@@ -103,3 +103,5 @@ ENV/
 
 # temp db
 db.sqlite3
+
+.DS_Store
