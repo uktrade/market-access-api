@@ -2,12 +2,14 @@ from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
+UserModel = get_user_model()
+
 
 class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
     class Meta:
-        model = get_user_model()
+        model = UserModel
         fields = (
             'last_login',
             'first_name',
