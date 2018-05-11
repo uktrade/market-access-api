@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -89,7 +90,11 @@ DATABASES = {
 }
 
 # django-oauth-toolkit settings
-
+AUTHENTICATION_BACKENDS = (
+    'oauth2_provider.backends.OAuth2Backend',
+    # Uncomment following if you want to access the admin
+    # 'django.contrib.auth.backends.ModelBackend'
+)
 SSO_ENABLED = env.bool('SSO_ENABLED')
 
 OAUTH2_PROVIDER = {}
