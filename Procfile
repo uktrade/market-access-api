@@ -1,1 +1,1 @@
-web: python manage.py collectstatic --noinput && waitress-serve --port=$PORT config.wsgi:application
+web: python manage.py migrate && waitress-serve --port=$PORT config.wsgi:application
