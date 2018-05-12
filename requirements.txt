@@ -41,6 +41,7 @@ pytest-django==3.2.1
 pytest-sugar==0.9.1
 python-dateutil==2.7.3
 pytz==2018.4
+raven==6.8.0
 requests==2.18.4
 six==1.11.0
 snowballstemmer==1.2.1

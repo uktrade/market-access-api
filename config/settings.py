@@ -1,5 +1,6 @@
 import environ
 import os
+import raven
 
 import dj_database_url
 
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
 
     # misc 3rd party
     'django_extensions',
+    "raven.contrib.django.raven_compat",
 
     # sso
     'oauth2_provider',
@@ -79,6 +81,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Sentry
+RAVEN_CONFIG = {
+    "dsn": os.getenv("SENTRY_DSN"),
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
