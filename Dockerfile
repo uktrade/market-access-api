@@ -4,8 +4,8 @@ RUN apt-get update && apt-get install -y postgresql-client
 
 RUN mkdir /app
 
-COPY alice /app/config
-COPY data /app/api
+COPY config /app/config
+COPY api /app/api
 COPY gunicorn /app/gunicorn
 
 COPY requirements.txt /app/requirements.txt
