@@ -47,7 +47,10 @@ INSTALLED_APPS = [
     'oauth2_provider',
 
     # local apps
+    'api.barriers',
     'api.core',
+    'api.user',
+    'api.ping',
 ]
 
 MIDDLEWARE = [
