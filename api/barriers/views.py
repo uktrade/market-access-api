@@ -1,14 +1,5 @@
-from django.conf import settings
-from django.http import Http404, HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
-from rest_framework import generics, mixins, status, viewsets
+from rest_framework import generics
 from rest_framework.decorators import permission_classes
-from rest_framework.parsers import JSONParser
-from rest_framework.permissions import IsAuthenticated, BasePermission
-from rest_framework.renderers import JSONRenderer
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from api.core.auth import IsMAServer, IsMAUser
 from api.barriers.models import Barrier
@@ -41,6 +32,3 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
