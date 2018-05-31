@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from api.metadata.constants import STATUS_TYPES
 
 
-@permission_classes([IsAuthenticated])
 class MetadataView(generics.GenericAPIView):
 
     def get(self, request):
