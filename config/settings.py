@@ -49,8 +49,9 @@ INSTALLED_APPS = [
     # local apps
     'api.barriers',
     'api.core',
-    'api.user',
     'api.ping',
+    'api.metadata',
+    'api.user',
 ]
 
 MIDDLEWARE = [
