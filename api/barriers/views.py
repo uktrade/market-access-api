@@ -5,11 +5,11 @@ from api.core.auth import IsMAServer, IsMAUser
 from api.barriers.models import Barrier
 from api.barriers.serializers import BarrierListSerializer, BarrierDetailSerializer
 
-MI_PERMISSION_CLASSES = (IsMAServer, IsMAUser)
+PERMISSION_CLASSES = (IsMAServer, IsMAUser)
 
 
 class BarrierList(generics.ListCreateAPIView):
-    permission_classes = MI_PERMISSION_CLASSES
+    permission_classes = PERMISSION_CLASSES
     queryset = Barrier.objects.all()
     serializer_class = BarrierListSerializer
 
@@ -21,7 +21,7 @@ class BarrierList(generics.ListCreateAPIView):
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
-    permission_classes = MI_PERMISSION_CLASSES
+    permission_classes = PERMISSION_CLASSES
 
     lookup_field = 'pk'
     queryset = Barrier.objects.all()
