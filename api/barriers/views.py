@@ -32,3 +32,17 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
+
+
+# class BarrierReportStagesList(generics.ListCreateAPIView):
+#     permission_classes = PERMISSION_CLASSES
+
+#     lookup_field = 'pk'
+#     queryset = BarrierReportStage.objects.filter()
+#     serializer_class = BarrierDetailSerializer
+
+#     def get(self, request, *args, **kwargs):
+#         return self.retrieve(request, *args, **kwargs)
+
+#     def put(self, request, *args, **kwargs):
+#         return self.update(request, *args, **kwargs)

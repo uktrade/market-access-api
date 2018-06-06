@@ -23,7 +23,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='barrier',
             name='commodity_codes',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(blank=True, default=None, max_length=10, null=True), default=[], size=None),
+            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(
+                blank=True, default=None, max_length=10, null=True), null=True, size=None),
             preserve_default=False,
         ),
     ]

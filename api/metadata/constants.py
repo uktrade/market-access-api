@@ -1,36 +1,38 @@
-PROBLEM_STATUS_TYPES = (
-    (1, "NOT_STARTED"),
-    (2, "ACTIVE"),
-    (3, "COMPLETE"),
+from model_utils import Choices
+
+PROBLEM_STATUS_TYPES = Choices(
+    (1, "It hasn't happened yet"),
+    (2, "It's happening now"),
+    (3, "It happened in the past"),
 )
 
-ESTIMATED_LOSS_RANGE = (
-    (1, "LESS_THAN_1M"),
-    (2, "1M_TO_10M"),
-    (3, "10M_TO_100M"),
-    (3, "OVER_100M"),
+ESTIMATED_LOSS_RANGE = Choices(
+    (1, "Less than £1m"),
+    (2, "£1m to £10m"),
+    (3, "£10m to £100m"),
+    (4, "Over £100m"),
 )
 
-STAGE_STATUS = (
-    (1, "NOT_STARTED"),
-    (2, "IN_PROGRESS"),
+STAGE_STATUS = Choices(
+    (1, "NOT STARTED"),
+    (2, "IN PROGRESS"),
     (3, "COMPLETED"),
 )
 
-ADV_BOOLEAN = (
-    (1, "YES"),
-    (2, "NO"),
-    (3, "DONT KNOW")
+ADV_BOOLEAN = Choices(
+    (1, "Yes"),
+    (2, "No"),
+    (3, "Don't know")
 )
 
-GOVT_RESPONSE = (
-    (1, "None"),
-    (2, "IN_COUNTRY_SUPPORT"),
-    (3, "GOVT_SENSITIVE")
+GOVT_RESPONSE = Choices(
+    (1, "None, this is for our information only at this stage"),
+    (2, "In-country support from post"),
+    (3, "Broader UK government sensitivities")
 )
 
-PUBLISH_RESPONSE = (
-    (1, "YES"),
-    (2, "NO"),
-    (3, "DONT_PUBLISH_WITHOUT_CONSULTATION")
+PUBLISH_RESPONSE = Choices(
+    (1, "Yes"),
+    (2, "No"),
+    (3, "Don't publish without consultation")
 )
