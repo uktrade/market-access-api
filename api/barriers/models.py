@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from api.metadata.constants import (
@@ -26,7 +27,6 @@ class CommodityCode(models.Model):
 class ReportStage(models.Model):
     code = models.CharField(max_length=4, null=False)
     description = models.CharField(max_length=255)
-    status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
 
 
 class Barrier(models.Model):
@@ -56,51 +56,113 @@ class Barrier(models.Model):
         null=True,
         blank=True
     )
-    commodity_codes = models.ManyToManyField(
-        CommodityCode,
-        related_name="commodity_codes",
-        through="BarrierCommodityCode"
+    commodity_codes = ArrayField(
+        models.CharField(
+            max_length=10,
+            blank=True,
+            null=True,
+            default=None
+        ),
     )
     export_country = models.CharField(
         max_length=255,
         null=True,
         blank=True
     )
-    problem_description = models.TextField(null=True)
-    problem_impact = models.TextField(null=True)
-    estimated_loss_range = models.PositiveIntegerField(choices=ESTIMATED_LOSS_RANGE, null=True)
-    other_companies_affected = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
-    govt_response_requester = models.PositiveIntegerField(choices=GOVT_RESPONSE, null=True)
+    problem_description = models.TextField(
+        null=True
+    )
+    problem_impact = models.TextField(
+        null=True
+    )
+    estimated_loss_range = models.PositiveIntegerField(
+        choices=ESTIMATED_LOSS_RANGE,
+        null=True
+    )
+    other_companies_affected = models.PositiveIntegerField(
+        choices=ADV_BOOLEAN,
+        null=True
+    )
+    govt_response_requester = models.PositiveIntegerField(
+        choices=GOVT_RESPONSE,
+        null=True
+    )
     is_confidential = models.NullBooleanField()
-    sensitivity_summary = models.TextField(null=True)
-    can_publish = models.PositiveIntegerField(choices=GOVT_RESPONSE, null=True)
-    barrier_name = models.CharField(max_length=255, null=True)
-    barrier_summary = models.TextField(null=True)
-    report_stages = models.ManyToManyField(ReportStage, related_name="report_stages",
-                                           through="BarrierReportStage")
+    sensitivity_summary = models.TextField(
+        null=True
+    )
+    can_publish = models.PositiveIntegerField(
+        choices=PUBLISH_RESPONSE,
+        null=True
+    )
+    barrier_name = models.CharField(
+        max_length=255,
+        null=True
+    )
+    barrier_summary = models.TextField(
+        null=True
+    )
+    report_stages = models.ManyToManyField(
+        ReportStage,
+        related_name="report_stages",
+        through="BarrierReportStage"
+    )
     # resolution?
     # Need to maintain other users who contribute to this barrier?
-    created_on = models.DateTimeField(db_index=True, null=True,
-                                      blank=True, auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,
-                                   blank=True, on_delete=models.SET_NULL)
+    created_on = models.DateTimeField(
+        db_index=True,
+        null=True,
+        blank=True,
+        auto_now_add=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return self.barrier_name
 
 
 class BarrierReportStage(models.Model):
-    barrier = models.ForeignKey('Barrier', on_delete=models.PROTECT)
-    stage = models.ForeignKey('ReportStage', on_delete=models.PROTECT)
-    status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
-    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True,
-                                   blank=True, on_delete=models.SET_NULL)
+    barrier = models.ForeignKey(
+        'Barrier',
+        on_delete=models.PROTECT
+    )
+    stage = models.ForeignKey(
+        'ReportStage',
+        on_delete=models.PROTECT
+    )
+    status = models.PositiveIntegerField(
+        choices=STAGE_STATUS,
+        null=True
+    )
+    created_on = models.DateTimeField(
+        db_index=True,
+        auto_now_add=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
 
 
 class BarrierCommodityCode(models.Model):
-    barrier = models.ForeignKey('Barrier', on_delete=models.PROTECT)
-    commodity_code = models.ForeignKey('CommodityCode', on_delete=models.PROTECT)
+    barrier = models.ForeignKey(
+        'Barrier',
+        on_delete=models.PROTECT
+    )
+    commodity_code = models.ForeignKey(
+        'CommodityCode',
+        on_delete=models.PROTECT
+    )
+    is_active = models.BooleanField(
+        default=False
+    )
 
     class Meta:
         unique_together = (('barrier', 'commodity_code'),)

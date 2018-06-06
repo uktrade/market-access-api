@@ -16,14 +16,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BarrierCommodityCode',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
             ],
         ),
         migrations.CreateModel(
             name='BarrierReportStage',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.PositiveIntegerField(choices=[(1, 'NOT_STARTED'), (2, 'IN_PROGRESS'), (3, 'COMPLETED')], null=True)),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
+                ('status', models.PositiveIntegerField(choices=[
+                 (1, 'NOT_STARTED'), (2, 'IN_PROGRESS'), (3, 'COMPLETED')], null=True)),
                 ('created_on', models.DateTimeField(auto_now_add=True, db_index=True)),
             ],
         ),
@@ -37,10 +40,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ReportStage',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('code', models.CharField(max_length=4)),
                 ('description', models.CharField(max_length=255)),
-                ('status', models.PositiveIntegerField(choices=[(1, 'NOT_STARTED'), (2, 'IN_PROGRESS'), (3, 'COMPLETED')], null=True)),
             ],
         ),
         migrations.RenameField(
@@ -69,7 +72,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='barrier',
             name='can_publish',
-            field=models.PositiveIntegerField(choices=[(1, 'None'), (2, 'IN_COUNTRY_SUPPORT'), (3, 'GOVT_SENSITIVE')], null=True),
+            field=models.PositiveIntegerField(
+                choices=[(1, 'None'), (2, 'IN_COUNTRY_SUPPORT'), (3, 'GOVT_SENSITIVE')], null=True),
         ),
         migrations.AddField(
             model_name='barrier',
@@ -79,12 +83,14 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='barrier',
             name='estimated_loss_range',
-            field=models.PositiveIntegerField(choices=[(1, 'LESS_THAN_1M'), (2, '1M_TO_10M'), (3, '10M_TO_100M'), (3, 'OVER_100M')], null=True),
+            field=models.PositiveIntegerField(
+                choices=[(1, 'LESS_THAN_1M'), (2, '1M_TO_10M'), (3, '10M_TO_100M'), (3, 'OVER_100M')], null=True),
         ),
         migrations.AddField(
             model_name='barrier',
             name='govt_response_requester',
-            field=models.PositiveIntegerField(choices=[(1, 'None'), (2, 'IN_COUNTRY_SUPPORT'), (3, 'GOVT_SENSITIVE')], null=True),
+            field=models.PositiveIntegerField(
+                choices=[(1, 'None'), (2, 'IN_COUNTRY_SUPPORT'), (3, 'GOVT_SENSITIVE')], null=True),
         ),
         migrations.AddField(
             model_name='barrier',
@@ -94,7 +100,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='barrier',
             name='other_companies_affected',
-            field=models.PositiveIntegerField(choices=[(1, 'YES'), (2, 'NO'), (3, 'DONT KNOW')], null=True),
+            field=models.PositiveIntegerField(
+                choices=[(1, 'YES'), (2, 'NO'), (3, 'DONT KNOW')], null=True),
         ),
         migrations.AddField(
             model_name='barrier',
@@ -119,37 +126,44 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='barrierreportstage',
             name='barrier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='barriers.Barrier'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to='barriers.Barrier'),
         ),
         migrations.AddField(
             model_name='barrierreportstage',
             name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
         ),
         migrations.AddField(
             model_name='barrierreportstage',
             name='stage',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='barriers.ReportStage'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to='barriers.ReportStage'),
         ),
         migrations.AddField(
             model_name='barriercommoditycode',
             name='barrier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='barriers.Barrier'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to='barriers.Barrier'),
         ),
         migrations.AddField(
             model_name='barriercommoditycode',
             name='commodity_code',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='barriers.CommodityCode'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT, to='barriers.CommodityCode'),
         ),
         migrations.AddField(
             model_name='barrier',
             name='commodity_codes',
-            field=models.ManyToManyField(related_name='commodity_codes', through='barriers.BarrierCommodityCode', to='barriers.CommodityCode'),
+            field=models.ManyToManyField(
+                related_name='commodity_codes', through='barriers.BarrierCommodityCode', to='barriers.CommodityCode'),
         ),
         migrations.AddField(
             model_name='barrier',
             name='report_stages',
-            field=models.ManyToManyField(related_name='report_stages', through='barriers.BarrierReportStage', to='barriers.ReportStage'),
+            field=models.ManyToManyField(
+                related_name='report_stages', through='barriers.BarrierReportStage', to='barriers.ReportStage'),
         ),
         migrations.AlterUniqueTogether(
             name='barriercommoditycode',
