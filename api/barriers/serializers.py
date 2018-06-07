@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, BarrierReportStage
 from api.barriers.company import Company
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Barrier
+        fields = '__all__'
         read_only_fields = (
             'id',
             'created_on',
@@ -49,6 +50,17 @@ class BarrierListSerializer(serializers.ModelSerializer):
 class BarrierDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Barrier
+        fields = '__all__'
+        read_only_fields = (
+            'id',
+            'created_on',
+            'created_by',
+        )
+
+
+class BarrierReportStageListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierReportStage
         fields = '__all__'
         read_only_fields = (
             'id',

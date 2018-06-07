@@ -63,6 +63,7 @@ class Barrier(models.Model):
             null=True,
             default=None
         ),
+        null=True
     )
     export_country = models.CharField(
         max_length=255,
