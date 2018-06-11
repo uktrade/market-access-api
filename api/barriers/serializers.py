@@ -18,7 +18,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
     def to_representation(self, obj):
         return {
             'id': obj.id,
-            'company_name': obj.company_name
+            'company_name': obj.company_name,
+            'status': obj.status
         }
 
     def create(self, validated_data):
