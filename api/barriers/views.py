@@ -73,22 +73,22 @@ class BarrierReportStagesList(generics.ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-    def create(self, request, *args, **kwargs):
-        """Create and one-time upload URL generation."""
-        barrier_id = self.kwargs['pk']
-        barrier = Barrier.objects.get(id=barrier_id)
-        stage_data = json.loads(request.body)
-        stage = ReportStage.objects.get(code=stage_data['stage'])
-        barrier_stage = BarrierReportStage(
-            stage=stage, barrier=barrier, status=stage_data['status']).save()
-        # serializer = BarrierDetailSerializer(data=request.data)
-        # if serializer.is_valid():
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # response = super().create(request, *args, **kwargs)
+    # def create(self, request, *args, **kwargs):
+    #     """Create and one-time upload URL generation."""
+    #     barrier_id = self.kwargs['pk']
+    #     barrier = Barrier.objects.get(id=barrier_id)
+    #     stage_data = json.loads(request.body)
+    #     stage = ReportStage.objects.get(code=stage_data['stage'])
+    #     barrier_stage = BarrierReportStage(
+    #         stage=stage, barrier=barrier, status=stage_data['status']).save()
+    #     # serializer = BarrierDetailSerializer(data=request.data)
+    #     # if serializer.is_valid():
+    #     #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     # response = super().create(request, *args, **kwargs)
 
-        # return response
-        return Response(status=status.HTTP_201_CREATED)
+    #     # return response
+    #     return Response(status=status.HTTP_201_CREATED)
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)

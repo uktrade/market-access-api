@@ -156,6 +156,9 @@ class BarrierReportStage(models.Model):
         on_delete=models.SET_NULL
     )
 
+    class Meta:
+        unique_together = (('barrier', 'stage', 'status'),)
+
 
 class BarrierCommodityCode(models.Model):
     barrier = models.ForeignKey(
