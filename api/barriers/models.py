@@ -11,7 +11,8 @@ from api.metadata.constants import (
     STAGE_STATUS,
     ADV_BOOLEAN,
     GOVT_RESPONSE,
-    PUBLISH_RESPONSE
+    PUBLISH_RESPONSE,
+    REPORT_STATUS
 )
 
 
@@ -108,7 +109,11 @@ class Barrier(models.Model):
         related_name="report_stages",
         through="BarrierReportStage"
     )
-    # resolution?
+
+    status = models.PositiveIntegerField(
+        choices=REPORT_STATUS,
+        default=0
+    )
     # Need to maintain other users who contribute to this barrier?
     created_on = models.DateTimeField(
         db_index=True,

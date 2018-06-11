@@ -36,3 +36,13 @@ PUBLISH_RESPONSE = Choices(
     (2, "No"),
     (3, "Don't publish without consultation")
 )
+
+REPORT_STATUS = Choices(
+    (0, 'Unfinished'),
+    (1, 'Screening'),
+    (2, 'Assesment'),
+    (3, 'Rejected'),
+    (4, 'Resolved'),
+    (5, 'Hibernated'),
+    (6, 'Archived')
+)
