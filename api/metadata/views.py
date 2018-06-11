@@ -11,7 +11,8 @@ from api.metadata.constants import (
     STAGE_STATUS,
     ADV_BOOLEAN,
     GOVT_RESPONSE,
-    PUBLISH_RESPONSE
+    PUBLISH_RESPONSE,
+    REPORT_STATUS
 )
 
 
@@ -24,6 +25,7 @@ class MetadataView(generics.GenericAPIView):
         adv_boolean = dict((x, y) for x, y in ADV_BOOLEAN)
         govt_response = dict((x, y) for x, y in GOVT_RESPONSE)
         publish_response = dict((x, y) for x, y in PUBLISH_RESPONSE)
+        report_status = dict((x, y) for x, y in REPORT_STATUS)
         report_stages = dict((stage.code, stage.description)
                              for stage in ReportStage.objects.all())
 
@@ -34,6 +36,7 @@ class MetadataView(generics.GenericAPIView):
             'adv_boolean': adv_boolean,
             'govt_response': govt_response,
             'publish_response': publish_response,
+            'report_status': report_status,
             'report_stages': report_stages
         }
 
