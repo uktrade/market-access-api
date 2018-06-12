@@ -1,4 +1,6 @@
 import json
+from django.conf import settings
+from django.contrib.auth.models import User
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes
@@ -40,6 +42,19 @@ class BarrierList(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
+
+    # def create(self, validated_data):
+    #     # add the current User to the validated_data dict and call
+    #     # the super method which basically only creates a model
+    #     # instance with that data
+    #     validated_data['user'] = self.request.user
+    #     return super(PhotoListAPIView, self).create(validated_data)
+
+    def perform_create(self, serializer):
+        if settings.DEBUG is False and self.request.user and self.request.user.is_authenticated:
+            serializer.save(user=self.request.user)
+        else:
+            serializer.save()
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
