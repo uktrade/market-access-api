@@ -11,15 +11,15 @@ class ReportStageSerializer(serializers.ModelSerializer):
 
 
 class BarrierReportStageSerializer(serializers.ModelSerializer):
-    stage = ReportStageSerializer(many=False)
+    stage = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model = BarrierReportStage
-        fields = '__all__'
+        fields = ('stage', 'status')
 
 
 class BarrierDetailSerializer(serializers.ModelSerializer):
-    # report_stages = BarrierReportStageSerializer(many=True, read_only=True)
+    report_stages = ReportStageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Barrier
