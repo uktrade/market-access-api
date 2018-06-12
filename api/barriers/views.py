@@ -47,14 +47,27 @@ class BarrierList(generics.ListCreateAPIView):
     #     # add the current User to the validated_data dict and call
     #     # the super method which basically only creates a model
     #     # instance with that data
-    #     validated_data['user'] = self.request.user
-    #     return super(PhotoListAPIView, self).create(validated_data)
+    #     if settings.DEBUG:
+    #         created_by = User.objects.get(email='admin@example.com')
+    #     else:
+    #         created_by = self.request.user
+    #     validated_data['user'] = created_by
+    #     return super(BarrierList, self).create(validated_data)
 
-    def perform_create(self, serializer):
-        if settings.DEBUG is False and self.request.user and self.request.user.is_authenticated:
-            serializer.save(user=self.request.user)
-        else:
-            serializer.save()
+    # def perform_create(self, serializer):
+    #     if settings.DEBUG:
+    #         admin = User.objects.get(email='admin@example.com')
+    #         serializer.save(user=admin)
+    #     else:
+    #         serializer.save(user=self.request.user)
+
+    # def perform_create(self, serializer):
+    #     if settings.DEBUG:
+    #         created_by = User.objects.get(email='admin@example.com')
+    #     else:
+    #         created_by = self.request.user
+    #     serializer.validated_data['user'] = created_by
+    #     return super(BarrierList, self).perform_create(serializer)
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):

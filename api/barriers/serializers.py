@@ -41,6 +41,9 @@ class BarrierListSerializer(serializers.ModelSerializer):
             'created_on',
             'created_by',
         )
+        created_by = serializers.HiddenField(
+            default=serializers.CurrentUserDefault()
+        )
         depth = 1
 
     def to_representation(self, obj):
@@ -50,13 +53,14 @@ class BarrierListSerializer(serializers.ModelSerializer):
             'company_name': obj.company_name,
             'status': obj.status,
             'problem_status': obj.problem_status,
+            'is_emergency': obj.is_emergency,
             'created_on': obj.created_on,
             'created_by': obj.created_by
         }
 
-    def create(self, validated_data):
-        barrier = Barrier.objects.create(**validated_data)
-        return barrier
+    # def create(self, validated_data):
+    #     barrier = Barrier.objects.create(**validated_data)
+    #     return barrier
 
 
 class BarrierReportStageListSerializer(serializers.ModelSerializer):
