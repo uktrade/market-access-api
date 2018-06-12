@@ -48,7 +48,10 @@ class BarrierListSerializer(serializers.ModelSerializer):
             'id': obj.id,
             'company_id': obj.company_id,
             'company_name': obj.company_name,
-            'status': obj.status
+            'status': obj.status,
+            'problem_status': obj.problem_status,
+            'created_on': obj.created_on,
+            'created_by': obj.created_by
         }
 
     def create(self, validated_data):
