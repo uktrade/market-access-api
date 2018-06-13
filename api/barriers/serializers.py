@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from api.barriers.models import Barrier, BarrierReportStage, ReportStage
@@ -27,7 +29,6 @@ class BarrierDetailSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'created_on',
-            'created_by',
         )
         depth = 1
 
@@ -39,28 +40,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'created_on',
-            'created_by',
-        )
-        created_by = serializers.HiddenField(
-            default=serializers.CurrentUserDefault()
         )
         depth = 1
-
-    def to_representation(self, obj):
-        return {
-            'id': obj.id,
-            'company_id': obj.company_id,
-            'company_name': obj.company_name,
-            'status': obj.status,
-            'problem_status': obj.problem_status,
-            'is_emergency': obj.is_emergency,
-            'created_on': obj.created_on,
-            'created_by': obj.created_by
-        }
-
-    # def create(self, validated_data):
-    #     barrier = Barrier.objects.create(**validated_data)
-    #     return barrier
 
 
 class BarrierReportStageListSerializer(serializers.ModelSerializer):
@@ -70,5 +51,4 @@ class BarrierReportStageListSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id',
             'created_on',
-            'created_by',
         )
