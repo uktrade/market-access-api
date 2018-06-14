@@ -46,6 +46,8 @@ class BarrierList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         if settings.DEBUG is False:
             serializer.save(created_by=self.request.user)
+        else:
+            serializer.save()
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):

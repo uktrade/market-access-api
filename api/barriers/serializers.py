@@ -37,10 +37,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Barrier
         fields = '__all__'
-        read_only_fields = (
-            'id',
-            'created_on',
-        )
         depth = 1
 
 
