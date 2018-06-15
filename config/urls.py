@@ -16,6 +16,6 @@ urlpatterns = [
     path('barriers/unfinished/', BarrierList.as_view(), {'status': 0}),
     path('barriers/screening/', BarrierList.as_view(), {'status': 1}),
     path('barriers/<int:pk>/', BarrierDetail.as_view()),
-    path('barriers/<int:pk>/stages/', BarrierReportStagesList.as_view()),
+    path('barriers/<int:barrier_pk>/stages/', BarrierReportStagesList.as_view()),
     path('metadata/', MetadataView.as_view()),
 ]

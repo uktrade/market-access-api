@@ -11,7 +11,7 @@ from api.metadata.constants import REPORT_STATUS
 from api.barriers.serializers import (
     BarrierListSerializer,
     BarrierDetailSerializer,
-    BarrierReportStageListSerializer
+    BarrierReportStageSerializer
 )
 
 PERMISSION_CLASSES = (IsMAServer, IsMAUser)
@@ -22,20 +22,28 @@ class BarrierList(generics.ListCreateAPIView):
     queryset = Barrier.objects.all()
     serializer_class = BarrierListSerializer
 
-    def list(self, request, *args, **kwargs):
+    def get_queryset(self):
         if self.kwargs['status']:
-            self.queryset = self.filter_queryset(self.get_queryset().filter(
-                status=self.kwargs['status'])
-            )
+            return self.queryset.filter(status=self.kwargs['status'])
+            # self.queryset = self.filter_queryset(self.get_queryset().filter(
+            #     status=self.kwargs['status'])
+            # )
+        return self.queryset
 
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+    # def list(self, request, *args, **kwargs):
+    #     if self.kwargs['status']:
+    #         self.queryset = self.filter_queryset(self.get_queryset().filter(
+    #             status=self.kwargs['status'])
+    #         )
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    #     queryset = self.filter_queryset(self.get_queryset())
+    #     page = self.paginate_queryset(queryset)
+    #     if page is not None:
+    #         serializer = self.get_serializer(page, many=True)
+    #         return self.get_paginated_response(serializer.data)
+
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -69,14 +77,19 @@ class BarrierReportStagesList(generics.ListCreateAPIView):
 
     lookup_field = 'pk'
     queryset = BarrierReportStage.objects.all()
-    serializer_class = BarrierReportStageListSerializer
+    serializer_class = BarrierReportStageSerializer
 
-    def list(self, request, *args, **kwargs):
-        self.queryset = self.filter_queryset(self.get_queryset().filter(
-            barrier_id=self.kwargs['pk'])
-        )
-        serializer = self.get_serializer(self.get_queryset(), many=True)
-        return Response(serializer.data)
+    # def get_queryset(self):
+
+    def get_queryset(self):
+        return self.queryset.filter(barrier_id=self.kwargs.get('barrier_pk'))
+
+    # def list(self, request, *args, **kwargs):
+    #     self.queryset = self.filter_queryset(self.get_queryset().filter(
+    #         barrier_id=self.kwargs['pk'])
+    #     )
+    #     serializer = self.get_serializer(self.get_queryset(), many=True)
+    #     return Response(serializer.data)
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

@@ -12,12 +12,12 @@ class ReportStageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class BarrierReportStageSerializer(serializers.ModelSerializer):
-    stage = serializers.StringRelatedField(many=True, read_only=True)
+# class BarrierReportStageSerializer(serializers.ModelSerializer):
+#     stage = serializers.StringRelatedField(many=True, read_only=True)
 
-    class Meta:
-        model = BarrierReportStage
-        fields = ('stage', 'status')
+#     class Meta:
+#         model = BarrierReportStage
+#         fields = ('stage', 'status')
 
 
 class BarrierDetailSerializer(serializers.ModelSerializer):
@@ -40,11 +40,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
         depth = 1
 
 
-class BarrierReportStageListSerializer(serializers.ModelSerializer):
+class BarrierReportStageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BarrierReportStage
         fields = '__all__'
-        read_only_fields = (
-            'id',
-            'created_on',
-        )
