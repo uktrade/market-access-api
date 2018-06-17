@@ -26,6 +26,43 @@ class BarrierReportStageSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+class BarrierSerializer(serializers.ModelSerializer):
+    report_stages = BarrierReportStageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Barrier
+        fields = (
+            'id',
+            'problem_status',
+            'is_emergency',
+            'company_id',
+            'company_name',
+            'contact_id',
+            'product',
+            'commodity_codes',
+            'export_country',
+            'problem_description',
+            'problem_impact',
+            'estimated_loss_range',
+            'other_companies_affected',
+            'govt_response_requester',
+            'is_confidential',
+            'sensitivity_summary',
+            'can_publish',
+            'barrier_name',
+            'barrier_summary',
+            'status',
+            'created_on',
+            'created_by',
+            'report_stages'
+        )
+        read_only_fields = (
+            'id',
+            'created_on',
+        )
+        depth = 1
+
+
 class BarrierDetailSerializer(serializers.ModelSerializer):
     report_stages = ReportStageSerializer(many=True, read_only=True)
 

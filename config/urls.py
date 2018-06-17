@@ -5,7 +5,12 @@ from django.urls import include, path
 from api.metadata.constants import REPORT_STATUS
 from api.ping.views import ping
 from api.user.views import who_am_i
-from api.barriers.views import BarrierList, BarrierDetail, BarrierReportStagesList
+from api.barriers.views import (
+    BarrierList,
+    BarrierDetail,
+    BarrierReportStagesList,
+    BarrierReportStageUpdate
+)
 from api.metadata.views import MetadataView
 
 urlpatterns = [
@@ -17,5 +22,6 @@ urlpatterns = [
     path('barriers/screening/', BarrierList.as_view(), {'status': 1}),
     path('barriers/<int:pk>/', BarrierDetail.as_view()),
     path('barriers/<int:barrier_pk>/stages/', BarrierReportStagesList.as_view()),
+    path('barriers/<int:barrier_pk>/stages/<int:pk>/', BarrierReportStageUpdate.as_view()),
     path('metadata/', MetadataView.as_view()),
 ]

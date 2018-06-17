@@ -160,7 +160,7 @@ class BarrierReportStage(models.Model):
     )
 
     class Meta:
-        unique_together = (('barrier', 'stage', 'status'),)
+        unique_together = (('barrier', 'stage'),)
 
 
 class BarrierCommodityCode(models.Model):

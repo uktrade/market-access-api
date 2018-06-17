@@ -10,6 +10,7 @@ from api.core.auth import IsMAServer, IsMAUser
 from api.barriers.models import Barrier, BarrierReportStage, ReportStage
 from api.metadata.constants import REPORT_STATUS
 from api.barriers.serializers import (
+    BarrierSerializer,
     BarrierListSerializer,
     BarrierDetailSerializer,
     BarrierReportStageSerializer
@@ -21,7 +22,7 @@ PERMISSION_CLASSES = (IsMAServer, IsMAUser)
 class BarrierList(generics.ListCreateAPIView):
     permission_classes = PERMISSION_CLASSES
     queryset = Barrier.objects.all()
-    serializer_class = BarrierListSerializer
+    serializer_class = BarrierSerializer
 
     def get_queryset(self):
         if self.kwargs['status']:
@@ -46,7 +47,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
 
     lookup_field = 'pk'
     queryset = Barrier.objects.all()
-    serializer_class = BarrierDetailSerializer
+    serializer_class = BarrierSerializer
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -71,3 +72,15 @@ class BarrierReportStagesList(generics.ListCreateAPIView):
             serializer.save(barrier=barrier_obj, stage=stage_obj, created_by=self.request.user)
         else:
             serializer.save(barrier=barrier_obj, stage=stage_obj)
+
+
+class BarrierReportStageUpdate(generics.RetrieveUpdateAPIView):
+    queryset = BarrierReportStage.objects.all()
+    serializer_class = BarrierReportStageSerializer
+
+    def get_object(self):
+        return get_object_or_404(
+            self.get_queryset(),
+            barrier_id=self.kwargs.get('barrier_pk'),
+            pk=self.kwargs.get('pk')
+        )
