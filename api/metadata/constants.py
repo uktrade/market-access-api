@@ -39,6 +39,14 @@ PUBLISH_RESPONSE = Choices(
 
 REPORT_STATUS = Choices(
     (0, 'Unfinished'),
+    (1, 'AwaitingScreening'),
+    (2, 'Accepted'),
+    (3, 'Rejected'),
+    (4, 'Archived')
+)
+
+BARRIER_STATUS = Choices(
+    (0, 'Unfinished'),
     (1, 'Screening'),
     (2, 'Assesment'),
     (3, 'Rejected'),
