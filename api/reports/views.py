@@ -27,17 +27,23 @@ class ReportList(generics.ListCreateAPIView):
             return self.queryset.filter(status=self.kwargs['status'])
         return self.queryset
 
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
-
     def perform_create(self, serializer):
         if settings.DEBUG is False:
             serializer.save(created_by=self.request.user)
         else:
             serializer.save()
+        # Create first stage
+        report_id = serializer.data.get('id')
+        report = Report.objects.get(id=report_id)
+        new_stage, new_status = report.current_stage()
+        report_stage = ReportStage(
+            report=report,
+            stage=new_stage,
+            status=new_status
+        ).save()
+        if settings.DEBUG is False:
+            report_stage.user = self.request.user
+            report_stage.save()
 
 
 class ReportDetail(generics.RetrieveUpdateAPIView):
@@ -47,11 +53,24 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-
-    def put(self, request, *args, **kwargs):
-        return self.update(request, *args, **kwargs)
+    def perform_update(self, serializer):
+        serializer.save()
+        report_id = serializer.data.get('id')
+        report = Report.objects.get(id=report_id)
+        new_stage, new_status = report.current_stage()
+        try:
+            report_stage = ReportStage.objects.get(report=report, stage=new_stage)
+            report_stage.status = new_status
+            report_stage.save()
+        except ReportStage.DoesNotExist:
+            report_stage = ReportStage(
+                report=report,
+                stage=new_stage,
+                status=new_status
+            ).save()
+        if settings.DEBUG is False:
+            report_stage.user = self.request.user
+            report_stage.save()
 
 
 class ReportStagesList(generics.ListCreateAPIView):
