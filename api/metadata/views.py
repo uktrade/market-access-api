@@ -4,7 +4,7 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.barriers.models import ReportStage
+from api.reports.models import Stage
 from api.metadata.constants import (
     PROBLEM_STATUS_TYPES,
     ESTIMATED_LOSS_RANGE,
@@ -27,7 +27,7 @@ class MetadataView(generics.GenericAPIView):
         publish_response = dict((x, y) for x, y in PUBLISH_RESPONSE)
         report_status = dict((x, y) for x, y in REPORT_STATUS)
         report_stages = dict((stage.code, stage.description)
-                             for stage in ReportStage.objects.all())
+                             for stage in Stage.objects.all())
 
         results = {
             'status_types': status_types,
