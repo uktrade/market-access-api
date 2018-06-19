@@ -2,6 +2,7 @@ import json
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.db import transaction
 
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -28,6 +29,7 @@ class ReportList(generics.ListCreateAPIView):
             return self.queryset.filter(status=self.kwargs['status'])
         return self.queryset
 
+    @transaction.atomic()
     def perform_create(self, serializer):
         if settings.DEBUG is False:
             serializer.save(created_by=self.request.user)
@@ -54,6 +56,7 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
+    @transaction.atomic()
     def perform_update(self, serializer):
         serializer.save()
         report_id = serializer.data.get('id')
