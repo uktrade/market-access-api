@@ -1,8 +1,12 @@
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework import serializers
 
 from api.reports.models import Report, ReportStage, Stage
+from api.metadata.constants import STAGE_STATUS
 
 
 class StageSerializer(serializers.ModelSerializer):
@@ -25,8 +29,19 @@ class ReportStageSerializer(serializers.ModelSerializer):
         depth = 1
 
 
+class ReportStageListingField(serializers.RelatedField):
+    def to_representation(self, value):
+        stage_status_dict = dict(STAGE_STATUS)
+        return {
+            'stage_code': value.stage.code,
+            'stage_desc': value.stage.description,
+            'status_id': value.status,
+            'status_desc': stage_status_dict[value.status]
+        }
+
+
 class ReportSerializer(serializers.ModelSerializer):
-    # stages = ReportStageSerializer(many=True, read_only=True)
+    progress = ReportStageListingField(many=True, read_only=True)
 
     class Meta:
         model = Report
@@ -53,10 +68,12 @@ class ReportSerializer(serializers.ModelSerializer):
             'status',
             'created_on',
             'created_by',
-            'stages'
+            'progress'
         )
         read_only_fields = (
             'id',
+            'stages',
+            'progress',
             'created_on',
         )
         depth = 1

@@ -113,7 +113,7 @@ class Report(models.Model):
     )
 
     stages = models.ManyToManyField(
-        Stage,
+        'Stage',
         related_name="report_stages",
         through="ReportStage"
     )
@@ -174,11 +174,13 @@ class Report(models.Model):
 
 class ReportStage(models.Model):
     report = models.ForeignKey(
-        'Report',
+        Report,
+        related_name='progress',
         on_delete=models.PROTECT
     )
     stage = models.ForeignKey(
-        'Stage',
+        Stage,
+        related_name='progress',
         on_delete=models.PROTECT
     )
     status = models.PositiveIntegerField(
