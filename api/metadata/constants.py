@@ -37,6 +37,12 @@ PUBLISH_RESPONSE = Choices(
     (3, "Don't publish without consultation")
 )
 
+SUPPORT_TYPE = Choices(
+    (1, "Market access team to take over the lead"),
+    (2, "Trade barriers team to guide me on next steps"),
+    (3, "None, I'm going to hendle next steps myself")
+)
+
 REPORT_STATUS = Choices(
     (0, 'Unfinished'),
     (1, 'AwaitingScreening'),

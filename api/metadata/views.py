@@ -1,8 +1,14 @@
+import requests
+
+from django.conf import settings
 from django.shortcuts import render
+
 from rest_framework import generics, status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from urlobject import URLObject
 
 from api.reports.models import Stage
 from api.metadata.constants import (
@@ -17,6 +23,19 @@ from api.metadata.constants import (
 
 
 class MetadataView(generics.GenericAPIView):
+    MODELS = {
+        './country/': 'countries',
+    }
+
+    def import_api_results(self, endpoint):
+        base_url = URLObject(settings.DH_METADATA_URL)
+        meta_url = base_url.relative(endpoint)
+
+        response = requests.get(meta_url, verify=not settings.DEBUG)
+        if response.ok:
+            return response.json()
+
+        return None
 
     def get(self, request):
         status_types = dict((x, y) for x, y in PROBLEM_STATUS_TYPES)
@@ -29,6 +48,8 @@ class MetadataView(generics.GenericAPIView):
         report_stages = dict((stage.code, stage.description)
                              for stage in Stage.objects.all())
 
+        dh_countries = self.import_api_results('./country/')
+
         results = {
             'status_types': status_types,
             'loss_range': loss_range,
@@ -37,7 +58,8 @@ class MetadataView(generics.GenericAPIView):
             'govt_response': govt_response,
             'publish_response': publish_response,
             'report_status': report_status,
-            'report_stages': report_stages
+            'report_stages': report_stages,
+            'countries': dh_countries
         }
 
         return Response(results, status=status.HTTP_200_OK)

@@ -49,6 +49,7 @@ snowballstemmer==1.2.1
 termcolor==1.1.0
 text-unidecode==1.2
 urllib3==1.22
+URLObject==2.4.3
 waitress==0.8.9
 whitenoise==1.0.6
 wrapt==1.10.11
