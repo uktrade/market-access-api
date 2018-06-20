@@ -1,3 +1,5 @@
+import json
+import os
 import requests
 
 from django.conf import settings
@@ -28,6 +30,14 @@ class MetadataView(generics.GenericAPIView):
     }
 
     def import_api_results(self, endpoint):
+        # Avoid calling DH
+        fake_it = settings.FAKE_METADATA
+        if fake_it:
+            file_path = os.path.join(
+                settings.BASE_DIR,
+                'api/metadata/static/fake-countries.json'
+            )
+            return json.loads(open(file_path).read())
         base_url = URLObject(settings.DH_METADATA_URL)
         meta_url = base_url.relative(endpoint)
 
