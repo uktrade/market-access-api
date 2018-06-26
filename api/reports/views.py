@@ -38,15 +38,21 @@ class ReportList(generics.ListCreateAPIView):
         # Create first stage
         report_id = serializer.data.get('id')
         report = Report.objects.get(id=report_id)
-        new_stage, new_status = report.current_stage()
-        report_stage = ReportStage(
-            report=report,
-            stage=new_stage,
-            status=new_status
-        ).save()
-        if settings.DEBUG is False:
-            report_stage.user = self.request.user
-            report_stage.save()
+        progress = report.current_stage()
+        for new_stage, new_status in progress:
+            try:
+                report_stage = ReportStage.objects.get(report=report, stage=new_stage)
+                report_stage.status = new_status
+                report_stage.save()
+            except ReportStage.DoesNotExist:
+                report_stage = ReportStage(
+                    report=report,
+                    stage=new_stage,
+                    status=new_status
+                ).save()
+            if settings.DEBUG is False:
+                report_stage.user = self.request.user
+                report_stage.save()
 
 
 class ReportDetail(generics.RetrieveUpdateAPIView):
@@ -61,20 +67,21 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
         serializer.save()
         report_id = serializer.data.get('id')
         report = Report.objects.get(id=report_id)
-        new_stage, new_status = report.current_stage()
-        try:
-            report_stage = ReportStage.objects.get(report=report, stage=new_stage)
-            report_stage.status = new_status
-            report_stage.save()
-        except ReportStage.DoesNotExist:
-            report_stage = ReportStage(
-                report=report,
-                stage=new_stage,
-                status=new_status
-            ).save()
-        if settings.DEBUG is False:
-            report_stage.user = self.request.user
-            report_stage.save()
+        progress = report.current_stage()
+        for new_stage, new_status in progress:
+            try:
+                report_stage = ReportStage.objects.get(report=report, stage=new_stage)
+                report_stage.status = new_status
+                report_stage.save()
+            except ReportStage.DoesNotExist:
+                report_stage = ReportStage(
+                    report=report,
+                    stage=new_stage,
+                    status=new_status
+                ).save()
+            if settings.DEBUG is False:
+                report_stage.user = self.request.user
+                report_stage.save()
 
 
 class ReportStagesList(generics.ListCreateAPIView):

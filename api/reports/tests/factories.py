@@ -1,3 +1,5 @@
+import uuid
+
 import factory
 import factory.fuzzy
 
@@ -13,32 +15,14 @@ from api.metadata.constants import (
 )
 from api.reports.models import Report, ReportStage, Stage
 
-sample_companies = [
-    {
-        'id': '',
-        'name': '',
-        'contact': ''
-    },
-    {
-        'id': '',
-        'name': '',
-        'contact': ''
-    },
-    {
-        'id': '',
-        'name': '',
-        'contact': ''
-    }
-]
-
 
 class Stage1_1ReportFactory(factory.django.DjangoModelFactory):
     problem_status = factory.fuzzy.FuzzyChoice(PROBLEM_STATUS_TYPES)
     is_emergency = False
     comapny = factory.fuzzy.FuzzyChoice(sample_companies)
-    company_id = company['id']
-    company_name = company['name']
-    contact_id = company['contact']
+    company_id = factory.LazyFunction(uuid.uuid4)
+    company_name = factory.Faker('text')
+    contact_id = factory.LazyFunction(uuid.uuid4)
 
     class Meta:
         model = Report
