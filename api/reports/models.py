@@ -141,35 +141,51 @@ class Report(models.Model):
         return self.name
 
     def current_stage(self):
+        progress = []
         if self.is_resolved is not None and self.support_type:
-            return (Stage.objects.get(code="3.0"), 3)
+            progress.append((Stage.objects.get(code="3.0"), 3))
         elif self.is_resolved is not None or self.support_type:
-            return (Stage.objects.get(code="3.0"), 2)
+            progress.append((Stage.objects.get(code="3.0"), 2))
+        else:
+            progress.append((Stage.objects.get(code="3.0"), 1))
 
         if self.name and self.summary:
-            return (Stage.objects.get(code="2.0"), 3)
+            progress.append((Stage.objects.get(code="2.0"), 3))
         elif self.name or self.summary:
-            return (Stage.objects.get(code="2.0"), 2)
+            progress.append((Stage.objects.get(code="2.0"), 2))
+        else:
+            progress.append((Stage.objects.get(code="2.0"), 1))
 
         if self.govt_response_requester and self.is_confidential is not None and self.can_publish is not None:
-            return (Stage.objects.get(code="1.5"), 3)    # 1.5
+            progress.append((Stage.objects.get(code="1.5"), 3))    # 1.5
         elif self.govt_response_requester or self.is_confidential is not None or self.can_publish is not None:
-            return (Stage.objects.get(code="1.5"), 2)    # 1.5
+            progress.append((Stage.objects.get(code="1.5"), 2))    # 1.5
+        else:
+            progress.append((Stage.objects.get(code="1.5"), 1))    # 1.5
 
         if self.product and self.export_country and self.problem_description and self.problem_impact and self.estimated_loss_range and self.other_companies_affected:
-            return (Stage.objects.get(code="1.4"), 3)    # 1.4
+            progress.append((Stage.objects.get(code="1.4"), 3))    # 1.4
         elif self.product or self.export_country or self.problem_description or self.problem_impact or self.estimated_loss_range or self.other_companies_affected:
-            return (Stage.objects.get(code="1.4"), 2)    # 1.4
+            progress.append((Stage.objects.get(code="1.4"), 2))    # 1.4
+        else:
+            progress.append((Stage.objects.get(code="1.4"), 1))
 
         if self.contact_id:
-            return (Stage.objects.get(code="1.3"), 3)    # 1.3
+            progress.append((Stage.objects.get(code="1.3"), 3))    # 1.3
+        else:
+            progress.append((Stage.objects.get(code="1.3"), 1))    # 1.3
 
         if self.company_id:
-            return (Stage.objects.get(code="1.2"), 3)    # 1.2
-        if self.problem_status:
-            return (Stage.objects.get(code="1.1"), 3)    # 1.1
+            progress.append((Stage.objects.get(code="1.2"), 3))    # 1.2
+        else:
+            progress.append((Stage.objects.get(code="1.2"), 1))    # 1.2
 
-        return (Stage.objects.get(code="1.1"), 2)
+        if self.problem_status:
+            progress.append((Stage.objects.get(code="1.1"), 3))    # 1.1
+        else:
+            progress.append((Stage.objects.get(code="1.1"), 1))    # 1.1
+
+        return progress
 
 
 class ReportStage(models.Model):
