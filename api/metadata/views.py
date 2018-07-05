@@ -14,6 +14,7 @@ from api.metadata.constants import (ADV_BOOLEAN, ESTIMATED_LOSS_RANGE,
                                     GOVT_RESPONSE, PROBLEM_STATUS_TYPES,
                                     PUBLISH_RESPONSE, REPORT_STATUS,
                                     STAGE_STATUS)
+from api.metadata.models import BarrierType
 from api.reports.models import Stage
 
 
@@ -50,6 +51,13 @@ class MetadataView(generics.GenericAPIView):
         report_status = dict((x, y) for x, y in REPORT_STATUS)
         report_stages = dict((stage.code, stage.description)
                              for stage in Stage.objects.all())
+        barrier_types = [
+            {
+                'title': barrier_type.title,
+                'description': barrier_type.description,
+                'category': barrier_type.category
+            } for barrier_type in BarrierType.objects.all()
+        ]
 
         dh_countries = self.import_api_results('country')
         dh_sectors = self.import_api_results('sector')
@@ -63,6 +71,7 @@ class MetadataView(generics.GenericAPIView):
             'publish_response': publish_response,
             'report_status': report_status,
             'report_stages': report_stages,
+            'barrier_types': barrier_types,
             'countries': dh_countries,
             'sectors': dh_sectors
         }
