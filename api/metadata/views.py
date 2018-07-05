@@ -1,27 +1,20 @@
 import json
 import os
-import requests
 
+import requests
 from django.conf import settings
 from django.shortcuts import render
-
 from rest_framework import generics, status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from urlobject import URLObject
 
+from api.metadata.constants import (ADV_BOOLEAN, ESTIMATED_LOSS_RANGE,
+                                    GOVT_RESPONSE, PROBLEM_STATUS_TYPES,
+                                    PUBLISH_RESPONSE, REPORT_STATUS,
+                                    STAGE_STATUS)
 from api.reports.models import Stage
-from api.metadata.constants import (
-    PROBLEM_STATUS_TYPES,
-    ESTIMATED_LOSS_RANGE,
-    STAGE_STATUS,
-    ADV_BOOLEAN,
-    GOVT_RESPONSE,
-    PUBLISH_RESPONSE,
-    REPORT_STATUS
-)
 
 
 class MetadataView(generics.GenericAPIView):
@@ -35,11 +28,11 @@ class MetadataView(generics.GenericAPIView):
         if fake_it:
             file_path = os.path.join(
                 settings.BASE_DIR,
-                'api/metadata/static/fake-countries.json'
+                f'api/metadata/static/{endpoint}.json'
             )
             return json.loads(open(file_path).read())
         base_url = URLObject(settings.DH_METADATA_URL)
-        meta_url = base_url.relative(endpoint)
+        meta_url = base_url.relative(f'./{endpoint}/')
 
         response = requests.get(meta_url, verify=not settings.DEBUG)
         if response.ok:
@@ -58,7 +51,8 @@ class MetadataView(generics.GenericAPIView):
         report_stages = dict((stage.code, stage.description)
                              for stage in Stage.objects.all())
 
-        dh_countries = self.import_api_results('./country/')
+        dh_countries = self.import_api_results('country')
+        dh_sectors = self.import_api_results('sector')
 
         results = {
             'status_types': status_types,
@@ -69,7 +63,8 @@ class MetadataView(generics.GenericAPIView):
             'publish_response': publish_response,
             'report_status': report_status,
             'report_stages': report_stages,
-            'countries': dh_countries
+            'countries': dh_countries,
+            'sectors': dh_sectors
         }
 
         return Response(results, status=status.HTTP_200_OK)

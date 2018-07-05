@@ -1,20 +1,17 @@
 import json
-from django.shortcuts import get_object_or_404
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
-
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
-from rest_framework.response import Response
 from rest_framework.decorators import permission_classes
+from rest_framework.response import Response
 
 from api.core.auth import IsMAServer, IsMAUser
-from api.reports.models import Report, ReportStage, Stage
 from api.metadata.constants import REPORT_STATUS
-from api.reports.serializers import (
-    ReportSerializer,
-    ReportStageSerializer
-)
+from api.reports.models import Report, ReportStage, Stage
+from api.reports.serializers import ReportSerializer, ReportStageSerializer
 
 PERMISSION_CLASSES = (IsMAServer, IsMAUser)
 
@@ -64,6 +61,8 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
+        if serializer.validated_data.get('is_confidential', False) is False:
+            serializer.validated_data['sensitivity_summary'] = None
         serializer.save()
         report_id = serializer.data.get('id')
         report = Report.objects.get(id=report_id)
@@ -112,3 +111,19 @@ class ReportStageUpdate(generics.RetrieveUpdateAPIView):
             report_id=self.kwargs.get('report_pk'),
             pk=self.kwargs.get('pk')
         )
+
+
+class ReportSubmit(generics.UpdateAPIView):
+    permission_classes = PERMISSION_CLASSES
+
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+
+    # def get_queryset(self):
+    #     return self.queryset.filter(id=self.kwargs.get('pk'))
+
+    @transaction.atomic()
+    def perform_update(self, serializer):
+        report_id = serializer.data.get('id')
+        report = Report.objects.get(id=report_id)
+        report.complete()

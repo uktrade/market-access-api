@@ -2,11 +2,10 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-
 from rest_framework import serializers
 
-from api.reports.models import Report, ReportStage, Stage
 from api.metadata.constants import STAGE_STATUS
+from api.reports.models import Report, ReportStage, Stage
 
 
 class StageSerializer(serializers.ModelSerializer):
@@ -45,30 +44,8 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = (
-            'id',
-            'problem_status',
-            'is_emergency',
-            'company_id',
-            'company_name',
-            'contact_id',
-            'product',
-            'commodity_codes',
-            'export_country',
-            'problem_description',
-            'problem_impact',
-            'estimated_loss_range',
-            'other_companies_affected',
-            'govt_response_requester',
-            'is_confidential',
-            'sensitivity_summary',
-            'can_publish',
-            'name',
-            'summary',
-            'status',
-            'created_on',
-            'created_by',
-            'progress'
+        exclude = (
+            'stages',
         )
         read_only_fields = (
             'id',

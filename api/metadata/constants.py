@@ -39,8 +39,7 @@ PUBLISH_RESPONSE = Choices(
 
 SUPPORT_TYPE = Choices(
     (1, "Market access team to take over the lead"),
-    (2, "Trade barriers team to guide me on next steps"),
-    (3, "None, I'm going to hendle next steps myself")
+    (2, "None, I'm going to hendle next steps myself")
 )
 
 REPORT_STATUS = Choices(
@@ -59,4 +58,9 @@ BARRIER_STATUS = Choices(
     (4, 'Resolved'),
     (5, 'Hibernated'),
     (6, 'Archived')
+)
+
+BARRIER_TYPE_CATEGORIES = Choices(
+    'GOODS', 'Goods',
+    'SERVICES', 'Services'
 )
