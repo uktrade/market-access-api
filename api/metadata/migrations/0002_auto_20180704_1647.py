@@ -10,14 +10,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
+        migrations.RemoveField(
             model_name='barriertype',
-            old_name='is_goods',
-            new_name='category',
+            name='is_goods',
         ),
         migrations.AddField(
             model_name='barriertype',
-            name='status',
-            field=models.CharField(choices=[('GOODS', 'GOODS'), ('Goods', 'Goods'), ('SERVICES', 'SERVICES'), ('Services', 'Services')], max_length=20, null=True),
+            name='category',
+            field=models.CharField(choices=[('GOODS', 'GOODS'), ('Goods', 'Goods'), (
+                'SERVICES', 'SERVICES'), ('Services', 'Services')], max_length=20),
         ),
     ]
