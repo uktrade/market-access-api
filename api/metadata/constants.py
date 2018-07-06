@@ -38,8 +38,8 @@ PUBLISH_RESPONSE = Choices(
 )
 
 SUPPORT_TYPE = Choices(
-    (1, "Market access team to take over the lead"),
-    (2, "None, I'm going to hendle next steps myself")
+    (1, "Market access team to provide support on next steps"),
+    (2, "None, I’m going to handle next steps myself as the lead coordinator")
 )
 
 REPORT_STATUS = Choices(
