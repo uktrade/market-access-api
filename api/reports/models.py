@@ -120,7 +120,8 @@ class Report(models.Model):
     # 1.7 Barrier type
     barrier_type = models.ForeignKey(
         BarrierType,
-        null=True, blank=True,
+        null=True,
+        default=None,
         related_name='report_barrier',
         on_delete=models.SET_NULL
     )
