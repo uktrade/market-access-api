@@ -107,11 +107,13 @@ class ReportDetailsFilledInValidator:
 
         for item in self.conditional_fields:
             condition_field = meta.get_field(item['condition_field'])
-            condition_value = value = data_combiner.get_value(condition_field)
+            condition_value = data_combiner.get_value(item['condition_field'])
             non_null_field = meta.get_field(item['non_null_field'])
-            non_null_value = data_combiner.get_value(non_null_field)
+            non_null_value = data_combiner.get_value(item['non_null_field'])
             relate = item['operator']
             value_to_check = item['value']
+            print(
+                f'condition_value {condition_value}, non_null_value {non_null_value}, relate {relate}, value_to_check {value_to_check}')
             if relate(condition_value, value_to_check):
                 if not non_null_value:
                     message = f'when {condition_field} is {relate} {value_to_check} then {non_null_field} can not be null'
