@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -11,7 +13,32 @@ from api.reports import validators
 from api.reports.validators import ReportDetailsFilledInValidator
 
 
+class ReportStatus(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    report = models.ForeignKey(
+        'Report',
+        related_name='report_status',
+        on_delete=models.PROTECT
+    )
+    status = models.PositiveIntegerField(
+        choices=REPORT_STATUS,
+        default=0
+    )
+    comments = models.TextField(
+        null=True
+    )
+    created_on = models.DateTimeField(
+        db_index=True,
+        auto_now_add=True
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT
+    )
+
+
 class Stage(models.Model):
+    # id = models.UUIDField(primary_key=True, default=uuid4)
     code = models.CharField(max_length=4, null=False)
     description = models.CharField(max_length=255)
     parent = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL)
@@ -22,13 +49,13 @@ class Stage(models.Model):
 
 class Report(models.Model):
 
+    # id = models.UUIDField(primary_key=True, default=uuid4)
     # 1.1 Status of the problem
     problem_status = models.PositiveIntegerField(
         choices=PROBLEM_STATUS_TYPES,
         null=True
     )
-    is_emergency = models.BooleanField(
-        default=False
+    is_emergency = models.NullBooleanField(
     )
     # 1.2 Export company affected
     company_id = models.UUIDField(
@@ -142,16 +169,19 @@ class Report(models.Model):
         through="ReportStage"
     )
 
+    # status = models.ForeignKey(
+    #     ReportStatus,
+    #     related_name='report_status',
+    #     on_delete=models.CASCADE
+    # )
+
     status = models.PositiveIntegerField(
         choices=REPORT_STATUS,
         default=0
     )
-    status_comments = models.TextField(
-        null=True
-    )
 
     def __str__(self):
-        return self.name
+        return self.barrier_title
 
     def complete(self):
         for validator in [

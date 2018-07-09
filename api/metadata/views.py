@@ -54,6 +54,7 @@ class MetadataView(generics.GenericAPIView):
                              for stage in Stage.objects.all())
         barrier_types = [
             {
+                'id': barrier_type.id,
                 'title': barrier_type.title,
                 'description': barrier_type.description,
                 'category': barrier_type.category

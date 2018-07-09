@@ -12,28 +12,35 @@ class ReportDetailsFilledInValidator:
 
     REQUIRED_FIELDS = (
         'problem_status',
-        'is_emergency',
         'company_id',
         'company_name',
+        'company_sector',
         'contact_id',
         'product',
-        'commodity_codes',
         'export_country',
         'problem_description',
+        'barrier_title',
         'problem_impact',
         'estimated_loss_range',
         'other_companies_affected',
+        'has_legal_infringment',
+        'wto_infingment',
+        'fta_infingment',
+        'other_infingment',
+        'barrier_type',
+        'is_resolved',
+        'support_type',
+        'steps_taken',
+        'is_politically_sensitive',
+        'political_sensitivity_summary',
         'govt_response_requester',
-        'is_confidential',
-        'sensitivity_summary',
+        'is_commercially_sensitive',
+        'commercial_sensitivity_summary',
         'can_publish',
-        'name',
-        'summary',
     )
 
     # extra_validators = (
-    #     VATValidator(),
-    #     AssigneesFilledInValidator(),
+    #     ConditionalFieldsFilledInValidator(),
     # )
 
     message = 'This field is required.'

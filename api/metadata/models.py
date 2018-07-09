@@ -1,9 +1,12 @@
+from uuid import uuid4
+
 from django.db import models
 
 from api.metadata.constants import BARRIER_TYPE_CATEGORIES
 
 
 class BarrierType(models.Model):
+    # id = models.UUIDField(primary_key=True, default=uuid4)
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     category = models.CharField(
