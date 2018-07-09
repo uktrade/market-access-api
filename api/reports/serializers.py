@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from api.metadata.constants import STAGE_STATUS
+from api.metadata.models import BarrierType
 from api.reports.models import Report, ReportStage, Stage
 
 
@@ -39,8 +40,15 @@ class ReportStageListingField(serializers.RelatedField):
         }
 
 
+class BarrierTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierType
+        fields = '__all__'
+
+
 class ReportSerializer(serializers.ModelSerializer):
     progress = ReportStageListingField(many=True, read_only=True)
+    barrier_type = serializers.PrimaryKeyRelatedField(queryset=BarrierType.objects.all())
 
     class Meta:
         model = Report

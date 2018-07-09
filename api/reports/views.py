@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from api.core.auth import IsMAServer, IsMAUser
 from api.metadata.constants import REPORT_STATUS
+from api.metadata.models import BarrierType
 from api.reports.models import Report, ReportStage, Stage
 from api.reports.serializers import ReportSerializer, ReportStageSerializer
 
@@ -61,8 +62,14 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
+        if serializer.validated_data.get('problem_status', None) == 3:
+            serializer.validated_data['is_emergency'] = None
         if serializer.validated_data.get('is_confidential', False) is False:
             serializer.validated_data['sensitivity_summary'] = None
+        if serializer.validated_data.get('is_commercially_sensitive', False) is False:
+            serializer.validated_data['commercial_sensitivity_summary'] = None
+        if serializer.validated_data.get('is_politically_sensitive', False) is False:
+            serializer.validated_data['political_sensitivity_summary'] = None
         serializer.save()
         report_id = serializer.data.get('id')
         report = Report.objects.get(id=report_id)
@@ -81,6 +88,7 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
             if settings.DEBUG is False:
                 report_stage.user = self.request.user
                 report_stage.save()
+        # serializer.save()
 
 
 class ReportStagesList(generics.ListCreateAPIView):

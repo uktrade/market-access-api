@@ -1,3 +1,4 @@
+import operator
 from collections import defaultdict
 
 from django.db import models
@@ -27,17 +28,25 @@ class ReportDetailsFilledInValidator:
         'wto_infingment',
         'fta_infingment',
         'other_infingment',
+        'infringment_summary',
         'barrier_type',
         'is_resolved',
         'support_type',
         'steps_taken',
         'is_politically_sensitive',
-        'political_sensitivity_summary',
         'govt_response_requester',
         'is_commercially_sensitive',
-        'commercial_sensitivity_summary',
         'can_publish',
     )
+
+    conditional_fields = [
+        {
+            'condition_field': 'problem_status',
+            'operator': operator.gt,
+            'value': 2,
+            'non_null_field': 'is_emergency'
+        },
+    ]
 
     # extra_validators = (
     #     ConditionalFieldsFilledInValidator(),
@@ -95,6 +104,18 @@ class ReportDetailsFilledInValidator:
 
             if not value:
                 errors[field_name] = [self.message]
+
+        for item in self.conditional_fields:
+            condition_field = meta.get_field(item['condition_field'])
+            condition_value = value = data_combiner.get_value(condition_field)
+            non_null_field = meta.get_field(item['non_null_field'])
+            non_null_value = data_combiner.get_value(non_null_field)
+            relate = item['operator']
+            value_to_check = item['value']
+            if relate(condition_value, value_to_check):
+                if not non_null_value:
+                    message = f'when {condition_field} is {relate} {value_to_check} then {non_null_field} can not be null'
+                    errors[field_name] = [self.message]
 
         # extra validators
         # extra_errors = self._run_extra_validators(data)

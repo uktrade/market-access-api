@@ -118,9 +118,10 @@ class Report(models.Model):
         null=True
     )
     # 1.7 Barrier type
-    barrier_type = models.OneToOneField(
+    barrier_type = models.ForeignKey(
         BarrierType,
         null=True, blank=True,
+        related_name='report_barrier',
         on_delete=models.SET_NULL
     )
     # 2.1 Tell us what happens next
