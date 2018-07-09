@@ -222,9 +222,9 @@ class Report(models.Model):
         else:
             progress.append((Stage.objects.get(code="1.6"), 1))    # 1.6
 
-        if self.problem_impact and self.estimated_loss_range and (self.other_companies_affected is False or (self.other_companies_affected is True and self.other_companies_info)):
+        if self.problem_impact is not None and self.estimated_loss_range is not None and (self.other_companies_affected == 2 or self.other_companies_affected == 3 or (self.other_companies_affected == 1 and self.other_companies_info)):
             progress.append((Stage.objects.get(code="1.5"), 3))    # 1.5
-        elif self.problem_impact or self.estimated_loss_range or (self.other_companies_affected is False or (self.other_companies_affected is True and self.other_companies_info)):
+        elif self.problem_impact or self.estimated_loss_range or self.other_companies_affected is not None:
             progress.append((Stage.objects.get(code="1.5"), 2))    # 1.5
         else:
             progress.append((Stage.objects.get(code="1.5"), 1))    # 1.5
