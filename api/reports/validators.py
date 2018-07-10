@@ -49,17 +49,66 @@ class ReportDetailsFilledInValidator:
         },
         {
             'condition_field': 'is_politically_sensitive',
-            'operator': operator.is_not,
-            'value': None,
+            'operator': operator.eq,
+            'value': True,
             'non_null_field': 'political_sensitivity_summary',
-            'error_message': 'political_sensitivity_summary can not be null, when is_politically_sensitive is not null'
+            'error_message': 'political_sensitivity_summary can not be null, when is_politically_sensitive is True'
         },
         {
             'condition_field': 'is_commercially_sensitive',
-            'operator': operator.is_not,
-            'value': None,
+            'operator': operator.eq,
+            'value': True,
             'non_null_field': 'commercial_sensitivity_summary',
-            'error_message': 'commercial_sensitivity_summary can not be null, when is_commercially_sensitive is not null'
+            'error_message': 'commercial_sensitivity_summary can not be null, when is_commercially_sensitive is True'
+        },
+        {
+            'condition_field': 'has_legal_infringment',
+            'operator': operator.eq,
+            'value': 1,
+            'non_null_field': 'wto_infingment',
+            'error_message': 'wto_infingment can not be null, when has_legal_infringment is True'
+        },
+        {
+            'condition_field': 'has_legal_infringment',
+            'operator': operator.eq,
+            'value': 1,
+            'non_null_field': 'fta_infingment',
+            'error_message': 'fta_infingment can not be null, when has_legal_infringment is True'
+        },
+        {
+            'condition_field': 'has_legal_infringment',
+            'operator': operator.eq,
+            'value': 1,
+            'non_null_field': 'other_infingment',
+            'error_message': 'other_infingment can not be null, when has_legal_infringment is True'
+        },
+        {
+            'condition_field': 'has_legal_infringment',
+            'operator': operator.eq,
+            'value': 1,
+            'non_null_field': 'infringment_summary',
+            'error_message': 'infringment_summary can not be null, when has_legal_infringment is True'
+        },
+        {
+            'condition_field': 'other_companies_affected',
+            'operator': operator.eq,
+            'value': True,
+            'non_null_field': 'other_companies_info',
+            'error_message': 'other_companies_info can not be null, when other_companies_affected is True'
+        },
+        {
+            'condition_field': 'is_resolved',
+            'operator': operator.eq,
+            'value': False,
+            'non_null_field': 'support_type',
+            'error_message': 'support_type can not be null, when is_resolved is True'
+        },
+        {
+            'condition_field': 'is_resolved',
+            'operator': operator.eq,
+            'value': False,
+            'non_null_field': 'steps_taken',
+            'error_message': 'steps_taken can not be null, when is_resolved is True'
         },
     ]
 
