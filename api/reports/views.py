@@ -64,8 +64,6 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         if serializer.validated_data.get('problem_status', None) == 3:
             serializer.validated_data['is_emergency'] = None
-        if serializer.validated_data.get('is_confidential', None) is False:
-            serializer.validated_data['sensitivity_summary'] = None
         if serializer.validated_data.get('is_politically_sensitive', None) is False:
             serializer.validated_data['political_sensitivity_summary'] = None
         if serializer.validated_data.get('is_commercially_sensitive', None) is False:

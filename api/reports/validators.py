@@ -44,7 +44,22 @@ class ReportDetailsFilledInValidator:
             'condition_field': 'problem_status',
             'operator': operator.gt,
             'value': 2,
-            'non_null_field': 'is_emergency'
+            'non_null_field': 'is_emergency',
+            'error_message': 'is_emergency can not be null, when problem_status is 3'
+        },
+        {
+            'condition_field': 'is_politically_sensitive',
+            'operator': operator.is_not,
+            'value': None,
+            'non_null_field': 'political_sensitivity_summary',
+            'error_message': 'political_sensitivity_summary can not be null, when is_politically_sensitive is not null'
+        },
+        {
+            'condition_field': 'is_commercially_sensitive',
+            'operator': operator.is_not,
+            'value': None,
+            'non_null_field': 'commercial_sensitivity_summary',
+            'error_message': 'commercial_sensitivity_summary can not be null, when is_commercially_sensitive is not null'
         },
     ]
 
@@ -102,22 +117,21 @@ class ReportDetailsFilledInValidator:
             else:
                 value = data_combiner.get_value(field_name)
 
-            if not value:
+            if value is None:
                 errors[field_name] = [self.message]
 
         for item in self.conditional_fields:
-            condition_field = meta.get_field(item['condition_field'])
+            field_name = item['non_null_field']
             condition_value = data_combiner.get_value(item['condition_field'])
-            non_null_field = meta.get_field(item['non_null_field'])
             non_null_value = data_combiner.get_value(item['non_null_field'])
             relate = item['operator']
             value_to_check = item['value']
             print(
                 f'condition_value {condition_value}, non_null_value {non_null_value}, relate {relate}, value_to_check {value_to_check}')
-            if relate(condition_value, value_to_check):
-                if not non_null_value:
-                    message = f'when {condition_field} is {relate} {value_to_check} then {non_null_field} can not be null'
-                    errors[field_name] = [self.message]
+            print(relate(condition_value, value_to_check))
+            if condition_value and relate(condition_value, value_to_check):
+                if non_null_value is None:
+                    errors[field_name] = [item['error_message']]
 
         # extra validators
         # extra_errors = self._run_extra_validators(data)
