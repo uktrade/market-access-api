@@ -86,7 +86,6 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
             if settings.DEBUG is False:
                 report_stage.user = self.request.user
                 report_stage.save()
-        # serializer.save()
 
 
 class ReportStagesList(generics.ListCreateAPIView):

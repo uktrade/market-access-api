@@ -10,7 +10,7 @@ from api.metadata.constants import (ADV_BOOLEAN, ESTIMATED_LOSS_RANGE,
                                     STAGE_STATUS, SUPPORT_TYPE)
 from api.metadata.models import BarrierType
 from api.reports import validators
-from api.reports.validators import ReportDetailsFilledInValidator
+from api.reports.validators import ReportCompletenValidator
 
 
 class ReportStatus(models.Model):
@@ -106,15 +106,15 @@ class Report(models.Model):
     other_companies_info = models.TextField(
         null=True
     )
-    # 1.6 Infringments
-    has_legal_infringment = models.PositiveIntegerField(
+    # 1.6 infringements
+    has_legal_infringement = models.PositiveIntegerField(
         choices=ADV_BOOLEAN,
         null=True
     )
-    wto_infingment = models.NullBooleanField()
-    fta_infingment = models.NullBooleanField()
-    other_infingment = models.NullBooleanField()
-    infringment_summary = models.TextField(
+    wto_infringement = models.NullBooleanField()
+    fta_infringement = models.NullBooleanField()
+    other_infringement = models.NullBooleanField()
+    infringement_summary = models.TextField(
         null=True
     )
     # 1.7 Barrier type
@@ -127,6 +127,13 @@ class Report(models.Model):
     )
     # 2.1 Tell us what happens next
     is_resolved = models.NullBooleanField()
+    resolved_date = models.DateField(
+        null=True,
+        default=None
+    )
+    resolution_summary = models.TextField(
+        null=True
+    )
     support_type = models.PositiveIntegerField(
         choices=SUPPORT_TYPE,
         null=True
@@ -139,7 +146,7 @@ class Report(models.Model):
         null=True
     )
     # 2.2 Next steps requested
-    govt_response_requester = models.PositiveIntegerField(
+    govt_response_requested = models.PositiveIntegerField(
         choices=GOVT_RESPONSE,
         null=True
     )
@@ -187,7 +194,7 @@ class Report(models.Model):
 
     def complete(self):
         for validator in [
-            validators.ReportDetailsFilledInValidator(),
+            validators.ReportCompletenValidator(),
         ]:
             validator.set_instance(self)
             validator()
@@ -196,9 +203,9 @@ class Report(models.Model):
 
     def current_stage(self):
         progress = []
-        if self.can_publish and (self.is_commercially_sensitive is False or (self.is_commercially_sensitive is True and self.commercial_sensitivity_summary)) and self.govt_response_requester:
+        if self.can_publish and (self.is_commercially_sensitive is False or (self.is_commercially_sensitive is True and self.commercial_sensitivity_summary)) and self.govt_response_requested:
             progress.append((Stage.objects.get(code="2.2"), 3))
-        elif self.can_publish or self.is_commercially_sensitive is not None or self.govt_response_requester:
+        elif self.can_publish or self.is_commercially_sensitive is not None or self.govt_response_requested:
             progress.append((Stage.objects.get(code="2.2"), 2))
         else:
             progress.append((Stage.objects.get(code="2.2"), 1))
@@ -215,9 +222,9 @@ class Report(models.Model):
         else:
             progress.append((Stage.objects.get(code="1.7"), 1))
 
-        if self.has_legal_infringment and self.wto_infingment is not None and self.fta_infingment is not None and self.other_infingment is not None and self.infringment_summary:
+        if self.has_legal_infringement and self.wto_infringement is not None and self.fta_infringement is not None and self.other_infringement is not None and self.infringement_summary:
             progress.append((Stage.objects.get(code="1.6"), 3))    # 1.6
-        elif self.has_legal_infringment or self.wto_infingment is not None or self.fta_infingment is not None or self.other_infingment is not None or self.infringment_summary:
+        elif self.has_legal_infringement or self.wto_infringement is not None or self.fta_infringement is not None or self.other_infringement is not None or self.infringement_summary:
             progress.append((Stage.objects.get(code="1.6"), 2))    # 1.6
         else:
             progress.append((Stage.objects.get(code="1.6"), 1))    # 1.6
@@ -241,13 +248,15 @@ class Report(models.Model):
         else:
             progress.append((Stage.objects.get(code="1.3"), 1))    # 1.3
 
-        if self.company_id:
+        if self.company_id and self.company_name and self.company_sector:
             progress.append((Stage.objects.get(code="1.2"), 3))    # 1.2
         else:
             progress.append((Stage.objects.get(code="1.2"), 1))    # 1.2
 
-        if self.problem_status:
+        if self.problem_status and (self.problem_status > 2 and self.is_emergency is not None):
             progress.append((Stage.objects.get(code="1.1"), 3))    # 1.1
+        elif self.problem_status and (self.problem_status > 2 and self.is_emergency is None):
+            progress.append((Stage.objects.get(code="1.1"), 2))    # 1.1
         else:
             progress.append((Stage.objects.get(code="1.1"), 1))    # 1.1
 
