@@ -12,7 +12,7 @@ from api.metadata.constants import (
     ADV_BOOLEAN,
     GOVT_RESPONSE,
     PUBLISH_RESPONSE,
-    REPORT_STATUS
+    REPORT_STATUS,
 )
 
 
