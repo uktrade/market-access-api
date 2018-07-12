@@ -53,6 +53,7 @@ class Report(models.Model):
     company_id = models.UUIDField(null=True)
     company_name = models.CharField(max_length=255, null=True)
     company_sector = models.UUIDField(null=True)
+    company_sector_name = models.CharField(max_length=255, null=True)
     # 1.3 contact
     contact_id = models.UUIDField(null=True)
     # 1.4 About the problem
