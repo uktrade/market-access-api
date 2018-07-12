@@ -20,7 +20,7 @@ class Stage1_1ReportFactory(factory.django.DjangoModelFactory):
     is_emergency = False
     company_id = factory.LazyFunction(uuid.uuid4)
     company_name = factory.Faker("text")
-    company_sector = factory.LazyFunction(uuid.uuid4)
+    company_sector_id = factory.LazyFunction(uuid.uuid4)
     contact_id = factory.LazyFunction(uuid.uuid4)
 
     class Meta:
