@@ -6,19 +6,25 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('reports', '0005_auto_20180618_2203'),
-    ]
+    dependencies = [("reports", "0005_auto_20180618_2203")]
 
     operations = [
         migrations.AlterField(
-            model_name='reportstage',
-            name='report',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='progress', to='reports.Report'),
+            model_name="reportstage",
+            name="report",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="progress",
+                to="reports.Report",
+            ),
         ),
         migrations.AlterField(
-            model_name='reportstage',
-            name='stage',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='progress', to='reports.Stage'),
+            model_name="reportstage",
+            name="stage",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="progress",
+                to="reports.Stage",
+            ),
         ),
     ]

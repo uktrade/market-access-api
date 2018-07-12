@@ -3,7 +3,7 @@ from rest_framework.permissions import BasePermission
 
 
 class IsMAServer(BasePermission):
-    server_name = 'ma'
+    server_name = "ma"
 
     def has_permission(self, request, view):
         if settings.DEBUG:

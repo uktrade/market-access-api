@@ -11,13 +11,11 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('reports', '0009_auto_20180704_1428'),
+        ("reports", "0009_auto_20180704_1428"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='report',
-            name='is_emergency',
-            field=models.NullBooleanField(),
-        ),
+            model_name="report", name="is_emergency", field=models.NullBooleanField()
+        )
     ]

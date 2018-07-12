@@ -106,3 +106,6 @@ ENV/
 db.sqlite3
 
 .DS_Store
+
+# VS Code
+.vscode/

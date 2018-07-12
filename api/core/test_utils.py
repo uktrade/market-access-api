@@ -16,13 +16,13 @@ def get_default_test_user():
     """Return the test user."""
     user_model = get_user_model()
     try:
-        test_user = user_model.objects.get(email='Testo@Useri.com')
+        test_user = user_model.objects.get(email="Testo@Useri.com")
     except user_model.DoesNotExist:
         test_user = create_test_user(
-            first_name='Testo',
-            last_name='Useri',
-            email='Testo@Useri.com',
-            username='TestoUseri',
+            first_name="Testo",
+            last_name="Useri",
+            email="Testo@Useri.com",
+            username="TestoUseri",
         )
     return test_user
 
@@ -35,11 +35,11 @@ def create_test_user(permission_codenames=(), **user_attrs):
     :param user_attrs: any user attribute
     """
     user_defaults = {
-        'first_name': factory.Faker('first_name').generate({}),
-        'last_name': factory.Faker('last_name').generate({}),
-        'email': factory.Faker('email').generate({}),
-        'date_joined': now(),
-        'username': factory.Faker('name').generate({}),
+        "first_name": factory.Faker("first_name").generate({}),
+        "last_name": factory.Faker("last_name").generate({}),
+        "email": factory.Faker("email").generate({}),
+        "date_joined": now(),
+        "username": factory.Faker("name").generate({}),
     }
     user_defaults.update(user_attrs)
 
@@ -55,7 +55,7 @@ def create_test_user(permission_codenames=(), **user_attrs):
 
 def get_admin_user(password=None):
     """Return the test admin user."""
-    email = 'powerfuluser@trade.dit'
+    email = "powerfuluser@trade.dit"
     user_model = get_user_model()
     try:
         admin_user = user_model.objects.get(email=email)
@@ -69,12 +69,12 @@ class AdminTestMixin:
 
     pytestmark = pytest.mark.django_db  # use db
 
-    PASSWORD = 'password'
+    PASSWORD = "password"
 
     @property
     def user(self):
         """Returns admin user."""
-        if not hasattr(self, '_user'):
+        if not hasattr(self, "_user"):
             self._user = get_admin_user(self.PASSWORD)
         return self._user
 
@@ -100,19 +100,19 @@ class APITestMixin:
     @property
     def user(self):
         """Return the user."""
-        if not hasattr(self, '_user'):
+        if not hasattr(self, "_user"):
             self._user = get_default_test_user()
         return self._user
 
     def get_token(self, grant_type=Application.GRANT_PASSWORD, user=None):
         """Get access token for user test."""
-        if not hasattr(self, '_tokens'):
+        if not hasattr(self, "_tokens"):
             self._tokens = {}
 
         if user is None and grant_type != Application.GRANT_CLIENT_CREDENTIALS:
             user = self.user
 
-        token_cache_key = (user.email if user else None)
+        token_cache_key = user.email if user else None
         if token_cache_key not in self._tokens:
             self._tokens[token_cache_key] = AccessToken.objects.create(
                 user=user,
@@ -131,19 +131,19 @@ class APITestMixin:
         """Creates an API client associated with an OAuth token with the specified scope."""
         token = self.get_token(grant_type=grant_type, user=user)
         client = APIClient()
-        client.credentials(Authorization=f'Bearer {token}')
+        client.credentials(Authorization=f"Bearer {token}")
         return client
 
     def get_application(self, grant_type=Application.GRANT_PASSWORD):
         """Return a test application with the specified grant type."""
-        if not hasattr(self, '_applications'):
+        if not hasattr(self, "_applications"):
             self._applications = {}
 
         if grant_type not in self._applications:
             self._applications[grant_type] = Application.objects.create(
                 client_type=Application.CLIENT_CONFIDENTIAL,
                 authorization_grant_type=grant_type,
-                name=f'Test client ({grant_type})'
+                name=f"Test client ({grant_type})",
             )
         return self._applications[grant_type]
 
@@ -176,4 +176,4 @@ def random_obj_for_model(model):
 
 def random_obj_for_queryset(queryset):
     """Returns a random object for a queryset."""
-    return queryset.order_by('?').first()
+    return queryset.order_by("?").first()

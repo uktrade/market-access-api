@@ -11,60 +11,69 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('reports', '0013_auto_20180709_1501'),
+        ("reports", "0013_auto_20180709_1501"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='report',
-            old_name='fta_infingment',
-            new_name='fta_infringement',
+            model_name="report", old_name="fta_infingment", new_name="fta_infringement"
         ),
         migrations.RenameField(
-            model_name='report',
-            old_name='govt_response_requester',
-            new_name='govt_response_requested',
+            model_name="report",
+            old_name="govt_response_requester",
+            new_name="govt_response_requested",
         ),
         migrations.RenameField(
-            model_name='report',
-            old_name='has_legal_infringment',
-            new_name='has_legal_infringement',
+            model_name="report",
+            old_name="has_legal_infringment",
+            new_name="has_legal_infringement",
         ),
         migrations.RenameField(
-            model_name='report',
-            old_name='infringment_summary',
-            new_name='infringement_summary',
+            model_name="report",
+            old_name="infringment_summary",
+            new_name="infringement_summary",
         ),
         migrations.RenameField(
-            model_name='report',
-            old_name='other_infingment',
-            new_name='other_infringement',
+            model_name="report",
+            old_name="other_infingment",
+            new_name="other_infringement",
         ),
         migrations.AddField(
-            model_name='report',
-            name='resolution_summary',
-            field=models.TextField(null=True)
+            model_name="report",
+            name="resolution_summary",
+            field=models.TextField(null=True),
         ),
         migrations.RenameField(
-            model_name='report',
-            old_name='wto_infingment',
-            new_name='wto_infringement',
+            model_name="report", old_name="wto_infingment", new_name="wto_infringement"
         ),
         migrations.AddField(
-            model_name='report',
-            name='resolved_date',
+            model_name="report",
+            name="resolved_date",
             field=models.DateField(default=None, null=True),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='barrier_type',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.SET_NULL,
-                                    related_name='report_barrier', to='metadata.BarrierType'),
+            model_name="report",
+            name="barrier_type",
+            field=models.ForeignKey(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="report_barrier",
+                to="metadata.BarrierType",
+            ),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='support_type',
-            field=models.PositiveIntegerField(choices=[(1, 'Market access team to provide support on next steps'), (
-                2, 'None, I’m going to handle next steps myself as the lead coordinator')], null=True),
+            model_name="report",
+            name="support_type",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "Market access team to provide support on next steps"),
+                    (
+                        2,
+                        "None, I’m going to handle next steps myself as the lead coordinator",
+                    ),
+                ],
+                null=True,
+            ),
         ),
     ]

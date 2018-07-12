@@ -12,7 +12,7 @@ class TestUserView(APITestMixin):
         user_test = create_test_user()
         api_client = self.create_api_client(user=user_test)
 
-        url = reverse('who_am_i')
+        url = reverse("who_am_i")
         response = api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
@@ -20,9 +20,9 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data == {
-            'username': user_test.username,
-            'last_login': None,
-            'first_name': user_test.first_name,
-            'last_name': user_test.last_name,
-            'email': user_test.email,
+            "username": user_test.username,
+            "last_login": None,
+            "first_name": user_test.first_name,
+            "last_name": user_test.last_name,
+            "email": user_test.email,
         }

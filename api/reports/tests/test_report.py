@@ -112,12 +112,11 @@ pytestmark = pytest.mark.django_db
 
 
 class TestListReports(APITestMixin):
-
     def test_companies_list_no_permissions(self):
         """Should return 403"""
         user_test = create_test_user()
         api_client = self.create_api_client()
 
-        url = reverse('list-reports')
+        url = reverse("list-reports")
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK

@@ -16,8 +16,9 @@ class DataCombiner:
     def __init__(self, instance, update_data, serializer=None, model=None):
         """Initialises the combiner."""
         if instance is None and update_data is None:
-            raise TypeError('One of instance and update_data must be provided '
-                            'and not None')
+            raise TypeError(
+                "One of instance and update_data must be provided " "and not None"
+            )
 
         if update_data is None:
             update_data = {}
@@ -76,7 +77,7 @@ class DataCombiner:
 
 def is_blank(value):
     """Returns True if a value is considered empty or blank."""
-    return value in (None, '') or (isinstance(value, Sequence) and len(value) == 0)
+    return value in (None, "") or (isinstance(value, Sequence) and len(value) == 0)
 
 
 def is_not_blank(value):

@@ -5,19 +5,21 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('metadata', '0001_initial'),
-    ]
+    dependencies = [("metadata", "0001_initial")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='barriertype',
-            name='is_goods',
-        ),
+        migrations.RemoveField(model_name="barriertype", name="is_goods"),
         migrations.AddField(
-            model_name='barriertype',
-            name='category',
-            field=models.CharField(choices=[('GOODS', 'GOODS'), ('Goods', 'Goods'), (
-                'SERVICES', 'SERVICES'), ('Services', 'Services')], max_length=20),
+            model_name="barriertype",
+            name="category",
+            field=models.CharField(
+                choices=[
+                    ("GOODS", "GOODS"),
+                    ("Goods", "Goods"),
+                    ("SERVICES", "SERVICES"),
+                    ("Services", "Services"),
+                ],
+                max_length=20,
+            ),
         ),
     ]

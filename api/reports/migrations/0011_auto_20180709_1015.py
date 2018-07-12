@@ -11,14 +11,18 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('reports', '0010_auto_20180709_0655'),
+        ("reports", "0010_auto_20180709_0655"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='report',
-            name='barrier_type',
+            model_name="report",
+            name="barrier_type",
             field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='metadata.BarrierType'),
-        ),
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="metadata.BarrierType",
+            ),
+        )
     ]

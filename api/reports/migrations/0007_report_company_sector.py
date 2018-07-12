@@ -6,50 +6,47 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('reports', '0006_auto_20180619_1101'),
-    ]
+    dependencies = [("reports", "0006_auto_20180619_1101")]
 
     operations = [
         migrations.AddField(
-            model_name='report',
-            name='company_sector',
+            model_name="report",
+            name="company_sector",
             field=models.UUIDField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='commodity_codes',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(
-                default=None, max_length=10, null=True), null=True, size=None),
+            model_name="report",
+            name="commodity_codes",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(default=None, max_length=10, null=True),
+                null=True,
+                size=None,
+            ),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='company_id',
-            field=models.UUIDField(null=True),
+            model_name="report", name="company_id", field=models.UUIDField(null=True)
         ),
         migrations.AlterField(
-            model_name='report',
-            name='company_name',
+            model_name="report",
+            name="company_name",
             field=models.CharField(max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='company_sector',
+            model_name="report",
+            name="company_sector",
             field=models.UUIDField(null=True),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='contact_id',
-            field=models.UUIDField(null=True),
+            model_name="report", name="contact_id", field=models.UUIDField(null=True)
         ),
         migrations.AlterField(
-            model_name='report',
-            name='export_country',
+            model_name="report",
+            name="export_country",
             field=models.CharField(max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='product',
+            model_name="report",
+            name="product",
             field=models.CharField(max_length=255, null=True),
         ),
     ]

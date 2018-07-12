@@ -23,8 +23,8 @@ class ReportList(generics.ListCreateAPIView):
     serializer_class = ReportSerializer
 
     def get_queryset(self):
-        if self.kwargs['status']:
-            return self.queryset.filter(status=self.kwargs['status'])
+        if self.kwargs["status"]:
+            return self.queryset.filter(status=self.kwargs["status"])
         return self.queryset
 
     @transaction.atomic()
@@ -34,7 +34,7 @@ class ReportList(generics.ListCreateAPIView):
         else:
             serializer.save()
         # Create first stage
-        report_id = serializer.data.get('id')
+        report_id = serializer.data.get("id")
         report = Report.objects.get(id=report_id)
         progress = report.current_stage()
         for new_stage, new_status in progress:
@@ -44,9 +44,7 @@ class ReportList(generics.ListCreateAPIView):
                 report_stage.save()
             except ReportStage.DoesNotExist:
                 report_stage = ReportStage(
-                    report=report,
-                    stage=new_stage,
-                    status=new_status
+                    report=report, stage=new_stage, status=new_status
                 ).save()
             if settings.DEBUG is False:
                 report_stage.user = self.request.user
@@ -56,20 +54,20 @@ class ReportList(generics.ListCreateAPIView):
 class ReportDetail(generics.RetrieveUpdateAPIView):
     permission_classes = PERMISSION_CLASSES
 
-    lookup_field = 'pk'
+    lookup_field = "pk"
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
 
     @transaction.atomic()
     def perform_update(self, serializer):
-        if serializer.validated_data.get('problem_status', None) == 3:
-            serializer.validated_data['is_emergency'] = None
-        if serializer.validated_data.get('is_politically_sensitive', None) is False:
-            serializer.validated_data['political_sensitivity_summary'] = None
-        if serializer.validated_data.get('is_commercially_sensitive', None) is False:
-            serializer.validated_data['commercial_sensitivity_summary'] = None
+        if serializer.validated_data.get("problem_status", None) == 3:
+            serializer.validated_data["is_emergency"] = None
+        if serializer.validated_data.get("is_politically_sensitive", None) is False:
+            serializer.validated_data["political_sensitivity_summary"] = None
+        if serializer.validated_data.get("is_commercially_sensitive", None) is False:
+            serializer.validated_data["commercial_sensitivity_summary"] = None
         serializer.save()
-        report_id = serializer.data.get('id')
+        report_id = serializer.data.get("id")
         report = Report.objects.get(id=report_id)
         progress = report.current_stage()
         for new_stage, new_status in progress:
@@ -79,9 +77,7 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
                 report_stage.save()
             except ReportStage.DoesNotExist:
                 report_stage = ReportStage(
-                    report=report,
-                    stage=new_stage,
-                    status=new_status
+                    report=report, stage=new_stage, status=new_status
                 ).save()
             if settings.DEBUG is False:
                 report_stage.user = self.request.user
@@ -95,13 +91,15 @@ class ReportStagesList(generics.ListCreateAPIView):
     serializer_class = ReportStageSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(report_id=self.kwargs.get('report_pk'))
+        return self.queryset.filter(report_id=self.kwargs.get("report_pk"))
 
     def perform_create(self, serializer):
-        report_obj = get_object_or_404(Report, pk=self.kwargs.get('report_pk'))
-        stage_obj = get_object_or_404(ReportStage, pk=self.request.data.get('stage'))
+        report_obj = get_object_or_404(Report, pk=self.kwargs.get("report_pk"))
+        stage_obj = get_object_or_404(ReportStage, pk=self.request.data.get("stage"))
         if settings.DEBUG is False:
-            serializer.save(report=report_obj, stage=stage_obj, created_by=self.request.user)
+            serializer.save(
+                report=report_obj, stage=stage_obj, created_by=self.request.user
+            )
         else:
             serializer.save(report=report_obj, stage=stage_obj)
 
@@ -113,8 +111,8 @@ class ReportStageUpdate(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return get_object_or_404(
             self.get_queryset(),
-            report_id=self.kwargs.get('report_pk'),
-            pk=self.kwargs.get('pk')
+            report_id=self.kwargs.get("report_pk"),
+            pk=self.kwargs.get("pk"),
         )
 
 
@@ -129,6 +127,6 @@ class ReportSubmit(generics.UpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
-        report_id = serializer.data.get('id')
+        report_id = serializer.data.get("id")
         report = Report.objects.get(id=report_id)
         report.complete()
