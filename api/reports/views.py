@@ -16,8 +16,26 @@ from api.reports.serializers import ReportSerializer, ReportStageSerializer
 
 PERMISSION_CLASSES = (IsMAServer, IsMAUser)
 
+class ReportBase(object):
+    def _update_stages(self, serializer, user):
+        report_id = serializer.data.get("id")
+        report = Report.objects.get(id=report_id)
+        progress = report.current_stage()
+        for new_stage, new_status in progress:
+            try:
+                report_stage = ReportStage.objects.get(report=report, stage=new_stage)
+                report_stage.status = new_status
+                report_stage.save()
+            except ReportStage.DoesNotExist:
+                report_stage = ReportStage(
+                    report=report, stage=new_stage, status=new_status
+                ).save()
+            if settings.DEBUG is False:
+                report_stage.user = user
+                report_stage.save()
 
-class ReportList(generics.ListCreateAPIView):
+
+class ReportList(ReportBase, generics.ListCreateAPIView):
     permission_classes = PERMISSION_CLASSES
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
@@ -33,25 +51,10 @@ class ReportList(generics.ListCreateAPIView):
             serializer.save(created_by=self.request.user)
         else:
             serializer.save()
-        # Create first stage
-        report_id = serializer.data.get("id")
-        report = Report.objects.get(id=report_id)
-        progress = report.current_stage()
-        for new_stage, new_status in progress:
-            try:
-                report_stage = ReportStage.objects.get(report=report, stage=new_stage)
-                report_stage.status = new_status
-                report_stage.save()
-            except ReportStage.DoesNotExist:
-                report_stage = ReportStage(
-                    report=report, stage=new_stage, status=new_status
-                ).save()
-            if settings.DEBUG is False:
-                report_stage.user = self.request.user
-                report_stage.save()
+        self._update_stages(serializer, self.request.user)
 
 
-class ReportDetail(generics.RetrieveUpdateAPIView):
+class ReportDetail(ReportBase, generics.RetrieveUpdateAPIView):
     permission_classes = PERMISSION_CLASSES
 
     lookup_field = "pk"
@@ -67,21 +70,7 @@ class ReportDetail(generics.RetrieveUpdateAPIView):
         if serializer.validated_data.get("is_commercially_sensitive", None) is False:
             serializer.validated_data["commercial_sensitivity_summary"] = None
         serializer.save()
-        report_id = serializer.data.get("id")
-        report = Report.objects.get(id=report_id)
-        progress = report.current_stage()
-        for new_stage, new_status in progress:
-            try:
-                report_stage = ReportStage.objects.get(report=report, stage=new_stage)
-                report_stage.status = new_status
-                report_stage.save()
-            except ReportStage.DoesNotExist:
-                report_stage = ReportStage(
-                    report=report, stage=new_stage, status=new_status
-                ).save()
-            if settings.DEBUG is False:
-                report_stage.user = self.request.user
-                report_stage.save()
+        self._update_stages(serializer, self.request.user)
 
 
 class ReportStagesList(generics.ListCreateAPIView):
