@@ -22,7 +22,8 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.2",
         "order": 2,
-        "required": ["company_id", "company_name", "company_sector"],
+        "required": ["company_id", "company_name"],
+        "optional": ["company_sector"],
         "conditional": [],
     },
     {"stage": "1.3", "order": 3, "required": ["contact_id"], "conditional": []},
