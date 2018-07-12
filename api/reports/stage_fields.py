@@ -12,8 +12,8 @@ REPORT_CONDITIONS = [
         "conditional": [
             {
                 "condition_field": "problem_status",
-                "operator": operator.gt,
-                "value": 2,
+                "operator": operator.lt,
+                "value": 3,
                 "non_null_field": "is_emergency",
                 "error_message": "is_emergency can not be null, when problem_status is 3",
             }
