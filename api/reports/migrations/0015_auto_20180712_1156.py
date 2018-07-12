@@ -14,6 +14,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RenameField(
+            model_name="report", 
+            old_name="company_sector", 
+            new_name="company_sector_id"
+        ),
         migrations.AddField(
             model_name='report',
             name='company_sector_name',
