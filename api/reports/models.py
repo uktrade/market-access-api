@@ -20,15 +20,15 @@ from api.reports.stage_fields import REPORT_CONDITIONS, stage_status
 from api.reports.validators import ReportCompleteValidator
 
 
-class ReportStatus(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4)
-    report = models.ForeignKey(
-        "Report", related_name="report_status", on_delete=models.PROTECT
-    )
-    status = models.PositiveIntegerField(choices=REPORT_STATUS, default=0)
-    comments = models.TextField(null=True)
-    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+# class ReportStatus(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid4)
+#     report = models.ForeignKey(
+#         "Report", related_name="report_status", on_delete=models.PROTECT
+#     )
+#     status = models.PositiveIntegerField(choices=REPORT_STATUS, default=0)
+#     comments = models.TextField(null=True)
+#     created_on = models.DateTimeField(db_index=True, auto_now_add=True)
+#     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
 
 class Stage(models.Model):

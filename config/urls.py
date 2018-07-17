@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import include, path
@@ -5,6 +7,10 @@ from django.urls import include, path
 from api.metadata.constants import REPORT_STATUS
 from api.metadata.views import MetadataView
 from api.ping.views import ping
+from api.barriers.views import (
+    BarrierList,
+    BarrierDetail
+)
 from api.reports.views import (
     ReportDetail,
     ReportList,
@@ -25,5 +31,9 @@ urlpatterns = [
     path("reports/<int:report_pk>/stages/", ReportStagesList.as_view()),
     path("reports/<int:pk>/submit/", ReportSubmit.as_view()),
     path("reports/<int:report_pk>/stages/<int:pk>/", ReportStageUpdate.as_view()),
+
     path("metadata/", MetadataView.as_view()),
+
+    path("barriers/", BarrierList.as_view(), name="list-barriers"),
+    path("barriers/<uuid:pk>/", BarrierDetail.as_view()),
 ]

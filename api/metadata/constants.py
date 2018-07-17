@@ -48,3 +48,20 @@ BARRIER_STATUS = Choices(
 )
 
 BARRIER_TYPE_CATEGORIES = Choices("GOODS", "Goods", "SERVICES", "Services")
+
+BARRIER_CHANCE_OF_SUCCESS = Choices(
+    "HIGHLY_LIKELY",
+    "LIKELY",
+    "UNLIKELY",
+    "HIGHLY_UNLIKELY"
+)
+
+BARRIER_INTERACTION_TYPE = Choices(
+    "COMMENT",
+)
+
+CONTRIBUTOR_TYPE = Choices(
+    "INITIATOR",
+    "CONTRIBUTOR",
+    "LEAD"
+)
