@@ -28,9 +28,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "fta_infringement",
             "other_infringement",
             "infringement_summary",
+            "report_id",
             "reported_on",
             "created_on",
-            "report_id",
             "created_by",
             "current_status"
         )

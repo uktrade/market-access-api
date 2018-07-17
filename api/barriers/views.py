@@ -1,4 +1,6 @@
 from rest_framework import generics
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 from api.core.auth import IsMAServer, IsMAUser
 from api.barriers.models import BarrierInstance
@@ -17,3 +19,8 @@ class BarrierDetail(generics.RetrieveAPIView):
     lookup_field = "pk"
     queryset = BarrierInstance.objects.all()
     serializer_class = BarrierInstanceSerializer
+
+
+@api_view(["GET"])
+def barrier_count(request):
+    return Response({"count": BarrierInstance.objects.count()})
