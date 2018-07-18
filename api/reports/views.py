@@ -9,7 +9,11 @@ from rest_framework import generics, status
 from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 
-from api.barriers.models import BarrierInstance, BarrierStatus
+from api.barriers.models import (
+    BarrierContributor,
+    BarrierInstance, 
+    BarrierStatus,
+)
 from api.core.auth import IsMAServer, IsMAUser
 from api.metadata.constants import REPORT_STATUS
 from api.metadata.models import BarrierType
@@ -118,25 +122,30 @@ class ReportSubmit(generics.UpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
+        """
+        Validates report for mandatory fields
+        Changes status of the report
+        Creates a Barrier Instance out of the report
+        Sets up default status
+        Sets up contributor where appropriate
+        """
+        # validate and complete a report
         report = self.get_object()
         report.complete()
-        # report_id = serializer.data.get("id")
-        # report = Report.objects.get(id=report_id)
-        # report.complete()
-        # # add this report as a barrier
-        # report = Report.objects.get(id=report_id)
+
+        # create a new barrier or update existing one
         try:
             barrier = BarrierInstance.objects.get(report_id=report.id)
-            barrier.barrier_type = report.barrier_type,
-            barrier.summary = report.summary,
-            barrier.estimated_loss_range = report.estimated_loss_range,
-            barrier.impact_summary = report.impact_summary,
-            barrier.other_companies_affected = report.other_companies_affected,
-            barrier.has_legal_infringement = report.has_legal_infringement,
-            barrier.wto_infringement = report.wto_infringement,
-            barrier.fta_infringement = report.fta_infringement,
-            barrier.other_infringement = report.other_infringement,
-            barrier.infringement_summary = report.infringement_summary,
+            # barrier.barrier_type = report.barrier_type,
+            # barrier.summary = report.summary,
+            # barrier.estimated_loss_range = report.estimated_loss_range,
+            # barrier.impact_summary = report.impact_summary,
+            # barrier.other_companies_affected = report.other_companies_affected,
+            # barrier.has_legal_infringement = report.has_legal_infringement,
+            # barrier.wto_infringement = report.wto_infringement,
+            # barrier.fta_infringement = report.fta_infringement,
+            # barrier.other_infringement = report.other_infringement,
+            # barrier.infringement_summary = report.infringement_summary,
         except BarrierInstance.DoesNotExist:
             barrier = BarrierInstance(
                 report=report,
@@ -155,11 +164,14 @@ class ReportSubmit(generics.UpdateAPIView):
             if settings.DEBUG is False:
                 barrier.created_by = self.request.user
                 barrier.save()
+        
+        # sort out barrier status
         if report.is_resolved:
             barrier_new_status = 4 # Resolved
         else:
             barrier_new_status = 2 # Assesment
         barrier = BarrierInstance.objects.get(report_id=report.id)
+
         try:
             barrier_status = BarrierStatus.objects.get(barrier=barrier, status=barrier_new_status)
         except BarrierStatus.DoesNotExist:
@@ -167,3 +179,21 @@ class ReportSubmit(generics.UpdateAPIView):
             if settings.DEBUG is False:
                 barrier_status.created_by = self.request.user
                 barrier_status.save()
+
+        # sort out contributors
+        if settings.DEBUG is False:
+            if report.support_type == 2:
+                try:
+                    lead_contrib = BarrierContributor.objects.get(
+                        barrier=barrier, 
+                        contributor=report.created_by,
+                        kind=CONTRIBUTOR_TYPE['LEAD'],
+                        is_active=True
+                    )
+                except BarrierContributor.DoesNotExist:
+                    BarrierContributor(
+                        barrier=barrier,
+                        contributor=report.created_by,
+                        kind=CONTRIBUTOR_TYPE['LEAD'],
+                        created_by=self.request.user
+                    ).save()

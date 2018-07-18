@@ -4,14 +4,14 @@ from rest_framework.response import Response
 
 from api.core.auth import IsMAServer, IsMAUser
 from api.barriers.models import BarrierInstance
-from api.barriers.serializers import BarrierInstanceSerializer
+from api.barriers.serializers import BarrierInstanceSerializer, BarrierListSerializer
 
 PERMISSION_CLASSES = (IsMAServer, IsMAUser)
 
 class BarrierList(generics.ListAPIView):
     permission_classes = PERMISSION_CLASSES
     queryset = BarrierInstance.objects.all()
-    serializer_class = BarrierInstanceSerializer
+    serializer_class = BarrierListSerializer
 
 
 class BarrierDetail(generics.RetrieveAPIView):
