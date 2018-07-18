@@ -69,7 +69,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     current_status = serializers.SerializerMethodField()
-    report_id = serializers.SerializerMethodField()
+    report = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -87,12 +87,13 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "fta_infringement",
             "other_infringement",
             "infringement_summary",
-            "report_id",
+            "report",
             "reported_on",
             "created_on",
             "created_by",
             "current_status"
         )
+        depth = 1
 
     def get_current_status(self, obj):
         barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
@@ -102,5 +103,45 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "created_by": barrier_status.created_by
         }
 
-    def get_report_id(self, obj):
-        return obj.report.id
+    def get_report(self, obj):
+        return {
+            "id": obj.report.id,
+            "problem_status": obj.report.problem_status,
+            "is_emergency": obj.report.is_emergency,
+            "company": {
+                "id": obj.report.company_id,
+                "name": obj.report.company_name,
+                "sector_id": obj.report.company_sector_id,
+                "sector_name": obj.report.company_sector_name,
+                "contact_id": obj.report.contact_id,
+            },
+            "product": obj.report.product,
+            "commodity_codes": obj.report.commodity_codes,
+            "export_country": obj.report.export_country,
+            "problem_description": obj.report.problem_description,
+            "barrier_title": obj.report.barrier_title,
+            "problem_impact": obj.report.problem_impact,
+            "estimated_loss_range": obj.report.estimated_loss_range,
+            "other_companies_affected": obj.report.other_companies_affected,
+            "other_companies_info": obj.report.other_companies_info,
+            "has_legal_infringement": obj.report.has_legal_infringement,
+            "wto_infringement": obj.report.wto_infringement,
+            "fta_infringement": obj.report.fta_infringement,
+            "other_infringement": obj.report.other_infringement,
+            "infringement_summary": obj.report.infringement_summary,
+            "is_resolved": obj.report.is_resolved,
+            "resolved_date": obj.report.resolved_date,
+            "resolution_summary": obj.report.resolution_summary,
+            "support_type": obj.report.support_type,
+            "steps_taken": obj.report.steps_taken,
+            "is_politically_sensitive": obj.report.is_politically_sensitive,
+            "political_sensitivity_summary": obj.report.political_sensitivity_summary,
+            "govt_response_requested": obj.report.govt_response_requested,
+            "is_commercially_sensitive": obj.report.is_commercially_sensitive,
+            "commercial_sensitivity_summary": obj.report.commercial_sensitivity_summary,
+            "can_publish": obj.report.can_publish,
+            "created_on": obj.report.created_on,
+            "status": obj.report.status,
+            "barrier_type": obj.report.barrier_type.id,
+            "created_by": obj.report.created_by,
+        }
