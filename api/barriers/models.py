@@ -55,8 +55,8 @@ class BarrierInteraction(models.Model):
         choices=BARRIER_INTERACTION_TYPE,
         max_length=25
     )
-    notes = models.TextField(null=True)
-    pin_it = models.BooleanField(default=False)
+    text = models.TextField(null=True)
+    pinned = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
