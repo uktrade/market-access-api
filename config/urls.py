@@ -10,7 +10,9 @@ from api.ping.views import ping
 from api.barriers.views import (
     barrier_count,
     BarrierList,
-    BarrierDetail
+    BarrierDetail,
+    BarrierInstanceInteraction,
+    BarrierInstanceContributor,
 )
 from api.reports.views import (
     ReportDetail,
@@ -38,4 +40,6 @@ urlpatterns = [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/count", barrier_count),
     path("barriers/<uuid:pk>", BarrierDetail.as_view()),
+    path("barriers/<uuid:barrier_pk>/contributors", BarrierInstanceContributor.as_view()),
+    path("barriers/<uuid:barrier_pk>/interactions", BarrierInstanceInteraction.as_view()),
 ]

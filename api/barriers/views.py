@@ -1,12 +1,31 @@
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+
 from rest_framework import generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
+from api.barriers.models import (
+    BarrierContributor,
+    BarrierInstance,
+    BarrierInteraction
+)
+from api.barriers.serializers import (
+    BarrierContributorSerializer,
+    BarrierInstanceSerializer,
+    BarrierInteractionSerializer,
+    BarrierListSerializer,
+)
 from api.core.auth import IsMAServer, IsMAUser
-from api.barriers.models import BarrierInstance
-from api.barriers.serializers import BarrierInstanceSerializer, BarrierListSerializer
+from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
 PERMISSION_CLASSES = (IsMAServer, IsMAUser)
+
+
+@api_view(["GET"])
+def barrier_count(request):
+    return Response({"count": BarrierInstance.objects.count()})
+
 
 class BarrierList(generics.ListAPIView):
     permission_classes = PERMISSION_CLASSES
@@ -21,6 +40,38 @@ class BarrierDetail(generics.RetrieveAPIView):
     serializer_class = BarrierInstanceSerializer
 
 
-@api_view(["GET"])
-def barrier_count(request):
-    return Response({"count": BarrierInstance.objects.count()})
+class BarrierInstanceInteraction(generics.ListCreateAPIView):
+    permission_classes = PERMISSION_CLASSES
+    queryset = BarrierInteraction.objects.all()
+    serializer_class = BarrierInteractionSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
+
+    def perform_create(self, serializer):
+        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
+        kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
+        if settings.DEBUG is False:
+            serializer.save(
+                barrier=barrier_obj, kind=kind, created_by=self.request.user
+            )
+        else:
+            serializer.save(barrier=barrier_obj, kind=kind)
+
+
+class BarrierInstanceContributor(generics.ListCreateAPIView):
+    permission_classes = PERMISSION_CLASSES
+    queryset = BarrierContributor.objects.all()
+    serializer_class = BarrierContributorSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
+
+    # def perform_create(self, serializer):
+    #     barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
+    #     if settings.DEBUG is False:
+    #         serializer.save(
+    #             barrier=barrier_obj, created_by=self.request.user
+    #         )
+    #     else:
+    #         serializer.save(barrier=barrier_obj)

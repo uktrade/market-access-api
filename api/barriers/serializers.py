@@ -5,7 +5,8 @@ from rest_framework import serializers
 
 from api.barriers.models import (
     BarrierContributor,
-    BarrierInstance, 
+    BarrierInstance,
+    BarrierInteraction,
     BarrierStatus
 )
 from api.metadata.models import BarrierType
@@ -145,3 +146,16 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "barrier_type": obj.report.barrier_type.id,
             "created_by": obj.report.created_by,
         }
+
+class BarrierInteractionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierInteraction
+        fields = "__all__"
+        read_only_fields = ("barrier", "kind", "created_on", "created_by")
+
+
+class BarrierContributorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierContributor
+        fields = "__all__"
+        read_only_fields = ("barrier", "created_on", "created_by")
