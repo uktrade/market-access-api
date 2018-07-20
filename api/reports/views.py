@@ -47,7 +47,7 @@ class ReportList(ReportBase, generics.ListCreateAPIView):
     serializer_class = ReportSerializer
 
     def get_queryset(self):
-        if self.kwargs["status"]:
+        if self.kwargs["status"] is not None:
             return self.queryset.filter(status=self.kwargs["status"])
         return self.queryset
 
