@@ -47,21 +47,24 @@ BARRIER_STATUS = Choices(
     (6, "Archived"),
 )
 
-BARRIER_TYPE_CATEGORIES = Choices("GOODS", "Goods", "SERVICES", "Services")
+BARRIER_TYPE_CATEGORIES = Choices(
+    ("GOODS", "Goods"), 
+    ("SERVICES", "Services")
+)
 
 BARRIER_CHANCE_OF_SUCCESS = Choices(
-    "HIGHLY_LIKELY",
-    "LIKELY",
-    "UNLIKELY",
-    "HIGHLY_UNLIKELY"
+    ("HIGHLY_LIKELY", "Highly likely"),
+    ("LIKELY", "Likely"),
+    ("UNLIKELY", "Unlikely"),
+    ("HIGHLY_UNLIKELY", "Highly unlikely")
 )
 
 BARRIER_INTERACTION_TYPE = Choices(
-    "COMMENT",
+    ("COMMENT", "Comment"),
 )
 
 CONTRIBUTOR_TYPE = Choices(
-    "INITIATOR",
-    "CONTRIBUTOR",
-    "LEAD"
+    ("INITIATOR", "Initiator"),
+    ("CONTRIBUTOR", "Contributor"),
+    ("LEAD", "Lead"),
 )

@@ -12,6 +12,11 @@ from urlobject import URLObject
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
+    BARRIER_STATUS,
+    BARRIER_TYPE_CATEGORIES,
+    BARRIER_CHANCE_OF_SUCCESS,
+    BARRIER_INTERACTION_TYPE,
+    CONTRIBUTOR_TYPE,
     ESTIMATED_LOSS_RANGE,
     GOVT_RESPONSE,
     PROBLEM_STATUS_TYPES,
@@ -69,6 +74,11 @@ class MetadataView(generics.GenericAPIView):
         dh_countries = self.import_api_results("country")
         dh_sectors = self.import_api_results("sector")
 
+        barrier_status = dict((x, y) for x, y in BARRIER_STATUS)
+        # barrier_type_cat = dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES)
+        # barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
+        # barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
+
         results = {
             "status_types": status_types,
             "loss_range": loss_range,
@@ -82,6 +92,10 @@ class MetadataView(generics.GenericAPIView):
             "barrier_types": barrier_types,
             "countries": dh_countries,
             "sectors": dh_sectors,
+            "barrier_status": barrier_status,
+            # "barrier_type_categories": barrier_type_cat,
+            # "barrier_chance_of_success": barrier_chance,
+            # "barrier_interaction_types": barrier_inter_type,
         }
 
         return Response(results, status=status.HTTP_200_OK)
