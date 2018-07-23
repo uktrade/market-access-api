@@ -3,6 +3,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
@@ -131,6 +132,28 @@ class BarrierInstance(models.Model):
 
     def __str__(self):
         return self.report
+
+    def _new_status(self, new_status, user):
+        try:
+            barrier_status = BarrierStatus.objects.get(barrier=self, status=new_status)
+            barrier_status.created_on = timezone.now()
+            barrier_status.is_active = True
+            barrier_status.save()
+        except BarrierStatus.DoesNotExist:
+            barrier_status = BarrierStatus(barrier=self, status=new_status).save()
+
+        if settings.DEBUG is False:
+            barrier_status.created_by = user
+            barrier_status.save()
+
+    def resolve(self, user):
+        resolved_status = 4 # Resolved
+        self._new_status(resolved_status, user)
+
+    def hibernate(self, user):
+        hibernate_status = 5 # Hibernated
+        self._new_status(hibernate_status, user)
+
 
 class BarrierContributor(models.Model):
     """ Contributors for each Barrier """

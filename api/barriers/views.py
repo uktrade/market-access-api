@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 
 from rest_framework import generics
@@ -15,6 +16,7 @@ from api.barriers.serializers import (
     BarrierInstanceSerializer,
     BarrierInteractionSerializer,
     BarrierListSerializer,
+    BarrierResolveSerializer,
 )
 from api.core.auth import IsMAServer, IsMAUser
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
@@ -75,3 +77,33 @@ class BarrierInstanceContributor(generics.ListCreateAPIView):
     #         )
     #     else:
     #         serializer.save(barrier=barrier_obj)
+
+
+class BarrierResolve(generics.UpdateAPIView):
+    permission_classes = PERMISSION_CLASSES
+
+    queryset = BarrierInstance.objects.all()
+    serializer_class = BarrierResolveSerializer
+
+    # def get_queryset(self):
+    #     return self.queryset.filter(id=self.kwargs.get('pk'))
+
+    @transaction.atomic()
+    def perform_update(self, serializer):
+        barrier = self.get_object()
+        barrier.resolve(self.request.user)
+
+
+class BarrierHibernate(generics.UpdateAPIView):
+    permission_classes = PERMISSION_CLASSES
+
+    queryset = BarrierInstance.objects.all()
+    serializer_class = BarrierResolveSerializer
+
+    # def get_queryset(self):
+    #     return self.queryset.filter(id=self.kwargs.get('pk'))
+
+    @transaction.atomic()
+    def perform_update(self, serializer):
+        barrier = self.get_object()
+        barrier.hibernate(self.request.user)

@@ -68,6 +68,9 @@ class BarrierListSerializer(serializers.ModelSerializer):
         return barrier_contributors_count
 
 
+class BarrierResolveSerializer(serializers.Serializer):
+    pass
+
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     current_status = serializers.SerializerMethodField()
     report = serializers.SerializerMethodField()
