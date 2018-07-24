@@ -86,12 +86,14 @@ class BarrierResolve(generics.UpdateAPIView):
     serializer_class = BarrierResolveSerializer
 
     # def get_queryset(self):
-    #     return self.queryset.filter(id=self.kwargs.get('pk'))
+    #     return self.queryset.filter(id=self.kwargs.get("barrier_pk"))
 
     @transaction.atomic()
     def perform_update(self, serializer):
-        barrier = self.get_object()
-        barrier.resolve(self.request.user)
+        summary = self.request.data.get("summary")
+        resolved_date = self.request.data.get("created_on")
+        barrier = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier.resolve(summary, resolved_date, self.request.user)
 
 
 class BarrierHibernate(generics.UpdateAPIView):
@@ -105,5 +107,7 @@ class BarrierHibernate(generics.UpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
-        barrier = self.get_object()
-        barrier.hibernate(self.request.user)
+        summary = self.request.data.get("summary")
+        resolved_date = self.request.data.get("created_on")
+        barrier = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier.hibernate(summary, resolved_date, self.request.user)

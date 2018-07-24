@@ -69,7 +69,16 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
 
 class BarrierResolveSerializer(serializers.Serializer):
-    pass
+    summary = serializers.CharField()
+    created_on = serializers.DateTimeField()
+
+
+class BarrierStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierStatus
+        fields = ("id", "barrier", "status", "summary", "is_active", "created_on", "created_by")
+        read_only_fields = ("is_active", "created_by")
+
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     current_status = serializers.SerializerMethodField()
