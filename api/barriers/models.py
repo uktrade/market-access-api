@@ -37,6 +37,11 @@ class BarrierStatus(models.Model):
         null=True,
         help_text="status summary if provided by user"
     )
+    status_date = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        help_text="date when status action occurred"
+    )
     is_active = models.BooleanField(
         default=True,
         help_text="specifies if this barrier status is current or historical"
@@ -46,8 +51,6 @@ class BarrierStatus(models.Model):
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
     )
 
-    class Meta:
-        unique_together = (("barrier", "status"),)
 
 class BarrierInteraction(models.Model):
     """ Interaction records for each Barrier """
@@ -140,16 +143,16 @@ class BarrierInstance(models.Model):
     def _new_status(self, new_status, summary, resolved_date, user):
         try:
             barrier_status = BarrierStatus.objects.get(barrier=self, status=new_status)
-            barrier_status.created_on = resolved_date
+            barrier_status.status_date = resolved_date
             barrier_status.summary = summary
             barrier_status.is_active = True
             barrier_status.save()
         except BarrierStatus.DoesNotExist:
             barrier_status = BarrierStatus(
-                barrier=self, 
-                status=new_status, 
-                summary=summary, 
-                created_on=resolved_date
+                barrier=self,
+                status=new_status,
+                summary=summary,
+                status_date=resolved_date
             ).save()
 
         if settings.DEBUG is False:
@@ -160,9 +163,9 @@ class BarrierInstance(models.Model):
         resolved_status = 4 # Resolved
         self._new_status(resolved_status, summary, resolved_date, user)
 
-    def hibernate(self, summary, resolved_date, user):
+    def hibernate(self, summary, user):
         hibernate_status = 5 # Hibernated
-        self._new_status(hibernate_status, summary, resolved_date, user)
+        self._new_status(hibernate_status, summary, timezone.now(), user)
 
 
 class BarrierContributor(models.Model):

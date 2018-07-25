@@ -10,6 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterUniqueTogether(
+            name='barrierstatus',
+            unique_together=set(),
+        ),
         migrations.AddField(
             model_name='barrierstatus',
             name='summary',
@@ -29,5 +33,10 @@ class Migration(migrations.Migration):
             model_name='barrierinteraction',
             name='kind',
             field=models.CharField(choices=[('COMMENT', 'Comment')], max_length=25),
+        ),
+        migrations.AddField(
+            model_name='barrierstatus',
+            name='status_date',
+            field=models.DateTimeField(auto_now_add=True, help_text='date when status action occurred', null=True),
         ),
     ]
