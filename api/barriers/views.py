@@ -83,27 +83,18 @@ class BarrierInstanceContributor(generics.ListCreateAPIView):
     #         serializer.save(barrier=barrier_obj)
 
 
-class BarrierResolve(generics.CreateAPIView):
-    permission_classes = PERMISSION_CLASSES
-
-    queryset = BarrierStatus.objects.all()
-    serializer_class = BarrierResolveSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-    def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-        status = 4
-        summary = self.request.data.get("summary")
-        status_date = self.request.data.get("status_date", timezone.now())
+class BarrierStatusBase(object):
+    def _create(self, serializer, request, barrier_id, status):
+        barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
+        summary = request.data.get("summary")
+        status_date = request.data.get("status_date", timezone.now())
         if settings.DEBUG is False:
             serializer.save(
                 barrier=barrier_obj,
                 status=status,
                 summary=summary,
                 status_date=status_date,
-                created_by=self.request.user
+                created_by=request.user
             )
         else:
             serializer.save(
@@ -114,7 +105,7 @@ class BarrierResolve(generics.CreateAPIView):
             )
 
 
-class BarrierHibernate(generics.CreateAPIView):
+class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
     permission_classes = PERMISSION_CLASSES
 
     queryset = BarrierStatus.objects.all()
@@ -124,29 +115,23 @@ class BarrierHibernate(generics.CreateAPIView):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-        status = 5
-        summary = self.request.data.get("summary")
-        status_date = self.request.data.get("status_date", timezone.now())
-        if settings.DEBUG is False:
-            serializer.save(
-                barrier=barrier_obj,
-                status=status,
-                summary=summary,
-                status_date=status_date,
-                created_by=self.request.user
-            )
-        else:
-            serializer.save(
-                barrier=barrier_obj,
-                status=status,
-                summary=summary,
-                status_date=status_date
-            )
+        self._create(serializer, self.request, self.kwargs.get("pk"), 4)
 
 
+class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
+    permission_classes = PERMISSION_CLASSES
 
-class BarrierStatusList(generics.ListCreateAPIView):
+    queryset = BarrierStatus.objects.all()
+    serializer_class = BarrierResolveSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+
+    def perform_create(self, serializer):
+        self._create(serializer, self.request, self.kwargs.get("pk"), 5)
+
+
+class BarrierStatusList(generics.ListCreateAPIView, BarrierStatusBase):
     permission_classes = PERMISSION_CLASSES
 
     queryset = BarrierStatus.objects.all()
@@ -156,22 +141,9 @@ class BarrierStatusList(generics.ListCreateAPIView):
         return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
 
     def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
-        status = self.request.data.get("status")
-        summary = self.request.data.get("summary")
-        status_date = self.request.data.get("status_date", timezone.now())
-        if settings.DEBUG is False:
-            serializer.save(
-                barrier=barrier_obj,
-                status=status,
-                summary=summary,
-                status_date=status_date,
-                created_by=self.request.user
-            )
-        else:
-            serializer.save(
-                barrier=barrier_obj,
-                status=status,
-                summary=summary,
-                status_date=status_date
-            )
+        self._create(
+            serializer,
+            self.request,
+            self.kwargs.get("pk"),
+            self.request.data.get("status")
+        )
