@@ -40,9 +40,11 @@ class BarrierListSerializer(serializers.ModelSerializer):
         return obj.report.id
 
     def get_current_status(self, obj):
-        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
+        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("status_date", "created_on")
         return {
             "status": barrier_status.status,
+            "status_date": barrier_status.status_date,
+            "summary": barrier_status.summary,
             "created_on": barrier_status.created_on,
             "created_by": barrier_status.created_by
         }
@@ -66,6 +68,62 @@ class BarrierListSerializer(serializers.ModelSerializer):
     def get_contributor_count(self, obj):
         barrier_contributors_count = BarrierContributor.objects.filter(barrier=obj, is_active=True).count()
         return barrier_contributors_count
+
+
+class BarrierResolveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierStatus
+        fields = (
+            "id",
+            "barrier",
+            "status",
+            "status_date",
+            "summary",
+            "is_active",
+            "created_on",
+            "created_by"
+        )
+        read_only_fields = ("id", "status", "barrier", "is_active", "created_on", "created_by")
+
+
+class BarrierHibernateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierStatus
+        fields = (
+            "id",
+            "barrier",
+            "status",
+            "status_date",
+            "summary",
+            "is_active",
+            "created_on",
+            "created_by"
+        )
+        read_only_fields = (
+            "id",
+            "status",
+            "barrier",
+            "status_date",
+            "is_active",
+            "created_on",
+            "created_by"
+        )
+
+
+class BarrierStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierStatus
+        fields = (
+            "id",
+            "barrier",
+            "status",
+            "status_date",
+            "summary",
+            "is_active",
+            "created_on",
+            "created_by"
+        )
+        read_only_fields = ("id", "barrier", "is_active", "created_by")
 
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
@@ -97,9 +155,11 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_current_status(self, obj):
-        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
+        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("status_date", "created_on")
         return {
             "status": barrier_status.status,
+            "status_date": barrier_status.status_date,
+            "summary": barrier_status.summary,
             "created_on": barrier_status.created_on,
             "created_by": barrier_status.created_by
         }

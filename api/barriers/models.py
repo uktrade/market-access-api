@@ -3,6 +3,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import timezone
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
@@ -32,6 +33,15 @@ class BarrierStatus(models.Model):
         choices=BARRIER_STATUS,
         help_text="status of the barrier instance"
     )
+    summary = models.TextField(
+        null=True,
+        help_text="status summary if provided by user"
+    )
+    status_date = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
+        help_text="date when status action occurred"
+    )
     is_active = models.BooleanField(
         default=True,
         help_text="specifies if this barrier status is current or historical"
@@ -41,8 +51,6 @@ class BarrierStatus(models.Model):
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
     )
 
-    class Meta:
-        unique_together = (("barrier", "status"),)
 
 class BarrierInteraction(models.Model):
     """ Interaction records for each Barrier """
@@ -131,6 +139,34 @@ class BarrierInstance(models.Model):
 
     def __str__(self):
         return self.report
+
+    def _new_status(self, new_status, summary, resolved_date, user):
+        try:
+            barrier_status = BarrierStatus.objects.get(barrier=self, status=new_status)
+            barrier_status.status_date = resolved_date
+            barrier_status.summary = summary
+            barrier_status.is_active = True
+            barrier_status.save()
+        except BarrierStatus.DoesNotExist:
+            barrier_status = BarrierStatus(
+                barrier=self,
+                status=new_status,
+                summary=summary,
+                status_date=resolved_date
+            ).save()
+
+        if settings.DEBUG is False:
+            barrier_status.created_by = user
+            barrier_status.save()
+
+    def resolve(self, summary, resolved_date, user):
+        resolved_status = 4 # Resolved
+        self._new_status(resolved_status, summary, resolved_date, user)
+
+    def hibernate(self, summary, user):
+        hibernate_status = 5 # Hibernated
+        self._new_status(hibernate_status, summary, timezone.now(), user)
+
 
 class BarrierContributor(models.Model):
     """ Contributors for each Barrier """

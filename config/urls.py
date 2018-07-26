@@ -13,6 +13,9 @@ from api.barriers.views import (
     BarrierDetail,
     BarrierInstanceInteraction,
     BarrierInstanceContributor,
+    BarrierResolve,
+    BarrierHibernate,
+    BarrierStatusList,
 )
 from api.reports.views import (
     ReportDetail,
@@ -45,6 +48,7 @@ urlpatterns = [
     path("barriers/<uuid:pk>", BarrierDetail.as_view()),
     path("barriers/<uuid:barrier_pk>/contributors", BarrierInstanceContributor.as_view()),
     path("barriers/<uuid:barrier_pk>/interactions", BarrierInstanceInteraction.as_view()),
-    path("barriers/<uuid:pk>/resolve", BarrierDetail.as_view()),
-    path("barriers/<uuid:pk>/hibernate", BarrierDetail.as_view()),
+    path("barriers/<uuid:pk>/resolve", BarrierResolve.as_view()),
+    path("barriers/<uuid:pk>/hibernate", BarrierHibernate.as_view()),
+    path("barriers/<uuid:barrier_pk>/statuses", BarrierStatusList.as_view()),
 ]
