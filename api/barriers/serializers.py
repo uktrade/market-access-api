@@ -85,7 +85,10 @@ class BarrierResolveSerializer(serializers.ModelSerializer):
             errors["summary"] = "This field is required"
         
         if len(errors) > 0:
-            raise serializers.ValidationError(errors)
+            message = {
+                "fields": errors
+            }
+            raise serializers.ValidationError(message)
 
         return BarrierStatus(**validated_data)
 
