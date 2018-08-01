@@ -1,3 +1,5 @@
+from dateutil.parser import parse
+
 from django.db.models import Manager
 from django.db.models.query import QuerySet
 
@@ -71,6 +73,14 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        try:
+            parse(validated_data["status_date"])
+        except ValueError:
+            raise serializers.ValidationError("invalid status_date")
+
+        return BarrierStatus(**validated_data)
+
     class Meta:
         model = BarrierStatus
         fields = (
@@ -84,6 +94,7 @@ class BarrierResolveSerializer(serializers.ModelSerializer):
             "created_by"
         )
         read_only_fields = ("id", "status", "barrier", "is_active", "created_on", "created_by")
+
 
 
 class BarrierHibernateSerializer(serializers.ModelSerializer):
