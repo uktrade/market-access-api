@@ -75,9 +75,9 @@ class MetadataView(generics.GenericAPIView):
         dh_sectors = self.import_api_results("sector")
 
         barrier_status = dict((x, y) for x, y in BARRIER_STATUS)
-        # barrier_type_cat = dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES)
-        # barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
-        # barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
+        barrier_type_cat = dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES)
+        barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
+        barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
 
         results = {
             "status_types": status_types,
@@ -93,9 +93,9 @@ class MetadataView(generics.GenericAPIView):
             "countries": dh_countries,
             "sectors": dh_sectors,
             "barrier_status": barrier_status,
-            # "barrier_type_categories": barrier_type_cat,
-            # "barrier_chance_of_success": barrier_chance,
-            # "barrier_interaction_types": barrier_inter_type,
+            "barrier_type_categories": barrier_type_cat,
+            "barrier_chance_of_success": barrier_chance,
+            "barrier_interaction_types": barrier_inter_type,
         }
 
         return Response(results, status=status.HTTP_200_OK)
