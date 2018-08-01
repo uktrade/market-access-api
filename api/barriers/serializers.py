@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dateutil.parser import parse
 
 from django.db.models import Manager
@@ -74,10 +75,17 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
+        errors = defaultdict(list)
         try:
             parse(validated_data["status_date"])
         except ValueError:
-            raise serializers.ValidationError("invalid status_date")
+            errors["status_date"] = "unable to parse date"
+
+        if validated_data.get("summary", None) is None:
+            errors["summary"] = "This field is required"
+        
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
 
         return BarrierStatus(**validated_data)
 
