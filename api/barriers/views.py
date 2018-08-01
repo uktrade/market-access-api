@@ -122,7 +122,7 @@ class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
     permission_classes = PERMISSION_CLASSES
 
     queryset = BarrierStatus.objects.all()
-    serializer_class = BarrierResolveSerializer
+    serializer_class = BarrierHibernateSerializer
 
     def get_queryset(self):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
