@@ -104,7 +104,7 @@ AUTH_USER_MODEL = "auth.User"
 AUTHENTICATION_BACKENDS = (
     "oauth2_provider.backends.OAuth2Backend",
     # Uncomment following if you want to access the admin
-    # 'django.contrib.auth.backends.ModelBackend'
+    "django.contrib.auth.backends.ModelBackend"
 )
 
 SSO_ENABLED = env.bool("SSO_ENABLED")
