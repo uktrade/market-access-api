@@ -27,7 +27,7 @@ from api.reports.views import (
 from api.user.views import who_am_i
 
 urlpatterns = [
-    url(r"^admin/", admin.site.urls),
+    path("admin", admin.site.urls),
     path("ping.xml", ping, name="ping"),
     path("whoami", who_am_i, name="who_am_i"),
     path("reports", ReportList.as_view(), {"status": None}, name="list-reports"),

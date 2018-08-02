@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from api.metadata.models import BarrierType
+
+admin.site.register(BarrierType)
