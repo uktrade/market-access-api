@@ -53,6 +53,8 @@ class ReportSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_barrier_type(self, obj):
+        if obj.barrier_type is None:
+            return None
         return {
             "id": obj.barrier_type.id,
             "title": obj.barrier_type.title,
