@@ -43,7 +43,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
         return obj.report.id
 
     def get_current_status(self, obj):
-        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("status_date", "created_on")
+        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
         return {
             "status": barrier_status.status,
             "status_date": barrier_status.status_date,
@@ -79,7 +79,7 @@ class BarrierResolveSerializer(serializers.ModelSerializer):
         try:
             parse(validated_data["status_date"])
         except ValueError:
-            errors["status_date"] = "unable to parse date"
+            errors["status_date"] = "enter a valid date"
 
         if validated_data.get("summary", None) is None:
             errors["summary"] = "This field is required"

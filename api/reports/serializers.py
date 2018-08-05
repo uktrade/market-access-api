@@ -41,10 +41,10 @@ class BarrierTypeSerializer(serializers.ModelSerializer):
 
 class ReportSerializer(serializers.ModelSerializer):
     progress = ReportStageListingField(many=True, read_only=True)
-    barrier_type = serializers.SerializerMethodField()
-    # barrier_type = serializers.PrimaryKeyRelatedField(
-    #     queryset=BarrierType.objects.all(), required=False
-    # )
+    barrier_type_category = serializers.SerializerMethodField()
+    barrier_type = serializers.PrimaryKeyRelatedField(
+        queryset=BarrierType.objects.all(), required=False
+    )
 
     class Meta:
         model = Report
@@ -52,12 +52,7 @@ class ReportSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "stages", "progress", "created_on")
         depth = 1
 
-    def get_barrier_type(self, obj):
+    def get_barrier_type_category(self, obj):
         if obj.barrier_type is None:
             return None
-        return {
-            "id": obj.barrier_type.id,
-            "title": obj.barrier_type.title,
-            "description": obj.barrier_type.description,
-            "category": obj.barrier_type.category,
-        }
+        return obj.barrier_type.category
