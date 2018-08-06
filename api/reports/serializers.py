@@ -41,9 +41,6 @@ class BarrierTypeSerializer(serializers.ModelSerializer):
 
 class ReportSerializer(serializers.ModelSerializer):
     progress = ReportStageListingField(many=True, read_only=True)
-    barrier_type = serializers.PrimaryKeyRelatedField(
-        queryset=BarrierType.objects.all(), required=False
-    )
 
     class Meta:
         model = Report

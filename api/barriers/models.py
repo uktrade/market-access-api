@@ -38,8 +38,6 @@ class BarrierStatus(models.Model):
         help_text="status summary if provided by user"
     )
     status_date = models.DateTimeField(
-        auto_now_add=True,
-        null=True,
         help_text="date when status action occurred"
     )
     is_active = models.BooleanField(
