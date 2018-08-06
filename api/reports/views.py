@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 
 from rest_framework import generics, status
 from rest_framework.decorators import permission_classes
@@ -72,14 +73,17 @@ class ReportDetail(ReportBase, generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
-        barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
         if serializer.validated_data.get("problem_status", None) == 3:
             serializer.validated_data["is_emergency"] = None
         if serializer.validated_data.get("is_politically_sensitive", None) is False:
             serializer.validated_data["political_sensitivity_summary"] = None
         if serializer.validated_data.get("is_commercially_sensitive", None) is False:
             serializer.validated_data["commercial_sensitivity_summary"] = None
-        serializer.save(barrier_type=barrier_type)
+        if self.request.data.get("barrier_type", None) is not None:
+            barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
+            serializer.save(barrier_type=barrier_type)
+        else:
+            serializer.save()
         self._update_stages(serializer, self.request.user)
 
 
@@ -176,7 +180,11 @@ class ReportSubmit(generics.UpdateAPIView):
         try:
             barrier_status = BarrierStatus.objects.get(barrier=barrier, status=barrier_new_status)
         except BarrierStatus.DoesNotExist:
-            barrier_status = BarrierStatus(barrier=barrier, status=barrier_new_status).save()
+            barrier_status = BarrierStatus(
+                barrier=barrier, 
+                status=barrier_new_status,
+                status_date=timezone.now()
+            ).save()
             if settings.DEBUG is False:
                 barrier_status.created_by = self.request.user
                 barrier_status.save()
