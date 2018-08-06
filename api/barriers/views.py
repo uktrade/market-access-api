@@ -1,9 +1,13 @@
+from collections import defaultdict
+from dateutil.parser import parse
+
 from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from rest_framework import generics
+from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -84,10 +88,10 @@ class BarrierInstanceContributor(generics.ListCreateAPIView):
 
 
 class BarrierStatusBase(object):
-    def _create(self, serializer, request, barrier_id, status):
+    def _create(self, serializer, barrier_id, status, summary, status_date=None):
         barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
-        summary = request.data.get("summary")
-        status_date = request.data.get("status_date", timezone.now())
+        if status_date is None:
+            status_date = timezone.now()
         if settings.DEBUG is False:
             serializer.save(
                 barrier=barrier_obj,
@@ -115,7 +119,23 @@ class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     def perform_create(self, serializer):
-        self._create(serializer, self.request, self.kwargs.get("pk"), 4)
+        errors = defaultdict(list)
+        if self.request.data.get("summary", None) is None:
+            errors["summary"] = "This field is required"
+        if self.request.data.get("status_date", None) is None:
+            errors["status_date"] = "This field is required"
+        else:
+            try:
+                parse(self.request.data.get("status_date"))
+            except ValueError:
+                errors["status_date"] = "enter a valid date"
+        
+        if len(errors) > 0:
+            message = {
+                "fields": errors
+            }
+            raise serializers.ValidationError(message)
+        self._create(serializer, self.kwargs.get("pk"), 4, self.request.data.get("summary"), self.request.data.get("status_date"))
 
 
 class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
@@ -128,7 +148,7 @@ class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     def perform_create(self, serializer):
-        self._create(serializer, self.request, self.kwargs.get("pk"), 5)
+        self._create(serializer, self.kwargs.get("pk"), 5, self.request.data.get("summary"))
 
 
 class BarrierStatusList(generics.ListCreateAPIView, BarrierStatusBase):

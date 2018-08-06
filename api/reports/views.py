@@ -15,7 +15,10 @@ from api.barriers.models import (
     BarrierStatus,
 )
 from api.core.auth import IsMAServer, IsMAUser
-from api.metadata.constants import REPORT_STATUS
+from api.metadata.constants import (
+    REPORT_STATUS,
+    CONTRIBUTOR_TYPE
+)
 from api.metadata.models import BarrierType
 from api.reports.models import Report, ReportStage, Stage
 from api.reports.serializers import ReportSerializer, ReportStageSerializer
@@ -69,13 +72,14 @@ class ReportDetail(ReportBase, generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
+        barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
         if serializer.validated_data.get("problem_status", None) == 3:
             serializer.validated_data["is_emergency"] = None
         if serializer.validated_data.get("is_politically_sensitive", None) is False:
             serializer.validated_data["political_sensitivity_summary"] = None
         if serializer.validated_data.get("is_commercially_sensitive", None) is False:
             serializer.validated_data["commercial_sensitivity_summary"] = None
-        serializer.save()
+        serializer.save(barrier_type=barrier_type)
         self._update_stages(serializer, self.request.user)
 
 
@@ -116,9 +120,6 @@ class ReportSubmit(generics.UpdateAPIView):
 
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
-
-    # def get_queryset(self):
-    #     return self.queryset.filter(id=self.kwargs.get('pk'))
 
     @transaction.atomic()
     def perform_update(self, serializer):
@@ -184,7 +185,7 @@ class ReportSubmit(generics.UpdateAPIView):
         if settings.DEBUG is False:
             if report.support_type == 2:
                 try:
-                    lead_contrib = BarrierContributor.objects.get(
+                    BarrierContributor.objects.get(
                         barrier=barrier, 
                         contributor=report.created_by,
                         kind=CONTRIBUTOR_TYPE['LEAD'],

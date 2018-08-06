@@ -74,24 +74,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        errors = defaultdict(list)
-        try:
-            parse(validated_data["status_date"])
-        except ValueError:
-            errors["status_date"] = "enter a valid date"
-
-        if validated_data.get("summary", None) is None:
-            errors["summary"] = "This field is required"
-        
-        if len(errors) > 0:
-            message = {
-                "fields": errors
-            }
-            raise serializers.ValidationError(message)
-
-        return BarrierStatus(**validated_data)
-
     class Meta:
         model = BarrierStatus
         fields = (
@@ -177,7 +159,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_current_status(self, obj):
-        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("status_date", "created_on")
+        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
         return {
             "status": barrier_status.status,
             "status_date": barrier_status.status_date,
