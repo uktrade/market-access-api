@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dateutil.parser import parse
+from oauth2_provider.contrib.rest_framework.permissions import IsAuthenticated
 
 from django.conf import settings
 from django.db import transaction
@@ -28,7 +29,7 @@ from api.barriers.serializers import (
 from api.core.auth import IsMAServer, IsMAUser
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
-PERMISSION_CLASSES = (IsMAServer, IsMAUser)
+PERMISSION_CLASSES = (IsAuthenticated,)
 
 
 @api_view(["GET"])

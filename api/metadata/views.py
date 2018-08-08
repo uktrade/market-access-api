@@ -30,6 +30,7 @@ from api.reports.models import Stage
 
 
 class MetadataView(generics.GenericAPIView):
+    permission_classes = ()
     MODELS = {"./country/": "countries"}
 
     def import_api_results(self, endpoint):

@@ -1,5 +1,7 @@
 import json
 
+from oauth2_provider.contrib.rest_framework.permissions import IsAuthenticated
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -24,7 +26,7 @@ from api.metadata.models import BarrierType
 from api.reports.models import Report, ReportStage, Stage
 from api.reports.serializers import ReportSerializer, ReportStageSerializer
 
-PERMISSION_CLASSES = (IsMAServer, IsMAUser)
+PERMISSION_CLASSES = (IsAuthenticated)
 
 class ReportBase(object):
     def _update_stages(self, serializer, user):
