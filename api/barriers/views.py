@@ -18,7 +18,7 @@ from api.barriers.models import (
 )
 from api.barriers.serializers import (
     BarrierContributorSerializer,
-    BarrierHibernateSerializer,
+    BarrierStaticStatusSerializer,
     BarrierInstanceSerializer,
     BarrierInteractionSerializer,
     BarrierListSerializer,
@@ -139,13 +139,26 @@ class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
 class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
 
     queryset = BarrierStatus.objects.all()
-    serializer_class = BarrierHibernateSerializer
+    serializer_class = BarrierStaticStatusSerializer
 
     def get_queryset(self):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     def perform_create(self, serializer):
         self._create(serializer, self.kwargs.get("pk"), 5, self.request.data.get("summary"))
+
+
+class BarrierOpen(generics.CreateAPIView, BarrierStatusBase):
+    permission_classes = PERMISSION_CLASSES
+
+    queryset = BarrierStatus.objects.all()
+    serializer_class = BarrierStaticStatusSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+
+    def perform_create(self, serializer):
+        self._create(serializer, self.kwargs.get("pk"), 2, self.request.data.get("summary"))
 
 
 class BarrierStatusList(generics.ListCreateAPIView, BarrierStatusBase):

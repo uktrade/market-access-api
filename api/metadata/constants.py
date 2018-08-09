@@ -40,7 +40,7 @@ REPORT_STATUS = Choices(
 BARRIER_STATUS = Choices(
     (0, "Unfinished"),
     (1, "Screening"),
-    (2, "Assesment"),
+    (2, "Open"),
     (3, "Rejected"),
     (4, "Resolved"),
     (5, "Hibernated"),
