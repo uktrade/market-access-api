@@ -1,10 +1,7 @@
-import environ
 import os
 import raven
 
 import dj_database_url
-
-env = environ.Env()
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -16,10 +13,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(env("DEBUG"))
+DEBUG = bool(os.getenv("DEBUG", False))
 
 # As app is running behind a host-based router supplied by Heroku or other
 # PaaS, we can open ALLOWED_HOSTS
@@ -39,6 +36,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # misc 3rd party
     "django_extensions",
+    "hawkrest",
     "raven.contrib.django.raven_compat",
     # sso
     "oauth2_provider",
@@ -60,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
+    "hawkrest.middleware.HawkResponseMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -107,7 +106,7 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend"
 )
 
-SSO_ENABLED = env.bool("SSO_ENABLED")
+SSO_ENABLED = os.getenv("SSO_ENABLED", True)
 # DataHub API
 DH_METADATA_URL = os.getenv("DH_METADATA_URL")
 FAKE_METADATA = os.getenv("FAKE_METADATA", False)
@@ -115,10 +114,10 @@ FAKE_METADATA = os.getenv("FAKE_METADATA", False)
 OAUTH2_PROVIDER = {}
 
 if SSO_ENABLED:
-    OAUTH2_PROVIDER["RESOURCE_SERVER_INTROSPECTION_URL"] = env(
+    OAUTH2_PROVIDER["RESOURCE_SERVER_INTROSPECTION_URL"] = os.getenv(
         "RESOURCE_SERVER_INTROSPECTION_URL"
     )
-    OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"] = env("RESOURCE_SERVER_AUTH_TOKEN")
+    OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"] = os.getenv("RESOURCE_SERVER_AUTH_TOKEN")
 
 # DRF
 REST_FRAMEWORK = {
@@ -129,7 +128,7 @@ REST_FRAMEWORK = {
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication"
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'oauth2_provider.contrib.rest_framework.IsAuthenticatedOrTokenHasScope',
+        "api.core.permissions.IsAuthenticated",
     ],
     "ORDERING_PARAM": "sortby",
 }
@@ -146,6 +145,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+HAWK_CREDENTIALS = {
+    "metadata": {
+        "id": "metadata",
+        "key": os.getenv("HAWK_KEY"),
+        "algorithm": "sha256"
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/

@@ -2,12 +2,17 @@ import json
 import os
 
 import requests
+
 from django.conf import settings
 from django.shortcuts import render
+
+from hawkrest import HawkAuthentication
+
 from rest_framework import generics, status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from urlobject import URLObject
 
 from api.metadata.constants import (
@@ -30,7 +35,8 @@ from api.reports.models import Stage
 
 
 class MetadataView(generics.GenericAPIView):
-    permission_classes = ()
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
     MODELS = {"./country/": "countries"}
 
     def import_api_results(self, endpoint):
