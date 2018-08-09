@@ -90,7 +90,7 @@ class BarrierResolveSerializer(serializers.ModelSerializer):
 
 
 
-class BarrierHibernateSerializer(serializers.ModelSerializer):
+class BarrierStaticStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = BarrierStatus
         fields = (
