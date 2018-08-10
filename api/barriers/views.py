@@ -2,7 +2,6 @@ from collections import defaultdict
 from dateutil.parser import parse
 
 from django.conf import settings
-from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -79,7 +78,7 @@ class BarrierInstanceContributor(generics.ListCreateAPIView):
     #         serializer.save(barrier=barrier_obj)
 
 
-class BarrierStatusBase(object):
+class BarrierStatusBase(generics.GenericAPIView):
     def _create(self, serializer, barrier_id, status, summary, status_date=None):
         barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
         if status_date is None:
@@ -90,7 +89,7 @@ class BarrierStatusBase(object):
                 status=status,
                 summary=summary,
                 status_date=status_date,
-                created_by=request.user
+                created_by=self.request.user
             )
         else:
             serializer.save(
@@ -127,7 +126,6 @@ class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
                 parse(self.request.data.get("status_date"))
             except ValueError:
                 errors["status_date"] = "enter a valid date"
-        
         if len(errors) > 0:
             message = {
                 "fields": errors

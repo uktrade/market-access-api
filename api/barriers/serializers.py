@@ -1,8 +1,3 @@
-from collections import defaultdict
-from dateutil.parser import parse
-
-from django.db.models import Manager
-from django.db.models.query import QuerySet
 
 from rest_framework import serializers
 
@@ -12,11 +7,11 @@ from api.barriers.models import (
     BarrierInteraction,
     BarrierStatus
 )
-from api.metadata.models import BarrierType
-from api.metadata.constants import BARRIER_STATUS
 
+# pylint: disable=R0201
 
 class BarrierListSerializer(serializers.ModelSerializer):
+    """ Serializer for listing Barriers """
     current_status = serializers.SerializerMethodField()
     report_id = serializers.SerializerMethodField()
     barrier_title = serializers.SerializerMethodField()
@@ -40,9 +35,11 @@ class BarrierListSerializer(serializers.ModelSerializer):
         )
 
     def get_report_id(self, obj):
+        """ Custom Serializer Method Field for exposing report ID """
         return obj.report.id
 
     def get_current_status(self, obj):
+        """  Custom Serializer Method Field for exposing current barrier status as json """
         barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
         return {
             "status": barrier_status.status,
@@ -53,27 +50,36 @@ class BarrierListSerializer(serializers.ModelSerializer):
         }
 
     def get_barrier_title(self, obj):
+        """ Custom Serializer Method Field for exposing Title from Report of the Barrier """ 
         return obj.report.barrier_title
-    
+
     def get_company(self, obj):
+        """ Custom Serializer Method Field for exposing company data from report as json """
         return {
             "id": obj.report.company_id,
             "name": obj.report.company_name,
             "sector_name": obj.report.company_sector_name
         }
-        
+
     def get_export_country(self, obj):
+        """ Custom Serializer Method Field for exposing export country of the report """
         return obj.report.export_country
 
     def get_support_type(self, obj):
+        """ Custom Serializer Method Field for exposing support type of report """
         return obj.report.support_type
-    
+
     def get_contributor_count(self, obj):
-        barrier_contributors_count = BarrierContributor.objects.filter(barrier=obj, is_active=True).count()
+        """ Custom Serializer Method Field for barrier count """
+        barrier_contributors_count = BarrierContributor.objects.filter(
+            barrier=obj,
+            is_active=True
+        ).count()
         return barrier_contributors_count
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
+    """ Serializer for resolving a barrier """
     class Meta:
         model = BarrierStatus
         fields = (
@@ -89,8 +95,8 @@ class BarrierResolveSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "status", "barrier", "is_active", "created_on", "created_by")
 
 
-
 class BarrierStaticStatusSerializer(serializers.ModelSerializer):
+    """ generic serializer for other barrier statuses """
     class Meta:
         model = BarrierStatus
         fields = (
@@ -114,23 +120,8 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
         )
 
 
-class BarrierStatusSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BarrierStatus
-        fields = (
-            "id",
-            "barrier",
-            "status",
-            "status_date",
-            "summary",
-            "is_active",
-            "created_on",
-            "created_by"
-        )
-        read_only_fields = ("id", "barrier", "is_active", "created_by")
-
-
 class BarrierInstanceSerializer(serializers.ModelSerializer):
+    """ Serializer for Barrier Instance """
     current_status = serializers.SerializerMethodField()
     report = serializers.SerializerMethodField()
 
@@ -212,6 +203,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         }
 
 class BarrierInteractionSerializer(serializers.ModelSerializer):
+    """ Serialzer for Barrier Ineractions """
     class Meta:
         model = BarrierInteraction
         fields = "__all__"
@@ -219,6 +211,7 @@ class BarrierInteractionSerializer(serializers.ModelSerializer):
 
 
 class BarrierContributorSerializer(serializers.ModelSerializer):
+    """ Serializer for Barrier Contributors """
     class Meta:
         model = BarrierContributor
         fields = "__all__"
