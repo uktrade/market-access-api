@@ -1,3 +1,4 @@
+import logging
 import os
 import raven
 
@@ -16,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv("DEBUG", False))
+DEBUG = bool(os.getenv("DEBUG", "False"))
 
 # As app is running behind a host-based router supplied by Heroku or other
 # PaaS, we can open ALLOWED_HOSTS
@@ -171,3 +172,62 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 STATIC_URL = "/static/"
+
+# Logging for development
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse'
+            }
+        },
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+            '': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                'propagate': False,
+            },
+        }
+    }
+else:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse'
+            }
+        },
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout
+            },
+        },
+        'loggers': {
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+            '': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': False,
+            },
+        }
+    }
