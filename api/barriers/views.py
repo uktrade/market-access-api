@@ -25,10 +25,7 @@ from api.barriers.serializers import (
     BarrierResolveSerializer,
     BarrierStatusSerializer,
 )
-from api.core.auth import IsMAServer, IsMAUser
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
-
-PERMISSION_CLASSES = (IsMAServer, IsMAUser)
 
 
 @api_view(["GET"])
@@ -37,20 +34,17 @@ def barrier_count(request):
 
 
 class BarrierList(generics.ListAPIView):
-    permission_classes = PERMISSION_CLASSES
     queryset = BarrierInstance.objects.all()
     serializer_class = BarrierListSerializer
 
 
 class BarrierDetail(generics.RetrieveAPIView):
-    permission_classes = PERMISSION_CLASSES
     lookup_field = "pk"
     queryset = BarrierInstance.objects.all()
     serializer_class = BarrierInstanceSerializer
 
 
 class BarrierInstanceInteraction(generics.ListCreateAPIView):
-    permission_classes = PERMISSION_CLASSES
     queryset = BarrierInteraction.objects.all()
     serializer_class = BarrierInteractionSerializer
 
@@ -69,7 +63,6 @@ class BarrierInstanceInteraction(generics.ListCreateAPIView):
 
 
 class BarrierInstanceContributor(generics.ListCreateAPIView):
-    permission_classes = PERMISSION_CLASSES
     queryset = BarrierContributor.objects.all()
     serializer_class = BarrierContributorSerializer
 
@@ -109,7 +102,6 @@ class BarrierStatusBase(object):
 
 
 class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
-    permission_classes = PERMISSION_CLASSES
 
     queryset = BarrierStatus.objects.all()
     serializer_class = BarrierResolveSerializer
@@ -145,7 +137,6 @@ class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
 
 
 class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
-    permission_classes = PERMISSION_CLASSES
 
     queryset = BarrierStatus.objects.all()
     serializer_class = BarrierHibernateSerializer
@@ -158,7 +149,6 @@ class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
 
 
 class BarrierStatusList(generics.ListCreateAPIView, BarrierStatusBase):
-    permission_classes = PERMISSION_CLASSES
 
     queryset = BarrierStatus.objects.all()
     serializer_class = BarrierStatusSerializer

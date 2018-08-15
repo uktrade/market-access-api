@@ -1,10 +1,9 @@
-import environ
+import logging
 import os
-import raven
+import sys
+import environ
 
 import dj_database_url
-
-env = environ.Env()
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -15,11 +14,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
+env = environ.Env()
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(env("DEBUG"))
+DEBUG = env.bool('DEBUG')
 
 # As app is running behind a host-based router supplied by Heroku or other
 # PaaS, we can open ALLOWED_HOSTS
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # misc 3rd party
     "django_extensions",
+    "hawkrest",
     "raven.contrib.django.raven_compat",
     # sso
     "oauth2_provider",
@@ -60,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
+    "hawkrest.middleware.HawkResponseMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -84,7 +87,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Sentry
 RAVEN_CONFIG = {
-    "dsn": os.getenv("SENTRY_DSN"),
+    "dsn": env("SENTRY_DSN"),
     # If you are using git, you can also automatically configure the
     # release based on the git info.
     # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
@@ -107,10 +110,10 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend"
 )
 
-SSO_ENABLED = env.bool("SSO_ENABLED")
+SSO_ENABLED = env.bool("SSO_ENABLED", True)
 # DataHub API
-DH_METADATA_URL = os.getenv("DH_METADATA_URL")
-FAKE_METADATA = os.getenv("FAKE_METADATA", False)
+DH_METADATA_URL = env("DH_METADATA_URL")
+FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
 OAUTH2_PROVIDER = {}
 
@@ -122,12 +125,14 @@ if SSO_ENABLED:
 
 # DRF
 REST_FRAMEWORK = {
-    "UNAUTHENTICATED_USER": None,
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 100,
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication"
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        "api.core.permissions.IsAuthenticated",
     ],
     "ORDERING_PARAM": "sortby",
 }
@@ -144,6 +149,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+HAWK_CREDENTIALS = {
+    "frontend": {
+        "id": env("HAWK_ID"),
+        "key": env("HAWK_KEY"),
+        "algorithm": "sha256"
+    },
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -163,3 +175,62 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 STATIC_URL = "/static/"
+
+# Logging for development
+if DEBUG:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse'
+            }
+        },
+        'handlers': {
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'loggers': {
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+            '': {
+                'handlers': ['console'],
+                'level': 'DEBUG',
+                'propagate': False,
+            },
+        }
+    }
+else:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse'
+            }
+        },
+        'handlers': {
+            'console': {
+                'level': 'INFO',
+                'class': 'logging.StreamHandler',
+                'stream': sys.stdout
+            },
+        },
+        'loggers': {
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': True,
+            },
+            '': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': False,
+            },
+        }
+    }
