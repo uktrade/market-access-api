@@ -35,8 +35,13 @@ from api.reports.models import Stage
 
 
 class MetadataView(generics.GenericAPIView):
-    authentication_classes = (HawkAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    if settings.DEBUG:
+        authentication_classes = ()
+        permission_classes = ()
+    else:
+        authentication_classes = (HawkAuthentication,)
+        permission_classes = (IsAuthenticated,)
+
     MODELS = {"./country/": "countries"}
 
     def import_api_results(self, endpoint):
