@@ -1,6 +1,7 @@
 import logging
 import os
-import raven
+import sys
+import environ
 
 import dj_database_url
 
@@ -13,11 +14,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
+env = environ.Env()
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv("DEBUG", "False"))
+DEBUG = env.bool('DEBUG')
 
 # As app is running behind a host-based router supplied by Heroku or other
 # PaaS, we can open ALLOWED_HOSTS
@@ -84,7 +87,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Sentry
 RAVEN_CONFIG = {
-    "dsn": os.getenv("SENTRY_DSN"),
+    "dsn": env("SENTRY_DSN"),
     # If you are using git, you can also automatically configure the
     # release based on the git info.
     # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
@@ -107,18 +110,18 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend"
 )
 
-SSO_ENABLED = os.getenv("SSO_ENABLED", True)
+SSO_ENABLED = env.bool("SSO_ENABLED", True)
 # DataHub API
-DH_METADATA_URL = os.getenv("DH_METADATA_URL")
-FAKE_METADATA = os.getenv("FAKE_METADATA", False)
+DH_METADATA_URL = env("DH_METADATA_URL")
+FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
 OAUTH2_PROVIDER = {}
 
 if SSO_ENABLED:
-    OAUTH2_PROVIDER["RESOURCE_SERVER_INTROSPECTION_URL"] = os.getenv(
+    OAUTH2_PROVIDER["RESOURCE_SERVER_INTROSPECTION_URL"] = env(
         "RESOURCE_SERVER_INTROSPECTION_URL"
     )
-    OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"] = os.getenv("RESOURCE_SERVER_AUTH_TOKEN")
+    OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"] = env("RESOURCE_SERVER_AUTH_TOKEN")
 
 # DRF
 REST_FRAMEWORK = {
@@ -147,9 +150,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 HAWK_CREDENTIALS = {
-    "metadata": {
-        "id": "metadata",
-        "key": os.getenv("HAWK_KEY"),
+    "frontend": {
+        "id": env("HAWK_ID"),
+        "key": env("HAWK_KEY"),
         "algorithm": "sha256"
     },
 }
