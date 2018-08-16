@@ -150,8 +150,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 HAWK_CREDENTIALS = {
-    env("HAWK_ID"): {
-        "id": env("HAWK_ID"),
+    "metadata": {
+        "id": "metadata",
         "key": env("HAWK_KEY"),
         "algorithm": "sha256"
     },
