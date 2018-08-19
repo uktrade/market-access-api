@@ -20,7 +20,7 @@ env = environ.Env()
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG')
+DEBUG = env.bool('DEBUG', False)
 
 # As app is running behind a host-based router supplied by Heroku or other
 # PaaS, we can open ALLOWED_HOSTS
@@ -149,6 +149,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+HAWK_ENABLED = env.bool("HAWK_ENABLED", True)
 HAWK_CREDENTIALS = {
     env("HAWK_ID"): {
         "id": env("HAWK_ID"),
@@ -215,8 +216,12 @@ else:
             }
         },
         'handlers': {
+            'sentry': {
+                'level': 'ERROR',
+                'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler'
+            },
             'console': {
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout
             },
