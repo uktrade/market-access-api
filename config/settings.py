@@ -149,6 +149,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+HAWK_ENABLED = env.bool("HAWK_ENABLED", True)
 HAWK_CREDENTIALS = {
     "metadata": {
         "id": "metadata",
@@ -215,8 +216,12 @@ else:
             }
         },
         'handlers': {
+            'sentry': {
+                'level': 'ERROR',
+                'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler'
+            },
             'console': {
-                'level': 'INFO',
+                'level': 'DEBUG',
                 'class': 'logging.StreamHandler',
                 'stream': sys.stdout
             },
