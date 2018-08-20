@@ -50,7 +50,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
         }
 
     def get_barrier_title(self, obj):
-        """ Custom Serializer Method Field for exposing Title from Report of the Barrier """ 
+        """ Custom Serializer Method Field for exposing Title from Report of the Barrier """
         return obj.report.barrier_title
 
     def get_company(self, obj):

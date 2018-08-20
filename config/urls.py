@@ -1,10 +1,6 @@
-from uuid import uuid4
-
-from django.conf.urls import url
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
 
-from api.metadata.constants import REPORT_STATUS
 from api.metadata.views import MetadataView
 from api.ping.views import ping
 from api.barriers.views import (
