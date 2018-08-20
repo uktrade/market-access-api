@@ -22,7 +22,6 @@ from api.barriers.serializers import (
     BarrierInteractionSerializer,
     BarrierListSerializer,
     BarrierResolveSerializer,
-    BarrierStatusSerializer,
 )
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
@@ -147,7 +146,6 @@ class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
 
 
 class BarrierOpen(generics.CreateAPIView, BarrierStatusBase):
-    permission_classes = PERMISSION_CLASSES
 
     queryset = BarrierStatus.objects.all()
     serializer_class = BarrierStaticStatusSerializer
@@ -162,7 +160,7 @@ class BarrierOpen(generics.CreateAPIView, BarrierStatusBase):
 class BarrierStatusList(generics.ListCreateAPIView, BarrierStatusBase):
 
     queryset = BarrierStatus.objects.all()
-    serializer_class = BarrierStatusSerializer
+    serializer_class = BarrierStaticStatusSerializer
 
     def get_queryset(self):
         return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
