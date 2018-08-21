@@ -1,7 +1,6 @@
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 
@@ -12,11 +11,6 @@ from api.metadata.constants import (
     BARRIER_STATUS,
     CONTRIBUTOR_TYPE,
     ESTIMATED_LOSS_RANGE,
-    GOVT_RESPONSE,
-    PROBLEM_STATUS_TYPES,
-    PUBLISH_RESPONSE,
-    REPORT_STATUS,
-    STAGE_STATUS,
 )
 from api.metadata.models import BarrierType
 from api.reports.models import Report
@@ -24,8 +18,8 @@ from api.reports.models import Report
 class BarrierStatus(models.Model):
     """ Record each status entry for a Barrier """
     barrier = models.ForeignKey(
-        "BarrierInstance", 
-        related_name="statuses", 
+        "BarrierInstance",
+        related_name="statuses",
         on_delete=models.PROTECT,
         help_text="barrier instance"
     )
@@ -66,8 +60,8 @@ class BarrierInteraction(models.Model):
     is_active = models.BooleanField(default=True)
     created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        null=True, 
+        settings.AUTH_USER_MODEL,
+        null=True,
         on_delete=models.SET_NULL
     )
 
@@ -146,12 +140,13 @@ class BarrierInstance(models.Model):
             barrier_status.is_active = True
             barrier_status.save()
         except BarrierStatus.DoesNotExist:
-            barrier_status = BarrierStatus(
+            BarrierStatus(
                 barrier=self,
                 status=new_status,
                 summary=summary,
                 status_date=resolved_date
             ).save()
+            barrier_status = BarrierStatus.objects.get(barrier=self, status=new_status)
 
         if settings.DEBUG is False:
             barrier_status.created_by = user
@@ -174,9 +169,9 @@ class BarrierContributor(models.Model):
         on_delete=models.PROTECT
     )
     contributor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
+        settings.AUTH_USER_MODEL,
         related_name="contributor_user",
-        null=True, 
+        null=True,
         on_delete=models.PROTECT
     )
     kind = models.CharField(
@@ -186,7 +181,7 @@ class BarrierContributor(models.Model):
     is_active = models.BooleanField(default=True)
     created_on = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        null=True, 
+        settings.AUTH_USER_MODEL,
+        null=True,
         on_delete=models.SET_NULL
     )

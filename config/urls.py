@@ -1,10 +1,6 @@
-from uuid import uuid4
-
-from django.conf.urls import url
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path
 
-from api.metadata.constants import REPORT_STATUS
 from api.metadata.views import MetadataView
 from api.ping.views import ping
 from api.barriers.views import (
@@ -15,6 +11,7 @@ from api.barriers.views import (
     BarrierInstanceContributor,
     BarrierResolve,
     BarrierHibernate,
+    BarrierOpen,
     BarrierStatusList,
 )
 from api.reports.views import (
@@ -50,5 +47,6 @@ urlpatterns = [
     path("barriers/<uuid:barrier_pk>/interactions", BarrierInstanceInteraction.as_view()),
     path("barriers/<uuid:pk>/resolve", BarrierResolve.as_view()),
     path("barriers/<uuid:pk>/hibernate", BarrierHibernate.as_view()),
+    path("barriers/<uuid:pk>/open", BarrierOpen.as_view()),
     path("barriers/<uuid:barrier_pk>/statuses", BarrierStatusList.as_view()),
 ]
