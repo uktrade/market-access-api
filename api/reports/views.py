@@ -35,10 +35,11 @@ class ReportBase(object):
                 report_stage.status = new_status
                 report_stage.save()
             except ReportStage.DoesNotExist:
-                report_stage = ReportStage(
+                ReportStage(
                     report=report, stage=new_stage, status=new_status
                 ).save()
             if settings.DEBUG is False:
+                report_stage = ReportStage.objects.get(report=report, stage=new_stage)
                 report_stage.user = user
                 report_stage.save()
 
@@ -160,8 +161,8 @@ class ReportSubmit(generics.UpdateAPIView):
                 infringement_summary=report.infringement_summary,
                 reported_on = report.created_on
             ).save()
-            barrier = BarrierInstance.objects.get(report_id=report.id)
             if settings.DEBUG is False:
+                barrier = BarrierInstance.objects.get(report_id=report.id)
                 barrier.created_by = self.request.user
                 barrier.save()
         
@@ -180,8 +181,8 @@ class ReportSubmit(generics.UpdateAPIView):
                 status=barrier_new_status,
                 status_date=timezone.now()
             ).save()
-            barrier_status = BarrierStatus.objects.get(barrier=barrier, status=barrier_new_status)
             if settings.DEBUG is False:
+                barrier_status = BarrierStatus.objects.get(barrier=barrier, status=barrier_new_status)
                 barrier_status.created_by = self.request.user
                 barrier_status.save()
 
