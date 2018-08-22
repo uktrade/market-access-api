@@ -46,7 +46,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "status_date": barrier_status.status_date,
             "summary": barrier_status.summary,
             "created_on": barrier_status.created_on,
-            "created_by": barrier_status.created_by
+            "created_by": barrier_status.created_by.email if barrier_status.created_by else ""
         }
 
     def get_barrier_title(self, obj):
@@ -156,7 +156,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "status_date": barrier_status.status_date,
             "summary": barrier_status.summary,
             "created_on": barrier_status.created_on,
-            "created_by": barrier_status.created_by
+            "created_by": barrier_status.created_by.email if barrier_status.created_by else ""
         }
 
     def get_report(self, obj):
@@ -199,7 +199,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "created_on": obj.report.created_on,
             "status": obj.report.status,
             "barrier_type": obj.report.barrier_type.id,
-            "created_by": obj.report.created_by,
+            "created_by": obj.report.created_by.email if obj.report.created_by else "",
         }
 
 class BarrierInteractionSerializer(serializers.ModelSerializer):

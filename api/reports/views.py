@@ -146,7 +146,7 @@ class ReportSubmit(generics.UpdateAPIView):
             # barrier.other_infringement = report.other_infringement,
             # barrier.infringement_summary = report.infringement_summary,
         except BarrierInstance.DoesNotExist:
-            barrier = BarrierInstance(
+            BarrierInstance(
                 report=report,
                 barrier_type=report.barrier_type,
                 summary=report.problem_description,
@@ -160,6 +160,7 @@ class ReportSubmit(generics.UpdateAPIView):
                 infringement_summary=report.infringement_summary,
                 reported_on = report.created_on
             ).save()
+            barrier = BarrierInstance.objects.get(report_id=report.id)
             if settings.DEBUG is False:
                 barrier.created_by = self.request.user
                 barrier.save()
@@ -174,11 +175,12 @@ class ReportSubmit(generics.UpdateAPIView):
         try:
             barrier_status = BarrierStatus.objects.get(barrier=barrier, status=barrier_new_status)
         except BarrierStatus.DoesNotExist:
-            barrier_status = BarrierStatus(
+            BarrierStatus(
                 barrier=barrier, 
                 status=barrier_new_status,
                 status_date=timezone.now()
             ).save()
+            barrier_status = BarrierStatus.objects.get(barrier=barrier, status=barrier_new_status)
             if settings.DEBUG is False:
                 barrier_status.created_by = self.request.user
                 barrier_status.save()
