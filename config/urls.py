@@ -14,13 +14,8 @@ from api.barriers.views import (
     BarrierOpen,
     BarrierStatusList,
     BarrierReportList,
-)
-from api.reports.views import (
-    ReportDetail,
-    ReportList,
-    ReportStagesList,
-    ReportStageUpdate,
-    ReportSubmit,
+    BarrierReportDetail,
+    BarrierReportSubmit,
 )
 from api.user.views import who_am_i
 
@@ -30,15 +25,8 @@ urlpatterns = [
     path("whoami", who_am_i, name="who_am_i"),
 
     path("reports", BarrierReportList.as_view(), name="list-reports"),
-    path("reports/unfinished", ReportList.as_view(), {"status": 0}),
-    path("reports/awaiting_screening", ReportList.as_view(), {"status": 1}),
-    path("reports/accepted", ReportList.as_view(), {"status": 2}),
-    path("reports/rejected", ReportList.as_view(), {"status": 3}),
-    path("reports/archived", ReportList.as_view(), {"status": 4}),
-    path("reports/<int:pk>", ReportDetail.as_view()),
-    path("reports/<int:report_pk>/stages", ReportStagesList.as_view()),
-    path("reports/<int:pk>/submit", ReportSubmit.as_view()),
-    path("reports/<int:report_pk>/stages/<int:pk>", ReportStageUpdate.as_view()),
+    path("reports/<uuid:pk>", BarrierReportDetail.as_view()),
+    path("reports/<uuid:pk>/submit", BarrierReportSubmit.as_view()),
 
     path("metadata", MetadataView.as_view()),
 

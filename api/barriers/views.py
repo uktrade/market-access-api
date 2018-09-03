@@ -27,6 +27,7 @@ from api.barriers.serializers import (
     BarrierReportSerializer,
 )
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
+from api.metadata.models import BarrierType
 
 
 @api_view(["GET"])
@@ -34,11 +35,11 @@ def barrier_count(request):
     return Response({"count": BarrierInstance.objects.count()})
 
 
-class ReportBase(object):
+class BarrierReportBase(object):
     def _update_stages(self, serializer, user):
         report_id = serializer.data.get("id")
         report = BarrierInstance.objects.get(id=report_id)
-        progress = report.current_stage()
+        progress = report.current_progress()
         for new_stage, new_status in progress:
             try:
                 report_stage = BarrierReportStage.objects.get(barrier=report, stage=new_stage)
@@ -57,7 +58,7 @@ class ReportBase(object):
         abstract = True
 
 
-class BarrierReportList(ReportBase, generics.ListCreateAPIView):
+class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
     queryset = BarrierInstance.objects.all()
     serializer_class = BarrierReportSerializer
 
@@ -71,6 +72,59 @@ class BarrierReportList(ReportBase, generics.ListCreateAPIView):
         else:
             serializer.save()
         self._update_stages(serializer, self.request.user)
+
+
+class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
+
+    lookup_field = "pk"
+    queryset = BarrierInstance.objects.all()
+    serializer_class = BarrierReportSerializer
+
+    @transaction.atomic()
+    def perform_update(self, serializer):
+        if self.request.data.get("barrier_type", None) is not None:
+            barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
+            serializer.save(barrier_type=barrier_type)
+        else:
+            serializer.save()
+        self._update_stages(serializer, self.request.user)
+
+
+class BarrierReportSubmit(generics.UpdateAPIView):
+
+    queryset = BarrierInstance.objects.all()
+    serializer_class = BarrierReportSerializer
+
+    @transaction.atomic()
+    def perform_update(self, serializer):
+        """
+        Validates report for mandatory fields
+        Changes status of the report
+        Creates a Barrier Instance out of the report
+        Sets up default status
+        Sets up contributor where appropriate
+        """
+        # validate and complete a report
+        report = self.get_object()
+        report.submit_report()
+
+        # sort out contributors
+        if settings.DEBUG is False:
+            if report.support_type == 2:
+                try:
+                    BarrierContributor.objects.get(
+                        barrier=report, 
+                        contributor=report.created_by,
+                        kind=CONTRIBUTOR_TYPE['LEAD'],
+                        is_active=True
+                    )
+                except BarrierContributor.DoesNotExist:
+                    BarrierContributor(
+                        barrier=report,
+                        contributor=report.created_by,
+                        kind=CONTRIBUTOR_TYPE['LEAD'],
+                        created_by=self.request.user
+                    ).save()
 
 
 class BarrierList(generics.ListCreateAPIView):
