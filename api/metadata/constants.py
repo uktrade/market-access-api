@@ -1,9 +1,8 @@
 from model_utils import Choices
 
 PROBLEM_STATUS_TYPES = Choices(
-    (1, "It hasn't happened yet"),
-    (2, "It's happening now"),
-    (3, "It happened in the past"),
+    (1, "On the border"),
+    (2, "Long term strategic barrier"),
 )
 
 ESTIMATED_LOSS_RANGE = Choices(
@@ -68,4 +67,11 @@ CONTRIBUTOR_TYPE = Choices(
     ("INITIATOR", "Initiator"),
     ("CONTRIBUTOR", "Contributor"),
     ("LEAD", "Lead"),
+)
+
+BARRIER_SOURCE = Choices(
+    ("COMPANY", "Company"),
+    ("TRADE", "Trade Association"),
+    ("GOVT", "Government Lead"),
+    ("OTHER", "Other"),
 )
