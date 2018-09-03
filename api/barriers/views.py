@@ -29,6 +29,7 @@ from api.barriers.serializers import (
     BarrierReportSerializer,
 )
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
+from api.metadata.models import BarrierType
 
 from api.metadata.models import BarrierType
 
