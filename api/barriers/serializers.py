@@ -7,8 +7,30 @@ from api.barriers.models import (
     BarrierInteraction,
     BarrierStatus
 )
+from api.metadata.constants import STAGE_STATUS
 
 # pylint: disable=R0201
+
+class BarrierReportStageListingField(serializers.RelatedField):
+    def to_representation(self, value):
+        stage_status_dict = dict(STAGE_STATUS)
+        return {
+            "stage_code": value.stage.code,
+            "stage_desc": value.stage.description,
+            "status_id": value.status,
+            "status_desc": stage_status_dict[value.status],
+        }
+
+
+class BarrierReportSerializer(serializers.ModelSerializer):
+    progress = ReportStageListingField(many=True, read_only=True)
+
+    class Meta:
+        model = BarrierInstance
+        exclude = ("stages",)
+        read_only_fields = ("id", "stages", "progress", "created_on")
+        depth = 1
+
 
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """

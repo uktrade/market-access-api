@@ -9,11 +9,15 @@ from api.metadata.constants import (
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
+    BARRIER_SOURCE,
     CONTRIBUTOR_TYPE,
     ESTIMATED_LOSS_RANGE,
+    GOVT_RESPONSE,
+    PROBLEM_STATUS_TYPES,
 )
 from api.metadata.models import BarrierType
-from api.reports.models import Report
+from api.barriers.report_stages import REPORT_CONDITIONS, stage_status
+
 
 class BarrierStatus(models.Model):
     """ Record each status entry for a Barrier """
@@ -66,21 +70,51 @@ class BarrierInteraction(models.Model):
     )
 
 
+class Stage(models.Model):
+    code = models.CharField(max_length=4, null=False)
+    description = models.CharField(max_length=255)
+    parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.code
+
+
 class BarrierInstance(models.Model):
     """ Barrier Instance, converted from a completed and accepted Report """
     id = models.UUIDField(primary_key=True, default=uuid4)
-    report = models.ForeignKey(
-        Report,
-        related_name="barrier_report",
-        on_delete=models.PROTECT,
-        help_text="originating report"
+    problem_status = models.PositiveIntegerField(
+        choices=PROBLEM_STATUS_TYPES, null=True
     )
+
+    is_resolved = models.NullBooleanField()
+    resolved_date = models.DateField(null=True, default=None)
+
+    export_country = models.UUIDField(null=True)
+
+    sectors_affected = models.BooleanField()
+
+    product = models.CharField(max_length=255, null=True)
+    source = models.CharField(
+        choices=BARRIER_SOURCE,
+        max_length=25,
+        null=True,
+        help_text="chance of success"
+    )
+    other_source = models.CharField(max_length=255, null=True)
+    barrier_title = models.CharField(max_length=255, null=True)
+    problem_description = models.TextField(null=True)
+
     barrier_type = models.ForeignKey(
         BarrierType,
-        related_name="barrier_barrier_type",
-        on_delete=models.PROTECT,
-        help_text="market access barrier type"
+        null=True,
+        default=None,
+        related_name="report_barrier",
+        on_delete=models.SET_NULL,
     )
+
+    commodity_codes = models.CharField(max_length=255, null=True)
+    problem_impact = models.TextField(null=True)
+
     summary = models.TextField(
         help_text="summary of barrier"
     )
@@ -129,8 +163,36 @@ class BarrierInstance(models.Model):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
     )
 
+    status = models.PositiveIntegerField(
+        choices=BARRIER_STATUS,
+        default=0,
+        help_text="status of the barrier instance"
+    )
+    status_summary = models.TextField(
+        null=True,
+        help_text="status summary if provided by user"
+    )
+    status_date = models.DateTimeField(
+        help_text="date when status action occurred"
+    )
+
+    stages = models.ManyToManyField(
+        "Stage", 
+        related_name="report_stages", 
+        through="ReportStage",
+        help_text="Store reporting stages before submitting"
+    )
+
     def __str__(self):
-        return self.report
+        return self.id
+
+    def current_stage(self):
+        progress = []
+        for stage in REPORT_CONDITIONS:
+            stage_code, status = stage_status(self, stage)
+            progress.append((Stage.objects.get(code=stage_code), status))
+
+        return progress
 
     def _new_status(self, new_status, summary, resolved_date, user):
         try:
@@ -159,6 +221,37 @@ class BarrierInstance(models.Model):
     def hibernate(self, summary, user):
         hibernate_status = 5 # Hibernated
         self._new_status(hibernate_status, summary, timezone.now(), user)
+
+
+class BarrierReportStage(models.Model):
+    barrier = models.ForeignKey(
+        BarrierInstance, related_name="progress", on_delete=models.PROTECT
+    )
+    stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
+    status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
+    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        unique_together = (("barrier", "stage"),)
+
+
+class BarrierSector(models.Model):
+    """ Sectors for each Barrier """
+    barrier = models.ForeignKey(
+        BarrierInstance,
+        related_name="sectors",
+        on_delete=models.PROTECT
+    )
+    sector_id = models.UUIDField(null=False)
+    created_on = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL
+    )
 
 
 class BarrierContributor(models.Model):

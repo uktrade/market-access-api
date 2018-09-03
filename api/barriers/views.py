@@ -2,6 +2,7 @@ from collections import defaultdict
 from dateutil.parser import parse
 
 from django.conf import settings
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -14,6 +15,7 @@ from api.barriers.models import (
     BarrierInstance,
     BarrierInteraction,
     BarrierStatus,
+    BarrierReportStage,
 )
 from api.barriers.serializers import (
     BarrierContributorSerializer,
@@ -22,6 +24,7 @@ from api.barriers.serializers import (
     BarrierInteractionSerializer,
     BarrierListSerializer,
     BarrierResolveSerializer,
+    BarrierReportSerializer,
 )
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
@@ -31,7 +34,46 @@ def barrier_count(request):
     return Response({"count": BarrierInstance.objects.count()})
 
 
-class BarrierList(generics.ListAPIView):
+class ReportBase(object):
+    def _update_stages(self, serializer, user):
+        report_id = serializer.data.get("id")
+        report = BarrierInstance.objects.get(id=report_id)
+        progress = report.current_stage()
+        for new_stage, new_status in progress:
+            try:
+                report_stage = BarrierReportStage.objects.get(barrier=report, stage=new_stage)
+                report_stage.status = new_status
+                report_stage.save()
+            except BarrierReportStage.DoesNotExist:
+                BarrierReportStage(
+                    barrier=report, stage=new_stage, status=new_status
+                ).save()
+            if settings.DEBUG is False:
+                report_stage = BarrierReportStage.objects.get(barrier=report, stage=new_stage)
+                report_stage.user = user
+                report_stage.save()
+    
+    class Meta:
+        abstract = True
+
+
+class BarrierReportList(ReportBase, generics.ListCreateAPIView):
+    queryset = BarrierInstance.objects.all()
+    serializer_class = BarrierReportSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(status=0)
+
+    @transaction.atomic()
+    def perform_create(self, serializer):
+        if settings.DEBUG is False:
+            serializer.save(created_by=self.request.user)
+        else:
+            serializer.save()
+        self._update_stages(serializer, self.request.user)
+
+
+class BarrierList(generics.ListCreateAPIView):
     queryset = BarrierInstance.objects.all()
     serializer_class = BarrierListSerializer
 

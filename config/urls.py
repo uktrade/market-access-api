@@ -13,6 +13,7 @@ from api.barriers.views import (
     BarrierHibernate,
     BarrierOpen,
     BarrierStatusList,
+    BarrierReportList,
 )
 from api.reports.views import (
     ReportDetail,
@@ -27,7 +28,8 @@ urlpatterns = [
     path("admin", admin.site.urls),
     path("ping.xml", ping, name="ping"),
     path("whoami", who_am_i, name="who_am_i"),
-    path("reports", ReportList.as_view(), {"status": None}, name="list-reports"),
+
+    path("reports", BarrierReportList.as_view(), name="list-reports"),
     path("reports/unfinished", ReportList.as_view(), {"status": 0}),
     path("reports/awaiting_screening", ReportList.as_view(), {"status": 1}),
     path("reports/accepted", ReportList.as_view(), {"status": 2}),
