@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import timezone
 
@@ -14,9 +15,11 @@ from api.metadata.constants import (
     ESTIMATED_LOSS_RANGE,
     GOVT_RESPONSE,
     PROBLEM_STATUS_TYPES,
+    STAGE_STATUS,
 )
 from api.metadata.models import BarrierType
-from api.barriers.report_stages import REPORT_CONDITIONS, stage_status
+from api.barriers import validators
+from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 
 
 class BarrierStatus(models.Model):
@@ -91,7 +94,13 @@ class BarrierInstance(models.Model):
 
     export_country = models.UUIDField(null=True)
 
-    sectors_affected = models.BooleanField()
+    sectors_affected = models.NullBooleanField()
+    sectors = ArrayField(
+        models.UUIDField(), 
+        blank=True, 
+        null=True,
+        default=None
+    )
 
     product = models.CharField(max_length=255, null=True)
     source = models.CharField(
@@ -108,7 +117,7 @@ class BarrierInstance(models.Model):
         BarrierType,
         null=True,
         default=None,
-        related_name="report_barrier",
+        related_name="barrier_type",
         on_delete=models.SET_NULL,
     )
 
@@ -130,6 +139,8 @@ class BarrierInstance(models.Model):
     )
     estimated_loss_range = models.PositiveIntegerField(
         choices=ESTIMATED_LOSS_RANGE,
+        null=True,
+        default=None,
         help_text="Estimated financial value of sales lost over a five year period"
     )
     impact_summary = models.TextField(
@@ -138,10 +149,14 @@ class BarrierInstance(models.Model):
     )
     other_companies_affected = models.PositiveIntegerField(
         choices=ADV_BOOLEAN,
+        null=True,
+        default=None,
         help_text="Are there other companies affected?"
     )
     has_legal_infringement = models.PositiveIntegerField(
         choices=ADV_BOOLEAN,
+        null=True,
+        default=None,
         help_text="Legal obligations infringed"
     )
     wto_infringement = models.NullBooleanField(
@@ -155,6 +170,7 @@ class BarrierInstance(models.Model):
     )
     infringement_summary = models.TextField(
         null=True,
+        default=None,
         help_text="Summary of infringments"
     )
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
@@ -170,29 +186,44 @@ class BarrierInstance(models.Model):
     )
     status_summary = models.TextField(
         null=True,
+        default=None,
         help_text="status summary if provided by user"
     )
     status_date = models.DateTimeField(
+        auto_now_add=True,
+        null=True,
         help_text="date when status action occurred"
     )
 
     stages = models.ManyToManyField(
         "Stage", 
         related_name="report_stages", 
-        through="ReportStage",
+        through="BarrierReportStage",
         help_text="Store reporting stages before submitting"
     )
 
     def __str__(self):
         return self.id
 
-    def current_stage(self):
-        progress = []
+    def current_progress(self):
+        progress_list = []
         for stage in REPORT_CONDITIONS:
-            stage_code, status = stage_status(self, stage)
-            progress.append((Stage.objects.get(code=stage_code), status))
+            stage_code, status = report_stage_status(self, stage)
+            progress_list.append((Stage.objects.get(code=stage_code), status))
 
-        return progress
+        return progress_list
+
+    def submit_report(self):
+        for validator in [validators.ReportReadyForSubmitValidator()]:
+            validator.set_instance(self)
+            validator()
+        if self.is_resolved:
+            barrier_new_status = 4 # Resolved
+        else:
+            barrier_new_status = 2 # Assesment
+        self.status = barrier_new_status  # If all good, then accept the report for now
+        self.status_date = timezone.now()
+        self.save()
 
     def _new_status(self, new_status, summary, resolved_date, user):
         try:
@@ -238,20 +269,20 @@ class BarrierReportStage(models.Model):
         unique_together = (("barrier", "stage"),)
 
 
-class BarrierSector(models.Model):
-    """ Sectors for each Barrier """
-    barrier = models.ForeignKey(
-        BarrierInstance,
-        related_name="sectors",
-        on_delete=models.PROTECT
-    )
-    sector_id = models.UUIDField(null=False)
-    created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        on_delete=models.SET_NULL
-    )
+# class BarrierSector(models.Model):
+#     """ Sectors for each Barrier """
+#     barrier = models.ForeignKey(
+#         BarrierInstance,
+#         related_name="sectors",
+#         on_delete=models.PROTECT
+#     )
+#     sector_id = models.UUIDField(null=False)
+#     created_on = models.DateTimeField(auto_now_add=True)
+#     created_by = models.ForeignKey(
+#         settings.AUTH_USER_MODEL,
+#         null=True,
+#         on_delete=models.SET_NULL
+#     )
 
 
 class BarrierContributor(models.Model):

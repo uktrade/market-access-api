@@ -23,19 +23,32 @@ class BarrierReportStageListingField(serializers.RelatedField):
 
 
 class BarrierReportSerializer(serializers.ModelSerializer):
-    progress = ReportStageListingField(many=True, read_only=True)
+    progress = BarrierReportStageListingField(many=True, read_only=True)
 
     class Meta:
         model = BarrierInstance
-        exclude = ("stages",)
-        read_only_fields = ("id", "stages", "progress", "created_on")
-        depth = 1
+        fields = (
+            "id",
+            "problem_status",
+            "is_resolved",
+            "resolved_date",
+            "export_country",
+            "sectors_affected",
+            "sectors",
+            "product",
+            "source",
+            "other_source",
+            "barrier_title",
+            "problem_description",
+            "barrier_type",
+            "progress"
+        )
+        read_only_fields = ("id", "progress", "created_on")
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
     current_status = serializers.SerializerMethodField()
-    report_id = serializers.SerializerMethodField()
     barrier_title = serializers.SerializerMethodField()
     company = serializers.SerializerMethodField()
     export_country = serializers.SerializerMethodField()
@@ -46,19 +59,13 @@ class BarrierListSerializer(serializers.ModelSerializer):
         model = BarrierInstance
         fields = (
             "id",
-            "report_id",
             "reported_on",
             "barrier_title",
-            "company",
             "export_country",
             "support_type",
             "contributor_count",
             "current_status"
         )
-
-    def get_report_id(self, obj):
-        """ Custom Serializer Method Field for exposing report ID """
-        return obj.report.id
 
     def get_current_status(self, obj):
         """  Custom Serializer Method Field for exposing current barrier status as json """

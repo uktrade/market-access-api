@@ -9,16 +9,19 @@ REPORT_CONDITIONS = [
         "stage": "1.1",
         "order": 1,
         "required": ["problem_status"],
+        "conditional": []
     },
     {
         "stage": "1.2",
         "order": 2,
         "required": ["is_resolved"],
+        "conditional": []
     },
     {
         "stage": "1.3",
         "order": 3,
         "required": ["export_country"],
+        "conditional": []
     },
     {
         "stage": "1.4",
@@ -43,7 +46,7 @@ REPORT_CONDITIONS = [
             "barrier_title",
             "problem_description",
         ],
-        "conditional": [            
+        "conditional": [       
             {
                 "condition_field": "source",
                 "operator": operator.eq,
@@ -56,7 +59,8 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.6",
         "order": 6,
-        "required": ["barrier_type"]
+        "required": ["barrier_type"],
+        "conditional": []
     },
 ]
 
@@ -91,7 +95,7 @@ def conditional_field_value(instance, rule_item):
         return True
 
 
-def stage_status(instance, stage_condition):
+def report_stage_status(instance, stage_condition):
     status = []
     for field in stage_condition["required"]:
         status.append(required_field_value(instance, field))
