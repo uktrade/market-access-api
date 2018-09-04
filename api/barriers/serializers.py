@@ -50,9 +50,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
     current_status = serializers.SerializerMethodField()
     barrier_title = serializers.SerializerMethodField()
-    company = serializers.SerializerMethodField()
     export_country = serializers.SerializerMethodField()
-    support_type = serializers.SerializerMethodField()
     contributor_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -62,41 +60,28 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "reported_on",
             "barrier_title",
             "export_country",
-            "support_type",
             "contributor_count",
             "current_status"
         )
 
     def get_current_status(self, obj):
         """  Custom Serializer Method Field for exposing current barrier status as json """
-        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
+        # barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
         return {
-            "status": barrier_status.status,
-            "status_date": barrier_status.status_date,
-            "summary": barrier_status.summary,
-            "created_on": barrier_status.created_on,
-            "created_by": barrier_status.created_by.email if barrier_status.created_by else ""
+            "status": obj.status,
+            "status_date": obj.status_date,
+            "summary": obj.summary,
+            "created_on": obj.created_on,
+            "created_by": obj.created_by.email if obj.created_by else ""
         }
 
     def get_barrier_title(self, obj):
         """ Custom Serializer Method Field for exposing Title from Report of the Barrier """
-        return obj.report.barrier_title
-
-    def get_company(self, obj):
-        """ Custom Serializer Method Field for exposing company data from report as json """
-        return {
-            "id": obj.report.company_id,
-            "name": obj.report.company_name,
-            "sector_name": obj.report.company_sector_name
-        }
+        return obj.barrier_title
 
     def get_export_country(self, obj):
         """ Custom Serializer Method Field for exposing export country of the report """
-        return obj.report.export_country
-
-    def get_support_type(self, obj):
-        """ Custom Serializer Method Field for exposing support type of report """
-        return obj.report.support_type
+        return obj.export_country
 
     def get_contributor_count(self, obj):
         """ Custom Serializer Method Field for barrier count """
