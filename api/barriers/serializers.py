@@ -52,17 +52,24 @@ class BarrierListSerializer(serializers.ModelSerializer):
     barrier_title = serializers.SerializerMethodField()
     export_country = serializers.SerializerMethodField()
     contributor_count = serializers.SerializerMethodField()
+    reported_by = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
         fields = (
             "id",
             "reported_on",
+            "reported_by",
+            "problem_status",
+            "is_resolved",
             "barrier_title",
             "export_country",
             "contributor_count",
             "current_status"
         )
+
+    def get_reported_by(self, obj):
+        return obj.created_by.email if obj.created_by else ""
 
     def get_current_status(self, obj):
         """  Custom Serializer Method Field for exposing current barrier status as json """
@@ -71,8 +78,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "status": obj.status,
             "status_date": obj.status_date,
             "summary": obj.summary,
-            "created_on": obj.created_on,
-            "created_by": obj.created_by.email if obj.created_by else ""
         }
 
     def get_barrier_title(self, obj):
