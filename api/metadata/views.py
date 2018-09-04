@@ -16,6 +16,7 @@ from urlobject import URLObject
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
+    BARRIER_SOURCE,
     BARRIER_STATUS,
     BARRIER_TYPE_CATEGORIES,
     BARRIER_CHANCE_OF_SUCCESS,
@@ -89,6 +90,8 @@ class MetadataView(generics.GenericAPIView):
         barrier_type_cat = dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES)
         barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
+        barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
+        
 
         results = {
             "status_types": status_types,
@@ -107,6 +110,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_type_categories": barrier_type_cat,
             "barrier_chance_of_success": barrier_chance,
             "barrier_interaction_types": barrier_inter_type,
+            "barrier_source": barrier_source,
         }
 
         return Response(results, status=status.HTTP_200_OK)
