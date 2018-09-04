@@ -31,7 +31,7 @@ from api.metadata.constants import (
     SUPPORT_TYPE,
 )
 from api.metadata.models import BarrierType
-from api.reports.models import Stage
+from api.barriers.models import Stage
 
 
 class MetadataView(generics.GenericAPIView):

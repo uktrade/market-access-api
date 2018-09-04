@@ -49,8 +49,6 @@ class BarrierReportSerializer(serializers.ModelSerializer):
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
     current_status = serializers.SerializerMethodField()
-    barrier_title = serializers.SerializerMethodField()
-    export_country = serializers.SerializerMethodField()
     contributor_count = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
 
@@ -79,14 +77,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "status_date": obj.status_date,
             "summary": obj.summary,
         }
-
-    def get_barrier_title(self, obj):
-        """ Custom Serializer Method Field for exposing Title from Report of the Barrier """
-        return obj.barrier_title
-
-    def get_export_country(self, obj):
-        """ Custom Serializer Method Field for exposing export country of the report """
-        return obj.export_country
 
     def get_contributor_count(self, obj):
         """ Custom Serializer Method Field for barrier count """
@@ -169,13 +159,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_current_status(self, obj):
-        barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
         return {
-            "status": barrier_status.status,
-            "status_date": barrier_status.status_date,
-            "summary": barrier_status.summary,
-            "created_on": barrier_status.created_on,
-            "created_by": barrier_status.created_by.email if barrier_status.created_by else ""
+            "status": obj.status,
+            "status_date": obj.status_date,
+            "summary": obj.summary,
         }
 
     def get_report(self, obj):
