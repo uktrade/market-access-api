@@ -121,58 +121,6 @@ class BarrierInstance(models.Model):
         on_delete=models.SET_NULL,
     )
 
-    commodity_codes = models.CharField(max_length=255, null=True)
-    problem_impact = models.TextField(null=True)
-
-    summary = models.TextField(
-        help_text="summary of barrier"
-    )
-    chance_of_success = models.CharField(
-        choices=BARRIER_CHANCE_OF_SUCCESS,
-        max_length=25,
-        null=True,
-        help_text="chance of success"
-    )
-    chance_of_success_summary = models.TextField(
-        null=True,
-        help_text="Give an explanation of your choice"
-    )
-    estimated_loss_range = models.PositiveIntegerField(
-        choices=ESTIMATED_LOSS_RANGE,
-        null=True,
-        default=None,
-        help_text="Estimated financial value of sales lost over a five year period"
-    )
-    impact_summary = models.TextField(
-        null=True,
-        help_text="Impact the problem expected to have on the company if it is not resolved"
-    )
-    other_companies_affected = models.PositiveIntegerField(
-        choices=ADV_BOOLEAN,
-        null=True,
-        default=None,
-        help_text="Are there other companies affected?"
-    )
-    has_legal_infringement = models.PositiveIntegerField(
-        choices=ADV_BOOLEAN,
-        null=True,
-        default=None,
-        help_text="Legal obligations infringed"
-    )
-    wto_infringement = models.NullBooleanField(
-        help_text="Legal obligations infringed"
-    )
-    fta_infringement = models.NullBooleanField(
-        help_text="Legal obligations infringed"
-    )
-    other_infringement = models.NullBooleanField(
-        help_text="Legal obligations infringed"
-    )
-    infringement_summary = models.TextField(
-        null=True,
-        default=None,
-        help_text="Summary of infringments"
-    )
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
     created_on = models.DateTimeField(db_index=True, auto_now_add=True)
     created_by = models.ForeignKey(
