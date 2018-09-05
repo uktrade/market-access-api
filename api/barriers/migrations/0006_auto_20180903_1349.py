@@ -4,19 +4,32 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
-REPORT_STAGE_ITEMS = [
-    {"code": "1.1", "description": "Nature of the problem"},
-    {"code": "1.2", "description": "Status of the problem"},
-    {"code": "1.3", "description": "Export Country"},
-    {"code": "1.4", "description": "Sectors affected"},
-    {"code": "1.5", "description": "About the problem"},
-    {"code": "1.6", "description": "Barrier type"},
+report_stage_items = [
+    {
+        "code": "1.0",
+        "description": "Report a barrier",
+        "sub_items": [
+            {"code": "1.1", "description": "Status of the problem"},
+            {"code": "1.2", "description": "Export Country"},
+            {"code": "1.3", "description": "Sectors affected"},
+            {"code": "1.4", "description": "About the problem"},
+        ],
+    },
 ]
+
 
 def add_report_stages(apps, schema_editor):
     Stage = apps.get_model("barriers", "Stage")
-    for item in REPORT_STAGE_ITEMS:
+    for item in report_stage_items:
         Stage(code=item["code"], description=item["description"]).save()
+        parent_stage = Stage.objects.get(code=item["code"])
+        for sub_item in item["sub_items"]:
+
+            Stage(
+                code=sub_item["code"], 
+                description=sub_item["description"], 
+                parent=parent_stage
+            ).save()
 
 
 class Migration(migrations.Migration):

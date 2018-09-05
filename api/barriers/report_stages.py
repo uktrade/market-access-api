@@ -8,24 +8,21 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.1",
         "order": 1,
-        "required": ["problem_status"],
+        "required": [
+            "problem_status", 
+            "is_resolved"
+        ],
         "conditional": []
     },
     {
         "stage": "1.2",
         "order": 2,
-        "required": ["is_resolved"],
+        "required": ["export_country"],
         "conditional": []
     },
     {
         "stage": "1.3",
         "order": 3,
-        "required": ["export_country"],
-        "conditional": []
-    },
-    {
-        "stage": "1.4",
-        "order": 4,
         "required": ["sectors_affected"],
         "conditional": [
             {
@@ -38,8 +35,8 @@ REPORT_CONDITIONS = [
         ],
     },
     {
-        "stage": "1.5",
-        "order": 5,
+        "stage": "1.4",
+        "order": 4,
         "required": [
             "product",
             "source",
@@ -55,12 +52,6 @@ REPORT_CONDITIONS = [
                 "error_message": "other_source can not be null, when source is True",
             },
         ],
-    },
-    {
-        "stage": "1.6",
-        "order": 6,
-        "required": ["barrier_type"],
-        "conditional": []
     },
 ]
 
