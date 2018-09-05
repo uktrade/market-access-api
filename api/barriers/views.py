@@ -139,7 +139,7 @@ class BarrierList(generics.ListCreateAPIView):
         return self.queryset.filter(~Q(status=0))
 
 
-class BarrierDetail(generics.RetrieveAPIView):
+class BarrierDetail(generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     queryset = BarrierInstance.objects.all()
     serializer_class = BarrierInstanceSerializer
