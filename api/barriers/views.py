@@ -113,22 +113,21 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         report.submit_report()
 
         # sort out contributors
-        if settings.DEBUG is False:
-            if report.support_type == 2:
-                try:
-                    BarrierContributor.objects.get(
-                        barrier=report, 
-                        contributor=report.created_by,
-                        kind=CONTRIBUTOR_TYPE['LEAD'],
-                        is_active=True
-                    )
-                except BarrierContributor.DoesNotExist:
-                    BarrierContributor(
-                        barrier=report,
-                        contributor=report.created_by,
-                        kind=CONTRIBUTOR_TYPE['LEAD'],
-                        created_by=self.request.user
-                    ).save()
+        # if settings.DEBUG is False:
+        #         try:
+        #             BarrierContributor.objects.get(
+        #                 barrier=report, 
+        #                 contributor=report.created_by,
+        #                 kind=CONTRIBUTOR_TYPE['LEAD'],
+        #                 is_active=True
+        #             )
+        #         except BarrierContributor.DoesNotExist:
+        #             BarrierContributor(
+        #                 barrier=report,
+        #                 contributor=report.created_by,
+        #                 kind=CONTRIBUTOR_TYPE['LEAD'],
+        #                 created_by=self.request.user
+        #             ).save()
 
 
 class BarrierList(generics.ListCreateAPIView):
