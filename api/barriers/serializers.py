@@ -147,38 +147,33 @@ class BarrierContributorSerializer(serializers.ModelSerializer):
 class BarrierResolveSerializer(serializers.ModelSerializer):
     """ Serializer for resolving a barrier """
     class Meta:
-        model = BarrierStatus
+        model = BarrierInstance
         fields = (
             "id",
-            "barrier",
             "status",
             "status_date",
             "status_summary",
-            "is_active",
             "created_on",
             "created_by"
         )
-        read_only_fields = ("id", "status", "barrier", "is_active", "created_on", "created_by")
+        read_only_fields = ("id", "status", "created_on", "created_by")
 
 
 class BarrierStaticStatusSerializer(serializers.ModelSerializer):
     """ generic serializer for other barrier statuses """
     class Meta:
-        model = BarrierStatus
+        model = BarrierInstance
         fields = (
             "id",
-            "barrier",
             "status",
             "status_date",
             "status_summary",
-            "is_active",
             "created_on",
             "created_by"
         )
         read_only_fields = (
             "id",
             "status",
-            "barrier",
             "status_date",
             "is_active",
             "created_on",
