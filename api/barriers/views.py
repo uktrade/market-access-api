@@ -180,44 +180,44 @@ class BarrierInstanceContributor(generics.ListCreateAPIView):
     #         serializer.save(barrier=barrier_obj)
 
 
-class BarrierStatusBase(generics.GenericAPIView):
+class BarrierStatusBase(generics.UpdateAPIView):
     def _create(self, serializer, barrier_id, barrier_status, barrier_summary, status_date=None):
         barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
+
         if status_date is None:
             status_date = timezone.now()
-        if settings.DEBUG is False:
-            serializer.save(
-                barrier=barrier_obj,
-                status=barrier_status,
-                summary=barrier_summary,
-                status_date=status_date,
-                created_by=self.request.user
-            )
-        else:
-            serializer.save(
-                barrier=barrier_obj,
-                status=barrier_status,
-                summary=barrier_summary,
-                status_date=status_date
-            )
+
+        serializer.save(
+            status=barrier_status,
+            summary=barrier_summary,
+            status_date=status_date
+        )
+        # if settings.DEBUG is False:
+        #     serializer.save(
+        #         barrier=barrier_obj,
+        #         status=barrier_status,
+        #         summary=barrier_summary,
+        #         status_date=status_date,
+        #         created_by=self.request.user
+        #     )
+        # else:
+        #     serializer.save(
+        #         barrier=barrier_obj,
+        #         status=barrier_status,
+        #         summary=barrier_summary,
+        #         status_date=status_date
+        #     )
 
 
-class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
+class BarrierResolve(BarrierStatusBase):
 
-    queryset = BarrierStatus.objects.all()
+    queryset = BarrierInstance.objects.all()
     serializer_class = BarrierResolveSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+        return self.queryset.filter(id=self.kwargs.get("pk"))
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=False)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-
-    def perform_create(self, serializer):
+    def perform_update(self, serializer):
         errors = defaultdict(list)
         if self.request.data.get("summary", None) is None:
             errors["summary"] = "This field is required"
@@ -233,51 +233,32 @@ class BarrierResolve(generics.CreateAPIView, BarrierStatusBase):
                 "fields": errors
             }
             raise serializers.ValidationError(message)
-        self._create(
-            serializer,
-            self.kwargs.get("pk"),
-            4,
-            self.request.data.get("summary"),
-            self.request.data.get("status_date")
+        serializer.save(
+            status=4,
+            summary=self.request.data.get("summary"),
+            status_date=self.request.data.get("status_date")
         )
 
 
-class BarrierHibernate(generics.CreateAPIView, BarrierStatusBase):
+class BarrierHibernate(BarrierStatusBase):
 
-    queryset = BarrierStatus.objects.all()
+    queryset = BarrierInstance.objects.all()
     serializer_class = BarrierStaticStatusSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+        return self.queryset.filter(id=self.kwargs.get("pk"))
 
-    def perform_create(self, serializer):
+    def perform_update(self, serializer):
         self._create(serializer, self.kwargs.get("pk"), 5, self.request.data.get("summary"))
 
 
-class BarrierOpen(generics.CreateAPIView, BarrierStatusBase):
+class BarrierOpen(BarrierStatusBase):
 
-    queryset = BarrierStatus.objects.all()
+    queryset = BarrierInstance.objects.all()
     serializer_class = BarrierStaticStatusSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+        return self.queryset.filter(id=self.kwargs.get("pk"))
 
-    def perform_create(self, serializer):
+    def perform_update(self, serializer):
         self._create(serializer, self.kwargs.get("pk"), 2, self.request.data.get("summary"))
-
-
-class BarrierStatusList(generics.ListCreateAPIView, BarrierStatusBase):
-
-    queryset = BarrierStatus.objects.all()
-    serializer_class = BarrierStaticStatusSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
-
-    def perform_create(self, serializer):
-        self._create(
-            serializer,
-            self.request,
-            self.kwargs.get("pk"),
-            self.request.data.get("status")
-        )
