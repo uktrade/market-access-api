@@ -3,7 +3,6 @@ from dateutil.parser import parse
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -15,7 +14,6 @@ from api.barriers.models import (
     BarrierContributor,
     BarrierInstance,
     BarrierInteraction,
-    BarrierStatus,
     BarrierReportStage,
 )
 from api.barriers.serializers import (
@@ -27,16 +25,15 @@ from api.barriers.serializers import (
     BarrierResolveSerializer,
     BarrierReportSerializer,
 )
-from api.metadata.constants import (
-    BARRIER_INTERACTION_TYPE,
-    CONTRIBUTOR_TYPE
-)
+from api.metadata.constants import BARRIER_INTERACTION_TYPE
+
 from api.metadata.models import BarrierType
 
 
 @api_view(["GET"])
 def barrier_count(request):
-    return Response({"count": BarrierInstance.objects.count()})
+    """ view to return number of barriers in the system """
+    return Response({"count": BarrierInstance.barriers.count()})
 
 
 class BarrierReportBase(object):
@@ -57,17 +54,14 @@ class BarrierReportBase(object):
                 report_stage = BarrierReportStage.objects.get(barrier=report, stage=new_stage)
                 report_stage.user = user
                 report_stage.save()
-    
+
     class Meta:
         abstract = True
 
 
 class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(status=0)
 
     @transaction.atomic()
     def perform_create(self, serializer):
@@ -86,11 +80,6 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
-        if self.request.data.get("barrier_type", None) is not None:
-            barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
-            serializer.save(barrier_type=barrier_type)
-        else:
-            serializer.save()
         self._update_stages(serializer, self.request.user)
 
 
@@ -108,7 +97,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         Sets up default status
         Sets up contributor where appropriate
         """
-        # validate and complete a report
+        # validate and submit a report
         report = self.get_object()
         report.submit_report()
 
@@ -116,7 +105,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         # if settings.DEBUG is False:
         #         try:
         #             BarrierContributor.objects.get(
-        #                 barrier=report, 
+        #                 barrier=report,
         #                 contributor=report.created_by,
         #                 kind=CONTRIBUTOR_TYPE['LEAD'],
         #                 is_active=True
@@ -131,17 +120,22 @@ class BarrierReportSubmit(generics.UpdateAPIView):
 
 
 class BarrierList(generics.ListCreateAPIView):
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierListSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(~Q(status=0))
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     queryset = BarrierInstance.objects.all()
     serializer_class = BarrierInstanceSerializer
+
+    @transaction.atomic()
+    def perform_update(self, serializer):
+        if self.request.data.get("barrier_type", None) is not None:
+            barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
+            serializer.save(barrier_type=barrier_type)
+        else:
+            serializer.save()
 
 
 class BarrierInstanceInteraction(generics.ListCreateAPIView):

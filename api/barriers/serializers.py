@@ -5,7 +5,6 @@ from api.barriers.models import (
     BarrierContributor,
     BarrierInstance,
     BarrierInteraction,
-    BarrierStatus
 )
 from api.metadata.constants import STAGE_STATUS
 
