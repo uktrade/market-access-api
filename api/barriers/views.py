@@ -80,6 +80,7 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
+        serializer.save()
         self._update_stages(serializer, self.request.user)
 
 
