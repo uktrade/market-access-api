@@ -3,7 +3,6 @@ from dateutil.parser import parse
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -29,10 +28,8 @@ from api.barriers.serializers import (
     BarrierResolveSerializer,
     BarrierReportSerializer,
 )
-from api.metadata.constants import (
-    BARRIER_INTERACTION_TYPE,
-    CONTRIBUTOR_TYPE
-)
+from api.metadata.constants import BARRIER_INTERACTION_TYPE
+
 from api.metadata.models import BarrierType
 
 from api.metadata.models import BarrierType
