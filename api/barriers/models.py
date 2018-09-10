@@ -3,52 +3,20 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 
 from api.metadata.constants import (
-    ADV_BOOLEAN,
-    BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
     CONTRIBUTOR_TYPE,
-    ESTIMATED_LOSS_RANGE,
-    GOVT_RESPONSE,
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
 )
 from api.metadata.models import BarrierType
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
-
-
-class BarrierStatus(models.Model):
-    """ Record each status entry for a Barrier """
-    barrier = models.ForeignKey(
-        "BarrierInstance",
-        related_name="statuses",
-        on_delete=models.PROTECT,
-        help_text="barrier instance"
-    )
-    status = models.PositiveIntegerField(
-        choices=BARRIER_STATUS,
-        help_text="status of the barrier instance"
-    )
-    summary = models.TextField(
-        null=True,
-        help_text="status summary if provided by user"
-    )
-    status_date = models.DateTimeField(
-        help_text="date when status action occurred"
-    )
-    is_active = models.BooleanField(
-        default=True,
-        help_text="specifies if this barrier status is current or historical"
-    )
-    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL
-    )
 
 
 class BarrierInteraction(models.Model):
@@ -74,12 +42,25 @@ class BarrierInteraction(models.Model):
 
 
 class Stage(models.Model):
+    """ Reporting workflow stages  """
     code = models.CharField(max_length=4, null=False)
     description = models.CharField(max_length=255)
     parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.code
+
+
+class ReportManager(models.Manager):
+    """ Manage reports within the model, with status 0 """
+    def get_queryset(self):
+        return super(ReportManager, self).get_queryset().filter(Q(status=0))
+
+
+class BarrierManager(models.Manager):
+    """ Manage barriers within the model, with status not 0 """
+    def get_queryset(self):
+        return super(BarrierManager, self).get_queryset().filter(~Q(status=0))
 
 
 class BarrierInstance(models.Model):
@@ -96,8 +77,8 @@ class BarrierInstance(models.Model):
 
     sectors_affected = models.NullBooleanField()
     sectors = ArrayField(
-        models.UUIDField(), 
-        blank=True, 
+        models.UUIDField(),
+        blank=True,
         null=True,
         default=None
     )
@@ -144,8 +125,8 @@ class BarrierInstance(models.Model):
     )
 
     stages = models.ManyToManyField(
-        "Stage", 
-        related_name="report_stages", 
+        "Stage",
+        related_name="report_stages",
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting"
     )
@@ -153,7 +134,12 @@ class BarrierInstance(models.Model):
     def __str__(self):
         return self.id
 
+    objects = models.Manager()
+    reports = ReportManager()
+    barriers = BarrierManager()
+
     def current_progress(self):
+        """ checks current dataset to see how far reporting workflow is done """
         progress_list = []
         for stage in REPORT_CONDITIONS:
             stage_code, status = report_stage_status(self, stage)
@@ -162,6 +148,7 @@ class BarrierInstance(models.Model):
         return progress_list
 
     def submit_report(self):
+        """ submit a report, convert it into a barrier. Changing status, essentially """
         for validator in [validators.ReportReadyForSubmitValidator()]:
             validator.set_instance(self)
             validator()
@@ -173,36 +160,9 @@ class BarrierInstance(models.Model):
         self.status_date = timezone.now()
         self.save()
 
-    def _new_status(self, new_status, summary, resolved_date, user):
-        try:
-            barrier_status = BarrierStatus.objects.get(barrier=self, status=new_status)
-            barrier_status.status_date = resolved_date
-            barrier_status.summary = summary
-            barrier_status.is_active = True
-            barrier_status.save()
-        except BarrierStatus.DoesNotExist:
-            BarrierStatus(
-                barrier=self,
-                status=new_status,
-                summary=summary,
-                status_date=resolved_date
-            ).save()
-            barrier_status = BarrierStatus.objects.get(barrier=self, status=new_status)
-
-        if settings.DEBUG is False:
-            barrier_status.created_by = user
-            barrier_status.save()
-
-    def resolve(self, summary, resolved_date, user):
-        resolved_status = 4 # Resolved
-        self._new_status(resolved_status, summary, resolved_date, user)
-
-    def hibernate(self, summary, user):
-        hibernate_status = 5 # Hibernated
-        self._new_status(hibernate_status, summary, timezone.now(), user)
-
 
 class BarrierReportStage(models.Model):
+    """ Many to Many between report and workflow stage """
     barrier = models.ForeignKey(
         BarrierInstance, related_name="progress", on_delete=models.PROTECT
     )
@@ -215,22 +175,6 @@ class BarrierReportStage(models.Model):
 
     class Meta:
         unique_together = (("barrier", "stage"),)
-
-
-# class BarrierSector(models.Model):
-#     """ Sectors for each Barrier """
-#     barrier = models.ForeignKey(
-#         BarrierInstance,
-#         related_name="sectors",
-#         on_delete=models.PROTECT
-#     )
-#     sector_id = models.UUIDField(null=False)
-#     created_on = models.DateTimeField(auto_now_add=True)
-#     created_by = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         null=True,
-#         on_delete=models.SET_NULL
-#     )
 
 
 class BarrierContributor(models.Model):
