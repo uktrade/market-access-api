@@ -173,6 +173,10 @@ class BarrierInstance(BaseModel):
     reports = ReportManager()
     barriers = BarrierManager()
 
+    objects = models.Manager()
+    reports = ReportManager()
+    barriers = BarrierManager()
+
     def current_progress(self):
         """ checks current dataset to see how far reporting workflow is done """
         progress_list = []
