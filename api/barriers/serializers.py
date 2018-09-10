@@ -24,6 +24,7 @@ class BarrierReportStageListingField(serializers.RelatedField):
 
 class BarrierReportSerializer(serializers.ModelSerializer):
     progress = BarrierReportStageListingField(many=True, read_only=True)
+    reported_by = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -41,9 +42,14 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "barrier_title",
             "problem_description",
             "barrier_type",
-            "progress"
+            "progress",
+            "reported_by",
+            "created_on"
         )
         read_only_fields = ("id", "progress", "created_on")
+
+    def get_reported_by(self, obj):
+        return obj.created_by.email if obj.created_by else ""
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
@@ -63,7 +69,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "barrier_title",
             "export_country",
             "contributor_count",
-            "current_status"
+            "current_status",
+            "created_on"
         )
 
     def get_reported_by(self, obj):
@@ -110,7 +117,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "barrier_type",
             "reported_on",
             "reported_by",
-            "current_status"
+            "current_status",
+            "created_on"
         )
         depth = 1
 
