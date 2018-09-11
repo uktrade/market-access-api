@@ -19,6 +19,8 @@ from api.metadata.models import BarrierType
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 
+MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
+
 
 class BarrierInteraction(models.Model):
     """ Interaction records for each Barrier """
@@ -47,6 +49,16 @@ class Stage(models.Model):
     code = models.CharField(max_length=4, null=False)
     description = models.CharField(max_length=255)
     parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.code
+
+class DatahubCompany(models.Model):
+    """ Local model to store data hub companies for ease  """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    name = models.CharField(
+        max_length=MAX_LENGTH, blank=True, null=True, help_text='Trading name'
+    )
 
     def __str__(self):
         return self.code
@@ -161,6 +173,13 @@ class BarrierInstance(models.Model):
         help_text="Commercial or confidentiality sensitivities to be aware of"
     )
 
+    companies = models.ManyToManyField(
+        "DatahubCompany",
+        related_name="companies_affected",
+        through="BarrierCompany",
+        help_text="companies affected by barrier"
+    )
+
     stages = models.ManyToManyField(
         "Stage",
         related_name="report_stages",
@@ -196,6 +215,21 @@ class BarrierInstance(models.Model):
         self.status = barrier_new_status  # If all good, then accept the report for now
         self.status_date = timezone.now()
         self.save()
+
+
+class BarrierCompany(models.Model):
+    """ Many to Many between barrier and company """
+    barrier = models.ForeignKey(
+        BarrierInstance, related_name="companies_affected", on_delete=models.PROTECT
+    )
+    company = models.ForeignKey(DatahubCompany, related_name="companies_affected", on_delete=models.CASCADE)
+    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+
+    class Meta:
+        unique_together = (("barrier", "company"),)
 
 
 class BarrierReportStage(models.Model):
