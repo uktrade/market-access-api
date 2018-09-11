@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from api.metadata.constants import (
+    ADV_BOOLEAN,
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
@@ -122,6 +123,42 @@ class BarrierInstance(models.Model):
         auto_now_add=True,
         null=True,
         help_text="date when status action occurred"
+    )
+
+    has_legal_infringement = models.PositiveIntegerField(
+        choices=ADV_BOOLEAN,
+        null=True,
+        default=None,
+        help_text="Legal obligations infringed"
+    )
+    wto_infringement = models.NullBooleanField(
+        default=None,
+        help_text="Legal obligations infringed"
+    )
+    fta_infringement = models.NullBooleanField(
+        default=None,
+        help_text="Legal obligations infringed"
+    )
+    other_infringement = models.NullBooleanField(
+        default=None,
+        help_text="Legal obligations infringed"
+    )
+    infringement_summary = models.TextField(
+        null=True,
+        default=None,
+        help_text="Summary of infringments"
+    )
+
+    political_sensitivities = models.TextField(
+        null=True,
+        default=None,
+        help_text="Political sensitivities to be aware of"
+    )
+
+    commercial_sensitivities = models.TextField(
+        null=True,
+        default=None,
+        help_text="Commercial or confidentiality sensitivities to be aware of"
     )
 
     stages = models.ManyToManyField(
