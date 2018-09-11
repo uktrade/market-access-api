@@ -866,6 +866,56 @@ class TestListReports(APITestMixin):
             "9538cecc-5f95-e211-a939-e4115bead28a"
         ]
         assert detail_response.data["product"] == "Some product"
+<<<<<<< HEAD
+=======
+        assert detail_response.data["source"] == "GOVT"
+        assert detail_response.data["other_source"] is None
+        assert detail_response.data["barrier_title"] == "Some title"
+        assert detail_response.data["problem_description"] == "Some problem_description"
+        stage_1 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.1']
+        assert stage_1[0]["status_desc"] == "COMPLETED"
+        stage_2 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.2']
+        assert stage_2[0]["status_desc"] == "COMPLETED"
+        stage_3 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.3']
+        assert stage_3[0]["status_desc"] == "COMPLETED"
+        stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
+        assert stage_4[0]["status_desc"] == "COMPLETED"
+
+    def test_list_reports_post_all_stages_completed(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": False,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["problem_status"] == 2
+        assert detail_response.data["is_resolved"] is False
+        assert detail_response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        assert detail_response.data["sectors_affected"] is True
+        assert detail_response.data["sectors"] == [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ]
+        assert detail_response.data["product"] == "Some product"
+>>>>>>> refactoring report detail submission tests
         assert detail_response.data["source"] == "OTHER"
         assert detail_response.data["other_source"] == "Other source"
         assert detail_response.data["barrier_title"] == "Some title"
