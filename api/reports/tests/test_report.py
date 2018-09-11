@@ -108,11 +108,11 @@ from api.reports.tests.factories import Stage1_1ReportFactory
 #         return self._applications[grant_type]
 
 
-class TestListReports(APITestMixin):
-    def test_companies_list_no_permissions(self):
-        """Should return 403"""
-        api_client = self.create_api_client()
+# class TestListReports(APITestMixin):
+#     def test_companies_list_no_permissions(self):
+#         """Should return 403"""
+#         api_client = self.create_api_client()
 
-        url = reverse("list-reports")
-        response = api_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
+#         url = reverse("list-reports")
+#         response = api_client.get(url)
+#         assert response.status_code == status.HTTP_200_OK
