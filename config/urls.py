@@ -24,7 +24,7 @@ urlpatterns = [
     path("whoami", who_am_i, name="who_am_i"),
 
     path("reports", BarrierReportList.as_view(), name="list-reports"),
-    path("reports/<uuid:pk>", BarrierReportDetail.as_view()),
+    path("reports/<uuid:pk>", BarrierReportDetail.as_view(), name="get-report"),
     path("reports/<uuid:pk>/submit", BarrierReportSubmit.as_view()),
 
     path("metadata", MetadataView.as_view()),
