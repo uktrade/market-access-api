@@ -12,7 +12,15 @@ REPORT_CONDITIONS = [
             "problem_status",
             "is_resolved"
         ],
-        "conditional": []
+        "conditional": [
+            {
+                "condition_field": "is_resolved",
+                "operator": operator.eq,
+                "value": True,
+                "non_null_field": "resolved_date",
+                "error_message": "resolved_date can not be null, when is_resolved is True",
+            },
+        ]
     },
     {
         "stage": "1.2",
