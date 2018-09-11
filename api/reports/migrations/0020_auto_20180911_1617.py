@@ -51,7 +51,4 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name='Stage',
         ),
-        migrations.DeleteModel(
-            name='reportstatus',
-        ),
     ]
