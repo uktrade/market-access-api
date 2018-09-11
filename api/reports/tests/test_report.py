@@ -15,9 +15,6 @@ from rest_framework.test import APIClient, APITestCase, RequestsClient
 from api.core.test_utils import APITestMixin, create_test_user
 from api.reports.tests.factories import Stage1_1ReportFactory
 
-# mark the whole module for db use
-pytestmark = pytest.mark.django_db
-
 
 # def get_default_test_user():
 #     """Return the test user."""
@@ -114,7 +111,6 @@ pytestmark = pytest.mark.django_db
 class TestListReports(APITestMixin):
     def test_companies_list_no_permissions(self):
         """Should return 403"""
-        user_test = create_test_user()
         api_client = self.create_api_client()
 
         url = reverse("list-reports")
