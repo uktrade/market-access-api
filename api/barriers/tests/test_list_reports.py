@@ -296,7 +296,7 @@ class TestListReports(APITestMixin):
         detail_url = reverse("get-report", kwargs={"pk": instance.id})
         detail_response = self.api_client.get(detail_url)
         assert detail_response.status_code == status.HTTP_200_OK
-        assert detail_response.data["problem_status"] == None
+        assert detail_response.data["problem_status"] is None
         assert detail_response.data["sectors_affected"] is True
         assert detail_response.data["progress"]
         stage_1 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.1']
@@ -327,7 +327,7 @@ class TestListReports(APITestMixin):
         detail_url = reverse("get-report", kwargs={"pk": instance.id})
         detail_response = self.api_client.get(detail_url)
         assert detail_response.status_code == status.HTTP_200_OK
-        assert detail_response.data["problem_status"] == None
+        assert detail_response.data["problem_status"] is None
         assert detail_response.data["sectors_affected"] is False
         assert detail_response.data["progress"]
         stage_1 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.1']
@@ -356,7 +356,7 @@ class TestListReports(APITestMixin):
         detail_url = reverse("get-report", kwargs={"pk": instance.id})
         detail_response = self.api_client.get(detail_url)
         assert detail_response.status_code == status.HTTP_200_OK
-        assert detail_response.data["problem_status"] == None
+        assert detail_response.data["problem_status"] is None
         assert detail_response.data["sectors_affected"] is True
         assert detail_response.data["sectors"]
         assert detail_response.data["progress"]
@@ -623,7 +623,7 @@ class TestListReports(APITestMixin):
         stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
         assert stage_4[0]["status_desc"] == "COMPLETED"
 
-    def test_list_reports_post_all_stages_completed(self):
+    def test_list_reports_post_all_stages_completed_1(self):
         url = reverse("list-reports")
         response = self.api_client.post(url, format="json", data={
             "problem_status": 2,
@@ -652,9 +652,9 @@ class TestListReports(APITestMixin):
         assert detail_response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
         assert detail_response.data["sectors_affected"] is True
         assert detail_response.data["sectors"] == [
-                "af959812-6095-e211-a939-e4115bead28a",
-                "9538cecc-5f95-e211-a939-e4115bead28a"
-            ]
+            "af959812-6095-e211-a939-e4115bead28a",
+            "9538cecc-5f95-e211-a939-e4115bead28a"
+        ]
         assert detail_response.data["product"] == "Some product"
         assert detail_response.data["source"] == "GOVT"
         assert detail_response.data["other_source"] is None
@@ -669,7 +669,7 @@ class TestListReports(APITestMixin):
         stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
         assert stage_4[0]["status_desc"] == "COMPLETED"
 
-    def test_list_reports_post_all_stages_completed(self):
+    def test_list_reports_post_all_stages_completed_2(self):
         url = reverse("list-reports")
         response = self.api_client.post(url, format="json", data={
             "problem_status": 2,
@@ -699,9 +699,9 @@ class TestListReports(APITestMixin):
         assert detail_response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
         assert detail_response.data["sectors_affected"] is True
         assert detail_response.data["sectors"] == [
-                "af959812-6095-e211-a939-e4115bead28a",
-                "9538cecc-5f95-e211-a939-e4115bead28a"
-            ]
+            "af959812-6095-e211-a939-e4115bead28a",
+            "9538cecc-5f95-e211-a939-e4115bead28a"
+        ]
         assert detail_response.data["product"] == "Some product"
         assert detail_response.data["source"] == "OTHER"
         assert detail_response.data["other_source"] == "Other source"

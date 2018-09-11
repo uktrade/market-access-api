@@ -9,7 +9,7 @@ REPORT_CONDITIONS = [
         "stage": "1.1",
         "order": 1,
         "required": [
-            "problem_status", 
+            "problem_status",
             "is_resolved"
         ],
         "conditional": []
@@ -43,7 +43,7 @@ REPORT_CONDITIONS = [
             "barrier_title",
             "problem_description",
         ],
-        "conditional": [       
+        "conditional": [
             {
                 "condition_field": "source",
                 "operator": operator.eq,

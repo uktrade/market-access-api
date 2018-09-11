@@ -47,7 +47,7 @@ BARRIER_STATUS = Choices(
 )
 
 BARRIER_TYPE_CATEGORIES = Choices(
-    ("GOODS", "Goods"), 
+    ("GOODS", "Goods"),
     ("SERVICES", "Services"),
     ("GOODSANDSERVICES", "Goods and Services"),
 )
