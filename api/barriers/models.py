@@ -6,6 +6,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
+from simple_history.models import HistoricalRecords
+
 from api.metadata.constants import (
     ADV_BOOLEAN,
     BARRIER_INTERACTION_TYPE,
@@ -37,6 +39,7 @@ class BarrierInteraction(BaseModel):
     text = models.TextField(null=True)
     pinned = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    history = HistoricalRecords()
 
 
 class Stage(models.Model):
@@ -178,6 +181,8 @@ class BarrierInstance(BaseModel):
         help_text="Store reporting stages before submitting"
     )
 
+    history = HistoricalRecords()
+
     def __str__(self):
         return self.id
 
@@ -215,6 +220,8 @@ class BarrierCompany(BaseModel):
     )
     company = models.ForeignKey(DatahubCompany, related_name="companies_affected", on_delete=models.CASCADE)
 
+    history = HistoricalRecords()
+
     class Meta:
         unique_together = (("barrier", "company"),)
 
@@ -226,6 +233,8 @@ class BarrierReportStage(BaseModel):
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
     status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         unique_together = (("barrier", "stage"),)
@@ -249,3 +258,4 @@ class BarrierContributor(BaseModel):
         max_length=25
     )
     is_active = models.BooleanField(default=True)
+    history = HistoricalRecords()
