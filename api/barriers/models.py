@@ -15,6 +15,7 @@ from api.metadata.constants import (
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
 )
+from api.core.models import BaseModel
 from api.metadata.models import BarrierType
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
@@ -22,7 +23,7 @@ from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
-class BarrierInteraction(models.Model):
+class BarrierInteraction(BaseModel):
     """ Interaction records for each Barrier """
     barrier = models.ForeignKey(
         "BarrierInstance",
@@ -36,18 +37,12 @@ class BarrierInteraction(models.Model):
     text = models.TextField(null=True)
     pinned = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        on_delete=models.SET_NULL
-    )
 
 
 class Stage(models.Model):
     """ Reporting workflow stages  """
     code = models.CharField(max_length=4, null=False)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=MAX_LENGTH)
     parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
@@ -55,13 +50,13 @@ class Stage(models.Model):
 
 class DatahubCompany(models.Model):
     """ Local model to store data hub companies for ease  """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    id = models.UUIDField(primary_key=True, default=uuid4)
     name = models.CharField(
         max_length=MAX_LENGTH, blank=True, null=True, help_text='Trading name'
     )
 
     def __str__(self):
-        return self.code
+        return self.name
 
 
 class ReportManager(models.Manager):
@@ -76,7 +71,7 @@ class BarrierManager(models.Manager):
         return super(BarrierManager, self).get_queryset().filter(~Q(status=0))
 
 
-class BarrierInstance(models.Model):
+class BarrierInstance(BaseModel):
     """ Barrier Instance, converted from a completed and accepted Report """
     id = models.UUIDField(primary_key=True, default=uuid4)
     problem_status = models.PositiveIntegerField(
@@ -103,8 +98,8 @@ class BarrierInstance(models.Model):
         null=True,
         help_text="chance of success"
     )
-    other_source = models.CharField(max_length=255, null=True)
-    barrier_title = models.CharField(max_length=255, null=True)
+    other_source = models.CharField(max_length=MAX_LENGTH, null=True)
+    barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
     problem_description = models.TextField(null=True)
 
     barrier_type = models.ForeignKey(
@@ -116,10 +111,6 @@ class BarrierInstance(models.Model):
     )
 
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
-    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
-    )
 
     status = models.PositiveIntegerField(
         choices=BARRIER_STATUS,
@@ -175,7 +166,7 @@ class BarrierInstance(models.Model):
 
     companies = models.ManyToManyField(
         "DatahubCompany",
-        related_name="companies_affected",
+        related_name="companies",
         through="BarrierCompany",
         help_text="companies affected by barrier"
     )
@@ -217,38 +208,30 @@ class BarrierInstance(models.Model):
         self.save()
 
 
-class BarrierCompany(models.Model):
+class BarrierCompany(BaseModel):
     """ Many to Many between barrier and company """
     barrier = models.ForeignKey(
         BarrierInstance, related_name="companies_affected", on_delete=models.PROTECT
     )
     company = models.ForeignKey(DatahubCompany, related_name="companies_affected", on_delete=models.CASCADE)
-    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
-    )
 
     class Meta:
         unique_together = (("barrier", "company"),)
 
 
-class BarrierReportStage(models.Model):
+class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
     barrier = models.ForeignKey(
         BarrierInstance, related_name="progress", on_delete=models.PROTECT
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
     status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
-    created_on = models.DateTimeField(db_index=True, auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
-    )
 
     class Meta:
         unique_together = (("barrier", "stage"),)
 
 
-class BarrierContributor(models.Model):
+class BarrierContributor(BaseModel):
     """ Contributors for each Barrier """
     barrier = models.ForeignKey(
         BarrierInstance,
@@ -266,9 +249,3 @@ class BarrierContributor(models.Model):
         max_length=25
     )
     is_active = models.BooleanField(default=True)
-    created_on = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        on_delete=models.SET_NULL
-    )
