@@ -246,6 +246,8 @@ class BarrierCompany(BaseModel):
 
     history = HistoricalRecords()
 
+    history = HistoricalRecords()
+
     class Meta:
         unique_together = (("barrier", "company_id"),)
 
