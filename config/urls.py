@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from api.metadata.views import MetadataView
 from api.ping.views import ping
@@ -22,9 +22,12 @@ from api.reports.views import (
     ReportSubmit,
 )
 from api.user.views import who_am_i
+from api.core.views import admin_override
 
 urlpatterns = [
-    path("admin", admin.site.urls),
+    path("admin/login/", admin_override, name="override"),
+    path("admin/", admin.site.urls),
+    path('auth/', include('authbroker_client.urls', namespace='authbroker')),
     path("ping.xml", ping, name="ping"),
     path("whoami", who_am_i, name="who_am_i"),
     path("reports", ReportList.as_view(), {"status": None}, name="list-reports"),

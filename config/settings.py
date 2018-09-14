@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "api.ping",
     "api.metadata",
     "api.user",
+    'authbroker_client',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "hawkrest.middleware.HawkResponseMiddleware",
+    'api.core.middleware.AdminIpRestrictionMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -110,10 +112,22 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend"
 )
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'authbroker_client.backends.AuthbrokerBackend',
+]
+
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 # DataHub API
 DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
+AUTHBROKER_URL = env("AUTHBROKER_URL")
+AUTHBROKER_CLIENT_ID = env("AUTHBROKER_CLIENT_ID")
+AUTHBROKER_CLIENT_SECRET = env("AUTHBROKER_CLIENT_SECRET")
+AUTHBROKER_SCOPES = "read write"
+LOGIN_REDIRECT_URL = "/admin/"
+RESTRICT_ADMIN = env.bool("RESTRICT_ADMIN", True)
+ALLOWED_ADMIN_IPS = env.list("ALLOWED_ADMIN_IPS")
 
 OAUTH2_PROVIDER = {}
 
