@@ -18,7 +18,7 @@ class BaseModel(models.Model):
         related_name='+'
     )
     modified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        settings.AUTH_USER_MODEL,   
         null=True, blank=True,
         on_delete=models.SET_NULL,
         related_name='+'
