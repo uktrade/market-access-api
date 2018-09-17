@@ -43,7 +43,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "barrier_type",
             "progress",
             "reported_by",
-            "created_on"
+            "created_on",
         )
         read_only_fields = ("id", "progress", "created_on")
 
