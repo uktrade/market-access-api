@@ -11,9 +11,8 @@ def admin_override(request):
 
     user = request.user
     if user.is_authenticated and user.is_staff and user.is_active:
-        return redirect('/admin/')
+        return redirect(LOGIN_REDIRECT_URL)
     elif not user.is_authenticated:
         return redirect('authbroker:login')
     else:
         return HttpResponse('Forbidden', status=403)
-
