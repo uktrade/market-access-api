@@ -361,11 +361,121 @@ class TestListReports(APITestMixin):
         stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
         assert stage_4[0]["status_desc"] == "NOT STARTED"
 
-    def test_list_reports_post_stage_1_2_completed_3_in_progress(self):
-        pass
+    def test_list_reports_post_stage_1_2_completed_3_in_progress_1(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": False,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True
+        })
 
-    def test_list_reports_post_stage_1_in_progress_2_completed_3_in_progress(self):
-        pass
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["problem_status"] == 2
+        assert detail_response.data["is_resolved"] is False
+        assert detail_response.data["sectors_affected"] is True
+        assert detail_response.data["progress"]
+        stage_1 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.1']
+        assert stage_1[0]["status_desc"] == "COMPLETED"
+        stage_2 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.2']
+        assert stage_2[0]["status_desc"] == "COMPLETED"
+        stage_3 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.3']
+        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
+        assert stage_4[0]["status_desc"] == "NOT STARTED"
+
+    def test_list_reports_post_stage_1_2_completed_3_in_progress_2(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "resolved_date": "2018-09-10",
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True
+        })
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["problem_status"] == 2
+        assert detail_response.data["is_resolved"] is True
+        assert detail_response.data["resolved_date"] == "2018-09-10"
+        assert detail_response.data["sectors_affected"] is True
+        assert detail_response.data["progress"]
+        stage_1 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.1']
+        assert stage_1[0]["status_desc"] == "COMPLETED"
+        stage_2 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.2']
+        assert stage_2[0]["status_desc"] == "COMPLETED"
+        stage_3 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.3']
+        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
+        assert stage_4[0]["status_desc"] == "NOT STARTED"
+
+    def test_list_reports_post_stage_1_in_progress_2_completed_3_in_progress_1(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(url, format="json", data={
+            "problem_status": 2,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True
+        })
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["problem_status"] == 2
+        assert detail_response.data["sectors_affected"] is True
+        assert detail_response.data["progress"]
+        stage_1 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.1']
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
+        stage_2 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.2']
+        assert stage_2[0]["status_desc"] == "COMPLETED"
+        stage_3 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.3']
+        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
+        assert stage_4[0]["status_desc"] == "NOT STARTED"
+
+    def test_list_reports_post_stage_1_in_progress_2_completed_3_in_progress_2(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True
+        })
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["problem_status"] == 2
+        assert detail_response.data["is_resolved"] is True
+        assert detail_response.data["sectors_affected"] is True
+        assert detail_response.data["progress"]
+        stage_1 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.1']
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
+        stage_2 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.2']
+        assert stage_2[0]["status_desc"] == "COMPLETED"
+        stage_3 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.3']
+        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
+        assert stage_4[0]["status_desc"] == "NOT STARTED"
 
     def test_list_reports_post_stage_3_completed_option_1(self):
         url = reverse("list-reports")

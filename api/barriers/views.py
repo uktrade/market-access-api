@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.barriers.models import (
@@ -155,6 +156,70 @@ class BarrierInstanceInteraction(generics.ListCreateAPIView):
             )
         else:
             serializer.save(barrier=barrier_obj, kind=kind)
+
+class BarrierInstanceHistory(GenericAPIView):
+    def _get_barrier(self, barrier_id):
+        """ Get BarrierInstance object or False if invalid ID """
+        try:
+            return BarrierInstance.objects.get(id=barrier_id)
+        except BarrierInstance.DoesNotExist:
+            return False
+
+    def get(self, request, barrier_pk):
+        ignore_fields = ["modified_on"]
+        barrier = BarrierInstance.objects.get(id=barrier_pk)
+        history = barrier.history.all().order_by("history_date")
+        results = []
+        for new_record in history:
+            if new_record.history_type == "+":
+                results.append({
+                    "date": new_record.history_date,
+                    "operation": "Add",
+                    "event": "Report created",
+                    "field": None,
+                    "old_value": None,
+                    "new_value": None,
+                    "user": new_record.history_user
+                })
+            else:
+                delta = new_record.diff_against(old_record)
+                for change in delta.changes:
+                    if change.field not in ignore_fields:
+                        if change.old is None:
+                            operation = "Add"
+                            event = "{} added to {}".format(change.new, change.field)
+                            field = change.field
+                            old_value = None
+                            new_value = change.new
+                        elif change.old is not None and change.new is not None:
+                            operation = "Update"
+                            event = "{} changed from {} to {}".format(change.field, change.old, change.new)
+                            field = change.field
+                            old_value = change.old
+                            new_value = change.new
+                        else:
+                            operation = "Delete"
+                            event = "{} deleted".format(change.field)
+                            field = change.field
+                            old_value = change.old
+                            new_value = None
+                        results.append(
+                            {
+                                "date": new_record.history_date,
+                                "operation": operation,
+                                "field": field,
+                                "old_value": old_value,
+                                "new_value": new_value,
+                                "event": event,
+                                "user": new_record.history_user
+                            }
+                        )
+            old_record = new_record
+            response = {
+                "barrier_id": barrier_pk,
+                "history": results
+            }
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class BarrierInstanceContributor(generics.ListCreateAPIView):

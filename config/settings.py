@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "hawkrest",
     "raven.contrib.django.raven_compat",
+    "simple_history",
     # sso
     "oauth2_provider",
     # local apps
@@ -65,6 +66,7 @@ MIDDLEWARE = [
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "hawkrest.middleware.HawkResponseMiddleware",
     'api.core.middleware.AdminIpRestrictionMiddleware',
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

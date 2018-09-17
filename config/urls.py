@@ -15,6 +15,7 @@ from api.barriers.views import (
     BarrierReportList,
     BarrierReportDetail,
     BarrierReportSubmit,
+    BarrierInstanceHistory
 )
 from api.user.views import who_am_i
 from api.core.views import admin_override
@@ -37,6 +38,7 @@ urlpatterns = [
     path("barriers/<uuid:pk>", BarrierDetail.as_view()),
     path("barriers/<uuid:barrier_pk>/contributors", BarrierInstanceContributor.as_view()),
     path("barriers/<uuid:barrier_pk>/interactions", BarrierInstanceInteraction.as_view()),
+    path("barriers/<uuid:barrier_pk>/history", BarrierInstanceHistory.as_view()),
     path("barriers/<uuid:pk>/resolve", BarrierResolve.as_view()),
     path("barriers/<uuid:pk>/hibernate", BarrierHibernate.as_view()),
     path("barriers/<uuid:pk>/open", BarrierOpen.as_view()),
