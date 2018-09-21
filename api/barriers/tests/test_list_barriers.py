@@ -1,11 +1,8 @@
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-<<<<<<< HEAD
 from django.utils.timezone import now
 
-=======
->>>>>>> adding audit history views for each barrier
 from api.barriers.models import BarrierInstance
 from api.core.test_utils import APITestMixin, create_test_user
 
@@ -18,7 +15,6 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
-<<<<<<< HEAD
     def test_list_barriers_report_is_not_barrier(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
@@ -80,9 +76,6 @@ class TestListBarriers(APITestMixin):
         assert response.data["count"] == 1
 
     def test_list_barriers_get_one_barrier_with_sso_kind_user(self):
-=======
-    def test_list_barriers_get_one_report(self):
->>>>>>> adding audit history views for each barrier
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -113,7 +106,6 @@ class TestListBarriers(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
-<<<<<<< HEAD
         barrier = response.data["results"][0]
         assert barrier["reported_by"] == self.user.username
 
@@ -281,5 +273,3 @@ class TestListBarriers(APITestMixin):
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
         assert barrier["reported_by"] == "Test.User"
-=======
->>>>>>> adding audit history views for each barrier
