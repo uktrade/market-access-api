@@ -51,16 +51,6 @@ class Stage(models.Model):
     def __str__(self):
         return self.code
 
-class DatahubCompany(models.Model):
-    """ Local model to store data hub companies for ease  """
-    id = models.UUIDField(primary_key=True, default=uuid4)
-    name = models.CharField(
-        max_length=MAX_LENGTH, blank=True, null=True, help_text='Trading name'
-    )
-
-    def __str__(self):
-        return self.name
-
 
 class ReportManager(models.Manager):
     """ Manage reports within the model, with status 0 """
@@ -165,13 +155,6 @@ class BarrierInstance(BaseModel):
         null=True,
         default=None,
         help_text="Commercial or confidentiality sensitivities to be aware of"
-    )
-
-    companies = models.ManyToManyField(
-        "DatahubCompany",
-        related_name="companies",
-        through="BarrierCompany",
-        help_text="companies affected by barrier"
     )
 
     stages = models.ManyToManyField(
