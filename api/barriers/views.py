@@ -12,12 +12,14 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.barriers.models import (
+    BarrierCompany,
     BarrierContributor,
     BarrierInstance,
     BarrierInteraction,
     BarrierReportStage,
 )
 from api.barriers.serializers import (
+    BarrierCompanySerializer,
     BarrierContributorSerializer,
     BarrierStaticStatusSerializer,
     BarrierInstanceSerializer,
@@ -156,6 +158,29 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             serializer.save(barrier_type=barrier_type)
         else:
             serializer.save()
+
+
+class BarrierInstanceCompany(generics.ListCreateAPIView):
+    queryset = BarrierCompany.objects.all()
+    serializer_class = BarrierCompanySerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
+
+    def perform_create(self, serializer):
+        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
+        company_id = serializer.validated_data.get("company_id")
+        company_name = serializer.validated_data.get("company_name")
+
+        if settings.DEBUG is False:
+            serializer.save(
+                barrier=barrier_obj,
+                company_id=company_id,
+                company_name=company_name,
+                created_by=self.request.user
+            )
+        else:
+            serializer.save(barrier=barrier_obj, company_id=company_id, company_name=company_name)
 
 
 class BarrierInstanceInteraction(generics.ListCreateAPIView):

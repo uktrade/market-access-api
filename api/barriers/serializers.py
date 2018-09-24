@@ -1,7 +1,11 @@
+from django.conf import settings
+
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 
 from api.barriers.models import (
+    BarrierCompany,
     BarrierContributor,
     BarrierInstance,
     BarrierInteraction,
@@ -149,6 +153,16 @@ class BarrierContributorSerializer(serializers.ModelSerializer):
         model = BarrierContributor
         fields = "__all__"
         read_only_fields = ("barrier", "created_on", "created_by")
+
+
+class BarrierCompanySerializer(serializers.ModelSerializer):
+    """ Serializer for Barrier Companies """
+
+    class Meta:
+        model = BarrierCompany
+        fields = fields = "__all__"
+        read_only_fields = ("barrier", "created_on", "created_by", "modified_on", "modified_by")
+
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
