@@ -115,6 +115,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    "oauth2_provider.backends.OAuth2Backend",
     'django.contrib.auth.backends.ModelBackend',
     'authbroker_client.backends.AuthbrokerBackend',
 ]
