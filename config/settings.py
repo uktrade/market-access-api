@@ -107,14 +107,15 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "auth.User"
-# django-oauth-toolkit settings
-AUTHENTICATION_BACKENDS = (
-    "oauth2_provider.backends.OAuth2Backend",
-    # Uncomment following if you want to access the admin
-    "django.contrib.auth.backends.ModelBackend"
-)
+# django-oauth-toolkit settings  -  removed as duplicated below.
+# AUTHENTICATION_BACKENDS = (
+#     "oauth2_provider.backends.OAuth2Backend",
+#     # Uncomment following if you want to access the admin
+#     "django.contrib.auth.backends.ModelBackend"
+# )
 
 AUTHENTICATION_BACKENDS = [
+    "oauth2_provider.backends.OAuth2Backend",
     'django.contrib.auth.backends.ModelBackend',
     'authbroker_client.backends.AuthbrokerBackend',
 ]
