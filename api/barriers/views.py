@@ -291,7 +291,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
 
         serializer.save(
             status=barrier_status,
-            summary=barrier_summary,
+            status_summary=barrier_summary,
             status_date=status_date
         )
         # if settings.DEBUG is False:
@@ -321,8 +321,8 @@ class BarrierResolve(BarrierStatusBase):
 
     def perform_update(self, serializer):
         errors = defaultdict(list)
-        if self.request.data.get("summary", None) is None:
-            errors["summary"] = "This field is required"
+        if self.request.data.get("status_summary", None) is None:
+            errors["status_summary"] = "This field is required"
         if self.request.data.get("status_date", None) is None:
             errors["status_date"] = "This field is required"
         else:
@@ -337,7 +337,7 @@ class BarrierResolve(BarrierStatusBase):
             raise serializers.ValidationError(message)
         serializer.save(
             status=4,
-            summary=self.request.data.get("summary"),
+            status_summary=self.request.data.get("status_summary"),
             status_date=self.request.data.get("status_date")
         )
 
@@ -351,7 +351,7 @@ class BarrierHibernate(BarrierStatusBase):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
     def perform_update(self, serializer):
-        self._create(serializer, self.kwargs.get("pk"), 5, self.request.data.get("summary"))
+        self._create(serializer, self.kwargs.get("pk"), 5, self.request.data.get("status_summary"))
 
 
 class BarrierOpen(BarrierStatusBase):
@@ -363,4 +363,4 @@ class BarrierOpen(BarrierStatusBase):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
     def perform_update(self, serializer):
-        self._create(serializer, self.kwargs.get("pk"), 2, self.request.data.get("summary"))
+        self._create(serializer, self.kwargs.get("pk"), 2, self.request.data.get("status_summary"))
