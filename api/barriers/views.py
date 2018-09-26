@@ -42,7 +42,7 @@ def barrier_count(request):
 class BarrierReportBase(object):
     def _update_stages(self, serializer, user):
         report_id = serializer.data.get("id")
-        report = BarrierInstance.objects.get(id=report_id)
+        report = BarrierInstance.reports.get(id=report_id)
         progress = report.current_progress()
         for new_stage, new_status in progress:
             try:
@@ -78,7 +78,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
 
     lookup_field = "pk"
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
 
     @transaction.atomic()
@@ -89,7 +89,7 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
 
 class BarrierReportSubmit(generics.UpdateAPIView):
 
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
 
     @transaction.atomic()
@@ -123,14 +123,32 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         #             ).save()
 
 
-class BarrierList(generics.ListCreateAPIView):
+class BarrierList(generics.ListAPIView):
+    """
+    Return a list of all the BarrierInstances with optional filtering.
+    """
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierListSerializer
 
+    def get_queryset(self):
+        """
+        Optionally restricts the returned barriers to a given export_country,
+        by filtering against a `country` query parameter in the URL.
+        """
+        queryset = BarrierInstance.barriers.all()
+        country = self.request.query_params.get("country", None)
+        if country is not None:
+            queryset = queryset.filter(export_country=country)
+        return queryset
+
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
+    """
+    Return details of a BarrierInstance
+    Allows the barrier to be updated as well
+    """
     lookup_field = "pk"
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierInstanceSerializer
 
     @transaction.atomic()
@@ -186,13 +204,13 @@ class BarrierInstanceHistory(GenericAPIView):
     def _get_barrier(self, barrier_id):
         """ Get BarrierInstance object or False if invalid ID """
         try:
-            return BarrierInstance.objects.get(id=barrier_id)
+            return BarrierInstance.barriers.get(id=barrier_id)
         except BarrierInstance.DoesNotExist:
             return False
 
     def get(self, request, barrier_pk):
         ignore_fields = ["modified_on"]
-        barrier = BarrierInstance.objects.get(id=barrier_pk)
+        barrier = BarrierInstance.barriers.get(id=barrier_pk)
         history = barrier.history.all().order_by("history_date")
         results = []
         for new_record in history:
@@ -204,7 +222,7 @@ class BarrierInstanceHistory(GenericAPIView):
                     "field": None,
                     "old_value": None,
                     "new_value": None,
-                    "user": new_record.history_user
+                    "user": new_record.history_user.email if new_record.history_user else ""
                 })
             else:
                 delta = new_record.diff_against(old_record)
@@ -236,7 +254,7 @@ class BarrierInstanceHistory(GenericAPIView):
                                 "old_value": old_value,
                                 "new_value": new_value,
                                 "event": event,
-                                "user": new_record.history_user
+                                "user": new_record.history_user.email if new_record.history_user else ""
                             }
                         )
             old_record = new_record
@@ -295,7 +313,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
 
 class BarrierResolve(BarrierStatusBase):
 
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierResolveSerializer
 
     def get_queryset(self):
@@ -326,7 +344,7 @@ class BarrierResolve(BarrierStatusBase):
 
 class BarrierHibernate(BarrierStatusBase):
 
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
     def get_queryset(self):
@@ -338,7 +356,7 @@ class BarrierHibernate(BarrierStatusBase):
 
 class BarrierOpen(BarrierStatusBase):
 
-    queryset = BarrierInstance.objects.all()
+    queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
     def get_queryset(self):
