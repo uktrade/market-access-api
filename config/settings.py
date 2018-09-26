@@ -107,13 +107,7 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = "auth.User"
-# django-oauth-toolkit settings  -  removed as duplicated below.
-# AUTHENTICATION_BACKENDS = (
-#     "oauth2_provider.backends.OAuth2Backend",
-#     # Uncomment following if you want to access the admin
-#     "django.contrib.auth.backends.ModelBackend"
-# )
-
+# django-oauth-toolkit settings
 AUTHENTICATION_BACKENDS = [
     "oauth2_provider.backends.OAuth2Backend",
     'django.contrib.auth.backends.ModelBackend',
@@ -132,6 +126,8 @@ AUTHBROKER_SCOPES = "read write"
 LOGIN_REDIRECT_URL = "/admin/"
 RESTRICT_ADMIN = env.bool("RESTRICT_ADMIN", True)
 ALLOWED_ADMIN_IPS = env.list("ALLOWED_ADMIN_IPS")
+# SECURE_PROXY_SSL_HEADER is needed to force the call back protocall to be https
+# setting this effects the Hawk hash generation.
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 OAUTH2_PROVIDER = {}
