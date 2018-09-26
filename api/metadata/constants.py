@@ -1,8 +1,8 @@
 from model_utils import Choices
 
 PROBLEM_STATUS_TYPES = Choices(
-    (1, "On the border"),
-    (2, "Long term strategic barrier"),
+    (1, "A procedural/short-term barrier"),
+    (2, "A long term strategic barrier"),
 )
 
 ESTIMATED_LOSS_RANGE = Choices(
