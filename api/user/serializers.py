@@ -10,5 +10,12 @@ class WhoAmISerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ("username", "last_login", "first_name", "last_name", "email")
+        fields = (
+            "username",
+            "last_login",
+            "first_name",
+            "last_name",
+            "email",
+            "profile",
+        )
         depth = 1
