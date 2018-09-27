@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
+from api.user.models import Profile
+
 UserModel = get_user_model()
 
 
@@ -23,4 +25,12 @@ class WhoAmISerializer(serializers.ModelSerializer):
         )
 
     def get_location(self, obj):
-        return obj.profile.location if obj.profile else None
+        try:
+            if obj.profile is not None and obj.profile.location is not None:
+                return obj.profile.location
+            else:
+                return None
+        except Profile.DoesNotExist:
+            return None
+        except AttributeError:
+            return None
