@@ -52,7 +52,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "progress", "created_on")
 
     def get_reported_by(self, obj):
-        return obj.created_by.email if obj.created_by else ""
+        return obj.created_by_username
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
@@ -79,7 +79,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
         )
 
     def get_reported_by(self, obj):
-        return obj.created_by.email if obj.created_by else ""
+        return obj.created_by_username
 
     def get_current_status(self, obj):
         """  Custom Serializer Method Field for exposing current barrier status as json """
@@ -131,7 +131,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         return obj.created_on
 
     def get_reported_by(self, obj):
-        return obj.created_by.email if obj.created_by else ""
+        return obj.created_by_username
 
     def get_current_status(self, obj):
         return {
