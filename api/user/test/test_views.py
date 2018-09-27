@@ -20,9 +20,11 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data == {
+            "id": user_test.id,
             "username": user_test.username,
             "last_login": None,
             "first_name": user_test.first_name,
             "last_name": user_test.last_name,
             "email": user_test.email,
+            "location": None
         }
