@@ -878,3 +878,167 @@ class TestListReports(APITestMixin):
         assert stage_3[0]["status_desc"] == "COMPLETED"
         stage_4 = [d for d in detail_response.data["progress"] if d['stage_code'] == '1.4']
         assert stage_4[0]["status_desc"] == "COMPLETED"
+
+    def test_list_reports_get_one_barrier_with_sso_kind_user(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "resolved_date": "2018-09-10",
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+
+        response = self.api_client.get(list_report_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        barrier = response.data["results"][0]
+        assert barrier["created_by"] == self.user.username
+
+
+    def test_list_reports_get_one_barrier_with_user_empty_username(self):
+        a_user = create_test_user(
+            first_name="",
+            last_name="",
+            email="Testo@Useri.com",
+            username="",
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+        list_report_response = new_api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "resolved_date": "2018-09-10",
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        barrier = response.data["results"][0]
+        assert barrier["created_by"] == "Testo"
+
+    def test_list_reports_get_one_barrier_with_user_email_as_username(self):
+        a_user = create_test_user(
+            first_name="",
+            last_name="",
+            email="",
+            username="Testo@Useri.com",
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+        list_report_response = new_api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "resolved_date": "2018-09-10",
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        barrier = response.data["results"][0]
+        assert barrier["created_by"] == "Testo"
+
+    def test_list_reports_get_one_barrier_with_user_normal_username(self):
+        a_user = create_test_user(
+            first_name="",
+            last_name="",
+            email="",
+            username="Test.User",
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+        list_report_response = new_api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "resolved_date": "2018-09-10",
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        barrier = response.data["results"][0]
+        assert barrier["created_by"] == "Test.User"
+
+    def test_list_reports_get_one_barrier_with_user_normal_username_and_email(self):
+        a_user = create_test_user(
+            first_name="",
+            last_name="",
+            email="Testo@Useri.com",
+            username="Test.User",
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+        list_report_response = new_api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "resolved_date": "2018-09-10",
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        barrier = response.data["results"][0]
+        assert barrier["created_by"] == "Test.User"
