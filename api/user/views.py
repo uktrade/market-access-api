@@ -5,8 +5,6 @@ from rest_framework.response import Response
 from api.user.serializers import WhoAmISerializer
 
 
-
-
 @api_view()
 @permission_classes([])
 def who_am_i(request):
