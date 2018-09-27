@@ -8,14 +8,19 @@ UserModel = get_user_model()
 class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
+    location = serializers.SerializerMethodField()
+
     class Meta:
         model = UserModel
         fields = (
+            "id",
             "username",
             "last_login",
             "first_name",
             "last_name",
             "email",
-            "profile",
+            "location",
         )
-        depth = 1
+
+    def get_location(self, obj):
+        return obj.profile.location if obj.profile else None
