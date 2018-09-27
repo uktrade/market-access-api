@@ -139,6 +139,7 @@ class BarrierList(generics.ListAPIView):
         """
         Optionally restricts the returned barriers to a given export_country,
         by filtering against a `country` query parameter in the URL.
+        and filtering against a `user` query parameter
         """
         queryset = BarrierInstance.barriers.all()
         country = self.request.query_params.get("country", None)
