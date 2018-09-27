@@ -2,6 +2,7 @@ from collections import defaultdict
 from dateutil.parser import parse
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -141,6 +142,10 @@ class BarrierList(generics.ListAPIView):
         country = self.request.query_params.get("country", None)
         if country is not None:
             queryset = queryset.filter(export_country=country)
+        user_id = self.request.query_params.get("user", None)
+        if user_id is not None:
+            user = User.objects.get(id=user_id)
+            queryset = queryset.filter(created_by=user)
         return queryset
 
 
