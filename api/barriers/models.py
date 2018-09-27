@@ -189,10 +189,12 @@ class BarrierInstance(BaseModel):
             validator()
         if self.is_resolved:
             barrier_new_status = 4 # Resolved
+            status_date = self.isodate_to_tz_datetime(self.resolved_date)
         else:
             barrier_new_status = 2 # Assesment
+            status_date = timezone.now()
         self.status = barrier_new_status  # If all good, then accept the report for now
-        self.status_date = timezone.now()
+        self.status_date = status_date
         self.save()
 
     @property
