@@ -198,13 +198,13 @@ class BarrierInstance(BaseModel):
     @property
     def created_by_username(self):
         if self.created_by is not None:
-            if self.created_by.email is not None and self.created_by.email.strip() != "":
-                return self.created_by.email.split("@")[0]
-            elif self.created_by.username is not None and self.created_by.username.strip() != "":
+            if self.created_by.username is not None and self.created_by.username.strip() != "":
                 if "@" in self.created_by.username:
                     return self.created_by.username.split("@")[0]
                 else:
                     return self.created_by.username
+            elif self.created_by.email is not None and self.created_by.email.strip() != "":
+                return self.created_by.email.split("@")[0]
 
         return None
 
