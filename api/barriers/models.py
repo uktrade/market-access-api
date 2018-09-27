@@ -167,7 +167,7 @@ class BarrierInstance(BaseModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return self.id
+        return self.barrier_title
 
     objects = models.Manager()
     reports = ReportManager()
@@ -194,6 +194,19 @@ class BarrierInstance(BaseModel):
         self.status = barrier_new_status  # If all good, then accept the report for now
         self.status_date = timezone.now()
         self.save()
+
+    @property
+    def created_by_username(self):
+        if self.created_by is not None:
+            if self.created_by.email is not None and self.created_by.email.strip() != "":
+                return self.created_by.email.split("@")[0]
+            elif self.created_by.username is not None and self.created_by.username.strip() != "":
+                if "@" in self.created_by.username:
+                    return self.created_by.username.split("@")[0]
+                else:
+                    return self.created_by.username
+
+        return None
 
 
 class BarrierCompany(BaseModel):
