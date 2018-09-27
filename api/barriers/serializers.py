@@ -70,6 +70,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "problem_status",
             "is_resolved",
             "barrier_title",
+            "sectors_affected",
+            "sectors",
             "export_country",
             "contributor_count",
             "current_status",
