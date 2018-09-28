@@ -5,7 +5,7 @@ from django.db import migrations
 actual_dummies_to_add = [
     {
         "title": "Locally produced material in goods",
-        "description": "<p.The requirement that goods contain a high proportion of locally produced material.</p>",
+        "description": "<p>The requirement that goods contain a high proportion of locally produced material.</p>",
         "category": "GOODS",
     },
     {
