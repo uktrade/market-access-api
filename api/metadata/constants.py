@@ -71,7 +71,7 @@ CONTRIBUTOR_TYPE = Choices(
 
 BARRIER_SOURCE = Choices(
     ("COMPANY", "Company"),
-    ("TRADE", "Trade Association"),
-    ("GOVT", "Government Lead"),
+    ("TRADE", "Trade association"),
+    ("GOVT", "Government entity"),
     ("OTHER", "Other"),
 )
