@@ -10,7 +10,7 @@ actual_dummies_to_add = [
     },
     {
         "title": "Restrictions on live animals, or animal and plant products",
-        "description": "<p>These sanitary and phytosanitary measures are implemented to protect human, animal, or plant health life. Threats to human, animal or plant health could arise from:<li>additives</li><li>contaminants</li><li>toxins</li><li>disease-causing organisms</li></p>",
+        "description": "<p>These sanitary and phytosanitary measures are implemented to protect human, animal, or plant health life. Threats to human, animal or plant health could arise from:<ul><li>additives</li><li>contaminants</li><li>toxins</li><li>disease-causing organisms</li></ul></p>",
         "category": "GOODS",
     },
     {
@@ -25,7 +25,7 @@ actual_dummies_to_add = [
     },
     {
         "title": "Quality measures on goods",
-        "description": "<p>Conditions of performance of goods, for example durability or hardness or quality of goods, for example content of defined ingredients.<br>These measures include:<li>product definitions</li><li>grading standards</li><li>production or processing regulations</li></p>",
+        "description": "<p>Conditions of performance of goods, for example durability or hardness or quality of goods, for example content of defined ingredients.<br>These measures include:<ul><li>product definitions</li><li>grading standards</li><li>production or processing regulations</li></ul></p>",
         "category": "GOODS",
     },
     {
@@ -55,7 +55,7 @@ actual_dummies_to_add = [
     },
     {
         "title": "Restrictions on foreign entry or movement of people",
-        "description": "<p>This includes:<li>visa costs</li><li>difficulties getting visas to do business</li><li>residence or nationality requirements</li><li>restrictions on buying land as foreign service supplier</li></p>",
+        "description": "<p>This includes:<ul><li>visa costs</li><li>difficulties getting visas to do business</li><li>residence or nationality requirements</li><li>restrictions on buying land as foreign service supplier</li></ul></p>",
         "category": "SERVICES",
     },
     {
@@ -140,7 +140,7 @@ actual_dummies_to_add = [
     },
     {
         "title": "Intellectual property rights and regulations",
-        "description": "<p>This includes trade related intellectual property legislation and covers:<li>patents</li><li>trademarks</li><li>industrial designs</li><li>layout designs of integrated circuits</li><li>copyright</li><li>geographical indications</li><li>trade secrets</li></p>",
+        "description": "<p>This includes trade related intellectual property legislation and covers:<ul><li>patents</li><li>trademarks</li><li>industrial designs</li><li>layout designs of integrated circuits</li><li>copyright</li><li>geographical indications</li><li>trade secrets</li></ul></p>",
         "category": "GOODSANDSERVICES",
     },
     {
