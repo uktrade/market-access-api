@@ -73,21 +73,31 @@ class MetadataView(generics.GenericAPIView):
         report_stages = dict(
             (stage.code, stage.description) for stage in Stage.objects.all()
         )
-        barrier_types = [
+        barrier_goods = [
             {
                 "id": barrier_type.id,
                 "title": barrier_type.title,
                 "description": barrier_type.description,
-                "category": barrier_type.category,
+                "category": "GOODS",
             }
-            for barrier_type in BarrierType.objects.all()
+            for barrier_type in BarrierType.goods.all()
         ]
+        barrier_services = [
+            {
+                "id": barrier_type.id,
+                "title": barrier_type.title,
+                "description": barrier_type.description,
+                "category": "SERVICES",
+            }
+            for barrier_type in BarrierType.services.all()
+        ]
+        barrier_types = barrier_goods + barrier_services
 
         dh_countries = self.import_api_results("country")
         dh_sectors = self.import_api_results("sector")
 
         barrier_status = dict((x, y) for x, y in BARRIER_STATUS)
-        barrier_type_cat = dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES)
+        barrier_type_cat = dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES")
         barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
