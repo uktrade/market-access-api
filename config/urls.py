@@ -32,7 +32,7 @@ urlpatterns = [
     path("reports/<uuid:pk>", BarrierReportDetail.as_view(), name="get-report"),
     path("reports/<uuid:pk>/submit", BarrierReportSubmit.as_view(), name="submit-report"),
 
-    path("metadata", MetadataView.as_view()),
+    path("metadata", MetadataView.as_view(), name="metadata"),
 
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/count", barrier_count),

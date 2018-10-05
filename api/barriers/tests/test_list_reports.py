@@ -1,10 +1,9 @@
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barriers.models import BarrierInstance
 from api.core.test_utils import APITestMixin, create_test_user
-
-from api.barriers.tests.test_utils import TestUtils
+from ..models import BarrierInstance
+from .test_utils import TestUtils
 
 
 class TestListReports(APITestMixin):
