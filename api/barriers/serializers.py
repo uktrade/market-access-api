@@ -51,11 +51,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "barrier_type",
             "barrier_type_category",
             "progress",
-<<<<<<< HEAD
             "created_by",
-=======
-            "reported_by",
->>>>>>> adding audit history views for each barrier
             "created_on",
         )
         read_only_fields = ("id", "progress", "created_on")
