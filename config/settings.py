@@ -114,6 +114,11 @@ AUTHENTICATION_BACKENDS = [
     'authbroker_client.backends.AuthbrokerBackend',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'authbroker_client.backends.AuthbrokerBackend',
+]
+
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 CHAR_FIELD_MAX_LENGTH = 255
 # DataHub API

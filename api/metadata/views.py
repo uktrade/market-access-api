@@ -61,6 +61,35 @@ class MetadataView(generics.GenericAPIView):
 
         return None
 
+    def get_barrier_types(self):
+        barrier_goods = [
+            {
+                "id": barrier_type.id,
+                "title": barrier_type.title,
+                "description": barrier_type.description,
+                "category": "GOODS",
+            }
+            for barrier_type in BarrierType.goods.all()
+        ]
+        barrier_services = [
+            {
+                "id": barrier_type.id,
+                "title": barrier_type.title,
+                "description": barrier_type.description,
+                "category": "SERVICES",
+            }
+            for barrier_type in BarrierType.services.all()
+        ]
+        return barrier_goods + barrier_services
+
+    def get_barrier_type_categories(self):
+        return dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES")
+
+    def get_reporting_stages(self):
+        return dict(
+            (stage.code, stage.description) for stage in Stage.objects.all()
+        )
+
     def get(self, request):
         status_types = dict((x, y) for x, y in PROBLEM_STATUS_TYPES)
         loss_range = dict((x, y) for x, y in ESTIMATED_LOSS_RANGE)
@@ -70,28 +99,17 @@ class MetadataView(generics.GenericAPIView):
         publish_response = dict((x, y) for x, y in PUBLISH_RESPONSE)
         report_status = dict((x, y) for x, y in REPORT_STATUS)
         support_type = dict((x, y) for x, y in SUPPORT_TYPE)
-        report_stages = dict(
-            (stage.code, stage.description) for stage in Stage.objects.all()
-        )
-        barrier_types = [
-            {
-                "id": barrier_type.id,
-                "title": barrier_type.title,
-                "description": barrier_type.description,
-                "category": barrier_type.category,
-            }
-            for barrier_type in BarrierType.objects.all()
-        ]
+        barrier_status = dict((x, y) for x, y in BARRIER_STATUS)
+        barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
+        barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
+        barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
 
         dh_countries = self.import_api_results("country")
         dh_sectors = self.import_api_results("sector")
 
-        barrier_status = dict((x, y) for x, y in BARRIER_STATUS)
-        barrier_type_cat = dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES)
-        barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
-        barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
-        barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
-        
+        report_stages = self.get_reporting_stages()
+        barrier_types = self.get_barrier_types()
+        barrier_type_cat = self.get_barrier_type_categories()        
 
         results = {
             "status_types": status_types,
