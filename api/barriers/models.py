@@ -13,6 +13,7 @@ from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
+    BARRIER_TYPE_CATEGORIES,
     CONTRIBUTOR_TYPE,
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
@@ -101,6 +102,13 @@ class BarrierInstance(BaseModel):
         default=None,
         related_name="barrier_type",
         on_delete=models.SET_NULL,
+    )
+    barrier_type_category = models.CharField(
+        choices=BARRIER_TYPE_CATEGORIES,
+        max_length=25,
+        null=True,
+        default=None,
+        help_text="barrier type category"
     )
 
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)

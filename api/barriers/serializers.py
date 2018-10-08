@@ -28,6 +28,7 @@ class BarrierReportStageListingField(serializers.RelatedField):
 class BarrierReportSerializer(serializers.ModelSerializer):
     progress = BarrierReportStageListingField(many=True, read_only=True)
     created_by = serializers.SerializerMethodField()
+    barrier_type = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -48,6 +49,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "barrier_title",
             "problem_description",
             "barrier_type",
+            "barrier_type_category",
             "progress",
 <<<<<<< HEAD
             "created_by",
@@ -60,6 +62,17 @@ class BarrierReportSerializer(serializers.ModelSerializer):
 
     def get_created_by(self, obj):
         return obj.created_by_username
+
+    def get_barrier_type(self, obj):
+        if obj.barrier_type is None:
+            return None
+        else:
+            return {
+                "id": obj.barrier_type.id,
+                "title": obj.barrier_type.title,
+                "description": obj.barrier_type.description,
+                "category": obj.barrier_type_category
+            }
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
@@ -90,7 +103,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
     def get_current_status(self, obj):
         """  Custom Serializer Method Field for exposing current barrier status as json """
-        # barrier_status = BarrierStatus.objects.filter(barrier=obj).latest("created_on")
         return {
             "status": obj.status,
             "status_date": obj.status_date,
@@ -110,6 +122,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
     current_status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
+    barrier_type = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -127,6 +140,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "barrier_title",
             "problem_description",
             "barrier_type",
+            "barrier_type_category",
             "reported_on",
             "reported_by",
             "current_status",
@@ -139,6 +153,17 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
     def get_reported_by(self, obj):
         return obj.created_by_username
+
+    def get_barrier_type(self, obj):
+        if obj.barrier_type is None:
+            return None
+        else:
+            return {
+                "id": obj.barrier_type.id,
+                "title": obj.barrier_type.title,
+                "description": obj.barrier_type.description,
+                "category": obj.barrier_type_category
+            }
 
     def get_current_status(self, obj):
         return {
