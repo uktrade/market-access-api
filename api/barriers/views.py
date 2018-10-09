@@ -35,13 +35,62 @@ from api.metadata.models import BarrierType
 
 from api.metadata.models import BarrierType
 
+from api.user.utils import has_profile
+
 UserModel = get_user_model()
 
 
 @api_view(["GET"])
 def barrier_count(request):
-    """ view to return number of barriers in the system """
-    return Response({"count": BarrierInstance.barriers.count()})
+    """ 
+    view to return number of barriers and reports in the system
+    total counts, user counts, country counts and region counts
+    {
+        "barrier_count": 8,
+        "unfinished_report_count": 6,
+        "user": {
+            "barrier_count": 1,
+            "unfinished_report_count": 2,
+            "country": {
+                "barrier_count": 1,
+                "unfinished_report_count": 0
+            },
+            "region": {
+                "barrier_count": 1,
+                "unfinished_report_count": 2
+            }
+        }
+    }
+    """
+    current_user = request.user
+    user_count = None
+    if current_user:
+        user_barrier_count = BarrierInstance.barriers.filter(created_by=current_user).count()
+        user_report_count = BarrierInstance.reports.filter(created_by=current_user).count()
+        user_count = {
+            "barrier_count": user_barrier_count,
+            "unfinished_report_count": user_report_count,
+        }
+        country_barrier_count = None
+        country_report_count = None
+        country_count = None
+        if has_profile(current_user) and current_user.profile.location:
+            country = current_user.profile.location
+            country_barrier_count = BarrierInstance.barriers.filter(export_country=country).count()
+            country_report_count = BarrierInstance.reports.filter(export_country=country).count()
+            country_count = {
+                "barrier_count": country_barrier_count,
+                "unfinished_report_count": country_report_count
+            }
+            user_count["country"] = country_count
+
+    counts = {
+        "barrier_count": BarrierInstance.barriers.count(),
+        "unfinished_report_count": BarrierInstance.reports.count(),
+    }
+    if user_count:
+        counts["user"] = user_count
+    return Response(counts)
 
 
 class BarrierReportBase(object):
