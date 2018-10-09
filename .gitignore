@@ -44,9 +44,11 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*.cover
+*,cover
 .hypothesis/
-.pytest_cache/
+/codecov.sh
+/test-reports/
+/.pytest_cache/
 
 # Translations
 *.mo

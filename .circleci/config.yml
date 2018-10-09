@@ -1,0 +1,80 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      - image: circleci/python:3.6.1
+      
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      - image: postgres:9.6
+        environment:
+          POSTGRES_DB=market_access
+
+    environment:
+      DATABASE_URL: postgresql://postgres@localhost/market_access
+      DATAHUB_SECRET: secret
+      DEBUG: 'True'
+      DJANGO_SECRET_KEY: changeme
+      DJANGO_SETTINGS_MODULE: config.settings
+      FAKE_METADATA: 'True'
+      HAWK_ENABLED: 'False'
+      SSO_ENABLED: 'True'
+      RESOURCE_SERVER_INTROSPECTION_URL: http://sso/o/introspect/
+      RESOURCE_SERVER_AUTH_TOKEN: sso-token
+      SENTRY_DSN: ''
+      DH_METADATA_URL: https://datahub-api-dev.cloudapps.digital/metadata/
+      HAWK_ENABLED: 'False'
+      HAWK_KEY: hawkkey
+      HAWK_ID: metadata
+      AUTHBROKER_URL: http://sso/o/
+      AUTHBROKER_CLIENT_ID: auth client
+      AUTHBROKER_CLIENT_SECRET: auth secret
+      ALLOWED_ADMIN_IPS: 1.2.3.4
+      RESTRICT_ADMIN: 'False'
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+        
+      # run tests!
+      # this example uses Django's built-in test-runner
+      # other common Python testing frameworks include pytest and nose
+      # https://pytest.org
+      # https://nose.readthedocs.io
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            python -m pytest -p no:sugar --cov api --junitxml=test-reports/junit.xml
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+          
