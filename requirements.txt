@@ -65,7 +65,7 @@ toml==0.9.4
 typed-ast==1.1.0
 urllib3==1.22
 URLObject==2.4.3
-waitress==0.8.9
+waitress==1.1.0
 whitenoise==1.0.6
 wrapt==1.10.11
 -e git+https://github.com/uktrade/django-staff-sso-client.git@861105d277ea7fc4fbce1063c69ac05c9a681103#egg=django_staff_sso_client
