@@ -21,7 +21,7 @@ jobs:
       DATABASE_URL: postgresql://postgres@localhost/market_access
       DATAHUB_SECRET: secret
       DEBUG: 'True'
-      DJANGO_SECRET_KEY: changeme
+      SECRET_KEY: changeme
       DJANGO_SETTINGS_MODULE: config.settings
       FAKE_METADATA: 'True'
       HAWK_ENABLED: 'False'
