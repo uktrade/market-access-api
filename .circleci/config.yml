@@ -21,7 +21,7 @@ jobs:
       DATABASE_URL: postgresql://postgres@localhost/market_access
       DATAHUB_SECRET: secret
       DEBUG: 'True'
-      DJANGO_SECRET_KEY: changeme
+      SECRET_KEY: changeme
       DJANGO_SETTINGS_MODULE: config.settings
       FAKE_METADATA: 'True'
       HAWK_ENABLED: 'False'
@@ -30,7 +30,6 @@ jobs:
       RESOURCE_SERVER_AUTH_TOKEN: sso-token
       SENTRY_DSN: ''
       DH_METADATA_URL: https://datahub-api-dev.cloudapps.digital/metadata/
-      HAWK_ENABLED: 'False'
       HAWK_KEY: hawkkey
       HAWK_ID: metadata
       AUTHBROKER_URL: http://sso/o/
