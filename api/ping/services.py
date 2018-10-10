@@ -1,3 +1,4 @@
+from api.barriers.models import BarrierInstance
 from django.db import DatabaseError
 
 
@@ -9,7 +10,7 @@ class CheckDatabase:
     def check(self):
         """Perform data check."""
         try:
-            # return True for now, will have to change once we have few models in place
+            BarrierInstance.objects.all().exists()
             return True, ""
         except DatabaseError as e:
             return False, e

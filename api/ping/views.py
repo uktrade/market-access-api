@@ -1,5 +1,9 @@
+from django.conf import settings
 from django.http import HttpResponse
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
+from hawkrest import HawkAuthentication
 
 from .services import services_to_check
 
@@ -13,6 +17,13 @@ COMMENT_TEMPLATE = "<!--{comment}-->\n"
 
 def ping(request):
     """Ping view."""
+    if settings.HAWK_ENABLED:
+        authentication_classes = (HawkAuthentication,)
+        permission_classes = (IsAuthenticated,)
+    else:
+        authentication_classes = ()
+        permission_classes = ()
+
     checked = {}
     for service in services_to_check:
         checked[service.name] = service().check()
