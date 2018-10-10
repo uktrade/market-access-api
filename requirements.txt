@@ -66,6 +66,6 @@ typed-ast==1.1.0
 urllib3==1.23
 URLObject==2.4.3
 waitress==1.1.0
-whitenoise==4.1
+whitenoise==3.3.1
 wrapt==1.10.11
 -e git+https://github.com/uktrade/django-staff-sso-client.git@861105d277ea7fc4fbce1063c69ac05c9a681103#egg=django_staff_sso_client
