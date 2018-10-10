@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.http import HttpResponse
 from rest_framework import status
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from hawkrest import HawkAuthentication
@@ -14,16 +15,11 @@ PINGDOM_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 
 COMMENT_TEMPLATE = "<!--{comment}-->\n"
 
-
+@api_view()
+@authentication_classes([HawkAuthentication])
+@permission_classes([IsAuthenticated])
 def ping(request):
     """Ping view."""
-    if settings.HAWK_ENABLED:
-        authentication_classes = (HawkAuthentication,)
-        permission_classes = (IsAuthenticated,)
-    else:
-        authentication_classes = ()
-        permission_classes = ()
-
     checked = {}
     for service in services_to_check:
         checked[service.name] = service().check()
