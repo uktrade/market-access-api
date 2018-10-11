@@ -15,16 +15,12 @@ PINGDOM_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 
 COMMENT_TEMPLATE = "<!--{comment}-->\n"
 
-if settings.HAWK_ENABLED:
-    hawk = [HawkAuthentication]
-    auth = [IsAuthenticated]
-else:
-    hawk = []
-    auth = []
+HAWK = [HawkAuthentication] if settings.HAWK_ENABLED else []
+AUTH = [IsAuthenticated] if settings.HAWK_ENABLED else []
 
 @api_view()
-@authentication_classes(hawk)
-@permission_classes(auth)
+@authentication_classes(HAWK)
+@permission_classes(AUTH)
 def ping(request):
     """Ping view."""
     checked = {}
