@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from api.barriers.models import (
-    BarrierCompany,
     BarrierContributor,
     BarrierInstance,
     BarrierInteraction,
@@ -88,6 +87,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "barrier_title",
             "sectors_affected",
             "sectors",
+            "companies",
             "export_country",
             "contributor_count",
             "current_status",
@@ -130,6 +130,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "export_country",
             "sectors_affected",
             "sectors",
+            "companies",
             "product",
             "source",
             "other_source",
@@ -183,16 +184,6 @@ class BarrierContributorSerializer(serializers.ModelSerializer):
         model = BarrierContributor
         fields = "__all__"
         read_only_fields = ("barrier", "created_on", "created_by")
-
-
-class BarrierCompanySerializer(serializers.ModelSerializer):
-    """ Serializer for Barrier Companies """
-
-    class Meta:
-        model = BarrierCompany
-        fields = fields = "__all__"
-        read_only_fields = ("barrier", "created_on", "created_by", "modified_on", "modified_by")
-
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
