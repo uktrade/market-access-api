@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -84,6 +84,7 @@ class BarrierInstance(BaseModel):
         null=True,
         default=None
     )
+    companies = JSONField(null=True, default=None)
 
     product = models.CharField(max_length=255, null=True)
     source = models.CharField(
@@ -221,26 +222,6 @@ class BarrierInstance(BaseModel):
                 return self.created_by.email.split("@")[0]
 
         return None
-
-
-class BarrierCompany(BaseModel):
-    """ Many to Many between barrier and company """
-    barrier = models.ForeignKey(
-        BarrierInstance, related_name="companies", on_delete=models.PROTECT
-    )
-    company_id = models.UUIDField(
-        null=False, help_text='Data hub company UUID'
-    )
-    company_name = models.CharField(
-        max_length=MAX_LENGTH, null=False, help_text='Data hub company name'
-    )
-
-    history = HistoricalRecords()
-
-    history = HistoricalRecords()
-
-    class Meta:
-        unique_together = (("barrier", "company_id"),)
 
 
 class BarrierReportStage(BaseModel):
