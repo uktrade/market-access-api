@@ -84,6 +84,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "reported_by",
             "problem_status",
             "is_resolved",
+            "resolved_date",
             "barrier_title",
             "sectors_affected",
             "sectors",
@@ -91,6 +92,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "export_country",
             "contributor_count",
             "current_status",
+            "barrier_type",
+            "barrier_type_category",
             "created_on"
         )
 
