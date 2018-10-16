@@ -6,6 +6,10 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+import django_filters
+from django_filters import Filter
+from django_filters.fields import Lookup
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
@@ -40,7 +44,7 @@ UserModel = get_user_model()
 
 @api_view(["GET"])
 def barrier_count(request):
-    """ 
+    """
     view to return number of barriers and reports in the system
     total counts, user counts, country counts and region counts
     {
@@ -125,7 +129,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
         and filtering against a `user` query parameter
         """
         queryset = BarrierInstance.reports.all()
-        country = self.request.query_params.get("country", None)
+        country = self.request.query_params.get("export_country", None)
         if country is not None:
             queryset = queryset.filter(export_country=country)
         return queryset
@@ -187,28 +191,50 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         #             ).save()
 
 
+class BarrierFilterSet(django_filters.FilterSet):
+    start_date = django_filters.DateFilter("status_date", lookup_expr='gte')
+    end_date = django_filters.DateFilter("status_date", lookup_expr='lte')
+    barrier_type = django_filters.ModelMultipleChoiceFilter(
+        queryset=BarrierType.objects.all(),
+        to_field_name='id',
+        conjoined=True,
+    )
+    sector = django_filters.UUIDFilter(method="sector_filter")
+
+    class Meta:
+        model = BarrierInstance
+        fields = ['export_country', 'barrier_type', 'sector', 'start_date', 'end_date']
+
+    def sector_filter(self, queryset, name, value):
+        """
+        custom filter to enable filtering Sectors, which is ArrayField
+        """
+        return queryset.filter(sectors__contains=[value])
+
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the BarrierInstances with optional filtering.
     """
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = BarrierFilterSet
 
-    def get_queryset(self):
-        """
-        Optionally restricts the returned barriers to a given export_country,
-        by filtering against a `country` query parameter in the URL.
-        and filtering against a `user` query parameter
-        """
-        queryset = BarrierInstance.barriers.all()
-        country = self.request.query_params.get("country", None)
-        if country is not None:
-            queryset = queryset.filter(export_country=country)
-        user_id = self.request.query_params.get("user", None)
-        if user_id is not None:
-            user = UserModel.objects.get(id=user_id)
-            queryset = queryset.filter(created_by=user)
-        return queryset
+    # def get_queryset(self):
+    #     """
+    #     Optionally restricts the returned barriers to a given export_country,
+    #     by filtering against a `country` query parameter in the URL.
+    #     and filtering against a `user` query parameter
+    #     """
+    #     queryset = BarrierInstance.barriers.all()
+    #     # country = self.request.query_params.get("country", None)
+    #     # if country is not None:
+    #     #     queryset = queryset.filter(export_country=country)
+    #     user_id = self.request.query_params.get("user", None)
+    #     if user_id is not None:
+    #         user = UserModel.objects.get(id=user_id)
+    #         queryset = queryset.filter(created_by=user)
+    #     return queryset
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
