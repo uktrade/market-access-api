@@ -31,7 +31,10 @@ from api.barriers.serializers import (
     BarrierResolveSerializer,
     BarrierReportSerializer,
 )
-from api.metadata.constants import BARRIER_INTERACTION_TYPE
+from api.metadata.constants import (
+    BARRIER_INTERACTION_TYPE,
+    BARRIER_STATUS
+)
 
 from api.metadata.models import BarrierType
 
@@ -87,7 +90,11 @@ def barrier_count(request):
             user_count["country"] = country_count
 
     counts = {
-        "barrier_count": BarrierInstance.barriers.count(),
+        "barriers": {
+            "total": BarrierInstance.barriers.count(),
+            "open": BarrierInstance.barriers.filter(status=2).count(),
+            "resolved": BarrierInstance.barriers.filter(status=4).count()
+        },
         "unfinished_report_count": BarrierInstance.reports.count(),
     }
     if user_count:
