@@ -73,8 +73,8 @@ def barrier_count(request):
         user_barrier_count = BarrierInstance.barriers.filter(created_by=current_user).count()
         user_report_count = BarrierInstance.reports.filter(created_by=current_user).count()
         user_count = {
-            "barrier_count": user_barrier_count,
-            "unfinished_report_count": user_report_count,
+            "barriers": user_barrier_count,
+            "reports": user_report_count,
         }
         country_barrier_count = None
         country_report_count = None
@@ -84,8 +84,8 @@ def barrier_count(request):
             country_barrier_count = BarrierInstance.barriers.filter(export_country=country).count()
             country_report_count = BarrierInstance.reports.filter(export_country=country).count()
             country_count = {
-                "barrier_count": country_barrier_count,
-                "unfinished_report_count": country_report_count
+                "barriers": country_barrier_count,
+                "reports": country_report_count
             }
             user_count["country"] = country_count
 
@@ -95,7 +95,7 @@ def barrier_count(request):
             "open": BarrierInstance.barriers.filter(status=2).count(),
             "resolved": BarrierInstance.barriers.filter(status=4).count()
         },
-        "unfinished_report_count": BarrierInstance.reports.count(),
+        "reports": BarrierInstance.reports.count(),
     }
     if user_count:
         counts["user"] = user_count
