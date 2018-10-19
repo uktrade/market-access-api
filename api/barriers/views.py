@@ -51,18 +51,18 @@ def barrier_count(request):
     view to return number of barriers and reports in the system
     total counts, user counts, country counts and region counts
     {
-        "barrier_count": 8,
-        "unfinished_report_count": 6,
+        "barriers": 8,
+        "reports": 6,
         "user": {
-            "barrier_count": 1,
-            "unfinished_report_count": 2,
+            "barriers": 1,
+            "reports": 2,
             "country": {
-                "barrier_count": 1,
-                "unfinished_report_count": 0
+                "barriers": 1,
+                "reports": 0
             },
             "region": {
-                "barrier_count": 1,
-                "unfinished_report_count": 2
+                "barriers": 1,
+                "reports": 2
             }
         }
     }
