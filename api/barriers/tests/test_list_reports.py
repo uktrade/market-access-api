@@ -21,6 +21,32 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
 
+    def test_list_reports_archived_report(self):
+        BarrierInstance(problem_status=1).save()
+        url = reverse("list-reports")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        sample_user = create_test_user()
+        report = BarrierInstance.objects.first()
+        report.archive(user=sample_user)
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 0
+
+    def test_list_reports_archived_with_reason_report(self):
+        BarrierInstance(problem_status=1).save()
+        url = reverse("list-reports")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        sample_user = create_test_user()
+        report = BarrierInstance.objects.first()
+        report.archive(user=sample_user, reason="not a barrier")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 0
+
     def test_list_reports_get_multiple_reports(self):
         BarrierInstance(problem_status=1).save()
         BarrierInstance(problem_status=2).save()
