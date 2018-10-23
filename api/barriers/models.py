@@ -18,7 +18,7 @@ from api.metadata.constants import (
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
 )
-from api.core.models import BaseModel
+from api.core.models import ArchivableModel, BaseModel
 from api.metadata.models import BarrierType
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
@@ -56,16 +56,20 @@ class Stage(models.Model):
 class ReportManager(models.Manager):
     """ Manage reports within the model, with status 0 """
     def get_queryset(self):
-        return super(ReportManager, self).get_queryset().filter(Q(status=0))
+        return super(ReportManager, self).get_queryset().filter(
+            Q(status=0) & Q(archived=False)
+        )
 
 
 class BarrierManager(models.Manager):
     """ Manage barriers within the model, with status not 0 """
     def get_queryset(self):
-        return super(BarrierManager, self).get_queryset().filter(~Q(status=0))
+        return super(BarrierManager, self).get_queryset().filter(
+            ~Q(status=0) & Q(archived=False)
+        )
 
 
-class BarrierInstance(BaseModel):
+class BarrierInstance(BaseModel, ArchivableModel):
     """ Barrier Instance, converted from a completed and accepted Report """
     id = models.UUIDField(primary_key=True, default=uuid4)
     problem_status = models.PositiveIntegerField(
@@ -176,10 +180,6 @@ class BarrierInstance(BaseModel):
 
     def __str__(self):
         return self.barrier_title
-
-    objects = models.Manager()
-    reports = ReportManager()
-    barriers = BarrierManager()
 
     objects = models.Manager()
     reports = ReportManager()
