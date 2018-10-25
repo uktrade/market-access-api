@@ -1,4 +1,6 @@
+import datetime
 from uuid import uuid4
+from random import randrange
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
@@ -24,7 +26,23 @@ from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
+CHARSET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
+LENGTH = 3
+MAX_TRIES = 100
 
+
+def random_barrier_reference():
+    """
+    function to produce a readable reference number for barriers
+    format: B-YY-XXXX
+    where YY is year and Xs are random alpha-numerics
+    """
+    dd = datetime.datetime.now()
+    ref_code = f"B-{str(dd.year)[-2:]}-"
+    for i in range(LENGTH):
+        ref_code += CHARSET[randrange(0, len(CHARSET))]
+    return ref_code
+    
 
 class BarrierInteraction(BaseModel):
     """ Interaction records for each Barrier """
@@ -72,6 +90,12 @@ class BarrierManager(models.Manager):
 class BarrierInstance(BaseModel, ArchivableModel):
     """ Barrier Instance, converted from a completed and accepted Report """
     id = models.UUIDField(primary_key=True, default=uuid4)
+    code = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True,
+        unique=True,
+        help_text="readable reference code"
+    )
     problem_status = models.PositiveIntegerField(
         choices=PROBLEM_STATUS_TYPES, null=True
     )
@@ -90,7 +114,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     )
     companies = JSONField(null=True, default=None)
 
-    product = models.CharField(max_length=255, null=True)
+    product = models.CharField(max_length=MAX_LENGTH, null=True)
     source = models.CharField(
         choices=BARRIER_SOURCE,
         max_length=25,
@@ -223,6 +247,27 @@ class BarrierInstance(BaseModel, ArchivableModel):
 
         return None
 
+    def save(self, *args, **kwargs):
+        """
+        Upon creating new item, generate a readable reference code
+        by randomly picking LENGTH number of characters from CHARSET and
+        concatenating them to 2 digit year. If code has already
+        been used, repeat until a unique code is found,
+        or fail after trying MAX_TRIES number of times.
+        """
+        if not self.pk:
+            loop_num = 0
+            unique = False
+            while not unique:
+                if loop_num < MAX_TRIES:
+                    new_code = random_barrier_reference()
+                    if not BarrierInstance.objects.filter(code=new_code):
+                        self.code = new_code
+                        unique = True
+                    loop_num += 1
+                else:
+                    raise ValueError("Error generating a unique reference code.")
+        super(BarrierInstance, self).save(*args, **kwargs)
 
 class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
