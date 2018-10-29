@@ -236,7 +236,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
         """
         Upon creating new item, generate a readable reference code
         """
-        if not self.pk:
+        if self.code is None:
             loop_num = 0
             unique = False
             while not unique:
