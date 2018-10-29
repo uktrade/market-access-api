@@ -189,6 +189,8 @@ class BarrierInstance(BaseModel, ArchivableModel):
     history = HistoricalRecords()
 
     def __str__(self):
+        if self.barrier_title is None:
+            return self.code
         return self.barrier_title
 
     objects = models.Manager()
