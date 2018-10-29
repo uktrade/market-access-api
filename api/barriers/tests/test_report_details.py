@@ -795,3 +795,25 @@ class TestReportDetail(APITestMixin):
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})
         submit_response = self.api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
+
+    def test_report_check_reference_code(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(url, format="json", data={
+            "product": "Some product",
+            "source": "GOVT",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["product"] == "Some product"
+        assert detail_response.data["source"] == "GOVT"
+        assert detail_response.data["barrier_title"] == "Some title"
+        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["code"] != ""

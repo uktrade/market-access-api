@@ -24,25 +24,10 @@ from api.core.models import ArchivableModel, BaseModel
 from api.metadata.models import BarrierType
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
+from api.barriers.utils import random_barrier_reference
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
-CHARSET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ'
-LENGTH = 3
-MAX_TRIES = 100
 
-
-def random_barrier_reference():
-    """
-    function to produce a readable reference number for barriers
-    format: B-YY-XXXX
-    where YY is year and Xs are random alpha-numerics
-    """
-    dd = datetime.datetime.now()
-    ref_code = f"B-{str(dd.year)[-2:]}-"
-    for i in range(LENGTH):
-        ref_code += CHARSET[randrange(0, len(CHARSET))]
-    return ref_code
-    
 
 class BarrierInteraction(BaseModel):
     """ Interaction records for each Barrier """
@@ -247,19 +232,15 @@ class BarrierInstance(BaseModel, ArchivableModel):
 
         return None
 
-    def save(self, *args, **kwargs):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):      
         """
         Upon creating new item, generate a readable reference code
-        by randomly picking LENGTH number of characters from CHARSET and
-        concatenating them to 2 digit year. If code has already
-        been used, repeat until a unique code is found,
-        or fail after trying MAX_TRIES number of times.
         """
         if not self.pk:
             loop_num = 0
             unique = False
             while not unique:
-                if loop_num < MAX_TRIES:
+                if loop_num < settings.REF_CODE_MAX_TRIES:
                     new_code = random_barrier_reference()
                     if not BarrierInstance.objects.filter(code=new_code):
                         self.code = new_code
@@ -267,7 +248,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
                     loop_num += 1
                 else:
                     raise ValueError("Error generating a unique reference code.")
-        super(BarrierInstance, self).save(*args, **kwargs)
+        super(BarrierInstance, self).save(force_insert, force_update, using, update_fields)
 
 class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
