@@ -27,7 +27,7 @@ def get_default_test_user():
     return test_user
 
 
-def create_test_user(permission_codenames=(), **user_attrs):
+def create_test_user(permission_codenames=(), location=None, internal=False, **user_attrs):
     """
     :returns: user
     :param permission_codenames: list of codename permissions to be
@@ -46,6 +46,16 @@ def create_test_user(permission_codenames=(), **user_attrs):
     user_model = get_user_model()
     user = user_model(**user_defaults)
     user.save()
+
+    if location:
+        user.profile.location = location
+        user.profile.save()
+        user.save()
+
+    if internal:
+        user.profile.internal = internal
+        user.profile.save()
+        user.save()
 
     permissions = Permission.objects.filter(codename__in=permission_codenames)
     user.user_permissions.set(permissions)

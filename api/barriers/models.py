@@ -1,7 +1,9 @@
+import datetime
 from uuid import uuid4
+from random import randrange
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -22,6 +24,7 @@ from api.core.models import ArchivableModel, BaseModel
 from api.metadata.models import BarrierType
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
+from api.barriers.utils import random_barrier_reference
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -72,6 +75,12 @@ class BarrierManager(models.Manager):
 class BarrierInstance(BaseModel, ArchivableModel):
     """ Barrier Instance, converted from a completed and accepted Report """
     id = models.UUIDField(primary_key=True, default=uuid4)
+    code = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True,
+        unique=True,
+        help_text="readable reference code"
+    )
     problem_status = models.PositiveIntegerField(
         choices=PROBLEM_STATUS_TYPES, null=True
     )
@@ -88,8 +97,9 @@ class BarrierInstance(BaseModel, ArchivableModel):
         null=True,
         default=None
     )
+    companies = JSONField(null=True, default=None)
 
-    product = models.CharField(max_length=255, null=True)
+    product = models.CharField(max_length=MAX_LENGTH, null=True)
     source = models.CharField(
         choices=BARRIER_SOURCE,
         max_length=25,
@@ -179,6 +189,8 @@ class BarrierInstance(BaseModel, ArchivableModel):
     history = HistoricalRecords()
 
     def __str__(self):
+        if self.barrier_title is None:
+            return self.code
         return self.barrier_title
 
     objects = models.Manager()
@@ -222,26 +234,23 @@ class BarrierInstance(BaseModel, ArchivableModel):
 
         return None
 
-
-class BarrierCompany(BaseModel):
-    """ Many to Many between barrier and company """
-    barrier = models.ForeignKey(
-        BarrierInstance, related_name="companies", on_delete=models.PROTECT
-    )
-    company_id = models.UUIDField(
-        null=False, help_text='Data hub company UUID'
-    )
-    company_name = models.CharField(
-        max_length=MAX_LENGTH, null=False, help_text='Data hub company name'
-    )
-
-    history = HistoricalRecords()
-
-    history = HistoricalRecords()
-
-    class Meta:
-        unique_together = (("barrier", "company_id"),)
-
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):      
+        """
+        Upon creating new item, generate a readable reference code
+        """
+        if self.code is None:
+            loop_num = 0
+            unique = False
+            while not unique:
+                if loop_num < settings.REF_CODE_MAX_TRIES:
+                    new_code = random_barrier_reference()
+                    if not BarrierInstance.objects.filter(code=new_code):
+                        self.code = new_code
+                        unique = True
+                    loop_num += 1
+                else:
+                    raise ValueError("Error generating a unique reference code.")
+        super(BarrierInstance, self).save(force_insert, force_update, using, update_fields)
 
 class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """

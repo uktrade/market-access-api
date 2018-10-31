@@ -11,6 +11,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
     location = serializers.SerializerMethodField()
+    internal = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
@@ -22,6 +23,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "location",
+            "internal"
         )
 
     def get_location(self, obj):
@@ -34,3 +36,14 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
         except AttributeError:
             return None
+
+    def get_internal(self, obj):
+        try:
+            if obj.profile is not None and obj.profile.internal is not None:
+                return obj.profile.internal
+            else:
+                return False
+        except Profile.DoesNotExist:
+            return False
+        except AttributeError:
+            return False

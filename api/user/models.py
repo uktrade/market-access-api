@@ -6,6 +6,7 @@ from django.dispatch import receiver
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     location = models.UUIDField(null=True, blank=True)
+    internal = models.BooleanField(default=False)
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):

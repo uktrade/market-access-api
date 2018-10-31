@@ -1,8 +1,3 @@
-import json
-import os
-
-import requests
-
 from django.conf import settings
 from django.shortcuts import render
 
@@ -12,7 +7,7 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from urlobject import URLObject
+from .utils import import_api_results
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
@@ -41,25 +36,6 @@ class MetadataView(generics.GenericAPIView):
     else:
         authentication_classes = ()
         permission_classes = ()
-
-    MODELS = {"./country/": "countries"}
-
-    def import_api_results(self, endpoint):
-        # Avoid calling DH
-        fake_it = settings.FAKE_METADATA
-        if fake_it:
-            file_path = os.path.join(
-                settings.BASE_DIR, f"api/metadata/static/{endpoint}.json"
-            )
-            return json.loads(open(file_path).read())
-        base_url = URLObject(settings.DH_METADATA_URL)
-        meta_url = base_url.relative(f"./{endpoint}/")
-
-        response = requests.get(meta_url, verify=not settings.DEBUG)
-        if response.ok:
-            return response.json()
-
-        return None
 
     def get_barrier_types(self):
         barrier_goods = [
@@ -104,8 +80,8 @@ class MetadataView(generics.GenericAPIView):
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
 
-        dh_countries = self.import_api_results("country")
-        dh_sectors = self.import_api_results("sector")
+        dh_countries = import_api_results("country")
+        dh_sectors = import_api_results("sector")
 
         report_stages = self.get_reporting_stages()
         barrier_types = self.get_barrier_types()
