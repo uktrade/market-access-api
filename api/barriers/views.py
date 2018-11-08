@@ -69,7 +69,7 @@ def barrier_count(request):
     """
     current_user = request.user
     user_count = None
-    if current_user:
+    if not current_user.is_anonymous():
         user_barrier_count = BarrierInstance.barriers.filter(created_by=current_user).count()
         user_report_count = BarrierInstance.reports.filter(created_by=current_user).count()
         user_count = {
@@ -276,14 +276,6 @@ class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     queryset = BarrierInteraction.objects.all()
     serializer_class = BarrierInteractionSerializer
-
-    # def get_queryset(self):
-    #     return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-    # @transaction.atomic()
-    # def perform_update(self, serializer):
-    #     barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
-    #     serializer.save(barrier=barrier_obj)
 
 
 class BarrierInstanceHistory(GenericAPIView):
