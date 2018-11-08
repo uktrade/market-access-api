@@ -280,14 +280,6 @@ class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
     queryset = BarrierInteraction.objects.all()
     serializer_class = BarrierInteractionSerializer
 
-    # def get_queryset(self):
-    #     return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-    # @transaction.atomic()
-    # def perform_update(self, serializer):
-    #     barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
-    #     serializer.save(barrier=barrier_obj)
-
 
 class BarrierInstanceHistory(GenericAPIView):
     def _get_barrier(self, barrier_id):
