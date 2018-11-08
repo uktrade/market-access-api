@@ -69,7 +69,7 @@ def barrier_count(request):
     """
     current_user = request.user
     user_count = None
-    if not current_user.is_anonymous():
+    if not current_user.is_anonymous:
         user_barrier_count = BarrierInstance.barriers.filter(created_by=current_user).count()
         user_report_count = BarrierInstance.reports.filter(created_by=current_user).count()
         user_count = {
