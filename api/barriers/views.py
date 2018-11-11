@@ -343,6 +343,48 @@ class BarrierInstanceHistory(GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
+class BarrierStatuseHistory(GenericAPIView):
+    def get(self, request, pk):
+        status_field = "status"
+        barrier = BarrierInstance.barriers.get(id=pk)
+        history = barrier.history.all().order_by("history_date")
+        results = []
+        for new_record in history:
+            if new_record.history_type == "+":
+                results.append({
+                    "date": new_record.status_date,
+                    "event": "Report created",
+                    "old_status": None,
+                    "new_status": new_record.status,
+                    "status_summary": None,
+                    "user": new_record.history_user.email if new_record.history_user else ""
+                })
+            else:
+                status_change = None
+                delta = new_record.diff_against(old_record)
+                for change in delta.changes:
+                    if change.field == status_field:
+                        if change.old == 0 and (change.new == 2 or change.new == 4):
+                            event = "Barrier submitted"
+                        else:
+                            event = "Status changed"
+                        status_change = {
+                            "date": new_record.status_date,
+                            "event": event,
+                            "old_status": change.old,
+                            "new_status": change.new,
+                            "status_summary": new_record.status_summary,
+                            "user": new_record.history_user.email if new_record.history_user else ""
+                        }
+                if status_change:
+                    results.append(status_change)
+            old_record = new_record
+            response = {
+                "barrier_id": pk,
+                "status_history": results
+            }
+        return Response(response, status=status.HTTP_200_OK)
+
 class BarrierInstanceContributor(generics.ListCreateAPIView):
     queryset = BarrierContributor.objects.all()
     serializer_class = BarrierContributorSerializer
