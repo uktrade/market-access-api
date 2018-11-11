@@ -202,3 +202,376 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
         assert barrier["reported_by"] == "Test.User"
+
+    def test_barrier_status_history_submitted(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": False,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 2
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+
+    def test_barrier_status_history_submitted_resolved(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": True,
+            "resolved_date": "2018-09-10",
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 2
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 4
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+
+    def test_barrier_status_history_submitted_open_and_resolved(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": False,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 2
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+
+        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_response = self.api_client.put(resolve_barrier_url, format="json", data={
+            "status": 4,
+            "status_date": "2018-09-10",
+            "status_summary": "dummy summary"
+        })
+
+        url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 3
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+        assert response.data["status_history"][2]["old_status"] == 2
+        assert response.data["status_history"][2]["new_status"] == 4
+        assert response.data["status_history"][2]["event"] == "Status changed"
+        assert response.data["status_history"][2]["status_summary"] == "dummy summary"
+
+    def test_barrier_status_history_submitted_open_and_resolved_and_open(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": False,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        history_url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(history_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 2
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+
+        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_response = self.api_client.put(resolve_barrier_url, format="json", data={
+            "status": 4,
+            "status_date": "2018-09-10",
+            "status_summary": "dummy summary"
+        })
+
+        response = self.api_client.get(history_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 3
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+        assert response.data["status_history"][2]["old_status"] == 2
+        assert response.data["status_history"][2]["new_status"] == 4
+        assert response.data["status_history"][2]["event"] == "Status changed"
+        assert response.data["status_history"][2]["status_summary"] == "dummy summary"
+
+        open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
+        open_barrier_response = self.api_client.put(open_barrier_url, format="json", data={
+            "status": 2,
+            "status_date": "2018-09-10",
+        })
+        assert open_barrier_response.status_code == status.HTTP_200_OK
+
+        response = self.api_client.get(history_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 4
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+        assert response.data["status_history"][2]["old_status"] == 2
+        assert response.data["status_history"][2]["new_status"] == 4
+        assert response.data["status_history"][2]["event"] == "Status changed"
+        assert response.data["status_history"][2]["status_summary"] == "dummy summary"
+        assert response.data["status_history"][3]["old_status"] == 4
+        assert response.data["status_history"][3]["new_status"] == 2
+        assert response.data["status_history"][3]["event"] == "Status changed"
+        assert response.data["status_history"][3]["status_summary"] is None
+
+    def test_barrier_status_history_submitted_open_and_hibernated(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": False,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 2
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+
+        hibernate_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
+        hibernate_barrier_response = self.api_client.put(hibernate_barrier_url, format="json", data={
+            "status": 5,
+            "status_date": "2018-09-10",
+            "status_summary": "dummy summary"
+        })
+        assert hibernate_barrier_response.status_code == status.HTTP_200_OK
+
+        url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 3
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+        assert response.data["status_history"][2]["old_status"] == 2
+        assert response.data["status_history"][2]["new_status"] == 5
+        assert response.data["status_history"][2]["event"] == "Status changed"
+        assert response.data["status_history"][2]["status_summary"] == "dummy summary"
+
+    def test_barrier_status_history_submitted_open_and_hibernated_and_open(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(list_report_url, format="json", data={
+            "problem_status": 2,
+            "is_resolved": False,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "sectors_affected": True,
+            "sectors": [
+                "af959812-6095-e211-a939-e4115bead28a",
+                "9538cecc-5f95-e211-a939-e4115bead28a"
+            ],
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+        })
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        history_url = reverse("status-history", kwargs={"pk": instance.id})
+        response = self.api_client.get(history_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 2
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+
+        hibernate_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
+        hibernate_barrier_response = self.api_client.put(hibernate_barrier_url, format="json", data={
+            "status": 5,
+            "status_date": "2018-09-10",
+            "status_summary": "dummy summary"
+        })
+        assert hibernate_barrier_response.status_code == status.HTTP_200_OK
+
+        response = self.api_client.get(history_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 3
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+        assert response.data["status_history"][2]["old_status"] == 2
+        assert response.data["status_history"][2]["new_status"] == 5
+        assert response.data["status_history"][2]["event"] == "Status changed"
+        assert response.data["status_history"][2]["status_summary"] == "dummy summary"
+
+        open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
+        open_barrier_response = self.api_client.put(open_barrier_url, format="json", data={
+            "status": 2,
+            "status_date": "2018-09-10",
+        })
+        assert open_barrier_response.status_code == status.HTTP_200_OK
+
+        response = self.api_client.get(history_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == instance.id
+        assert len(response.data["status_history"]) == 4
+        assert response.data["status_history"][0]["old_status"] is None
+        assert response.data["status_history"][0]["new_status"] == 0
+        assert response.data["status_history"][0]["event"] == "Report created"
+        assert response.data["status_history"][1]["old_status"] == 0
+        assert response.data["status_history"][1]["new_status"] == 2
+        assert response.data["status_history"][1]["event"] == "Barrier submitted"
+        assert response.data["status_history"][2]["old_status"] == 2
+        assert response.data["status_history"][2]["new_status"] == 5
+        assert response.data["status_history"][2]["event"] == "Status changed"
+        assert response.data["status_history"][2]["status_summary"] == "dummy summary"
+        assert response.data["status_history"][3]["old_status"] == 5
+        assert response.data["status_history"][3]["new_status"] == 2
+        assert response.data["status_history"][3]["event"] == "Status changed"
+        assert response.data["status_history"][3]["status_summary"] is None
