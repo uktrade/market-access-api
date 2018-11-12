@@ -235,7 +235,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     Allows the barrier to be updated as well
     """
     lookup_field = "pk"
-    queryset = BarrierInstance.barriers.all()
+    queryset = BarrierInstance.obejcts.all()
     serializer_class = BarrierInstanceSerializer
 
     @transaction.atomic()
@@ -251,7 +251,7 @@ class BarrierInteractionList(generics.ListCreateAPIView):
     """
     Handling Barrier interactions, such as notes
     """
-    queryset = BarrierInteraction.barriers.all()
+    queryset = BarrierInteraction.objects.all()
     serializer_class = BarrierInteractionSerializer
 
     def get_queryset(self):
