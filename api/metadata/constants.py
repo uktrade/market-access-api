@@ -75,3 +75,9 @@ BARRIER_SOURCE = Choices(
     ("GOVT", "Government entity"),
     ("OTHER", "Other"),
 )
+
+TIMELINE_EVENTS = Choices(
+    ("REPORT_CREATED", "Report Created"),
+    ("BARRIER_CREATED", "Barrier Created"),
+    ("BARRIER_STATUS_CHANGE", "Barrier Status Change"),
+)
