@@ -33,7 +33,8 @@ from api.barriers.serializers import (
 )
 from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
-    BARRIER_STATUS
+    BARRIER_STATUS,
+    TIMELINE_EVENTS,
 )
 
 from api.metadata.models import BarrierType
@@ -361,11 +362,12 @@ class BarrierStatuseHistory(GenericAPIView):
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
+        TIMELINE_REVERTED = {v: k for k, v in TIMELINE_EVENTS}
         for new_record in history:
             if new_record.history_type == "+":
                 results.append({
                     "date": new_record.status_date,
-                    "event": "Report created",
+                    "event": TIMELINE_REVERTED["Report Created"],
                     "old_status": None,
                     "new_status": new_record.status,
                     "status_summary": None,
@@ -377,9 +379,9 @@ class BarrierStatuseHistory(GenericAPIView):
                 for change in delta.changes:
                     if change.field == status_field:
                         if change.old == 0 and (change.new == 2 or change.new == 4):
-                            event = "Barrier submitted"
+                            event = TIMELINE_REVERTED["Barrier Created"]
                         else:
-                            event = "Status changed"
+                            event = TIMELINE_REVERTED["Barrier Status Change"]
                         status_change = {
                             "date": new_record.status_date,
                             "event": event,
