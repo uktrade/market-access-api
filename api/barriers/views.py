@@ -371,7 +371,10 @@ class BarrierStatuseHistory(GenericAPIView):
                     "old_status": None,
                     "new_status": new_record.status,
                     "status_summary": None,
-                    "user": self._username_from_user(new_record.history_user)
+                    "user": {
+                        "id": new_record.history_user.id,
+                        "nmae": self._username_from_user(new_record.history_user),
+                    }
                 })
             else:
                 status_change = None
@@ -388,7 +391,10 @@ class BarrierStatuseHistory(GenericAPIView):
                             "old_status": change.old,
                             "new_status": change.new,
                             "status_summary": new_record.status_summary,
-                            "user": self._username_from_user(new_record.history_user)
+                            "user": {
+                                "id": new_record.history_user.id,
+                                "nmae": self._username_from_user(new_record.history_user),
+                            }
                         }
                 if status_change:
                     results.append(status_change)
