@@ -349,9 +349,15 @@ class BarrierStatuseHistory(GenericAPIView):
         if user is not None:
             if user.username is not None and user.username.strip() != "":
                 if "@" in user.username:
-                    return user.username.split("@")[0]
+                    return {
+                        "id": user.id,
+                        "name": user.username.split("@")[0],
+                    }
                 else:
-                    return user.username
+                    return {
+                        "id": user.id,
+                        "name": user.username,
+                    }
             elif user.email is not None and user.email.strip() != "":
                 return user.email.split("@")[0]
 
@@ -371,10 +377,7 @@ class BarrierStatuseHistory(GenericAPIView):
                     "old_status": None,
                     "new_status": new_record.status,
                     "status_summary": None,
-                    "user": {
-                        "id": new_record.history_user.id,
-                        "name": self._username_from_user(new_record.history_user),
-                    }
+                    "user": self._username_from_user(new_record.history_user),
                 })
             else:
                 status_change = None
@@ -391,10 +394,7 @@ class BarrierStatuseHistory(GenericAPIView):
                             "old_status": change.old,
                             "new_status": change.new,
                             "status_summary": new_record.status_summary,
-                            "user": {
-                                "id": new_record.history_user.id,
-                                "name": self._username_from_user(new_record.history_user),
-                            }
+                            "user": self._username_from_user(new_record.history_user),
                         }
                 if status_change:
                     results.append(status_change)
