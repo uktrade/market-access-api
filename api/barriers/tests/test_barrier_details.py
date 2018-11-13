@@ -237,9 +237,13 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["status_history"][0]["old_status"] is None
         assert response.data["status_history"][0]["new_status"] == 0
         assert response.data["status_history"][0]["event"] == "REPORT_CREATED"
+        assert response.data["status_history"][0]["status_date"] is not None
+        assert response.data["status_history"][0]["date"] is not None
         assert response.data["status_history"][1]["old_status"] == 0
         assert response.data["status_history"][1]["new_status"] == 2
         assert response.data["status_history"][1]["event"] == "BARRIER_CREATED"
+        assert response.data["status_history"][0]["status_date"] is not None
+        assert response.data["status_history"][0]["date"] is not None
 
     def test_barrier_status_history_submitted_user(self):
         a_user = create_test_user(
