@@ -283,11 +283,11 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["status_history"][0]["old_status"] is None
         assert response.data["status_history"][0]["new_status"] == 0
         assert response.data["status_history"][0]["event"] == "REPORT_CREATED"
-        assert response.data["status_history"][0]["user"] == "Test.User"
+        assert response.data["status_history"][0]["user"]["name"] == "Test.User"
         assert response.data["status_history"][1]["old_status"] == 0
         assert response.data["status_history"][1]["new_status"] == 2
         assert response.data["status_history"][1]["event"] == "BARRIER_CREATED"
-        assert response.data["status_history"][1]["user"] == "Test.User"
+        assert response.data["status_history"][1]["user"]["name"] == "Test.User"
     def test_barrier_status_history_submitted_resolved(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
