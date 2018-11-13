@@ -373,7 +373,7 @@ class BarrierStatuseHistory(GenericAPIView):
                     "status_summary": None,
                     "user": {
                         "id": new_record.history_user.id,
-                        "nmae": self._username_from_user(new_record.history_user),
+                        "name": self._username_from_user(new_record.history_user),
                     }
                 })
             else:
@@ -393,7 +393,7 @@ class BarrierStatuseHistory(GenericAPIView):
                             "status_summary": new_record.status_summary,
                             "user": {
                                 "id": new_record.history_user.id,
-                                "nmae": self._username_from_user(new_record.history_user),
+                                "name": self._username_from_user(new_record.history_user),
                             }
                         }
                 if status_change:
