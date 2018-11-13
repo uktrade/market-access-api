@@ -372,7 +372,8 @@ class BarrierStatuseHistory(GenericAPIView):
         for new_record in history:
             if new_record.history_type == "+":
                 results.append({
-                    "date": new_record.status_date,
+                    "date": new_record.history_date,
+                    "status_date": new_record.status_date,
                     "event": TIMELINE_REVERTED["Report Created"],
                     "old_status": None,
                     "new_status": new_record.status,
@@ -389,7 +390,8 @@ class BarrierStatuseHistory(GenericAPIView):
                         else:
                             event = TIMELINE_REVERTED["Barrier Status Change"]
                         status_change = {
-                            "date": new_record.status_date,
+                            "date": new_record.history_date,
+                            "status_date": new_record.status_date,
                             "event": event,
                             "old_status": change.old,
                             "new_status": change.new,
