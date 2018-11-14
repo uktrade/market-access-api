@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     "api.ping",
     "api.metadata",
     "api.user",
-    'authbroker_client',
+    "api.documents",
+    "authbroker_client",
 ]
 
 MIDDLEWARE = [
@@ -132,6 +133,19 @@ REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 100)
 # DataHub API
 DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
+
+# Documents
+AV_V2_SERVICE_URL = env('AV_V2_SERVICE_URL', default=None)
+DOCUMENT_BUCKETS = {
+    'default': {
+        'bucket': env('DEFAULT_BUCKET'),
+        'aws_access_key_id': env('AWS_ACCESS_KEY_ID', default=''),
+        'aws_secret_access_key': env('AWS_SECRET_ACCESS_KEY', default=''),
+        'aws_region': env('AWS_DEFAULT_REGION', default=''),
+    },
+}
+
+# Admin locking
 AUTHBROKER_URL = env("AUTHBROKER_URL")
 AUTHBROKER_CLIENT_ID = env("AUTHBROKER_CLIENT_ID")
 AUTHBROKER_CLIENT_SECRET = env("AUTHBROKER_CLIENT_SECRET")

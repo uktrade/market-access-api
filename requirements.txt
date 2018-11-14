@@ -4,6 +4,8 @@ atomicwrites==1.2.1
 attrs==18.2.0
 autopep8==1.4
 black==18.9b0
+boto3==1.9.42
+celery==4.2.1
 certifi==2018.8.24
 chardet==3.0.4
 Click==7.0
@@ -15,6 +17,7 @@ django-extensions==2.1.3
 django-filter==2.0.0
 django-model-utils==3.1.2
 django-oauth-toolkit==1.2.0
+django-pglocks==1.0.2
 django-simple-history==2.4.0
 -e git+https://github.com/uktrade/django-staff-sso-client.git@861105d277ea7fc4fbce1063c69ac05c9a681103#egg=django_staff_sso_client
 djangorestframework==3.8.2
@@ -60,6 +63,7 @@ pytz==2018.5
 raven==6.9.0
 requests==2.20.0
 requests-oauthlib==1.0.0
+requests_toolbelt==0.8.0
 six==1.11.0
 snowballstemmer==1.2.1
 termcolor==1.1.0
