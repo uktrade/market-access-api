@@ -368,6 +368,7 @@ class BarrierStatuseHistory(GenericAPIView):
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
+        old_record = None
         TIMELINE_REVERTED = {v: k for k, v in TIMELINE_EVENTS}
         for new_record in history:
             if new_record.history_type == "+":
@@ -381,25 +382,36 @@ class BarrierStatuseHistory(GenericAPIView):
                     "user": self._username_from_user(new_record.history_user),
                 })
             else:
-                status_change = None
-                delta = new_record.diff_against(old_record)
-                for change in delta.changes:
-                    if change.field == status_field:
-                        if change.old == 0 and (change.new == 2 or change.new == 4):
-                            event = TIMELINE_REVERTED["Barrier Created"]
-                        else:
-                            event = TIMELINE_REVERTED["Barrier Status Change"]
-                        status_change = {
-                            "date": new_record.history_date,
-                            "status_date": new_record.status_date,
-                            "event": event,
-                            "old_status": change.old,
-                            "new_status": change.new,
-                            "status_summary": new_record.status_summary,
-                            "user": self._username_from_user(new_record.history_user),
-                        }
-                if status_change:
-                    results.append(status_change)
+                if old_record is None:
+                    results.append({
+                        "date": new_record.history_date,
+                        "status_date": new_record.status_date,
+                        "event": TIMELINE_REVERTED["Barrier Status Change"],
+                        "old_status": None,
+                        "new_status": new_record.status,
+                        "status_summary": new_record.status_summary,
+                        "user": self._username_from_user(new_record.history_user),
+                    })
+                else:
+                    status_change = None
+                    delta = new_record.diff_against(old_record)
+                    for change in delta.changes:
+                        if change.field == status_field:
+                            if change.old == 0 and (change.new == 2 or change.new == 4):
+                                event = TIMELINE_REVERTED["Barrier Created"]
+                            else:
+                                event = TIMELINE_REVERTED["Barrier Status Change"]
+                            status_change = {
+                                "date": new_record.history_date,
+                                "status_date": new_record.status_date,
+                                "event": event,
+                                "old_status": change.old,
+                                "new_status": change.new,
+                                "status_summary": new_record.status_summary,
+                                "user": self._username_from_user(new_record.history_user),
+                            }
+                    if status_change:
+                        results.append(status_change)
             old_record = new_record
             response = {
                 "barrier_id": pk,
