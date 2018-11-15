@@ -69,7 +69,7 @@ def barrier_count(request):
     """
     current_user = request.user
     user_count = None
-    if current_user:
+    if not current_user.is_anonymous:
         user_barrier_count = BarrierInstance.barriers.filter(created_by=current_user).count()
         user_report_count = BarrierInstance.reports.filter(created_by=current_user).count()
         user_count = {
@@ -218,6 +218,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         return queryset.filter(sectors__contains=[value])
 
+
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the BarrierInstances with optional filtering.
@@ -226,22 +227,6 @@ class BarrierList(generics.ListAPIView):
     serializer_class = BarrierListSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = BarrierFilterSet
-
-    # def get_queryset(self):
-    #     """
-    #     Optionally restricts the returned barriers to a given export_country,
-    #     by filtering against a `country` query parameter in the URL.
-    #     and filtering against a `user` query parameter
-    #     """
-    #     queryset = BarrierInstance.barriers.all()
-    #     # country = self.request.query_params.get("country", None)
-    #     # if country is not None:
-    #     #     queryset = queryset.filter(export_country=country)
-    #     user_id = self.request.query_params.get("user", None)
-    #     if user_id is not None:
-    #         user = UserModel.objects.get(id=user_id)
-    #         queryset = queryset.filter(created_by=user)
-    #     return queryset
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
@@ -262,15 +247,18 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             serializer.save()
 
 
-class BarrierInstanceInteraction(generics.ListCreateAPIView):
+class BarrierInteractionList(generics.ListCreateAPIView):
+    """
+    Handling Barrier interactions, such as notes
+    """
     queryset = BarrierInteraction.objects.all()
     serializer_class = BarrierInteractionSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
+        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
+        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
         kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
         if settings.DEBUG is False:
             serializer.save(
@@ -278,6 +266,17 @@ class BarrierInstanceInteraction(generics.ListCreateAPIView):
             )
         else:
             serializer.save(barrier=barrier_obj, kind=kind)
+
+
+class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
+    """
+    Return details of a Barrier Interaction
+    Allows the barrier interaction to be updated as well
+    """
+    lookup_field = "pk"
+    queryset = BarrierInteraction.objects.all()
+    serializer_class = BarrierInteractionSerializer
+
 
 class BarrierInstanceHistory(GenericAPIView):
     def _get_barrier(self, barrier_id):
@@ -287,9 +286,9 @@ class BarrierInstanceHistory(GenericAPIView):
         except BarrierInstance.DoesNotExist:
             return False
 
-    def get(self, request, barrier_pk):
+    def get(self, request, pk):
         ignore_fields = ["modified_on"]
-        barrier = BarrierInstance.barriers.get(id=barrier_pk)
+        barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
         for new_record in history:
@@ -338,7 +337,7 @@ class BarrierInstanceHistory(GenericAPIView):
                         )
             old_record = new_record
             response = {
-                "barrier_id": barrier_pk,
+                "barrier_id": pk,
                 "history": results
             }
         return Response(response, status=status.HTTP_200_OK)
@@ -349,10 +348,10 @@ class BarrierInstanceContributor(generics.ListCreateAPIView):
     serializer_class = BarrierContributorSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("barrier_pk"))
+        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     # def perform_create(self, serializer):
-    #     barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("barrier_pk"))
+    #     barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
     #     if settings.DEBUG is False:
     #         serializer.save(
     #             barrier=barrier_obj, created_by=self.request.user

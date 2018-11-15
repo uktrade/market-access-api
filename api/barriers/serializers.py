@@ -81,6 +81,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
         model = BarrierInstance
         fields = (
             "id",
+            "code",
             "reported_on",
             "reported_by",
             "problem_status",
@@ -128,6 +129,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         model = BarrierInstance
         fields = (
             "id",
+            "code",
             "problem_status",
             "is_resolved",
             "resolved_date",
