@@ -24,6 +24,7 @@ from api.metadata.constants import (
     REPORT_STATUS,
     STAGE_STATUS,
     SUPPORT_TYPE,
+    TIMELINE_EVENTS,
 )
 from api.metadata.models import BarrierType
 from api.barriers.models import Stage
@@ -79,6 +80,7 @@ class MetadataView(generics.GenericAPIView):
         barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
+        timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
 
         dh_countries = import_api_results("country")
         dh_sectors = import_api_results("sector")
@@ -105,6 +107,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_chance_of_success": barrier_chance,
             "barrier_interaction_types": barrier_inter_type,
             "barrier_source": barrier_source,
+            "timeline_events": timeline_events,
         }
 
         return Response(results, status=status.HTTP_200_OK)

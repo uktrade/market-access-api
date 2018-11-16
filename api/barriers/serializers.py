@@ -57,7 +57,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "progress", "created_on")
 
     def get_created_by(self, obj):
-        return obj.created_by_username
+        return obj.created_user
 
     def get_barrier_type(self, obj):
         if obj.barrier_type is None:
@@ -100,7 +100,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
         )
 
     def get_reported_by(self, obj):
-        return obj.created_by_username
+        return obj.created_user
 
     def get_current_status(self, obj):
         """  Custom Serializer Method Field for exposing current barrier status as json """
@@ -124,6 +124,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     current_status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     barrier_type = serializers.SerializerMethodField()
+    modified_by = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -147,7 +148,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "reported_on",
             "reported_by",
             "current_status",
-            "created_on"
+            "created_on",
+            "modified_by",
+            "modified_on",
         )
         depth = 1
 
@@ -155,7 +158,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         return obj.created_on
 
     def get_reported_by(self, obj):
-        return obj.created_by_username
+        return obj.created_user
+
+    def get_modified_by(self, obj):
+        return obj.modified_user
 
     def get_barrier_type(self, obj):
         if obj.barrier_type is None:
@@ -178,10 +184,29 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
 class BarrierInteractionSerializer(serializers.ModelSerializer):
     """ Serialzer for Barrier Ineractions """
+    created_by = serializers.SerializerMethodField()
+
     class Meta:
         model = BarrierInteraction
-        fields = "__all__"
+        fields = (
+            "id",
+            "kind",
+            "text",
+            "pinned",
+            "is_active",
+            "created_on",
+            "created_by"
+        )
         read_only_fields = ("barrier", "kind", "created_on", "created_by")
+    
+    def get_created_by(self, obj):
+        if obj.created_by is None:
+            return None
+
+        return {
+            "id": obj.created_by.id,
+            "name": obj.created_user,
+        }
 
 
 class BarrierContributorSerializer(serializers.ModelSerializer):
