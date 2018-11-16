@@ -45,6 +45,14 @@ class BarrierInteraction(BaseModel):
     is_active = models.BooleanField(default=True)
     history = HistoricalRecords()
 
+    @property
+    def created_user(self):
+        return self._cleansed_username(self.created_by)
+
+    @property
+    def modified_user(self):
+        return self._cleansed_username(self.modified_by)
+
 
 class Stage(models.Model):
     """ Reporting workflow stages  """
@@ -206,7 +214,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
 
         return progress_list
 
-    def submit_report(self):
+    def submit_report(self, submitted_by=None):
         """ submit a report, convert it into a barrier. Changing status, essentially """
         for validator in [validators.ReportReadyForSubmitValidator()]:
             validator.set_instance(self)
@@ -217,22 +225,18 @@ class BarrierInstance(BaseModel, ArchivableModel):
         else:
             barrier_new_status = 2 # Assesment
             status_date = timezone.now()
+        self.modified_by = submitted_by
         self.status = barrier_new_status  # If all good, then accept the report for now
         self.status_date = status_date
         self.save()
 
     @property
-    def created_by_username(self):
-        if self.created_by is not None:
-            if self.created_by.username is not None and self.created_by.username.strip() != "":
-                if "@" in self.created_by.username:
-                    return self.created_by.username.split("@")[0]
-                else:
-                    return self.created_by.username
-            elif self.created_by.email is not None and self.created_by.email.strip() != "":
-                return self.created_by.email.split("@")[0]
+    def created_user(self):
+        return self._cleansed_username(self.created_by)
 
-        return None
+    @property
+    def modified_user(self):
+        return self._cleansed_username(self.modified_by)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):      
         """
