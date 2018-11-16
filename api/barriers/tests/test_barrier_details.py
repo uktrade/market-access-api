@@ -38,7 +38,6 @@ class TestBarrierDetail(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         # assert response["reported_by"] == self.user.username
 
-
     def test_barrier_with_user_empty_username(self):
         a_user = create_test_user(
             first_name="",
@@ -73,12 +72,14 @@ class TestBarrierDetail(APITestMixin):
         submit_response = new_api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
-        url = reverse("list-barriers")
-        response = new_api_client.get(url)
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = new_api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
-        barrier = response.data["results"][0]
+        barrier = response.data
         assert barrier["reported_by"] == "Testo"
+        assert barrier["created_on"] is not None
+        assert barrier["modified_by"] == "Testo"
+        assert barrier["modified_by"] is not None
 
     def test_barrier_with_user_email_as_username(self):
         a_user = create_test_user(
@@ -114,12 +115,14 @@ class TestBarrierDetail(APITestMixin):
         submit_response = new_api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
-        url = reverse("list-barriers")
-        response = new_api_client.get(url)
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = new_api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
-        barrier = response.data["results"][0]
+        barrier = response.data
         assert barrier["reported_by"] == "Testo"
+        assert barrier["created_on"] is not None
+        assert barrier["modified_by"] == "Testo"
+        assert barrier["modified_by"] is not None
 
     def test_barrier_with_user_normal_username(self):
         a_user = create_test_user(
@@ -155,12 +158,14 @@ class TestBarrierDetail(APITestMixin):
         submit_response = new_api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
-        url = reverse("list-barriers")
-        response = new_api_client.get(url)
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = new_api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
-        barrier = response.data["results"][0]
+        barrier = response.data
         assert barrier["reported_by"] == "Test.User"
+        assert barrier["created_on"] is not None
+        assert barrier["modified_by"] == "Test.User"
+        assert barrier["modified_by"] is not None
 
     def test_barrier_with_user_normal_username_and_email(self):
         a_user = create_test_user(
@@ -196,12 +201,14 @@ class TestBarrierDetail(APITestMixin):
         submit_response = new_api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
-        url = reverse("list-barriers")
-        response = new_api_client.get(url)
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = new_api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
-        barrier = response.data["results"][0]
+        barrier = response.data
         assert barrier["reported_by"] == "Test.User"
+        assert barrier["created_on"] is not None
+        assert barrier["modified_by"] == "Test.User"
+        assert barrier["modified_by"] is not None
 
     def test_barrier_status_history_submitted(self):
         list_report_url = reverse("list-reports")

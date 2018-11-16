@@ -179,24 +179,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         """
         # validate and submit a report
         report = self.get_object()
-        report.submit_report()
-
-        # sort out contributors
-        # if settings.DEBUG is False:
-        #         try:
-        #             BarrierContributor.objects.get(
-        #                 barrier=report,
-        #                 contributor=report.created_by,
-        #                 kind=CONTRIBUTOR_TYPE['LEAD'],
-        #                 is_active=True
-        #             )
-        #         except BarrierContributor.DoesNotExist:
-        #             BarrierContributor(
-        #                 barrier=report,
-        #                 contributor=report.created_by,
-        #                 kind=CONTRIBUTOR_TYPE['LEAD'],
-        #                 created_by=self.request.user
-        #             ).save()
+        report.submit_report(self.request.user)
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -243,9 +226,12 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         if self.request.data.get("barrier_type", None) is not None:
             barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
-            serializer.save(barrier_type=barrier_type)
+            serializer.save(
+                barrier_type=barrier_type,
+                modified_by=self.request.user
+            )
         else:
-            serializer.save()
+            serializer.save(modified_by=self.request.user)
 
 
 class BarrierInteractionList(generics.ListCreateAPIView):
@@ -261,12 +247,17 @@ class BarrierInteractionList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
         kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
-        if settings.DEBUG is False:
+        if settings.SSO_ENABLED:
             serializer.save(
-                barrier=barrier_obj, kind=kind, created_by=self.request.user
+                barrier=barrier_obj,
+                kind=kind,
+                created_by=self.request.user
             )
         else:
-            serializer.save(barrier=barrier_obj, kind=kind)
+            serializer.save(
+                barrier=barrier_obj,
+                kind=kind,
+            )
 
 
 class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
@@ -446,7 +437,8 @@ class BarrierStatusBase(generics.UpdateAPIView):
         serializer.save(
             status=barrier_status,
             status_summary=barrier_summary,
-            status_date=status_date
+            status_date=status_date,
+            modified_by=self.request.user
         )
         # if settings.DEBUG is False:
         #     serializer.save(
@@ -492,7 +484,8 @@ class BarrierResolve(BarrierStatusBase):
         serializer.save(
             status=4,
             status_summary=self.request.data.get("status_summary"),
-            status_date=self.request.data.get("status_date")
+            status_date=self.request.data.get("status_date"),
+            modified_by=self.request.user
         )
 
 
