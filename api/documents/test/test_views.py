@@ -16,7 +16,7 @@ from api.documents.test.my_entity_document.models import MyEntityDocument
 @pytest.fixture
 def test_urls():  # noqa: D403
     """pytest fixture to override the ROOT_URLCONF with test views."""
-    with override_settings(ROOT_URLCONF='datahub.documents.test.my_entity_document.urls'):
+    with override_settings(ROOT_URLCONF='api.documents.test.my_entity_document.urls'):
         yield
 
 
@@ -123,7 +123,7 @@ class TestDocumentViews(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    @patch('datahub.documents.tasks.virus_scan_document.apply_async')
+    @patch('api.documents.tasks.virus_scan_document.apply_async')
     def test_document_schedule_virus_scan(
         self,
         virus_scan_document,
@@ -150,7 +150,7 @@ class TestDocumentViews(APITestMixin):
             args=(str(entity_document.document.pk),),
         )
 
-    @patch('datahub.documents.tasks.delete_document.apply_async')
+    @patch('api.documents.tasks.delete_document.apply_async')
     def test_document_delete(self, delete_document, test_urls):
         """Tests document deletion."""
         entity_document = MyEntityDocument.objects.create(

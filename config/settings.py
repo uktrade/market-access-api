@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "api.metadata",
     "api.user",
     "api.documents",
+    "api.documents.test.my_entity_document",
     "authbroker_client",
 ]
 
@@ -135,10 +136,11 @@ DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
 # Documents
-AV_V2_SERVICE_URL = env('AV_V2_SERVICE_URL', default=None)
+AV_V2_SERVICE_URL = env('AV_V2_SERVICE_URL', default="http://av-service/")
+DOCUMENT_BUCKET = 'test-bucket'
 DOCUMENT_BUCKETS = {
     'default': {
-        'bucket': env('DEFAULT_BUCKET'),
+        'bucket': env('DEFAULT_BUCKET', default=""),
         'aws_access_key_id': env('AWS_ACCESS_KEY_ID', default=''),
         'aws_secret_access_key': env('AWS_SECRET_ACCESS_KEY', default=''),
         'aws_region': env('AWS_DEFAULT_REGION', default=''),

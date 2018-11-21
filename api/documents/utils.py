@@ -81,7 +81,7 @@ def perform_delete_document(document_pk):
 
     :param document_pk: id of the Document
     """
-    from datahub.documents.models import UPLOAD_STATUSES
+    from api.documents.models import UPLOAD_STATUSES
 
     document = get_document_by_pk(document_pk)
     if not document:
