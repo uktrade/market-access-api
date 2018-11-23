@@ -26,7 +26,6 @@ from api.barriers.serializers import (
     BarrierContributorSerializer,
     BarrierStaticStatusSerializer,
     BarrierInstanceSerializer,
-    BarrierInteractionSerializer,
     BarrierListSerializer,
     BarrierResolveSerializer,
     BarrierReportSerializer,
