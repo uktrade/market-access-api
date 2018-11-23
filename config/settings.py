@@ -138,7 +138,7 @@ FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
 # Documents
 AV_V2_SERVICE_URL = env('AV_V2_SERVICE_URL', default="http://av-service/")
-DOCUMENT_BUCKET = 'test-bucket'
+DOCUMENT_BUCKET = env('AWS_SECRET_ACCESS_KEY', default='test-bucket')
 DOCUMENT_BUCKETS = {
     'default': {
         'bucket': env('DEFAULT_BUCKET', default=""),
