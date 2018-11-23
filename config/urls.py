@@ -7,8 +7,6 @@ from api.barriers.views import (
     barrier_count,
     BarrierList,
     BarrierDetail,
-    BarrierInteractionList,
-    BarrierIneractionDetail,
     BarrierInstanceContributor,
     BarrierResolve,
     BarrierHibernate,
@@ -19,8 +17,14 @@ from api.barriers.views import (
     BarrierInstanceHistory,
     BarrierStatuseHistory
 )
+from api.interactions.views import (
+    BarrierInteractionList,
+    BarrierIneractionDetail,
+)
 from api.user.views import who_am_i
 from api.core.views import admin_override
+
+from api.interactions.urls import urlpatterns
 
 urlpatterns = [
     path("admin/login/", admin_override, name="override"),
@@ -46,4 +50,4 @@ urlpatterns = [
     path("barriers/<uuid:pk>/resolve", BarrierResolve.as_view(), name="resolve-barrier"),
     path("barriers/<uuid:pk>/hibernate", BarrierHibernate.as_view(), name="hibernate-barrier"),
     path("barriers/<uuid:pk>/open", BarrierOpen.as_view(), name="open-barrier"),
-]
+] + urlpatterns

@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "api.metadata",
     "api.user",
     "api.documents",
+    "api.interactions",
     "api.documents.test.my_entity_document",
     "authbroker_client",
 ]

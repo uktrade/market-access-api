@@ -182,33 +182,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         }
 
 
-class BarrierInteractionSerializer(serializers.ModelSerializer):
-    """ Serialzer for Barrier Ineractions """
-    created_by = serializers.SerializerMethodField()
-
-    class Meta:
-        model = BarrierInteraction
-        fields = (
-            "id",
-            "kind",
-            "text",
-            "pinned",
-            "is_active",
-            "created_on",
-            "created_by"
-        )
-        read_only_fields = ("barrier", "kind", "created_on", "created_by")
-    
-    def get_created_by(self, obj):
-        if obj.created_by is None:
-            return None
-
-        return {
-            "id": obj.created_by.id,
-            "name": obj.created_user,
-        }
-
-
 class BarrierContributorSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Contributors """
     class Meta:
