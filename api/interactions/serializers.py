@@ -39,7 +39,8 @@ class InteractionSerializer(serializers.ModelSerializer):
             {
                 "id": document.id,
                 "name": document.original_filename,
-                "size": document.size
+                "size": document.size,
+                "status": document.status
             }
             for document in obj.documents.all()
         ]
