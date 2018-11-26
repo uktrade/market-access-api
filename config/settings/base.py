@@ -1,5 +1,6 @@
 import logging
 import os
+import ssl
 import sys
 import environ
 
@@ -19,13 +20,12 @@ env = environ.Env()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', False)
-
 # As app is running behind a host-based router supplied by Heroku or other
 # PaaS, we can open ALLOWED_HOSTS
 ALLOWED_HOSTS = ["*"]
 
+DEBUG = env.bool("SSO_ENABLED", False)
+SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
 # Application definition
 
@@ -54,7 +54,6 @@ INSTALLED_APPS = [
     "api.user",
     "api.documents",
     "api.interactions",
-    "api.documents.test.my_entity_document",
     "authbroker_client",
 ]
 
@@ -128,7 +127,8 @@ AUTHENTICATION_BACKENDS = [
     'authbroker_client.backends.AuthbrokerBackend',
 ]
 
-SSO_ENABLED = env.bool("SSO_ENABLED", True)
+VCAP_SERVICES = env.json('VCAP_SERVICES', default={})
+
 CHAR_FIELD_MAX_LENGTH = 255
 REF_CODE_LENGTH = env.int("REF_CODE_LENGTH", 3)
 REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 100)
@@ -137,6 +137,37 @@ DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
 # Documents
+# CACHE / REDIS
+if 'redis' in VCAP_SERVICES:
+    REDIS_BASE_URL = VCAP_SERVICES['redis'][0]['credentials']['uri']
+else:
+    REDIS_BASE_URL = env('REDIS_BASE_URL', default=None)
+
+if REDIS_BASE_URL:
+    REDIS_CACHE_DB = env('REDIS_CACHE_DB', default=0)
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': f'{REDIS_BASE_URL}/{REDIS_CACHE_DB}',
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
+
+# CELERY (it does not understand rediss:// yet so extra work needed)
+if REDIS_BASE_URL:
+    # REDIS_BASIC_URL == REDIS_BASE_URL without the SSL
+    REDIS_BASIC_URL = REDIS_BASE_URL.replace('rediss://', 'redis://')
+    REDIS_CELERY_DB = env('REDIS_CELERY_DB', default=1)
+    CELERY_BROKER_URL = f'{REDIS_BASIC_URL}/{REDIS_CELERY_DB}'
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    if 'rediss://' in REDIS_BASE_URL:
+        CELERY_REDIS_BACKEND_USE_SSL = {
+            'ssl_cert_reqs': ssl.CERT_NONE
+        }
+        CELERY_BROKER_USE_SSL = CELERY_REDIS_BACKEND_USE_SSL
+
 AV_V2_SERVICE_URL = env('AV_V2_SERVICE_URL', default="http://av-service/")
 DOCUMENT_BUCKET = env('AWS_SECRET_ACCESS_KEY', default='test-bucket')
 DOCUMENT_BUCKETS = {
@@ -206,7 +237,7 @@ HAWK_CREDENTIALS = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-gb"
 
 TIME_ZONE = "UTC"
 
@@ -221,66 +252,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 STATIC_URL = "/static/"
-
-# Logging for development
-if DEBUG:
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'filters': {
-            'require_debug_false': {
-                '()': 'django.utils.log.RequireDebugFalse'
-            }
-        },
-        'handlers': {
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-            },
-        },
-        'loggers': {
-            'django.request': {
-                'handlers': ['console'],
-                'level': 'DEBUG',
-                'propagate': True,
-            },
-            '': {
-                'handlers': ['console'],
-                'level': 'DEBUG',
-                'propagate': False,
-            },
-        }
-    }
-else:
-    LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'filters': {
-            'require_debug_false': {
-                '()': 'django.utils.log.RequireDebugFalse'
-            }
-        },
-        'handlers': {
-            'sentry': {
-                'level': 'ERROR',
-                'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler'
-            },
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'stream': sys.stdout
-            },
-        },
-        'loggers': {
-            'django.request': {
-                'handlers': ['console'],
-                'level': 'ERROR',
-                'propagate': True,
-            },
-            '': {
-                'handlers': ['console'],
-                'level': 'ERROR',
-                'propagate': False,
-            },
-        }
-    }

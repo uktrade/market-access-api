@@ -8,6 +8,7 @@ from api.interactions.models import Document, Interaction
 from api.interactions.serializers import DocumentSerializer, InteractionSerializer
 from api.documents.views import BaseEntityDocumentModelViewSet
 
+from api.core.viewsets import CoreViewSet
 from api.barriers.models import (
     BarrierInstance,
 )
@@ -21,6 +22,16 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
 
     serializer_class = DocumentSerializer
     queryset = Document.objects.all()
+
+
+class InteractionViewSet(CoreViewSet):
+    def create(self, request, *args, **kwargs):
+        """Create and one-time upload URL generation."""
+        response = super().create(request, *args, **kwargs)
+        entity_document = self.get_queryset().get(pk=response.data['id'])
+        response.data['signed_upload_url'] = entity_document.document.get_signed_upload_url()
+
+        return response
 
 
 class BarrierInteractionList(generics.ListCreateAPIView):
