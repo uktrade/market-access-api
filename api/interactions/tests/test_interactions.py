@@ -734,4 +734,4 @@ class TestListInteractions(APITestMixin):
         get_int_response = self.api_client.get(get_interaction_url)
         assert get_int_response.status_code == status.HTTP_200_OK
         assert get_int_response.data["text"] == "sample interaction notes"
-        assert get_int_response.data["documents"] is None
+        assert get_int_response.data["documents"] == []

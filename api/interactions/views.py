@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 from rest_framework import generics
+from rest_framework.response import Response
 
 from oauth2_provider.contrib.rest_framework.permissions import IsAuthenticatedOrTokenHasScope
 
@@ -25,13 +26,45 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
 
 
 class InteractionViewSet(CoreViewSet):
-    def create(self, request, *args, **kwargs):
-        """Create and one-time upload URL generation."""
-        response = super().create(request, *args, **kwargs)
-        entity_document = self.get_queryset().get(pk=response.data['id'])
-        response.data['signed_upload_url'] = entity_document.document.get_signed_upload_url()
+    serializer_class = InteractionSerializer
+    queryset = Interaction.objects.all()
 
-        return response
+    def get_queryset(self):
+        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+
+
+    def perform_create(self, serializer):
+        """Custom logic for creating the model instance."""
+        extra_data = self.get_additional_data(True)
+        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
+        docs_in_req = self.request.data.get("documents", None)
+        documents = []
+        if docs_in_req:
+            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
+        serializer.save(
+            barrier=barrier_obj,
+            kind=kind,
+            documents=documents,
+            **extra_data
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        """Custom logic for updating the model instance."""
+        extra_data = self.get_additional_data(False)
+        docs_in_req = self.request.data.get("documents", None)
+        documents = []
+        if docs_in_req:
+            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
+        serializer.save(
+            documents=documents,
+            **extra_data
+        )
 
 
 class BarrierInteractionList(generics.ListCreateAPIView):
@@ -67,3 +100,14 @@ class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     queryset = Interaction.objects.all()
     serializer_class = InteractionSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.kwargs.get("pk"))
+
+    def perform_update(self, serializer):
+        docs_in_req = self.request.data.get("documents", [])
+        documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
+        serializer.save(
+            documents=documents,
+            modified_by=self.request.user
+        )
