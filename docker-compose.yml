@@ -12,3 +12,15 @@ services:
       - "8000:8000"
     depends_on:
       - db
+  celery:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    entrypoint: dockerize -wait tcp://web:8000 -timeout 60s
+    env_file: docker-compose.env
+    depends_on:
+      - web
+    links:
+      - web
+    command: celery worker -A config -l info -B
