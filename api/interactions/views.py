@@ -25,48 +25,6 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
     queryset = Document.objects.all()
 
 
-class InteractionViewSet(CoreViewSet):
-    serializer_class = InteractionSerializer
-    queryset = Interaction.objects.all()
-
-    def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-
-    def perform_create(self, serializer):
-        """Custom logic for creating the model instance."""
-        extra_data = self.get_additional_data(True)
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-        kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
-        docs_in_req = self.request.data.get("documents", None)
-        documents = []
-        if docs_in_req:
-            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
-        serializer.save(
-            barrier=barrier_obj,
-            kind=kind,
-            documents=documents,
-            **extra_data
-        )
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    def perform_update(self, serializer):
-        """Custom logic for updating the model instance."""
-        extra_data = self.get_additional_data(False)
-        docs_in_req = self.request.data.get("documents", None)
-        documents = []
-        if docs_in_req:
-            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
-        serializer.save(
-            documents=documents,
-            **extra_data
-        )
-
-
 class BarrierInteractionList(generics.ListCreateAPIView):
     """
     Handling Barrier interactions, such as notes

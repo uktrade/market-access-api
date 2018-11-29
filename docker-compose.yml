@@ -23,4 +23,4 @@ services:
       - web
     links:
       - web
-    command: celery worker -A config -l info -B
+    command: celery worker -A config.celery -l info -B
