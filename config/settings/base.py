@@ -178,6 +178,8 @@ DOCUMENT_BUCKETS = {
         'aws_region': env('AWS_DEFAULT_REGION', default=''),
     },
 }
+# ServerSideEncryption
+SERVER_SIDE_ENCRYPTION = env("SERVER_SIDE_ENCRYPTION", default="AES256")
 
 # Admin locking
 AUTHBROKER_URL = env("AUTHBROKER_URL")

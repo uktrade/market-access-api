@@ -1,7 +1,9 @@
 from functools import lru_cache
 from logging import getLogger
 
+import os
 import boto3
+
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -57,13 +59,17 @@ def sign_s3_url(bucket_id, key, method='get_object', expires=3600):
     """Sign s3 url with given expiry in seconds."""
     client = get_s3_client_for_bucket(bucket_id)
     bucket_name = get_bucket_name(bucket_id)
+    params = {
+            'Bucket': bucket_name,
+            'Key': key,
+        }
+    # adding server side encryption for uploads
+    if method == "put_object":
+        params["ServerSideEncryption"] = settings.SERVER_SIDE_ENCRYPTION
 
     return client.generate_presigned_url(
         ClientMethod=method,
-        Params={
-            'Bucket': bucket_name,
-            'Key': key,
-        },
+        Params=params,
         ExpiresIn=expires,
     )
 

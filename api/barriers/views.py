@@ -233,53 +233,6 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             serializer.save(modified_by=self.request.user)
 
 
-class BarrierInteractionList(generics.ListCreateAPIView):
-    """
-    Handling Barrier interactions, such as notes
-    """
-    queryset = BarrierInteraction.objects.all()
-    serializer_class = BarrierInteractionSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-    def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-        kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
-        if settings.SSO_ENABLED:
-            serializer.save(
-                barrier=barrier_obj,
-                kind=kind,
-                created_by=self.request.user
-            )
-        else:
-            serializer.save(
-                barrier=barrier_obj,
-                kind=kind,
-            )
-
-
-class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
-    """
-    Return details of a Barrier Interaction
-    Allows the barrier interaction to be updated as well
-    """
-    lookup_field = "pk"
-    queryset = BarrierInteraction.objects.all()
-    serializer_class = BarrierInteractionSerializer
-
-
-
-class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
-    """
-    Return details of a Barrier Interaction
-    Allows the barrier interaction to be updated as well
-    """
-    lookup_field = "pk"
-    queryset = BarrierInteraction.objects.all()
-    serializer_class = BarrierInteractionSerializer
-
-
 class BarrierInstanceHistory(GenericAPIView):
     def _get_barrier(self, barrier_id):
         """ Get BarrierInstance object or False if invalid ID """
