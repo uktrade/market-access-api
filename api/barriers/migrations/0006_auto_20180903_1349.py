@@ -91,7 +91,6 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
-        migrations.RemoveField(model_name="barrierinstance", name="report"),
         migrations.AddField(
             model_name="barrierinstance",
             name="barrier_title",

@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     # sso
     "oauth2_provider",
     # local apps
-    "api.reports",
     "api.barriers",
     "api.core",
     "api.ping",

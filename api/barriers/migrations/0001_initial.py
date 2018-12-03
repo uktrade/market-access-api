@@ -13,7 +13,6 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("metadata", "0003_auto_20180705_1132"),
-        ("reports", "0015_auto_20180712_1156"),
     ]
 
     operations = [
@@ -140,15 +139,6 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "report",
-                    models.ForeignKey(
-                        help_text="originating report",
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="barrier_report",
-                        to="reports.Report",
                     ),
                 ),
             ],
