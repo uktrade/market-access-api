@@ -3,58 +3,45 @@ from django.urls import path
 from api.interactions.views import (
     DocumentViewSet,
     BarrierInteractionList,
-    BarrierIneractionDetail
+    BarrierIneractionDetail,
 )
 
 
-document_collection = DocumentViewSet.as_view({
-    'get': 'list',
-    'post': 'create',
-})
+document_collection = DocumentViewSet.as_view({"get": "list", "post": "create"})
 
-document_item = DocumentViewSet.as_view({
-    'get': 'retrieve',
-    'patch': 'partial_update',
-    'delete': 'destroy',
-})
+document_item = DocumentViewSet.as_view(
+    {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+)
 
-document_callback = DocumentViewSet.as_view({
-    'post': 'upload_complete_callback',
-})
+document_callback = DocumentViewSet.as_view({"post": "upload_complete_callback"})
 
-document_download = DocumentViewSet.as_view({
-    'get': 'download',
-})
+document_download = DocumentViewSet.as_view({"get": "download"})
 
 urlpatterns = [
+    path("documents", document_collection, name="barrier-documents"),
     path(
-        'documents',
-        document_collection,
-        name='barrier-documents',
-    ),
-    path(
-        'documents/<uuid:entity_document_pk>',
+        "documents/<uuid:entity_document_pk>",
         document_item,
-        name='barrier-document-item',
+        name="barrier-document-item",
     ),
     path(
-        'documents/<uuid:entity_document_pk>/upload-callback',
+        "documents/<uuid:entity_document_pk>/upload-callback",
         document_callback,
-        name='barrier-document-item-callback',
+        name="barrier-document-item-callback",
     ),
     path(
-        'documents/<uuid:entity_document_pk>/download',
+        "documents/<uuid:entity_document_pk>/download",
         document_download,
-        name='barrier-document-item-download',
+        name="barrier-document-item-download",
     ),
     path(
-        "barriers/<uuid:pk>/interactions", 
-        BarrierInteractionList.as_view(), 
-        name="list-interactions"
+        "barriers/<uuid:pk>/interactions",
+        BarrierInteractionList.as_view(),
+        name="list-interactions",
     ),
     path(
-        "barriers/interactions/<int:pk>", 
-        BarrierIneractionDetail.as_view(), 
-        name="get-interaction"
+        "barriers/interactions/<int:pk>",
+        BarrierIneractionDetail.as_view(),
+        name="get-interaction",
     ),
 ]

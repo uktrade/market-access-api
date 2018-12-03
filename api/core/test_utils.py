@@ -27,7 +27,9 @@ def get_default_test_user():
     return test_user
 
 
-def create_test_user(permission_codenames=(), location=None, internal=False, **user_attrs):
+def create_test_user(
+    permission_codenames=(), location=None, internal=False, **user_attrs
+):
     """
     :returns: user
     :param permission_codenames: list of codename permissions to be

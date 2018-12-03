@@ -45,10 +45,10 @@ class CoreViewSet(
         :return:        dict of additional data to be saved
         """
         additional_data = {}
-        if has_fields(self.get_queryset().model, 'created_by', 'modified_by'):
-            additional_data['modified_by'] = self.request.user
+        if has_fields(self.get_queryset().model, "created_by", "modified_by"):
+            additional_data["modified_by"] = self.request.user
 
             if create:
-                additional_data['created_by'] = self.request.user
+                additional_data["created_by"] = self.request.user
 
         return additional_data

@@ -60,12 +60,12 @@ class MetadataView(generics.GenericAPIView):
         return barrier_goods + barrier_services
 
     def get_barrier_type_categories(self):
-        return dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES")
+        return dict(
+            (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
+        )
 
     def get_reporting_stages(self):
-        return dict(
-            (stage.code, stage.description) for stage in Stage.objects.all()
-        )
+        return dict((stage.code, stage.description) for stage in Stage.objects.all())
 
     def get(self, request):
         status_types = dict((x, y) for x, y in PROBLEM_STATUS_TYPES)
@@ -87,7 +87,7 @@ class MetadataView(generics.GenericAPIView):
 
         report_stages = self.get_reporting_stages()
         barrier_types = self.get_barrier_types()
-        barrier_type_cat = self.get_barrier_type_categories()        
+        barrier_type_cat = self.get_barrier_type_categories()
 
         results = {
             "status_types": status_types,

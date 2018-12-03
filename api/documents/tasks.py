@@ -17,9 +17,7 @@ def delete_document(document_pk):
     try:
         perform_delete_document(document_pk)
     except Exception:
-        logger.error(
-            f'Deletion from S3 of document with ID {document_pk} failed.',
-        )
+        logger.error(f"Deletion from S3 of document with ID {document_pk} failed.")
         raise
 
 
@@ -31,7 +29,7 @@ def virus_scan_document(document_pk: str):
 
     Any errors are logged and sent to Sentry.
     """
-    with advisory_lock(f'av-scan-{document_pk}'):
+    with advisory_lock(f"av-scan-{document_pk}"):
         document = get_document_by_pk(document_pk)
         if document:
             download_url = document.get_signed_url(allow_unsafe=True)

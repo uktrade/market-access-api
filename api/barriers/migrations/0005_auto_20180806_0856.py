@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0004_auto_20180724_0808'),
-    ]
+    dependencies = [("barriers", "0004_auto_20180724_0808")]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierstatus',
-            name='status_date',
-            field=models.DateTimeField(help_text='date when status action occurred'),
-        ),
+            model_name="barrierstatus",
+            name="status_date",
+            field=models.DateTimeField(help_text="date when status action occurred"),
+        )
     ]

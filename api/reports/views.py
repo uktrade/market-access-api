@@ -12,7 +12,7 @@
 
 # from api.barriers.models import (
 #     BarrierContributor,
-#     BarrierInstance, 
+#     BarrierInstance,
 #     BarrierStatus,
 # )
 # from api.metadata.constants import (
@@ -164,7 +164,7 @@
 #                 barrier = BarrierInstance.objects.get(report_id=report.id)
 #                 barrier.created_by = self.request.user
 #                 barrier.save()
-        
+
 #         # sort out barrier status
 #         if report.is_resolved:
 #             barrier_new_status = 4 # Resolved
@@ -176,7 +176,7 @@
 #             barrier_status = BarrierStatus.objects.get(barrier=barrier, status=barrier_new_status)
 #         except BarrierStatus.DoesNotExist:
 #             BarrierStatus(
-#                 barrier=barrier, 
+#                 barrier=barrier,
 #                 status=barrier_new_status,
 #                 status_date=timezone.now()
 #             ).save()
@@ -190,7 +190,7 @@
 #             if report.support_type == 2:
 #                 try:
 #                     BarrierContributor.objects.get(
-#                         barrier=barrier, 
+#                         barrier=barrier,
 #                         contributor=report.created_by,
 #                         kind=CONTRIBUTOR_TYPE['LEAD'],
 #                         is_active=True

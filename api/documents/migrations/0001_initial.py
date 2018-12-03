@@ -10,35 +10,84 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
+    dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL)]
 
     operations = [
         migrations.CreateModel(
-            name='Document',
+            name="Document",
             fields=[
-                ('created_on', models.DateTimeField(auto_now_add=True, db_index=True, null=True)),
-                ('modified_on', models.DateTimeField(auto_now=True, null=True)),
-                ('archived', models.BooleanField(default=False)),
-                ('archived_on', models.DateTimeField(blank=True, null=True)),
-                ('archived_reason', models.TextField(blank=True, null=True)),
-                ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('bucket_id', models.CharField(default='default', max_length=255)),
-                ('path', models.CharField(max_length=255)),
-                ('uploaded_on', models.DateTimeField(blank=True, null=True)),
-                ('scan_initiated_on', models.DateTimeField(blank=True, null=True)),
-                ('scanned_on', models.DateTimeField(blank=True, null=True)),
-                ('av_clean', models.NullBooleanField(db_index=True)),
-                ('av_reason', models.TextField(blank=True)),
-                ('status', models.CharField(choices=[('not_virus_scanned', 'Not virus scanned'), ('virus_scanning_scheduled', 'Virus scanning scheduled'), ('virus_scanning_in_progress', 'Virus scanning in progress'), ('virus_scanning_failed', 'Virus scanning failed.'), ('virus_scanned', 'Virus scanned'), ('deletion_pending', 'Deletion pending')], default='not_virus_scanned', max_length=255)),
-                ('archived_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('modified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                (
+                    "created_on",
+                    models.DateTimeField(auto_now_add=True, db_index=True, null=True),
+                ),
+                ("modified_on", models.DateTimeField(auto_now=True, null=True)),
+                ("archived", models.BooleanField(default=False)),
+                ("archived_on", models.DateTimeField(blank=True, null=True)),
+                ("archived_reason", models.TextField(blank=True, null=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                ("bucket_id", models.CharField(default="default", max_length=255)),
+                ("path", models.CharField(max_length=255)),
+                ("uploaded_on", models.DateTimeField(blank=True, null=True)),
+                ("scan_initiated_on", models.DateTimeField(blank=True, null=True)),
+                ("scanned_on", models.DateTimeField(blank=True, null=True)),
+                ("av_clean", models.NullBooleanField(db_index=True)),
+                ("av_reason", models.TextField(blank=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("not_virus_scanned", "Not virus scanned"),
+                            ("virus_scanning_scheduled", "Virus scanning scheduled"),
+                            (
+                                "virus_scanning_in_progress",
+                                "Virus scanning in progress",
+                            ),
+                            ("virus_scanning_failed", "Virus scanning failed."),
+                            ("virus_scanned", "Virus scanned"),
+                            ("deletion_pending", "Deletion pending"),
+                        ],
+                        default="not_virus_scanned",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "archived_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "modified_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.AlterUniqueTogether(
-            name='document',
-            unique_together={('bucket_id', 'path')},
+            name="document", unique_together={("bucket_id", "path")}
         ),
     ]

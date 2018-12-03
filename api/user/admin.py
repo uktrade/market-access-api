@@ -7,10 +7,8 @@ from api.user.models import Profile
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        widgets = {
-            'location': forms.Select(),
-        }
-        fields = '__all__'
+        widgets = {"location": forms.Select()}
+        fields = "__all__"
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -18,6 +16,7 @@ class ProfileAdmin(admin.ModelAdmin):
     ModelAdmin class for customised behaviour for
     allowing User Profile edits.
     """
+
     # form = ProfileForm
 
     # def formfield_for_dbfield(self, db_field, **kwargs):
@@ -41,6 +40,7 @@ class ProfileAdmin(admin.ModelAdmin):
         """ No Delete permission """
         return False
 
-    list_display = ('user', 'location', 'internal')
+    list_display = ("user", "location", "internal")
+
 
 admin.site.register(Profile, ProfileAdmin)

@@ -6,34 +6,26 @@ DEBUG = False
 SSO_ENABLED = True
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
-    'handlers': {
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler'
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
+    "handlers": {
+        "sentry": {
+            "level": "ERROR",
+            "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'stream': sys.stdout
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
         },
     },
-    'loggers': {
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': True,
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": True,
         },
-        '': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-    }
+        "": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+    },
 }

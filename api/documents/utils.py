@@ -21,11 +21,11 @@ def get_document_by_pk(document_pk):
     This is to avoid circular imports from av_scan and tasks.
     """
     try:
-        document_model = apps.get_model('documents', 'Document')
+        document_model = apps.get_model("documents", "Document")
         document = document_model.objects.get(pk=document_pk)
         return document
     except ObjectDoesNotExist:
-        logger.warning(f'Document with ID {document_pk} does not exist.')
+        logger.warning(f"Document with ID {document_pk} does not exist.")
         return None
 
 
@@ -39,7 +39,7 @@ def get_bucket_credentials(bucket_id):
 
 def get_bucket_name(bucket_id):
     """Get bucket name for given bucket id."""
-    return get_bucket_credentials(bucket_id)['bucket']
+    return get_bucket_credentials(bucket_id)["bucket"]
 
 
 @lru_cache()
@@ -47,30 +47,25 @@ def get_s3_client_for_bucket(bucket_id):
     """Get S3 client for bucket id."""
     credentials = get_bucket_credentials(bucket_id)
     return boto3.client(
-        's3',
-        aws_access_key_id=credentials['aws_access_key_id'],
-        aws_secret_access_key=credentials['aws_secret_access_key'],
-        region_name=credentials['aws_region'],
-        config=boto3.session.Config(signature_version='s3v4'),
+        "s3",
+        aws_access_key_id=credentials["aws_access_key_id"],
+        aws_secret_access_key=credentials["aws_secret_access_key"],
+        region_name=credentials["aws_region"],
+        config=boto3.session.Config(signature_version="s3v4"),
     )
 
 
-def sign_s3_url(bucket_id, key, method='get_object', expires=3600):
+def sign_s3_url(bucket_id, key, method="get_object", expires=3600):
     """Sign s3 url with given expiry in seconds."""
     client = get_s3_client_for_bucket(bucket_id)
     bucket_name = get_bucket_name(bucket_id)
-    params = {
-            'Bucket': bucket_name,
-            'Key': key,
-        }
+    params = {"Bucket": bucket_name, "Key": key}
     # adding server side encryption for uploads
     if method == "put_object":
         params["ServerSideEncryption"] = settings.SERVER_SIDE_ENCRYPTION
 
     return client.generate_presigned_url(
-        ClientMethod=method,
-        Params=params,
-        ExpiresIn=expires,
+        ClientMethod=method, Params=params, ExpiresIn=expires
     )
 
 
@@ -91,13 +86,11 @@ def perform_delete_document(document_pk):
 
     document = get_document_by_pk(document_pk)
     if not document:
-        raise DocumentDeleteException(
-            f'Document with ID {document_pk} not found.',
-        )
+        raise DocumentDeleteException(f"Document with ID {document_pk} not found.")
 
     if document.status != UPLOAD_STATUSES.deletion_pending:
         raise DocumentDeleteException(
-            f'Document with ID {document_pk} is not pending deletion.',
+            f"Document with ID {document_pk} is not pending deletion."
         )
 
     if document.uploaded_on:

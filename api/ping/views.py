@@ -1,7 +1,11 @@
 from django.conf import settings
 from django.http import HttpResponse
 from rest_framework import status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
 from rest_framework.permissions import IsAuthenticated
 
 from hawkrest import HawkAuthentication
@@ -17,6 +21,7 @@ COMMENT_TEMPLATE = "<!--{comment}-->\n"
 
 HAWK = [HawkAuthentication] if settings.HAWK_ENABLED else []
 AUTH = [IsAuthenticated] if settings.HAWK_ENABLED else []
+
 
 @api_view()
 @authentication_classes(HAWK)

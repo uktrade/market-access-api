@@ -17,5 +17,5 @@ class TemporarilyUnavailableException(APIException):
     """Tell client that file is being scanned and is unavailable."""
 
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    default_detail = _('File is being scanned for viruses, try again later.')
-    default_code = 'file_is_being_scanned'
+    default_detail = _("File is being scanned for viruses, try again later.")
+    default_code = "file_is_being_scanned"

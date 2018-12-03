@@ -5,9 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('reports', '0018_remove_report_status_comments'),
-    ]
+    dependencies = [("reports", "0018_remove_report_status_comments")]
 
-    operations = [
-    ]
+    operations = []

@@ -31,15 +31,11 @@ MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 class BarrierInteraction(BaseModel):
     """ Interaction records for each Barrier """
+
     barrier = models.ForeignKey(
-        "BarrierInstance",
-        related_name="interactions",
-        on_delete=models.PROTECT
+        "BarrierInstance", related_name="interactions", on_delete=models.PROTECT
     )
-    kind = models.CharField(
-        choices=BARRIER_INTERACTION_TYPE,
-        max_length=25
-    )
+    kind = models.CharField(choices=BARRIER_INTERACTION_TYPE, max_length=25)
     text = models.TextField(null=True)
     pinned = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -56,6 +52,7 @@ class BarrierInteraction(BaseModel):
 
 class Stage(models.Model):
     """ Reporting workflow stages  """
+
     code = models.CharField(max_length=4, null=False)
     description = models.CharField(max_length=MAX_LENGTH)
     parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.SET_NULL)
@@ -66,28 +63,35 @@ class Stage(models.Model):
 
 class ReportManager(models.Manager):
     """ Manage reports within the model, with status 0 """
+
     def get_queryset(self):
-        return super(ReportManager, self).get_queryset().filter(
-            Q(status=0) & Q(archived=False)
+        return (
+            super(ReportManager, self)
+            .get_queryset()
+            .filter(Q(status=0) & Q(archived=False))
         )
 
 
 class BarrierManager(models.Manager):
     """ Manage barriers within the model, with status not 0 """
+
     def get_queryset(self):
-        return super(BarrierManager, self).get_queryset().filter(
-            ~Q(status=0) & Q(archived=False)
+        return (
+            super(BarrierManager, self)
+            .get_queryset()
+            .filter(~Q(status=0) & Q(archived=False))
         )
 
 
 class BarrierInstance(BaseModel, ArchivableModel):
     """ Barrier Instance, converted from a completed and accepted Report """
+
     id = models.UUIDField(primary_key=True, default=uuid4)
     code = models.CharField(
         max_length=MAX_LENGTH,
         null=True,
         unique=True,
-        help_text="readable reference code"
+        help_text="readable reference code",
     )
     problem_status = models.PositiveIntegerField(
         choices=PROBLEM_STATUS_TYPES, null=True
@@ -99,20 +103,12 @@ class BarrierInstance(BaseModel, ArchivableModel):
     export_country = models.UUIDField(null=True)
 
     sectors_affected = models.NullBooleanField()
-    sectors = ArrayField(
-        models.UUIDField(),
-        blank=True,
-        null=True,
-        default=None
-    )
+    sectors = ArrayField(models.UUIDField(), blank=True, null=True, default=None)
     companies = JSONField(null=True, default=None)
 
     product = models.CharField(max_length=MAX_LENGTH, null=True)
     source = models.CharField(
-        choices=BARRIER_SOURCE,
-        max_length=25,
-        null=True,
-        help_text="chance of success"
+        choices=BARRIER_SOURCE, max_length=25, null=True, help_text="chance of success"
     )
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
     barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
@@ -130,68 +126,55 @@ class BarrierInstance(BaseModel, ArchivableModel):
         max_length=25,
         null=True,
         default=None,
-        help_text="barrier type category"
+        help_text="barrier type category",
     )
 
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     status = models.PositiveIntegerField(
-        choices=BARRIER_STATUS,
-        default=0,
-        help_text="status of the barrier instance"
+        choices=BARRIER_STATUS, default=0, help_text="status of the barrier instance"
     )
     status_summary = models.TextField(
-        null=True,
-        default=None,
-        help_text="status summary if provided by user"
+        null=True, default=None, help_text="status summary if provided by user"
     )
     status_date = models.DateTimeField(
-        auto_now_add=True,
-        null=True,
-        help_text="date when status action occurred"
+        auto_now_add=True, null=True, help_text="date when status action occurred"
     )
 
     has_legal_infringement = models.PositiveIntegerField(
         choices=ADV_BOOLEAN,
         null=True,
         default=None,
-        help_text="Legal obligations infringed"
+        help_text="Legal obligations infringed",
     )
     wto_infringement = models.NullBooleanField(
-        default=None,
-        help_text="Legal obligations infringed"
+        default=None, help_text="Legal obligations infringed"
     )
     fta_infringement = models.NullBooleanField(
-        default=None,
-        help_text="Legal obligations infringed"
+        default=None, help_text="Legal obligations infringed"
     )
     other_infringement = models.NullBooleanField(
-        default=None,
-        help_text="Legal obligations infringed"
+        default=None, help_text="Legal obligations infringed"
     )
     infringement_summary = models.TextField(
-        null=True,
-        default=None,
-        help_text="Summary of infringments"
+        null=True, default=None, help_text="Summary of infringments"
     )
 
     political_sensitivities = models.TextField(
-        null=True,
-        default=None,
-        help_text="Political sensitivities to be aware of"
+        null=True, default=None, help_text="Political sensitivities to be aware of"
     )
 
     commercial_sensitivities = models.TextField(
         null=True,
         default=None,
-        help_text="Commercial or confidentiality sensitivities to be aware of"
+        help_text="Commercial or confidentiality sensitivities to be aware of",
     )
 
     stages = models.ManyToManyField(
         "Stage",
         related_name="report_stages",
         through="BarrierReportStage",
-        help_text="Store reporting stages before submitting"
+        help_text="Store reporting stages before submitting",
     )
 
     history = HistoricalRecords()
@@ -220,10 +203,10 @@ class BarrierInstance(BaseModel, ArchivableModel):
             validator.set_instance(self)
             validator()
         if self.is_resolved:
-            barrier_new_status = 4 # Resolved
+            barrier_new_status = 4  # Resolved
             status_date = self.isodate_to_tz_datetime(self.resolved_date)
         else:
-            barrier_new_status = 2 # Assesment
+            barrier_new_status = 2  # Assesment
             status_date = timezone.now()
         self.modified_by = submitted_by
         self.status = barrier_new_status  # If all good, then accept the report for now
@@ -238,7 +221,9 @@ class BarrierInstance(BaseModel, ArchivableModel):
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):      
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
         """
         Upon creating new item, generate a readable reference code
         """
@@ -254,10 +239,14 @@ class BarrierInstance(BaseModel, ArchivableModel):
                     loop_num += 1
                 else:
                     raise ValueError("Error generating a unique reference code.")
-        super(BarrierInstance, self).save(force_insert, force_update, using, update_fields)
+        super(BarrierInstance, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
 
 class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
+
     barrier = models.ForeignKey(
         BarrierInstance, related_name="progress", on_delete=models.PROTECT
     )
@@ -272,20 +261,16 @@ class BarrierReportStage(BaseModel):
 
 class BarrierContributor(BaseModel):
     """ Contributors for each Barrier """
+
     barrier = models.ForeignKey(
-        BarrierInstance,
-        related_name="contributors",
-        on_delete=models.PROTECT
+        BarrierInstance, related_name="contributors", on_delete=models.PROTECT
     )
     contributor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="contributor_user",
         null=True,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
     )
-    kind = models.CharField(
-        choices=CONTRIBUTOR_TYPE,
-        max_length=25
-    )
+    kind = models.CharField(choices=CONTRIBUTOR_TYPE, max_length=25)
     is_active = models.BooleanField(default=True)
     history = HistoricalRecords()

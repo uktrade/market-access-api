@@ -14,12 +14,12 @@ logger = getLogger(__name__)
 
 
 UPLOAD_STATUSES = Choices(
-    ('not_virus_scanned', 'Not virus scanned'),
-    ('virus_scanning_scheduled', 'Virus scanning scheduled'),
-    ('virus_scanning_in_progress', 'Virus scanning in progress'),
-    ('virus_scanning_failed', 'Virus scanning failed.'),
-    ('virus_scanned', 'Virus scanned'),
-    ('deletion_pending', 'Deletion pending'),
+    ("not_virus_scanned", "Not virus scanned"),
+    ("virus_scanning_scheduled", "Virus scanning scheduled"),
+    ("virus_scanning_in_progress", "Virus scanning in progress"),
+    ("virus_scanning_failed", "Virus scanning failed."),
+    ("virus_scanned", "Virus scanned"),
+    ("deletion_pending", "Deletion pending"),
 )
 
 
@@ -27,18 +27,14 @@ class Document(BaseModel, ArchivableModel):
     """General model for keeping track of user uploaded documents."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    bucket_id = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH, default='default')
+    bucket_id = models.CharField(
+        max_length=settings.CHAR_FIELD_MAX_LENGTH, default="default"
+    )
     path = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH)
 
-    uploaded_on = models.DateTimeField(
-        null=True, blank=True,
-    )
-    scan_initiated_on = models.DateTimeField(
-        null=True, blank=True,
-    )
-    scanned_on = models.DateTimeField(
-        null=True, blank=True,
-    )
+    uploaded_on = models.DateTimeField(null=True, blank=True)
+    scan_initiated_on = models.DateTimeField(null=True, blank=True)
+    scanned_on = models.DateTimeField(null=True, blank=True)
 
     av_clean = models.NullBooleanField(db_index=True)
     av_reason = models.TextField(blank=True)
@@ -50,9 +46,7 @@ class Document(BaseModel, ArchivableModel):
     )
 
     class Meta:
-        unique_together = (
-            ('bucket_id', 'path'),
-        )
+        unique_together = (("bucket_id", "path"),)
 
     @property
     def name(self):
@@ -62,17 +56,17 @@ class Document(BaseModel, ArchivableModel):
     def __repr__(self):
         """String repr."""
         return (
-            f'Document('
-            f'id={self.id!r}, '
-            f'bucket_id={self.bucket_id!r}, '
-            f'path={self.path!r}, '
-            f'uploaded_on={self.uploaded_on!r}, '
-            f'scan_initiated_on={self.scan_initiated_on!r}, '
-            f'scanned_on={self.scanned_on!r}, '
-            f'av_clean={self.av_clean!r}, '
-            f'av_reason={self.av_reason!r}, '
-            f'status={self.status!r}'
-            f')'
+            f"Document("
+            f"id={self.id!r}, "
+            f"bucket_id={self.bucket_id!r}, "
+            f"path={self.path!r}, "
+            f"uploaded_on={self.uploaded_on!r}, "
+            f"scan_initiated_on={self.scan_initiated_on!r}, "
+            f"scanned_on={self.scanned_on!r}, "
+            f"av_clean={self.av_clean!r}, "
+            f"av_reason={self.av_reason!r}, "
+            f"status={self.status!r}"
+            f")"
         )
 
     def schedule_av_scan(self):
@@ -123,21 +117,14 @@ class Document(BaseModel, ArchivableModel):
         or allow_unsafe is set.
         """
         if self.av_clean or allow_unsafe:
-            return sign_s3_url(
-                self.bucket_id,
-                self.path,
-            )
+            return sign_s3_url(self.bucket_id, self.path)
         return None
 
     def get_signed_upload_url(self):
         """Generate pre-signed upload URL."""
         assert self.scan_initiated_on is None
 
-        return sign_s3_url(
-            self.bucket_id,
-            self.path,
-            method='put_object',
-        )
+        return sign_s3_url(self.bucket_id, self.path, method="put_object")
 
 
 class EntityDocumentManager(models.Manager):
@@ -155,14 +142,16 @@ class EntityDocumentManager(models.Manager):
         )
         document.save()
         return super().create(
-            document=document,
-            original_filename=original_filename,
-            **kwargs,
+            document=document, original_filename=original_filename, **kwargs
         )
 
     def get_queryset(self):
         """Exclude objects with document having deletion pending as status."""
-        return super().get_queryset().exclude(document__status=UPLOAD_STATUSES.deletion_pending)
+        return (
+            super()
+            .get_queryset()
+            .exclude(document__status=UPLOAD_STATUSES.deletion_pending)
+        )
 
     def include_objects_deletion_pending(self):
         """
@@ -174,8 +163,10 @@ class EntityDocumentManager(models.Manager):
 
     def _create_document_path(self, document_pk, original_filename):
         """Create document path."""
-        today = now().strftime('%Y-%m-%d')
-        return f'{self.model._meta.model_name}/{today}/{document_pk}/{original_filename}'
+        today = now().strftime("%Y-%m-%d")
+        return (
+            f"{self.model._meta.model_name}/{today}/{document_pk}/{original_filename}"
+        )
 
 
 class AbstractEntityDocumentModel(BaseModel):
@@ -191,7 +182,7 @@ class AbstractEntityDocumentModel(BaseModel):
     include_objects_deletion_pending method, that returns untouched queryset, should be used.
     """
 
-    BUCKET = 'default'
+    BUCKET = "default"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     original_filename = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH)

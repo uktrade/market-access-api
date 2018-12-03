@@ -27,7 +27,7 @@ class TestUserView(APITestMixin):
             "last_name": user_test.last_name,
             "email": user_test.email,
             "location": None,
-            "internal": False
+            "internal": False,
         }
 
     def test_user_country(self):
@@ -51,7 +51,7 @@ class TestUserView(APITestMixin):
             "last_name": user_test.last_name,
             "email": user_test.email,
             "location": "ba6ee1ca-5d95-e211-a939-e4115bead28a",
-            "internal": False
+            "internal": False,
         }
 
     def test_user_internal(self):
@@ -75,5 +75,5 @@ class TestUserView(APITestMixin):
             "last_name": user_test.last_name,
             "email": user_test.email,
             "location": None,
-            "internal": True
+            "internal": True,
         }

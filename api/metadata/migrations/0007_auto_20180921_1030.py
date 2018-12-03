@@ -165,9 +165,11 @@ actual_dummies_to_add = [
     },
 ]
 
+
 def clear_barrier_types(apps, schema_editor):
     BarrierType = apps.get_model("metadata", "BarrierType")
     BarrierType.objects.all().delete()
+
 
 def add_actual_barrier_types(apps, schema_editor):
     BarrierType = apps.get_model("metadata", "BarrierType")
@@ -186,12 +188,9 @@ def add_actual_barrier_types(apps, schema_editor):
             ).save()
 
 
-
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('metadata', '0006_auto_20180903_1349'),
-    ]
+    dependencies = [("metadata", "0006_auto_20180903_1349")]
 
     operations = [
         migrations.RunPython(clear_barrier_types),

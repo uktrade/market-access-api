@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
+
 class BaseModelAdminMixin:
     """
     Mixin for ModelAdmins which adds extra functionalities.
@@ -19,15 +20,14 @@ class BaseModelAdminMixin:
     def _get_description_for_timed_event(self, event_on, event_by):
         text_parts = []
         if event_on:
-            text_parts.extend((
-                f'on {date_filter(event_on)}',
-                f'at {time_filter(event_on)}',
-            ))
+            text_parts.extend(
+                (f"on {date_filter(event_on)}", f"at {time_filter(event_on)}")
+            )
         if event_by:
             adviser_admin_url = get_change_link(event_by)
-            text_parts.append(f'by {adviser_admin_url}')
+            text_parts.append(f"by {adviser_admin_url}")
 
-        return mark_safe(' '.join(text_parts) or '-')
+        return mark_safe(" ".join(text_parts) or "-")
 
     def created(self, obj):
         """:returns: created on/by details."""

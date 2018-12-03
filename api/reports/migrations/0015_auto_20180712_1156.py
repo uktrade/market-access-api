@@ -10,18 +10,16 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('reports', '0014_auto_20180711_1414'),
+        ("reports", "0014_auto_20180711_1414"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name="report", 
-            old_name="company_sector", 
-            new_name="company_sector_id"
+            model_name="report", old_name="company_sector", new_name="company_sector_id"
         ),
         migrations.AddField(
-            model_name='report',
-            name='company_sector_name',
+            model_name="report",
+            name="company_sector_name",
             field=models.CharField(max_length=255, null=True),
         ),
     ]

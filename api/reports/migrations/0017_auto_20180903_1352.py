@@ -5,14 +5,15 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('reports', '0016_remove_report_status_comments'),
-    ]
+    dependencies = [("reports", "0016_remove_report_status_comments")]
 
     operations = [
         migrations.AlterField(
-            model_name='report',
-            name='problem_status',
-            field=models.PositiveIntegerField(choices=[(1, 'On the border'), (2, 'Long term strategic barrier')], null=True),
-        ),
+            model_name="report",
+            name="problem_status",
+            field=models.PositiveIntegerField(
+                choices=[(1, "On the border"), (2, "Long term strategic barrier")],
+                null=True,
+            ),
+        )
     ]

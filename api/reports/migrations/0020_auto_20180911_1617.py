@@ -5,50 +5,18 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('reports', '0019_remove_report_status_comments'),
-    ]
+    dependencies = [("reports", "0019_remove_report_status_comments")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='report',
-            name='barrier_type',
-        ),
-        migrations.RemoveField(
-            model_name='report',
-            name='created_by',
-        ),
-        migrations.RemoveField(
-            model_name='report',
-            name='stages',
-        ),
-        migrations.AlterUniqueTogether(
-            name='reportstage',
-            unique_together=set(),
-        ),
-        migrations.RemoveField(
-            model_name='reportstage',
-            name='created_by',
-        ),
-        migrations.RemoveField(
-            model_name='reportstage',
-            name='report',
-        ),
-        migrations.RemoveField(
-            model_name='reportstage',
-            name='stage',
-        ),
-        migrations.RemoveField(
-            model_name='stage',
-            name='parent',
-        ),
-        migrations.DeleteModel(
-            name='Report',
-        ),
-        migrations.DeleteModel(
-            name='ReportStage',
-        ),
-        migrations.DeleteModel(
-            name='Stage',
-        ),
+        migrations.RemoveField(model_name="report", name="barrier_type"),
+        migrations.RemoveField(model_name="report", name="created_by"),
+        migrations.RemoveField(model_name="report", name="stages"),
+        migrations.AlterUniqueTogether(name="reportstage", unique_together=set()),
+        migrations.RemoveField(model_name="reportstage", name="created_by"),
+        migrations.RemoveField(model_name="reportstage", name="report"),
+        migrations.RemoveField(model_name="reportstage", name="stage"),
+        migrations.RemoveField(model_name="stage", name="parent"),
+        migrations.DeleteModel(name="Report"),
+        migrations.DeleteModel(name="ReportStage"),
+        migrations.DeleteModel(name="Stage"),
     ]

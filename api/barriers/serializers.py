@@ -4,14 +4,11 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 
-from api.barriers.models import (
-    BarrierContributor,
-    BarrierInstance,
-    BarrierInteraction,
-)
+from api.barriers.models import BarrierContributor, BarrierInstance, BarrierInteraction
 from api.metadata.constants import STAGE_STATUS
 
 # pylint: disable=R0201
+
 
 class BarrierReportStageListingField(serializers.RelatedField):
     def to_representation(self, value):
@@ -67,12 +64,13 @@ class BarrierReportSerializer(serializers.ModelSerializer):
                 "id": obj.barrier_type.id,
                 "title": obj.barrier_type.title,
                 "description": obj.barrier_type.description,
-                "category": obj.barrier_type_category
+                "category": obj.barrier_type_category,
             }
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
+
     current_status = serializers.SerializerMethodField()
     contributor_count = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
@@ -96,7 +94,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "current_status",
             "barrier_type",
             "barrier_type_category",
-            "created_on"
+            "created_on",
         )
 
     def get_reported_by(self, obj):
@@ -113,14 +111,14 @@ class BarrierListSerializer(serializers.ModelSerializer):
     def get_contributor_count(self, obj):
         """ Custom Serializer Method Field for barrier count """
         barrier_contributors_count = BarrierContributor.objects.filter(
-            barrier=obj,
-            is_active=True
+            barrier=obj, is_active=True
         ).count()
         return barrier_contributors_count
 
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
+
     current_status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     barrier_type = serializers.SerializerMethodField()
@@ -171,7 +169,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 "id": obj.barrier_type.id,
                 "title": obj.barrier_type.title,
                 "description": obj.barrier_type.description,
-                "category": obj.barrier_type_category
+                "category": obj.barrier_type_category,
             }
 
     def get_current_status(self, obj):
@@ -184,6 +182,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
 class BarrierContributorSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Contributors """
+
     class Meta:
         model = BarrierContributor
         fields = "__all__"
@@ -192,6 +191,7 @@ class BarrierContributorSerializer(serializers.ModelSerializer):
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
     """ Serializer for resolving a barrier """
+
     class Meta:
         model = BarrierInstance
         fields = (
@@ -200,13 +200,14 @@ class BarrierResolveSerializer(serializers.ModelSerializer):
             "status_date",
             "status_summary",
             "created_on",
-            "created_by"
+            "created_by",
         )
         read_only_fields = ("id", "status", "created_on", "created_by")
 
 
 class BarrierStaticStatusSerializer(serializers.ModelSerializer):
     """ generic serializer for other barrier statuses """
+
     class Meta:
         model = BarrierInstance
         fields = (
@@ -215,7 +216,7 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
             "status_date",
             "status_summary",
             "created_on",
-            "created_by"
+            "created_by",
         )
         read_only_fields = (
             "id",
@@ -223,6 +224,5 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
             "status_date",
             "is_active",
             "created_on",
-            "created_by"
+            "created_by",
         )
-
