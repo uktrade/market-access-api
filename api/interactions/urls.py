@@ -1,6 +1,10 @@
 from django.urls import path
 
-from api.interactions.views import DocumentViewSet
+from api.interactions.views import (
+    DocumentViewSet,
+    BarrierInteractionList,
+    BarrierIneractionDetail
+)
 
 
 document_collection = DocumentViewSet.as_view({
@@ -42,5 +46,15 @@ urlpatterns = [
         'documents/<uuid:entity_document_pk>/download',
         document_download,
         name='barrier-document-item-download',
+    ),
+    path(
+        "barriers/<uuid:pk>/interactions", 
+        BarrierInteractionList.as_view(), 
+        name="list-interactions"
+    ),
+    path(
+        "barriers/interactions/<int:pk>", 
+        BarrierIneractionDetail.as_view(), 
+        name="get-interaction"
     ),
 ]

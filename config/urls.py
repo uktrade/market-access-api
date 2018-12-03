@@ -43,8 +43,6 @@ urlpatterns = [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path("barriers/<uuid:pk>/contributors", BarrierInstanceContributor.as_view()),
-    path("barriers/<uuid:pk>/interactions", BarrierInteractionList.as_view(), name="list-interactions"),
-    path("barriers/interactions/<int:pk>", BarrierIneractionDetail.as_view(), name="get-interaction"),
     path("barriers/<uuid:pk>/history", BarrierInstanceHistory.as_view(), name="history"),
     path("barriers/<uuid:pk>/status_history", BarrierStatuseHistory.as_view(), name="status-history"),
     path("barriers/<uuid:pk>/resolve", BarrierResolve.as_view(), name="resolve-barrier"),

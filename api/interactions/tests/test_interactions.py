@@ -48,7 +48,7 @@ class TestListInteractions(APITestMixin):
         assert response.data["count"] == 0
 
     def test_add_interactions_no_pin(self):
-        """Test there are no barrier interactions using list"""
+        """Test there is one interaction without pinning"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -98,7 +98,7 @@ class TestListInteractions(APITestMixin):
         assert int_response.data["results"][0]["is_active"] is True
 
     def test_add_interactions_pinned(self):
-        """Test there are no barrier interactions using list"""
+        """Test there are one interaction with pinning"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -149,7 +149,7 @@ class TestListInteractions(APITestMixin):
         assert int_response.data["results"][0]["is_active"] is True
 
     def test_add_interactions_multiple(self):
-        """Test there are no barrier interactions using list"""
+        """Test multiple interactions for barrier"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -204,7 +204,7 @@ class TestListInteractions(APITestMixin):
         assert int_response.data["count"] == 2
 
     def test_add_interactions_multiple_mixed_pinning(self):
-        """Test there are no barrier interactions using list"""
+        """Test multiple interactions with mixed pinning"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -270,7 +270,7 @@ class TestListInteractions(APITestMixin):
         assert int_response.data["count"] == 3
 
     def test_get_interaction(self):
-        """Test retreiving an interaction """
+        """Test retreiving an interaction"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -330,7 +330,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["is_active"] is True
 
     def test_edit_interaction(self):
-        """Test retreiving an interaction """
+        """Test editing an interaction"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -400,7 +400,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["text"] == "edited interaction notes"
 
     def test_edit_interaction_pin_it(self):
-        """Test retreiving an interaction """
+        """Test edit interaction with pinning"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -471,7 +471,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["pinned"] is True
 
     def test_edit_interaction_unpin_it(self):
-        """Test retreiving an interaction """
+        """Test edit interaction un pin it"""
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(list_report_url, format="json", data={
             "problem_status": 2,
@@ -543,7 +543,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["pinned"] is False
 
     def test_add_document(self):
-        """Test adding a document"""
+        """Test add a new document, ready to be attached to an interaction"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "somefile.pdf"
@@ -559,7 +559,7 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.data["signed_upload_url"] is not None
 
     def test_add_document_with_size(self):
-        """Test adding a document"""
+        """Test add a document with size"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "somefile.pdf",
@@ -576,7 +576,7 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.data["signed_upload_url"] is not None
 
     def _test_add_document_with__size_mime_type(self):
-        """Test adding a document"""
+        """Test add a document with size and mime type"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "somefile.pdf",
@@ -594,7 +594,7 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.data["signed_upload_url"] is not None
 
     def test_add_interactions_with_document(self):
-        """Test there are no barrier interactions using list"""
+        """Test add interaction with a document"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "somefile.pdf"
@@ -660,7 +660,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["documents"][0]["id"] == uuid.UUID(document_id)
 
     def test_add_interactions_with_clear_documents(self):
-        """Test there are no barrier interactions using list"""
+        """Test add interaction with documents and edit to clear them"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "somefile.pdf"
@@ -737,7 +737,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["documents"] == []
 
     def test_add_interactions_change_document(self):
-        """Test there are no barrier interactions using list"""
+        """Test add interaction with document and edit to change document"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "somefile.pdf"
@@ -821,7 +821,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["documents"][0]["id"] == uuid.UUID(anotherfile_id)
 
     def test_add_interactions_with_multiple_documents(self):
-        """Test there are no barrier interactions using list"""
+        """Test add an interaction with multiple documents"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "somefile.pdf"
@@ -895,7 +895,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["documents"][1]["id"] == uuid.UUID(otherfile_id)
 
     def test_add_interactions_change_multiple_documents(self):
-        """Test there are no barrier interactions using list"""
+        """Test add an interaction with multiple documents and change them to be different"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "file1.pdf"
@@ -995,7 +995,7 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.data["documents"][1]["id"] == uuid.UUID(file4_id)
 
     def test_add_interactions_change_add_another_document(self):
-        """Test there are no barrier interactions using list"""
+        """Test add interaction with a document and edit to add one more document"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(docs_list_url, format="json", data={
             "original_filename": "file1.pdf"
