@@ -16,6 +16,7 @@ from api.metadata.constants import (
     BARRIER_TYPE_CATEGORIES,
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
+    BARRIER_PRIORITY,
     CONTRIBUTOR_TYPE,
     ESTIMATED_LOSS_RANGE,
     GOVT_RESPONSE,
@@ -81,6 +82,7 @@ class MetadataView(generics.GenericAPIView):
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
         timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
+        barrier_priority = dict((x, y) for x, y in BARRIER_PRIORITY)
 
         dh_countries = import_api_results("country")
         dh_sectors = import_api_results("sector")
@@ -108,6 +110,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_interaction_types": barrier_inter_type,
             "barrier_source": barrier_source,
             "timeline_events": timeline_events,
+            "barrier_priority": barrier_priority,
         }
 
         return Response(results, status=status.HTTP_200_OK)
