@@ -24,7 +24,6 @@ class BarrierReportStageListingField(serializers.RelatedField):
 class BarrierReportSerializer(serializers.ModelSerializer):
     progress = BarrierReportStageListingField(many=True, read_only=True)
     created_by = serializers.SerializerMethodField()
-    barrier_type = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -45,27 +44,23 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "other_source",
             "barrier_title",
             "problem_description",
-            "barrier_type",
-            "barrier_type_category",
             "progress",
             "created_by",
             "created_on",
         )
-        read_only_fields = ("id", "progress", "created_on")
+        read_only_fields = (
+            "id",
+            "code",
+            "status",
+            "status_summary",
+            "status_date",
+            "progress",
+            "created_by",
+            "created_on"
+        )
 
     def get_created_by(self, obj):
         return obj.created_user
-
-    def get_barrier_type(self, obj):
-        if obj.barrier_type is None:
-            return None
-        else:
-            return {
-                "id": obj.barrier_type.id,
-                "title": obj.barrier_type.title,
-                "description": obj.barrier_type.description,
-                "category": obj.barrier_type_category,
-            }
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
@@ -92,6 +87,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "export_country",
             "contributor_count",
             "current_status",
+            "priority",
             "barrier_type",
             "barrier_type_category",
             "created_on",
@@ -146,9 +142,20 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "reported_on",
             "reported_by",
             "current_status",
+            "priority",
             "created_on",
             "modified_by",
             "modified_on",
+        )
+        read_only_fields = (
+            "id",
+            "code",
+            "reported_on",
+            "reported_by",
+            "priority_date",
+            "created_on",
+            "modified_on",
+            "modifieds_by",
         )
         depth = 1
 

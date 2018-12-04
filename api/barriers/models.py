@@ -15,6 +15,7 @@ from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
+    BARRIER_PRIORITY,
     BARRIER_TYPE_CATEGORIES,
     CONTRIBUTOR_TYPE,
     PROBLEM_STATUS_TYPES,
@@ -131,6 +132,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
 
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
+    # Barrier status
     status = models.PositiveIntegerField(
         choices=BARRIER_STATUS, default=0, help_text="status of the barrier instance"
     )
@@ -139,6 +141,20 @@ class BarrierInstance(BaseModel, ArchivableModel):
     )
     status_date = models.DateTimeField(
         auto_now_add=True, null=True, help_text="date when status action occurred"
+    )
+
+    # Barrier priority
+    priority = models.CharField(
+        choices=BARRIER_PRIORITY,
+        max_length=25,
+        default="UNKNOWN",
+        help_text="priority of the barrier instance"
+    )
+    priority_summary = models.TextField(
+        null=True, default=None, help_text="priority summary if provided by user"
+    )
+    priority_date = models.DateTimeField(
+        auto_now=True, null=True, help_text="date when priority was set"
     )
 
     has_legal_infringement = models.PositiveIntegerField(

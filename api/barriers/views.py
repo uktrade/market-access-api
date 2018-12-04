@@ -11,11 +11,12 @@ from django_filters import Filter
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import generics, status, serializers
+from rest_framework import generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from api.core.viewsets import CoreViewSet
 from api.barriers.models import (
     BarrierContributor,
     BarrierInstance,
@@ -169,6 +170,12 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         serializer.save()
         self._update_stages(serializer, self.request.user)
+
+
+class BarrierReportViewSet(CoreViewSet):
+    queryset = BarrierInstance.reports.all()
+    serializer_class = BarrierReportSerializer
+    lookup_field = "pk"
 
 
 class BarrierReportSubmit(generics.UpdateAPIView):
