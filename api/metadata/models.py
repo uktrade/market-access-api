@@ -44,3 +44,10 @@ class BarrierType(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class BarrierPriority(models.Model):
+    """ Model representing Priority to be set for each Barrier """
+    code = models.CharField(max_length=10, null=False, unique=True)
+    name = models.CharField(max_length=25)
+    order = models.IntegerField(null=False)

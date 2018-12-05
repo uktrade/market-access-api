@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierContributor, BarrierInstance, BarrierInteraction
+from api.barriers.models import BarrierInstance, BarrierInteraction
 from api.metadata.constants import STAGE_STATUS
 
 # pylint: disable=R0201
@@ -67,8 +67,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
 
     current_status = serializers.SerializerMethodField()
-    contributor_count = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -83,9 +83,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "barrier_title",
             "sectors_affected",
             "sectors",
-            "companies",
             "export_country",
-            "contributor_count",
             "current_status",
             "priority",
             "barrier_type",
@@ -104,12 +102,20 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "status_summary": obj.status_summary,
         }
 
-    def get_contributor_count(self, obj):
-        """ Custom Serializer Method Field for barrier count """
-        barrier_contributors_count = BarrierContributor.objects.filter(
-            barrier=obj, is_active=True
-        ).count()
-        return barrier_contributors_count
+    def get_priority(self, obj):
+        """  Custom Serializer Method Field for exposing barrier priority """
+        if obj.priority:
+            return {
+                "code": obj.priority.code,
+                "name": obj.priority.name,
+                "order": obj.priority.order,
+            }
+        else:
+            return {
+                "code": "UNKNOWN",
+                "name": "Unknown",
+                "order": 0,
+            }
 
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
@@ -119,6 +125,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     reported_by = serializers.SerializerMethodField()
     barrier_type = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -186,14 +193,20 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "status_summary": obj.status_summary,
         }
 
-
-class BarrierContributorSerializer(serializers.ModelSerializer):
-    """ Serializer for Barrier Contributors """
-
-    class Meta:
-        model = BarrierContributor
-        fields = "__all__"
-        read_only_fields = ("barrier", "created_on", "created_by")
+    def get_priority(self, obj):
+        """  Custom Serializer Method Field for exposing barrier priority """
+        if obj.priority:
+            return {
+                "code": obj.priority.code,
+                "name": obj.priority.name,
+                "order": obj.priority.order,
+            }
+        else:
+            return {
+                "code": "UNKNOWN",
+                "name": "Unknown",
+                "order": 0,
+            }
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
