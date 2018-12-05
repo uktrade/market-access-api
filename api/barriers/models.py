@@ -17,12 +17,14 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_PRIORITY,
     BARRIER_TYPE_CATEGORIES,
-    CONTRIBUTOR_TYPE,
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
 )
 from api.core.models import ArchivableModel, BaseModel
-from api.metadata.models import BarrierType
+from api.metadata.models import (
+    BarrierType,
+    BarrierPriority
+)
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -144,46 +146,18 @@ class BarrierInstance(BaseModel, ArchivableModel):
     )
 
     # Barrier priority
-    priority = models.CharField(
-        choices=BARRIER_PRIORITY,
-        max_length=25,
-        default="UNKNOWN",
-        help_text="priority of the barrier instance"
+    priority = models.ForeignKey(
+        BarrierPriority,
+        null=True,
+        default=None,
+        related_name="barrier_priority",
+        on_delete=models.SET_NULL,
     )
     priority_summary = models.TextField(
         null=True, default=None, help_text="priority summary if provided by user"
     )
     priority_date = models.DateTimeField(
         auto_now=True, null=True, help_text="date when priority was set"
-    )
-
-    has_legal_infringement = models.PositiveIntegerField(
-        choices=ADV_BOOLEAN,
-        null=True,
-        default=None,
-        help_text="Legal obligations infringed",
-    )
-    wto_infringement = models.NullBooleanField(
-        default=None, help_text="Legal obligations infringed"
-    )
-    fta_infringement = models.NullBooleanField(
-        default=None, help_text="Legal obligations infringed"
-    )
-    other_infringement = models.NullBooleanField(
-        default=None, help_text="Legal obligations infringed"
-    )
-    infringement_summary = models.TextField(
-        null=True, default=None, help_text="Summary of infringments"
-    )
-
-    political_sensitivities = models.TextField(
-        null=True, default=None, help_text="Political sensitivities to be aware of"
-    )
-
-    commercial_sensitivities = models.TextField(
-        null=True,
-        default=None,
-        help_text="Commercial or confidentiality sensitivities to be aware of",
     )
 
     stages = models.ManyToManyField(
@@ -273,20 +247,3 @@ class BarrierReportStage(BaseModel):
 
     class Meta:
         unique_together = (("barrier", "stage"),)
-
-
-class BarrierContributor(BaseModel):
-    """ Contributors for each Barrier """
-
-    barrier = models.ForeignKey(
-        BarrierInstance, related_name="contributors", on_delete=models.PROTECT
-    )
-    contributor = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name="contributor_user",
-        null=True,
-        on_delete=models.PROTECT,
-    )
-    kind = models.CharField(choices=CONTRIBUTOR_TYPE, max_length=25)
-    is_active = models.BooleanField(default=True)
-    history = HistoricalRecords()

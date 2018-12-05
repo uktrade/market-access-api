@@ -7,7 +7,6 @@ from api.barriers.views import (
     barrier_count,
     BarrierList,
     BarrierDetail,
-    BarrierInstanceContributor,
     BarrierResolve,
     BarrierHibernate,
     BarrierOpen,
@@ -38,7 +37,6 @@ urlpatterns = [
     path("metadata", MetadataView.as_view(), name="metadata"),
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
-    path("barriers/<uuid:pk>/contributors", BarrierInstanceContributor.as_view()),
     path(
         "barriers/<uuid:pk>/history", BarrierInstanceHistory.as_view(), name="history"
     ),

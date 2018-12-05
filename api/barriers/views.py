@@ -18,13 +18,11 @@ from rest_framework.response import Response
 
 from api.core.viewsets import CoreViewSet
 from api.barriers.models import (
-    BarrierContributor,
     BarrierInstance,
     BarrierInteraction,
     BarrierReportStage,
 )
 from api.barriers.serializers import (
-    BarrierContributorSerializer,
     BarrierStaticStatusSerializer,
     BarrierInstanceSerializer,
     BarrierListSerializer,
@@ -37,9 +35,10 @@ from api.metadata.constants import (
     TIMELINE_EVENTS,
 )
 
-from api.metadata.models import BarrierType
-
-from api.metadata.models import BarrierType
+from api.metadata.models import (
+    BarrierType,
+    BarrierPriority
+)
 
 from api.user.utils import has_profile
 
@@ -172,12 +171,6 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
         self._update_stages(serializer, self.request.user)
 
 
-class BarrierReportViewSet(CoreViewSet):
-    queryset = BarrierInstance.reports.all()
-    serializer_class = BarrierReportSerializer
-    lookup_field = "pk"
-
-
 class BarrierReportSubmit(generics.UpdateAPIView):
 
     queryset = BarrierInstance.reports.all()
@@ -190,7 +183,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         Changes status of the report
         Creates a Barrier Instance out of the report
         Sets up default status
-        Sets up contributor where appropriate
         """
         # validate and submit a report
         report = self.get_object()
@@ -239,13 +231,22 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
+        barrier_type = None
         if self.request.data.get("barrier_type", None) is not None:
             barrier_type = get_object_or_404(
                 BarrierType, pk=self.request.data.get("barrier_type")
             )
-            serializer.save(barrier_type=barrier_type, modified_by=self.request.user)
-        else:
-            serializer.save(modified_by=self.request.user)
+        barrier_priority = None
+        if self.request.data.get("priority", None) is not None:
+            barrier_priority = get_object_or_404(
+                BarrierPriority, code=self.request.data.get("priority")
+            )
+
+        serializer.save(
+            barrier_type=barrier_type,
+            priority=barrier_priority,
+            modified_by=self.request.user
+        )
 
 
 class BarrierInstanceHistory(GenericAPIView):
@@ -391,23 +392,6 @@ class BarrierStatuseHistory(GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class BarrierInstanceContributor(generics.ListCreateAPIView):
-    queryset = BarrierContributor.objects.all()
-    serializer_class = BarrierContributorSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-    # def perform_create(self, serializer):
-    #     barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-    #     if settings.DEBUG is False:
-    #         serializer.save(
-    #             barrier=barrier_obj, created_by=self.request.user
-    #         )
-    #     else:
-    #         serializer.save(barrier=barrier_obj)
-
-
 class BarrierStatusBase(generics.UpdateAPIView):
     def _create(
         self, serializer, barrier_id, barrier_status, barrier_summary, status_date=None
@@ -423,21 +407,6 @@ class BarrierStatusBase(generics.UpdateAPIView):
             status_date=status_date,
             modified_by=self.request.user,
         )
-        # if settings.DEBUG is False:
-        #     serializer.save(
-        #         barrier=barrier_obj,
-        #         status=barrier_status,
-        #         summary=barrier_summary,
-        #         status_date=status_date,
-        #         created_by=self.request.user
-        #     )
-        # else:
-        #     serializer.save(
-        #         barrier=barrier_obj,
-        #         status=barrier_status,
-        #         summary=barrier_summary,
-        #         status_date=status_date
-        #     )
 
 
 class BarrierResolve(BarrierStatusBase):
