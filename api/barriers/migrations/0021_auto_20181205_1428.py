@@ -103,26 +103,6 @@ class Migration(migrations.Migration):
             model_name='historicalbarrierinstance',
             name='wto_infringement',
         ),
-        migrations.AddField(
-            model_name='barrierinstance',
-            name='priority_date',
-            field=models.DateTimeField(auto_now=True, help_text='date when priority was set', null=True),
-        ),
-        migrations.AddField(
-            model_name='barrierinstance',
-            name='priority_summary',
-            field=models.TextField(default=None, help_text='priority summary if provided by user', null=True),
-        ),
-        migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='priority_date',
-            field=models.DateTimeField(blank=True, editable=False, help_text='date when priority was set', null=True),
-        ),
-        migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='priority_summary',
-            field=models.TextField(default=None, help_text='priority summary if provided by user', null=True),
-        ),
         migrations.DeleteModel(
             name='BarrierContributor',
         ),

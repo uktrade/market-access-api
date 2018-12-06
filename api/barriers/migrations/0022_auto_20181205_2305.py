@@ -14,8 +14,28 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='barrierinstance',
+            name='priority_date',
+            field=models.DateTimeField(auto_now=True, help_text='date when priority was set', null=True),
+        ),
+        migrations.AddField(
+            model_name='barrierinstance',
+            name='priority_summary',
+            field=models.TextField(default=None, help_text='priority summary if provided by user', null=True),
+        ),
+        migrations.AddField(
+            model_name='barrierinstance',
             name='priority',
             field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='barrier_priority', to='metadata.BarrierPriority'),
+        ),
+        migrations.AddField(
+            model_name='historicalbarrierinstance',
+            name='priority_date',
+            field=models.DateTimeField(blank=True, editable=False, help_text='date when priority was set', null=True),
+        ),
+        migrations.AddField(
+            model_name='historicalbarrierinstance',
+            name='priority_summary',
+            field=models.TextField(default=None, help_text='priority summary if provided by user', null=True),
         ),
         migrations.AddField(
             model_name='historicalbarrierinstance',
