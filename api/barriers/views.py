@@ -338,7 +338,6 @@ class BarrierStatuseHistory(GenericAPIView):
 
     def get(self, request, pk):
         status_field = "status"
-        timeline_fields = ["status", "priority"]
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
@@ -349,13 +348,11 @@ class BarrierStatuseHistory(GenericAPIView):
                 results.append(
                     {
                         "date": new_record.history_date,
-                        "field": status_field,
-                        "old_value": None,
-                        "new_value": str(new_record.status),
-                        "field_info": {
-                            "status_date": new_record.status_date,
-                            "status_summary": None,
-                        },
+                        "status_date": new_record.status_date,
+                        "event": TIMELINE_REVERTED["Report Created"],
+                        "old_status": None,
+                        "new_status": new_record.status,
+                        "status_summary": None,
                         "user": self._username_from_user(new_record.history_user),
                     }
                 )
@@ -364,13 +361,11 @@ class BarrierStatuseHistory(GenericAPIView):
                     results.append(
                         {
                             "date": new_record.history_date,
-                            "field": status_field,
-                            "old_value": None,
-                            "new_value": str(new_record.status),
-                            "field_info": {
-                                "status_date": new_record.status_date,
-                                "status_summary": new_record.status_summary,
-                            },
+                            "status_date": new_record.status_date,
+                            "event": TIMELINE_REVERTED["Barrier Status Change"],
+                            "old_status": None,
+                            "new_status": new_record.status,
+                            "status_summary": new_record.status_summary,
                             "user": self._username_from_user(new_record.history_user),
                         }
                     )
@@ -378,32 +373,27 @@ class BarrierStatuseHistory(GenericAPIView):
                     status_change = None
                     delta = new_record.diff_against(old_record)
                     for change in delta.changes:
-                        if change.field in timeline_fields:
+                        if change.field == status_field:
+                            if change.old == 0 and (change.new == 2 or change.new == 4):
+                                event = TIMELINE_REVERTED["Barrier Created"]
+                            else:
+                                event = TIMELINE_REVERTED["Barrier Status Change"]
                             status_change = {
                                 "date": new_record.history_date,
-                                "field": change.field,
-                                "old_value": str(change.old),
-                                "new_value": str(change.new),
+                                "status_date": new_record.status_date,
+                                "event": event,
+                                "old_status": change.old,
+                                "new_status": change.new,
+                                "status_summary": new_record.status_summary,
                                 "user": self._username_from_user(
                                     new_record.history_user
                                 ),
                             }
-                            if change.field == "status":
-                                status_change["field_info"] = {
-                                    "status_date": new_record.status_date,
-                                    "status_summary": new_record.status_summary,
-                                }
-                            elif change.field == "priority":
-                                status_change["field_info"] = {
-                                    "priority_date": new_record.priority_date,
-                                    "priority_summary": new_record.priority_summary,
-                                }
-
                     if status_change:
                         results.append(status_change)
             old_record = new_record
-        response = {"barrier_id": str(pk), "status_history": results}
-        return JsonResponse(response, status=status.HTTP_200_OK)
+            response = {"barrier_id": pk, "status_history": results}
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class BarrierStatusBase(generics.UpdateAPIView):
