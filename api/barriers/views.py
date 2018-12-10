@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
+from django.forms.models import model_to_dict
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -350,7 +351,7 @@ class BarrierStatuseHistory(GenericAPIView):
                         "date": new_record.history_date,
                         "field": status_field,
                         "old_value": None,
-                        "new_value": new_record.status,
+                        "new_value": str(new_record.status),
                         "field_info": {
                             "status_date": new_record.status_date,
                             "status_summary": None,
@@ -365,7 +366,7 @@ class BarrierStatuseHistory(GenericAPIView):
                             "date": new_record.history_date,
                             "field": status_field,
                             "old_value": None,
-                            "new_value": new_record.status,
+                            "new_value": str(new_record.status),
                             "field_info": {
                                 "status_date": new_record.status_date,
                                 "status_summary": new_record.status_summary,
@@ -381,8 +382,8 @@ class BarrierStatuseHistory(GenericAPIView):
                             status_change = {
                                 "date": new_record.history_date,
                                 "field": change.field,
-                                "old_value": change.old,
-                                "new_value": change.new,
+                                "old_value": str(change.old),
+                                "new_value": str(change.new),
                                 "user": self._username_from_user(
                                     new_record.history_user
                                 ),
@@ -401,21 +402,8 @@ class BarrierStatuseHistory(GenericAPIView):
                     if status_change:
                         results.append(status_change)
             old_record = new_record
-        print(results)
         response = {"barrier_id": str(pk), "status_history": results}
-        return HttpResponse(json.dumps(
-                response,
-                sort_keys=True,
-                indent=1,
-                cls=DjangoJSONEncoder
-            ), mimetype="application/json")
-        # return JsonResponse(json.dumps(
-        #         response,
-        #         sort_keys=True,
-        #         indent=1,
-        #         cls=DjangoJSONEncoder
-        #     ), status=status.HTTP_200_OK)
-        # return Response(response, status=status.HTTP_200_OK)
+        return JsonResponse(response, status=status.HTTP_200_OK)
 
 
 class BarrierStatusBase(generics.UpdateAPIView):
