@@ -63,6 +63,9 @@ class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
     def perform_update(self, serializer):
-        docs_in_req = self.request.data.get("documents", [])
-        documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
-        serializer.save(documents=documents, modified_by=self.request.user)
+        if "documents" in self.request.data:
+            docs_in_req = self.request.data.get("documents", [])
+            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
+            serializer.save(documents=documents, modified_by=self.request.user)
+        else:
+            serializer.save(modified_by=self.request.user)
