@@ -54,10 +54,10 @@ class BarrierPriority(models.Model):
     order = models.IntegerField(null=False)
 
     def __repr__(self):
-        return self.code
+        return self.name
 
     def __str__(self):
-        return self.code
+        return self.name
 
     def toJSON(self):
         return json.dumps(
