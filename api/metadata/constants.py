@@ -76,10 +76,3 @@ TIMELINE_EVENTS = Choices(
     ("BARRIER_CREATED", "Barrier Created"),
     ("BARRIER_STATUS_CHANGE", "Barrier Status Change"),
 )
-
-BARRIER_PRIORITY = Choices(
-    ("UNKNOWN", "Unknown"),
-    ("HIGH", "High"),
-    ("MEDIUM", "Medium"),
-    ("LOW", "Low"),
-)

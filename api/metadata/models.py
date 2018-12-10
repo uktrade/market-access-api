@@ -1,3 +1,4 @@
+import json
 from uuid import uuid4
 
 from django.db import models
@@ -51,3 +52,17 @@ class BarrierPriority(models.Model):
     code = models.CharField(max_length=10, null=False, unique=True)
     name = models.CharField(max_length=25)
     order = models.IntegerField(null=False)
+
+    def __repr__(self):
+        return self.code
+
+    def __str__(self):
+        return self.code
+
+    def toJSON(self):
+        return json.dumps(
+            self,
+            default=lambda o: o.__dict__,
+            sort_keys=True,
+            indent=4
+        )
