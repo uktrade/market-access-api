@@ -38,7 +38,7 @@ jobs:
       AUTHBROKER_CLIENT_SECRET: auth secret
       ALLOWED_ADMIN_IPS: 1.2.3.4
       RESTRICT_ADMIN: 'False'
-      AV_V2_SERVICE_URL: 'https://test:74q4q7S75JWFKA9K6vWy46jXa@av-api.uktrade.io/v2/scan'
+      AV_V2_SERVICE_URL: 'https://test:secret@av-api/scan'
       DEFAULT_BUCKET: market-access-enc-dev
       AWS_ACCESS_KEY_ID: 'access_key'
       AWS_SECRET_ACCESS_KEY: 'access_secret'
