@@ -6,67 +6,67 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0017_auto_20181008_0743'),
-    ]
+    dependencies = [("barriers", "0017_auto_20181008_0743")]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='barriercompany',
-            unique_together=set(),
+        migrations.AlterUniqueTogether(name="barriercompany", unique_together=set()),
+        migrations.RemoveField(model_name="barriercompany", name="barrier"),
+        migrations.RemoveField(model_name="barriercompany", name="created_by"),
+        migrations.RemoveField(model_name="barriercompany", name="modified_by"),
+        migrations.RemoveField(model_name="historicalbarriercompany", name="barrier"),
+        migrations.RemoveField(
+            model_name="historicalbarriercompany", name="created_by"
         ),
         migrations.RemoveField(
-            model_name='barriercompany',
-            name='barrier',
+            model_name="historicalbarriercompany", name="history_user"
         ),
         migrations.RemoveField(
-            model_name='barriercompany',
-            name='created_by',
-        ),
-        migrations.RemoveField(
-            model_name='barriercompany',
-            name='modified_by',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarriercompany',
-            name='barrier',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarriercompany',
-            name='created_by',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarriercompany',
-            name='history_user',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarriercompany',
-            name='modified_by',
+            model_name="historicalbarriercompany", name="modified_by"
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='companies',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default=None, null=True),
+            model_name="barrierinstance",
+            name="companies",
+            field=django.contrib.postgres.fields.jsonb.JSONField(
+                default=None, null=True
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='companies',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default=None, null=True),
+            model_name="historicalbarrierinstance",
+            name="companies",
+            field=django.contrib.postgres.fields.jsonb.JSONField(
+                default=None, null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='barrier_type_category',
-            field=models.CharField(choices=[('GOODS', 'Goods'), ('SERVICES', 'Services'), ('GOODSANDSERVICES', 'Goods and Services')], default=None, help_text='barrier type category', max_length=25, null=True),
+            model_name="barrierinstance",
+            name="barrier_type_category",
+            field=models.CharField(
+                choices=[
+                    ("GOODS", "Goods"),
+                    ("SERVICES", "Services"),
+                    ("GOODSANDSERVICES", "Goods and Services"),
+                ],
+                default=None,
+                help_text="barrier type category",
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='barrier_type_category',
-            field=models.CharField(choices=[('GOODS', 'Goods'), ('SERVICES', 'Services'), ('GOODSANDSERVICES', 'Goods and Services')], default=None, help_text='barrier type category', max_length=25, null=True),
+            model_name="historicalbarrierinstance",
+            name="barrier_type_category",
+            field=models.CharField(
+                choices=[
+                    ("GOODS", "Goods"),
+                    ("SERVICES", "Services"),
+                    ("GOODSANDSERVICES", "Goods and Services"),
+                ],
+                default=None,
+                help_text="barrier type category",
+                max_length=25,
+                null=True,
+            ),
         ),
-        migrations.DeleteModel(
-            name='BarrierCompany',
-        ),
-        migrations.DeleteModel(
-            name='HistoricalBarrierCompany',
-        ),
+        migrations.DeleteModel(name="BarrierCompany"),
+        migrations.DeleteModel(name="HistoricalBarrierCompany"),
     ]

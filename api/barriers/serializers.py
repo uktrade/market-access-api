@@ -4,14 +4,11 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 
-from api.barriers.models import (
-    BarrierContributor,
-    BarrierInstance,
-    BarrierInteraction,
-)
+from api.barriers.models import BarrierInstance, BarrierInteraction
 from api.metadata.constants import STAGE_STATUS
 
 # pylint: disable=R0201
+
 
 class BarrierReportStageListingField(serializers.RelatedField):
     def to_representation(self, value):
@@ -27,7 +24,6 @@ class BarrierReportStageListingField(serializers.RelatedField):
 class BarrierReportSerializer(serializers.ModelSerializer):
     progress = BarrierReportStageListingField(many=True, read_only=True)
     created_by = serializers.SerializerMethodField()
-    barrier_type = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -48,34 +44,31 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "other_source",
             "barrier_title",
             "problem_description",
-            "barrier_type",
-            "barrier_type_category",
             "progress",
             "created_by",
             "created_on",
         )
-        read_only_fields = ("id", "progress", "created_on")
+        read_only_fields = (
+            "id",
+            "code",
+            "status",
+            "status_summary",
+            "status_date",
+            "progress",
+            "created_by",
+            "created_on"
+        )
 
     def get_created_by(self, obj):
         return obj.created_user
 
-    def get_barrier_type(self, obj):
-        if obj.barrier_type is None:
-            return None
-        else:
-            return {
-                "id": obj.barrier_type.id,
-                "title": obj.barrier_type.title,
-                "description": obj.barrier_type.description,
-                "category": obj.barrier_type_category
-            }
-
 
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
+
     current_status = serializers.SerializerMethodField()
-    contributor_count = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -90,13 +83,12 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "barrier_title",
             "sectors_affected",
             "sectors",
-            "companies",
             "export_country",
-            "contributor_count",
             "current_status",
+            "priority",
             "barrier_type",
             "barrier_type_category",
-            "created_on"
+            "created_on",
         )
 
     def get_reported_by(self, obj):
@@ -110,21 +102,30 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "status_summary": obj.status_summary,
         }
 
-    def get_contributor_count(self, obj):
-        """ Custom Serializer Method Field for barrier count """
-        barrier_contributors_count = BarrierContributor.objects.filter(
-            barrier=obj,
-            is_active=True
-        ).count()
-        return barrier_contributors_count
+    def get_priority(self, obj):
+        """  Custom Serializer Method Field for exposing barrier priority """
+        if obj.priority:
+            return {
+                "code": obj.priority.code,
+                "name": obj.priority.name,
+                "order": obj.priority.order,
+            }
+        else:
+            return {
+                "code": "UNKNOWN",
+                "name": "Unknown",
+                "order": 0,
+            }
 
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
+
     current_status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     barrier_type = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -148,9 +149,21 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "reported_on",
             "reported_by",
             "current_status",
+            "priority",
+            "priority_summary",
             "created_on",
             "modified_by",
             "modified_on",
+        )
+        read_only_fields = (
+            "id",
+            "code",
+            "reported_on",
+            "reported_by",
+            "priority_date",
+            "created_on",
+            "modified_on",
+            "modifieds_by",
         )
         depth = 1
 
@@ -171,7 +184,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 "id": obj.barrier_type.id,
                 "title": obj.barrier_type.title,
                 "description": obj.barrier_type.description,
-                "category": obj.barrier_type_category
+                "category": obj.barrier_type_category,
             }
 
     def get_current_status(self, obj):
@@ -181,44 +194,25 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "status_summary": obj.status_summary,
         }
 
-
-class BarrierInteractionSerializer(serializers.ModelSerializer):
-    """ Serialzer for Barrier Ineractions """
-    created_by = serializers.SerializerMethodField()
-
-    class Meta:
-        model = BarrierInteraction
-        fields = (
-            "id",
-            "kind",
-            "text",
-            "pinned",
-            "is_active",
-            "created_on",
-            "created_by"
-        )
-        read_only_fields = ("barrier", "kind", "created_on", "created_by")
-    
-    def get_created_by(self, obj):
-        if obj.created_by is None:
-            return None
-
-        return {
-            "id": obj.created_by.id,
-            "name": obj.created_user,
-        }
-
-
-class BarrierContributorSerializer(serializers.ModelSerializer):
-    """ Serializer for Barrier Contributors """
-    class Meta:
-        model = BarrierContributor
-        fields = "__all__"
-        read_only_fields = ("barrier", "created_on", "created_by")
+    def get_priority(self, obj):
+        """  Custom Serializer Method Field for exposing barrier priority """
+        if obj.priority:
+            return {
+                "code": obj.priority.code,
+                "name": obj.priority.name,
+                "order": obj.priority.order,
+            }
+        else:
+            return {
+                "code": "UNKNOWN",
+                "name": "Unknown",
+                "order": 0,
+            }
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
     """ Serializer for resolving a barrier """
+
     class Meta:
         model = BarrierInstance
         fields = (
@@ -227,13 +221,14 @@ class BarrierResolveSerializer(serializers.ModelSerializer):
             "status_date",
             "status_summary",
             "created_on",
-            "created_by"
+            "created_by",
         )
         read_only_fields = ("id", "status", "created_on", "created_by")
 
 
 class BarrierStaticStatusSerializer(serializers.ModelSerializer):
     """ generic serializer for other barrier statuses """
+
     class Meta:
         model = BarrierInstance
         fields = (
@@ -242,7 +237,7 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
             "status_date",
             "status_summary",
             "created_on",
-            "created_by"
+            "created_by",
         )
         read_only_fields = (
             "id",
@@ -250,6 +245,5 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
             "status_date",
             "is_active",
             "created_on",
-            "created_by"
+            "created_by",
         )
-

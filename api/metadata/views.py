@@ -16,7 +16,6 @@ from api.metadata.constants import (
     BARRIER_TYPE_CATEGORIES,
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
-    CONTRIBUTOR_TYPE,
     ESTIMATED_LOSS_RANGE,
     GOVT_RESPONSE,
     PROBLEM_STATUS_TYPES,
@@ -26,7 +25,10 @@ from api.metadata.constants import (
     SUPPORT_TYPE,
     TIMELINE_EVENTS,
 )
-from api.metadata.models import BarrierType
+from api.metadata.models import (
+    BarrierType,
+    BarrierPriority
+)
 from api.barriers.models import Stage
 
 
@@ -59,13 +61,23 @@ class MetadataView(generics.GenericAPIView):
         ]
         return barrier_goods + barrier_services
 
+    def get_barrier_priorities(self):
+        return [
+            {
+                "code": priority.code,
+                "name": priority.name,
+                "order": priority.order,
+            }
+            for priority in BarrierPriority.objects.all()
+        ]
+
     def get_barrier_type_categories(self):
-        return dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES")
+        return dict(
+            (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
+        )
 
     def get_reporting_stages(self):
-        return dict(
-            (stage.code, stage.description) for stage in Stage.objects.all()
-        )
+        return dict((stage.code, stage.description) for stage in Stage.objects.all())
 
     def get(self, request):
         status_types = dict((x, y) for x, y in PROBLEM_STATUS_TYPES)
@@ -87,7 +99,8 @@ class MetadataView(generics.GenericAPIView):
 
         report_stages = self.get_reporting_stages()
         barrier_types = self.get_barrier_types()
-        barrier_type_cat = self.get_barrier_type_categories()        
+        barrier_type_cat = self.get_barrier_type_categories()
+        barrier_priorities = self.get_barrier_priorities()
 
         results = {
             "status_types": status_types,
@@ -108,6 +121,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_interaction_types": barrier_inter_type,
             "barrier_source": barrier_source,
             "timeline_events": timeline_events,
+            "barrier_priorities": barrier_priorities,
         }
 
         return Response(results, status=status.HTTP_200_OK)

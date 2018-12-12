@@ -5,14 +5,15 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0001_initial'),
-    ]
+    dependencies = [("barriers", "0001_initial")]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='other_companies_affected',
-            field=models.PositiveIntegerField(choices=[(1, 'Yes'), (2, 'No'), (3, "Don't know")], help_text='Are there other companies affected?'),
-        ),
+            model_name="barrierinstance",
+            name="other_companies_affected",
+            field=models.PositiveIntegerField(
+                choices=[(1, "Yes"), (2, "No"), (3, "Don't know")],
+                help_text="Are there other companies affected?",
+            ),
+        )
     ]

@@ -5,14 +5,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('metadata', '0003_auto_20180705_1132'),
-    ]
+    dependencies = [("metadata", "0003_auto_20180705_1132")]
 
     operations = [
         migrations.AlterField(
-            model_name='barriertype',
-            name='category',
-            field=models.CharField(choices=[('GOODS', 'Goods'), ('SERVICES', 'Services')], max_length=20),
-        ),
+            model_name="barriertype",
+            name="category",
+            field=models.CharField(
+                choices=[("GOODS", "Goods"), ("SERVICES", "Services")], max_length=20
+            ),
+        )
     ]

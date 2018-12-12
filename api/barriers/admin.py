@@ -9,6 +9,7 @@ class BarrierInstanceAdmin(admin.ModelAdmin):
     allowing BarrierInstance archivable.
     Admin shouldn't be able to add or delete objects
     """
+
     def has_add_permission(self, request, obj=None):
         """ No Add permission """
         return False
@@ -17,12 +18,12 @@ class BarrierInstanceAdmin(admin.ModelAdmin):
         """ No Delete permission """
         return False
 
-    list_display = ('id', 'code', 'reported_on', 'archived')
-    search_fields = ('id', 'code')
-    list_filter = ('reported_on',)
-    date_hierarchy = 'reported_on'
-    ordering = ('-reported_on',)
-    fields = ('archived', 'archived_on', 'archived_reason', 'archived_by')
+    list_display = ("id", "code", "reported_on", "archived")
+    search_fields = ("id", "code")
+    list_filter = ("reported_on",)
+    date_hierarchy = "reported_on"
+    ordering = ("-reported_on",)
+    fields = ("archived", "archived_on", "archived_reason", "archived_by")
 
 
 admin.site.register(BarrierInstance, BarrierInstanceAdmin)

@@ -23,7 +23,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "location",
-            "internal"
+            "internal",
         )
 
     def get_location(self, obj):

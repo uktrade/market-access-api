@@ -5,61 +5,30 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0006_auto_20180903_1349'),
-    ]
+    dependencies = [("barriers", "0006_auto_20180903_1349")]
 
     operations = [
+        migrations.RemoveField(model_name="barrierinstance", name="chance_of_success"),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='chance_of_success',
+            model_name="barrierinstance", name="chance_of_success_summary"
+        ),
+        migrations.RemoveField(model_name="barrierinstance", name="commodity_codes"),
+        migrations.RemoveField(
+            model_name="barrierinstance", name="estimated_loss_range"
+        ),
+        migrations.RemoveField(model_name="barrierinstance", name="fta_infringement"),
+        migrations.RemoveField(
+            model_name="barrierinstance", name="has_legal_infringement"
+        ),
+        migrations.RemoveField(model_name="barrierinstance", name="impact_summary"),
+        migrations.RemoveField(
+            model_name="barrierinstance", name="infringement_summary"
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='chance_of_success_summary',
+            model_name="barrierinstance", name="other_companies_affected"
         ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='commodity_codes',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='estimated_loss_range',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='fta_infringement',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='has_legal_infringement',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='impact_summary',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='infringement_summary',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='other_companies_affected',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='other_infringement',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='problem_impact',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='summary',
-        ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='wto_infringement',
-        ),
+        migrations.RemoveField(model_name="barrierinstance", name="other_infringement"),
+        migrations.RemoveField(model_name="barrierinstance", name="problem_impact"),
+        migrations.RemoveField(model_name="barrierinstance", name="summary"),
+        migrations.RemoveField(model_name="barrierinstance", name="wto_infringement"),
     ]

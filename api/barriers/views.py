@@ -1,9 +1,13 @@
+import json
 from collections import defaultdict
 from dateutil.parser import parse
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
+from django.forms.models import model_to_dict
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 import django_filters
@@ -11,22 +15,20 @@ from django_filters import Filter
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import generics, status, serializers
+from rest_framework import generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from api.core.viewsets import CoreViewSet
 from api.barriers.models import (
-    BarrierContributor,
     BarrierInstance,
     BarrierInteraction,
     BarrierReportStage,
 )
 from api.barriers.serializers import (
-    BarrierContributorSerializer,
     BarrierStaticStatusSerializer,
     BarrierInstanceSerializer,
-    BarrierInteractionSerializer,
     BarrierListSerializer,
     BarrierResolveSerializer,
     BarrierReportSerializer,
@@ -37,9 +39,10 @@ from api.metadata.constants import (
     TIMELINE_EVENTS,
 )
 
-from api.metadata.models import BarrierType
-
-from api.metadata.models import BarrierType
+from api.metadata.models import (
+    BarrierType,
+    BarrierPriority
+)
 
 from api.user.utils import has_profile
 
@@ -71,22 +74,27 @@ def barrier_count(request):
     current_user = request.user
     user_count = None
     if not current_user.is_anonymous:
-        user_barrier_count = BarrierInstance.barriers.filter(created_by=current_user).count()
-        user_report_count = BarrierInstance.reports.filter(created_by=current_user).count()
-        user_count = {
-            "barriers": user_barrier_count,
-            "reports": user_report_count,
-        }
+        user_barrier_count = BarrierInstance.barriers.filter(
+            created_by=current_user
+        ).count()
+        user_report_count = BarrierInstance.reports.filter(
+            created_by=current_user
+        ).count()
+        user_count = {"barriers": user_barrier_count, "reports": user_report_count}
         country_barrier_count = None
         country_report_count = None
         country_count = None
         if has_profile(current_user) and current_user.profile.location:
             country = current_user.profile.location
-            country_barrier_count = BarrierInstance.barriers.filter(export_country=country).count()
-            country_report_count = BarrierInstance.reports.filter(export_country=country).count()
+            country_barrier_count = BarrierInstance.barriers.filter(
+                export_country=country
+            ).count()
+            country_report_count = BarrierInstance.reports.filter(
+                export_country=country
+            ).count()
             country_count = {
                 "barriers": country_barrier_count,
-                "reports": country_report_count
+                "reports": country_report_count,
             }
             user_count["country"] = country_count
 
@@ -94,7 +102,7 @@ def barrier_count(request):
         "barriers": {
             "total": BarrierInstance.barriers.count(),
             "open": BarrierInstance.barriers.filter(status=2).count(),
-            "resolved": BarrierInstance.barriers.filter(status=4).count()
+            "resolved": BarrierInstance.barriers.filter(status=4).count(),
         },
         "reports": BarrierInstance.reports.count(),
     }
@@ -110,7 +118,9 @@ class BarrierReportBase(object):
         progress = report.current_progress()
         for new_stage, new_status in progress:
             try:
-                report_stage = BarrierReportStage.objects.get(barrier=report, stage=new_stage)
+                report_stage = BarrierReportStage.objects.get(
+                    barrier=report, stage=new_stage
+                )
                 report_stage.status = new_status
                 report_stage.save()
             except BarrierReportStage.DoesNotExist:
@@ -118,7 +128,9 @@ class BarrierReportBase(object):
                     barrier=report, stage=new_stage, status=new_status
                 ).save()
             if settings.DEBUG is False:
-                report_stage = BarrierReportStage.objects.get(barrier=report, stage=new_stage)
+                report_stage = BarrierReportStage.objects.get(
+                    barrier=report, stage=new_stage
+                )
                 report_stage.user = user
                 report_stage.save()
 
@@ -175,7 +187,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         Changes status of the report
         Creates a Barrier Instance out of the report
         Sets up default status
-        Sets up contributor where appropriate
         """
         # validate and submit a report
         report = self.get_object()
@@ -183,18 +194,16 @@ class BarrierReportSubmit(generics.UpdateAPIView):
 
 
 class BarrierFilterSet(django_filters.FilterSet):
-    start_date = django_filters.DateFilter("status_date", lookup_expr='gte')
-    end_date = django_filters.DateFilter("status_date", lookup_expr='lte')
+    start_date = django_filters.DateFilter("status_date", lookup_expr="gte")
+    end_date = django_filters.DateFilter("status_date", lookup_expr="lte")
     barrier_type = django_filters.ModelMultipleChoiceFilter(
-        queryset=BarrierType.objects.all(),
-        to_field_name='id',
-        conjoined=True,
+        queryset=BarrierType.objects.all(), to_field_name="id", conjoined=True
     )
     sector = django_filters.UUIDFilter(method="sector_filter")
 
     class Meta:
         model = BarrierInstance
-        fields = ['export_country', 'barrier_type', 'sector', 'start_date', 'end_date']
+        fields = ["export_country", "barrier_type", "sector", "start_date", "end_date"]
 
     def sector_filter(self, queryset, name, value):
         """
@@ -207,6 +216,7 @@ class BarrierList(generics.ListAPIView):
     """
     Return a list of all the BarrierInstances with optional filtering.
     """
+
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierListSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -218,56 +228,29 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     Return details of a BarrierInstance
     Allows the barrier to be updated as well
     """
+
     lookup_field = "pk"
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierInstanceSerializer
 
     @transaction.atomic()
     def perform_update(self, serializer):
+        barrier_type = None
         if self.request.data.get("barrier_type", None) is not None:
-            barrier_type = get_object_or_404(BarrierType, pk=self.request.data.get("barrier_type"))
-            serializer.save(
-                barrier_type=barrier_type,
-                modified_by=self.request.user
+            barrier_type = get_object_or_404(
+                BarrierType, pk=self.request.data.get("barrier_type")
             )
-        else:
-            serializer.save(modified_by=self.request.user)
-
-
-class BarrierInteractionList(generics.ListCreateAPIView):
-    """
-    Handling Barrier interactions, such as notes
-    """
-    queryset = BarrierInteraction.objects.all()
-    serializer_class = BarrierInteractionSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-    def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-        kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
-        if settings.SSO_ENABLED:
-            serializer.save(
-                barrier=barrier_obj,
-                kind=kind,
-                created_by=self.request.user
-            )
-        else:
-            serializer.save(
-                barrier=barrier_obj,
-                kind=kind,
+        barrier_priority = None
+        if self.request.data.get("priority", None) is not None:
+            barrier_priority = get_object_or_404(
+                BarrierPriority, code=self.request.data.get("priority")
             )
 
-
-class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
-    """
-    Return details of a Barrier Interaction
-    Allows the barrier interaction to be updated as well
-    """
-    lookup_field = "pk"
-    queryset = BarrierInteraction.objects.all()
-    serializer_class = BarrierInteractionSerializer
+        serializer.save(
+            barrier_type=barrier_type,
+            priority=barrier_priority,
+            modified_by=self.request.user
+        )
 
 
 class BarrierInstanceHistory(GenericAPIView):
@@ -285,15 +268,19 @@ class BarrierInstanceHistory(GenericAPIView):
         results = []
         for new_record in history:
             if new_record.history_type == "+":
-                results.append({
-                    "date": new_record.history_date,
-                    "operation": "Add",
-                    "event": "Report created",
-                    "field": None,
-                    "old_value": None,
-                    "new_value": None,
-                    "user": new_record.history_user.email if new_record.history_user else ""
-                })
+                results.append(
+                    {
+                        "date": new_record.history_date,
+                        "operation": "Add",
+                        "event": "Report created",
+                        "field": None,
+                        "old_value": None,
+                        "new_value": None,
+                        "user": new_record.history_user.email
+                        if new_record.history_user
+                        else "",
+                    }
+                )
             else:
                 delta = new_record.diff_against(old_record)
                 for change in delta.changes:
@@ -306,7 +293,9 @@ class BarrierInstanceHistory(GenericAPIView):
                             new_value = change.new
                         elif change.old is not None and change.new is not None:
                             operation = "Update"
-                            event = "{} changed from {} to {}".format(change.field, change.old, change.new)
+                            event = "{} changed from {} to {}".format(
+                                change.field, change.old, change.new
+                            )
                             field = change.field
                             old_value = change.old
                             new_value = change.new
@@ -324,14 +313,13 @@ class BarrierInstanceHistory(GenericAPIView):
                                 "old_value": old_value,
                                 "new_value": new_value,
                                 "event": event,
-                                "user": new_record.history_user.email if new_record.history_user else ""
+                                "user": new_record.history_user.email
+                                if new_record.history_user
+                                else "",
                             }
                         )
             old_record = new_record
-            response = {
-                "barrier_id": pk,
-                "history": results
-            }
+            response = {"barrier_id": pk, "history": results}
         return Response(response, status=status.HTTP_200_OK)
 
 
@@ -340,15 +328,9 @@ class BarrierStatuseHistory(GenericAPIView):
         if user is not None:
             if user.username is not None and user.username.strip() != "":
                 if "@" in user.username:
-                    return {
-                        "id": user.id,
-                        "name": user.username.split("@")[0],
-                    }
+                    return {"id": user.id, "name": user.username.split("@")[0]}
                 else:
-                    return {
-                        "id": user.id,
-                        "name": user.username,
-                    }
+                    return {"id": user.id, "name": user.username}
             elif user.email is not None and user.email.strip() != "":
                 return user.email.split("@")[0]
 
@@ -356,6 +338,7 @@ class BarrierStatuseHistory(GenericAPIView):
 
     def get(self, request, pk):
         status_field = "status"
+        timeline_fields = ["status", "priority"]
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
@@ -363,72 +346,77 @@ class BarrierStatuseHistory(GenericAPIView):
         TIMELINE_REVERTED = {v: k for k, v in TIMELINE_EVENTS}
         for new_record in history:
             if new_record.history_type == "+":
-                results.append({
-                    "date": new_record.history_date,
-                    "status_date": new_record.status_date,
-                    "event": TIMELINE_REVERTED["Report Created"],
-                    "old_status": None,
-                    "new_status": new_record.status,
-                    "status_summary": None,
-                    "user": self._username_from_user(new_record.history_user),
-                })
+                results.append(
+                    {
+                        "date": new_record.history_date,
+                        "field": status_field,
+                        "old_value": None,
+                        "new_value": str(new_record.status),
+                        "field_info": {
+                            "status_date": new_record.status_date,
+                            "status_summary": None,
+                            "event": TIMELINE_REVERTED["Report Created"],
+                        },
+                        "user": self._username_from_user(new_record.history_user),
+                    }
+                )
             else:
                 if old_record is None:
-                    results.append({
-                        "date": new_record.history_date,
-                        "status_date": new_record.status_date,
-                        "event": TIMELINE_REVERTED["Barrier Status Change"],
-                        "old_status": None,
-                        "new_status": new_record.status,
-                        "status_summary": new_record.status_summary,
-                        "user": self._username_from_user(new_record.history_user),
-                    })
+                    results.append(
+                        {
+                            "date": new_record.history_date,
+                            "field": status_field,
+                            "old_value": None,
+                            "new_value": str(new_record.status),
+                            "field_info": {
+                                "status_date": new_record.status_date,
+                                "status_summary": new_record.status_summary,
+                                "event": TIMELINE_REVERTED["Barrier Status Change"],
+                            },
+                            "user": self._username_from_user(new_record.history_user),
+                        }
+                    )
                 else:
                     status_change = None
                     delta = new_record.diff_against(old_record)
                     for change in delta.changes:
-                        if change.field == status_field:
-                            if change.old == 0 and (change.new == 2 or change.new == 4):
-                                event = TIMELINE_REVERTED["Barrier Created"]
-                            else:
-                                event = TIMELINE_REVERTED["Barrier Status Change"]
+                        if change.field in timeline_fields:
                             status_change = {
                                 "date": new_record.history_date,
-                                "status_date": new_record.status_date,
-                                "event": event,
-                                "old_status": change.old,
-                                "new_status": change.new,
-                                "status_summary": new_record.status_summary,
-                                "user": self._username_from_user(new_record.history_user),
+                                "field": change.field,
+                                "old_value": str(change.old),
+                                "new_value": str(change.new),
+                                "user": self._username_from_user(
+                                    new_record.history_user
+                                ),
                             }
+                            if change.field == "status":
+                                if change.old == 0 and (change.new == 2 or change.new == 4):
+                                    event = TIMELINE_REVERTED["Barrier Created"]
+                                else:
+                                    event = TIMELINE_REVERTED["Barrier Status Change"]
+                                status_change["field_info"] = {
+                                    "status_date": new_record.status_date,
+                                    "status_summary": new_record.status_summary,
+                                    "event": event,
+                                }
+                            elif change.field == "priority":
+                                status_change["field_info"] = {
+                                    "priority_date": new_record.priority_date,
+                                    "priority_summary": new_record.priority_summary,
+                                }
+
                     if status_change:
                         results.append(status_change)
             old_record = new_record
-            response = {
-                "barrier_id": pk,
-                "status_history": results
-            }
+        response = {"barrier_id": str(pk), "history": results}
         return Response(response, status=status.HTTP_200_OK)
-
-class BarrierInstanceContributor(generics.ListCreateAPIView):
-    queryset = BarrierContributor.objects.all()
-    serializer_class = BarrierContributorSerializer
-
-    def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
-
-    # def perform_create(self, serializer):
-    #     barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-    #     if settings.DEBUG is False:
-    #         serializer.save(
-    #             barrier=barrier_obj, created_by=self.request.user
-    #         )
-    #     else:
-    #         serializer.save(barrier=barrier_obj)
 
 
 class BarrierStatusBase(generics.UpdateAPIView):
-    def _create(self, serializer, barrier_id, barrier_status, barrier_summary, status_date=None):
+    def _create(
+        self, serializer, barrier_id, barrier_status, barrier_summary, status_date=None
+    ):
         barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
 
         if status_date is None:
@@ -438,23 +426,8 @@ class BarrierStatusBase(generics.UpdateAPIView):
             status=barrier_status,
             status_summary=barrier_summary,
             status_date=status_date,
-            modified_by=self.request.user
+            modified_by=self.request.user,
         )
-        # if settings.DEBUG is False:
-        #     serializer.save(
-        #         barrier=barrier_obj,
-        #         status=barrier_status,
-        #         summary=barrier_summary,
-        #         status_date=status_date,
-        #         created_by=self.request.user
-        #     )
-        # else:
-        #     serializer.save(
-        #         barrier=barrier_obj,
-        #         status=barrier_status,
-        #         summary=barrier_summary,
-        #         status_date=status_date
-        #     )
 
 
 class BarrierResolve(BarrierStatusBase):
@@ -477,15 +450,13 @@ class BarrierResolve(BarrierStatusBase):
             except ValueError:
                 errors["status_date"] = "enter a valid date"
         if errors:
-            message = {
-                "fields": errors
-            }
+            message = {"fields": errors}
             raise serializers.ValidationError(message)
         serializer.save(
             status=4,
             status_summary=self.request.data.get("status_summary"),
             status_date=self.request.data.get("status_date"),
-            modified_by=self.request.user
+            modified_by=self.request.user,
         )
 
 
@@ -498,7 +469,12 @@ class BarrierHibernate(BarrierStatusBase):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
     def perform_update(self, serializer):
-        self._create(serializer, self.kwargs.get("pk"), 5, self.request.data.get("status_summary"))
+        self._create(
+            serializer,
+            self.kwargs.get("pk"),
+            5,
+            self.request.data.get("status_summary"),
+        )
 
 
 class BarrierOpen(BarrierStatusBase):
@@ -510,4 +486,9 @@ class BarrierOpen(BarrierStatusBase):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
     def perform_update(self, serializer):
-        self._create(serializer, self.kwargs.get("pk"), 2, self.request.data.get("status_summary"))
+        self._create(
+            serializer,
+            self.kwargs.get("pk"),
+            2,
+            self.request.data.get("status_summary"),
+        )

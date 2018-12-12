@@ -5,19 +5,37 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0015_auto_20180927_0954'),
-    ]
+    dependencies = [("barriers", "0015_auto_20180927_0954")]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='source',
-            field=models.CharField(choices=[('COMPANY', 'Company'), ('TRADE', 'Trade association'), ('GOVT', 'Government entity'), ('OTHER', 'Other')], help_text='chance of success', max_length=25, null=True),
+            model_name="barrierinstance",
+            name="source",
+            field=models.CharField(
+                choices=[
+                    ("COMPANY", "Company"),
+                    ("TRADE", "Trade association"),
+                    ("GOVT", "Government entity"),
+                    ("OTHER", "Other"),
+                ],
+                help_text="chance of success",
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='source',
-            field=models.CharField(choices=[('COMPANY', 'Company'), ('TRADE', 'Trade association'), ('GOVT', 'Government entity'), ('OTHER', 'Other')], help_text='chance of success', max_length=25, null=True),
+            model_name="historicalbarrierinstance",
+            name="source",
+            field=models.CharField(
+                choices=[
+                    ("COMPANY", "Company"),
+                    ("TRADE", "Trade association"),
+                    ("GOVT", "Government entity"),
+                    ("OTHER", "Other"),
+                ],
+                help_text="chance of success",
+                max_length=25,
+                null=True,
+            ),
         ),
     ]

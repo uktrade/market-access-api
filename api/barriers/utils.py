@@ -3,7 +3,7 @@ from random import randrange
 
 from django.conf import settings
 
-CHARSET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
 def random_barrier_reference():

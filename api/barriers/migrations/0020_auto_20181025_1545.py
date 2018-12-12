@@ -5,19 +5,27 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0019_merge_20181023_1423'),
-    ]
+    dependencies = [("barriers", "0019_merge_20181023_1423")]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='code',
-            field=models.CharField(help_text='readable reference code', max_length=255, null=True, unique=True),
+            model_name="barrierinstance",
+            name="code",
+            field=models.CharField(
+                help_text="readable reference code",
+                max_length=255,
+                null=True,
+                unique=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='code',
-            field=models.CharField(db_index=True, help_text='readable reference code', max_length=255, null=True),
+            model_name="historicalbarrierinstance",
+            name="code",
+            field=models.CharField(
+                db_index=True,
+                help_text="readable reference code",
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

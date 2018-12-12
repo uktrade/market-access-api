@@ -8,10 +8,7 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.1",
         "order": 1,
-        "required": [
-            "problem_status",
-            "is_resolved"
-        ],
+        "required": ["problem_status", "is_resolved"],
         "conditional": [
             {
                 "condition_field": "is_resolved",
@@ -19,15 +16,10 @@ REPORT_CONDITIONS = [
                 "value": True,
                 "non_null_field": "resolved_date",
                 "error_message": "resolved_date can not be null, when is_resolved is True",
-            },
-        ]
+            }
+        ],
     },
-    {
-        "stage": "1.2",
-        "order": 2,
-        "required": ["export_country"],
-        "conditional": []
-    },
+    {"stage": "1.2", "order": 2, "required": ["export_country"], "conditional": []},
     {
         "stage": "1.3",
         "order": 3,
@@ -39,18 +31,13 @@ REPORT_CONDITIONS = [
                 "value": True,
                 "non_null_field": "sectors",
                 "error_message": "sectors can not be null, when sectors_affected is True",
-            },
+            }
         ],
     },
     {
         "stage": "1.4",
         "order": 4,
-        "required": [
-            "product",
-            "source",
-            "barrier_title",
-            "problem_description",
-        ],
+        "required": ["product", "source", "barrier_title", "problem_description"],
         "conditional": [
             {
                 "condition_field": "source",
@@ -58,7 +45,7 @@ REPORT_CONDITIONS = [
                 "value": "OTHER",
                 "non_null_field": "other_source",
                 "error_message": "other_source can not be null, when source is True",
-            },
+            }
         ],
     },
 ]

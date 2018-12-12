@@ -9,58 +9,91 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('barriers', '0017_auto_20181008_0743'),
+        ("barriers", "0017_auto_20181008_0743"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='archived',
+            model_name="barrierinstance",
+            name="archived",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='archived_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL),
+            model_name="barrierinstance",
+            name="archived_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='archived_on',
+            model_name="barrierinstance",
+            name="archived_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='archived_reason',
+            model_name="barrierinstance",
+            name="archived_reason",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='archived',
+            model_name="historicalbarrierinstance",
+            name="archived",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='archived_by',
-            field=models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL),
+            model_name="historicalbarrierinstance",
+            name="archived_by",
+            field=models.ForeignKey(
+                blank=True,
+                db_constraint=False,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='archived_on',
+            model_name="historicalbarrierinstance",
+            name="archived_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='archived_reason',
+            model_name="historicalbarrierinstance",
+            name="archived_reason",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='barrier_type_category',
-            field=models.CharField(choices=[('GOODS', 'Goods'), ('SERVICES', 'Services'), ('GOODSANDSERVICES', 'Goods and Services')], default=None, help_text='barrier type category', max_length=25, null=True),
+            model_name="barrierinstance",
+            name="barrier_type_category",
+            field=models.CharField(
+                choices=[
+                    ("GOODS", "Goods"),
+                    ("SERVICES", "Services"),
+                    ("GOODSANDSERVICES", "Goods and Services"),
+                ],
+                default=None,
+                help_text="barrier type category",
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='barrier_type_category',
-            field=models.CharField(choices=[('GOODS', 'Goods'), ('SERVICES', 'Services'), ('GOODSANDSERVICES', 'Goods and Services')], default=None, help_text='barrier type category', max_length=25, null=True),
+            model_name="historicalbarrierinstance",
+            name="barrier_type_category",
+            field=models.CharField(
+                choices=[
+                    ("GOODS", "Goods"),
+                    ("SERVICES", "Services"),
+                    ("GOODSANDSERVICES", "Goods and Services"),
+                ],
+                default=None,
+                help_text="barrier type category",
+                max_length=25,
+                null=True,
+            ),
         ),
     ]

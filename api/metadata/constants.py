@@ -1,8 +1,7 @@
 from model_utils import Choices
 
 PROBLEM_STATUS_TYPES = Choices(
-    (1, "A procedural/short-term barrier"),
-    (2, "A long term strategic barrier"),
+    (1, "A procedural/short-term barrier"), (2, "A long term strategic barrier")
 )
 
 ESTIMATED_LOSS_RANGE = Choices(
@@ -56,17 +55,13 @@ BARRIER_CHANCE_OF_SUCCESS = Choices(
     ("HIGHLY_LIKELY", "Highly likely"),
     ("LIKELY", "Likely"),
     ("UNLIKELY", "Unlikely"),
-    ("HIGHLY_UNLIKELY", "Highly unlikely")
+    ("HIGHLY_UNLIKELY", "Highly unlikely"),
 )
 
-BARRIER_INTERACTION_TYPE = Choices(
-    ("COMMENT", "Comment"),
-)
+BARRIER_INTERACTION_TYPE = Choices(("COMMENT", "Comment"))
 
 CONTRIBUTOR_TYPE = Choices(
-    ("INITIATOR", "Initiator"),
-    ("CONTRIBUTOR", "Contributor"),
-    ("LEAD", "Lead"),
+    ("INITIATOR", "Initiator"), ("CONTRIBUTOR", "Contributor"), ("LEAD", "Lead")
 )
 
 BARRIER_SOURCE = Choices(

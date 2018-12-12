@@ -12,7 +12,7 @@ updated_report_stage_items = [
             {"code": "1.3", "description": "Sectors affected by the barrier"},
             {"code": "1.4", "description": "About the barrier"},
         ],
-    },
+    }
 ]
 
 
@@ -27,12 +27,9 @@ def update_report_stages(apps, schema_editor):
             except Stage.DoesNotExist:
                 pass
 
+
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0013_auto_20180924_1701'),
-    ]
+    dependencies = [("barriers", "0013_auto_20180924_1701")]
 
-    operations = [
-        migrations.RunPython(update_report_stages),
-    ]
+    operations = [migrations.RunPython(update_report_stages)]

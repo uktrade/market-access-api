@@ -4,8 +4,9 @@ from django.conf import settings
 from api.barriers.models import BarrierInstance
 from api.barriers.utils import random_barrier_reference
 
+
 class Command(BaseCommand):
-    help = 'Import projects from Data Hub API'
+    help = "Import projects from Data Hub API"
 
     def _unique_barrier_reference(self):
         """
