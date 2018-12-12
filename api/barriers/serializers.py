@@ -150,6 +150,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "reported_by",
             "current_status",
             "priority",
+            "priority_summary",
             "created_on",
             "modified_by",
             "modified_on",
