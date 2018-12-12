@@ -11,7 +11,7 @@ def import_api_results(endpoint):
     fake_it = settings.FAKE_METADATA
     if fake_it:
         file_path = os.path.join(
-            settings.BASE_DIR, f"api/metadata/static/{endpoint}.json"
+            settings.BASE_DIR, f"static/{endpoint}.json"
         )
         return json.loads(open(file_path).read())
     base_url = URLObject(settings.DH_METADATA_URL)
