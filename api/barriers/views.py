@@ -410,7 +410,7 @@ class BarrierStatuseHistory(GenericAPIView):
                         results.append(status_change)
             old_record = new_record
         response = {"barrier_id": str(pk), "history": results}
-        return JsonResponse(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class BarrierStatusBase(generics.UpdateAPIView):
