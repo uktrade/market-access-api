@@ -22,7 +22,7 @@ jobs:
       DATAHUB_SECRET: secret
       DEBUG: 'True'
       SECRET_KEY: changeme
-      DJANGO_SETTINGS_MODULE: config.settings
+      DJANGO_SETTINGS_MODULE: config.settings.local
       FAKE_METADATA: 'True'
       HAWK_ENABLED: 'False'
       SSO_ENABLED: 'True'
