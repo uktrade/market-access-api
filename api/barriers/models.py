@@ -199,6 +199,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
             status_date = timezone.now()
         self.modified_by = submitted_by
         self.status = barrier_new_status  # If all good, then accept the report for now
+        self.reported_on = timezone.now()
         self.status_date = status_date
         self.save()
 
