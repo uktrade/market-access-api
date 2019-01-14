@@ -127,12 +127,11 @@ class BarrierReportBase(object):
                 BarrierReportStage(
                     barrier=report, stage=new_stage, status=new_status
                 ).save()
-            if settings.DEBUG is False:
-                report_stage = BarrierReportStage.objects.get(
-                    barrier=report, stage=new_stage
-                )
-                report_stage.user = user
-                report_stage.save()
+            report_stage = BarrierReportStage.objects.get(
+                barrier=report, stage=new_stage
+            )
+            report_stage.user = user
+            report_stage.save()
 
     class Meta:
         abstract = True
@@ -156,10 +155,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 
     @transaction.atomic()
     def perform_create(self, serializer):
-        if settings.DEBUG is False:
-            serializer.save(created_by=self.request.user)
-        else:
-            serializer.save()
+        serializer.save(created_by=self.request.user)
         self._update_stages(serializer, self.request.user)
 
 
