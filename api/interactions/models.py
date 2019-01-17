@@ -52,17 +52,3 @@ class Interaction(BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
-
-
-# class InteractionDocuments(BaseModel):
-#     """ Many to Many between interaction and documents """
-#     interaction = models.ForeignKey(
-#         Interaction, related_name="interaction_documents", on_delete=models.PROTECT
-#     )
-#     document = models.ForeignKey(Document, related_name="interaction_documents", on_delete=models.CASCADE)
-#     is_active = models.BooleanField(default=True)
-
-#     # history = HistoricalRecords()
-
-#     class Meta:
-#         unique_together = (("interaction", "document"),)

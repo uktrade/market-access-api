@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierInstance, BarrierInteraction
+from api.barriers.models import BarrierInstance
 from api.metadata.constants import STAGE_STATUS
 
 # pylint: disable=R0201

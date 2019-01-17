@@ -23,7 +23,6 @@ from rest_framework.response import Response
 from api.core.viewsets import CoreViewSet
 from api.barriers.models import (
     BarrierInstance,
-    BarrierInteraction,
     BarrierReportStage,
 )
 from api.barriers.serializers import (

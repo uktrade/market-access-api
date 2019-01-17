@@ -5,6 +5,8 @@ DEBUG = True
 
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
+SLACK_WEBHOOK = env("SLACK_WEBHOOK")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

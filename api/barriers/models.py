@@ -31,27 +31,6 @@ from api.barriers.utils import random_barrier_reference
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
-class BarrierInteraction(BaseModel):
-    """ Interaction records for each Barrier """
-
-    barrier = models.ForeignKey(
-        "BarrierInstance", related_name="interactions", on_delete=models.PROTECT
-    )
-    kind = models.CharField(choices=BARRIER_INTERACTION_TYPE, max_length=25)
-    text = models.TextField(null=True)
-    pinned = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    history = HistoricalRecords()
-
-    @property
-    def created_user(self):
-        return self._cleansed_username(self.created_by)
-
-    @property
-    def modified_user(self):
-        return self._cleansed_username(self.modified_by)
-
-
 class Stage(models.Model):
     """ Reporting workflow stages  """
 
