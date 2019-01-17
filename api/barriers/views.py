@@ -340,67 +340,43 @@ class BarrierStatuseHistory(GenericAPIView):
         old_record = None
         TIMELINE_REVERTED = {v: k for k, v in TIMELINE_EVENTS}
         for new_record in history:
-            if new_record.history_type == "+":
-                results.append(
-                    {
-                        "date": new_record.history_date,
-                        "field": status_field,
-                        "old_value": None,
-                        "new_value": str(new_record.status),
-                        "field_info": {
-                            "status_date": new_record.status_date,
-                            "status_summary": None,
-                            "event": TIMELINE_REVERTED["Report Created"],
-                        },
-                        "user": self._username_from_user(new_record.history_user),
-                    }
-                )
-            else:
-                if old_record is None:
-                    results.append(
-                        {
-                            "date": new_record.history_date,
-                            "field": status_field,
-                            "old_value": None,
-                            "new_value": str(new_record.status),
-                            "field_info": {
-                                "status_date": new_record.status_date,
-                                "status_summary": new_record.status_summary,
-                                "event": TIMELINE_REVERTED["Barrier Status Change"],
-                            },
-                            "user": self._username_from_user(new_record.history_user),
-                        }
-                    )
-                else:
+            if new_record.history_type != "+":
+                if old_record is not None:
                     status_change = None
                     delta = new_record.diff_against(old_record)
                     for change in delta.changes:
                         if change.field in timeline_fields:
-                            status_change = {
-                                "date": new_record.history_date,
-                                "field": change.field,
-                                "old_value": str(change.old),
-                                "new_value": str(change.new),
-                                "user": self._username_from_user(
-                                    new_record.history_user
-                                ),
-                            }
                             if change.field == "status":
-                                if change.old == 0 and (change.new == 2 or change.new == 4):
-                                    event = TIMELINE_REVERTED["Barrier Created"]
-                                else:
+                                if not (change.old == 0 and (change.new == 2 or change.new == 4)):
                                     event = TIMELINE_REVERTED["Barrier Status Change"]
-                                status_change["field_info"] = {
-                                    "status_date": new_record.status_date,
-                                    "status_summary": new_record.status_summary,
-                                    "event": event,
-                                }
+                                    status_change = {
+                                        "date": new_record.history_date,
+                                        "field": change.field,
+                                        "old_value": str(change.old),
+                                        "new_value": str(change.new),
+                                        "user": self._username_from_user(
+                                            new_record.history_user
+                                        ),
+                                        "field_info": {
+                                            "status_date": new_record.status_date,
+                                            "status_summary": new_record.status_summary,
+                                            "event": event,
+                                        }
+                                    }
                             elif change.field == "priority":
-                                status_change["field_info"] = {
-                                    "priority_date": new_record.priority_date,
-                                    "priority_summary": new_record.priority_summary,
+                                status_change = {
+                                    "date": new_record.history_date,
+                                    "field": change.field,
+                                    "old_value": str(change.old),
+                                    "new_value": str(change.new),
+                                    "user": self._username_from_user(
+                                        new_record.history_user
+                                    ),
+                                    "field_info": {
+                                        "priority_date": new_record.priority_date,
+                                        "priority_summary": new_record.priority_summary,
+                                    }
                                 }
-
                     if status_change:
                         results.append(status_change)
             old_record = new_record

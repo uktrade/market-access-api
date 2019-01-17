@@ -40,17 +40,7 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][0]["field_info"]["status_date"] is not None
-        assert response.data["history"][0]["date"] is not None
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][0]["field_info"]["status_date"] is not None
-        assert response.data["history"][0]["date"] is not None
+        assert len(response.data["history"]) == 0
 
     def test_barrier_status_history_submitted_user(self):
         a_user = create_test_user(
@@ -91,15 +81,7 @@ class TestBarrierStatusHistory(APITestMixin):
         response = new_api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][0]["user"]["name"] == "Test.User"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][1]["user"]["name"] == "Test.User"
+        assert len(response.data["history"]) == 0
 
     def test_barrier_status_history_submitted_resolved(self):
         list_report_url = reverse("list-reports")
@@ -136,13 +118,7 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "4"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
+        assert len(response.data["history"]) == 0
 
     def test_barrier_status_history_submitted_open_and_resolved(self):
         list_report_url = reverse("list-reports")
@@ -178,13 +154,7 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
+        assert len(response.data["history"]) == 0
 
         resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -200,17 +170,11 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 3
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][2]["old_value"] == "2"
-        assert response.data["history"][2]["new_value"] == "4"
-        assert response.data["history"][2]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][2]["field_info"]["status_summary"] == "dummy summary"
+        assert len(response.data["history"]) == 1
+        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["new_value"] == "4"
+        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
 
     def test_barrier_status_history_submitted_open_and_resolved_and_open(self):
         list_report_url = reverse("list-reports")
@@ -246,13 +210,7 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(history_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
+        assert len(response.data["history"]) == 0
 
         resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -267,17 +225,11 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(history_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 3
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][2]["old_value"] == "2"
-        assert response.data["history"][2]["new_value"] == "4"
-        assert response.data["history"][2]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][2]["field_info"]["status_summary"] == "dummy summary"
+        assert len(response.data["history"]) == 1
+        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["new_value"] == "4"
+        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
 
         open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
@@ -290,21 +242,15 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(history_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 4
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
+        assert len(response.data["history"]) == 2
+        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["new_value"] == "4"
+        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert response.data["history"][1]["old_value"] == "4"
         assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][2]["old_value"] == "2"
-        assert response.data["history"][2]["new_value"] == "4"
-        assert response.data["history"][2]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][2]["field_info"]["status_summary"] == "dummy summary"
-        assert response.data["history"][3]["old_value"] == "4"
-        assert response.data["history"][3]["new_value"] == "2"
-        assert response.data["history"][3]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][3]["field_info"]["status_summary"] is None
+        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][1]["field_info"]["status_summary"] is None
 
     def test_barrier_status_history_submitted_open_and_hibernated(self):
         list_report_url = reverse("list-reports")
@@ -340,13 +286,7 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
+        assert len(response.data["history"]) == 0
 
         hibernate_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         hibernate_barrier_response = self.api_client.put(
@@ -363,17 +303,11 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 3
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][2]["old_value"] == "2"
-        assert response.data["history"][2]["new_value"] == "5"
-        assert response.data["history"][2]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][2]["field_info"]["status_summary"] == "dummy summary"
+        assert len(response.data["history"]) == 1
+        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["new_value"] == "5"
+        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
 
     def test_barrier_status_history_submitted_open_and_hibernated_and_open(self):
         list_report_url = reverse("list-reports")
@@ -409,13 +343,7 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(history_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
+        assert len(response.data["history"]) == 0
 
         hibernate_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         hibernate_barrier_response = self.api_client.put(
@@ -431,17 +359,11 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(history_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 3
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
-        assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][2]["old_value"] == "2"
-        assert response.data["history"][2]["new_value"] == "5"
-        assert response.data["history"][2]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][2]["field_info"]["status_summary"] == "dummy summary"
+        assert len(response.data["history"]) == 1
+        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["new_value"] == "5"
+        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
 
         open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
@@ -454,18 +376,12 @@ class TestBarrierStatusHistory(APITestMixin):
         response = self.api_client.get(history_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
-        assert len(response.data["history"]) == 4
-        assert response.data["history"][0]["old_value"] is None
-        assert response.data["history"][0]["new_value"] == "0"
-        assert response.data["history"][0]["field_info"]["event"] == "REPORT_CREATED"
-        assert response.data["history"][1]["old_value"] == "0"
+        assert len(response.data["history"]) == 2
+        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["new_value"] == "5"
+        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert response.data["history"][1]["old_value"] == "5"
         assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_CREATED"
-        assert response.data["history"][2]["old_value"] == "2"
-        assert response.data["history"][2]["new_value"] == "5"
-        assert response.data["history"][2]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][2]["field_info"]["status_summary"] == "dummy summary"
-        assert response.data["history"][3]["old_value"] == "5"
-        assert response.data["history"][3]["new_value"] == "2"
-        assert response.data["history"][3]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][3]["field_info"]["status_summary"] is None
+        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert response.data["history"][1]["field_info"]["status_summary"] is None
