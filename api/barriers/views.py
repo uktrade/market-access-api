@@ -230,12 +230,13 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
 
     @transaction.atomic()
     def perform_update(self, serializer):
-        barrier_type = None
+        barrier = self.get_object()
+        barrier_type = barrier.barrier_type
         if self.request.data.get("barrier_type", None) is not None:
             barrier_type = get_object_or_404(
                 BarrierType, pk=self.request.data.get("barrier_type")
             )
-        barrier_priority = None
+        barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
             barrier_priority = get_object_or_404(
                 BarrierPriority, code=self.request.data.get("priority")

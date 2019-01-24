@@ -1,11 +1,9 @@
 from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("SSO_ENABLED", False)
 
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
-
-SLACK_WEBHOOK = env("SLACK_WEBHOOK")
 
 LOGGING = {
     "version": 1,

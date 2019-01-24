@@ -47,6 +47,8 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "progress",
             "created_by",
             "created_on",
+            "modified_by",
+            "modified_on"
         )
         read_only_fields = (
             "id",
@@ -57,6 +59,8 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "progress",
             "created_by",
             "created_on"
+            "modified_by",
+            "modified_on"
         )
 
     def get_created_by(self, obj):
