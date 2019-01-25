@@ -229,6 +229,8 @@ HAWK_CREDENTIALS = {
     }
 }
 
+SLACK_WEBHOOK = env("SLACK_WEBHOOK")
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
