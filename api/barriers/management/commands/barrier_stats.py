@@ -61,8 +61,12 @@ class Command(BaseCommand):
         stats = {
             "barriers": {
                 "total_count": barriers.count(),
+                "total_open": barriers.filter(status=2).count(),
+                "total_resolved": barriers.filter(status=4).count(),
                 "submitted_count": barriers.filter(reported_on__gt=days_ago).count(),
+                "submitted": [b.code for b in barriers.filter(reported_on__gt=days_ago)],
                 "modified_count": barriers.filter(modified_on__gt=days_ago).count(),
+                "modified": [b.code for b in barriers.filter(modified_on__gt=days_ago)]
             },
             "reports": {
                 "total_count": reports.count()
@@ -100,26 +104,35 @@ class Command(BaseCommand):
         stats_txt = """
             BARRIERS:
 
-            Number of barriers added to the service in last {} days: {} 
-            Number of barriers modified in last {} days: {}
-            Barriers modified in last {} days: {}
+            Number of barriers: 
+            Total - {}
+            Open - {}
+            Resolved - {}
 
-            UNFINISHED REPORTS:
+            Number of barriers added in last {} days: {}
+            {}
+
+            Number of Barriers modified in last {} days: {}
+            {}
 
             Current number of unfinished reports: {}
 
             USERS:
 
             Amount  of registered users for the service: {}
-            Number of users logged in within last {} days: {}
 
             """.format(
-            days, barriers["total_count"],
-            days, barriers["submitted_count"],
-            days, barriers["modified_count"],
+            barriers["total_count"],
+            barriers["total_open"],
+            barriers["total_resolved"],
+            days,
+            barriers["submitted_count"],
+            barriers["submitted"],
+            days,
+            barriers["modified_count"],
+            barriers["modified"],
             reports["total_count"],
             users["total_count"],
-            days, users["active_count"]
         )
         return textwrap.dedent(stats_txt)
 
