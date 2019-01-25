@@ -729,6 +729,7 @@ class TestBarrierDetail(APITestMixin):
         assert edit_barrier_response.data["id"] == str(instance.id)
         assert edit_barrier_response.data["priority"]["code"] == "LOW"
 
+
     def test_barrier_detail_edit_priority_and_barrier_type(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
@@ -797,7 +798,7 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["id"] == str(instance.id)
         assert response.data["barrier_type"]["id"] == barrier_type.id
         assert response.data["priority"]["code"] == "LOW"
-
+    
     def test_barrier_detail_edit_barrier_type_then_priority(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
