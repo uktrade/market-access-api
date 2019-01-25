@@ -77,7 +77,6 @@ class Command(BaseCommand):
             }
         }
 
-        print(stats)
         if options["json"]:
             return self._handle_json(stats)
 
