@@ -31,6 +31,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -72,6 +73,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -126,6 +128,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -182,6 +185,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -241,6 +245,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -313,6 +318,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -377,6 +383,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -453,6 +460,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -528,6 +536,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -665,6 +674,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -736,6 +746,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -825,6 +836,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -914,6 +926,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -1010,6 +1023,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 
@@ -1118,6 +1132,7 @@ class TestListInteractions(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
             },
         )
 

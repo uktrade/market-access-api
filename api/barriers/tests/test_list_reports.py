@@ -1060,6 +1060,7 @@ class TestListReports(APITestMixin):
             url,
             format="json",
             data={
+                "is_resolved": True,
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
@@ -1082,7 +1083,7 @@ class TestListReports(APITestMixin):
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
-        assert stage_1[0]["status_desc"] == "NOT STARTED"
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
         stage_2 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
         ]
