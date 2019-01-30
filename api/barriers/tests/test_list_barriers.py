@@ -4,10 +4,14 @@ from rest_framework.reverse import reverse
 
 from django.utils.timezone import now
 from freezegun import freeze_time
+from factory.fuzzy import FuzzyChoice
 
 from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
 from api.metadata.models import BarrierType
+from api.metadata.constants import (
+    PROBLEM_STATUS_TYPES
+)
 from .test_utils import TestUtils
 
 
@@ -450,18 +454,29 @@ class TestListBarriers(APITestMixin):
         assert response.data["count"] == 2
 
     def add_multiple_barriers(self):
-        with freeze_time("2018-08-14"):
+        sectors = [
+            "af959812-6095-e211-a939-e4115bead28a",
+            "75debee7-a182-410e-bde0-3098e4f7b822",
+            "9538cecc-5f95-e211-a939-e4115bead28a",
+        ]
+        countries = [
+            "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
+            "985f66a0-5d95-e211-a939-e4115bead28a",
+            "1f0be5c4-5d95-e211-a939-e4115bead28a",
+        ]
+        dates = ["2018-08-14", "2018-08-21", "2018-09-01", "2018-09-17", "2018-10-12", "2018-10-26"]
+        with freeze_time():
             list_report_url = reverse("list-reports")
             list_report_response = self.api_client.post(
                 list_report_url,
                 format="json",
                 data={
-                    "problem_status": 1,
-                    "is_resolved": False,
-                    "export_country": "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
+                    "problem_status": FuzzyChoice[PROBLEM_STATUS_TYPES],
+                    "is_resolved": FuzzyChoice([True, False]),
+                    "export_country": FuzzyChoice(countries),
                     "sectors_affected": True,
                     "sectors": [
-                        "af959812-6095-e211-a939-e4115bead28a",
+                        FuzzyChoice(sectors)
                     ],
                     "product": "Some product",
                     "source": "OTHER",
@@ -479,7 +494,7 @@ class TestListBarriers(APITestMixin):
             assert submit_response.status_code == status.HTTP_200_OK
 
             get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-            barrier_type = BarrierType.objects.all()[:1].get()
+            barrier_type = FuzzyChoice(BarrierType.objects.all())
             edit_type_response = self.api_client.put(
                 get_url,
                 format="json",
