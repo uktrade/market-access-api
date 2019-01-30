@@ -45,6 +45,13 @@ REPORT_CONDITIONS = [
                 "value": "OTHER",
                 "non_null_field": "other_source",
                 "error_message": "other_source can not be null, when source is True",
+            },
+            {
+                "condition_field": "is_resolved",
+                "operator": operator.eq,
+                "value": True,
+                "non_null_field": "status_summary",
+                "error_message": "status_summary can not be null, when is_resolved is True",
             }
         ],
     },

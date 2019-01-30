@@ -54,7 +54,6 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "id",
             "code",
             "status",
-            "status_summary",
             "status_date",
             "progress",
             "created_by",

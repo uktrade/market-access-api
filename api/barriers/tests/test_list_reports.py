@@ -961,12 +961,14 @@ class TestListReports(APITestMixin):
         ]
         assert stage_4[0]["status_desc"] == "IN PROGRESS"
 
-    def test_list_reports_post_stage_4_completed_2(self):
+
+    def test_list_reports_post_stage_4_completed_1(self):
         url = reverse("list-reports")
         response = self.api_client.post(
             url,
             format="json",
             data={
+                "is_resolved": False,
                 "product": "Some product",
                 "source": "OTHER",
                 "other_source": "Not sure",
@@ -990,7 +992,7 @@ class TestListReports(APITestMixin):
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
-        assert stage_1[0]["status_desc"] == "NOT STARTED"
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
         stage_2 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
         ]
@@ -1004,7 +1006,55 @@ class TestListReports(APITestMixin):
         ]
         assert stage_4[0]["status_desc"] == "COMPLETED"
 
-    def test_list_reports_post_stage_4_completed(self):
+
+    def test_list_reports_post_stage_4_completed_2(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(
+            url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Not sure",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["product"] == "Some product"
+        assert detail_response.data["source"] == "OTHER"
+        assert detail_response.data["other_source"] == "Not sure"
+        assert detail_response.data["barrier_title"] == "Some title"
+        assert detail_response.data["problem_description"] == "Some problem_description"
+        stage_1 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
+        ]
+        assert stage_1[0]["status_desc"] == "COMPLETED"
+        stage_2 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
+        ]
+        assert stage_2[0]["status_desc"] == "NOT STARTED"
+        stage_3 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
+        ]
+        assert stage_3[0]["status_desc"] == "NOT STARTED"
+        stage_4 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
+        ]
+        assert stage_4[0]["status_desc"] == "COMPLETED"
+
+    def test_list_reports_post_stage_4_in_progress_status_summary(self):
         url = reverse("list-reports")
         response = self.api_client.post(
             url,
@@ -1044,7 +1094,7 @@ class TestListReports(APITestMixin):
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
-        assert stage_4[0]["status_desc"] == "COMPLETED"
+        assert stage_4[0]["status_desc"] == "IN PROGRESS"
 
     def test_list_reports_post_all_stages_completed_1(self):
         url = reverse("list-reports")
