@@ -37,6 +37,7 @@ flake8-polyfill==1.0.2
 flake8-print==3.1.0
 flake8-quotes==1.0.0
 flake8-string-format==0.2.3
+freezegun==0.3.11
 gunicorn==19.9.0
 # hawkrest==1.0.0
 # HawkRest has a fix for newer Django versions middleware, which isn't yet released.

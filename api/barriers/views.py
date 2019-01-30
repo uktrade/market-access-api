@@ -11,11 +11,17 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 import django_filters
-from django_filters import Filter
+from rest_framework.filters import OrderingFilter
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import generics, status, serializers, viewsets
+from rest_framework import (
+    filters,
+    generics,
+    status,
+    serializers,
+    viewsets,
+)
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -198,7 +204,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = BarrierInstance
-        fields = ["export_country", "barrier_type", "sector", "start_date", "end_date"]
+        fields = ["export_country", "barrier_type", "sector", "start_date", "end_date", "status"]
 
     def sector_filter(self, queryset, name, value):
         """
@@ -214,8 +220,10 @@ class BarrierList(generics.ListAPIView):
 
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierListSerializer
-    filter_backends = (DjangoFilterBackend,)
     filterset_class = BarrierFilterSet
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    ordering_fields = ("reported_on",)
+    ordering = ("reported_on",)
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
