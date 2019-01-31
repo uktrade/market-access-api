@@ -650,7 +650,10 @@ class TestReportDetail(APITestMixin):
     def test_submit_stage_4_in_progress_problem_description(self):
         url = reverse("list-reports")
         response = self.api_client.post(
-            url, format="json", data={"problem_description": "Some problem_description"}
+            url, format="json", data={
+                "is_resolved": True,
+                "problem_description": "Some problem_description"
+            }
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -668,7 +671,7 @@ class TestReportDetail(APITestMixin):
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
-        assert stage_1[0]["status_desc"] == "NOT STARTED"
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
         stage_2 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
         ]
@@ -680,7 +683,11 @@ class TestReportDetail(APITestMixin):
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
-        assert stage_4[0]["status_desc"] == "IN PROGRESS"
+        assert stage_4[0]["status_desc"] == "NOT STARTED"
+        stage_5 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.5"
+        ]
+        assert stage_5[0]["status_desc"] == "IN PROGRESS"
 
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})
         submit_response = self.api_client.put(submit_url, format="json", data={})

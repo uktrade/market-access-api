@@ -93,11 +93,12 @@ class TestBarrierTypes(APITestMixin):
 
     def test_report_stages(self):
         expected = {
-            "1.0": "Report a barrier",
-            "1.1": "Status of the barrier",
+            "1.0": "Add a barrier",
+            "1.1": "Urgency of the problem",
             "1.2": "Location of the barrier",
             "1.3": "Sectors affected by the barrier",
             "1.4": "About the barrier",
+            "1.5": "Summarise the problem",
         }
 
         url = reverse("metadata")
