@@ -3,8 +3,12 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from django.utils.timezone import now
+
 from freezegun import freeze_time
-from factory.fuzzy import FuzzyChoice
+from factory.fuzzy import (
+    FuzzyChoice,
+    FuzzyDate
+)
 
 from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
@@ -463,7 +467,7 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 2
 
-    def add_multiple_barriers(self):
+    def add_multiple_barriers(self, count):
         sectors = [
             "af959812-6095-e211-a939-e4115bead28a",
             "75debee7-a182-410e-bde0-3098e4f7b822",
@@ -474,26 +478,31 @@ class TestListBarriers(APITestMixin):
             "985f66a0-5d95-e211-a939-e4115bead28a",
             "1f0be5c4-5d95-e211-a939-e4115bead28a",
         ]
-        dates = ["2018-08-14", "2018-08-21", "2018-09-01", "2018-09-17", "2018-10-12", "2018-10-26"]
-        for date in dates:
+        for _ in range(count):
+            date = FuzzyDate(
+                start_date=datetime.date.today() - datetime.timedelta(days=45),
+                end_date=datetime.date.today(),
+            ).evaluate(2, None, False)
             with freeze_time(date):
                 list_report_url = reverse("list-reports")
                 list_report_response = self.api_client.post(
                     list_report_url,
                     format="json",
                     data={
-                        "problem_status": FuzzyChoice[PROBLEM_STATUS_TYPES],
-                        "is_resolved": FuzzyChoice([True, False]),
-                        "export_country": FuzzyChoice(countries),
+                        "problem_status": FuzzyChoice([1, 2]).fuzz(),
+                        "is_resolved": FuzzyChoice([True, False]).fuzz(),
+                        "resolved_date": date.strftime("%Y-%m-%d"),
+                        "export_country": FuzzyChoice(countries).fuzz(),
                         "sectors_affected": True,
                         "sectors": [
-                            FuzzyChoice(sectors)
+                            FuzzyChoice(sectors).fuzz()
                         ],
                         "product": "Some product",
                         "source": "OTHER",
                         "other_source": "Other source",
                         "barrier_title": "Some title",
                         "problem_description": "Some problem_description",
+                        "status_summary": "some status summary"
                     },
                 )
 
@@ -505,7 +514,7 @@ class TestListBarriers(APITestMixin):
                 assert submit_response.status_code == status.HTTP_200_OK
 
                 get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-                barrier_type = FuzzyChoice(BarrierType.objects.all())
+                barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
                 edit_type_response = self.api_client.put(
                     get_url,
                     format="json",
@@ -515,168 +524,6 @@ class TestListBarriers(APITestMixin):
                     }
                 )
                 assert edit_type_response.status_code == status.HTTP_200_OK
-
-        with freeze_time("2018-09-12"):
-            list_report_url = reverse("list-reports")
-            list_report_response = self.api_client.post(
-                list_report_url,
-                format="json",
-                data={
-                    "problem_status": 1,
-                    "is_resolved": True,
-                    "resolved_date": "2018-09-01",
-                    "export_country": "985f66a0-5d95-e211-a939-e4115bead28a",
-                    "sectors_affected": True,
-                    "sectors": [
-                        "75debee7-a182-410e-bde0-3098e4f7b822",
-                    ],
-                    "product": "Some product",
-                    "source": "OTHER",
-                    "other_source": "Other source",
-                    "barrier_title": "Some title",
-                    "problem_description": "Some problem_description",
-                    "status_summary": "some status summary"
-                },
-            )
-
-            assert list_report_response.status_code == status.HTTP_201_CREATED
-
-            instance_id = list_report_response.data["id"]
-            submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-            submit_response = self.api_client.put(submit_url, format="json", data={})
-            assert submit_response.status_code == status.HTTP_200_OK
-
-            get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-            barrier_type = BarrierType.objects.all()[:1].get()
-            edit_type_response = self.api_client.put(
-                get_url,
-                format="json",
-                data={
-                    "barrier_type":barrier_type.id,
-                    "barrier_type_category":barrier_type.category
-                }
-            )
-            assert edit_type_response.status_code == status.HTTP_200_OK
-
-        with freeze_time("2018-09-27"):
-            list_report_url = reverse("list-reports")
-            list_report_response = self.api_client.post(
-                list_report_url,
-                format="json",
-                data={
-                    "problem_status": 1,
-                    "is_resolved": False,
-                    "export_country": "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
-                    "sectors_affected": True,
-                    "sectors": [
-                        "9538cecc-5f95-e211-a939-e4115bead28a",
-                    ],
-                    "product": "Some product",
-                    "source": "OTHER",
-                    "other_source": "Other source",
-                    "barrier_title": "Some title",
-                    "problem_description": "Some problem_description",
-                },
-            )
-
-            assert list_report_response.status_code == status.HTTP_201_CREATED
-
-            instance_id = list_report_response.data["id"]
-            submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-            submit_response = self.api_client.put(submit_url, format="json", data={})
-            assert submit_response.status_code == status.HTTP_200_OK
-
-            get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-            barrier_type = BarrierType.objects.all()[:1].get()
-            edit_type_response = self.api_client.put(
-                get_url,
-                format="json",
-                data={
-                    "barrier_type":barrier_type.id,
-                    "barrier_type_category":barrier_type.category
-                }
-            )
-            assert edit_type_response.status_code == status.HTTP_200_OK
-
-        with freeze_time("2018-10-11"):
-            list_report_url = reverse("list-reports")
-            list_report_response = self.api_client.post(
-                list_report_url,
-                format="json",
-                data={
-                    "problem_status": 1,
-                    "is_resolved": False,
-                    "export_country": "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
-                    "sectors_affected": True,
-                    "sectors": [
-                        "af959812-6095-e211-a939-e4115bead28a",
-                    ],
-                    "product": "Some product",
-                    "source": "OTHER",
-                    "other_source": "Other source",
-                    "barrier_title": "Some title",
-                    "problem_description": "Some problem_description",
-                },
-            )
-
-            assert list_report_response.status_code == status.HTTP_201_CREATED
-
-            instance_id = list_report_response.data["id"]
-            submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-            submit_response = self.api_client.put(submit_url, format="json", data={})
-            assert submit_response.status_code == status.HTTP_200_OK
-
-            get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-            barrier_type = BarrierType.objects.all()[:1].get()
-            edit_type_response = self.api_client.put(
-                get_url,
-                format="json",
-                data={
-                    "barrier_type":barrier_type.id,
-                    "barrier_type_category":barrier_type.category
-                }
-            )
-            assert edit_type_response.status_code == status.HTTP_200_OK
-
-        with freeze_time("2018-12-04"):
-            list_report_url = reverse("list-reports")
-            list_report_response = self.api_client.post(
-                list_report_url,
-                format="json",
-                data={
-                    "problem_status": 1,
-                    "is_resolved": False,
-                    "export_country": "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
-                    "sectors_affected": True,
-                    "sectors": [
-                        "af959812-6095-e211-a939-e4115bead28a",
-                    ],
-                    "product": "Some product",
-                    "source": "OTHER",
-                    "other_source": "Other source",
-                    "barrier_title": "Some title",
-                    "problem_description": "Some problem_description",
-                },
-            )
-
-            assert list_report_response.status_code == status.HTTP_201_CREATED
-
-            instance_id = list_report_response.data["id"]
-            submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-            submit_response = self.api_client.put(submit_url, format="json", data={})
-            assert submit_response.status_code == status.HTTP_200_OK
-
-            get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-            barrier_type = BarrierType.objects.all()[:1].get()
-            edit_type_response = self.api_client.put(
-                get_url,
-                format="json",
-                data={
-                    "barrier_type":barrier_type.id,
-                    "barrier_type_category":barrier_type.category
-                }
-            )
-            assert edit_type_response.status_code == status.HTTP_200_OK
 
     def test_list_barriers_get_multiple_barriers_country_filter(self):
         list_report_url = reverse("list-reports")
@@ -894,14 +741,81 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
-    def test_list_barriers_status_filter(self):
-        pass
+    def test_list_barriers_status_2_filter(self):
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"status": 2},
+        )
+
+        status_response = self.api_client.get(url)
+        assert status_response.status_code == status.HTTP_200_OK
+        barriers = BarrierInstance.objects.filter(status=2)
+        assert 0 < status_response.data["count"] < count
+        assert status_response.data["count"] == barriers.count()
+
+    def test_list_barriers_status_4_filter(self):
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"status": 4},
+        )
+
+        status_response = self.api_client.get(url)
+        assert status_response.status_code == status.HTTP_200_OK
+        barriers = BarrierInstance.objects.filter(status=4)
+        assert 0 < status_response.data["count"] < count
+        assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_barrier_type_filter(self):
-        pass
+        count = 10
+        barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"barrier_type": barrier_type.id},
+        )
+
+        status_response = self.api_client.get(url)
+        assert status_response.status_code == status.HTTP_200_OK
+        barriers = BarrierInstance.objects.filter(barrier_type=barrier_type.id)
+        assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_sector_filter(self):
-        pass
+        count = 10
+        sector_id = "af959812-6095-e211-a939-e4115bead28a"
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"sector": sector_id},
+        )
+
+        status_response = self.api_client.get(url)
+        assert status_response.status_code == status.HTTP_200_OK
+        barriers = BarrierInstance.objects.filter(sectors__contains=[sector_id])
+        assert status_response.data["count"] == barriers.count()
     
     def test_list_barriers_date_range_filter(self):
         pass

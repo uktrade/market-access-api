@@ -37,7 +37,7 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.4",
         "order": 4,
-        "required": ["product", "source", "barrier_title", "problem_description"],
+        "required": ["product", "source", "barrier_title",],
         "conditional": [
             {
                 "condition_field": "source",
@@ -46,6 +46,13 @@ REPORT_CONDITIONS = [
                 "non_null_field": "other_source",
                 "error_message": "other_source can not be null, when source is True",
             },
+        ],
+    },
+    {
+        "stage": "1.5",
+        "order": 5,
+        "required": ["problem_description", "next_steps_summary",],
+        "conditional": [
             {
                 "condition_field": "is_resolved",
                 "operator": operator.eq,

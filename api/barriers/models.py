@@ -94,6 +94,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
     barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
     problem_description = models.TextField(null=True)
+    next_steps_summary = models.TextField(null=True)
 
     barrier_type = models.ForeignKey(
         BarrierType,
