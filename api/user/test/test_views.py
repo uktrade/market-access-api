@@ -30,6 +30,78 @@ class TestUserView(APITestMixin):
             "internal": False,
         }
 
+    def test_who_am_i_email_as_username(self):
+        """Who am I, when email is set in username"""
+
+        user_test = create_test_user(username="Testo@Useri.com")
+        api_client = self.create_api_client(user=user_test)
+
+        url = reverse("who_am_i")
+        response = api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response_data = response.json()
+
+        assert response_data == {
+            "id": user_test.id,
+            "username": "Testo",
+            "last_login": None,
+            "first_name": user_test.first_name,
+            "last_name": user_test.last_name,
+            "email": user_test.email,
+            "location": None,
+            "internal": False,
+        }
+
+    def test_who_am_i_no_username(self):
+        """Who am I, when email is set in username"""
+
+        user_test = create_test_user(email="Test.Email@Useri.com", username="")
+        api_client = self.create_api_client(user=user_test)
+
+        url = reverse("who_am_i")
+        response = api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response_data = response.json()
+
+        assert response_data == {
+            "id": user_test.id,
+            "username": "Test.Email",
+            "last_login": None,
+            "first_name": user_test.first_name,
+            "last_name": user_test.last_name,
+            "email": user_test.email,
+            "location": None,
+            "internal": False,
+        }
+
+    def test_who_am_i_no_username_no_email(self):
+        """Who am I, when email is set in username"""
+
+        user_test = create_test_user(email="", username="")
+        api_client = self.create_api_client(user=user_test)
+
+        url = reverse("who_am_i")
+        response = api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response_data = response.json()
+
+        assert response_data == {
+            "id": user_test.id,
+            "username": None,
+            "last_login": None,
+            "first_name": user_test.first_name,
+            "last_name": user_test.last_name,
+            "email": user_test.email,
+            "location": None,
+            "internal": False,
+        }
+
     def test_user_country(self):
         """Test user's country"""
 

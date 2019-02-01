@@ -146,6 +146,9 @@ class BarrierReportBase(object):
 class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
     queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
+    filter_backends = (OrderingFilter, )
+    ordering_fields = ("created_on",)
+    ordering = ("created_on",)
 
     def get_queryset(self):
         """

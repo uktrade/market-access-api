@@ -1,4 +1,5 @@
 import datetime
+import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -833,7 +834,11 @@ class TestListBarriers(APITestMixin):
             status_date__range=[start_date, end_date])
         assert status_response.data["count"] == barriers.count()
 
-    def test_list_barriers_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_order_by_reported_on(self, order_by):
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
         self.add_multiple_barriers(count)
@@ -844,18 +849,22 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"ordering": "reported_on"},
+            query_kwargs={"ordering": order_by},
         )
 
         status_response = self.api_client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.all().order_by("reported_on")
+        barriers = BarrierInstance.objects.all().order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    def test_list_barriers_country_filter_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_country_filter_order_by_reported_on(self, order_by):
         count = 10
         self.add_multiple_barriers(count)
         url = reverse("list-barriers")
@@ -867,7 +876,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers",
             query_kwargs={
                 "export_country": "af959812-6095-e211-a939-e4115bead28a",
-                "ordering": "reported_on"
+                "ordering": order_by
             },
         )
 
@@ -875,13 +884,17 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             export_country="af959812-6095-e211-a939-e4115bead28a"
-        ).order_by("reported_on")
+        ).order_by(order_by)
         assert response.data["count"] == barriers.count()
         response_list = [b["id"] for b in response.data["results"]]
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    def test_list_barriers_status_filter_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_status_filter_order_by_reported_on(self, order_by):
         count = 10
         self.add_multiple_barriers(count)
         url = reverse("list-barriers")
@@ -893,19 +906,23 @@ class TestListBarriers(APITestMixin):
             "list-barriers",
             query_kwargs={
                 "status": 2,
-                "ordering": "reported_on"
+                "ordering": order_by
             },
         )
 
         status_response = self.api_client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.filter(status=2).order_by("reported_on")
+        barriers = BarrierInstance.objects.filter(status=2).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    def test_list_barriers_barrier_type_filter_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_barrier_type_filter_order_by_reported_on(self, order_by):
         count = 10
         barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
         self.add_multiple_barriers(count)
@@ -918,7 +935,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers",
             query_kwargs={
                 "barrier_type": barrier_type.id,
-                "ordering": "reported_on"
+                "ordering": order_by
             },
         )
 
@@ -926,13 +943,17 @@ class TestListBarriers(APITestMixin):
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             barrier_type=barrier_type.id
-        ).order_by("reported_on")
+        ).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    def test_list_barriers_sector_filter_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_sector_filter_order_by_reported_on(self, order_by):
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
         self.add_multiple_barriers(count)
@@ -945,7 +966,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers",
             query_kwargs={
                 "sector": sector_id,
-                "ordering": "reported_on"
+                "ordering": order_by
             },
         )
 
@@ -953,13 +974,17 @@ class TestListBarriers(APITestMixin):
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             sectors__contains=[sector_id]
-        ).order_by("reported_on")
+        ).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    def test_list_barriers_start_date_filter_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_start_date_filter_order_by_reported_on(self, order_by):
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -975,7 +1000,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers",
             query_kwargs={
                 "start_date": date.strftime("%Y-%m-%d"),
-                "ordering": "reported_on"
+                "ordering": order_by
             },
         )
 
@@ -983,13 +1008,17 @@ class TestListBarriers(APITestMixin):
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             status_date__gte=date
-        ).order_by("reported_on")
+        ).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    def test_list_barriers_end_date_filter_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_end_date_filter_order_by_reported_on(self, order_by):
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1005,7 +1034,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers",
             query_kwargs={
                 "end_date": date.strftime("%Y-%m-%d"),
-                "ordering": "reported_on"
+                "ordering": order_by
             },
         )
 
@@ -1013,13 +1042,17 @@ class TestListBarriers(APITestMixin):
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             status_date__lte=date
-        ).order_by("reported_on")
+        ).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    def test_list_barriers_date_range_filter_order_by_reported_on(self):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on",
+        "-reported_on"
+    ])
+    def test_list_barriers_date_range_filter_order_by_reported_on(self, order_by):
         count = 10
         start_date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1037,7 +1070,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={
                 "start_date": start_date.strftime("%Y-%m-%d"),
                 "end_date": end_date.strftime("%Y-%m-%d"),
-                "ordering": "reported_on"
+                "ordering": order_by
             },
         )
 
@@ -1045,30 +1078,7 @@ class TestListBarriers(APITestMixin):
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             status_date__range=[start_date, end_date]
-        ).order_by("reported_on")
-        assert status_response.data["count"] == barriers.count()
-        response_list = [b["id"] for b in status_response.data["results"]]
-        db_list = [str(b.id) for b in barriers]
-        assert response_list == db_list
-
-
-    def test_list_barriers_order_by_reported_on_descending(self):
-        count = 10
-        sector_id = "af959812-6095-e211-a939-e4115bead28a"
-        self.add_multiple_barriers(count)
-        url = reverse("list-barriers")
-        response = self.api_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == count
-
-        url = TestUtils.reverse_querystring(
-            "list-barriers",
-            query_kwargs={"ordering": "-reported_on"},
-        )
-
-        status_response = self.api_client.get(url)
-        assert status_response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.all().order_by("-reported_on")
+        ).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
         db_list = [str(b.id) for b in barriers]
