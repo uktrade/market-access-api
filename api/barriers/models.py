@@ -182,6 +182,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
         self.reported_on = timezone.now()
         self.status_date = status_date
         self.save()
+        return self
 
     @property
     def created_user(self):

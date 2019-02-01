@@ -48,6 +48,7 @@ from api.metadata.models import (
     BarrierType,
     BarrierPriority
 )
+from api.interactions.models import Interaction
 
 from api.user.utils import has_profile
 
@@ -188,13 +189,28 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         Changes status of the report
         Creates a Barrier Instance out of the report
         Sets up default status
+        Adds next_steps_summary, if exists, as a new note
         """
         # validate and submit a report
         report = self.get_object()
-        report.submit_report(self.request.user)
+        barrier_obj = report.submit_report(self.request.user)
+        # add next steps, if exists, as a new note
+        if barrier_obj.next_steps_summary is not None:
+            kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
+            Interaction(
+                barrier=barrier_obj,
+                text=barrier_obj.next_steps_summary,
+                kind=kind,
+                created_by=self.request.user,
+            ).save()
+
+
 
 
 class BarrierFilterSet(django_filters.FilterSet):
+    """
+    Custom FilterSet to handle all necessary filters on Barriers
+    """
     start_date = django_filters.DateFilter("status_date", lookup_expr="gte")
     end_date = django_filters.DateFilter("status_date", lookup_expr="lte")
     barrier_type = django_filters.ModelMultipleChoiceFilter(
