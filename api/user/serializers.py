@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from api.user.models import Profile
+from api.core.utils import cleansed_username
 
 UserModel = get_user_model()
 
@@ -10,6 +11,7 @@ UserModel = get_user_model()
 class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
+    username = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
     internal = serializers.SerializerMethodField()
 
@@ -25,6 +27,9 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "location",
             "internal",
         )
+
+    def get_username(self, obj):
+        return cleansed_username(obj)
 
     def get_location(self, obj):
         try:

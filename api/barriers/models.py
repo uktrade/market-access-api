@@ -94,6 +94,8 @@ class BarrierInstance(BaseModel, ArchivableModel):
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
     barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
     problem_description = models.TextField(null=True)
+    # next steps will be saved here momentarily during reporting.
+    # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(null=True)
 
     barrier_type = models.ForeignKey(

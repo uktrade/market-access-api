@@ -194,7 +194,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         # validate and submit a report
         report = self.get_object()
         barrier_obj = report.submit_report(self.request.user)
-        # add next steps, if exists, as a new note
+        # add next steps, if exists, as a new COMMENT note
         if barrier_obj.next_steps_summary is not None:
             kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
             Interaction(
@@ -203,8 +203,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 kind=kind,
                 created_by=self.request.user,
             ).save()
-
-
 
 
 class BarrierFilterSet(django_filters.FilterSet):
