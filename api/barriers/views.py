@@ -218,6 +218,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         queryset=BarrierType.objects.all(), to_field_name="id", conjoined=True
     )
     sector = django_filters.UUIDFilter(method="sector_filter")
+    status = django_filters.BaseInFilter("status")
 
     class Meta:
         model = BarrierInstance
@@ -228,6 +229,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         custom filter to enable filtering Sectors, which is ArrayField
         """
         return queryset.filter(sectors__contains=[value])
+
 
 
 class BarrierList(generics.ListAPIView):
