@@ -725,6 +725,25 @@ class TestListBarriers(APITestMixin):
         assert 0 < status_response.data["count"] < count
         assert status_response.data["count"] == barriers.count()
 
+
+    def test_list_barriers_status_2_4_filter(self):
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"status": "2,4"},
+        )
+
+        status_response = self.api_client.get(url)
+        assert status_response.status_code == status.HTTP_200_OK
+        barriers = BarrierInstance.objects.filter(status__in=[2,4])
+        assert status_response.data["count"] == barriers.count()
+
     def test_list_barriers_barrier_type_filter(self):
         count = 10
         barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
@@ -777,7 +796,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"start_date": date.strftime("%Y-%m-%d")},
+            query_kwargs={"reported_on_after": date.strftime("%Y-%m-%d")},
         )
 
         status_response = self.api_client.get(url)
@@ -799,7 +818,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"end_date": date.strftime("%Y-%m-%d")},
+            query_kwargs={"reported_on_before": date.strftime("%Y-%m-%d")},
         )
 
         status_response = self.api_client.get(url)
@@ -823,8 +842,8 @@ class TestListBarriers(APITestMixin):
         url = TestUtils.reverse_querystring(
             "list-barriers",
             query_kwargs={
-                "start_date": start_date.strftime("%Y-%m-%d"),
-                "end_date": end_date.strftime("%Y-%m-%d")
+                "reported_on_after": start_date.strftime("%Y-%m-%d"),
+                "reported_on_before": end_date.strftime("%Y-%m-%d")
             },
         )
 
@@ -999,7 +1018,7 @@ class TestListBarriers(APITestMixin):
         url = TestUtils.reverse_querystring(
             "list-barriers",
             query_kwargs={
-                "start_date": date.strftime("%Y-%m-%d"),
+                "reported_on_after": date.strftime("%Y-%m-%d"),
                 "ordering": order_by
             },
         )
@@ -1033,7 +1052,7 @@ class TestListBarriers(APITestMixin):
         url = TestUtils.reverse_querystring(
             "list-barriers",
             query_kwargs={
-                "end_date": date.strftime("%Y-%m-%d"),
+                "reported_on_before": date.strftime("%Y-%m-%d"),
                 "ordering": order_by
             },
         )
@@ -1068,8 +1087,8 @@ class TestListBarriers(APITestMixin):
         url = TestUtils.reverse_querystring(
             "list-barriers",
             query_kwargs={
-                "start_date": start_date.strftime("%Y-%m-%d"),
-                "end_date": end_date.strftime("%Y-%m-%d"),
+                "reported_on_after": start_date.strftime("%Y-%m-%d"),
+                "reported_on_before": end_date.strftime("%Y-%m-%d"),
                 "ordering": order_by
             },
         )

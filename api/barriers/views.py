@@ -211,9 +211,15 @@ class BarrierReportSubmit(generics.UpdateAPIView):
 class BarrierFilterSet(django_filters.FilterSet):
     """
     Custom FilterSet to handle all necessary filters on Barriers
+    reported_on_before: filter start date dd-mm-yyyy
+    reported_on_after: filter end date dd-mm-yyyy
+    barrier_type: int, one of the barrier type choices
+    sector: uuid, specifying which sector
+    status: int, one or more status id's.
+        ex: status=1 or status=1,2
+    export_country: country UUID
     """
-    start_date = django_filters.DateFilter("status_date", lookup_expr="gte")
-    end_date = django_filters.DateFilter("status_date", lookup_expr="lte")
+    reported_on = django_filters.DateFromToRangeFilter("reported_on")
     barrier_type = django_filters.ModelMultipleChoiceFilter(
         queryset=BarrierType.objects.all(), to_field_name="id", conjoined=True
     )
@@ -222,7 +228,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = BarrierInstance
-        fields = ["export_country", "barrier_type", "sector", "start_date", "end_date", "status"]
+        fields = ["export_country", "barrier_type", "sector", "reported_on", "status"]
 
     def sector_filter(self, queryset, name, value):
         """

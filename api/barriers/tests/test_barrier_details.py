@@ -879,3 +879,89 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["id"] == str(instance.id)
         assert response.data["barrier_type"]["id"] == barrier_type.id
         assert response.data["priority"]["code"] == "LOW"
+
+    def test_barrier_detail_next_steps_as_note(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "next_steps_summary": "Some next steps"
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = self.api_client.get(get_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == str(instance.id)
+        assert response.data["current_status"]["status"] == 2
+
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 1
+
+
+    def test_barrier_detail_next_steps_as_note_not_added_400_bad_submit(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "is_resolved": False,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "next_steps_summary": "Some next steps"
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
+
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
