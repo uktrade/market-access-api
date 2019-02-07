@@ -1,9 +1,9 @@
 from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-SSO_ENABLED = False
+SSO_ENABLED = True
 HAWK_ENABLED = False
 
 LOGGING = {
