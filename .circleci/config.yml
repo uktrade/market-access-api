@@ -29,7 +29,7 @@ jobs:
       RESOURCE_SERVER_INTROSPECTION_URL: http://sso/o/introspect/
       RESOURCE_SERVER_AUTH_TOKEN: sso-token
       FAKE_METADATA: 'True'
-      DH_METADATA_URL: https://datahub-api-dev.cloudapps.digital/metadata/
+      DH_METADATA_URL: https://datahub-api-dev.london.cloudapps.digital/metadata/
       HAWK_ENABLED: 'False'
       HAWK_KEY: hawkkey
       HAWK_ID: metadata
