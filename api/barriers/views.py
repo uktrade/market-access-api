@@ -11,11 +11,17 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 import django_filters
-from django_filters import Filter
+from rest_framework.filters import OrderingFilter
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import generics, status, serializers, viewsets
+from rest_framework import (
+    filters,
+    generics,
+    status,
+    serializers,
+    viewsets,
+)
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -42,6 +48,7 @@ from api.metadata.models import (
     BarrierType,
     BarrierPriority
 )
+from api.interactions.models import Interaction
 
 from api.user.utils import has_profile
 
@@ -139,6 +146,9 @@ class BarrierReportBase(object):
 class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
     queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
+    filter_backends = (OrderingFilter, )
+    ordering_fields = ("created_on",)
+    ordering = ("created_on",)
 
     def get_queryset(self):
         """
@@ -182,29 +192,50 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         Changes status of the report
         Creates a Barrier Instance out of the report
         Sets up default status
+        Adds next_steps_summary, if exists, as a new note
         """
         # validate and submit a report
         report = self.get_object()
-        report.submit_report(self.request.user)
+        barrier_obj = report.submit_report(self.request.user)
+        # add next steps, if exists, as a new COMMENT note
+        if barrier_obj.next_steps_summary is not None:
+            kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
+            Interaction(
+                barrier=barrier_obj,
+                text=barrier_obj.next_steps_summary,
+                kind=kind,
+                created_by=self.request.user,
+            ).save()
 
 
 class BarrierFilterSet(django_filters.FilterSet):
-    start_date = django_filters.DateFilter("status_date", lookup_expr="gte")
-    end_date = django_filters.DateFilter("status_date", lookup_expr="lte")
+    """
+    Custom FilterSet to handle all necessary filters on Barriers
+    reported_on_before: filter start date dd-mm-yyyy
+    reported_on_after: filter end date dd-mm-yyyy
+    barrier_type: int, one of the barrier type choices
+    sector: uuid, specifying which sector
+    status: int, one or more status id's.
+        ex: status=1 or status=1,2
+    export_country: country UUID
+    """
+    reported_on = django_filters.DateFromToRangeFilter("reported_on")
     barrier_type = django_filters.ModelMultipleChoiceFilter(
         queryset=BarrierType.objects.all(), to_field_name="id", conjoined=True
     )
     sector = django_filters.UUIDFilter(method="sector_filter")
+    status = django_filters.BaseInFilter("status")
 
     class Meta:
         model = BarrierInstance
-        fields = ["export_country", "barrier_type", "sector", "start_date", "end_date"]
+        fields = ["export_country", "barrier_type", "sector", "reported_on", "status"]
 
     def sector_filter(self, queryset, name, value):
         """
         custom filter to enable filtering Sectors, which is ArrayField
         """
         return queryset.filter(sectors__contains=[value])
+
 
 
 class BarrierList(generics.ListAPIView):
@@ -214,8 +245,10 @@ class BarrierList(generics.ListAPIView):
 
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierListSerializer
-    filter_backends = (DjangoFilterBackend,)
     filterset_class = BarrierFilterSet
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    ordering_fields = ("reported_on",)
+    ordering = ("reported_on",)
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):

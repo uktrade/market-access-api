@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from api.core.utils import cleansed_username
+
 
 class BaseModel(models.Model):
     """Common fields for most of the models we use."""
@@ -41,16 +43,7 @@ class BaseModel(models.Model):
         return current_timezone.localize(date, is_dst=None)
 
     def _cleansed_username(self, user):
-        if user is not None:
-            if user.username is not None and user.username.strip() != "":
-                if "@" in user.username:
-                    return user.username.split("@")[0]
-                else:
-                    return user.username
-            elif user.email is not None and user.email.strip() != "":
-                return user.email.split("@")[0]
-
-        return None
+        return cleansed_username(user)
 
 
 class ArchivableModel(models.Model):

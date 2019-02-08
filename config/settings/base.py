@@ -24,7 +24,7 @@ SECRET_KEY = env("SECRET_KEY")
 # PaaS, we can open ALLOWED_HOSTS
 ALLOWED_HOSTS = ["*"]
 
-DEBUG = env.bool("SSO_ENABLED", False)
+DEBUG = env.bool("DEBUG", False)
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
 # Application definition
@@ -205,7 +205,6 @@ REST_FRAMEWORK = {
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication"
     ],
     "DEFAULT_PERMISSION_CLASSES": ["api.core.permissions.IsAuthenticated"],
-    "ORDERING_PARAM": "sortby",
 }
 
 # Password validation

@@ -1,5 +1,14 @@
+import datetime
+import pytest
+
 from rest_framework import status
 from rest_framework.reverse import reverse
+
+from freezegun import freeze_time
+from factory.fuzzy import (
+    FuzzyChoice,
+    FuzzyDate
+)
 
 from api.core.test_utils import APITestMixin, create_test_user
 from ..models import BarrierInstance
@@ -887,7 +896,10 @@ class TestListReports(APITestMixin):
     def test_list_reports_post_stage_4_in_progress_problem_description(self):
         url = reverse("list-reports")
         response = self.api_client.post(
-            url, format="json", data={"problem_description": "Some problem_description"}
+            url, format="json", data={
+                "is_resolved": True,
+                "problem_description": "Some problem_description"
+            }
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -905,7 +917,7 @@ class TestListReports(APITestMixin):
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
-        assert stage_1[0]["status_desc"] == "NOT STARTED"
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
         stage_2 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
         ]
@@ -917,7 +929,11 @@ class TestListReports(APITestMixin):
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
-        assert stage_4[0]["status_desc"] == "IN PROGRESS"
+        assert stage_4[0]["status_desc"] == "NOT STARTED"
+        stage_5 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.5"
+        ]
+        assert stage_5[0]["status_desc"] == "IN PROGRESS"
 
     def test_list_reports_post_stage_4_not_completed(self):
         url = reverse("list-reports")
@@ -961,12 +977,14 @@ class TestListReports(APITestMixin):
         ]
         assert stage_4[0]["status_desc"] == "IN PROGRESS"
 
-    def test_list_reports_post_stage_4_completed_2(self):
+
+    def test_list_reports_post_stage_4_completed_1(self):
         url = reverse("list-reports")
         response = self.api_client.post(
             url,
             format="json",
             data={
+                "is_resolved": False,
                 "product": "Some product",
                 "source": "OTHER",
                 "other_source": "Not sure",
@@ -990,7 +1008,7 @@ class TestListReports(APITestMixin):
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
-        assert stage_1[0]["status_desc"] == "NOT STARTED"
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
         stage_2 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
         ]
@@ -1004,12 +1022,61 @@ class TestListReports(APITestMixin):
         ]
         assert stage_4[0]["status_desc"] == "COMPLETED"
 
-    def test_list_reports_post_stage_4_completed(self):
+
+    def test_list_reports_post_stage_4_completed_2(self):
         url = reverse("list-reports")
         response = self.api_client.post(
             url,
             format="json",
             data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Not sure",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary"
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+        assert detail_response.data["product"] == "Some product"
+        assert detail_response.data["source"] == "OTHER"
+        assert detail_response.data["other_source"] == "Not sure"
+        assert detail_response.data["barrier_title"] == "Some title"
+        assert detail_response.data["problem_description"] == "Some problem_description"
+        stage_1 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
+        ]
+        assert stage_1[0]["status_desc"] == "COMPLETED"
+        stage_2 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
+        ]
+        assert stage_2[0]["status_desc"] == "NOT STARTED"
+        stage_3 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
+        ]
+        assert stage_3[0]["status_desc"] == "NOT STARTED"
+        stage_4 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
+        ]
+        assert stage_4[0]["status_desc"] == "COMPLETED"
+
+    def test_list_reports_post_stage_4_in_progress_status_summary(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(
+            url,
+            format="json",
+            data={
+                "is_resolved": True,
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
@@ -1032,7 +1099,7 @@ class TestListReports(APITestMixin):
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
-        assert stage_1[0]["status_desc"] == "NOT STARTED"
+        assert stage_1[0]["status_desc"] == "IN PROGRESS"
         stage_2 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.2"
         ]
@@ -1045,6 +1112,10 @@ class TestListReports(APITestMixin):
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
         assert stage_4[0]["status_desc"] == "COMPLETED"
+        stage_5 = [
+            d for d in detail_response.data["progress"] if d["stage_code"] == "1.5"
+        ]
+        assert stage_5[0]["status_desc"] == "IN PROGRESS"
 
     def test_list_reports_post_all_stages_completed_1(self):
         url = reverse("list-reports")
@@ -1339,3 +1410,70 @@ class TestListReports(APITestMixin):
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
         assert barrier["created_by"] == "Test.User"
+
+    def add_multiple_reports(self, count):
+        sectors = [
+            "af959812-6095-e211-a939-e4115bead28a",
+            "75debee7-a182-410e-bde0-3098e4f7b822",
+            "9538cecc-5f95-e211-a939-e4115bead28a",
+        ]
+        countries = [
+            "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
+            "985f66a0-5d95-e211-a939-e4115bead28a",
+            "1f0be5c4-5d95-e211-a939-e4115bead28a",
+        ]
+        for _ in range(count):
+            date = FuzzyDate(
+                start_date=datetime.date.today() - datetime.timedelta(days=45),
+                end_date=datetime.date.today(),
+            ).evaluate(2, None, False)
+            with freeze_time(date):
+                list_report_url = reverse("list-reports")
+                list_report_response = self.api_client.post(
+                    list_report_url,
+                    format="json",
+                    data={
+                        "problem_status": FuzzyChoice([1, 2]).fuzz(),
+                        "is_resolved": FuzzyChoice([True, False]).fuzz(),
+                        "resolved_date": date.strftime("%Y-%m-%d"),
+                        "export_country": FuzzyChoice(countries).fuzz(),
+                        "sectors_affected": True,
+                        "sectors": [
+                            FuzzyChoice(sectors).fuzz()
+                        ],
+                        "product": "Some product",
+                        "source": "OTHER",
+                        "other_source": "Other source",
+                        "barrier_title": "Some title",
+                        "problem_description": "Some problem_description",
+                        "status_summary": "some status summary"
+                    },
+                )
+
+                assert list_report_response.status_code == status.HTTP_201_CREATED
+
+    @pytest.mark.parametrize("order_by", [
+        "created_on",
+        "-created_on"
+    ])
+    def test_list_barriers_order_by_reported_on(self, order_by):
+        count = 10
+        sector_id = "af959812-6095-e211-a939-e4115bead28a"
+        self.add_multiple_reports(count)
+        url = reverse("list-reports")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-reports",
+            query_kwargs={"ordering": order_by},
+        )
+
+        status_response = self.api_client.get(url)
+        assert status_response.status_code == status.HTTP_200_OK
+        barriers = BarrierInstance.objects.all().order_by(order_by)
+        assert status_response.data["count"] == barriers.count()
+        response_list = [b["id"] for b in status_response.data["results"]]
+        db_list = [str(b.id) for b in barriers]
+        assert response_list == db_list

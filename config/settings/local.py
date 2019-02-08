@@ -1,7 +1,7 @@
 from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("SSO_ENABLED", False)
+DEBUG = env.bool("DEBUG", False)
 
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 

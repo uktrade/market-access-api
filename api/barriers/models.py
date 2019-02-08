@@ -94,6 +94,9 @@ class BarrierInstance(BaseModel, ArchivableModel):
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
     barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
     problem_description = models.TextField(null=True)
+    # next steps will be saved here momentarily during reporting.
+    # once the report is ready for submission, this will be added as a new note
+    next_steps_summary = models.TextField(null=True)
 
     barrier_type = models.ForeignKey(
         BarrierType,
@@ -181,6 +184,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
         self.reported_on = timezone.now()
         self.status_date = status_date
         self.save()
+        return self
 
     @property
     def created_user(self):
