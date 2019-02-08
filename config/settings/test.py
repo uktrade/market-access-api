@@ -3,7 +3,7 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-SSO_ENABLED = True
+SSO_ENABLED = False
 HAWK_ENABLED = False
 
 LOGGING = {

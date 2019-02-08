@@ -16,30 +16,35 @@ jobs:
       - image: postgres:9.6
         environment:
           POSTGRES_DB=market_access
+      - image: ukti/mock-sso
+        environment:
+          MOCK_SSO_PORT: 5000
+          MOCK_SSO_USERNAME: test-user
+          MOCK_SSO_SCOPE: test
 
     environment:
-      DATABASE_URL: postgresql://postgres@localhost/market_access
-      DATAHUB_SECRET: secret
-      DJANGO_SETTINGS_MODULE: config.settings.test
+      DATABASE_URL: 'postgresql://postgres@localhost/market_access'
+      DATAHUB_SECRET: 'secret'
+      DJANGO_SETTINGS_MODULE: 'config.settings.test'
       DEBUG: 'True'
-      SECRET_KEY: changeme
+      SECRET_KEY: 'changeme'
       SSO_ENABLED: 'True'
       SENTRY_DSN: ''
       SENTRY_ENVIRONMENT: ''
-      RESOURCE_SERVER_INTROSPECTION_URL: http://sso/o/introspect/
+      RESOURCE_SERVER_INTROSPECTION_URL: 'http://localhost:5000/o/introspect/'
       RESOURCE_SERVER_AUTH_TOKEN: sso-token
       FAKE_METADATA: 'True'
-      DH_METADATA_URL: https://datahub-api-dev.london.cloudapps.digital/metadata/
+      DH_METADATA_URL: 'https://datahub-api-dev.london.cloudapps.digital/metadata/'
       HAWK_ENABLED: 'False'
-      HAWK_KEY: hawkkey
-      HAWK_ID: metadata
-      AUTHBROKER_URL: http://sso/o/
-      AUTHBROKER_CLIENT_ID: auth client
+      HAWK_KEY: 'hawkkey'
+      HAWK_ID: 'metadata'
+      AUTHBROKER_URL: 'http://localhost:5000/o/'
+      AUTHBROKER_CLIENT_ID: 'auth client'
       AUTHBROKER_CLIENT_SECRET: auth secret
-      ALLOWED_ADMIN_IPS: 1.2.3.4
+      ALLOWED_ADMIN_IPS: '1.2.3.4'
       RESTRICT_ADMIN: 'False'
       AV_V2_SERVICE_URL: 'https://test:secret@av-api/scan'
-      DEFAULT_BUCKET: market-access-enc-dev
+      DEFAULT_BUCKET: 'market-access-enc-dev'
       AWS_ACCESS_KEY_ID: 'access_key'
       AWS_SECRET_ACCESS_KEY: 'access_secret'
       AWS_DEFAULT_REGION: 'eu-west-2'

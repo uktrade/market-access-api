@@ -24,7 +24,7 @@ SECRET_KEY = env("SECRET_KEY")
 # PaaS, we can open ALLOWED_HOSTS
 ALLOWED_HOSTS = ["*"]
 
-DEBUG = env.bool("SSO_ENABLED", False)
+DEBUG = env.bool("DEBUG", False)
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
 # Application definition
