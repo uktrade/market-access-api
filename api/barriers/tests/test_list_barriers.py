@@ -35,6 +35,7 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barriers"]["total"] == 0
         assert response.data["barriers"]["open"] == 0
+        assert response.data["barriers"]["paused"] == 0
         assert response.data["barriers"]["resolved"] == 0
         assert response.data["reports"] == 0
         assert response.data["user"]["barriers"] == 0

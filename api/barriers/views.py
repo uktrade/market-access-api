@@ -79,6 +79,8 @@ def barrier_count(request):
     """
     current_user = request.user
     user_count = None
+    barriers = BarrierInstance.barriers.all()
+    reports = BarrierInstance.reports.all()
     if not current_user.is_anonymous:
         user_barrier_count = BarrierInstance.barriers.filter(
             created_by=current_user
@@ -87,20 +89,17 @@ def barrier_count(request):
             created_by=current_user
         ).count()
         user_count = {"barriers": user_barrier_count, "reports": user_report_count}
-        country_barrier_count = None
-        country_report_count = None
-        country_count = None
         if has_profile(current_user) and current_user.profile.location:
             country = current_user.profile.location
-            country_barrier_count = BarrierInstance.barriers.filter(
-                export_country=country
-            ).count()
-            country_report_count = BarrierInstance.reports.filter(
-                export_country=country
-            ).count()
+            country_barriers = barriers.filter(export_country=country)
             country_count = {
-                "barriers": country_barrier_count,
-                "reports": country_report_count,
+                "barriers": {
+                    "total": country_barriers.count(),
+                    "open": country_barriers.filter(status=2).count(),
+                    "paused": country_barriers.filter(status=5).count(),
+                    "resolved": country_barriers.filter(status=4).count(),
+                },
+                "reports": reports.filter(export_country=country).count(),
             }
             user_count["country"] = country_count
 
@@ -108,6 +107,7 @@ def barrier_count(request):
         "barriers": {
             "total": BarrierInstance.barriers.count(),
             "open": BarrierInstance.barriers.filter(status=2).count(),
+            "paused": BarrierInstance.barriers.filter(status=5).count(),
             "resolved": BarrierInstance.barriers.filter(status=4).count(),
         },
         "reports": BarrierInstance.reports.count(),
