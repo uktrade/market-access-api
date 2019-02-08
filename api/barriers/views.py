@@ -108,6 +108,7 @@ def barrier_count(request):
         "barriers": {
             "total": BarrierInstance.barriers.count(),
             "open": BarrierInstance.barriers.filter(status=2).count(),
+            "paused": BarrierInstance.barriers.filter(status=5).count(),
             "resolved": BarrierInstance.barriers.filter(status=4).count(),
         },
         "reports": BarrierInstance.reports.count(),
