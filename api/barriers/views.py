@@ -215,15 +215,24 @@ class BarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle all necessary filters on Barriers
     reported_on_before: filter start date dd-mm-yyyy
     reported_on_after: filter end date dd-mm-yyyy
-    barrier_type: int, one or more of the barrier type choices
+    barrier_type: int, one or more comma seperated barrier type ids
         ex: barrier_type=1 or barrier_type=1,2
-    sector: uuid, specifying which sector
+    sector: uuid, one or more comma seperated sector UUIDs
+        ex:
+        sector=af959812-6095-e211-a939-e4115bead28a
+        sector=af959812-6095-e211-a939-e4115bead28a,9538cecc-5f95-e211-a939-e4115bead28a
     status: int, one or more status id's.
         ex: status=1 or status=1,2
-    export_country: country UUID
+    export_country: UUID, one or more comma seperated country UUIDs
+        ex: 
+        export_country=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc
+        export_country=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc,955f66a0-5d95-e211-a939-e4115bead28a
+    priority: priority code, one or more comma seperated priority codes
+        ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     """
+    export_country = django_filters.BaseInFilter("export_country")
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
-    sector = django_filters.UUIDFilter(method="sector_filter")
+    sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
     barrier_type = django_filters.BaseInFilter("barrier_type")
     priority = django_filters.BaseInFilter(method="priority_filter")
@@ -243,7 +252,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         custom filter to enable filtering Sectors, which is ArrayField
         """
-        return queryset.filter(sectors__contains=[value])
+        return queryset.filter(sectors__overlap=value)
 
     def priority_filter(self, queryset, name, value):
         priorities = BarrierPriority.objects.filter(code__in=value)
