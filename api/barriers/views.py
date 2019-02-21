@@ -250,13 +250,21 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def sector_filter(self, queryset, name, value):
         """
-        custom filter to enable filtering Sectors, which is ArrayField
+        custom filter for multi-select filtering of Sectors field,
+        which is ArrayField
         """
         return queryset.filter(sectors__overlap=value)
 
     def priority_filter(self, queryset, name, value):
+        """
+        customer filter for multi-select of priorities field
+        by code rather than priority id.
+        UNKNOWN would either mean, UNKNOWN is set in the field
+        or priority is not yet set for that barrier
+        """
+        UNKNOWN = "UNKNOWN"
         priorities = BarrierPriority.objects.filter(code__in=value)
-        if "UNKNOWN" in value:
+        if UNKNOWN in value:
             return queryset.filter(Q(priority__isnull=True) | Q(priority__in=priorities))
         else:
             return queryset.filter(priority__in=priorities)
@@ -264,15 +272,16 @@ class BarrierFilterSet(django_filters.FilterSet):
 
 class BarrierList(generics.ListAPIView):
     """
-    Return a list of all the BarrierInstances with optional filtering.
+    Return a list of all the BarrierInstances
+    with optional filtering and ordering defined
     """
 
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)
-    ordering_fields = ("reported_on",)
-    ordering = ("reported_on",)
+    ordering_fields = ("reported_on", "modified_on")
+    ordering = ("reported_on", "modified_on")
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):

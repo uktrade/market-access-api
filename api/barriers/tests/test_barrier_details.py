@@ -27,7 +27,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "status_summary": "some status summary"
+                "status_summary": "some status summary",
+                "eu_exit_related": True,
             },
         )
 
@@ -68,7 +69,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "status_summary": "some status summary"
+                "status_summary": "some status summary",
+                "eu_exit_related": True,
             },
         )
 
@@ -113,7 +115,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "status_summary": "some status summary"
+                "status_summary": "some status summary",
+                "eu_exit_related": True,
             },
         )
 
@@ -158,7 +161,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "status_summary": "some status summary"
+                "status_summary": "some status summary",
+                "eu_exit_related": True,
             },
         )
 
@@ -203,7 +207,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "status_summary": "some status summary"
+                "status_summary": "some status summary",
+                "eu_exit_related": True,
             },
         )
 
@@ -243,6 +248,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -294,6 +300,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -346,7 +353,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "status_summary": "some status summary"
+                "status_summary": "some status summary",
+                "eu_exit_related": True,
             },
         )
 
@@ -399,7 +407,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "status_summary": "some status summary"
+                "status_summary": "some status summary",
+                "eu_exit_related": True,
             },
         )
 
@@ -451,6 +460,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -504,6 +514,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -558,6 +569,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -608,6 +620,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -657,6 +670,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -706,6 +720,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -756,6 +771,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -825,6 +841,7 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
+                "eu_exit_related": True,
             },
         )
 
@@ -899,7 +916,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "next_steps_summary": "Some next steps"
+                "next_steps_summary": "Some next steps",
+                "eu_exit_related": True,
             },
         )
 
@@ -945,7 +963,8 @@ class TestBarrierDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "next_steps_summary": "Some next steps"
+                "next_steps_summary": "Some next steps",
+                "eu_exit_related": True,
             },
         )
 

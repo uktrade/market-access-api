@@ -94,6 +94,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "barrier_type",
             "barrier_type_category",
             "created_on",
+            "modified_on"
         )
 
     def get_reported_by(self, obj):
