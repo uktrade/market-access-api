@@ -79,6 +79,12 @@ class MetadataView(generics.GenericAPIView):
     def get_reporting_stages(self):
         return dict((stage.code, stage.description) for stage in Stage.objects.all())
 
+    def get_os_regions_and_countries(self):
+        dh_countries = import_api_results("countries")
+        dh_os_regions_all = [r["overseas_region"] for r in dh_countries]
+        dh_os_regions = list(set(dh_os_regions_all))
+        return dh_os_regions, dh_countries
+
     def get(self, request):
         status_types = dict((x, y) for x, y in PROBLEM_STATUS_TYPES)
         loss_range = dict((x, y) for x, y in ESTIMATED_LOSS_RANGE)
@@ -94,7 +100,9 @@ class MetadataView(generics.GenericAPIView):
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
         timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
 
-        dh_countries = import_api_results("country")
+        # dh_os_regions, dh_countries = self.get_os_regions_and_countries()
+        dh_os_regions = None
+        dh_countries = None
         dh_sectors = import_api_results("sector")
 
         report_stages = self.get_reporting_stages()
@@ -113,6 +121,7 @@ class MetadataView(generics.GenericAPIView):
             "report_stages": report_stages,
             "support_type": support_type,
             "barrier_types": barrier_types,
+            "overseas_regions": dh_os_regions,
             "countries": dh_countries,
             "sectors": dh_sectors,
             "barrier_status": barrier_status,
