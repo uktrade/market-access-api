@@ -45,6 +45,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "barrier_title",
             "problem_description",
             "next_steps_summary",
+            "eu_exit_related",
             "progress",
             "created_by",
             "created_on",
@@ -93,6 +94,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "barrier_type",
             "barrier_type_category",
             "created_on",
+            "modified_on"
         )
 
     def get_reported_by(self, obj):
@@ -155,6 +157,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "current_status",
             "priority",
             "priority_summary",
+            "eu_exit_related",
             "created_on",
             "modified_by",
             "modified_on",
