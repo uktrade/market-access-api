@@ -14,6 +14,7 @@ from django.db.models.aggregates import Sum
 from django.utils import timezone
 
 from ...models import BarrierInstance
+from api.core.utils import cleansed_username
 
 
 class Command(BaseCommand):
@@ -53,27 +54,35 @@ class Command(BaseCommand):
         barriers = BarrierInstance.barriers.all()
         reports = BarrierInstance.reports.all()
         user_model = get_user_model()
-        users = user_model.objects.all()
+        users = [cleansed_username(user) for user in user_model.objects.all()]
+        users = list(set(users))
+
 
         days = options["days"][0]
         days_ago = timezone.now() - relativedelta(days=days)
+
+        submitted = [b.code for b in barriers.filter(reported_on__gt=days_ago)]
+        modified = [
+            b.code
+            for b in barriers.filter(modified_on__gt=days_ago)
+            if b.code not in submitted
+        ]
 
         stats = {
             "barriers": {
                 "total_count": barriers.count(),
                 "total_open": barriers.filter(status=2).count(),
                 "total_resolved": barriers.filter(status=4).count(),
-                "submitted_count": barriers.filter(reported_on__gt=days_ago).count(),
-                "submitted": [b.code for b in barriers.filter(reported_on__gt=days_ago)],
-                "modified_count": barriers.filter(modified_on__gt=days_ago).count(),
-                "modified": [b.code for b in barriers.filter(modified_on__gt=days_ago)]
+                "submitted_count": len(submitted),
+                "submitted": submitted,
+                "modified_count": len(modified),
+                "modified": modified
             },
             "reports": {
                 "total_count": reports.count()
             },
             "users": {
-                "total_count": users.distinct().count(),
-                "active_count": users.filter(last_login__gt=days_ago).distinct().count()
+                "total_count": len(users),
             }
         }
 

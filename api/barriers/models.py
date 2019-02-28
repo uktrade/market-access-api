@@ -75,28 +75,68 @@ class BarrierInstance(BaseModel, ArchivableModel):
         help_text="readable reference code",
     )
     problem_status = models.PositiveIntegerField(
-        choices=PROBLEM_STATUS_TYPES, null=True
+        choices=PROBLEM_STATUS_TYPES,
+        null=True,
+        help_text="type of problem, long term or short term"
     )
 
     is_resolved = models.NullBooleanField()
-    resolved_date = models.DateField(null=True, default=None)
+    resolved_date = models.DateField(
+        null=True,
+        default=None
+    )
 
-    export_country = models.UUIDField(null=True)
+    export_country = models.UUIDField(
+        null=True
+    )
+    country_admin_areas = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        null=True,
+        default=None,
+        help_text="list of states, provinces, regions etc within a country"
+    )
 
     sectors_affected = models.NullBooleanField()
-    sectors = ArrayField(models.UUIDField(), blank=True, null=True, default=None)
-    companies = JSONField(null=True, default=None)
-
-    product = models.CharField(max_length=MAX_LENGTH, null=True)
-    source = models.CharField(
-        choices=BARRIER_SOURCE, max_length=25, null=True, help_text="chance of success"
+    sectors = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        null=True,
+        default=None,
+        help_text="list of sectors that are affected"
     )
-    other_source = models.CharField(max_length=MAX_LENGTH, null=True)
-    barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
-    problem_description = models.TextField(null=True)
+    companies = JSONField(
+        null=True,
+        default=None,
+        help_text="list of companies that are affected"
+    )
+
+    product = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True
+    )
+    source = models.CharField(
+        choices=BARRIER_SOURCE,
+        max_length=25,
+        null=True,
+        help_text="chance of success"
+    )
+    other_source = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True
+    )
+    barrier_title = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True
+    )
+    problem_description = models.TextField(
+        null=True
+    )
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
-    next_steps_summary = models.TextField(null=True)
+    next_steps_summary = models.TextField(
+        null=True
+    )
     eu_exit_related = models.NullBooleanField()
 
     barrier_type = models.ForeignKey(
@@ -114,17 +154,26 @@ class BarrierInstance(BaseModel, ArchivableModel):
         help_text="barrier type category",
     )
 
-    reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
+    reported_on = models.DateTimeField(
+        db_index=True,
+        auto_now_add=True
+    )
 
     # Barrier status
     status = models.PositiveIntegerField(
-        choices=BARRIER_STATUS, default=0, help_text="status of the barrier instance"
+        choices=BARRIER_STATUS,
+        default=0,
+        help_text="status of the barrier instance"
     )
     status_summary = models.TextField(
-        null=True, default=None, help_text="status summary if provided by user"
+        null=True,
+        default=None,
+        help_text="status summary if provided by user"
     )
     status_date = models.DateTimeField(
-        auto_now_add=True, null=True, help_text="date when status action occurred"
+        auto_now_add=True,
+        null=True,
+        help_text="date when status action occurred"
     )
 
     # Barrier priority
@@ -136,10 +185,14 @@ class BarrierInstance(BaseModel, ArchivableModel):
         on_delete=models.SET_NULL,
     )
     priority_summary = models.TextField(
-        null=True, default=None, help_text="priority summary if provided by user"
+        null=True,
+        default=None,
+        help_text="priority summary if provided by user"
     )
     priority_date = models.DateTimeField(
-        auto_now=True, null=True, help_text="date when priority was set"
+        auto_now=True,
+        null=True,
+        help_text="date when priority was set"
     )
 
     stages = models.ManyToManyField(

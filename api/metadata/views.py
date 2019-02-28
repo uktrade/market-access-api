@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.shortcuts import render
 
@@ -80,9 +82,13 @@ class MetadataView(generics.GenericAPIView):
         return dict((stage.code, stage.description) for stage in Stage.objects.all())
 
     def get_os_regions_and_countries(self):
-        dh_countries = import_api_results("countries")
-        dh_os_regions_all = [r["overseas_region"] for r in dh_countries]
-        dh_os_regions = list(set(dh_os_regions_all))
+        dh_countries = import_api_results("country")
+        dh_os_regions = []
+        for item in dh_countries:
+            if item["overseas_region"] not in dh_os_regions:
+                # there are few countries with no overseas region
+                if item["overseas_region"] is not None:
+                    dh_os_regions.append(item["overseas_region"])
         return dh_os_regions, dh_countries
 
     def get(self, request):
@@ -100,9 +106,8 @@ class MetadataView(generics.GenericAPIView):
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
         timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
 
-        # dh_os_regions, dh_countries = self.get_os_regions_and_countries()
-        dh_os_regions = None
-        dh_countries = None
+        dh_os_regions, dh_countries = self.get_os_regions_and_countries()
+        dh_admin_areas = import_api_results("administrative-area")
         dh_sectors = import_api_results("sector")
 
         report_stages = self.get_reporting_stages()
@@ -123,6 +128,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_types": barrier_types,
             "overseas_regions": dh_os_regions,
             "countries": dh_countries,
+            "country_admin_areas": dh_admin_areas,
             "sectors": dh_sectors,
             "barrier_status": barrier_status,
             "barrier_type_categories": barrier_type_cat,
