@@ -37,7 +37,7 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.4",
         "order": 4,
-        "required": ["product", "source", "barrier_title", "eu_exit_related"],
+        "required": ["product", "source", "barrier_title",],
         "conditional": [
             {
                 "condition_field": "source",
