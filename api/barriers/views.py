@@ -50,6 +50,8 @@ from api.metadata.models import (
     BarrierType,
     BarrierPriority
 )
+from api.metadata.utils import get_os_regions_and_countries
+
 from api.interactions.models import Interaction
 
 from api.user.utils import has_profile
@@ -236,6 +238,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     status = django_filters.BaseInFilter("status")
     barrier_type = django_filters.BaseInFilter("barrier_type")
     priority = django_filters.BaseInFilter(method="priority_filter")
+    overseas_region = django_filters.BaseInFilter(method="region_filter")
 
     class Meta:
         model = BarrierInstance
@@ -268,6 +271,11 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.filter(Q(priority__isnull=True) | Q(priority__in=priorities))
         else:
             return queryset.filter(priority__in=priorities)
+
+    def region_filter(self, queryset, name, value):
+        dh_regions, dh_countries = get_os_regions_and_countries()
+        countries = [item["id"] for item in dh_countries if item["overseas_region"]["id"] == value]
+        return queryset.filter(export_country__in=countries)
 
 
 class BarrierList(generics.ListAPIView):
