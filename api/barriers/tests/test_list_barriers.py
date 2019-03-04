@@ -1167,6 +1167,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["barrier_type"] is None
         assert barrier["barrier_type_category"] is None
         assert barrier["created_on"] is not None
+        assert barrier["eu_exit_related"] == 1
 
     def test_check_all_fields_after_report_submit_2(self):
         list_report_url = reverse("list-reports")
@@ -1184,7 +1185,7 @@ class TestListBarriers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
+                "eu_exit_related": 2,
             },
         )
 
@@ -1219,6 +1220,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["barrier_type"] is None
         assert barrier["barrier_type_category"] is None
         assert barrier["created_on"] is not None
+        assert barrier["eu_exit_related"] == 2
 
     def test_check_all_fields_after_report_submit_3(self):
         list_report_url = reverse("list-reports")
@@ -1238,7 +1240,7 @@ class TestListBarriers(APITestMixin):
                 "source": "GOVT",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1,
+                "eu_exit_related": 3,
             },
         )
 
@@ -1276,3 +1278,4 @@ class TestListBarriers(APITestMixin):
         assert barrier["barrier_type"] is None
         assert barrier["barrier_type_category"] is None
         assert barrier["created_on"] is not None
+        assert barrier["eu_exit_related"] == 3
