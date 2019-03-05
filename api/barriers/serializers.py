@@ -91,6 +91,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "sectors",
             "export_country",
             "country_admin_areas",
+            "eu_exit_related",
             "current_status",
             "priority",
             "barrier_type",
