@@ -750,7 +750,7 @@ class TestReportDetail(APITestMixin):
                 "other_source": "Not sure",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": True,
+                "eu_exit_related": 1,
             },
         )
 
@@ -797,7 +797,7 @@ class TestReportDetail(APITestMixin):
                 "source": "GOVT",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": True,
+                "eu_exit_related": 1,
             },
         )
 
@@ -851,7 +851,7 @@ class TestReportDetail(APITestMixin):
                 "source": "GOVT",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": True,
+                "eu_exit_related": 1,
             },
         )
 
@@ -917,7 +917,7 @@ class TestReportDetail(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": True,
+                "eu_exit_related": 1,
             },
         )
 
@@ -986,7 +986,7 @@ class TestReportDetail(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": True,
+                "eu_exit_related": 1,
             },
         )
 

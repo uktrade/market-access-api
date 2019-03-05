@@ -97,7 +97,10 @@ class BarrierInstance(BaseModel, ArchivableModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(null=True)
-    eu_exit_related = models.NullBooleanField()
+    eu_exit_related = models.PositiveIntegerField(
+        choices=ADV_BOOLEAN,
+        null=True
+    )
 
     barrier_type = models.ForeignKey(
         BarrierType,
