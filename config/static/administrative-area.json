@@ -1,0 +1,92 @@
+[
+    {
+        "id": "8ad3f33a-ace8-40ec-bd2c-638fdc3024ea",
+        "name": "Alabama",
+        "disabled_on": null,
+        "country": {
+            "name": "United States",
+            "id": "81756b9a-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "68338f52-88ff-437d-93ef-790ec9505321",
+        "name": "Alaska",
+        "disabled_on": null,
+        "country": {
+            "name": "United States",
+            "id": "81756b9a-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "75e337c3-23c9-4294-8085-6b1e8c43eb07",
+        "name": "Alberta",
+        "disabled_on": null,
+        "country": {
+            "name": "Canada",
+            "id": "5daf72a6-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "5dad1164-2bd0-4187-a471-7d588cb5af35",
+        "name": "Anhui",
+        "disabled_on": null,
+        "country": {
+            "name": "China",
+            "id": "63af72a6-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "3d963d27-1d03-4ebd-a3be-e22eba06a9e6",
+        "name": "Arizona",
+        "disabled_on": null,
+        "country": {
+            "name": "United States",
+            "id": "81756b9a-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "2f0ebf4a-9306-4af4-b0de-206caaa2ed9e",
+        "name": "Arkansas",
+        "disabled_on": null,
+        "country": {
+            "name": "United States",
+            "id": "81756b9a-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "56f5f425-e3e3-4c9a-b886-ecb671b81503",
+        "name": "Beijing",
+        "disabled_on": null,
+        "country": {
+            "name": "China",
+            "id": "63af72a6-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "351410eb-81b5-4a55-a76d-790b31a833fa",
+        "name": "British Columbia",
+        "disabled_on": null,
+        "country": {
+            "name": "Canada",
+            "id": "5daf72a6-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "a88512e0-62d4-4808-95dc-d3beab05d0e9",
+        "name": "California",
+        "disabled_on": null,
+        "country": {
+            "name": "United States",
+            "id": "81756b9a-5d95-e211-a939-e4115bead28a"
+        }
+    },
+    {
+        "id": "5c48e9e3-d82c-475d-86bc-b739daf5137c",
+        "name": "Chongqing",
+        "disabled_on": null,
+        "country": {
+            "name": "China",
+            "id": "63af72a6-5d95-e211-a939-e4115bead28a"
+        }
+    },
+]
