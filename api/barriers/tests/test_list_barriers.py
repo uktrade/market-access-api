@@ -485,9 +485,9 @@ class TestListBarriers(APITestMixin):
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
         countries = [
-            "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
-            "985f66a0-5d95-e211-a939-e4115bead28a",
-            "1f0be5c4-5d95-e211-a939-e4115bead28a",
+            "a05f66a0-5d95-e211-a939-e4115bead28a",
+            "a75f66a0-5d95-e211-a939-e4115bead28a",
+            "ad5f66a0-5d95-e211-a939-e4115bead28a",
         ]
         for _ in range(count):
             date = FuzzyDate(
@@ -547,12 +547,12 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"export_country": "af959812-6095-e211-a939-e4115bead28a"},
+            query_kwargs={"export_country": "a05f66a0-5d95-e211-a939-e4115bead28a"},
         )
 
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.filter(export_country="af959812-6095-e211-a939-e4115bead28a")
+        barriers = BarrierInstance.objects.filter(export_country="a05f66a0-5d95-e211-a939-e4115bead28a")
         assert response.data["count"] == barriers.count()
 
     def test_list_barriers_get_multiple_barriers_country_filter_all(self):
@@ -564,7 +564,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "export_country": "af959812-6095-e211-a939-e4115bead28a",
+                "export_country": "a05f66a0-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -593,7 +593,7 @@ class TestListBarriers(APITestMixin):
             data={
                 "problem_status": 1,
                 "is_resolved": False,
-                "export_country": "af959812-6095-e211-a939-e4115bead28a",
+                "export_country": "a05f66a0-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -622,7 +622,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"export_country": "af959812-6095-e211-a939-e4115bead28a"},
+            query_kwargs={"export_country": "a05f66a0-5d95-e211-a939-e4115bead28a"},
         )
 
         response = self.api_client.get(url)
@@ -696,7 +696,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"export_country": "af959812-6095-e211-a939-e4115bead28a"},
+            query_kwargs={"export_country": "a05f66a0-5d95-e211-a939-e4115bead28a"},
         )
 
         response = self.api_client.get(url)
@@ -909,7 +909,7 @@ class TestListBarriers(APITestMixin):
         url = TestUtils.reverse_querystring(
             "list-barriers",
             query_kwargs={
-                "export_country": "af959812-6095-e211-a939-e4115bead28a",
+                "export_country": "a05f66a0-5d95-e211-a939-e4115bead28a",
                 "ordering": order_by
             },
         )
@@ -917,7 +917,7 @@ class TestListBarriers(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
-            export_country="af959812-6095-e211-a939-e4115bead28a"
+            export_country="a05f66a0-5d95-e211-a939-e4115bead28a"
         ).order_by(order_by)
         assert response.data["count"] == barriers.count()
         response_list = [b["id"] for b in response.data["results"]]
@@ -1279,3 +1279,71 @@ class TestListBarriers(APITestMixin):
         assert barrier["barrier_type_category"] is None
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 3
+
+    def test_list_barriers_get_multiple_barriers_overseas_region_filter_1(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"overseas_region": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10
+
+    def test_list_barriers_get_multiple_barriers_overseas_region_filter_2(self):
+        """
+        Test all except one in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "ab5f66a0-5d95-e211-a939-e4115bead28a",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "GOVT",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "eu_exit_related": 3,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance_id = list_report_response.data["id"]
+        submit_url = reverse("submit-report", kwargs={"pk": instance_id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 11
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"overseas_region": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10

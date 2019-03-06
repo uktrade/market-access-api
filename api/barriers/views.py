@@ -2,6 +2,7 @@ import json
 from collections import defaultdict
 from dateutil.parser import parse
 
+from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.serializers.json import DjangoJSONEncoder
@@ -272,17 +273,21 @@ class BarrierFilterSet(django_filters.FilterSet):
         else:
             return queryset.filter(priority__in=priorities)
 
+    def _countries(self):
+        dh_regions, dh_countries = get_os_regions_and_countries()
+        return dh_countries
+
     def region_filter(self, queryset, name, value):
         """
         custom filter for retreiving barriers of all countries of an overseas region
         """
-        dh_regions, dh_countries = get_os_regions_and_countries()
-        countries = [
+        countries = cache.get_or_set('dh_countries', self._countries, 72000)
+        countries_for_region = [
             item["id"] 
-            for item in dh_countries 
+            for item in countries 
             if item["overseas_region"] and item["overseas_region"]["id"] == value
         ]
-        return queryset.filter(export_country__in=countries)
+        return queryset.filter(export_country__in=countries_for_region)
 
 
 class BarrierList(generics.ListAPIView):
