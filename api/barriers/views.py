@@ -387,6 +387,10 @@ class BarrierInstanceHistory(GenericAPIView):
                             field = change.field
                             old_value = change.old
                             new_value = None
+                        if new_value and hasattr(new_value, '_meta'):
+                            new_value = model_to_dict(new_value)
+                        if old_value and hasattr(old_value, '_meta'):
+                            old_value = model_to_dict(old_value)
                         results.append(
                             {
                                 "date": new_record.history_date,
