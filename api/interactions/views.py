@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from oauth2_provider.contrib.rest_framework.permissions import (
@@ -50,10 +50,11 @@ class BarrierInteractionList(generics.ListCreateAPIView):
         barrier_obj.save()
 
 
-class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
+class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     Return details of a Barrier Interaction
-    Allows the barrier interaction to be updated as well
+    Allows the barrier interaction to be updated
+    and deleted (archive)
     """
 
     lookup_field = "pk"
@@ -72,3 +73,6 @@ class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
         else:
             serializer.save(modified_by=self.request.user)
         interaction.barrier.save()
+
+    def perform_destroy(self, instance):
+        instance.archive(self.request.user)
