@@ -18,6 +18,7 @@ report_stage_items = [
     }
 ]
 
+
 def add_report_stages(apps, schema_editor):
     Stage = apps.get_model("barriers", "Stage")
     for item in report_stage_items:
@@ -39,9 +40,5 @@ def add_report_stages(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("barriers", "0024_auto_20190131_1542"),
-    ]
-    operations = [
-        migrations.RunPython(add_report_stages),
-    ]
+    dependencies = [("barriers", "0024_auto_20190131_1542")]
+    operations = [migrations.RunPython(add_report_stages)]

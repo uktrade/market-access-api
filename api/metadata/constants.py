@@ -1,8 +1,8 @@
 from model_utils import Choices
 
 PROBLEM_STATUS_TYPES = Choices(
-    (1, "A problem that is blocking a specific export or investment"), 
-    (2, "A strategic barrier likely to affect multiple exports or sectors")
+    (1, "A problem that is blocking a specific export or investment"),
+    (2, "A strategic barrier likely to affect multiple exports or sectors"),
 )
 
 ESTIMATED_LOSS_RANGE = Choices(

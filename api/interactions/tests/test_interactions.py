@@ -1282,7 +1282,6 @@ class TestListInteractions(APITestMixin):
         get_int_response = self.api_client.get(get_interaction_url)
         assert get_int_response.status_code == status.HTTP_404_NOT_FOUND
 
-
     def test_archive_edited_interaction(self):
         """Test archiving an edited interaction"""
         list_report_url = reverse("list-reports")

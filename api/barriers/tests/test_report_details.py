@@ -650,10 +650,12 @@ class TestReportDetail(APITestMixin):
     def test_submit_stage_4_in_progress_problem_description(self):
         url = reverse("list-reports")
         response = self.api_client.post(
-            url, format="json", data={
+            url,
+            format="json",
+            data={
                 "is_resolved": True,
-                "problem_description": "Some problem_description"
-            }
+                "problem_description": "Some problem_description",
+            },
         )
 
         assert response.status_code == status.HTTP_201_CREATED

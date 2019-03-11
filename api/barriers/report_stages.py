@@ -45,13 +45,13 @@ REPORT_CONDITIONS = [
                 "value": "OTHER",
                 "non_null_field": "other_source",
                 "error_message": "other_source can not be null, when source is True",
-            },
+            }
         ],
     },
     {
         "stage": "1.5",
         "order": 5,
-        "required": ["problem_description",],
+        "required": ["problem_description"],
         "conditional": [
             {
                 "condition_field": "is_resolved",

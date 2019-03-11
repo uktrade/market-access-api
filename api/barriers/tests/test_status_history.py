@@ -165,10 +165,7 @@ class TestBarrierStatusHistory(APITestMixin):
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-10",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
         )
 
         url = reverse("status-history", kwargs={"pk": instance.id})
@@ -178,8 +175,14 @@ class TestBarrierStatusHistory(APITestMixin):
         assert len(response.data["history"]) == 1
         assert response.data["history"][0]["old_value"] == "2"
         assert response.data["history"][0]["new_value"] == "4"
-        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert (
+            response.data["history"][0]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
+        assert (
+            response.data["history"][0]["field_info"]["status_summary"]
+            == "dummy summary"
+        )
 
     def test_barrier_status_history_submitted_open_and_resolved_and_open(self):
         list_report_url = reverse("list-reports")
@@ -222,10 +225,7 @@ class TestBarrierStatusHistory(APITestMixin):
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-10",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
         )
 
         response = self.api_client.get(history_url)
@@ -234,14 +234,18 @@ class TestBarrierStatusHistory(APITestMixin):
         assert len(response.data["history"]) == 1
         assert response.data["history"][0]["old_value"] == "2"
         assert response.data["history"][0]["new_value"] == "4"
-        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert (
+            response.data["history"][0]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
+        assert (
+            response.data["history"][0]["field_info"]["status_summary"]
+            == "dummy summary"
+        )
 
         open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
-            open_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10"},
+            open_barrier_url, format="json", data={"status_date": "2018-09-10"}
         )
         assert open_barrier_response.status_code == status.HTTP_200_OK
 
@@ -251,11 +255,20 @@ class TestBarrierStatusHistory(APITestMixin):
         assert len(response.data["history"]) == 2
         assert response.data["history"][0]["old_value"] == "2"
         assert response.data["history"][0]["new_value"] == "4"
-        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert (
+            response.data["history"][0]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
+        assert (
+            response.data["history"][0]["field_info"]["status_summary"]
+            == "dummy summary"
+        )
         assert response.data["history"][1]["old_value"] == "4"
         assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert (
+            response.data["history"][1]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
         assert response.data["history"][1]["field_info"]["status_summary"] is None
 
     def test_barrier_status_history_submitted_open_and_hibernated(self):
@@ -299,10 +312,7 @@ class TestBarrierStatusHistory(APITestMixin):
         hibernate_barrier_response = self.api_client.put(
             hibernate_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-10",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
         )
         assert hibernate_barrier_response.status_code == status.HTTP_200_OK
 
@@ -313,8 +323,14 @@ class TestBarrierStatusHistory(APITestMixin):
         assert len(response.data["history"]) == 1
         assert response.data["history"][0]["old_value"] == "2"
         assert response.data["history"][0]["new_value"] == "5"
-        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert (
+            response.data["history"][0]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
+        assert (
+            response.data["history"][0]["field_info"]["status_summary"]
+            == "dummy summary"
+        )
 
     def test_barrier_status_history_submitted_open_and_hibernated_and_open(self):
         list_report_url = reverse("list-reports")
@@ -357,10 +373,7 @@ class TestBarrierStatusHistory(APITestMixin):
         hibernate_barrier_response = self.api_client.put(
             hibernate_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-10",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
         )
         assert hibernate_barrier_response.status_code == status.HTTP_200_OK
 
@@ -370,14 +383,18 @@ class TestBarrierStatusHistory(APITestMixin):
         assert len(response.data["history"]) == 1
         assert response.data["history"][0]["old_value"] == "2"
         assert response.data["history"][0]["new_value"] == "5"
-        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert (
+            response.data["history"][0]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
+        assert (
+            response.data["history"][0]["field_info"]["status_summary"]
+            == "dummy summary"
+        )
 
         open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
-            open_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10"},
+            open_barrier_url, format="json", data={"status_date": "2018-09-10"}
         )
         assert open_barrier_response.status_code == status.HTTP_200_OK
 
@@ -387,9 +404,18 @@ class TestBarrierStatusHistory(APITestMixin):
         assert len(response.data["history"]) == 2
         assert response.data["history"][0]["old_value"] == "2"
         assert response.data["history"][0]["new_value"] == "5"
-        assert response.data["history"][0]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
-        assert response.data["history"][0]["field_info"]["status_summary"] == "dummy summary"
+        assert (
+            response.data["history"][0]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
+        assert (
+            response.data["history"][0]["field_info"]["status_summary"]
+            == "dummy summary"
+        )
         assert response.data["history"][1]["old_value"] == "5"
         assert response.data["history"][1]["new_value"] == "2"
-        assert response.data["history"][1]["field_info"]["event"] == "BARRIER_STATUS_CHANGE"
+        assert (
+            response.data["history"][1]["field_info"]["event"]
+            == "BARRIER_STATUS_CHANGE"
+        )
         assert response.data["history"][1]["field_info"]["status_summary"] is None

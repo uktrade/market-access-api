@@ -18,22 +18,13 @@ from rest_framework.filters import OrderingFilter
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import (
-    filters,
-    generics,
-    status,
-    serializers,
-    viewsets,
-)
+from rest_framework import filters, generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.core.viewsets import CoreViewSet
-from api.barriers.models import (
-    BarrierInstance,
-    BarrierReportStage,
-)
+from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
     BarrierInstanceSerializer,
@@ -47,10 +38,7 @@ from api.metadata.constants import (
     TIMELINE_EVENTS,
 )
 
-from api.metadata.models import (
-    BarrierType,
-    BarrierPriority
-)
+from api.metadata.models import BarrierType, BarrierPriority
 from api.metadata.utils import get_os_regions_and_countries
 
 from api.interactions.models import Interaction
@@ -151,7 +139,7 @@ class BarrierReportBase(object):
 class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
     queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
-    filter_backends = (OrderingFilter, )
+    filter_backends = (OrderingFilter,)
     ordering_fields = ("created_on",)
     ordering = ("created_on",)
 
@@ -233,6 +221,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     priority: priority code, one or more comma seperated priority codes
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     """
+
     export_country = django_filters.BaseInFilter("export_country")
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
@@ -269,7 +258,9 @@ class BarrierFilterSet(django_filters.FilterSet):
         UNKNOWN = "UNKNOWN"
         priorities = BarrierPriority.objects.filter(code__in=value)
         if UNKNOWN in value:
-            return queryset.filter(Q(priority__isnull=True) | Q(priority__in=priorities))
+            return queryset.filter(
+                Q(priority__isnull=True) | Q(priority__in=priorities)
+            )
         else:
             return queryset.filter(priority__in=priorities)
 
@@ -281,10 +272,10 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         custom filter for retreiving barriers of all countries of an overseas region
         """
-        countries = cache.get_or_set('dh_countries', self._countries, 72000)
+        countries = cache.get_or_set("dh_countries", self._countries, 72000)
         countries_for_region = [
-            item["id"] 
-            for item in countries 
+            item["id"]
+            for item in countries
             if item["overseas_region"] and item["overseas_region"]["id"] in value
         ]
         return queryset.filter(export_country__in=countries_for_region)
@@ -331,7 +322,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
         serializer.save(
             barrier_type=barrier_type,
             priority=barrier_priority,
-            modified_by=self.request.user
+            modified_by=self.request.user,
         )
 
 
@@ -387,9 +378,9 @@ class BarrierInstanceHistory(GenericAPIView):
                             field = change.field
                             old_value = change.old
                             new_value = None
-                        if new_value and hasattr(new_value, '_meta'):
+                        if new_value and hasattr(new_value, "_meta"):
                             new_value = model_to_dict(new_value)
-                        if old_value and hasattr(old_value, '_meta'):
+                        if old_value and hasattr(old_value, "_meta"):
                             old_value = model_to_dict(old_value)
                         results.append(
                             {
@@ -438,7 +429,10 @@ class BarrierStatuseHistory(GenericAPIView):
                     for change in delta.changes:
                         if change.field in timeline_fields:
                             if change.field == "status":
-                                if not (change.old == 0 and (change.new == 2 or change.new == 4)):
+                                if not (
+                                    change.old == 0
+                                    and (change.new == 2 or change.new == 4)
+                                ):
                                     event = TIMELINE_REVERTED["Barrier Status Change"]
                                     status_change = {
                                         "date": new_record.history_date,
@@ -452,7 +446,7 @@ class BarrierStatuseHistory(GenericAPIView):
                                             "status_date": new_record.status_date,
                                             "status_summary": new_record.status_summary,
                                             "event": event,
-                                        }
+                                        },
                                     }
                             elif change.field == "priority":
                                 status_change = {
@@ -466,7 +460,7 @@ class BarrierStatuseHistory(GenericAPIView):
                                     "field_info": {
                                         "priority_date": new_record.priority_date,
                                         "priority_summary": new_record.priority_summary,
-                                    }
+                                    },
                                 }
                     if status_change:
                         results.append(status_change)

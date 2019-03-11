@@ -6,107 +6,64 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0020_auto_20181025_1545'),
-    ]
+    dependencies = [("barriers", "0020_auto_20181025_1545")]
 
     operations = [
+        migrations.RemoveField(model_name="barriercontributor", name="barrier"),
+        migrations.RemoveField(model_name="barriercontributor", name="contributor"),
+        migrations.RemoveField(model_name="barriercontributor", name="created_by"),
+        migrations.RemoveField(model_name="barriercontributor", name="modified_by"),
         migrations.RemoveField(
-            model_name='barriercontributor',
-            name='barrier',
-        ),
-        migrations.RemoveField(
-            model_name='barriercontributor',
-            name='contributor',
-        ),
-        migrations.RemoveField(
-            model_name='barriercontributor',
-            name='created_by',
+            model_name="historicalbarriercontributor", name="barrier"
         ),
         migrations.RemoveField(
-            model_name='barriercontributor',
-            name='modified_by',
+            model_name="historicalbarriercontributor", name="contributor"
         ),
         migrations.RemoveField(
-            model_name='historicalbarriercontributor',
-            name='barrier',
+            model_name="historicalbarriercontributor", name="created_by"
         ),
         migrations.RemoveField(
-            model_name='historicalbarriercontributor',
-            name='contributor',
+            model_name="historicalbarriercontributor", name="history_user"
         ),
         migrations.RemoveField(
-            model_name='historicalbarriercontributor',
-            name='created_by',
+            model_name="historicalbarriercontributor", name="modified_by"
         ),
         migrations.RemoveField(
-            model_name='historicalbarriercontributor',
-            name='history_user',
+            model_name="barrierinstance", name="commercial_sensitivities"
+        ),
+        migrations.RemoveField(model_name="barrierinstance", name="fta_infringement"),
+        migrations.RemoveField(
+            model_name="barrierinstance", name="has_legal_infringement"
         ),
         migrations.RemoveField(
-            model_name='historicalbarriercontributor',
-            name='modified_by',
+            model_name="barrierinstance", name="infringement_summary"
+        ),
+        migrations.RemoveField(model_name="barrierinstance", name="other_infringement"),
+        migrations.RemoveField(
+            model_name="barrierinstance", name="political_sensitivities"
+        ),
+        migrations.RemoveField(model_name="barrierinstance", name="wto_infringement"),
+        migrations.RemoveField(
+            model_name="historicalbarrierinstance", name="commercial_sensitivities"
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='commercial_sensitivities',
+            model_name="historicalbarrierinstance", name="fta_infringement"
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='fta_infringement',
+            model_name="historicalbarrierinstance", name="has_legal_infringement"
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='has_legal_infringement',
+            model_name="historicalbarrierinstance", name="infringement_summary"
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='infringement_summary',
+            model_name="historicalbarrierinstance", name="other_infringement"
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='other_infringement',
+            model_name="historicalbarrierinstance", name="political_sensitivities"
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='political_sensitivities',
+            model_name="historicalbarrierinstance", name="wto_infringement"
         ),
-        migrations.RemoveField(
-            model_name='barrierinstance',
-            name='wto_infringement',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='commercial_sensitivities',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='fta_infringement',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='has_legal_infringement',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='infringement_summary',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='other_infringement',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='political_sensitivities',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='wto_infringement',
-        ),
-        migrations.DeleteModel(
-            name='BarrierContributor',
-        ),
-        migrations.DeleteModel(
-            name='HistoricalBarrierContributor',
-        ),
+        migrations.DeleteModel(name="BarrierContributor"),
+        migrations.DeleteModel(name="HistoricalBarrierContributor"),
     ]

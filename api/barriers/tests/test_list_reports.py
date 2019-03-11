@@ -5,10 +5,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from freezegun import freeze_time
-from factory.fuzzy import (
-    FuzzyChoice,
-    FuzzyDate
-)
+from factory.fuzzy import FuzzyChoice, FuzzyDate
 
 from api.core.test_utils import APITestMixin, create_test_user
 from ..models import BarrierInstance
@@ -896,10 +893,12 @@ class TestListReports(APITestMixin):
     def test_list_reports_post_stage_4_in_progress_problem_description(self):
         url = reverse("list-reports")
         response = self.api_client.post(
-            url, format="json", data={
+            url,
+            format="json",
+            data={
                 "is_resolved": True,
-                "problem_description": "Some problem_description"
-            }
+                "problem_description": "Some problem_description",
+            },
         )
 
         assert response.status_code == status.HTTP_201_CREATED
@@ -977,7 +976,6 @@ class TestListReports(APITestMixin):
         ]
         assert stage_4[0]["status_desc"] == "IN PROGRESS"
 
-
     def test_list_reports_post_stage_4_completed_1(self):
         url = reverse("list-reports")
         response = self.api_client.post(
@@ -1022,7 +1020,6 @@ class TestListReports(APITestMixin):
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
         assert stage_4[0]["status_desc"] == "COMPLETED"
-
 
     def test_list_reports_post_stage_4_completed_2(self):
         url = reverse("list-reports")
@@ -1130,7 +1127,7 @@ class TestListReports(APITestMixin):
                 "source": "GOVT",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1
+                "eu_exit_related": 1,
             },
         )
 
@@ -1178,7 +1175,7 @@ class TestListReports(APITestMixin):
                 "source": "GOVT",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 2
+                "eu_exit_related": 2,
             },
         )
 
@@ -1226,7 +1223,7 @@ class TestListReports(APITestMixin):
                 "source": "GOVT",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 3
+                "eu_exit_related": 3,
             },
         )
 
@@ -1634,25 +1631,20 @@ class TestListReports(APITestMixin):
                         "resolved_date": date.strftime("%Y-%m-%d"),
                         "export_country": FuzzyChoice(countries).fuzz(),
                         "sectors_affected": True,
-                        "sectors": [
-                            FuzzyChoice(sectors).fuzz()
-                        ],
+                        "sectors": [FuzzyChoice(sectors).fuzz()],
                         "product": "Some product",
                         "source": "OTHER",
                         "other_source": "Other source",
                         "barrier_title": "Some title",
                         "problem_description": "Some problem_description",
                         "status_summary": "some status summary",
-                        "eu_exit_related": 1
+                        "eu_exit_related": 1,
                     },
                 )
 
                 assert list_report_response.status_code == status.HTTP_201_CREATED
 
-    @pytest.mark.parametrize("order_by", [
-        "created_on",
-        "-created_on"
-    ])
+    @pytest.mark.parametrize("order_by", ["created_on", "-created_on"])
     def test_list_reports_order_by_reported_on(self, order_by):
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
@@ -1663,8 +1655,7 @@ class TestListReports(APITestMixin):
         assert response.data["count"] == count
 
         url = TestUtils.reverse_querystring(
-            "list-reports",
-            query_kwargs={"ordering": order_by},
+            "list-reports", query_kwargs={"ordering": order_by}
         )
 
         status_response = self.api_client.get(url)

@@ -10,9 +10,7 @@ def import_api_results(endpoint):
     # Avoid calling DH
     fake_it = settings.FAKE_METADATA
     if fake_it:
-        file_path = os.path.join(
-            settings.BASE_DIR, f"static/{endpoint}.json"
-        )
+        file_path = os.path.join(settings.BASE_DIR, f"static/{endpoint}.json")
         return json.loads(open(file_path).read())
     base_url = URLObject(settings.DH_METADATA_URL)
     meta_url = base_url.relative(f"./{endpoint}/")
@@ -22,6 +20,7 @@ def import_api_results(endpoint):
         return response.json()
 
     return None
+
 
 def get_os_regions_and_countries():
     dh_countries = import_api_results("country")

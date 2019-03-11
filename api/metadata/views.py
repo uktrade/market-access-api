@@ -27,10 +27,7 @@ from api.metadata.constants import (
     SUPPORT_TYPE,
     TIMELINE_EVENTS,
 )
-from api.metadata.models import (
-    BarrierType,
-    BarrierPriority
-)
+from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers.models import Stage
 
 
@@ -65,11 +62,7 @@ class MetadataView(generics.GenericAPIView):
 
     def get_barrier_priorities(self):
         return [
-            {
-                "code": priority.code,
-                "name": priority.name,
-                "order": priority.order,
-            }
+            {"code": priority.code, "name": priority.name, "order": priority.order}
             for priority in BarrierPriority.objects.all()
         ]
 

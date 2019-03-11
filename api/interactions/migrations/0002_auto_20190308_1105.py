@@ -9,48 +9,61 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('interactions', '0001_initial'),
+        ("interactions", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalinteraction',
-            name='archived',
+            model_name="historicalinteraction",
+            name="archived",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='historicalinteraction',
-            name='archived_by',
-            field=models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL),
+            model_name="historicalinteraction",
+            name="archived_by",
+            field=models.ForeignKey(
+                blank=True,
+                db_constraint=False,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalinteraction',
-            name='archived_on',
+            model_name="historicalinteraction",
+            name="archived_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalinteraction',
-            name='archived_reason',
+            model_name="historicalinteraction",
+            name="archived_reason",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='interaction',
-            name='archived',
+            model_name="interaction",
+            name="archived",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='interaction',
-            name='archived_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL),
+            model_name="interaction",
+            name="archived_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='interaction',
-            name='archived_on',
+            model_name="interaction",
+            name="archived_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='interaction',
-            name='archived_reason',
+            model_name="interaction",
+            name="archived_reason",
             field=models.TextField(blank=True, null=True),
         ),
     ]

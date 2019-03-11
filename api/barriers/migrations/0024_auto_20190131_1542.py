@@ -5,19 +5,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0023_auto_20190116_0911'),
-    ]
+    dependencies = [("barriers", "0023_auto_20190116_0911")]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='next_steps_summary',
+            model_name="barrierinstance",
+            name="next_steps_summary",
             field=models.TextField(null=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='next_steps_summary',
+            model_name="historicalbarrierinstance",
+            name="next_steps_summary",
             field=models.TextField(null=True),
         ),
     ]

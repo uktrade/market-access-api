@@ -33,11 +33,7 @@ class InteractionManager(models.Manager):
     """ Manage barrier interactions within the model, with archived not False """
 
     def get_queryset(self):
-        return (
-            super(InteractionManager, self)
-            .get_queryset()
-            .filter(Q(archived=False))
-        )
+        return super(InteractionManager, self).get_queryset().filter(Q(archived=False))
 
 
 class Interaction(BaseModel, ArchivableModel):

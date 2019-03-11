@@ -270,10 +270,7 @@ class TestBarrierDetail(APITestMixin):
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-10",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
         )
 
         response = self.api_client.get(get_url)
@@ -322,10 +319,7 @@ class TestBarrierDetail(APITestMixin):
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-10",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
         )
 
         response = self.api_client.get(get_url)
@@ -376,10 +370,7 @@ class TestBarrierDetail(APITestMixin):
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-11",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-11", "status_summary": "dummy summary"},
         )
 
         response = self.api_client.get(get_url)
@@ -430,10 +421,7 @@ class TestBarrierDetail(APITestMixin):
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
-            data={
-                "status_date": "2018-09-11",
-                "status_summary": "dummy summary",
-            },
+            data={"status_date": "2018-09-11", "status_summary": "dummy summary"},
         )
 
         response = self.api_client.get(get_url)
@@ -482,18 +470,17 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
 
         edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={
-                "barrier_title": "a different title",
-            },
+            get_url, format="json", data={"barrier_title": "a different title"}
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
         assert edit_barrier_response.data["barrier_title"] == "a different title"
         assert edit_barrier_response.data["problem_status"] == 2
-        assert edit_barrier_response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        assert (
+            edit_barrier_response.data["export_country"]
+            == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        )
 
     def test_barrier_detail_edit_barrier_headline_2(self):
         list_report_url = reverse("list-reports")
@@ -538,17 +525,17 @@ class TestBarrierDetail(APITestMixin):
         edit_barrier_response = self.api_client.put(
             get_url,
             format="json",
-            data={
-                "problem_status": 1,
-                "barrier_title": "a different title",
-            },
+            data={"problem_status": 1, "barrier_title": "a different title"},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
         assert edit_barrier_response.data["barrier_title"] == "a different title"
         assert edit_barrier_response.data["problem_status"] == 1
-        assert edit_barrier_response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        assert (
+            edit_barrier_response.data["export_country"]
+            == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        )
 
     def test_barrier_detail_incorrect_problem_status(self):
         list_report_url = reverse("list-reports")
@@ -593,10 +580,7 @@ class TestBarrierDetail(APITestMixin):
         edit_barrier_response = self.api_client.put(
             get_url,
             format="json",
-            data={
-                "barrier_title": "a different title",
-                "problem_status": 3
-            },
+            data={"barrier_title": "a different title", "problem_status": 3},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_400_BAD_REQUEST
@@ -641,10 +625,7 @@ class TestBarrierDetail(APITestMixin):
         edit_barrier_response = self.api_client.put(
             get_url,
             format="json",
-            data={
-                "priority": "HIGH",
-                "priority_summary": "some priority summary",
-            },
+            data={"priority": "HIGH", "priority_summary": "some priority summary"},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
@@ -691,10 +672,7 @@ class TestBarrierDetail(APITestMixin):
         edit_barrier_response = self.api_client.put(
             get_url,
             format="json",
-            data={
-                "priority": "MEDIUM",
-                "priority_summary": "some priority summary",
-            },
+            data={"priority": "MEDIUM", "priority_summary": "some priority summary"},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
@@ -741,16 +719,12 @@ class TestBarrierDetail(APITestMixin):
         edit_barrier_response = self.api_client.put(
             get_url,
             format="json",
-            data={
-                "priority": "LOW",
-                "priority_summary": "some priority summary",
-            },
+            data={"priority": "LOW", "priority_summary": "some priority summary"},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
         assert edit_barrier_response.data["priority"]["code"] == "LOW"
-
 
     def test_barrier_detail_edit_priority_and_barrier_type(self):
         list_report_url = reverse("list-reports")
@@ -792,10 +766,7 @@ class TestBarrierDetail(APITestMixin):
         edit_barrier_response = self.api_client.put(
             get_url,
             format="json",
-            data={
-                "priority": "LOW",
-                "priority_summary": "some priority summary",
-            },
+            data={"priority": "LOW", "priority_summary": "some priority summary"},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
@@ -810,9 +781,9 @@ class TestBarrierDetail(APITestMixin):
             get_url,
             format="json",
             data={
-                "barrier_type":barrier_type.id,
-                "barrier_type_category":barrier_type.category
-            }
+                "barrier_type": barrier_type.id,
+                "barrier_type_category": barrier_type.category,
+            },
         )
 
         assert edit_type_response.status_code == status.HTTP_200_OK
@@ -821,7 +792,7 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["id"] == str(instance.id)
         assert response.data["barrier_type"]["id"] == barrier_type.id
         assert response.data["priority"]["code"] == "LOW"
-    
+
     def test_barrier_detail_edit_barrier_type_then_priority(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
@@ -867,9 +838,9 @@ class TestBarrierDetail(APITestMixin):
             get_url,
             format="json",
             data={
-                "barrier_type":barrier_type.id,
-                "barrier_type_category":barrier_type.category
-            }
+                "barrier_type": barrier_type.id,
+                "barrier_type_category": barrier_type.category,
+            },
         )
 
         assert edit_type_response.status_code == status.HTTP_200_OK
@@ -882,10 +853,7 @@ class TestBarrierDetail(APITestMixin):
         edit_barrier_response = self.api_client.put(
             get_url,
             format="json",
-            data={
-                "priority": "LOW",
-                "priority_summary": "some priority summary",
-            },
+            data={"priority": "LOW", "priority_summary": "some priority summary"},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
@@ -943,7 +911,6 @@ class TestBarrierDetail(APITestMixin):
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 1
-
 
     def test_barrier_detail_next_steps_as_note_not_added_400_bad_submit(self):
         list_report_url = reverse("list-reports")
