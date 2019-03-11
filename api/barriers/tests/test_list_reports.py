@@ -1653,7 +1653,7 @@ class TestListReports(APITestMixin):
         "created_on",
         "-created_on"
     ])
-    def test_list_barriers_order_by_reported_on(self, order_by):
+    def test_list_reports_order_by_reported_on(self, order_by):
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
         self.add_multiple_reports(count)
@@ -1669,8 +1669,8 @@ class TestListReports(APITestMixin):
 
         status_response = self.api_client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.all().order_by(order_by)
-        assert status_response.data["count"] == barriers.count()
+        reports = BarrierInstance.reports.all().order_by(order_by)
+        assert status_response.data["count"] == reports.count()
         response_list = [b["id"] for b in status_response.data["results"]]
-        db_list = [str(b.id) for b in barriers]
+        db_list = [str(b.id) for b in reports]
         assert response_list == db_list
