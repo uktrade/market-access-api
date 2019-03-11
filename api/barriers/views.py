@@ -285,7 +285,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         countries_for_region = [
             item["id"] 
             for item in countries 
-            if item["overseas_region"] and item["overseas_region"]["id"] == value
+            if item["overseas_region"] and item["overseas_region"]["id"] in value
         ]
         return queryset.filter(export_country__in=countries_for_region)
 
