@@ -67,8 +67,10 @@ class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         interaction = self.get_object()
         if "documents" in self.request.data:
-            docs_in_req = self.request.data.get("documents", [])
-            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
+            docs_in_req = self.request.data.get("documents", None)
+            documents = []
+            if docs_in_req:
+                documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
             serializer.save(documents=documents, modified_by=self.request.user)
         else:
             serializer.save(modified_by=self.request.user)
