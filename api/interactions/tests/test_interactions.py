@@ -1,3 +1,4 @@
+import json
 import uuid
 
 from rest_framework import status
@@ -1444,3 +1445,230 @@ class TestListInteractions(APITestMixin):
 
         get_int_response = self.api_client.get(get_interaction_url)
         assert get_int_response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_add_interactions_null_document(self):
+        """Test there is one interaction without pinning"""
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+
+        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
+
+        json_string = u'{"text": "sample interaction notes", "documents":null}'
+        add_int_response = self.api_client.post(
+            interactions_url, format="json", data=json.loads(json_string)
+        )
+
+        assert add_int_response.status_code == status.HTTP_201_CREATED
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 1
+        assert int_response.data["results"][0]["text"] == "sample interaction notes"
+        assert int_response.data["results"][0]["kind"] == "Comment"
+        assert int_response.data["results"][0]["pinned"] is False
+        assert int_response.data["results"][0]["is_active"] is True
+
+    def test_add_interactions_with_edit_text_clear_documents_with_null(self):
+        """Test add interaction with documents and edit to clear them"""
+        docs_list_url = reverse("barrier-documents")
+        docs_list_report_response = self.api_client.post(
+            docs_list_url, format="json", data={"original_filename": "somefile.pdf"}
+        )
+
+        assert docs_list_report_response.status_code == status.HTTP_201_CREATED
+        document_id = docs_list_report_response.data["id"]
+
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+
+        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
+
+        add_int_response = self.api_client.post(
+            interactions_url,
+            format="json",
+            data={"text": "sample interaction notes", "documents": [document_id]},
+        )
+
+        assert add_int_response.status_code == status.HTTP_201_CREATED
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 1
+        int_id = int_response.data["results"][0]["id"]
+
+        get_interaction_url = reverse("get-interaction", kwargs={"pk": int_id})
+        get_int_response = self.api_client.get(get_interaction_url)
+        assert get_int_response.status_code == status.HTTP_200_OK
+        assert get_int_response.data["text"] == "sample interaction notes"
+        assert get_int_response.data["kind"] == "Comment"
+        assert get_int_response.data["pinned"] is False
+        assert get_int_response.data["is_active"] is True
+        assert get_int_response.data["documents"] is not None
+        assert get_int_response.data["documents"][0]["id"] == uuid.UUID(document_id)
+
+        json_string = u'{"text": "edited sample interaction notes", "documents":null}'
+        edit_int_response = self.api_client.put(
+            get_interaction_url, format="json", data=json.loads(json_string)
+        )
+        assert edit_int_response.status_code == status.HTTP_200_OK
+
+        get_interaction_url = reverse("get-interaction", kwargs={"pk": int_id})
+        get_int_response = self.api_client.get(get_interaction_url)
+        assert get_int_response.status_code == status.HTTP_200_OK
+        assert get_int_response.data["text"] == "edited sample interaction notes"
+        assert get_int_response.data["documents"] == []
+
+    def test_add_interactions_with_clear_documents_with_null(self):
+        """Test add interaction with documents and edit to clear them"""
+        docs_list_url = reverse("barrier-documents")
+        docs_list_report_response = self.api_client.post(
+            docs_list_url, format="json", data={"original_filename": "somefile.pdf"}
+        )
+
+        assert docs_list_report_response.status_code == status.HTTP_201_CREATED
+        document_id = docs_list_report_response.data["id"]
+
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+
+        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
+
+        add_int_response = self.api_client.post(
+            interactions_url,
+            format="json",
+            data={"text": "sample interaction notes", "documents": [document_id]},
+        )
+
+        assert add_int_response.status_code == status.HTTP_201_CREATED
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 1
+        int_id = int_response.data["results"][0]["id"]
+
+        get_interaction_url = reverse("get-interaction", kwargs={"pk": int_id})
+        get_int_response = self.api_client.get(get_interaction_url)
+        assert get_int_response.status_code == status.HTTP_200_OK
+        assert get_int_response.data["text"] == "sample interaction notes"
+        assert get_int_response.data["kind"] == "Comment"
+        assert get_int_response.data["pinned"] is False
+        assert get_int_response.data["is_active"] is True
+        assert get_int_response.data["documents"] is not None
+        assert get_int_response.data["documents"][0]["id"] == uuid.UUID(document_id)
+
+        json_string = u'{"documents":null}'
+        edit_int_response = self.api_client.put(
+            get_interaction_url, format="json", data=json.loads(json_string)
+        )
+        assert edit_int_response.status_code == status.HTTP_200_OK
+
+        get_interaction_url = reverse("get-interaction", kwargs={"pk": int_id})
+        get_int_response = self.api_client.get(get_interaction_url)
+        assert get_int_response.status_code == status.HTTP_200_OK
+        assert get_int_response.data["text"] == "sample interaction notes"
+        assert get_int_response.data["documents"] == []
