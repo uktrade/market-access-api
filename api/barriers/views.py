@@ -222,13 +222,12 @@ class BarrierFilterSet(django_filters.FilterSet):
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     """
 
-    export_country = django_filters.BaseInFilter("export_country")
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
     barrier_type = django_filters.BaseInFilter("barrier_type")
     priority = django_filters.BaseInFilter(method="priority_filter")
-    overseas_region = django_filters.Filter(method="region_filter")
+    location = django_filters.Filter(method="location_filter")
 
     class Meta:
         model = BarrierInstance
@@ -268,17 +267,25 @@ class BarrierFilterSet(django_filters.FilterSet):
         dh_regions, dh_countries = get_os_regions_and_countries()
         return dh_countries
 
-    def region_filter(self, queryset, name, value):
+    def location_filter(self, queryset, name, value):
         """
-        custom filter for retreiving barriers of all countries of an overseas region
+        custom filter for retreiving barriers of all 
+        countries of an overseas region
+        + countries
+        + country_admin_areas
         """
+        print(f"location: {value}")
         countries = cache.get_or_set("dh_countries", self._countries, 72000)
         countries_for_region = [
             item["id"]
             for item in countries
             if item["overseas_region"] and item["overseas_region"]["id"] in value
         ]
-        return queryset.filter(export_country__in=countries_for_region)
+        return queryset.filter(
+            Q(export_country__in=countries_for_region) |
+            Q(export_country__in=value) |
+            Q(country_admin_areas__in=value)
+        )
 
 
 class BarrierList(generics.ListAPIView):

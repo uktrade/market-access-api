@@ -542,7 +542,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"export_country": "a05f66a0-5d95-e211-a939-e4115bead28a"},
+            query_kwargs={"location": "a05f66a0-5d95-e211-a939-e4115bead28a"},
         )
 
         response = self.api_client.get(url)
@@ -619,7 +619,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"export_country": "a05f66a0-5d95-e211-a939-e4115bead28a"},
+            query_kwargs={"location": "a05f66a0-5d95-e211-a939-e4115bead28a"},
         )
 
         response = self.api_client.get(url)
@@ -693,7 +693,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"export_country": "a05f66a0-5d95-e211-a939-e4115bead28a"},
+            query_kwargs={"location": "a05f66a0-5d95-e211-a939-e4115bead28a"},
         )
 
         response = self.api_client.get(url)
@@ -890,7 +890,7 @@ class TestListBarriers(APITestMixin):
         url = TestUtils.reverse_querystring(
             "list-barriers",
             query_kwargs={
-                "export_country": "a05f66a0-5d95-e211-a939-e4115bead28a",
+                "location": "a05f66a0-5d95-e211-a939-e4115bead28a",
                 "ordering": order_by,
             },
         )
@@ -1245,7 +1245,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"overseas_region": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
+            query_kwargs={"location": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
         )
 
         response = self.api_client.get(url)
@@ -1293,7 +1293,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"overseas_region": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
+            query_kwargs={"location": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
         )
 
         response = self.api_client.get(url)
@@ -1341,7 +1341,7 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"overseas_region": "12ed13cf-4b2c-4a46-b2f9-068e397d8c84"},
+            query_kwargs={"location": "12ed13cf-4b2c-4a46-b2f9-068e397d8c84"},
         )
 
         response = self.api_client.get(url)
@@ -1390,7 +1390,7 @@ class TestListBarriers(APITestMixin):
         url = TestUtils.reverse_querystring(
             "list-barriers",
             query_kwargs={
-                "overseas_region": "3e6809d6-89f6-4590-8458-1d0dab73ad1a,12ed13cf-4b2c-4a46-b2f9-068e397d8c84"
+                "location": "3e6809d6-89f6-4590-8458-1d0dab73ad1a,12ed13cf-4b2c-4a46-b2f9-068e397d8c84"
             },
         )
 
