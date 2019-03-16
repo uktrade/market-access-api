@@ -222,6 +222,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     """
 
+    export_country = django_filters.BaseInFilter("export_country")
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
@@ -269,22 +270,19 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def location_filter(self, queryset, name, value):
         """
-        custom filter for retreiving barriers of all 
-        countries of an overseas region
-        + countries
-        + country_admin_areas
+        custom filter for retreiving barriers of all countries of an overseas region
         """
-        print(f"location: {value}")
         countries = cache.get_or_set("dh_countries", self._countries, 72000)
+        items = value.split(',')
         countries_for_region = [
             item["id"]
             for item in countries
-            if item["overseas_region"] and item["overseas_region"]["id"] in value
+            if item["overseas_region"] and item["overseas_region"]["id"] in items
         ]
         return queryset.filter(
+            Q(export_country__in=items) |
             Q(export_country__in=countries_for_region) |
-            Q(export_country__in=value) |
-            Q(country_admin_areas__in=value)
+            Q(country_admin_areas__overlap=items)
         )
 
 

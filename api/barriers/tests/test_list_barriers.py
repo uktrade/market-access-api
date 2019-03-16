@@ -1397,3 +1397,79 @@ class TestListBarriers(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
+
+    def test_list_barriers_get_barriers_multiple_overseas_region_filter_2(self):
+        """
+        Test all in Europe and South Asia, except one
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "ab5f66a0-5d95-e211-a939-e4115bead28a",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "GOVT",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "eu_exit_related": 3,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance_id = list_report_response.data["id"]
+        submit_url = reverse("submit-report", kwargs={"pk": instance_id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "0809e385-9e9f-4a55-b121-e85cf865ca99",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "GOVT",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "eu_exit_related": 3,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance_id = list_report_response.data["id"]
+        submit_url = reverse("submit-report", kwargs={"pk": instance_id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 12
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={
+                "location": "3e6809d6-89f6-4590-8458-1d0dab73ad1a,12ed13cf-4b2c-4a46-b2f9-068e397d8c84"
+            },
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 11
