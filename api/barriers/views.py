@@ -214,15 +214,14 @@ class BarrierFilterSet(django_filters.FilterSet):
         sector=af959812-6095-e211-a939-e4115bead28a,9538cecc-5f95-e211-a939-e4115bead28a
     status: int, one or more status id's.
         ex: status=1 or status=1,2
-    export_country: UUID, one or more comma seperated country UUIDs
+    location: UUID, one or more comma seperated overseas region/country/state UUIDs
         ex: 
-        export_country=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc
-        export_country=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc,955f66a0-5d95-e211-a939-e4115bead28a
+        location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc
+        location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc,955f66a0-5d95-e211-a939-e4115bead28a
     priority: priority code, one or more comma seperated priority codes
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     """
 
-    export_country = django_filters.BaseInFilter("export_country")
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
