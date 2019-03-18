@@ -1672,3 +1672,112 @@ class TestListInteractions(APITestMixin):
         assert get_int_response.status_code == status.HTTP_200_OK
         assert get_int_response.data["text"] == "sample interaction notes"
         assert get_int_response.data["documents"] == []
+
+    def test_add_interactions_with_document_check_deleting_document(self):
+        """
+        Test add interaction with a document
+        Attempt to delete the document while it was attached
+        to an interaction
+        """
+        docs_list_url = reverse("barrier-documents")
+        docs_list_report_response = self.api_client.post(
+            docs_list_url, format="json", data={"original_filename": "somefile.pdf"}
+        )
+
+        assert docs_list_report_response.status_code == status.HTTP_201_CREATED
+        document_id = docs_list_report_response.data["id"]
+
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+
+        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
+
+        add_int_response = self.api_client.post(
+            interactions_url,
+            format="json",
+            data={"text": "sample interaction notes", "documents": [document_id]},
+        )
+
+        assert add_int_response.status_code == status.HTTP_201_CREATED
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 1
+        int_id = int_response.data["results"][0]["id"]
+
+        get_interaction_url = reverse("get-interaction", kwargs={"pk": int_id})
+        get_int_response = self.api_client.get(get_interaction_url)
+        assert get_int_response.status_code == status.HTTP_200_OK
+        assert get_int_response.data["text"] == "sample interaction notes"
+        assert get_int_response.data["kind"] == "Comment"
+        assert get_int_response.data["pinned"] is False
+        assert get_int_response.data["is_active"] is True
+        assert get_int_response.data["documents"] is not None
+        assert get_int_response.data["documents"][0]["id"] == uuid.UUID(document_id)
+
+        get_doc_url = reverse(
+            "barrier-document-item",
+            kwargs={"entity_document_pk": document_id}
+        )
+        get_doc_response = self.api_client.get(get_doc_url)
+        assert get_doc_response.status_code == status.HTTP_200_OK
+
+        get_doc_response = self.api_client.delete(get_doc_url)
+        assert get_doc_response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_check_deleting_document_when_not_attached_to_interaction(self):
+        """
+        Test deleting a document when it was not attached to an interaction
+        """
+        docs_list_url = reverse("barrier-documents")
+        docs_list_report_response = self.api_client.post(
+            docs_list_url, format="json", data={"original_filename": "somefile.pdf"}
+        )
+
+        assert docs_list_report_response.status_code == status.HTTP_201_CREATED
+        document_id = docs_list_report_response.data["id"]
+
+        get_doc_url = reverse(
+            "barrier-document-item",
+            kwargs={"entity_document_pk": document_id}
+        )
+        get_doc_response = self.api_client.get(get_doc_url)
+        assert get_doc_response.status_code == status.HTTP_200_OK
+
+        get_doc_response = self.api_client.delete(get_doc_url)
+        assert get_doc_response.status_code == status.HTTP_204_NO_CONTENT

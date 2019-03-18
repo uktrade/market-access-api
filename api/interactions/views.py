@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from oauth2_provider.contrib.rest_framework.permissions import (
@@ -21,6 +22,13 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
 
     serializer_class = DocumentSerializer
     queryset = Document.objects.all()
+
+    def perform_destroy(self, instance):
+        active_int = Interaction.objects.filter(documents=str(instance.pk))
+        if active_int.count() > 0:
+            raise ValidationError()
+        return super().perform_destroy(instance)
+
 
 
 class BarrierInteractionList(generics.ListCreateAPIView):
