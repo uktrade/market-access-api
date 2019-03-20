@@ -113,6 +113,9 @@ class BarrierInstance(BaseModel, ArchivableModel):
     next_steps_summary = models.TextField(null=True)
     eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
+    barrier_types = models.ManyToManyField(
+        BarrierType, related_name="barrier_types", help_text="Barrier types"
+    )
     barrier_type = models.ForeignKey(
         BarrierType,
         null=True,
