@@ -229,5 +229,23 @@
             "name": "Africa",
             "id": "8d4c4f31-06ce-4320-8e2f-1c13559e125f"
         }
+    },
+    {
+        "id": "81756b9a-5d95-e211-a939-e4115bead28a",
+        "name": "United States",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "North America",
+            "id": "fdfbbc8d-0e8a-479a-b10f-4979d582ff87"
+        }
+    },
+    {
+        "id": "75e337c3-23c9-4294-8085-6b1e8c43eb07",
+        "name": "Alberta",
+        "disabled_on": null,
+        "country": {
+            "name": "Canada",
+            "id": "5daf72a6-5d95-e211-a939-e4115bead28a"
+        }
     }
 ]
