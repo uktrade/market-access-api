@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
 
 from simple_history.models import HistoricalRecords
@@ -28,7 +29,14 @@ class Document(AbstractEntityDocumentModel):
         )
 
 
-class Interaction(BaseModel):
+class InteractionManager(models.Manager):
+    """ Manage barrier interactions within the model, with archived not False """
+
+    def get_queryset(self):
+        return super(InteractionManager, self).get_queryset().filter(Q(archived=False))
+
+
+class Interaction(BaseModel, ArchivableModel):
     """ Interaction records for each Barrier """
 
     barrier = models.ForeignKey(
@@ -44,6 +52,8 @@ class Interaction(BaseModel):
     )
 
     history = HistoricalRecords()
+
+    objects = InteractionManager()
 
     @property
     def created_user(self):

@@ -38,7 +38,9 @@ urlpatterns = [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path(
-        "barriers/<uuid:pk>/full_history", BarrierInstanceHistory.as_view(), name="history"
+        "barriers/<uuid:pk>/full_history",
+        BarrierInstanceHistory.as_view(),
+        name="history",
     ),
     path(
         "barriers/<uuid:pk>/history",

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404, render
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from oauth2_provider.contrib.rest_framework.permissions import (
@@ -21,6 +22,13 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
 
     serializer_class = DocumentSerializer
     queryset = Document.objects.all()
+
+    def perform_destroy(self, instance):
+        active_int = Interaction.objects.filter(documents=str(instance.pk))
+        if active_int.count() > 0:
+            raise ValidationError()
+        return super().perform_destroy(instance)
+
 
 
 class BarrierInteractionList(generics.ListCreateAPIView):
@@ -50,10 +58,11 @@ class BarrierInteractionList(generics.ListCreateAPIView):
         barrier_obj.save()
 
 
-class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
+class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     Return details of a Barrier Interaction
-    Allows the barrier interaction to be updated as well
+    Allows the barrier interaction to be updated
+    and deleted (archive)
     """
 
     lookup_field = "pk"
@@ -66,9 +75,14 @@ class BarrierIneractionDetail(generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         interaction = self.get_object()
         if "documents" in self.request.data:
-            docs_in_req = self.request.data.get("documents", [])
-            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
+            docs_in_req = self.request.data.get("documents", None)
+            documents = []
+            if docs_in_req:
+                documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
             serializer.save(documents=documents, modified_by=self.request.user)
         else:
             serializer.save(modified_by=self.request.user)
         interaction.barrier.save()
+
+    def perform_destroy(self, instance):
+        instance.archive(self.request.user)

@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.shortcuts import render
 
@@ -7,7 +9,7 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .utils import import_api_results
+from .utils import import_api_results, get_os_regions_and_countries
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
@@ -25,10 +27,7 @@ from api.metadata.constants import (
     SUPPORT_TYPE,
     TIMELINE_EVENTS,
 )
-from api.metadata.models import (
-    BarrierType,
-    BarrierPriority
-)
+from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers.models import Stage
 
 
@@ -63,11 +62,7 @@ class MetadataView(generics.GenericAPIView):
 
     def get_barrier_priorities(self):
         return [
-            {
-                "code": priority.code,
-                "name": priority.name,
-                "order": priority.order,
-            }
+            {"code": priority.code, "name": priority.name, "order": priority.order}
             for priority in BarrierPriority.objects.all()
         ]
 
@@ -94,7 +89,8 @@ class MetadataView(generics.GenericAPIView):
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
         timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
 
-        dh_countries = import_api_results("country")
+        dh_os_regions, dh_countries = get_os_regions_and_countries()
+        dh_admin_areas = import_api_results("administrative-area")
         dh_sectors = import_api_results("sector")
 
         report_stages = self.get_reporting_stages()
@@ -113,7 +109,9 @@ class MetadataView(generics.GenericAPIView):
             "report_stages": report_stages,
             "support_type": support_type,
             "barrier_types": barrier_types,
+            "overseas_regions": dh_os_regions,
             "countries": dh_countries,
+            "country_admin_areas": dh_admin_areas,
             "sectors": dh_sectors,
             "barrier_status": barrier_status,
             "barrier_type_categories": barrier_type_cat,

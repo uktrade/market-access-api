@@ -37,6 +37,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "status_date",
             "resolved_date",
             "export_country",
+            "country_admin_areas",
             "sectors_affected",
             "sectors",
             "product",
@@ -50,7 +51,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "created_by",
             "created_on",
             "modified_by",
-            "modified_on"
+            "modified_on",
         )
         read_only_fields = (
             "id",
@@ -59,9 +60,8 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "status_date",
             "progress",
             "created_by",
-            "created_on"
-            "modified_by",
-            "modified_on"
+            "created_on" "modified_by",
+            "modified_on",
         )
 
     def get_created_by(self, obj):
@@ -89,13 +89,14 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "sectors_affected",
             "sectors",
             "export_country",
+            "country_admin_areas",
             "eu_exit_related",
             "current_status",
             "priority",
             "barrier_type",
             "barrier_type_category",
             "created_on",
-            "modified_on"
+            "modified_on",
         )
 
     def get_reported_by(self, obj):
@@ -118,11 +119,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
                 "order": obj.priority.order,
             }
         else:
-            return {
-                "code": "UNKNOWN",
-                "name": "Unknown",
-                "order": 0,
-            }
+            return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
 
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
@@ -143,6 +140,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "is_resolved",
             "resolved_date",
             "export_country",
+            "country_admin_areas",
             "sectors_affected",
             "sectors",
             "companies",
@@ -211,11 +209,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 "order": obj.priority.order,
             }
         else:
-            return {
-                "code": "UNKNOWN",
-                "name": "Unknown",
-                "order": 0,
-            }
+            return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):

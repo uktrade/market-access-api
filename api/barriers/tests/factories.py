@@ -4,12 +4,10 @@ from django.utils.timezone import now
 
 import factory
 from freezegun import freeze_time
-from factory.fuzzy import (
-    FuzzyChoice,
-    FuzzyDate
-)
+from factory.fuzzy import FuzzyChoice, FuzzyDate
 
 from api.barriers.models import BarrierInstance
+
 
 class UnresolvedReportFactory(factory.django.DjangoModelFactory):
     sectors = [
@@ -28,9 +26,7 @@ class UnresolvedReportFactory(factory.django.DjangoModelFactory):
     is_resolved = False
     export_country = FuzzyChoice(countries).fuzz()
     sectors_affected = True
-    sectors = [
-        FuzzyChoice(sectors).fuzz()
-    ]
+    sectors = [FuzzyChoice(sectors).fuzz()]
     product = "Some product"
     source = "OTHER"
     other_source = "Other source"

@@ -47,16 +47,12 @@ class BarrierType(models.Model):
         return self.title
 
     def toJSON(self):
-        return json.dumps(
-            self,
-            default=lambda o: o.__dict__,
-            sort_keys=True,
-            indent=4
-        )
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 class BarrierPriority(models.Model):
     """ Model representing Priority to be set for each Barrier """
+
     code = models.CharField(max_length=10, null=False, unique=True)
     name = models.CharField(max_length=25)
     order = models.IntegerField(null=False)
@@ -68,9 +64,4 @@ class BarrierPriority(models.Model):
         return self.code
 
     def toJSON(self):
-        return json.dumps(
-            self,
-            default=lambda o: o.__dict__,
-            sort_keys=True,
-            indent=4
-        )
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

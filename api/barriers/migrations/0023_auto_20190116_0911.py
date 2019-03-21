@@ -5,53 +5,52 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0022_auto_20181205_2305'),
-    ]
+    dependencies = [("barriers", "0022_auto_20181205_2305")]
 
     operations = [
+        migrations.RemoveField(model_name="barrierinteraction", name="barrier"),
+        migrations.RemoveField(model_name="barrierinteraction", name="created_by"),
+        migrations.RemoveField(model_name="barrierinteraction", name="modified_by"),
         migrations.RemoveField(
-            model_name='barrierinteraction',
-            name='barrier',
+            model_name="historicalbarrierinteraction", name="barrier"
         ),
         migrations.RemoveField(
-            model_name='barrierinteraction',
-            name='created_by',
+            model_name="historicalbarrierinteraction", name="created_by"
         ),
         migrations.RemoveField(
-            model_name='barrierinteraction',
-            name='modified_by',
+            model_name="historicalbarrierinteraction", name="history_user"
         ),
         migrations.RemoveField(
-            model_name='historicalbarrierinteraction',
-            name='barrier',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinteraction',
-            name='created_by',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinteraction',
-            name='history_user',
-        ),
-        migrations.RemoveField(
-            model_name='historicalbarrierinteraction',
-            name='modified_by',
+            model_name="historicalbarrierinteraction", name="modified_by"
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='problem_status',
-            field=models.PositiveIntegerField(choices=[(1, 'A problem that is blocking a specific export or investment'), (2, 'A strategic barrier likely to affect multiple exports or sectors')], null=True),
+            model_name="barrierinstance",
+            name="problem_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "A problem that is blocking a specific export or investment"),
+                    (
+                        2,
+                        "A strategic barrier likely to affect multiple exports or sectors",
+                    ),
+                ],
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='problem_status',
-            field=models.PositiveIntegerField(choices=[(1, 'A problem that is blocking a specific export or investment'), (2, 'A strategic barrier likely to affect multiple exports or sectors')], null=True),
+            model_name="historicalbarrierinstance",
+            name="problem_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "A problem that is blocking a specific export or investment"),
+                    (
+                        2,
+                        "A strategic barrier likely to affect multiple exports or sectors",
+                    ),
+                ],
+                null=True,
+            ),
         ),
-        migrations.DeleteModel(
-            name='BarrierInteraction',
-        ),
-        migrations.DeleteModel(
-            name='HistoricalBarrierInteraction',
-        ),
+        migrations.DeleteModel(name="BarrierInteraction"),
+        migrations.DeleteModel(name="HistoricalBarrierInteraction"),
     ]

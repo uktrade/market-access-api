@@ -2,131 +2,277 @@
     {
         "id": "35e5630c-01b5-4bd0-a599-428d4fa596b5",
         "name": "Saint Martin",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": null
     },
     {
         "id": "10727c65-96c6-42a1-96c1-9e2158f9a935",
         "name": "China",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
         "name": "Yemen",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Middle East",
+            "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
+        }
     },
     {
         "id": "0809e385-9e9f-4a55-b121-e85cf865ca99",
         "name": "Turkmenistan",
-        "disabled_on": "Wed Jul 12 2017 08:39:11 GMT+0100 (BST)"
+        "disabled_on": "Wed Jul 12 2017 08:39:11 GMT+0100 (BST)",
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "b5b3a03c-c860-40b8-b94f-00d49a3d518b",
         "name": "Mozambique",
-        "disabled_on": "Mon Aug 07 2017 10:18:22 GMT+0100 (BST)"
+        "disabled_on": "Mon Aug 07 2017 10:18:22 GMT+0100 (BST)",
+        "overseas_region": {
+            "name": "Africa",
+            "id": "8d4c4f31-06ce-4320-8e2f-1c13559e125f"
+        }
     },
     {
         "id": "74bb67d0-bc5d-4518-825c-553b7c375c9e",
         "name": "Haiti",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Latin America",
+            "id": "5616ccf5-ab4a-4c2c-9624-13c69be3c46b"
+        }
     },
     {
         "id": "4bcbf6b2-6e26-40c1-949f-9644b787f9b0",
         "name": "Afghanistan",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "5823f2e1-135c-4e1d-a26e-a6632702cb1c",
         "name": "Timor-Leste",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Africa",
+            "id": "8d4c4f31-06ce-4320-8e2f-1c13559e125f"
+        }
     },
     {
         "id": "4020b8dc-f3fe-4d85-b088-ca4fe3f29702",
         "name": "Bhutan",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
         "name": "Bahamas",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Latin America",
+            "id": "5616ccf5-ab4a-4c2c-9624-13c69be3c46b"
+        }
     },
     {
         "id": "4fda3a62-89fb-4b9c-8f4c-0f39807d2714",
         "name": "Saint Vincent and the Grenadines",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Latin America",
+            "id": "5616ccf5-ab4a-4c2c-9624-13c69be3c46b"
+        }
     },
     {
         "id": "5473e458-b4ea-4bd3-a0ce-dc2ad1ba5241",
         "name": "Kyrgyz Republic",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "9ee0c223-b16b-4a97-8002-06f055cad486",
         "name": "Papua New Guinea",
-        "disabled_on": "Sun Feb 04 2018 21:01:24 GMT+0000 (GMT)"
+        "disabled_on": "Sun Feb 04 2018 21:01:24 GMT+0000 (GMT)",
+        "overseas_region": {
+            "name": "Latin America",
+            "id": "5616ccf5-ab4a-4c2c-9624-13c69be3c46b"
+        }
     },
     {
         "id": "4dd001fa-8920-4449-9178-568a194b854c",
         "name": "Latvia",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Europe",
+            "id": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        }
     },
     {
         "id": "94faca39-6154-428c-9e2a-43833c463629",
         "name": "Turks and Caicos Islands",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "106f8d36-bf8a-430e-8dda-d06203e5e746",
         "name": "Christmas Island",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Europe",
+            "id": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        }
     },
     {
         "id": "584bb6ca-cab1-4f26-bb24-b1934776962c",
         "name": "Barbados",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "407021c0-c1b4-4483-bbb9-82b255e5e377",
         "name": "Bahrain",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "f5de3947-8824-47f6-8c62-2f6cb02e87f6",
         "name": "Syrian Arab Republic",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "080de327-d730-4960-8adf-add5b37aa861",
         "name": "Pakistan",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "b12359aa-63ad-4b93-99b9-fe875a6f7f77",
         "name": "Equatorial Guinea",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Africa",
+            "id": "8d4c4f31-06ce-4320-8e2f-1c13559e125f"
+        }
     },
     {
         "id": "f64fadee-2421-473d-aa26-b21473956592",
         "name": "American Samoa",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "80ed8ec4-bc5a-44b6-8e28-0ddf2c0b7659",
         "name": "Puerto Rico",
-        "disabled_on": "Thu Jan 11 2018 23:22:15 GMT+0000 (GMT)"
+        "disabled_on": "Thu Jan 11 2018 23:22:15 GMT+0000 (GMT)",
+        "overseas_region": {
+            "name": "Asia-Pacific",
+            "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+        }
     },
     {
         "id": "9caa50af-3db7-42ad-af52-273fb32ddfe4",
         "name": "Central African Republic",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Africa",
+            "id": "8d4c4f31-06ce-4320-8e2f-1c13559e125f"
+        }
     },
     {
         "id": "9fb02b6b-a73e-4167-8f40-445b6f124091",
         "name": "Sudan",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Africa",
+            "id": "8d4c4f31-06ce-4320-8e2f-1c13559e125f"
+        }
     },
     {
         "id": "0404c3fb-8b96-425a-a211-a4b9438fcb58",
         "name": "Sao Tome and Principe",
-        "disabled_on": null
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Africa",
+            "id": "8d4c4f31-06ce-4320-8e2f-1c13559e125f"
+        }
+    },
+    {
+        "id": "81756b9a-5d95-e211-a939-e4115bead28a",
+        "name": "United States",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "North America",
+            "id": "fdfbbc8d-0e8a-479a-b10f-4979d582ff87"
+        }
+    },
+    {
+        "id": "a05f66a0-5d95-e211-a939-e4115bead28a",
+        "name": "Austria",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Europe",
+            "id": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        }
+    },
+    {
+        "id": "a75f66a0-5d95-e211-a939-e4115bead28a",
+        "name": "Belgium",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Europe",
+            "id": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        }
+    },
+    {
+        "id": "ad5f66a0-5d95-e211-a939-e4115bead28a",
+        "name": "Bosnia and Herzegovina",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Europe",
+            "id": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        }
+    },
+    {
+        "id": "ab5f66a0-5d95-e211-a939-e4115bead28a",
+        "name": "Bhutan",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "South Asia",
+            "id": "12ed13cf-4b2c-4a46-b2f9-068e397d8c84"
+        }
     }
 ]

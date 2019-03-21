@@ -20,10 +20,7 @@ from api.metadata.constants import (
     STAGE_STATUS,
 )
 from api.core.models import ArchivableModel, BaseModel
-from api.metadata.models import (
-    BarrierType,
-    BarrierPriority
-)
+from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -75,17 +72,34 @@ class BarrierInstance(BaseModel, ArchivableModel):
         help_text="readable reference code",
     )
     problem_status = models.PositiveIntegerField(
-        choices=PROBLEM_STATUS_TYPES, null=True
+        choices=PROBLEM_STATUS_TYPES,
+        null=True,
+        help_text="type of problem, long term or short term",
     )
 
     is_resolved = models.NullBooleanField()
     resolved_date = models.DateField(null=True, default=None)
 
     export_country = models.UUIDField(null=True)
+    country_admin_areas = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        null=True,
+        default=None,
+        help_text="list of states, provinces, regions etc within a country",
+    )
 
     sectors_affected = models.NullBooleanField()
-    sectors = ArrayField(models.UUIDField(), blank=True, null=True, default=None)
-    companies = JSONField(null=True, default=None)
+    sectors = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        null=True,
+        default=None,
+        help_text="list of sectors that are affected",
+    )
+    companies = JSONField(
+        null=True, default=None, help_text="list of companies that are affected"
+    )
 
     product = models.CharField(max_length=MAX_LENGTH, null=True)
     source = models.CharField(
@@ -97,10 +111,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(null=True)
-    eu_exit_related = models.PositiveIntegerField(
-        choices=ADV_BOOLEAN,
-        null=True
-    )
+    eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
     barrier_type = models.ForeignKey(
         BarrierType,

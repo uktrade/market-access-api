@@ -5,19 +5,21 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0026_auto_20190205_2329'),
-    ]
+    dependencies = [("barriers", "0026_auto_20190205_2329")]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='eu_exit_related',
-            field=models.PositiveIntegerField(choices=[(1, 'Yes'), (2, 'No'), (3, "Don't know")], null=True),
+            model_name="barrierinstance",
+            name="eu_exit_related",
+            field=models.PositiveIntegerField(
+                choices=[(1, "Yes"), (2, "No"), (3, "Don't know")], null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='eu_exit_related',
-            field=models.PositiveIntegerField(choices=[(1, 'Yes'), (2, 'No'), (3, "Don't know")], null=True),
+            model_name="historicalbarrierinstance",
+            name="eu_exit_related",
+            field=models.PositiveIntegerField(
+                choices=[(1, "Yes"), (2, "No"), (3, "Don't know")], null=True
+            ),
         ),
     ]

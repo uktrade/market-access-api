@@ -5,19 +5,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('barriers', '0025_auto_20190131_1557'),
-    ]
+    dependencies = [("barriers", "0025_auto_20190131_1557")]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='eu_exit_related',
+            model_name="barrierinstance",
+            name="eu_exit_related",
             field=models.NullBooleanField(),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='eu_exit_related',
+            model_name="historicalbarrierinstance",
+            name="eu_exit_related",
             field=models.NullBooleanField(),
         ),
     ]
