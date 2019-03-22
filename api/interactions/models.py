@@ -18,6 +18,7 @@ class Document(AbstractEntityDocumentModel):
 
     size = models.IntegerField(null=True)
     mime_type = models.CharField(max_length=MAX_LENGTH, null=True)
+    detached = models.BooleanField(default=False)
 
     history = HistoricalRecords()
 

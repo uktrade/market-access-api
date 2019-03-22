@@ -24,11 +24,21 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
     queryset = Document.objects.all()
 
     def perform_destroy(self, instance):
+        """
+        Customise document delete,
+        if it was attached to a notes, just detach it and mark as detached
+        if it was detached already, skip it
+        only if was never attached to any notes, delete it from S3
+        """
+        doc = Document.objects.get(id=str(instance.pk))
         try:
-            active_int = Interaction.objects.get(documents=str(instance.pk))
+            active_int = Interaction.objects.get(documents=doc.id)
             active_int.documents.remove(instance)
+            instance.detached = True
+            instance.save()
         except Interaction.DoesNotExist:
-            return super().perform_destroy(instance)
+            if not doc.detached:
+                return super().perform_destroy(instance)
 
 
 class BarrierInteractionList(generics.ListCreateAPIView):
