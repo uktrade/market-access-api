@@ -1758,7 +1758,7 @@ class TestListInteractions(APITestMixin):
         assert get_doc_response.status_code == status.HTTP_200_OK
 
         get_doc_response = self.api_client.delete(get_doc_url)
-        assert get_doc_response.status_code == status.HTTP_400_BAD_REQUEST
+        assert get_doc_response.status_code == status.HTTP_204_NO_CONTENT
 
     def test_check_deleting_document_when_not_attached_to_interaction(self):
         """

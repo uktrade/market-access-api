@@ -24,11 +24,11 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
     queryset = Document.objects.all()
 
     def perform_destroy(self, instance):
-        active_int = Interaction.objects.filter(documents=str(instance.pk))
-        if active_int.count() > 0:
-            raise ValidationError()
-        return super().perform_destroy(instance)
-
+        try:
+            active_int = Interaction.objects.get(documents=str(instance.pk))
+            active_int.documents.remove(instance)
+        except Interaction.DoesNotExist:
+            return super().perform_destroy(instance)
 
 
 class BarrierInteractionList(generics.ListCreateAPIView):
