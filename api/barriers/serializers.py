@@ -127,7 +127,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
     current_status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
-    barrier_type = serializers.SerializerMethodField()
+    barrier_types = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
 
@@ -149,8 +149,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "other_source",
             "barrier_title",
             "problem_description",
-            "barrier_type",
-            "barrier_type_category",
+            "barrier_types",
             "reported_on",
             "reported_by",
             "current_status",
@@ -182,16 +181,17 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def get_modified_by(self, obj):
         return obj.modified_user
 
-    def get_barrier_type(self, obj):
-        if obj.barrier_type is None:
+    def get_barrier_types(self, obj):
+        if obj.barrier_types is None:
             return None
-        else:
-            return {
-                "id": obj.barrier_type.id,
-                "title": obj.barrier_type.title,
-                "description": obj.barrier_type.description,
-                "category": obj.barrier_type_category,
+
+        return [
+            {
+                "title": barrier_type.title,
+                "category": barrier_type.category,
             }
+            for barrier_type in obj.barrier_types.all()
+        ]
 
     def get_current_status(self, obj):
         return {
