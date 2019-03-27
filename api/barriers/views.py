@@ -157,17 +157,17 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 
     @transaction.atomic()
     def perform_create(self, serializer):
-        # barrier_types_in_req = self.request.data.get("barrier_types", None)
-        # barrier_types = []
-        # if barrier_types_in_req:
-        #     barrier_types = [get_object_or_404(BarrierType, pk=id) for id in barrier_types_in_req]
-        #     serializer.save(
-        #         barrier_types=barrier_types,
-        #         created_by=self.request.user,
-        #     )
-        # else:
-        #     serializer.save(created_by=self.request.user)
-        # self._update_stages(serializer, self.request.user)
+        barrier_types_in_req = self.request.data.get("barrier_types", None)
+        barrier_types = []
+        if barrier_types_in_req:
+            barrier_types = [get_object_or_404(BarrierType, pk=id) for id in barrier_types_in_req]
+            serializer.save(
+                barrier_types=barrier_types,
+                created_by=self.request.user,
+            )
+        else:
+            serializer.save(created_by=self.request.user)
+        self._update_stages(serializer, self.request.user)
 
 
 class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
@@ -321,10 +321,15 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
-        barrier_type = barrier.barrier_type
-        if self.request.data.get("barrier_type", None) is not None:
-            barrier_type = get_object_or_404(
-                BarrierType, pk=self.request.data.get("barrier_type")
+        barrier_types = barrier.barrier_types
+        if self.request.data.get("barrier_types", None) is not None:
+            barrier_types = [
+                get_object_or_404(BarrierType, pk=barrier_type.id) 
+                for barrier_type in self.request.data.get("barrier_types")
+            ]
+            serializer.save(
+                barrier_types=barrier_types,
+                created_by=self.request.user,
             )
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
@@ -333,7 +338,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             )
 
         serializer.save(
-            barrier_type=barrier_type,
+            barrier_type=barrier_types,
             priority=barrier_priority,
             modified_by=self.request.user,
         )
