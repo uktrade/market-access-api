@@ -24,10 +24,16 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
     queryset = Document.objects.all()
 
     def perform_destroy(self, instance):
-        try:
-            active_int = Interaction.objects.get(documents=str(instance.pk))
-            active_int.documents.remove(instance)
-        except Interaction.DoesNotExist:
+        """
+        Customise document delete,
+        if it is actively attached to a note, raise validation error
+        if it was detached already, skip it
+        only if was never attached to any note, delete it from S3
+        """
+        doc = Document.objects.get(id=str(instance.pk))
+        if Interaction.objects.filter(documents=doc.id).count() > 0:
+            raise ValidationError()
+        if not doc.detached:
             return super().perform_destroy(instance)
 
 
@@ -73,13 +79,22 @@ class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
     def perform_update(self, serializer):
+        """
+        This needs to attach new set of documents
+        And detach the ones that not present in the request, but were previously attached
+        """
         interaction = self.get_object()
         if "documents" in self.request.data:
             docs_in_req = self.request.data.get("documents", None)
-            documents = []
+            docs_to_add = []
             if docs_in_req:
-                documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
-            serializer.save(documents=documents, modified_by=self.request.user)
+                docs_to_add = [get_object_or_404(Document, pk=id) for id in docs_in_req]
+            docs_to_detach = list(set(interaction.documents.all()) - set(docs_to_add))
+            serializer.save(documents=docs_to_add, modified_by=self.request.user)
+            for doc in docs_to_detach:
+                interaction.documents.remove(doc)
+                doc.detached = True
+                doc.save()
         else:
             serializer.save(modified_by=self.request.user)
         interaction.barrier.save()
