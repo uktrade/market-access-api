@@ -157,16 +157,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 
     @transaction.atomic()
     def perform_create(self, serializer):
-        barrier_types_in_req = self.request.data.get("barrier_types", None)
-        barrier_types = []
-        if barrier_types_in_req:
-            barrier_types = [get_object_or_404(BarrierType, pk=id) for id in barrier_types_in_req]
-            serializer.save(
-                barrier_types=barrier_types,
-                created_by=self.request.user,
-            )
-        else:
-            serializer.save(created_by=self.request.user)
+        serializer.save(created_by=self.request.user)
         self._update_stages(serializer, self.request.user)
 
 
