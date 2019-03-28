@@ -161,7 +161,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
         self._update_stages(serializer, self.request.user)
 
 
-class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
+class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIView):
 
     lookup_field = "pk"
     queryset = BarrierInstance.reports.all()
@@ -171,6 +171,9 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         serializer.save()
         self._update_stages(serializer, self.request.user)
+
+    def perform_destroy(self, instance):
+        instance.archive(self.request.user)
 
 
 class BarrierReportSubmit(generics.UpdateAPIView):
