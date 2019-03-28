@@ -318,10 +318,6 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
                 get_object_or_404(BarrierType, pk=barrier_type.id) 
                 for barrier_type in self.request.data.get("barrier_types")
             ]
-            serializer.save(
-                barrier_types=barrier_types,
-                created_by=self.request.user,
-            )
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
             barrier_priority = get_object_or_404(
@@ -329,7 +325,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             )
 
         serializer.save(
-            barrier_type=barrier_types,
+            barrier_types=barrier_types,
             priority=barrier_priority,
             modified_by=self.request.user,
         )
