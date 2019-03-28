@@ -315,8 +315,8 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
         barrier_types = barrier.barrier_types
         if self.request.data.get("barrier_types", None) is not None:
             barrier_types = [
-                get_object_or_404(BarrierType, pk=barrier_type.id) 
-                for barrier_type in self.request.data.get("barrier_types")
+                get_object_or_404(BarrierType, pk=barrier_type_id) 
+                for barrier_type_id in self.request.data.get("barrier_types")
             ]
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
