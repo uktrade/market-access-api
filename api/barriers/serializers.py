@@ -93,8 +93,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "eu_exit_related",
             "current_status",
             "priority",
-            "barrier_type",
-            "barrier_type_category",
+            "barrier_types",
             "created_on",
             "modified_on",
         )

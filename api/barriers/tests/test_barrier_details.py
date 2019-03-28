@@ -762,7 +762,7 @@ class TestBarrierDetail(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
         assert response.data["priority"]["code"] == "UNKNOWN"
-        assert response.data["barrier_types"] == []
+        assert len(response.data["barrier_types"]) == 0
 
         db_barrier_types = BarrierType.objects.all()[:2]
         edit_type_response = self.api_client.put(
@@ -827,7 +827,7 @@ class TestBarrierDetail(APITestMixin):
         assert edit_barrier_response.data["priority"]["code"] == "LOW"
 
         response = self.api_client.get(get_url)
-        assert response.data["barrier_types"] == None
+        assert len(response.data["barrier_types"]) == 0
 
         db_barrier_types = BarrierType.objects.all()[:2]
         edit_type_response = self.api_client.put(
@@ -883,7 +883,7 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["priority"]["code"] == "UNKNOWN"
 
         response = self.api_client.get(get_url)
-        assert response.data["barrier_types"] == []
+        assert len(response.data["barrier_types"]) == 0
 
         db_barrier_types = BarrierType.objects.all()[:2]
         edit_type_response = self.api_client.put(

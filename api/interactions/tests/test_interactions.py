@@ -1776,21 +1776,6 @@ class TestListInteractions(APITestMixin):
         doc = Document.objects.get(id=document_id)
         assert doc.detached is False
 
-        get_interaction_url = reverse("get-interaction", kwargs={"pk": int_id})
-        get_int_response = self.api_client.get(get_interaction_url)
-        assert get_int_response.status_code == status.HTTP_200_OK
-        assert get_int_response.data["text"] == "sample interaction notes"
-        assert get_int_response.data["kind"] == "Comment"
-        assert get_int_response.data["pinned"] is False
-        assert get_int_response.data["is_active"] is True
-        assert len(get_int_response.data["documents"]) == 0
-
-        get_doc_response = self.api_client.get(get_doc_url)
-        assert get_doc_response.status_code == status.HTTP_200_OK
-
-        doc = Document.objects.get(id=document_id)
-        assert doc.detached is True
-
     def test_check_deleting_document_when_not_attached_to_interaction(self):
         """
         Test deleting a document when it was not attached to an interaction

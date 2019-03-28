@@ -1116,8 +1116,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["current_status"]["status_date"] is not None
         assert barrier["current_status"]["status_summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert barrier["barrier_type"] is None
-        assert barrier["barrier_type_category"] is None
+        assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 1
 
@@ -1169,8 +1168,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["current_status"]["status_date"] is not None
         assert barrier["current_status"]["status_summary"] is not None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert barrier["barrier_type"] is None
-        assert barrier["barrier_type_category"] is None
+        assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 2
 
@@ -1227,8 +1225,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["current_status"]["status_date"] is not None
         assert barrier["current_status"]["status_summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert barrier["barrier_type"] is None
-        assert barrier["barrier_type_category"] is None
+        assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 3
 
