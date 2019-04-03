@@ -295,7 +295,13 @@ class BarrierList(generics.ListAPIView):
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)
-    ordering_fields = ("reported_on", "modified_on")
+    ordering_fields = (
+        "reported_on",
+        "modified_on",
+        "status",
+        "priority",
+        "export_country"
+    )
     ordering = ("reported_on", "modified_on")
 
 
