@@ -125,7 +125,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
 
-    current_status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     barrier_type = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
@@ -153,7 +152,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "barrier_type_category",
             "reported_on",
             "reported_by",
-            "current_status",
+            "status",
+            "status_summary",
+            "status_date"
             "priority",
             "priority_summary",
             "eu_exit_related",
@@ -164,6 +165,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "code",
+            "status",
             "reported_on",
             "reported_by",
             "priority_date",
@@ -192,13 +194,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 "description": obj.barrier_type.description,
                 "category": obj.barrier_type_category,
             }
-
-    def get_current_status(self, obj):
-        return {
-            "status": obj.status,
-            "status_date": obj.status_date,
-            "status_summary": obj.status_summary,
-        }
 
     def get_priority(self, obj):
         """  Custom Serializer Method Field for exposing barrier priority """
