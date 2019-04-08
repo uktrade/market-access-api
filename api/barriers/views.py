@@ -309,9 +309,6 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierInstanceSerializer
 
-    def validate_status_summary(self, status_summary):
-        
-
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
@@ -325,10 +322,6 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             barrier_priority = get_object_or_404(
                 BarrierPriority, code=self.request.data.get("priority")
             )
-        # make sure status stuff is properly dealt with
-        status_date = self.request.data.get("status_date", None)
-        status_summary = self.request.data.get("status_summary", None)
-
 
         serializer.save(
             barrier_type=barrier_type,

@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.conf import settings
 
 from django.shortcuts import get_object_or_404
@@ -71,7 +72,6 @@ class BarrierReportSerializer(serializers.ModelSerializer):
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
 
-    current_status = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
 
@@ -91,7 +91,9 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "export_country",
             "country_admin_areas",
             "eu_exit_related",
-            "current_status",
+            "status",
+            "status_date",
+            "status_summary",
             "priority",
             "barrier_type",
             "barrier_type_category",
@@ -101,14 +103,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
     def get_reported_by(self, obj):
         return obj.created_user
-
-    def get_current_status(self, obj):
-        """  Custom Serializer Method Field for exposing current barrier status as json """
-        return {
-            "status": obj.status,
-            "status_date": obj.status_date,
-            "status_summary": obj.status_summary,
-        }
 
     def get_priority(self, obj):
         """  Custom Serializer Method Field for exposing barrier priority """
@@ -154,7 +148,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "reported_by",
             "status",
             "status_summary",
-            "status_date"
+            "status_date",
             "priority",
             "priority_summary",
             "eu_exit_related",
@@ -205,6 +199,22 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             }
         else:
             return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
+
+    def validate(self, data):
+        """
+        status related validations:
+        if status_summary is provided, status_date is mandatory 
+            when current status is Resolved
+        if status_date is provided, status_summary is also expected
+        """
+        status_summary = self.initial_data.get('status_summary', None)
+        status_date = self.initial_data.get('status_date', None)
+        if status_date is not None and status_summary is None:
+            raise serializers.ValidationError('missing data')
+        barrier = BarrierInstance.objects.get(id=self.instance.id)
+        if barrier.status == 4 and status_summary is not None and status_date is None:
+            raise serializers.ValidationError('missing data')
+        return data
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
