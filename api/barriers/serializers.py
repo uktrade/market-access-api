@@ -201,6 +201,13 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         else:
             return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
 
+    def _get_value(self, source1, source2, field_name):
+        if field_name in source1:
+            return source1[field_name]
+        if field_name in source2:
+            return source2[field_name]
+        return None
+
     def validate(self, data):
         """
         Performs cross-field validation
@@ -209,15 +216,19 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             when current status is Resolved
         if status_date is provided, status_summary is also expected
         """
-        combiner = DataCombiner(self.instance, data)
-        # if {'status_summary', 'status_date'} & data.keys():
-        status_summary = combiner.get_value('status_summary')
-        status_date = combiner.get_value('status_date')
+        status_summary = data.get('status_summary', None)
+        status_date = data.get('status_date', None)
         if status_date is not None and status_summary is None:
             raise serializers.ValidationError('missing data')
-        barrier = BarrierInstance.objects.get(id=self.instance.id)
-        if barrier.status == 4 and status_summary is not None and status_date is None:
-            raise serializers.ValidationError('missing data')
+        
+        if status_summary is not None:
+            barrier = BarrierInstance.objects.get(id=self.instance.id)
+            if barrier.status == 4:
+                if status_date is None:
+                    raise serializers.ValidationError('missing data')
+            else:
+                # ignore status_date if provided
+                data["status_date"] = getattr(self.instance, "status_date")
         return data
 
 

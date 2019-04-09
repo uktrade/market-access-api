@@ -480,7 +480,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
         barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
 
         if status_date is None:
-            status_date = timezone.now()
+            status_date = timezone.now().date()
 
         serializer.save(
             status=barrier_status,
@@ -497,6 +497,20 @@ class BarrierResolve(BarrierStatusBase):
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
+
+    # def update(self, request, *args, **kwargs):
+    #     partial = kwargs.pop('partial', False)
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
+    #     serializer.is_valid(raise_exception=False)
+    #     self.perform_update(serializer)
+
+    #     if getattr(instance, '_prefetched_objects_cache', None):
+    #         # If 'prefetch_related' has been applied to a queryset, we need to
+    #         # forcibly invalidate the prefetch cache on the instance.
+    #         instance._prefetched_objects_cache = {}
+
+    #     return Response(serializer.data)
 
     def perform_update(self, serializer):
         errors = defaultdict(list)
