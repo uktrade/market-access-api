@@ -1001,17 +1001,19 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["id"] == str(instance.id)
         assert response.data["status"] == 4
         assert response.data["status_summary"] == "dummy summary"
+        assert response.data["status_date"] == "2018-09-10T00:00:00Z"
 
         edit_barrier_response = self.api_client.put(
-            get_url,
+            resolve_barrier_url,
             format="json",
-            data={"status_date": "2018-09-10", "status_summary": "more dummy summary"},
+            data={"status_date": "2018-10-10", "status_summary": "more dummy summary"},
         )
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
         assert edit_barrier_response.data["status"] == 4
         assert edit_barrier_response.data["status_summary"] == "more dummy summary"
+        assert response.data["status_date"] == "2018-10-10T00:00:00Z"
 
     def test_barrier_detail_submitted_open_and_resolve_edit_summary_no_status_date_400(self):
         list_report_url = reverse("list-reports")

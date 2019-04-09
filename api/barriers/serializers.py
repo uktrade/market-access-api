@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance
+from api.core.validate_utils import DataCombiner
 from api.metadata.constants import STAGE_STATUS
 
 # pylint: disable=R0201
@@ -207,8 +208,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             when current status is Resolved
         if status_date is provided, status_summary is also expected
         """
-        status_summary = self.initial_data.get('status_summary', None)
-        status_date = self.initial_data.get('status_date', None)
+        combiner = DataCombiner(self.instance, data)
+        # if {'status_summary', 'status_date'} & data.keys():
+        status_summary = combiner.get_value('status_summary')
+        status_date = combiner.get_value('status_date')
         if status_date is not None and status_summary is None:
             raise serializers.ValidationError('missing data')
         barrier = BarrierInstance.objects.get(id=self.instance.id)
