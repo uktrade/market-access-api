@@ -765,11 +765,12 @@ class TestBarrierDetail(APITestMixin):
         assert len(response.data["barrier_types"]) == 0
 
         db_barrier_types = BarrierType.objects.all()[:2]
+        barrier_type_ids = [bt.id for bt in db_barrier_types]
         edit_type_response = self.api_client.put(
             get_url,
             format="json",
             data={
-                "barrier_types": [bt.id for bt in db_barrier_types]
+                "barrier_types": barrier_type_ids
             },
         )
 
@@ -777,7 +778,7 @@ class TestBarrierDetail(APITestMixin):
 
         response = self.api_client.get(get_url)
         assert response.data["id"] == str(instance.id)
-        assert len(response.data["barrier_types"]) == 2
+        assert response.data["barrier_types"] == barrier_type_ids
 
     def test_barrier_detail_edit_priority_and_barrier_type(self):
         list_report_url = reverse("list-reports")

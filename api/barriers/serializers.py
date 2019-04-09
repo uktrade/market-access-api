@@ -128,6 +128,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     reported_by = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
+    barrier_types = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -185,6 +186,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "status_date": obj.status_date,
             "status_summary": obj.status_summary,
         }
+
+    def get_barrier_types(self, obj):
+        return [barrier_type.id for barrier_type in obj.barrier_types.all()]
 
     def get_priority(self, obj):
         """  Custom Serializer Method Field for exposing barrier priority """
