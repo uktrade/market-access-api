@@ -203,7 +203,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """
-        status related validations:
+        Performs cross-field validation
+        status validations:
         if status_summary is provided, status_date is mandatory 
             when current status is Resolved
         if status_date is provided, status_summary is also expected

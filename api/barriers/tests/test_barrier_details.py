@@ -984,10 +984,10 @@ class TestBarrierDetail(APITestMixin):
         assert submit_response.status_code == status.HTTP_200_OK
 
         get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+        assert get_response.data["id"] == str(instance.id)
+        assert get_response.data["status"] == 2
 
         resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -996,15 +996,15 @@ class TestBarrierDetail(APITestMixin):
             data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
         )
 
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 4
-        assert response.data["status_summary"] == "dummy summary"
-        assert response.data["status_date"] == "2018-09-10T00:00:00Z"
+        resolve_response = self.api_client.get(get_url)
+        assert resolve_response.status_code == status.HTTP_200_OK
+        assert resolve_response.data["id"] == str(instance.id)
+        assert resolve_response.data["status"] == 4
+        assert resolve_response.data["status_summary"] == "dummy summary"
+        assert resolve_response.data["status_date"] == "2018-09-10T00:00:00Z"
 
         edit_barrier_response = self.api_client.put(
-            resolve_barrier_url,
+            get_url,
             format="json",
             data={"status_date": "2018-10-10", "status_summary": "more dummy summary"},
         )
@@ -1013,7 +1013,7 @@ class TestBarrierDetail(APITestMixin):
         assert edit_barrier_response.data["id"] == str(instance.id)
         assert edit_barrier_response.data["status"] == 4
         assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert response.data["status_date"] == "2018-10-10T00:00:00Z"
+        assert edit_barrier_response.data["status_date"] == "2018-10-10T00:00:00Z"
 
     def test_barrier_detail_submitted_open_and_resolve_edit_summary_no_status_date_400(self):
         list_report_url = reverse("list-reports")

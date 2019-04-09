@@ -512,12 +512,19 @@ class BarrierResolve(BarrierStatusBase):
         if errors:
             message = {"fields": errors}
             raise serializers.ValidationError(message)
-        serializer.save(
-            status=4,
-            status_summary=self.request.data.get("status_summary"),
-            status_date=self.request.data.get("status_date"),
-            modified_by=self.request.user,
+        self._create(
+            serializer=serializer,
+            barrier_id=self.kwargs.get("pk"),
+            barrier_status=4,
+            barrier_summary=self.request.data.get("status_summary"),
+            status_date=self.request.data.get("status_date")
         )
+        # serializer.save(
+        #     status=4,
+        #     status_summary=self.request.data.get("status_summary"),
+        #     status_date=self.request.data.get("status_date"),
+        #     modified_by=self.request.user,
+        # )
 
 
 class BarrierHibernate(BarrierStatusBase):
