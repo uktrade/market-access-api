@@ -1003,3 +1003,47 @@ class TestBarrierDetail(APITestMixin):
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
+
+    def test_barrier_detail_check_delete_not_allowed(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "next_steps_summary": "Some next steps",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(interactions_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 0
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = self.api_client.get(get_url)
+        assert response.status_code == status.HTTP_200_OK
+
+        delete_response = self.api_client.delete(get_url)
+        assert delete_response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
