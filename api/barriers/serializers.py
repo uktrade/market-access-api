@@ -142,6 +142,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "export_country",
             "country_admin_areas",
             "sectors_affected",
+            "all_sectors",
             "sectors",
             "companies",
             "product",

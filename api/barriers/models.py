@@ -89,7 +89,12 @@ class BarrierInstance(BaseModel, ArchivableModel):
         help_text="list of states, provinces, regions etc within a country",
     )
 
-    sectors_affected = models.NullBooleanField()
+    sectors_affected = models.NullBooleanField(
+        help_text="boolean to signify one or more sectors are affected by this barrier"
+    )
+    all_sectors = models.NullBooleanField(
+        help_text="boolean to signify that all sectors are affected by this barrier"
+    )
     sectors = ArrayField(
         models.UUIDField(),
         blank=True,
