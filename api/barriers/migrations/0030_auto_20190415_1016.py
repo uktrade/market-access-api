@@ -10,6 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RemoveField(
+            model_name='barrierinstance',
+            name='barrier_types',
+        ),
         migrations.AddField(
             model_name='barrierinstance',
             name='all_sectors',
