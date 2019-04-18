@@ -585,6 +585,126 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_400_BAD_REQUEST
 
+    def test_barrier_detail_conflicting_all_sectors(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = self.api_client.get(get_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == str(instance.id)
+        assert response.data["current_status"]["status"] == 2
+        assert response.data["sectors_affected"] == True
+        assert len(response.data["sectors"]) == 2
+
+        edit_barrier_response = self.api_client.put(
+            get_url,
+            format="json",
+            data={"all_sectors": True},
+        )
+
+        assert edit_barrier_response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_barrier_detail_conflicting_sectors(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "all_sectors": True,
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = self.api_client.get(get_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"] == str(instance.id)
+        assert response.data["current_status"]["status"] == 2
+        assert response.data["sectors_affected"] == True
+
+        edit_barrier_response = self.api_client.put(
+            get_url,
+            format="json",
+            data={"sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ]},
+            )
+
+        assert edit_barrier_response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_barrier_detail_missing_all_sectors_and_sectors(self):
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": False,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
+
     def test_barrier_detail_edit_priority_high(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
