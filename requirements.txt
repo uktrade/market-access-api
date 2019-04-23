@@ -39,7 +39,9 @@ flake8-quotes==1.0.0
 flake8-string-format==0.2.3
 freezegun==0.3.11
 gunicorn==19.9.0
-hawkrest==1.0.0
+# hawkrest==1.0.0	hawkrest==1.0.0
+# HawkRest has a fix for newer Django versions middleware, which isn't yet released.	
+git+https://github.com/kumar303/hawkrest.git@dce22be5a0ebbbf61e4496f38fc13478220a66b9#egg=hawkrest
 idna==2.7
 isort==4.3.4
 jmespath==0.9.3
