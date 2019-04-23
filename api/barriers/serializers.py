@@ -104,6 +104,14 @@ class BarrierListSerializer(serializers.ModelSerializer):
     def get_reported_by(self, obj):
         return obj.created_user
 
+    def get_current_status(self, obj):
+        """  Custom Serializer Method Field for exposing current barrier status as json """
+        return {
+            "status": obj.status,
+            "status_date": obj.status_date,
+            "status_summary": obj.status_summary,
+        }
+
     def get_priority(self, obj):
         """  Custom Serializer Method Field for exposing barrier priority """
         if obj.priority:
@@ -177,16 +185,15 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def get_modified_by(self, obj):
         return obj.modified_user
 
-    def get_barrier_type(self, obj):
-        if obj.barrier_type is None:
-            return None
-        else:
-            return {
-                "id": obj.barrier_type.id,
-                "title": obj.barrier_type.title,
-                "description": obj.barrier_type.description,
-                "category": obj.barrier_type_category,
-            }
+    def get_current_status(self, obj):
+        return {
+            "status": obj.status,
+            "status_date": obj.status_date,
+            "status_summary": obj.status_summary,
+        }
+
+    def get_barrier_types(self, obj):
+        return [barrier_type.id for barrier_type in obj.barrier_types.all()]
 
     def get_priority(self, obj):
         """  Custom Serializer Method Field for exposing barrier priority """
