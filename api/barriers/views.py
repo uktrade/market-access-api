@@ -161,7 +161,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
         self._update_stages(serializer, self.request.user)
 
 
-class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
+class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIView):
 
     lookup_field = "pk"
     queryset = BarrierInstance.reports.all()
@@ -171,6 +171,9 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         serializer.save()
         self._update_stages(serializer, self.request.user)
+
+    def perform_destroy(self, instance):
+        instance.archive(self.request.user)
 
 
 class BarrierReportSubmit(generics.UpdateAPIView):
@@ -295,7 +298,13 @@ class BarrierList(generics.ListAPIView):
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)
-    ordering_fields = ("reported_on", "modified_on")
+    ordering_fields = (
+        "reported_on",
+        "modified_on",
+        "status",
+        "priority",
+        "export_country"
+    )
     ordering = ("reported_on", "modified_on")
 
 
@@ -312,11 +321,12 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
-        barrier_type = barrier.barrier_type
-        if self.request.data.get("barrier_type", None) is not None:
-            barrier_type = get_object_or_404(
-                BarrierType, pk=self.request.data.get("barrier_type")
-            )
+        barrier_types = barrier.barrier_types.all()
+        if self.request.data.get("barrier_types", None) is not None:
+            barrier_types = [
+                get_object_or_404(BarrierType, pk=barrier_type_id)
+                for barrier_type_id in self.request.data.get("barrier_types")
+            ]
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
             barrier_priority = get_object_or_404(
@@ -324,7 +334,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             )
 
         serializer.save(
-            barrier_type=barrier_type,
+            barrier_types=barrier_types,
             priority=barrier_priority,
             modified_by=self.request.user,
         )
@@ -480,7 +490,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
         barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
 
         if status_date is None:
-            status_date = timezone.now()
+            status_date = timezone.now().date()
 
         serializer.save(
             status=barrier_status,
@@ -498,6 +508,20 @@ class BarrierResolve(BarrierStatusBase):
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
+    # def update(self, request, *args, **kwargs):
+    #     partial = kwargs.pop('partial', False)
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
+    #     serializer.is_valid(raise_exception=False)
+    #     self.perform_update(serializer)
+
+    #     if getattr(instance, '_prefetched_objects_cache', None):
+    #         # If 'prefetch_related' has been applied to a queryset, we need to
+    #         # forcibly invalidate the prefetch cache on the instance.
+    #         instance._prefetched_objects_cache = {}
+
+    #     return Response(serializer.data)
+
     def perform_update(self, serializer):
         errors = defaultdict(list)
         if self.request.data.get("status_summary", None) is None:
@@ -512,12 +536,19 @@ class BarrierResolve(BarrierStatusBase):
         if errors:
             message = {"fields": errors}
             raise serializers.ValidationError(message)
-        serializer.save(
-            status=4,
-            status_summary=self.request.data.get("status_summary"),
-            status_date=self.request.data.get("status_date"),
-            modified_by=self.request.user,
+        self._create(
+            serializer=serializer,
+            barrier_id=self.kwargs.get("pk"),
+            barrier_status=4,
+            barrier_summary=self.request.data.get("status_summary"),
+            status_date=self.request.data.get("status_date")
         )
+        # serializer.save(
+        #     status=4,
+        #     status_summary=self.request.data.get("status_summary"),
+        #     status_date=self.request.data.get("status_date"),
+        #     modified_by=self.request.user,
+        # )
 
 
 class BarrierHibernate(BarrierStatusBase):

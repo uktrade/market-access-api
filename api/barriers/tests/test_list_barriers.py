@@ -856,8 +856,14 @@ class TestListBarriers(APITestMixin):
         )
         assert status_response.data["count"] == barriers.count()
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
-    def test_list_barriers_order_by_reported_on(self, order_by):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
+    def test_list_barriers_order_by(self, order_by):
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
         self.add_multiple_barriers(count)
@@ -878,8 +884,14 @@ class TestListBarriers(APITestMixin):
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
-    def test_list_barriers_country_filter_order_by_reported_on(self, order_by):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
+    def test_list_barriers_country_filter_order_by(self, order_by):
         count = 10
         self.add_multiple_barriers(count)
         url = reverse("list-barriers")
@@ -905,7 +917,13 @@ class TestListBarriers(APITestMixin):
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
     def test_list_barriers_status_filter_order_by_reported_on(self, order_by):
         count = 10
         self.add_multiple_barriers(count)
@@ -926,7 +944,13 @@ class TestListBarriers(APITestMixin):
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
     def test_list_barriers_barrier_type_filter_order_by_reported_on(self, order_by):
         count = 10
         barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
@@ -951,7 +975,13 @@ class TestListBarriers(APITestMixin):
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
     def test_list_barriers_sector_filter_order_by_reported_on(self, order_by):
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
@@ -975,8 +1005,14 @@ class TestListBarriers(APITestMixin):
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
-    def test_list_barriers_start_date_filter_order_by_reported_on(self, order_by):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
+    def _test_list_barriers_start_date_filter_order_by_reported_on(self, order_by):
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1006,8 +1042,14 @@ class TestListBarriers(APITestMixin):
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
-    def test_list_barriers_end_date_filter_order_by_reported_on(self, order_by):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
+    def _test_list_barriers_end_date_filter_order_by_reported_on(self, order_by):
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1037,8 +1079,14 @@ class TestListBarriers(APITestMixin):
         db_list = [str(b.id) for b in barriers]
         assert response_list == db_list
 
-    @pytest.mark.parametrize("order_by", ["reported_on", "-reported_on"])
-    def test_list_barriers_date_range_filter_order_by_reported_on(self, order_by):
+    @pytest.mark.parametrize("order_by", [
+        "reported_on", "-reported_on",
+        "modified_on", "-modified_on",
+        "status", "-status",
+        "priority", "-priority",
+        "export_country", "-export_country"
+    ])
+    def _test_list_barriers_date_range_filter_order_by_reported_on(self, order_by):
         count = 10
         start_date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1112,12 +1160,11 @@ class TestListBarriers(APITestMixin):
         assert barrier["sectors_affected"] == False
         assert barrier["sectors"] is None
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["current_status"]["status"] == 2
-        assert barrier["current_status"]["status_date"] is not None
-        assert barrier["current_status"]["status_summary"] is None
+        assert barrier["status"] == 2
+        assert barrier["status_date"] is not None
+        assert barrier["status_summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert barrier["barrier_type"] is None
-        assert barrier["barrier_type_category"] is None
+        assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 1
 
@@ -1165,12 +1212,11 @@ class TestListBarriers(APITestMixin):
         assert barrier["sectors_affected"] == False
         assert barrier["sectors"] is None
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["current_status"]["status"] == 4
-        assert barrier["current_status"]["status_date"] is not None
-        assert barrier["current_status"]["status_summary"] is not None
+        assert barrier["status"] == 4
+        assert barrier["status_date"] is not None
+        assert barrier["status_summary"] is not None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert barrier["barrier_type"] is None
-        assert barrier["barrier_type_category"] is None
+        assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 2
 
@@ -1223,12 +1269,11 @@ class TestListBarriers(APITestMixin):
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["current_status"]["status"] == 2
-        assert barrier["current_status"]["status_date"] is not None
-        assert barrier["current_status"]["status_summary"] is None
+        assert barrier["status"] == 2
+        assert barrier["status_date"] is not None
+        assert barrier["status_summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert barrier["barrier_type"] is None
-        assert barrier["barrier_type_category"] is None
+        assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 3
 

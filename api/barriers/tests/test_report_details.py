@@ -1062,3 +1062,27 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["barrier_title"] == "Some title"
         assert detail_response.data["problem_description"] == "Some problem_description"
         assert detail_response.data["code"] != ""
+
+    def test_report_deletion(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(
+            url,
+            format="json",
+            data={
+                "product": "Some product",
+                "source": "GOVT",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+
+        detail_response = self.api_client.delete(detail_url)
+        assert detail_response.status_code == status.HTTP_204_NO_CONTENT
