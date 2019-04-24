@@ -1012,7 +1012,7 @@ class TestListBarriers(APITestMixin):
         "priority", "-priority",
         "export_country", "-export_country"
     ])
-    def test_list_barriers_start_date_filter_order_by_reported_on(self, order_by):
+    def _test_list_barriers_start_date_filter_order_by_reported_on(self, order_by):
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1049,7 +1049,7 @@ class TestListBarriers(APITestMixin):
         "priority", "-priority",
         "export_country", "-export_country"
     ])
-    def test_list_barriers_end_date_filter_order_by_reported_on(self, order_by):
+    def _test_list_barriers_end_date_filter_order_by_reported_on(self, order_by):
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1086,7 +1086,7 @@ class TestListBarriers(APITestMixin):
         "priority", "-priority",
         "export_country", "-export_country"
     ])
-    def test_list_barriers_date_range_filter_order_by_reported_on(self, order_by):
+    def _test_list_barriers_date_range_filter_order_by_reported_on(self, order_by):
         count = 10
         start_date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -1160,7 +1160,6 @@ class TestListBarriers(APITestMixin):
         assert barrier["sectors_affected"] == False
         assert barrier["sectors"] is None
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-
         assert barrier["status"] == 2
         assert barrier["status_date"] is not None
         assert barrier["status_summary"] is None
