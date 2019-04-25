@@ -67,7 +67,10 @@ class BarrierReportSerializer(serializers.ModelSerializer):
         )
 
     def get_created_by(self, obj):
-        return obj.created_user
+        if obj.created_by is None:
+            return None
+
+        return {"id": obj.created_by.id, "name": obj.created_user}
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
