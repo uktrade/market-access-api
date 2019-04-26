@@ -174,7 +174,6 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIVi
         self._update_stages(serializer, self.request.user)
 
     def perform_destroy(self, instance):
-        print(f"instance {instance.created_by.id}, request {self.request.user.id}")
         if int(instance.created_by.id) == int(self.request.user.id):
             instance.archive(self.request.user)
             return
