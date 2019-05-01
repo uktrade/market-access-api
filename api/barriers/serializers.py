@@ -107,6 +107,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "resolved_date",
             "barrier_title",
             "sectors_affected",
+            "all_sectors",
             "sectors",
             "export_country",
             "country_admin_areas",
