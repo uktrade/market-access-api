@@ -1,8 +1,12 @@
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.user.serializers import WhoAmISerializer
+from django.shortcuts import get_object_or_404
+
+from api.user.models import Profile, Watchlist
+from api.user.serializers import WhoAmISerializer, WatchlistSerializer
 
 
 @api_view()
@@ -14,28 +18,21 @@ def who_am_i(request):
     return Response(data=serializer.data)
 
 
-class BarrierInteractionList(generics.ListCreateAPIView):
+class WatchlistDetails(generics.RetrieveUpdateDestroyAPIView):
     """
-    Handling Barrier interactions, such as notes
+    Handling watchlist items, such as notes
     """
 
-    queryset = Interaction.objects.all()
-    serializer_class = InteractionSerializer
+    lookup_field = "pk"
+    queryset = Watchlist.objects.all()
+    serializer_class = WatchlistSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+        return self.queryset.filter(id=self.kwargs.get("pk"))
 
-    def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
-        kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
-        docs_in_req = self.request.data.get("documents", None)
-        documents = []
-        if docs_in_req:
-            documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
-        serializer.save(
-            barrier=barrier_obj,
-            kind=kind,
-            documents=documents,
-            created_by=self.request.user,
-        )
-        barrier_obj.save()
+    def perform_update(self, serializer):
+        watchlist = self.get_object()
+        serializer.save(modified_by=self.request.user)
+
+    # def perform_destroy(self, instance):
+    #     instance.archive(self.request.user)

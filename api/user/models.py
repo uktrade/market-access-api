@@ -6,25 +6,28 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from api.core.models import ArchivableModel
+
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
+
+
+class Watchlist(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    name = models.CharField(max_length=MAX_LENGTH, null=False)
+    filter = JSONField(
+        null=False, help_text="list of filters that make up this watchlist"
+    )
 
 
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     location = models.UUIDField(null=True, blank=True)
     internal = models.BooleanField(default=False)
-    watch_lists = models.ManyToManyField(
-        WatchList, related_name="watch_lists", help_text="personalised watch lists"
+    watchlists = models.ManyToManyField(
+        Watchlist, related_name="watchlists", help_text="personalised watch lists"
     )
 
-
-class WatchList(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4)
-    name = models.CharField(max_length=MAX_LENGTH, null=False)
-    filter = JSONField(
-        null=False, help_text="list of filters that make up this watchlist"
-    )
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

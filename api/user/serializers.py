@@ -2,31 +2,22 @@ from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
-from api.user.models import Profile, WatchList
+from api.user.models import Profile, Watchlist
 from api.core.utils import cleansed_username
 
 UserModel = get_user_model()
 
 
-class WatchListSerializer(serializers.ModelSerializer):
-    """ Serialzer for User Watch List """
-
-    created_by = serializers.SerializerMethodField()
-    documents = serializers.SerializerMethodField()
+class WatchlistSerializer(serializers.ModelSerializer):
+    """ Serialzer for User Watchlist """
 
     class Meta:
-        model = WatchList
+        model = Watchlist
         fields = (
             "id",
             "name",
             "filter",
         )
-
-    def get_created_by(self, obj):
-        if obj.created_by is None:
-            return None
-
-        return {"id": obj.created_by.id, "name": obj.created_user}
 
 
 class WhoAmISerializer(serializers.ModelSerializer):
@@ -79,9 +70,9 @@ class WhoAmISerializer(serializers.ModelSerializer):
     def get_watch_lists(self, obj):
         return [
             {
-                "id": obj.watch_list.id,
-                "name": obj.watch_list.name,
-                "filter": obj.watch_list.filter,
+                "id": watch_list.id,
+                "name": watch_list.name,
+                "filter": watch_list.filter,
             }
-            for watch_list in obj.watch_lists.all()
+            for watch_list in obj.profile.watch_lists.all()
         ]
