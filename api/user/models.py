@@ -12,32 +12,35 @@ from api.core.models import ArchivableModel
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
-class Watchlist(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4)
-    name = models.CharField(max_length=MAX_LENGTH, null=False)
-    filter = JSONField(
-        null=False, help_text="list of filters that make up this watchlist"
-    )
-
-
 class Profile(models.Model):
+    """
+    Profile object to hold user profile elements (temporary)
+    This will be replaced by external SSO profile
+    """
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     location = models.UUIDField(null=True, blank=True)
     internal = models.BooleanField(default=False)
-    watchlists = models.ManyToManyField(
-        Watchlist, related_name="watchlists", help_text="personalised watch lists"
+    user_profile = JSONField(
+        null=False, help_text="temporary field to hold sso profile json object"
     )
-
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_user_profile(sender, instance, created, **kwargs):
+    """
+    Create profile object if it doesn't already exist
+    upon user object creation
+    """
     if created:
         Profile.objects.create(user=instance)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def save_user_profile(sender, instance, **kwargs):
+    """
+    Create profile object if it doesn't already exist
+    otherwise save it
+    """
     try:
         instance.profile.save()
     except Profile.DoesNotExist:

@@ -2,22 +2,10 @@ from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
-from api.user.models import Profile, Watchlist
+from api.user.models import Profile
 from api.core.utils import cleansed_username
 
 UserModel = get_user_model()
-
-
-class WatchlistSerializer(serializers.ModelSerializer):
-    """ Serialzer for User Watchlist """
-
-    class Meta:
-        model = Watchlist
-        fields = (
-            "id",
-            "name",
-            "filter",
-        )
 
 
 class WhoAmISerializer(serializers.ModelSerializer):
@@ -26,7 +14,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
     internal = serializers.SerializerMethodField()
-    watch_lists = serializers.SerializerMethodField()
+    user_profile = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
@@ -39,7 +27,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "email",
             "location",
             "internal",
-            "watch_lists",
+            "user_profile",
         )
 
     def get_username(self, obj):
@@ -67,12 +55,13 @@ class WhoAmISerializer(serializers.ModelSerializer):
         except AttributeError:
             return False
 
-    def get_watch_lists(self, obj):
-        return [
-            {
-                "id": watch_list.id,
-                "name": watch_list.name,
-                "filter": watch_list.filter,
-            }
-            for watch_list in obj.profile.watch_lists.all()
-        ]
+    def get_user_profile(self, obj):
+        try:
+            if obj.profile is not None and obj.profile.user_profile is not None:
+                return obj.profile.user_profile
+            else:
+                return None
+        except Profile.DoesNotExist:
+            return None
+        except AttributeError:
+            return None
