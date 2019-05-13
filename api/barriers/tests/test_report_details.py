@@ -1086,6 +1086,7 @@ class TestReportDetail(APITestMixin):
 
         detail_response = self.api_client.delete(detail_url)
         assert detail_response.status_code == status.HTTP_204_NO_CONTENT
+<<<<<<< HEAD
 
     def _test_report_deletion_failure(self):
         a_user_1 = create_test_user(
@@ -1122,3 +1123,5 @@ class TestReportDetail(APITestMixin):
 
         detail_response = api_client_2.delete(detail_url)
         assert detail_response.status_code == status.HTTP_403_FORBIDDEN
+=======
+>>>>>>> master
