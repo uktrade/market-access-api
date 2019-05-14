@@ -1086,3 +1086,39 @@ class TestReportDetail(APITestMixin):
 
         detail_response = self.api_client.delete(detail_url)
         assert detail_response.status_code == status.HTTP_204_NO_CONTENT
+
+    def _test_report_deletion_failure(self):
+        a_user_1 = create_test_user(
+            first_name="", last_name="", email="", username="Test_1@Useri.com"
+        )
+        list_report_url = reverse("list-reports")
+        api_client_1 = self.create_api_client(user=a_user_1)
+
+        a_user_2 = create_test_user(
+            first_name="", last_name="", email="", username="Test_2@Useri.com"
+        )
+        list_report_url = reverse("list-reports")
+        api_client_2 = self.create_api_client(user=a_user_2)
+
+        url = reverse("list-reports")
+        response = api_client_1.post(
+            url,
+            format="json",
+            data={
+                "product": "Some product",
+                "source": "GOVT",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+            },
+        )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert response.data["id"] == str(instance.id)
+
+        detail_url = reverse("get-report", kwargs={"pk": instance.id})
+        detail_response = self.api_client_2.get(detail_url)
+        assert detail_response.status_code == status.HTTP_200_OK
+
+        detail_response = api_client_2.delete(detail_url)
+        assert detail_response.status_code == status.HTTP_403_FORBIDDEN
