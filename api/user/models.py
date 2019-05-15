@@ -21,7 +21,7 @@ class Profile(models.Model):
     location = models.UUIDField(null=True, blank=True)
     internal = models.BooleanField(default=False)
     user_profile = JSONField(
-        null=False, help_text="temporary field to hold sso profile json object"
+        null=True, help_text="temporary field to hold sso profile json object"
     )
 
 
