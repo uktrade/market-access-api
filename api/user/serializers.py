@@ -1,3 +1,7 @@
+import requests
+import time
+from django.conf import settings
+
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
@@ -15,6 +19,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     location = serializers.SerializerMethodField()
     internal = serializers.SerializerMethodField()
     user_profile = serializers.SerializerMethodField()
+    permitted_applications = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
@@ -28,6 +33,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "location",
             "internal",
             "user_profile",
+            "permitted_applications"
         )
 
     def get_username(self, obj):
@@ -65,3 +71,22 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
         except AttributeError:
             return None
+
+    def get_permitted_applications(self, obj):
+        if not settings.SSO_ENABLED:
+            return None
+        url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"]
+        token = self.context.get("token", None)
+        auth_string = f"Bearer {token}"
+        headers = {
+            'Authorization': auth_string,
+            'cache-control': "no-cache"
+            }
+        response = requests.request("GET", url, headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("permitted_applications", None)
+        else:
+            # log the error
+            return None
+        return None
