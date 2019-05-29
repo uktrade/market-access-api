@@ -184,7 +184,7 @@ class TestUserView(APITestMixin):
             "last_name": user_test.last_name,
             "email": user_test.email,
             "location": None,
-            "internal": True,
+            "internal": False,
             "user_profile": {
                 "internal": False,
                 "watch_lists": {
@@ -194,3 +194,46 @@ class TestUserView(APITestMixin):
                 }
             },
         }
+
+    def test_user_edit_add_new_profofile(self):
+        """Test user's internal flag"""
+
+        user_test = create_test_user(internal=True)
+        api_client = self.create_api_client(user=user_test)
+
+        url = reverse("who_am_i")
+        response = api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        response_data = response.json()
+
+        assert response_data == {
+            "id": user_test.id,
+            "username": user_test.username,
+            "last_login": None,
+            "first_name": user_test.first_name,
+            "last_name": user_test.last_name,
+            "email": user_test.email,
+            "location": None,
+            "internal": True,
+            "user_profile": None,
+        }
+
+        edit_response = self.api_client.patch(
+            url,
+            format="json",
+            data={
+                "user_profile": {
+                    "internal": False,
+                    "watch_lists": {
+                        "watch_list_1": {
+                            "country":"955f66a0-5d95-e211-a939-e4115bead28a"
+                        }
+                    }
+                }
+            },
+        )
+
+        assert edit_response.status_code == status.HTTP_200_OK
+
