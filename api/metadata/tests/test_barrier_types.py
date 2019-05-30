@@ -9,11 +9,11 @@ from api.metadata.models import BarrierType
 class TestBarrierTypes(APITestMixin):
     def test_barrier_types_count(self):
         barrier_types_count = BarrierType.objects.count()
-        assert barrier_types_count == 32
+        assert barrier_types_count == 33
 
     def test_barrier_types_goods_count(self):
         barrier_types_count = BarrierType.goods.count()
-        assert barrier_types_count == 25
+        assert barrier_types_count == 26
 
     def test_barrier_types_services_count(self):
         barrier_types_count = BarrierType.services.count()

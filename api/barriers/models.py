@@ -118,6 +118,9 @@ class BarrierInstance(BaseModel, ArchivableModel):
     next_steps_summary = models.TextField(null=True)
     eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
+    barrier_types = models.ManyToManyField(
+        BarrierType, related_name="barrier_types", help_text="Barrier types"
+    )
     barrier_type = models.ForeignKey(
         BarrierType,
         null=True,
@@ -142,8 +145,8 @@ class BarrierInstance(BaseModel, ArchivableModel):
     status_summary = models.TextField(
         null=True, default=None, help_text="status summary if provided by user"
     )
-    status_date = models.DateTimeField(
-        auto_now_add=True, null=True, help_text="date when status action occurred"
+    status_date = models.DateField(
+        null=True, help_text="date when status action occurred"
     )
 
     # Barrier priority

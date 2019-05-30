@@ -10,6 +10,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name='barrierinstance',
+            name='status_date',
+            field=models.DateField(help_text='date when status action occurred', null=True),
+        ),
+        migrations.AlterField(
+            model_name='historicalbarrierinstance',
+            name='status_date',
+            field=models.DateField(help_text='date when status action occurred', null=True),
+        ),
         migrations.RemoveField(
             model_name='barrierinstance',
             name='barrier_types',
