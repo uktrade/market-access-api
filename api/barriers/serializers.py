@@ -238,21 +238,21 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             return source2[field_name]
         return None
 
-    def validate(self, data):
-        """
-        Performs cross-field validation
-        """
-        combiner = DataCombiner(self.instance, data)
+    # def validate(self, data):
+    #     """
+    #     Performs cross-field validation
+    #     """
+    #     combiner = DataCombiner(self.instance, data)
 
-        sectors_affected = combiner.get_value('sectors_affected')
-        all_sectors = combiner.get_value('all_sectors')
-        sectors = combiner.get_value('sectors')
+    #     sectors_affected = combiner.get_value('sectors_affected')
+    #     all_sectors = combiner.get_value('all_sectors')
+    #     sectors = combiner.get_value('sectors')
 
-        if sectors_affected and all_sectors is None and sectors is None:
-            raise serializers.ValidationError('missing data')
+    #     if sectors_affected and all_sectors is None and sectors is None:
+    #         raise serializers.ValidationError('missing data')
 
-        if sectors_affected and all_sectors and sectors:
-            raise serializers.ValidationError('conflicting input')
+    #     if sectors_affected and all_sectors and sectors:
+    #         raise serializers.ValidationError('conflicting input')
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
