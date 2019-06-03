@@ -78,7 +78,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     )
 
     is_resolved = models.NullBooleanField()
-    resolved_date = models.DateTimeField(null=True, default=None)
+    resolved_date = models.DateField(null=True, default=None)
 
     export_country = models.UUIDField(null=True)
     country_admin_areas = ArrayField(

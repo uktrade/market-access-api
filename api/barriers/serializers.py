@@ -238,6 +238,30 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             return source2[field_name]
         return None
 
+    def validate(self, data):
+        """
+        Performs cross-field validation
+        status validations:
+        if status_summary is provided, status_date is mandatory
+            when current status is Resolved
+         if status_date is provided, status_summary is also expected
+        """
+        status_summary = data.get('status_summary', None)
+        status_date = data.get('status_date', None)
+        if status_date is not None and status_summary is None:
+            raise serializers.ValidationError('missing data')
+
+
+        if status_summary is not None:
+            barrier = BarrierInstance.objects.get(id=self.instance.id)
+            if barrier.status == 4:
+                if status_date is None:
+                    raise serializers.ValidationError('missing data')
+            else:
+                # ignore status_date if provided
+                data["status_date"] = getattr(self.instance, "status_date")
+        return data
+
     # def validate(self, data):
     #     """
     #     Performs cross-field validation

@@ -390,7 +390,7 @@ class TestReportDetail(APITestMixin):
         stage_3 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
         ]
-        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        assert stage_3[0]["status_desc"] == "COMPLETED"
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]

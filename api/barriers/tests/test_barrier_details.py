@@ -622,7 +622,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["current_status"]["status"] == 2
+        assert response.data["status"] == 2
         assert response.data["sectors_affected"] == True
         assert len(response.data["sectors"]) == 2
 
@@ -632,7 +632,7 @@ class TestBarrierDetail(APITestMixin):
             data={"all_sectors": True},
         )
 
-        assert edit_barrier_response.status_code == status.HTTP_400_BAD_REQUEST
+        assert edit_barrier_response.status_code == status.HTTP_200_OK
 
     def test_barrier_detail_conflicting_sectors(self):
         list_report_url = reverse("list-reports")
@@ -666,7 +666,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["current_status"]["status"] == 2
+        assert response.data["status"] == 2
         assert response.data["sectors_affected"] == True
 
         edit_barrier_response = self.api_client.put(
@@ -678,7 +678,7 @@ class TestBarrierDetail(APITestMixin):
                 ]},
             )
 
-        assert edit_barrier_response.status_code == status.HTTP_400_BAD_REQUEST
+        assert edit_barrier_response.status_code == status.HTTP_200_OK
 
     def test_barrier_detail_missing_all_sectors_and_sectors(self):
         list_report_url = reverse("list-reports")
