@@ -8,6 +8,7 @@ from rest_framework import serializers
 from api.barriers.models import BarrierInstance
 from api.core.validate_utils import DataCombiner
 from api.metadata.constants import STAGE_STATUS
+from api.core.validate_utils import DataCombiner
 
 # pylint: disable=R0201
 
@@ -41,6 +42,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "export_country",
             "country_admin_areas",
             "sectors_affected",
+            "all_sectors",
             "sectors",
             "product",
             "source",
@@ -72,6 +74,24 @@ class BarrierReportSerializer(serializers.ModelSerializer):
 
         return {"id": obj.created_by.id, "name": obj.created_user}
 
+    # def validate(self, data):
+    #     """
+    #     Performs cross-field validation
+    #     """
+    #     combiner = DataCombiner(self.instance, data)
+
+    #     sectors_affected = combiner.get_value('sectors_affected')
+    #     all_sectors = combiner.get_value('all_sectors')
+    #     sectors = combiner.get_value('sectors')
+
+    #     if sectors_affected and all_sectors is None and sectors is None:
+    #         raise serializers.ValidationError('missing data')
+
+    #     if sectors_affected and all_sectors and sectors:
+    #         raise serializers.ValidationError('conflicting input')
+
+    #     return data
+
 
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
@@ -91,6 +111,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "resolved_date",
             "barrier_title",
             "sectors_affected",
+            "all_sectors",
             "sectors",
             "export_country",
             "country_admin_areas",
@@ -146,6 +167,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "export_country",
             "country_admin_areas",
             "sectors_affected",
+            "all_sectors",
             "sectors",
             "companies",
             "product",
@@ -220,15 +242,16 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         """
         Performs cross-field validation
         status validations:
-        if status_summary is provided, status_date is mandatory 
+        if status_summary is provided, status_date is mandatory
             when current status is Resolved
-        if status_date is provided, status_summary is also expected
+         if status_date is provided, status_summary is also expected
         """
         status_summary = data.get('status_summary', None)
         status_date = data.get('status_date', None)
         if status_date is not None and status_summary is None:
             raise serializers.ValidationError('missing data')
-        
+
+
         if status_summary is not None:
             barrier = BarrierInstance.objects.get(id=self.instance.id)
             if barrier.status == 4:
@@ -238,6 +261,22 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 # ignore status_date if provided
                 data["status_date"] = getattr(self.instance, "status_date")
         return data
+
+    # def validate(self, data):
+    #     """
+    #     Performs cross-field validation
+    #     """
+    #     combiner = DataCombiner(self.instance, data)
+
+    #     sectors_affected = combiner.get_value('sectors_affected')
+    #     all_sectors = combiner.get_value('all_sectors')
+    #     sectors = combiner.get_value('sectors')
+
+    #     if sectors_affected and all_sectors is None and sectors is None:
+    #         raise serializers.ValidationError('missing data')
+
+    #     if sectors_affected and all_sectors and sectors:
+    #         raise serializers.ValidationError('conflicting input')
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
