@@ -24,15 +24,7 @@ REPORT_CONDITIONS = [
         "stage": "1.3",
         "order": 3,
         "required": ["sectors_affected"],
-        "conditional": [
-            {
-                "condition_field": "sectors_affected",
-                "operator": operator.eq,
-                "value": True,
-                "non_null_field": "sectors",
-                "error_message": "sectors can not be null, when sectors_affected is True",
-            }
-        ],
+        "conditional": []
     },
     {
         "stage": "1.4",

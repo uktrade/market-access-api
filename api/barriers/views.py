@@ -20,6 +20,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
@@ -173,7 +174,10 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIVi
         self._update_stages(serializer, self.request.user)
 
     def perform_destroy(self, instance):
-        instance.archive(self.request.user)
+        if int(instance.created_by.id) == int(self.request.user.id):
+            instance.archive(self.request.user)
+            return
+        raise PermissionDenied()
 
 
 class BarrierReportSubmit(generics.UpdateAPIView):
@@ -248,7 +252,9 @@ class BarrierFilterSet(django_filters.FilterSet):
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
         """
-        return queryset.filter(sectors__overlap=value)
+        return queryset.filter(
+            Q(all_sectors=True) | Q(sectors__overlap=value)
+        )
 
     def priority_filter(self, queryset, name, value):
         """

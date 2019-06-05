@@ -50,5 +50,15 @@ class ReportReadyForSubmitValidator:
                     if non_null_value is None:
                         errors[field_name] = [item["error_message"]]
 
+        sectors_affected = data_combiner.get_value('sectors_affected')
+        all_sectors = data_combiner.get_value('all_sectors')
+        sectors = data_combiner.get_value('sectors')
+
+        if sectors_affected and all_sectors is None and sectors is None:
+            errors['sectors'] = 'missing data'
+
+        if sectors_affected and all_sectors and sectors:
+            errors['sectors'] = 'conflicting input'
+
         if errors:
             raise ValidationError(errors)

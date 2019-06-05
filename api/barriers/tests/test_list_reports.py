@@ -485,7 +485,7 @@ class TestListReports(APITestMixin):
         stage_3 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
         ]
-        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        assert stage_3[0]["status_desc"] == "COMPLETED"
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
@@ -526,7 +526,7 @@ class TestListReports(APITestMixin):
         stage_3 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
         ]
-        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        assert stage_3[0]["status_desc"] == "COMPLETED"
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
@@ -569,7 +569,7 @@ class TestListReports(APITestMixin):
         stage_3 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
         ]
-        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        assert stage_3[0]["status_desc"] == "COMPLETED"
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
@@ -608,7 +608,7 @@ class TestListReports(APITestMixin):
         stage_3 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
         ]
-        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        assert stage_3[0]["status_desc"] == "COMPLETED"
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
@@ -649,7 +649,7 @@ class TestListReports(APITestMixin):
         stage_3 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.3"
         ]
-        assert stage_3[0]["status_desc"] == "IN PROGRESS"
+        assert stage_3[0]["status_desc"] == "COMPLETED"
         stage_4 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.4"
         ]
@@ -1462,7 +1462,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"] == self.user.username
+        assert barrier["created_by"]["name"] == self.user.username
 
     def test_list_reports_get_one_barrier_with_user_empty_username(self):
         a_user = create_test_user(
@@ -1497,7 +1497,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"] == "Testo"
+        assert barrier["created_by"]["name"] == "Testo"
 
     def test_list_reports_get_one_barrier_with_user_email_as_username(self):
         a_user = create_test_user(
@@ -1532,7 +1532,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"] == "Testo"
+        assert barrier["created_by"]["name"] == "Testo"
 
     def test_list_reports_get_one_barrier_with_user_normal_username(self):
         a_user = create_test_user(
@@ -1567,7 +1567,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"] == "Test.User"
+        assert barrier["created_by"]["name"] == "Test.User"
 
     def test_list_reports_get_one_barrier_with_user_normal_username_and_email(self):
         a_user = create_test_user(
@@ -1602,7 +1602,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"] == "Test.User"
+        assert barrier["created_by"]["name"] == "Test.User"
 
     def add_multiple_reports(self, count):
         sectors = [
