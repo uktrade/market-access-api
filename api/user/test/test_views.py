@@ -28,6 +28,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": None,
             "internal": False,
+            "permitted_applications": None,
             "user_profile": None,
         }
 
@@ -53,6 +54,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": None,
             "internal": False,
+            "permitted_applications": None,
             "user_profile": None,
         }
 
@@ -78,6 +80,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": None,
             "internal": False,
+            "permitted_applications": None,
             "user_profile": None,
         }
 
@@ -103,6 +106,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": None,
             "internal": False,
+            "permitted_applications": None,
             "user_profile": None,
         }
 
@@ -128,6 +132,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": "ba6ee1ca-5d95-e211-a939-e4115bead28a",
             "internal": False,
+            "permitted_applications": None,
             "user_profile": None,
         }
 
@@ -153,6 +158,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": None,
             "internal": True,
+            "permitted_applications": None,
             "user_profile": None,
         }
 
@@ -185,6 +191,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": None,
             "internal": False,
+            "permitted_applications": None,
             "user_profile": {
                 "internal": False,
                 "watch_lists": {
@@ -217,6 +224,7 @@ class TestUserView(APITestMixin):
             "email": user_test.email,
             "location": None,
             "internal": True,
+            "permitted_applications": None,
             "user_profile": None,
         }
 
