@@ -1,3 +1,5 @@
+from logging import getLogger
+
 import requests
 import time
 from django.conf import settings
