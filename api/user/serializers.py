@@ -10,6 +10,7 @@ from api.user.models import Profile
 from api.core.utils import cleansed_username
 
 UserModel = get_user_model()
+logger = getLogger(__name__)
 
 
 class WhoAmISerializer(serializers.ModelSerializer):
@@ -82,11 +83,16 @@ class WhoAmISerializer(serializers.ModelSerializer):
             'Authorization': auth_string,
             'cache-control': "no-cache"
             }
-        response = requests.request("GET", url, headers=headers)
-        if response.status_code == 200:
-            data = response.json()
-            return data.get("permitted_applications", None)
-        else:
-            # log the error
-            return None
+        try:
+            response = requests.request("GET", url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("permitted_applications", None)
+            else:
+                logger.warning("User info endpoint on SSO was not successful")
+                return None
+        except Exception as exc:
+            logger.error(f"Error occurred while requesting user info from SSO, {exc}")
+            raise
+        
         return None
