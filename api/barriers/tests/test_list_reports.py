@@ -21,46 +21,99 @@ class TestListReports(APITestMixin):
         assert response.data["count"] == 0
 
     def test_list_reports_get_one_report(self):
-        BarrierInstance(problem_status=1).save()
-        url = reverse("list-reports")
-        response = self.api_client.get(url)
+        a_user = create_test_user(
+            first_name="", last_name="", email="Testo@Useri.com", username=""
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+
+        response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={"problem_status": 1}
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
 
     def test_list_reports_archived_report(self):
-        BarrierInstance(problem_status=1).save()
-        url = reverse("list-reports")
-        response = self.api_client.get(url)
+        a_user = create_test_user(
+            first_name="", last_name="", email="Testo@Useri.com", username=""
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+
+        response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={"problem_status": 1}
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         sample_user = create_test_user()
         report = BarrierInstance.objects.first()
         report.archive(user=sample_user)
-        response = self.api_client.get(url)
+        response = new_api_client.get(list_report_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
     def test_list_reports_archived_with_reason_report(self):
-        BarrierInstance(problem_status=1).save()
-        url = reverse("list-reports")
-        response = self.api_client.get(url)
+        a_user = create_test_user(
+            first_name="", last_name="", email="Testo@Useri.com", username=""
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+
+        response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={"problem_status": 1}
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
         assert response.status_code == status.HTTP_200_OK
+
         assert response.data["count"] == 1
         sample_user = create_test_user()
         report = BarrierInstance.objects.first()
         report.archive(user=sample_user, reason="not a barrier")
-        response = self.api_client.get(url)
+        response = new_api_client.get(list_report_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
     def test_list_reports_get_multiple_reports(self):
-        BarrierInstance(problem_status=1).save()
-        BarrierInstance(problem_status=2).save()
-        BarrierInstance(problem_status=1).save()
-        url = reverse("list-reports")
-        response = self.api_client.get(url)
+        a_user = create_test_user(
+            first_name="", last_name="", email="Testo@Useri.com", username=""
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+
+        response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={"problem_status": 1}
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 3
+
+        response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={"problem_status": 2}
+        )
+        assert response.status_code == status.HTTP_201_CREATED
+
+        response = new_api_client.get(list_report_url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 2
 
     def test_list_reports_post_problem_status_validation(self):
         url = reverse("list-reports")
@@ -1604,7 +1657,9 @@ class TestListReports(APITestMixin):
         barrier = response.data["results"][0]
         assert barrier["created_by"]["name"] == "Test.User"
 
-    def add_multiple_reports(self, count):
+    def add_multiple_reports(self, count, api_client=None):
+        if not api_client:
+            api_client = self.api_client
         sectors = [
             "af959812-6095-e211-a939-e4115bead28a",
             "75debee7-a182-410e-bde0-3098e4f7b822",
@@ -1622,7 +1677,7 @@ class TestListReports(APITestMixin):
             ).evaluate(2, None, False)
             with freeze_time(date):
                 list_report_url = reverse("list-reports")
-                list_report_response = self.api_client.post(
+                list_report_response = api_client.post(
                     list_report_url,
                     format="json",
                     data={
@@ -1644,13 +1699,19 @@ class TestListReports(APITestMixin):
 
                 assert list_report_response.status_code == status.HTTP_201_CREATED
 
-    @pytest.mark.parametrize("order_by", ["created_on", "-created_on"])
+    @pytest.mark.parametrize("order_by", ["created_on"])
     def test_list_reports_order_by_reported_on(self, order_by):
+        a_user = create_test_user(
+            first_name="", last_name="", email="Testo@Useri.com", username="Test.User"
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
-        self.add_multiple_reports(count)
+        self.add_multiple_reports(count, new_api_client)
         url = reverse("list-reports")
-        response = self.api_client.get(url)
+        response = new_api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1658,7 +1719,7 @@ class TestListReports(APITestMixin):
             "list-reports", query_kwargs={"ordering": order_by}
         )
 
-        status_response = self.api_client.get(url)
+        status_response = new_api_client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         reports = BarrierInstance.reports.all().order_by(order_by)
         assert status_response.data["count"] == reports.count()
