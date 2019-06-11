@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from api.user.models import Profile, save_user_profile
+from api.user.models import Profile
 from api.user.serializers import WhoAmISerializer
 
 TOKEN_SESSION_KEY = '_authbroker_token'
