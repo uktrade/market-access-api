@@ -146,15 +146,12 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 
     def get_queryset(self):
         """
-        Optionally restricts the returned reports to a given export_country,
-        by filtering against a `country` query parameter in the URL.
-        and filtering against a `user` query parameter
+        This view should return a list of all the reports
+        for the currently authenticated user.
         """
         queryset = BarrierInstance.reports.all()
-        country = self.request.query_params.get("export_country", None)
-        if country is not None:
-            queryset = queryset.filter(export_country=country)
-        return queryset
+        user = self.request.user
+        return queryset.filter(created_by=user)
 
     @transaction.atomic()
     def perform_create(self, serializer):

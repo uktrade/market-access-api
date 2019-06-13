@@ -28,7 +28,11 @@ def get_default_test_user():
 
 
 def create_test_user(
-    permission_codenames=(), location=None, internal=False, **user_attrs
+    permission_codenames=(),
+    location=None,
+    internal=False,
+    user_profile=None,
+    **user_attrs
 ):
     """
     :returns: user
@@ -56,6 +60,11 @@ def create_test_user(
 
     if internal:
         user.profile.internal = internal
+        user.profile.save()
+        user.save()
+
+    if user_profile:
+        user.profile.user_profile = user_profile
         user.profile.save()
         user.save()
 
