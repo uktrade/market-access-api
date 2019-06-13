@@ -33,6 +33,7 @@ jobs:
       SENTRY_ENVIRONMENT: ''
       RESOURCE_SERVER_INTROSPECTION_URL: 'http://localhost:5000/o/introspect/'
       RESOURCE_SERVER_AUTH_TOKEN: sso-token
+      RESOURCE_SERVER_USER_INFO_URL: 'http://localhost:8080/api/v1/user/me/'
       FAKE_METADATA: 'True'
       DH_METADATA_URL: 'https://datahub-api-dev.london.cloudapps.digital/metadata/'
       HAWK_ENABLED: 'False'
