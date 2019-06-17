@@ -1,3 +1,4 @@
+import csv
 import json
 from collections import defaultdict
 from dateutil.parser import parse
@@ -9,7 +10,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import Q
 from django.forms.models import model_to_dict
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -48,6 +49,30 @@ from api.user.utils import has_profile
 
 UserModel = get_user_model()
 
+
+class Echo:
+    """An object that implements just the write method of the file-like
+    interface.
+    """
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
+
+@api_view(["GET"])
+def barriers_export(request):
+    """A view that streams a large CSV file."""
+    # Generate a sequence of rows. The range is based on the maximum number of
+    # rows that can be handled by a single sheet in most spreadsheet
+    # applications.
+    rows = (["Row {}".format(idx), str(idx)] for idx in range(10))
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer)
+    response = StreamingHttpResponse(
+        (writer.writerow(row) for row in rows),
+        content_type="text/csv"
+    )
+    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+    return response
 
 @api_view(["GET"])
 def barrier_count(request):
