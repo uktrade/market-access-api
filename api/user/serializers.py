@@ -20,6 +20,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
     username = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
     internal = serializers.SerializerMethodField()
     user_profile = serializers.SerializerMethodField()
@@ -40,13 +41,18 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "permitted_applications"
         )
 
-    def get_username(self, obj):
+    def get_email(self, obj):
+        email = obj.username
         sso_data = cache.get_or_set("sso_data", self._sso_user_data(), 72000)
-        username = None
+        if sso_data:
+            email = sso_data.get("email")
+        return email
+
+    def get_username(self, obj):
+        username = cleansed_username(obj)
+        sso_data = cache.get_or_set("sso_data", self._sso_user_data(), 72000)
         if sso_data:
             username = f"{sso_data.get('first_name', '')} {sso_data.get('last_name', '')}"
-            if username == ' ':
-                username = cleansed_username(obj)
         return username
 
     def get_location(self, obj):
