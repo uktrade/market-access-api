@@ -1,3 +1,4 @@
+import csv
 from codecs import BOM_UTF8
 from csv import DictWriter
 from datetime import datetime
@@ -19,7 +20,11 @@ def csv_iterator(rows, field_titles):
     """Returns an iterator producing CSV formatted data from provided input."""
     try:
         yield BOM_UTF8
-        writer = DictWriter(EchoUTF8(), fieldnames=field_titles.keys())
+        writer = DictWriter(
+            EchoUTF8(),
+            fieldnames=field_titles.keys(),
+            quoting=csv.QUOTE_MINIMAL
+        )
 
         yield writer.writerow(field_titles)
         for row in rows:
@@ -54,8 +59,8 @@ def _transform_csv_value(value):
     Transforms values before they are written to a CSV file for better compatibility with Excel.
 
     In particular, datetimes are formatted in a way that results in better compatibility with
-    Excel. Other values are passed through unchanged (the csv module automatically formats None
-    as an empty string).
+    Excel. Lists are converted to comma separated strings. Other values are passed through 
+    unchanged (the csv module automatically formats None as an empty string).
 
     These transformations are specific to CSV files and won't necessarily apply to other file
     formats.
@@ -65,4 +70,6 @@ def _transform_csv_value(value):
     if isinstance(value, Decimal):
         normalized_value = value.normalize()
         return f'{normalized_value:f}'
+    if isinstance(value, list):
+        return ", ".join(str(x) for x in value)
     return value

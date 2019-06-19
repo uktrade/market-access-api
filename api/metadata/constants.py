@@ -11,7 +11,7 @@ ESTIMATED_LOSS_RANGE = Choices(
 
 STAGE_STATUS = Choices((1, "NOT STARTED"), (2, "IN PROGRESS"), (3, "COMPLETED"))
 
-ADV_BOOLEAN = Choices((1, "Yes"), (2, "No"), (3, "Don't know"))
+ADV_BOOLEAN = Choices((1, "Yes"), (2, "No"), (3, "Dont know"))
 
 GOVT_RESPONSE = Choices(
     (1, "None, this is for our information only at this stage"),

@@ -1,14 +1,27 @@
 from datetime import datetime
 from django.conf import settings
 
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance
 from api.core.validate_utils import DataCombiner
-from api.metadata.constants import STAGE_STATUS
+from api.metadata.constants import (
+    ADV_BOOLEAN,
+    BARRIER_SOURCE,
+    BARRIER_STATUS,
+    STAGE_STATUS,
+    PROBLEM_STATUS_TYPES
+)
 from api.core.validate_utils import DataCombiner
+from api.metadata.utils import (
+    get_admin_areas,
+    get_barrier_types,
+    get_countries,
+    get_sectors,
+)
 
 # pylint: disable=R0201
 
@@ -91,6 +104,99 @@ class BarrierReportSerializer(serializers.ModelSerializer):
     #         raise serializers.ValidationError('conflicting input')
 
     #     return data
+
+
+class BarrierCsvExportSerializer(serializers.ModelSerializer):
+    """ Serializer for CSV export """
+    
+    scope = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    sectors = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    admin_areas = serializers.SerializerMethodField()
+    barrier_types = serializers.SerializerMethodField()
+    eu_exit_related = serializers.SerializerMethodField()
+    source = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BarrierInstance
+        fields = (
+            "code",
+            "scope",
+            "status",
+            "resolved_date",
+            "reported_on",
+            "barrier_title",
+            "sectors",
+            "country",
+            "admin_areas",
+            "eu_exit_related",
+            "barrier_types",
+            "product",
+            "source",
+            "priority",
+            "modified_on",
+        )
+
+    def get_scope(self, obj):
+        """  Custom Serializer Method Field for exposing current problem scope display value """
+        problem_status_dict = dict(PROBLEM_STATUS_TYPES)
+        return problem_status_dict.get(obj.problem_status, "Unknown")
+
+    def get_status(self, obj):
+        """  Custom Serializer Method Field for exposing current status display value """
+        status_dict = dict(BARRIER_STATUS)
+        return status_dict.get(obj.status, "Unknown")
+
+    def get_sectors(self, obj):
+        if obj.sectors_affected:
+            if obj.all_sectors:
+                return "All"
+            else:
+                dh_sectors = cache.get_or_set("dh_sectors", get_sectors, 72000)
+                sectors = []
+                for sector in obj.sectors:
+                    sectors.extend([s["name"] for s in dh_sectors if s["id"] == str(sector)])
+                return sectors
+        else:
+            return "N/A"
+    
+    def get_country(self, obj):
+        dh_countries = cache.get_or_set("dh_countries", get_countries, 72000)
+        country = [c["name"] for c in dh_countries if c["id"] == str(obj.export_country)]
+        return country
+    
+    def get_admin_areas(self, obj):
+        dh_areas = cache.get_or_set("dh_admin_areas", get_admin_areas, 72000)
+        areas = []
+        for area in obj.country_admin_areas:
+            areas.extend([a["name"] for a in dh_areas if a["id"] == str(area)])
+        return areas
+
+    def get_barrier_types(self, obj):
+        dh_btypes = get_barrier_types()
+        btypes = []
+        for btype in obj.barrier_types.all():
+            btypes.append(btype.title)
+        return btypes
+
+    def get_eu_exit_related(self, obj):
+        """  Custom Serializer Method Field for exposing current eu_exit_related display value """
+        eu_dict = dict(ADV_BOOLEAN)
+        return eu_dict.get(obj.eu_exit_related, "Unknown")
+
+    def get_source(self, obj):
+        """  Custom Serializer Method Field for exposing source display value """
+        source_dict = dict(BARRIER_SOURCE)
+        return source_dict.get(obj.source, "Unknown")
+
+    def get_priority(self, obj):
+        """  Custom Serializer Method Field for exposing barrier priority """
+        if obj.priority:
+            return obj.priority.name
+        else:
+            return "Unknown"
 
 
 class BarrierListSerializer(serializers.ModelSerializer):

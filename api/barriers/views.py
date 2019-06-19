@@ -13,8 +13,12 @@ from django.forms.models import model_to_dict
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.text import capfirst
+from django.utils.timezone import now
 
 import django_filters
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
@@ -25,11 +29,13 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
     BarrierInstanceSerializer,
+    BarrierCsvExportSerializer,
     BarrierListSerializer,
     BarrierResolveSerializer,
     BarrierReportSerializer,
@@ -41,7 +47,7 @@ from api.metadata.constants import (
 )
 
 from api.metadata.models import BarrierType, BarrierPriority
-from api.metadata.utils import get_os_regions_and_countries
+from api.metadata.utils import get_countries
 
 from api.interactions.models import Interaction
 
@@ -64,7 +70,9 @@ def barriers_export(request):
     # Generate a sequence of rows. The range is based on the maximum number of
     # rows that can be handled by a single sheet in most spreadsheet
     # applications.
-    rows = (["Row {}".format(idx), str(idx)] for idx in range(10))
+    barriers = BarrierInstance.barriers.all()
+
+    rows = ([barrier.id, barrier.export_country] for barrier in barriers)
     pseudo_buffer = Echo()
     writer = csv.writer(pseudo_buffer)
     response = StreamingHttpResponse(
@@ -294,15 +302,11 @@ class BarrierFilterSet(django_filters.FilterSet):
         else:
             return queryset.filter(priority__in=priorities)
 
-    def _countries(self):
-        dh_regions, dh_countries = get_os_regions_and_countries()
-        return dh_countries
-
     def location_filter(self, queryset, name, value):
         """
         custom filter for retreiving barriers of all countries of an overseas region
         """
-        countries = cache.get_or_set("dh_countries", self._countries, 72000)
+        countries = cache.get_or_set("dh_countries", get_countries, 72000)
         items = value.split(',')
         countries_for_region = [
             item["id"]
@@ -334,6 +338,60 @@ class BarrierList(generics.ListAPIView):
         "export_country"
     )
     ordering = ("reported_on", "modified_on")
+
+
+class BarriertListExportView(BarrierList):
+    """
+    Return a streaming http response of all the BarrierInstances
+    with optional filtering and ordering defined
+    """
+
+    serializer_class = BarrierCsvExportSerializer
+    field_titles = {
+            "code": "code",
+            "scope": "Scope",
+            "status": "Status",
+            "resolved_date": "Resolved Date",
+            "reported_on": "Reported Date",
+            "barrier_title": "Title",
+            "sectors": "Sectors",
+            "country": "Country",
+            "admin_areas": "Admin areas",
+            "eu_exit_related": "Eu Exit releated",
+            "barrier_types": "Barrier types",
+            "product": "Product",
+            "source": "Source",
+            "priority": "Priority",
+            "modified_on": "Last updated",
+        }
+
+    def _get_rows(self, queryset):
+        """
+        Returns an iterable using QuerySet.iterator() over the search results.
+        """
+
+        return queryset.values(
+            *self.field_titles.keys(),
+        ).iterator()
+
+    def _get_base_filename(self):
+        """
+        Gets the filename (without the .csv suffix) for the CSV file download.
+        """
+        filename_parts = [
+            'Data Hub Market Access Barriers',
+            now().strftime('%Y-%m-%d-%H-%M-%S'),
+        ]
+        return ' - '.join(filename_parts)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Returns CSV file with all search results for barriers
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        base_filename = self._get_base_filename()
+        return create_csv_response(serializer.data, self.field_titles, base_filename)
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
