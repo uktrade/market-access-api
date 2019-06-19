@@ -3,6 +3,7 @@ from logging import getLogger
 import requests
 import time
 from django.conf import settings
+from django.core.cache import cache
 
 from rest_framework import serializers
 
@@ -40,7 +41,13 @@ class WhoAmISerializer(serializers.ModelSerializer):
         )
 
     def get_username(self, obj):
-        return cleansed_username(obj)
+        sso_data = cache.get_or_set("sso_data", self._sso_user_data(), 72000)
+        username = None
+        if sso_data:
+            username = sso_data.get("username", None)
+            if username is None:
+                username = cleansed_username(obj)
+        return username
 
     def get_location(self, obj):
         try:
@@ -75,7 +82,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
         except AttributeError:
             return None
 
-    def get_permitted_applications(self, obj):
+    def _sso_user_data(self):
         if not settings.SSO_ENABLED:
             return None
         url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"]
@@ -88,13 +95,16 @@ class WhoAmISerializer(serializers.ModelSerializer):
         try:
             response = requests.request("GET", url, headers=headers)
             if response.status_code == 200:
-                data = response.json()
-                return data.get("permitted_applications", None)
+                return response.json()
             else:
                 logger.warning("User info endpoint on SSO was not successful")
                 return None
         except Exception as exc:
             logger.error(f"Error occurred while requesting user info from SSO, {exc}")
-            raise
-        
+            return None
+
+    def get_permitted_applications(self, obj):
+        sso_data = cache.get_or_set("sso_data", self._sso_user_data(), 72000)
+        if sso_data:
+            return sso_data.get("permitted_applications", None)
         return None
