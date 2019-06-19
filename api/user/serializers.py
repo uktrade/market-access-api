@@ -44,7 +44,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
         sso_data = cache.get_or_set("sso_data", self._sso_user_data(), 72000)
         username = None
         if sso_data:
-            username = sso_data.get("username", None)
+            username = f"{sso_data.get('firstname', None)} {sso_data.get('lastname', None)}"
             if username is None:
                 username = cleansed_username(obj)
         return username
