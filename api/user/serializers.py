@@ -49,11 +49,11 @@ class WhoAmISerializer(serializers.ModelSerializer):
         return email
 
     def get_username(self, obj):
-        username = cleansed_username(obj)
+        # username = cleansed_username(obj)
         sso_data = cache.get_or_set("sso_data", self._sso_user_data(), 72000)
         if sso_data:
-            username = f"{sso_data.get('first_name', '')} {sso_data.get('last_name', '')}"
-        return username
+            return f"{sso_data.get('first_name', '')} {sso_data.get('last_name', '')}"
+        return None
 
     def get_location(self, obj):
         try:
