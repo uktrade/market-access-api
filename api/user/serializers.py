@@ -93,10 +93,12 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
         url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"]
         token = self.context.get("token", None)
+        if token is None:
+            logger.warning("token is empty")
         auth_string = f"Bearer {token}"
         headers = {
             'Authorization': auth_string,
-            'cache-control': "no-cache"
+            'Cache-Control': "no-cache"
             }
         try:
             response = requests.request("GET", url, headers=headers)
@@ -110,6 +112,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
 
     def get_permitted_applications(self, obj):
+        print(self.context)
         sso_data = cache.get_or_set("sso_data", self._sso_user_data(), 72000)
         if sso_data:
             return sso_data.get("permitted_applications", None)
