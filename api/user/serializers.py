@@ -1,8 +1,8 @@
 from logging import getLogger
 
-import requests
 import time
 from django.conf import settings
+from django.core.cache import cache
 
 from rest_framework import serializers
 
@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 
 from api.user.models import Profile
 from api.core.utils import cleansed_username
+from api.user.utils import get_sso_user_data
 
 UserModel = get_user_model()
 logger = getLogger(__name__)
@@ -19,6 +20,9 @@ class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
     username = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
     internal = serializers.SerializerMethodField()
     user_profile = serializers.SerializerMethodField()
@@ -39,8 +43,33 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "permitted_applications"
         )
 
+    def get_email(self, obj):
+        email = obj.username
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        if sso_data:
+            return sso_data.get("email")
+        return email
+
+    def get_first_name(self, obj):
+        first_name = obj.username
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        if sso_data:
+            return sso_data.get("first_name")
+        return first_name
+
+    def get_last_name(self, obj):
+        last_name = obj.username
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        if sso_data:
+            return sso_data.get("last_name")
+        return last_name
+
     def get_username(self, obj):
-        return cleansed_username(obj)
+        username = cleansed_username(obj)
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        if sso_data:
+            return f"{sso_data.get('first_name', '')} {sso_data.get('last_name', '')}"
+        return username
 
     def get_location(self, obj):
         try:
@@ -76,25 +105,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
 
     def get_permitted_applications(self, obj):
-        if not settings.SSO_ENABLED:
-            return None
-        url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"]
-        token = self.context.get("token", None)
-        auth_string = f"Bearer {token}"
-        headers = {
-            'Authorization': auth_string,
-            'cache-control': "no-cache"
-            }
-        try:
-            response = requests.request("GET", url, headers=headers)
-            if response.status_code == 200:
-                data = response.json()
-                return data.get("permitted_applications", None)
-            else:
-                logger.warning("User info endpoint on SSO was not successful")
-                return None
-        except Exception as exc:
-            logger.error(f"Error occurred while requesting user info from SSO, {exc}")
-            raise
-        
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        if sso_data:
+            return sso_data.get("permitted_applications", None)
         return None
