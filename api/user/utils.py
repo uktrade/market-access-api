@@ -16,11 +16,11 @@ def has_profile(user):
     except Profile.DoesNotExist:
         return False
 
-def get_sso_user_data(self):
+def get_sso_user_data(context):
     if not settings.SSO_ENABLED:
         return None
     url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"]
-    token = self.context.get("token", None)
+    token = context.get("token", None)
     if token is None:
         logger.warning("auth bearer token is empty")
     auth_string = f"Bearer {token}"

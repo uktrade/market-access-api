@@ -45,28 +45,28 @@ class WhoAmISerializer(serializers.ModelSerializer):
 
     def get_email(self, obj):
         email = obj.username
-        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(self.context), 72000)
         if sso_data:
             return sso_data.get("email")
         return email
 
     def get_first_name(self, obj):
         first_name = obj.username
-        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(self.context), 72000)
         if sso_data:
             return sso_data.get("first_name")
         return first_name
 
     def get_last_name(self, obj):
         last_name = obj.username
-        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(self.context), 72000)
         if sso_data:
             return sso_data.get("last_name")
         return last_name
 
     def get_username(self, obj):
         username = cleansed_username(obj)
-        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(self.context), 72000)
         if sso_data:
             return f"{sso_data.get('first_name', '')} {sso_data.get('last_name', '')}"
         return username
@@ -105,7 +105,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
 
     def get_permitted_applications(self, obj):
-        sso_data = cache.get_or_set("sso_data", get_sso_user_data(), 72000)
+        sso_data = cache.get_or_set("sso_data", get_sso_user_data(self.context), 72000)
         if sso_data:
             return sso_data.get("permitted_applications", None)
         return None
