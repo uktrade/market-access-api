@@ -156,8 +156,9 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
             else:
                 dh_sectors = cache.get_or_set("dh_sectors", get_sectors, 72000)
                 sectors = []
-                for sector in obj.sectors:
-                    sectors.extend([s["name"] for s in dh_sectors if s["id"] == str(sector)])
+                if obj.sectors:
+                    for sector in obj.sectors:
+                        sectors.extend([s["name"] for s in dh_sectors if s["id"] == str(sector)])
                 return sectors
         else:
             return "N/A"
@@ -170,15 +171,17 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
     def get_admin_areas(self, obj):
         dh_areas = cache.get_or_set("dh_admin_areas", get_admin_areas, 72000)
         areas = []
-        for area in obj.country_admin_areas:
-            areas.extend([a["name"] for a in dh_areas if a["id"] == str(area)])
+        if obj.country_admin_areas:
+            for area in obj.country_admin_areas:
+                areas.extend([a["name"] for a in dh_areas if a["id"] == str(area)])
         return areas
 
     def get_barrier_types(self, obj):
         dh_btypes = get_barrier_types()
         btypes = []
-        for btype in obj.barrier_types.all():
-            btypes.append(btype.title)
+        if obj.barrier_types:
+            for btype in obj.barrier_types.all():
+                btypes.append(btype.title)
         return btypes
 
     def get_eu_exit_related(self, obj):
