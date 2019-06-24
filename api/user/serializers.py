@@ -10,7 +10,11 @@ from django.contrib.auth import get_user_model
 
 from api.user.models import Profile
 from api.core.utils import cleansed_username
-from api.user.utils import get_sso_user_data
+from api.user.utils import (
+    get_sso_field,
+    get_sso_user_data,
+    get_username
+)
 
 UserModel = get_user_model()
 logger = getLogger(__name__)
@@ -44,32 +48,16 @@ class WhoAmISerializer(serializers.ModelSerializer):
         )
 
     def get_email(self, obj):
-        email = obj.username
-        sso_me = cache.get_or_set("sso_me", get_sso_user_data(self.context), 72000)
-        if sso_me:
-            return sso_me.get("email")
-        return email
+        get_sso_field("email", obj.username, self.context)
 
     def get_first_name(self, obj):
-        first_name = obj.username
-        sso_me = cache.get_or_set("sso_me", get_sso_user_data(self.context), 72000)
-        if sso_me:
-            return sso_me.get("first_name")
-        return first_name
+        get_sso_field("first_name", obj.first_name, self.context)
 
     def get_last_name(self, obj):
-        last_name = obj.username
-        sso_me = cache.get_or_set("sso_me", get_sso_user_data(self.context), 72000)
-        if sso_me:
-            return sso_me.get("last_name")
-        return last_name
+        get_sso_field("last_name", obj.last_name, self.context)
 
     def get_username(self, obj):
-        username = cleansed_username(obj)
-        sso_me = cache.get_or_set("sso_me", get_sso_user_data(self.context), 72000)
-        if sso_me:
-            return f"{sso_me.get('first_name', '')} {sso_me.get('last_name', '')}"
-        return username
+        return get_username(obj, self.context)
 
     def get_location(self, obj):
         try:
@@ -105,7 +93,4 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
 
     def get_permitted_applications(self, obj):
-        sso_me = cache.get_or_set("sso_me", get_sso_user_data(self.context), 72000)
-        if sso_me:
-            return sso_me.get("permitted_applications", None)
-        return None
+        get_sso_field("permitted_applications", None, self.context)

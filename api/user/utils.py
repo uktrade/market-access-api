@@ -3,8 +3,10 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 
 from .models import Profile
+from api.core.utils import cleansed_username
 
 UserModel = get_user_model()
 logger = getLogger(__name__)
@@ -38,3 +40,18 @@ def get_sso_user_data(context):
     except Exception as exc:
         logger.error(f"Error occurred while requesting user info from SSO, {exc}")
         return None
+
+def get_sso_field(field_name, default=None, context=None):
+    # sso_me = cache.get_or_set("sso_me", get_sso_user_data(context), 72000)
+    sso_me = get_sso_user_data(context)
+    if sso_me:
+        return sso_me.get(field_name, default)
+    return default
+
+def get_username(user, context=None):
+    username = cleansed_username(user)
+    # sso_me = cache.get_or_set("sso_me", get_sso_user_data(context), 72000)
+    sso_me = get_sso_user_data(context)
+    if sso_me:
+        return f"{sso_me.get('first_name', '')} {sso_me.get('last_name', '')}"
+    return username
