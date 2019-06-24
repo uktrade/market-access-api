@@ -48,13 +48,22 @@ class WhoAmISerializer(serializers.ModelSerializer):
         )
 
     def get_email(self, obj):
-        get_sso_field("email", obj.username, self.context)
+        sso_me = get_sso_user_data(self.context)
+        if sso_me is not None:
+            return sso_me.get('email', None)
+        return None
 
     def get_first_name(self, obj):
-        get_sso_field("first_name", obj.first_name, self.context)
+        sso_me = get_sso_user_data(self.context)
+        if sso_me is not None:
+            return sso_me.get('first_name', None)
+        return None
 
     def get_last_name(self, obj):
-        get_sso_field("last_name", obj.last_name, self.context)
+        sso_me = get_sso_user_data(self.context)
+        if sso_me is not None:
+            return sso_me.get('last_name', None)
+        return None
 
     def get_username(self, obj):
         return get_username(obj, self.context)
@@ -93,4 +102,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
 
     def get_permitted_applications(self, obj):
-        get_sso_field("permitted_applications", None, self.context)
+        sso_me = get_sso_user_data(self.context)
+        if sso_me is not None:
+            return sso_me.get('permitted_applications', None)
+        return None
