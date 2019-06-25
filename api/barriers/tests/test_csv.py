@@ -54,7 +54,7 @@ def test_csv_iterator_with_error():
         ),
         (
             datetime.datetime(2010, 1, 1, 3, 3, 3),
-            '2010-01-01 03:03:03',
+            '2010-01-01',
         ),
         (
             1000,
