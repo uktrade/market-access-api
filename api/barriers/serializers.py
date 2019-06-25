@@ -112,6 +112,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
     scope = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     sectors = serializers.SerializerMethodField()
+    overseas_region = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
     barrier_types = serializers.SerializerMethodField()
@@ -129,6 +130,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
             "reported_on",
             "barrier_title",
             "sectors",
+            "overseas_region",
             "country",
             "admin_areas",
             "eu_exit_related",
@@ -167,6 +169,15 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
         dh_countries = cache.get_or_set("dh_countries", get_countries, 72000)
         country = [c["name"] for c in dh_countries if c["id"] == str(obj.export_country)]
         return country
+
+    def get_overseas_region(self, obj):
+        dh_countries = cache.get_or_set("dh_countries", get_countries, 72000)
+        country = [c for c in dh_countries if c["id"] == str(obj.export_country)]
+        if len(country) > 0:
+            overseas_region = country[0].get("overseas_region", None)
+            if overseas_region is not None:
+                return overseas_region["name"]
+        return None
     
     def get_admin_areas(self, obj):
         dh_areas = cache.get_or_set("dh_admin_areas", get_admin_areas, 72000)

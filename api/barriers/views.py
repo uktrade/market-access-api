@@ -349,19 +349,20 @@ class BarriertListExportView(BarrierList):
     serializer_class = BarrierCsvExportSerializer
     field_titles = {
             "code": "code",
-            "scope": "Scope",
-            "status": "Status",
-            "resolved_date": "Resolved Date",
-            "reported_on": "Reported Date",
             "barrier_title": "Title",
-            "sectors": "Sectors",
+            "status": "Status",
+            "priority": "Priority",
+            "overseas_region": "Overseas Region",
             "country": "Country",
             "admin_areas": "Admin areas",
-            "eu_exit_related": "Eu Exit releated",
-            "barrier_types": "Barrier types",
+            "sectors": "Sectors",
             "product": "Product",
+            "scope": "Scope",
+            "barrier_types": "Barrier types",
+            "eu_exit_related": "Eu Exit releated",
             "source": "Source",
-            "priority": "Priority",
+            "resolved_date": "Resolved Date",
+            "reported_on": "Reported Date",
             "modified_on": "Last updated",
         }
 
