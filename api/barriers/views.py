@@ -53,6 +53,9 @@ from api.interactions.models import Interaction
 
 from api.user.utils import has_profile
 
+from api.user_event_log.constants import USER_EVENT_TYPES
+from api.user_event_log.utils import record_user_event
+
 UserModel = get_user_model()
 
 
@@ -389,6 +392,10 @@ class BarriertListExportView(BarrierList):
         """
         Returns CSV file with all search results for barriers
         """
+        user_event_data = {}
+
+        record_user_event(request, USER_EVENT_TYPES.csv_download, data=user_event_data)
+
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         base_filename = self._get_base_filename()
