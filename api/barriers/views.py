@@ -362,7 +362,6 @@ class BarriertListExportView(BarrierList):
             "product": "Product",
             "scope": "Scope",
             "barrier_types": "Barrier types",
-            "eu_exit_related": "Eu Exit releated",
             "source": "Source",
             "reported_on": "Reported Date",
             "resolved_date": "Resolved Date",
