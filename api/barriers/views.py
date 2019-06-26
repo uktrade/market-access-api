@@ -337,7 +337,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset.annotate(
             search=SearchVector('problem_description')
         ).filter(
-            Q(code=value) | Q(search=value) | Q(barrier_title__contains=value)
+            Q(code=value) | Q(search=value) | Q(barrier_title__icontains=value)
         )
 
 
