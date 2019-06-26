@@ -116,7 +116,6 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
     country = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
     barrier_types = serializers.SerializerMethodField()
-    eu_exit_related = serializers.SerializerMethodField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
@@ -133,7 +132,6 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
             "overseas_region",
             "country",
             "admin_areas",
-            "eu_exit_related",
             "barrier_types",
             "product",
             "source",
