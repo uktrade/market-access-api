@@ -5,6 +5,12 @@ from urlobject import URLObject
 
 from django.conf import settings
 
+from api.metadata.constants import (
+    BARRIER_TYPE_CATEGORIES
+)
+from api.metadata.models import BarrierType, BarrierPriority
+from api.barriers.models import Stage
+
 
 def import_api_results(endpoint):
     # Avoid calling DH
@@ -21,7 +27,6 @@ def import_api_results(endpoint):
 
     return None
 
-
 def get_os_regions_and_countries():
     dh_countries = import_api_results("country")
     dh_os_regions = []
@@ -31,3 +36,48 @@ def get_os_regions_and_countries():
             if item["overseas_region"] is not None:
                 dh_os_regions.append(item["overseas_region"])
     return dh_os_regions, dh_countries
+
+def get_countries():
+    dh_regions, dh_countries = get_os_regions_and_countries()
+    return dh_countries
+
+def get_admin_areas():
+    return import_api_results("administrative-area")
+
+def get_sectors():
+    return import_api_results("sector")
+
+def get_barrier_types():
+    barrier_goods = [
+        {
+            "id": barrier_type.id,
+            "title": barrier_type.title,
+            "description": barrier_type.description,
+            "category": "GOODS",
+        }
+        for barrier_type in BarrierType.goods.all()
+    ]
+    barrier_services = [
+        {
+            "id": barrier_type.id,
+            "title": barrier_type.title,
+            "description": barrier_type.description,
+            "category": "SERVICES",
+        }
+        for barrier_type in BarrierType.services.all()
+    ]
+    return barrier_goods + barrier_services
+
+def get_barrier_priorities():
+    return [
+        {"code": priority.code, "name": priority.name, "order": priority.order}
+        for priority in BarrierPriority.objects.all()
+    ]
+
+def get_barrier_type_categories():
+    return dict(
+        (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
+    )
+
+def get_reporting_stages():
+    return dict((stage.code, stage.description) for stage in Stage.objects.all())

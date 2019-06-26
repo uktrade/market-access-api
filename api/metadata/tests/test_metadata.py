@@ -47,7 +47,7 @@ class TestBarrierTypes(APITestMixin):
         assert json.dumps(response.data["stage_status"]) == json.dumps(expected)
 
     def test_adv_boolean(self):
-        expected = {"1": "Yes", "2": "No", "3": "Don't know"}
+        expected = {"1": "Yes", "2": "No", "3": "Dont know"}
         url = reverse("metadata")
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK

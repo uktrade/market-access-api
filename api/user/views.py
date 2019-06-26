@@ -12,7 +12,7 @@ TOKEN_SESSION_KEY = '_authbroker_token'
 @permission_classes([])
 def who_am_i(request):
     """Return the current user. This view is behind a login."""
-    token = request.session.get(TOKEN_SESSION_KEY, None)
+    token = request.auth.token
     context = {"token": token}
     serializer = WhoAmISerializer(request.user, context=context)
 

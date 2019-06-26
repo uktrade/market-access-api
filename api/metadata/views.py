@@ -9,7 +9,16 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .utils import import_api_results, get_os_regions_and_countries
+from .utils import (
+    import_api_results,
+    get_os_regions_and_countries,
+    get_admin_areas,
+    get_sectors,
+    get_barrier_priorities,
+    get_barrier_type_categories,
+    get_barrier_types,
+    get_reporting_stages
+)
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
@@ -39,40 +48,6 @@ class MetadataView(generics.GenericAPIView):
         authentication_classes = ()
         permission_classes = ()
 
-    def get_barrier_types(self):
-        barrier_goods = [
-            {
-                "id": barrier_type.id,
-                "title": barrier_type.title,
-                "description": barrier_type.description,
-                "category": "GOODS",
-            }
-            for barrier_type in BarrierType.goods.all()
-        ]
-        barrier_services = [
-            {
-                "id": barrier_type.id,
-                "title": barrier_type.title,
-                "description": barrier_type.description,
-                "category": "SERVICES",
-            }
-            for barrier_type in BarrierType.services.all()
-        ]
-        return barrier_goods + barrier_services
-
-    def get_barrier_priorities(self):
-        return [
-            {"code": priority.code, "name": priority.name, "order": priority.order}
-            for priority in BarrierPriority.objects.all()
-        ]
-
-    def get_barrier_type_categories(self):
-        return dict(
-            (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
-        )
-
-    def get_reporting_stages(self):
-        return dict((stage.code, stage.description) for stage in Stage.objects.all())
 
     def get(self, request):
         status_types = dict((x, y) for x, y in PROBLEM_STATUS_TYPES)
@@ -90,13 +65,13 @@ class MetadataView(generics.GenericAPIView):
         timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
 
         dh_os_regions, dh_countries = get_os_regions_and_countries()
-        dh_admin_areas = import_api_results("administrative-area")
-        dh_sectors = import_api_results("sector")
+        dh_admin_areas = get_admin_areas()
+        dh_sectors = get_sectors()
 
-        report_stages = self.get_reporting_stages()
-        barrier_types = self.get_barrier_types()
-        barrier_type_cat = self.get_barrier_type_categories()
-        barrier_priorities = self.get_barrier_priorities()
+        report_stages = get_reporting_stages()
+        barrier_types = get_barrier_types()
+        barrier_type_cat = get_barrier_type_categories()
+        barrier_priorities = get_barrier_priorities()
 
         results = {
             "status_types": status_types,

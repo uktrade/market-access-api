@@ -5,7 +5,9 @@ from api.metadata.views import MetadataView
 from api.ping.views import ping
 from api.barriers.views import (
     barrier_count,
+    barriers_export,
     BarrierList,
+    BarriertListExportView,
     BarrierDetail,
     BarrierResolve,
     BarrierHibernate,
@@ -36,6 +38,7 @@ urlpatterns = [
     ),
     path("metadata", MetadataView.as_view(), name="metadata"),
     path("barriers", BarrierList.as_view(), name="list-barriers"),
+    path("barriers/export", BarriertListExportView.as_view(), name="barriers-export"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path(
         "barriers/<uuid:pk>/full_history",

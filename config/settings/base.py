@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "api.documents",
     "api.interactions",
     "authbroker_client",
+    "api.user_event_log",
 ]
 
 MIDDLEWARE = [
