@@ -504,8 +504,8 @@ class TestListBarriers(APITestMixin):
                         "product": "Some product",
                         "source": "OTHER",
                         "other_source": "Other source",
-                        "barrier_title": "Some title",
-                        "problem_description": "Some problem_description",
+                        "barrier_title": "Some test title",
+                        "problem_description": "Some test problem_description",
                         "status_summary": "some status summary",
                         "eu_exit_related": 1,
                     },
@@ -1518,3 +1518,143 @@ class TestListBarriers(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
+
+    def test_list_barriers_text_filter_based_on_title(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"text": "Some"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10
+
+    def _test_list_barriers_text_filter_based_on_title_no_fuzzy_1(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"text": "testing"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 0
+
+    def test_list_barriers_text_filter_based_on_title_no_fuzzy_2(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"text": "test2"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 0
+
+    def test_list_barriers_text_filter_based_on_title_case_insensitive(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"text": "SOME"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10
+
+    def test_list_barriers_text_filter_based_on_summary(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"text": "problem_description"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10
+
+    def _test_list_barriers_text_filter_based_on_summary_no_fuzzy(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"text": "testing"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 0
+
+    def test_list_barriers_text_filter_based_on_summary_case_insensitive(self):
+        """
+        Test all barriers in Europe
+        """
+        count = 10
+        self.add_multiple_barriers(count)
+        url = reverse("list-barriers")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"text": "Problem_Description"},
+        )
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10

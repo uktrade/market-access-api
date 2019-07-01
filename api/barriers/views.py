@@ -6,6 +6,7 @@ from dateutil.parser import parse
 from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.search import SearchVector
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 from django.db.models import Q
@@ -260,6 +261,9 @@ class BarrierFilterSet(django_filters.FilterSet):
         location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc,955f66a0-5d95-e211-a939-e4115bead28a
     priority: priority code, one or more comma seperated priority codes
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
+    text: combination custom search across multiple fields.
+        Searches for reference code,
+        barrier title and barrier summary
     """
 
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
@@ -268,6 +272,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     barrier_type = django_filters.BaseInFilter("barrier_type")
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.Filter(method="location_filter")
+    text = django_filters.Filter(method="text_search")
 
     class Meta:
         model = BarrierInstance
@@ -320,6 +325,19 @@ class BarrierFilterSet(django_filters.FilterSet):
             Q(export_country__in=items) |
             Q(export_country__in=countries_for_region) |
             Q(country_admin_areas__overlap=items)
+        )
+
+    def text_search(self, queryset, name, value):
+        """
+        custom text search against multiple fields
+            full value of code
+            full text search on problem_description
+            partial search on barrier_title
+        """
+        return queryset.annotate(
+            search=SearchVector('problem_description')
+        ).filter(
+            Q(code=value) | Q(search=value) | Q(barrier_title__icontains=value)
         )
 
 
