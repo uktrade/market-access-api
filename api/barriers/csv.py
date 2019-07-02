@@ -71,5 +71,5 @@ def _transform_csv_value(value):
         normalized_value = value.normalize()
         return f'{normalized_value:f}'
     if isinstance(value, list):
-        return ", ".join(str(x) for x in value)
+        return "; ".join(str(x) for x in value)
     return value

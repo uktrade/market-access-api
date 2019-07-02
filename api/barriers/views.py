@@ -369,6 +369,7 @@ class BarriertListExportView(BarrierList):
 
     serializer_class = BarrierCsvExportSerializer
     field_titles = {
+            "id": "id",
             "code": "code",
             "barrier_title": "Title",
             "status": "Status",
