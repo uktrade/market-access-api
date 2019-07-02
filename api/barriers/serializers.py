@@ -124,6 +124,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
     class Meta:
         model = BarrierInstance
         fields = (
+            "id",
             "code",
             "scope",
             "status",
