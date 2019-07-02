@@ -120,6 +120,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
     priority = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
+    resolved_date = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -212,6 +213,19 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
             return obj.priority.name
         else:
             return "Unknown"
+
+    def get_resolved_date(self, obj):
+        """
+        Customer field to return resolved_date if the barrier was resolved by the time it was reported
+        otherwise return status_date, if current status is resolved
+        """
+        if obj.resolved_date:
+            return obj.resolved_date
+        else:
+            if obj.status == 4:
+                return obj.status_date
+
+        return None
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
