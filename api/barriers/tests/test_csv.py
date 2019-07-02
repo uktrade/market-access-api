@@ -70,7 +70,7 @@ def test_csv_iterator_with_error():
         ),
         (
             ["a","b","c"],
-            "a, b, c",
+            "a; b; c",
         ),
         (
             ["a"],
