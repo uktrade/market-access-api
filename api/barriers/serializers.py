@@ -5,6 +5,7 @@ from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
+from rest_framework.utils import model_meta
 
 from api.barriers.models import BarrierInstance
 from api.core.validate_utils import DataCombiner
@@ -233,6 +234,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
     reported_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -252,8 +254,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "country_admin_areas",
             "eu_exit_related",
             "status",
-            "status_date",
-            "status_summary",
             "priority",
             "barrier_types",
             "created_on",
@@ -263,12 +263,13 @@ class BarrierListSerializer(serializers.ModelSerializer):
     def get_reported_by(self, obj):
         return obj.created_user
 
-    def get_current_status(self, obj):
-        """  Custom Serializer Method Field for exposing current barrier status as json """
+    def get_status(self, obj):
         return {
-            "status": obj.status,
-            "status_date": obj.status_date,
-            "status_summary": obj.status_summary,
+            "id": obj.status,
+            "sub_status": obj.sub_status,
+            "sub_status_text": obj.sub_status_other,
+            "date": obj.status_date,
+            "summary": obj.status_summary,
         }
 
     def get_priority(self, obj):
@@ -290,6 +291,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     modified_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     barrier_types = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -314,8 +316,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "reported_on",
             "reported_by",
             "status",
-            "status_summary",
-            "status_date",
             "priority",
             "priority_summary",
             "eu_exit_related",
@@ -326,7 +326,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "code",
-            "status",
             "reported_on",
             "reported_by",
             "priority_date",
@@ -345,11 +344,13 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def get_modified_by(self, obj):
         return obj.modified_user
 
-    def get_current_status(self, obj):
+    def get_status(self, obj):
         return {
-            "status": obj.status,
-            "status_date": obj.status_date,
-            "status_summary": obj.status_summary,
+            "id": obj.status,
+            "sub_status": obj.sub_status,
+            "sub_status_text": obj.sub_status_other,
+            "date": obj.status_date,
+            "summary": obj.status_summary,
         }
 
     def get_barrier_types(self, obj):
@@ -381,37 +382,21 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             when current status is Resolved
          if status_date is provided, status_summary is also expected
         """
-        status_summary = data.get('status_summary', None)
-        status_date = data.get('status_date', None)
-        if status_date is not None and status_summary is None:
-            raise serializers.ValidationError('missing data')
+        # status_summary = data.get('status_summary', None)
+        # status_date = data.get('status_date', None)
+        # if status_date is not None and status_summary is None:
+        #     raise serializers.ValidationError('missing data')
 
 
-        if status_summary is not None:
-            barrier = BarrierInstance.objects.get(id=self.instance.id)
-            if barrier.status == 4:
-                if status_date is None:
-                    raise serializers.ValidationError('missing data')
-            else:
-                # ignore status_date if provided
-                data["status_date"] = getattr(self.instance, "status_date")
+        # if status_summary is not None:
+        #     barrier = BarrierInstance.objects.get(id=self.instance.id)
+        #     if barrier.status == 4:
+        #         if status_date is None:
+        #             raise serializers.ValidationError('missing data')
+        #     else:
+        #         # ignore status_date if provided
+        #         data["status_date"] = getattr(self.instance, "status_date")
         return data
-
-    # def validate(self, data):
-    #     """
-    #     Performs cross-field validation
-    #     """
-    #     combiner = DataCombiner(self.instance, data)
-
-    #     sectors_affected = combiner.get_value('sectors_affected')
-    #     all_sectors = combiner.get_value('all_sectors')
-    #     sectors = combiner.get_value('sectors')
-
-    #     if sectors_affected and all_sectors is None and sectors is None:
-    #         raise serializers.ValidationError('missing data')
-
-    #     if sectors_affected and all_sectors and sectors:
-    #         raise serializers.ValidationError('conflicting input')
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
@@ -438,6 +423,8 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "status",
+            "sub_status",
+            "sub_status_other",
             "status_date",
             "status_summary",
             "created_on",

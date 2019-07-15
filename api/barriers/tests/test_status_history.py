@@ -161,7 +161,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 0
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -221,7 +221,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 0
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -243,7 +243,7 @@ class TestBarrierStatusHistory(APITestMixin):
             == "dummy summary"
         )
 
-        open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
+        open_barrier_url = reverse("open-in-progress", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
             open_barrier_url, format="json", data={"status_date": "2018-09-10"}
         )
@@ -392,7 +392,7 @@ class TestBarrierStatusHistory(APITestMixin):
             == "dummy summary"
         )
 
-        open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
+        open_barrier_url = reverse("open-in-progress", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
             open_barrier_url, format="json", data={"status_date": "2018-09-10"}
         )

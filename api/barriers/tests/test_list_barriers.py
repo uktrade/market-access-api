@@ -1160,9 +1160,9 @@ class TestListBarriers(APITestMixin):
         assert barrier["sectors_affected"] == False
         assert barrier["sectors"] is None
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["status"] == 2
-        assert barrier["status_date"] is not None
-        assert barrier["status_summary"] is None
+        assert barrier["status"]["id"] == 2
+        assert barrier["status"]["date"] is not None
+        assert barrier["status"]["summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
         assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
@@ -1269,9 +1269,9 @@ class TestListBarriers(APITestMixin):
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["status"] == 2
-        assert barrier["status_date"] is not None
-        assert barrier["status_summary"] is None
+        assert barrier["status"]["id"] == 2
+        assert barrier["status"]["date"] is not None
+        assert barrier["status"]["summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
         assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None

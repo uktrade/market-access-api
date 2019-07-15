@@ -597,7 +597,7 @@ class BarrierStatuseHistory(GenericAPIView):
 
 class BarrierStatusBase(generics.UpdateAPIView):
     def _create(
-        self, serializer, barrier_id, barrier_status, barrier_summary, status_date=None
+        self, serializer, barrier_id, status, summary, sub_status=None, sub_other=None, status_date=None
     ):
         barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
 
@@ -605,34 +605,22 @@ class BarrierStatusBase(generics.UpdateAPIView):
             status_date = timezone.now().date()
 
         serializer.save(
-            status=barrier_status,
-            status_summary=barrier_summary,
+            status=status,
+            sub_status=sub_status,
+            sub_status_other=sub_other,
+            status_summary=summary,
             status_date=status_date,
             modified_by=self.request.user,
         )
 
 
-class BarrierResolve(BarrierStatusBase):
+class BarrierResolveInFull(BarrierStatusBase):
 
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierResolveSerializer
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
-
-    # def update(self, request, *args, **kwargs):
-    #     partial = kwargs.pop('partial', False)
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
-    #     serializer.is_valid(raise_exception=False)
-    #     self.perform_update(serializer)
-
-    #     if getattr(instance, '_prefetched_objects_cache', None):
-    #         # If 'prefetch_related' has been applied to a queryset, we need to
-    #         # forcibly invalidate the prefetch cache on the instance.
-    #         instance._prefetched_objects_cache = {}
-
-    #     return Response(serializer.data)
 
     def perform_update(self, serializer):
         errors = defaultdict(list)
@@ -651,16 +639,41 @@ class BarrierResolve(BarrierStatusBase):
         self._create(
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
-            barrier_status=4,
-            barrier_summary=self.request.data.get("status_summary"),
+            status=4,
+            summary=self.request.data.get("status_summary"),
             status_date=self.request.data.get("status_date")
         )
-        # serializer.save(
-        #     status=4,
-        #     status_summary=self.request.data.get("status_summary"),
-        #     status_date=self.request.data.get("status_date"),
-        #     modified_by=self.request.user,
-        # )
+
+
+class BarrierResolveInPart(BarrierStatusBase):
+
+    queryset = BarrierInstance.barriers.all()
+    serializer_class = BarrierResolveSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.kwargs.get("pk"))
+
+    def perform_update(self, serializer):
+        errors = defaultdict(list)
+        if self.request.data.get("status_summary", None) is None:
+            errors["status_summary"] = "This field is required"
+        if self.request.data.get("status_date", None) is None:
+            errors["status_date"] = "This field is required"
+        else:
+            try:
+                parse(self.request.data.get("status_date"))
+            except ValueError:
+                errors["status_date"] = "enter a valid date"
+        if errors:
+            message = {"fields": errors}
+            raise serializers.ValidationError(message)
+        self._create(
+            serializer=serializer,
+            barrier_id=self.kwargs.get("pk"),
+            status=3,
+            summary=self.request.data.get("status_summary"),
+            status_date=self.request.data.get("status_date")
+        )
 
 
 class BarrierHibernate(BarrierStatusBase):
@@ -673,14 +686,14 @@ class BarrierHibernate(BarrierStatusBase):
 
     def perform_update(self, serializer):
         self._create(
-            serializer,
-            self.kwargs.get("pk"),
-            5,
-            self.request.data.get("status_summary"),
+            serializer=serializer,
+            barrier_id=self.kwargs.get("pk"),
+            status=5,
+            summary=self.request.data.get("status_summary"),
         )
 
 
-class BarrierOpen(BarrierStatusBase):
+class BarrierOpenInProgress(BarrierStatusBase):
 
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
@@ -690,8 +703,39 @@ class BarrierOpen(BarrierStatusBase):
 
     def perform_update(self, serializer):
         self._create(
-            serializer,
-            self.kwargs.get("pk"),
-            2,
-            self.request.data.get("status_summary"),
+            serializer=serializer,
+            barrier_id=self.kwargs.get("pk"),
+            status=2,
+            summary=self.request.data.get("status_summary"),
+        )
+
+
+class BarrierOpenActionRequired(BarrierStatusBase):
+
+    queryset = BarrierInstance.barriers.all()
+    serializer_class = BarrierStaticStatusSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.kwargs.get("pk"))
+
+    def perform_update(self, serializer):
+        errors = defaultdict(list)
+        if self.request.data.get("sub_status", None) is None:
+            errors["sub_status"] = "This field is required"
+        elif self.request.data.get("sub_status", None) == "OTHER" and self.request.data.get("sub_status_other", None) is None:
+            errors["sub_status_other"] = "This field is required"
+        if self.request.data.get("status_summary", None) is None:
+            errors["status_summary"] = "This field is required"
+
+        if errors:
+            message = {"fields": errors}
+            raise serializers.ValidationError(message)
+        self._create(
+            serializer=serializer,
+            barrier_id=self.kwargs.get("pk"),
+            status=1,
+            sub_status=self.request.data.get("sub_status"),
+            sub_other=self.request.data.get("sub_status_other"),
+            summary=self.request.data.get("status_summary"),
+            status_date=self.request.data.get("status_date")
         )

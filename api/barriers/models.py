@@ -15,6 +15,7 @@ from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
+    BARRIER_PENDING,
     BARRIER_TYPE_CATEGORIES,
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
@@ -141,6 +142,18 @@ class BarrierInstance(BaseModel, ArchivableModel):
     # Barrier status
     status = models.PositiveIntegerField(
         choices=BARRIER_STATUS, default=0, help_text="status of the barrier instance"
+    )
+    sub_status = models.CharField(
+        choices=BARRIER_PENDING,
+        max_length=25,
+        null=True,
+        default=None,
+        help_text="barrier sub status",
+    )
+    sub_status_other = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True,
+        help_text="barrier sub status text for other choice"
     )
     status_summary = models.TextField(
         null=True, default=None, help_text="status summary if provided by user"

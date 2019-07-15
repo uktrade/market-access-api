@@ -9,9 +9,11 @@ from api.barriers.views import (
     BarrierList,
     BarriertListExportView,
     BarrierDetail,
-    BarrierResolve,
+    BarrierResolveInFull,
+    BarrierResolveInPart,
     BarrierHibernate,
-    BarrierOpen,
+    BarrierOpenInProgress,
+    BarrierOpenActionRequired,
     BarrierReportList,
     BarrierReportDetail,
     BarrierReportSubmit,
@@ -51,12 +53,16 @@ urlpatterns = [
         name="status-history",
     ),
     path(
-        "barriers/<uuid:pk>/resolve", BarrierResolve.as_view(), name="resolve-barrier"
+        "barriers/<uuid:pk>/resolve-in-full", BarrierResolveInFull.as_view(), name="resolve-in-full"
+    ),
+    path(
+        "barriers/<uuid:pk>/resolve-in-part", BarrierResolveInPart.as_view(), name="resolve-in-part"
     ),
     path(
         "barriers/<uuid:pk>/hibernate",
         BarrierHibernate.as_view(),
         name="hibernate-barrier",
     ),
-    path("barriers/<uuid:pk>/open", BarrierOpen.as_view(), name="open-barrier"),
+    path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
+    path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
 ] + urlpatterns

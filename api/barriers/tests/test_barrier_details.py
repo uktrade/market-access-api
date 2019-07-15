@@ -266,9 +266,9 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -278,7 +278,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 4
+        assert response.data["status"]["id"] == 4
 
     def test_barrier_detail_submitted_open_edit_to_hibernate(self):
         list_report_url = reverse("list-reports")
@@ -315,7 +315,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -327,7 +327,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 5
+        assert response.data["status"]["id"] == 5
 
     def test_barrier_detail_submitted_resolved_edit_to_hibernate(self):
         list_report_url = reverse("list-reports")
@@ -366,7 +366,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 4
+        assert response.data["status"]["id"] == 4
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -378,7 +378,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 5
+        assert response.data["status"]["id"] == 5
 
     def test_barrier_detail_submitted_resolved_edit_to_open(self):
         list_report_url = reverse("list-reports")
@@ -417,9 +417,9 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 4
+        assert response.data["status"]["id"] == 4
 
-        resolve_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("open-in-progress", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -429,7 +429,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
     def test_barrier_detail_edit_barrier_headline_1(self):
         list_report_url = reverse("list-reports")
@@ -466,7 +466,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
         assert response.data["problem_status"] == 2
         assert response.data["barrier_title"] == "Some title"
         assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
@@ -519,7 +519,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
         assert response.data["problem_status"] == 2
         assert response.data["barrier_title"] == "Some title"
         assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
@@ -574,7 +574,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
         assert response.data["problem_status"] == 2
         assert response.data["barrier_title"] == "Some title"
         assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
@@ -622,7 +622,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
         assert response.data["sectors_affected"] == True
         assert len(response.data["sectors"]) == 2
 
@@ -666,7 +666,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
         assert response.data["sectors_affected"] == True
 
         edit_barrier_response = self.api_client.put(
@@ -1080,7 +1080,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
@@ -1161,9 +1161,9 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"] == 2
+        assert get_response.data["status"]["id"] == 2
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -1173,9 +1173,9 @@ class TestBarrierDetail(APITestMixin):
         resolve_response = self.api_client.get(get_url)
         assert resolve_response.status_code == status.HTTP_200_OK
         assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"] == 4
-        assert resolve_response.data["status_summary"] == "dummy summary"
-        assert resolve_response.data["status_date"] == "2018-09-10"
+        assert resolve_response.data["status"]["id"] == 4
+        assert resolve_response.data["status"]["summary"] == "dummy summary"
+        assert resolve_response.data["status"]["date"] == "2018-09-10"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1185,9 +1185,9 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["status"] == 4
-        assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert edit_barrier_response.data["status_date"] == "2018-10-10"
+        assert edit_barrier_response.data["status"]["id"] == 4
+        assert edit_barrier_response.data["status"]["summary"] == "more dummy summary"
+        assert edit_barrier_response.data["status"]["date"] == "2018-10-10"
 
     def test_barrier_detail_submitted_open_and_resolve_edit_summary_no_status_date_400(self):
         list_report_url = reverse("list-reports")
@@ -1224,9 +1224,9 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -1236,8 +1236,8 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 4
-        assert response.data["status_summary"] == "dummy summary"
+        assert response.data["status"]["id"] == 4
+        assert response.data["status"]["summary"] == "dummy summary"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1282,9 +1282,9 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -1294,8 +1294,8 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 4
-        assert response.data["status_summary"] == "dummy summary"
+        assert response.data["status"]["id"] == 4
+        assert response.data["status"]["summary"] == "dummy summary"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1341,7 +1341,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"] == 2
+        assert get_response.data["status"]["id"] == 2
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1353,9 +1353,9 @@ class TestBarrierDetail(APITestMixin):
         resolve_response = self.api_client.get(get_url)
         assert resolve_response.status_code == status.HTTP_200_OK
         assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"] == 5
-        assert resolve_response.data["status_summary"] == "dummy summary"
-        assert resolve_response.data["status_date"] == "2018-11-10"
+        assert resolve_response.data["status"]["id"] == 5
+        assert resolve_response.data["status"]["summary"] == "dummy summary"
+        assert resolve_response.data["status"]["date"] == "2018-11-10"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1365,9 +1365,9 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["status"] == 5
-        assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert edit_barrier_response.data["status_date"] == "2018-11-10"
+        assert edit_barrier_response.data["status"]["id"] == 5
+        assert edit_barrier_response.data["status"]["summary"] == "more dummy summary"
+        assert edit_barrier_response.data["status"]["date"] == "2018-11-10"
 
     @freeze_time("2018-11-10")
     def test_barrier_detail_submitted_open_and_hibernate_edit_status_summary_2(self):
@@ -1405,7 +1405,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"] == 2
+        assert get_response.data["status"]["id"] == 2
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1417,9 +1417,9 @@ class TestBarrierDetail(APITestMixin):
         resolve_response = self.api_client.get(get_url)
         assert resolve_response.status_code == status.HTTP_200_OK
         assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"] == 5
-        assert resolve_response.data["status_summary"] == "dummy summary"
-        assert resolve_response.data["status_date"] == "2018-11-10"
+        assert resolve_response.data["status"]["id"] == 5
+        assert resolve_response.data["status"]["summary"] == "dummy summary"
+        assert resolve_response.data["status"]["date"] == "2018-11-10"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1429,9 +1429,9 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["status"] == 5
-        assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert edit_barrier_response.data["status_date"] == "2018-11-10"
+        assert edit_barrier_response.data["status"]["id"] == 5
+        assert edit_barrier_response.data["status"]["summary"] == "more dummy summary"
+        assert edit_barrier_response.data["status"]["date"] == "2018-11-10"
 
     @freeze_time("2018-11-10")
     def test_barrier_detail_submitted_open_and_hibernate_edit_status_summary_2(self):
@@ -1469,7 +1469,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"] == 2
+        assert get_response.data["status"]["id"] == 2
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1481,9 +1481,9 @@ class TestBarrierDetail(APITestMixin):
         resolve_response = self.api_client.get(get_url)
         assert resolve_response.status_code == status.HTTP_200_OK
         assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"] == 5
-        assert resolve_response.data["status_summary"] == "dummy summary"
-        assert resolve_response.data["status_date"] == "2018-11-10"
+        assert resolve_response.data["status"]["id"] == 5
+        assert resolve_response.data["status"]["summary"] == "dummy summary"
+        assert resolve_response.data["status"]["date"] == "2018-11-10"
 
         with freeze_time("2019-01-10"):
             edit_barrier_response = self.api_client.put(
@@ -1494,9 +1494,9 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["status"] == 5
-        assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert edit_barrier_response.data["status_date"] == "2018-11-10"
+        assert edit_barrier_response.data["status"]["id"] == 5
+        assert edit_barrier_response.data["status"]["summary"] == "more dummy summary"
+        assert edit_barrier_response.data["status"]["date"] == "2018-11-10"
 
     @freeze_time("2018-11-10")
     def test_barrier_detail_submitted_open_and_hibernate_edit_status_summary_and_status_date(self):
@@ -1534,7 +1534,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"] == 2
+        assert get_response.data["status"]["id"] == 2
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1546,9 +1546,9 @@ class TestBarrierDetail(APITestMixin):
         resolve_response = self.api_client.get(get_url)
         assert resolve_response.status_code == status.HTTP_200_OK
         assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"] == 5
-        assert resolve_response.data["status_summary"] == "dummy summary"
-        assert resolve_response.data["status_date"] == "2018-11-10"
+        assert resolve_response.data["status"]["id"] == 5
+        assert resolve_response.data["status"]["summary"] == "dummy summary"
+        assert resolve_response.data["status"]["date"] == "2018-11-10"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1558,9 +1558,9 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["status"] == 5
-        assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert edit_barrier_response.data["status_date"] == "2018-11-10"
+        assert edit_barrier_response.data["status"]["id"] == 5
+        assert edit_barrier_response.data["status"]["summary"] == "more dummy summary"
+        assert edit_barrier_response.data["status"]["date"] == "2018-11-10"
 
     @freeze_time("2018-11-10")
     def test_barrier_detail_submitted_open_and_hibernate_edit_summary_no_status_date_400(self):
@@ -1598,7 +1598,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1610,8 +1610,8 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 5
-        assert response.data["status_summary"] == "dummy summary"
+        assert response.data["status"]["id"] == 5
+        assert response.data["status"]["summary"] == "dummy summary"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1621,9 +1621,9 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["status"] == 5
-        assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert edit_barrier_response.data["status_date"] == "2018-11-10"
+        assert edit_barrier_response.data["status"]["id"] == 5
+        assert edit_barrier_response.data["status"]["summary"] == "more dummy summary"
+        assert edit_barrier_response.data["status"]["date"] == "2018-11-10"
 
     def test_barrier_detail_submitted_open_and_hibernate_edit_status_no_status_summary_400(self):
         list_report_url = reverse("list-reports")
@@ -1660,7 +1660,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 2
+        assert response.data["status"]["id"] == 2
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1672,8 +1672,8 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"] == 5
-        assert response.data["status_summary"] == "dummy summary"
+        assert response.data["status"]["id"] == 5
+        assert response.data["status"]["summary"] == "dummy summary"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1718,9 +1718,9 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"] == 2
+        assert get_response.data["status"]["id"] == 2
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -1730,9 +1730,9 @@ class TestBarrierDetail(APITestMixin):
         resolve_response = self.api_client.get(get_url)
         assert resolve_response.status_code == status.HTTP_200_OK
         assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"] == 4
-        assert resolve_response.data["status_summary"] == "dummy summary"
-        assert resolve_response.data["status_date"] == "2018-09-10"
+        assert resolve_response.data["status"]["id"] == 4
+        assert resolve_response.data["status"]["summary"] == "dummy summary"
+        assert resolve_response.data["status"]["date"] == "2018-09-10"
 
         edit_barrier_response = self.api_client.put(
             get_url,
@@ -1742,6 +1742,6 @@ class TestBarrierDetail(APITestMixin):
 
         assert edit_barrier_response.status_code == status.HTTP_200_OK
         assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["status"] == 4
-        assert edit_barrier_response.data["status_summary"] == "more dummy summary"
-        assert edit_barrier_response.data["status_date"] == "2018-10-10"
+        assert edit_barrier_response.data["status"]["id"] == 4
+        assert edit_barrier_response.data["status"]["summary"] == "more dummy summary"
+        assert edit_barrier_response.data["status"]["date"] == "2018-10-10"
