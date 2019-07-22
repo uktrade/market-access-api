@@ -36,6 +36,11 @@ REPORT_STATUS = Choices(
     (4, "Archived"),
 )
 
+RESOLVED_STATUS = Choices(
+    ("IN_FULL", "In Full"),
+    ("IN_PART", "In Part"),
+)
+
 BARRIER_STATUS = Choices(
     (0, "Unknown"),
     (1, "Open: Pending action"),

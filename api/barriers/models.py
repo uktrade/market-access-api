@@ -18,6 +18,7 @@ from api.metadata.constants import (
     BARRIER_PENDING,
     BARRIER_TYPE_CATEGORIES,
     PROBLEM_STATUS_TYPES,
+    RESOLVED_STATUS,
     STAGE_STATUS,
 )
 from api.core.models import ArchivableModel, BaseModel
@@ -80,6 +81,9 @@ class BarrierInstance(BaseModel, ArchivableModel):
 
     is_resolved = models.NullBooleanField()
     resolved_date = models.DateField(null=True, default=None)
+    resolved_status = models.CharField(
+        choices=RESOLVED_STATUS, max_length=25, null=True, help_text="chance of success"
+    )
 
     export_country = models.UUIDField(null=True)
     country_admin_areas = ArrayField(
@@ -210,10 +214,13 @@ class BarrierInstance(BaseModel, ArchivableModel):
             validator.set_instance(self)
             validator()
         if self.is_resolved:
-            barrier_new_status = 4  # Resolved
+            if self.resolved_status == "IN_FULL":
+                barrier_new_status = 4  # Resolved In Full
+            else:
+                barrier_new_status = 3  # Resolved In Part
             status_date = self.isodate_to_tz_datetime(self.resolved_date)
         else:
-            barrier_new_status = 2  # Assesment
+            barrier_new_status = 2  # Open pending action
             status_date = timezone.now()
         self.modified_by = submitted_by
         self.status = barrier_new_status  # If all good, then accept the report for now

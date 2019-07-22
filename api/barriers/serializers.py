@@ -49,10 +49,11 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "code",
             "problem_status",
             "is_resolved",
+            "resolved_date",
+            "resolved_status",
             "status",
             "status_summary",
             "status_date",
-            "resolved_date",
             "export_country",
             "country_admin_areas",
             "sectors_affected",
@@ -268,7 +269,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "id": obj.status,
             "sub_status": obj.sub_status,
             "sub_status_text": obj.sub_status_other,
-            "date": obj.status_date,
+            "date": obj.status_date.strftime('%Y-%m-%d'),
             "summary": obj.status_summary,
         }
 
@@ -349,7 +350,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "id": obj.status,
             "sub_status": obj.sub_status,
             "sub_status_text": obj.sub_status_other,
-            "date": obj.status_date,
+            "date": obj.status_date.strftime('%Y-%m-%d'),
             "summary": obj.status_summary,
         }
 
