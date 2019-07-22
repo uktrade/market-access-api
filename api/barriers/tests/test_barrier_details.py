@@ -434,7 +434,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 0
+        assert response.data["status"]["id"] == 7
 
     def test_barrier_detail_submitted_resolved_edit_to_unknown(self):
         list_report_url = reverse("list-reports")
@@ -487,7 +487,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 0
+        assert response.data["status"]["id"] == 7
 
     def test_barrier_detail_submitted_resolved_edit_to_open(self):
         list_report_url = reverse("list-reports")

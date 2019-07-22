@@ -714,7 +714,7 @@ class BarrierStatusChangeUnknown(BarrierStatusBase):
         self._create(
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
-            status=0,
+            status=7,
             summary=self.request.data.get("status_summary"),
         )
 

@@ -23,11 +23,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='barrierinstance',
             name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unknown'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (5, 'Dormant'), (6, 'Archived'), (3, 'Resolved: In part'), (4, 'Resolved: In full')], default=0, help_text='status of the barrier instance'),
+            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (5, 'Dormant'), (6, 'Archived'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (7, 'Unknown')], default=0, help_text='status of the barrier instance'),
         ),
         migrations.AlterField(
             model_name='historicalbarrierinstance',
             name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unknown'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (5, 'Dormant'), (6, 'Archived'), (3, 'Resolved: In part'), (4, 'Resolved: In full')], default=0, help_text='status of the barrier instance'),
+            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (5, 'Dormant'), (6, 'Archived'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (7, 'Unknown')], default=0, help_text='status of the barrier instance'),
         ),
     ]

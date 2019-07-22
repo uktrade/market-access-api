@@ -42,11 +42,12 @@ RESOLVED_STATUS = Choices(
 )
 
 BARRIER_STATUS = Choices(
-    (0, "Unknown"),
+    (0, "Unfinished"),
     (1, "Open: Pending action"),
     (2, "Open: In progress"),
     (5, "Dormant"),
     (6, "Archived"),
+    (7, 'Unknown'),
 ) + RESOLVED_STATUS
 
 BARRIER_PENDING = Choices(
