@@ -67,7 +67,7 @@ urlpatterns = [
     path(
         "barriers/<uuid:pk>/unknown",
         BarrierStatusChangeUnknown.as_view(),
-        name="hibernate-barrier",
+        name="unknown-barrier",
     ),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
