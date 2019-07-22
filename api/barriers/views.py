@@ -273,6 +273,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.Filter(method="location_filter")
     text = django_filters.Filter(method="text_search")
+    user = django_filters.Filter(method="my_barriers")
 
     class Meta:
         model = BarrierInstance
@@ -339,6 +340,14 @@ class BarrierFilterSet(django_filters.FilterSet):
         ).filter(
             Q(code=value) | Q(search=value) | Q(barrier_title__icontains=value)
         )
+
+    def my_barriers(self, queryset, name, value):
+        if value:
+            current_user = self.request.user
+            return queryset.filter(
+                Q(created_by=self.request.user)
+            )
+        return queryset
 
 
 class BarrierList(generics.ListAPIView):
