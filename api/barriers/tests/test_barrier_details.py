@@ -18,7 +18,7 @@ class TestBarrierDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -61,7 +61,7 @@ class TestBarrierDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -90,6 +90,7 @@ class TestBarrierDetail(APITestMixin):
         response = new_api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         barrier = response.data
+        assert barrier["status"]["id"] == 4
         assert barrier["reported_by"] == "Testo"
         assert barrier["created_on"] is not None
         assert barrier["modified_by"] == "Testo"
@@ -108,7 +109,7 @@ class TestBarrierDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -155,7 +156,7 @@ class TestBarrierDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -202,7 +203,7 @@ class TestBarrierDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -343,7 +344,7 @@ class TestBarrierDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -395,7 +396,7 @@ class TestBarrierDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1635,3 +1636,91 @@ class TestBarrierDetail(APITestMixin):
         assert resolve_response.data["status"]["id"] == 4
         assert resolve_response.data["status"]["summary"] == "dummy summary"
         assert resolve_response.data["status"]["date"] == "2018-09-10"
+
+    def test_barrier_with_report_resolved_in_full(self):
+        a_user = create_test_user(
+            first_name="", last_name="", email="Testo@Useri.com", username=""
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+        list_report_response = new_api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "resolved_status": 4,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = new_api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = new_api_client.get(get_url)
+        assert response.status_code == status.HTTP_200_OK
+        barrier = response.data
+        assert barrier["status"]["id"] == 4
+
+    def test_barrier_with_report_resolved_in_part(self):
+        a_user = create_test_user(
+            first_name="", last_name="", email="Testo@Useri.com", username=""
+        )
+        list_report_url = reverse("list-reports")
+        new_api_client = self.create_api_client(user=a_user)
+        list_report_response = new_api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "resolved_status": 3,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = new_api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        response = new_api_client.get(get_url)
+        assert response.status_code == status.HTTP_200_OK
+        barrier = response.data
+        assert barrier["status"]["id"] == 3

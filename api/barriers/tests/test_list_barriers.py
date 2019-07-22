@@ -45,7 +45,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -79,7 +79,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -118,7 +118,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -161,7 +161,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -206,7 +206,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -251,7 +251,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -296,7 +296,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -337,7 +337,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -382,7 +382,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -426,7 +426,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -508,7 +508,7 @@ class TestListBarriers(APITestMixin):
                         "problem_status": FuzzyChoice([1, 2]).fuzz(),
                         "is_resolved": FuzzyChoice([True, False]).fuzz(),
                         "resolved_date": date.strftime("%Y-%m-%d"),
-                        "resolved_status": "IN_FULL",
+                        "resolved_status": 4,
                         "export_country": FuzzyChoice(countries).fuzz(),
                         "sectors_affected": True,
                         "sectors": [FuzzyChoice(sectors).fuzz()],
@@ -572,7 +572,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "a05f66a0-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
@@ -647,7 +647,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1190,7 +1190,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": False,
                 "product": "Some product",

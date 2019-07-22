@@ -326,7 +326,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
             },
         )
 
@@ -595,7 +595,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
             },
@@ -611,7 +611,7 @@ class TestListReports(APITestMixin):
         assert detail_response.data["problem_status"] == 2
         assert detail_response.data["is_resolved"] is True
         assert detail_response.data["resolved_date"] == "2018-09-10"
-        assert detail_response.data["resolved_status"] == "IN_FULL"
+        assert detail_response.data["resolved_status"] == 4
         assert detail_response.data["sectors_affected"] is True
         assert detail_response.data["progress"]
         stage_1 = [
@@ -1086,7 +1086,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "product": "Some product",
                 "source": "OTHER",
                 "other_source": "Not sure",
@@ -1499,7 +1499,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1535,7 +1535,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1571,7 +1571,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1607,7 +1607,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1643,7 +1643,7 @@ class TestListReports(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
-                "resolved_status": "IN_FULL",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1693,7 +1693,7 @@ class TestListReports(APITestMixin):
                         "problem_status": FuzzyChoice([1, 2]).fuzz(),
                         "is_resolved": FuzzyChoice([True, False]).fuzz(),
                         "resolved_date": date.strftime("%Y-%m-%d"),
-                        "resolved_status": "IN_FULL",
+                        "resolved_status": 4,
                         "export_country": FuzzyChoice(countries).fuzz(),
                         "sectors_affected": True,
                         "sectors": [FuzzyChoice(sectors).fuzz()],

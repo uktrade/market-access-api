@@ -82,7 +82,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     is_resolved = models.NullBooleanField()
     resolved_date = models.DateField(null=True, default=None)
     resolved_status = models.CharField(
-        choices=RESOLVED_STATUS, max_length=25, null=True, help_text="chance of success"
+        choices=RESOLVED_STATUS, max_length=25, null=True
     )
 
     export_country = models.UUIDField(null=True)
@@ -214,10 +214,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
             validator.set_instance(self)
             validator()
         if self.is_resolved:
-            if self.resolved_status == "IN_FULL":
-                barrier_new_status = 4  # Resolved In Full
-            else:
-                barrier_new_status = 3  # Resolved In Part
+            barrier_new_status = self.resolved_status
             status_date = self.isodate_to_tz_datetime(self.resolved_date)
         else:
             barrier_new_status = 2  # Open pending action

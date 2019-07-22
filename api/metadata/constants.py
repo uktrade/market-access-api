@@ -37,19 +37,17 @@ REPORT_STATUS = Choices(
 )
 
 RESOLVED_STATUS = Choices(
-    ("IN_FULL", "In Full"),
-    ("IN_PART", "In Part"),
+    (3, "Resolved: In part"),
+    (4, "Resolved: In full"),
 )
 
 BARRIER_STATUS = Choices(
     (0, "Unknown"),
     (1, "Open: Pending action"),
     (2, "Open: In progress"),
-    (3, "Resolved: In part"),
-    (4, "Resolved: In full"),
     (5, "Dormant"),
     (6, "Archived"),
-)
+) + RESOLVED_STATUS
 
 BARRIER_PENDING = Choices(
     ("UK_GOVT", "UK government"),

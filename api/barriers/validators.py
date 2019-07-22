@@ -60,5 +60,10 @@ class ReportReadyForSubmitValidator:
         if sectors_affected and all_sectors and sectors:
             errors['sectors'] = 'conflicting input'
 
+        is_resolved = data_combiner.get_value('is_resolved')
+        resolved_status = data_combiner.get_value('resolved_status')
+        if is_resolved and resolved_status not in ['3', '4']:
+            errors['resolved_status'] = 'incorrect data'
+
         if errors:
             raise ValidationError(errors)
