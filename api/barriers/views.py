@@ -535,7 +535,7 @@ class BarrierInstanceHistory(GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class BarrierStatuseHistory(GenericAPIView):
+class BarrierStatusHistory(GenericAPIView):
     def _username_from_user(self, user):
         if user is not None:
             if user.username is not None and user.username.strip() != "":
@@ -698,6 +698,23 @@ class BarrierHibernate(BarrierStatusBase):
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
             status=5,
+            summary=self.request.data.get("status_summary"),
+        )
+
+
+class BarrierStatusChangeUnknown(BarrierStatusBase):
+
+    queryset = BarrierInstance.barriers.all()
+    serializer_class = BarrierStaticStatusSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.kwargs.get("pk"))
+
+    def perform_update(self, serializer):
+        self._create(
+            serializer=serializer,
+            barrier_id=self.kwargs.get("pk"),
+            status=0,
             summary=self.request.data.get("status_summary"),
         )
 
