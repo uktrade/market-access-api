@@ -79,7 +79,8 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "status_date",
             "progress",
             "created_by",
-            "created_on" "modified_by",
+            "created_on",
+            "modified_by",
             "modified_on",
         )
 

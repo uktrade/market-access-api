@@ -581,6 +581,8 @@ class BarrierStatusHistory(GenericAPIView):
                                         "field_info": {
                                             "status_date": new_record.status_date,
                                             "status_summary": new_record.status_summary,
+                                            "sub_status": new_record.sub_status,
+                                            "sub_status_other": new_record.sub_status_other,
                                             "event": event,
                                         },
                                     }
