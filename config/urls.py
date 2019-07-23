@@ -22,7 +22,8 @@ from api.interactions.views import BarrierInteractionList, BarrierIneractionDeta
 from api.user.views import who_am_i
 from api.core.views import admin_override
 
-from api.interactions.urls import urlpatterns
+from api.interactions.urls import urlpatterns as interaction_urls
+from api.collaboration.urls import urlpatterns as team_urls
 
 urlpatterns = [
     path("admin/login/", admin_override, name="override"),
@@ -59,4 +60,4 @@ urlpatterns = [
         name="hibernate-barrier",
     ),
     path("barriers/<uuid:pk>/open", BarrierOpen.as_view(), name="open-barrier"),
-] + urlpatterns
+] + interaction_urls + team_urls
