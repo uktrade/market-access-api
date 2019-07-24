@@ -217,7 +217,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
             barrier_new_status = self.resolved_status
             status_date = self.isodate_to_tz_datetime(self.resolved_date)
         else:
-            barrier_new_status = 2  # Open pending action
+            barrier_new_status = 7  # Unknown
             status_date = timezone.now()
         self.modified_by = submitted_by
         self.status = barrier_new_status  # If all good, then accept the report for now

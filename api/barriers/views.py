@@ -567,7 +567,7 @@ class BarrierStatusHistory(GenericAPIView):
                                 # ignore default status setup, during report submission
                                 if not (
                                     (change.old == 0 or change.old is None)
-                                    and (change.new == 2 or change.new == 3 or change.new == 4)
+                                    and (change.new == 7 or change.new == 3 or change.new == 4)
                                 ):
                                     event = TIMELINE_REVERTED["Barrier Status Change"]
                                     status_change = {

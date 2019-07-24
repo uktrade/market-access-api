@@ -174,7 +174,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "4"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -233,7 +233,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "4"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -254,7 +254,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "4"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -322,7 +322,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "5"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -382,7 +382,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "5"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -403,7 +403,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "5"
         assert (
             response.data["history"][0]["field_info"]["event"]
