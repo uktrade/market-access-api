@@ -318,6 +318,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "reported_on",
             "reported_by",
             "status",
+            "status_summary",
+            "status_date",
             "priority",
             "priority_summary",
             "eu_exit_related",
