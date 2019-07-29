@@ -976,6 +976,7 @@ class TestReportDetail(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1002,6 +1003,10 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["problem_status"] == 2
         assert detail_response.data["is_resolved"] is True
         assert detail_response.data["resolved_date"] == "2018-09-10"
+        assert detail_response.data["resolved_status"] == 4
+
+        assert detail_response.data["status"] == 0
+
         assert (
             detail_response.data["export_country"]
             == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
@@ -1036,6 +1041,35 @@ class TestReportDetail(APITestMixin):
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})
         submit_response = self.api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
+
+    def test_submit_completed_report_error_resolved_status(self):
+        url = reverse("list-reports")
+        response = self.api_client.post(
+            url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "resolved_status": 1,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
 
     def test_report_check_reference_code(self):
         url = reverse("list-reports")

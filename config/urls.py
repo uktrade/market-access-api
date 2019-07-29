@@ -6,17 +6,20 @@ from api.ping.views import ping
 from api.barriers.views import (
     barrier_count,
     barriers_export,
+    BarrierDetail,
+    BarrierHibernate,
+    BarrierInstanceHistory,
     BarrierList,
     BarriertListExportView,
-    BarrierDetail,
-    BarrierResolve,
-    BarrierHibernate,
-    BarrierOpen,
-    BarrierReportList,
+    BarrierResolveInFull,
+    BarrierResolveInPart,
+    BarrierOpenInProgress,
+    BarrierOpenActionRequired,
     BarrierReportDetail,
+    BarrierReportList,
     BarrierReportSubmit,
-    BarrierInstanceHistory,
-    BarrierStatuseHistory,
+    BarrierStatusChangeUnknown,
+    BarrierStatusHistory,
 )
 from api.interactions.views import BarrierInteractionList, BarrierIneractionDetail
 from api.user.views import who_am_i
@@ -48,16 +51,25 @@ urlpatterns = [
     ),
     path(
         "barriers/<uuid:pk>/history",
-        BarrierStatuseHistory.as_view(),
+        BarrierStatusHistory.as_view(),
         name="status-history",
     ),
     path(
-        "barriers/<uuid:pk>/resolve", BarrierResolve.as_view(), name="resolve-barrier"
+        "barriers/<uuid:pk>/resolve-in-full", BarrierResolveInFull.as_view(), name="resolve-in-full"
+    ),
+    path(
+        "barriers/<uuid:pk>/resolve-in-part", BarrierResolveInPart.as_view(), name="resolve-in-part"
     ),
     path(
         "barriers/<uuid:pk>/hibernate",
         BarrierHibernate.as_view(),
         name="hibernate-barrier",
     ),
-    path("barriers/<uuid:pk>/open", BarrierOpen.as_view(), name="open-barrier"),
+    path(
+        "barriers/<uuid:pk>/unknown",
+        BarrierStatusChangeUnknown.as_view(),
+        name="unknown-barrier",
+    ),
+    path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
+    path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
 ] + interaction_urls + team_urls

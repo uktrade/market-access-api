@@ -94,6 +94,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -161,7 +162,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 0
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -173,7 +174,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "4"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -221,7 +222,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 0
 
-        resolve_barrier_url = reverse("resolve-barrier", kwargs={"pk": instance.id})
+        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
             resolve_barrier_url,
             format="json",
@@ -232,7 +233,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "4"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -243,7 +244,7 @@ class TestBarrierStatusHistory(APITestMixin):
             == "dummy summary"
         )
 
-        open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
+        open_barrier_url = reverse("open-in-progress", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
             open_barrier_url, format="json", data={"status_date": "2018-09-10"}
         )
@@ -253,7 +254,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "4"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -321,7 +322,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "5"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -381,7 +382,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 1
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "5"
         assert (
             response.data["history"][0]["field_info"]["event"]
@@ -392,7 +393,7 @@ class TestBarrierStatusHistory(APITestMixin):
             == "dummy summary"
         )
 
-        open_barrier_url = reverse("open-barrier", kwargs={"pk": instance.id})
+        open_barrier_url = reverse("open-in-progress", kwargs={"pk": instance.id})
         open_barrier_response = self.api_client.put(
             open_barrier_url, format="json", data={"status_date": "2018-09-10"}
         )
@@ -402,7 +403,7 @@ class TestBarrierStatusHistory(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["barrier_id"] == str(instance.id)
         assert len(response.data["history"]) == 2
-        assert response.data["history"][0]["old_value"] == "2"
+        assert response.data["history"][0]["old_value"] == "7"
         assert response.data["history"][0]["new_value"] == "5"
         assert (
             response.data["history"][0]["field_info"]["event"]
