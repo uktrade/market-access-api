@@ -158,7 +158,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
         sub_status_dict = dict(BARRIER_PENDING)
         status = status_dict.get(obj.status, "Unknown")
         if status == "Open: Pending action":
-            status = f"{status} - {sub_status_dict.get(obj.sub_status, 'Unknown')}"
+            status = f"{status} ({sub_status_dict.get(obj.sub_status, 'Unknown')})"
         return status
 
     def get_sectors(self, obj):
