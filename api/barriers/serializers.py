@@ -13,6 +13,7 @@ from api.metadata.constants import (
     ADV_BOOLEAN,
     BARRIER_SOURCE,
     BARRIER_STATUS,
+    BARRIER_PENDING,
     STAGE_STATUS,
     PROBLEM_STATUS_TYPES
 )
@@ -154,7 +155,11 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
         status_dict = dict(BARRIER_STATUS)
-        return status_dict.get(obj.status, "Unknown")
+        sub_status_dict = dict(BARRIER_PENDING)
+        status = status_dict.get(obj.status, "Unknown")
+        if status == "Open: Pending action":
+            status = f"{status} - {sub_status_dict.get(obj.sub_status, 'Unknown')}"
+        return status
 
     def get_sectors(self, obj):
         if obj.sectors_affected:
