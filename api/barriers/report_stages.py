@@ -16,6 +16,13 @@ REPORT_CONDITIONS = [
                 "value": True,
                 "non_null_field": "resolved_date",
                 "error_message": "resolved_date can not be null, when is_resolved is True",
+            },
+            {
+                "condition_field": "is_resolved",
+                "operator": operator.eq,
+                "value": True,
+                "non_null_field": "resolved_status",
+                "error_message": "resolved_status can not be null, when is_resolved is True",
             }
         ],
     },

@@ -15,8 +15,10 @@ from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
+    BARRIER_PENDING,
     BARRIER_TYPE_CATEGORIES,
     PROBLEM_STATUS_TYPES,
+    RESOLVED_STATUS,
     STAGE_STATUS,
 )
 from api.core.models import ArchivableModel, BaseModel
@@ -79,6 +81,9 @@ class BarrierInstance(BaseModel, ArchivableModel):
 
     is_resolved = models.NullBooleanField()
     resolved_date = models.DateField(null=True, default=None)
+    resolved_status = models.CharField(
+        choices=RESOLVED_STATUS, max_length=25, null=True
+    )
 
     export_country = models.UUIDField(null=True)
     country_admin_areas = ArrayField(
@@ -142,6 +147,18 @@ class BarrierInstance(BaseModel, ArchivableModel):
     status = models.PositiveIntegerField(
         choices=BARRIER_STATUS, default=0, help_text="status of the barrier instance"
     )
+    sub_status = models.CharField(
+        choices=BARRIER_PENDING,
+        max_length=25,
+        null=True,
+        default=None,
+        help_text="barrier sub status",
+    )
+    sub_status_other = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True,
+        help_text="barrier sub status text for other choice"
+    )
     status_summary = models.TextField(
         null=True, default=None, help_text="status summary if provided by user"
     )
@@ -197,10 +214,10 @@ class BarrierInstance(BaseModel, ArchivableModel):
             validator.set_instance(self)
             validator()
         if self.is_resolved:
-            barrier_new_status = 4  # Resolved
+            barrier_new_status = self.resolved_status
             status_date = self.isodate_to_tz_datetime(self.resolved_date)
         else:
-            barrier_new_status = 2  # Assesment
+            barrier_new_status = 7  # Unknown
             status_date = timezone.now()
         self.modified_by = submitted_by
         self.status = barrier_new_status  # If all good, then accept the report for now

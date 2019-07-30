@@ -22,6 +22,7 @@ from .utils import (
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
+    BARRIER_PENDING,
     BARRIER_SOURCE,
     BARRIER_STATUS,
     BARRIER_TYPE_CATEGORIES,
@@ -59,6 +60,7 @@ class MetadataView(generics.GenericAPIView):
         report_status = dict((x, y) for x, y in REPORT_STATUS)
         support_type = dict((x, y) for x, y in SUPPORT_TYPE)
         barrier_status = dict((x, y) for x, y in BARRIER_STATUS)
+        barrier_pending = dict((x, y) for x, y in BARRIER_PENDING)
         barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
@@ -89,6 +91,7 @@ class MetadataView(generics.GenericAPIView):
             "country_admin_areas": dh_admin_areas,
             "sectors": dh_sectors,
             "barrier_status": barrier_status,
+            "barrier_pending": barrier_pending,
             "barrier_type_categories": barrier_type_cat,
             "barrier_chance_of_success": barrier_chance,
             "barrier_interaction_types": barrier_inter_type,

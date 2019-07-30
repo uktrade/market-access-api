@@ -36,14 +36,25 @@ REPORT_STATUS = Choices(
     (4, "Archived"),
 )
 
+RESOLVED_STATUS = Choices(
+    (3, "Resolved: In part"),
+    (4, "Resolved: In full"),
+)
+
 BARRIER_STATUS = Choices(
     (0, "Unfinished"),
-    (1, "Screening"),
-    (2, "Open"),
-    (3, "Rejected"),
-    (4, "Resolved"),
-    (5, "Hibernated"),
+    (1, "Open: Pending action"),
+    (2, "Open: In progress"),
+    (5, "Dormant"),
     (6, "Archived"),
+    (7, 'Unknown'),
+) + RESOLVED_STATUS
+
+BARRIER_PENDING = Choices(
+    ("UK_GOVT", "UK government"),
+    ("FOR_GOVT", "Foreign government"),
+    ("BUS", "Affected business"),
+    ("OTHER", "Other")
 )
 
 BARRIER_TYPE_CATEGORIES = Choices(

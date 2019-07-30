@@ -45,6 +45,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -78,6 +79,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -116,6 +118,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -158,6 +161,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -202,6 +206,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -246,6 +251,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -290,6 +296,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -330,6 +337,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -374,6 +382,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -417,6 +426,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -498,6 +508,7 @@ class TestListBarriers(APITestMixin):
                         "problem_status": FuzzyChoice([1, 2]).fuzz(),
                         "is_resolved": FuzzyChoice([True, False]).fuzz(),
                         "resolved_date": date.strftime("%Y-%m-%d"),
+                        "resolved_status": 4,
                         "export_country": FuzzyChoice(countries).fuzz(),
                         "sectors_affected": True,
                         "sectors": [FuzzyChoice(sectors).fuzz()],
@@ -561,6 +572,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "a05f66a0-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
@@ -635,6 +647,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1160,9 +1173,9 @@ class TestListBarriers(APITestMixin):
         assert barrier["sectors_affected"] == False
         assert barrier["sectors"] is None
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["status"] == 2
-        assert barrier["status_date"] is not None
-        assert barrier["status_summary"] is None
+        assert barrier["status"]["id"] == 7
+        assert barrier["status"]["date"] is not None
+        assert barrier["status"]["summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
         assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
@@ -1177,6 +1190,7 @@ class TestListBarriers(APITestMixin):
                 "problem_status": 2,
                 "is_resolved": True,
                 "resolved_date": "2018-09-10",
+                "resolved_status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": False,
                 "product": "Some product",
@@ -1212,9 +1226,9 @@ class TestListBarriers(APITestMixin):
         assert barrier["sectors_affected"] == False
         assert barrier["sectors"] is None
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["status"] == 4
-        assert barrier["status_date"] is not None
-        assert barrier["status_summary"] is not None
+        assert barrier["status"]["id"] == 4
+        assert barrier["status"]["date"] is not None
+        assert barrier["status"]["summary"] is not None
         assert barrier["priority"]["code"] == "UNKNOWN"
         assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
@@ -1261,7 +1275,6 @@ class TestListBarriers(APITestMixin):
         assert barrier["reported_by"] is not None
         assert barrier["problem_status"] == 2
         assert barrier["is_resolved"] == False
-        assert barrier["resolved_date"] is None
         assert barrier["barrier_title"] == "Some title"
         assert barrier["sectors_affected"] == True
         assert barrier["sectors"] == [
@@ -1269,9 +1282,9 @@ class TestListBarriers(APITestMixin):
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        assert barrier["status"] == 2
-        assert barrier["status_date"] is not None
-        assert barrier["status_summary"] is None
+        assert barrier["status"]["id"] == 7
+        assert barrier["status"]["date"] is not None
+        assert barrier["status"]["summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
         assert len(barrier["barrier_types"]) == 0
         assert barrier["created_on"] is not None
