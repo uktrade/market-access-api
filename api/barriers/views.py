@@ -565,10 +565,7 @@ class BarrierStatusHistory(GenericAPIView):
                         if change.field in timeline_fields:
                             if change.field == "status":
                                 # ignore default status setup, during report submission
-                                if not (
-                                    (change.old == 0 or change.old is None)
-                                    and (change.new == 7 or change.new == 3 or change.new == 4)
-                                ):
+                                if not (change.old == 0 or change.old is None):
                                     event = TIMELINE_REVERTED["Barrier Status Change"]
                                     status_change = {
                                         "date": new_record.history_date,
