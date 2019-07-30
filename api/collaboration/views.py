@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render
 from django.contrib.auth import get_user_model
 
 from rest_framework import generics
+from rest_framework.exceptions import PermissionDenied
 
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
@@ -19,21 +20,21 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
     serializer_class = BarrierTeamSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
+        return self.queryset.filter(barrier_id=self.kwargs.get("pk")).order_by("created_on")
 
     def perform_create(self, serializer):
         barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
         user = self.request.data.get("user")
         try:
-            user = UserModel.objects.get(username=user["username"])
+            user = UserModel.objects.get(username=user["email"])
         except UserModel.DoesNotExist:
             UserModel.objects.create(
-                username=user["username"],
+                username=user["email"],
                 email=user["email"],
                 first_name=user["first_name"],
-                lastname=user["lastname"],
+                last_name=user["last_name"],
             )
-            user = UserModel.objects.get(username=user["username"])
+            user = UserModel.objects.get(username=user["email"])
 
         role = self.request.data.get("role", None)
 
@@ -46,7 +47,7 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
         barrier_obj.save()
 
 
-class BarrierIneractionDetail(generics.RetrieveDestroyAPIView):
+class BarrierTeamMemberDetail(generics.RetrieveDestroyAPIView):
     """
     Return details of a Barrier team member
     Allows the barrier team member to be deleted (archive)
@@ -60,4 +61,7 @@ class BarrierIneractionDetail(generics.RetrieveDestroyAPIView):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
     def perform_destroy(self, instance):
+        if instance.default:
+            raise PermissionDenied()
+
         instance.archive(self.request.user)

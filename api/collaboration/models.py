@@ -14,7 +14,7 @@ class TeamMemberManager(models.Manager):
     """ Manage barrier team member within the model, with archived not False """
 
     def get_queryset(self):
-        return super(TeamMember, self).get_queryset().filter(Q(archived=False))
+        return super(TeamMemberManager, self).get_queryset().filter(Q(archived=False))
 
 
 class TeamMember(BaseModel, ArchivableModel):
@@ -31,11 +31,12 @@ class TeamMember(BaseModel, ArchivableModel):
         related_name="+",
     )
     role = models.CharField(max_length=MAX_LENGTH, null=True)
+    default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     history = HistoricalRecords()
 
-    objects = TeamMember()
+    objects = TeamMemberManager()
 
     @property
     def created_user(self):

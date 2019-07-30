@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "api.user",
     "api.documents",
     "api.interactions",
+    "api.collaboration",
     "authbroker_client",
     "api.user_event_log",
 ]

@@ -51,6 +51,7 @@ from api.metadata.models import BarrierType, BarrierPriority
 from api.metadata.utils import get_countries
 
 from api.interactions.models import Interaction
+from api.collaboration.models import TeamMember
 
 from api.user.utils import has_profile
 
@@ -240,6 +241,13 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 kind=kind,
                 created_by=self.request.user,
             ).save()
+        # add submitted_by as default team member
+        TeamMember(
+            barrier=barrier_obj,
+            user=self.request.user,
+            role='Barrier creator',
+            default=True
+        ).save()
 
 
 class BarrierFilterSet(django_filters.FilterSet):

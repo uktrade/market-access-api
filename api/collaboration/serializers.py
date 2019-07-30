@@ -1,12 +1,24 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 
 from api.collaboration.models import TeamMember
+
+UserModel = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserModel
+        fields = ['email', 'first_name', 'last_name']
+
 
 class BarrierTeamSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers team members """
 
     created_by = serializers.SerializerMethodField()
-    user = serializers.SerializerMethodField()
+    user = UserSerializer()
 
     class Meta:
         model = TeamMember
@@ -17,17 +29,6 @@ class BarrierTeamSerializer(serializers.ModelSerializer):
             "is_active",
             "created_on",
             "created_by",
-            "modified_on",
-            "modified_by",
-        )
-        read_only_fields = (
-            "id",
-            "name",
-            "email",
-            "modified_on",
-            "modified_by",
-            "created_on",
-            "created_by"
         )
 
     def get_created_by(self, obj):
@@ -35,10 +36,3 @@ class BarrierTeamSerializer(serializers.ModelSerializer):
             return None
 
         return {"id": obj.created_by.id, "name": obj.created_user}
-
-    def get_user(self, obj):
-        if obj.user is None:
-            return None
-
-        name = f"{obj.user.first_name} {obj.user.lastname}"
-        return {"name": name, "email": obj.user.email}
