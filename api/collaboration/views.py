@@ -1,5 +1,6 @@
-from django.shortcuts import get_object_or_404, render
 from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 
 from rest_framework import generics
 from rest_framework.exceptions import PermissionDenied
@@ -7,8 +8,11 @@ from rest_framework.exceptions import PermissionDenied
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
 from api.collaboration.serializers import BarrierTeamSerializer
+from api.user.models import Profile
+from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
+sso = StaffSSO()
 
 
 class BarrierTeamMembersView(generics.ListCreateAPIView):
@@ -22,19 +26,25 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
     def get_queryset(self):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk")).order_by("created_on")
 
+    @transaction.atomic()
     def perform_create(self, serializer):
         barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
         user = self.request.data.get("user")
+        sso_user_id = user["profile"]["sso_user_id"]
         try:
-            user = UserModel.objects.get(username=user["email"])
-        except UserModel.DoesNotExist:
-            UserModel.objects.create(
-                username=user["email"],
-                email=user["email"],
-                first_name=user["first_name"],
-                last_name=user["last_name"],
+            user_profile = Profile.objects.get(sso_user_id=sso_user_id)
+            user = user_profile.user
+        except Profile.DoesNotExist:
+            sso_user = sso.get_user_details_by_id(sso_user_id)
+            user = UserModel(
+                username=sso_user["email"],
+                email=sso_user["email"],
+                first_name=sso_user["first_name"],
+                last_name=sso_user["last_name"],
             )
-            user = UserModel.objects.get(username=user["email"])
+            user.save()
+            user.profile.sso_user_id = sso_user_id
+            user.profile.save()
 
         role = self.request.data.get("role", None)
 

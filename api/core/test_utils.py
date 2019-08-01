@@ -32,6 +32,7 @@ def create_test_user(
     location=None,
     internal=False,
     user_profile=None,
+    sso_user_id=None,
     **user_attrs
 ):
     """
@@ -65,6 +66,11 @@ def create_test_user(
 
     if user_profile:
         user.profile.user_profile = user_profile
+        user.profile.save()
+        user.save()
+    
+    if sso_user_id:
+        user.profile.sso_user_id = sso_user_id
         user.profile.save()
         user.save()
 

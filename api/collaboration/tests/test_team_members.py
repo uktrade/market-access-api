@@ -1,6 +1,8 @@
 import json
 import uuid
 
+from unittest.mock import patch
+
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -10,6 +12,68 @@ from api.barriers.tests.test_utils import TestUtils
 
 
 class TestListTeamMembers(APITestMixin):
+    sso_user_data_1 = {
+        "email": "unit1.test1@unittest.uk",
+        "user_id": "907a7a2c-b6cd-454f-3764-a4388ec2a42b",
+        "first_name": "Unit1",
+        "last_name": "Test1",
+        "related_emails": [
+            "unit1.test1@mocktest.uk"
+        ],
+        "groups": [],
+        "permitted_applications": [
+            {
+                "key": "app-one",
+                "url": "http://undefined",
+                "name": "App One"
+            },
+            {
+                "key": "app-two",
+                "url": "http://undefined",
+                "name": "App Two"
+            },
+            {
+                "key": "app-three",
+                "url": "http://undefined",
+                "name": "App Three"
+            },
+        ],
+        "access_profiles": [
+            "full-access"
+        ]
+    }
+
+    sso_user_data_2 = {
+        "email": "unit2.test2@unittest.uk",
+        "user_id": "e5e9394c-daed-498e-b9f3-69228b44fbfa",
+        "first_name": "Unit2",
+        "last_name": "Test2",
+        "related_emails": [
+            "unit2.test2@mocktest.uk"
+        ],
+        "groups": [],
+        "permitted_applications": [
+            {
+                "key": "app-one",
+                "url": "http://undefined",
+                "name": "App One"
+            },
+            {
+                "key": "app-two",
+                "url": "http://undefined",
+                "name": "App Two"
+            },
+            {
+                "key": "app-three",
+                "url": "http://undefined",
+                "name": "App Three"
+            },
+        ],
+        "access_profiles": [
+            "full-access"
+        ]
+    }
+
     def test_no_members_except_default(self):
         """Test there are no barrier members using list"""
         list_report_url = reverse("list-reports")
@@ -54,8 +118,10 @@ class TestListTeamMembers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
 
-    def test_add_existing_user_as_member(self):
+    @patch("api.user.utils.StaffSSO.get_user_details_by_id")
+    def test_add_existing_user_with_profile_with_sso_user_id_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
+        mock_sso_user.return_value = self.sso_user_data_1
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
             list_report_url,
@@ -99,7 +165,11 @@ class TestListTeamMembers(APITestMixin):
         assert int_response.data["count"] == 1
 
         a_user = create_test_user(
-            first_name="Diff", last_name="User", email="diff_user@Useri.com", username=""
+            first_name="Diff",
+            last_name="User",
+            email="diff_user@Useri.com",
+            username="",
+            sso_user_id=self.sso_user_data_1["user_id"]
         )
 
         add_mem_response = self.api_client.post(
@@ -107,9 +177,9 @@ class TestListTeamMembers(APITestMixin):
             format="json",
             data={
                 "user": {
-                    "email": "diff_user@Useri.com",
-                    "first_name": "Diff",
-                    "last_name": "User"
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                    }
                 },
                 "role": "dummy"
             }
@@ -131,8 +201,10 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == "User"
         member["role"] == "dummy"
 
-    def test_add_new_user_as_member(self):
+    @patch("api.user.utils.StaffSSO.get_user_details_by_id")
+    def test_add_existing_user_with_profile_without_sso_user_id_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
+        mock_sso_user.return_value = self.sso_user_data_1
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
             list_report_url,
@@ -175,14 +247,23 @@ class TestListTeamMembers(APITestMixin):
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 1
 
+        # create a user and its profle object, but no sso_user_id
+        a_user = create_test_user(
+            first_name="Diff",
+            last_name="User",
+            email="diff_user@Useri.com",
+            username="",
+            internal=True
+        )
+
         add_mem_response = self.api_client.post(
             members_url,
             format="json",
             data={
                 "user": {
-                    "email": "user1@example.com",
-                    "first_name": "first",
-                    "last_name": "last"
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                    }
                 },
                 "role": "dummy"
             }
@@ -199,13 +280,100 @@ class TestListTeamMembers(APITestMixin):
         assert member["role"] == "Barrier creator"
 
         member = mem_response.data["results"][1]
-        member["user"]["email"] == "user1@example.com"
-        member["user"]["first_name"] == "first"
-        member["user"]["last_name"] == "last"
+        member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
+        member["user"]["email"] == "diff_user@Useri.com"
+        member["user"]["first_name"] == "Diff"
+        member["user"]["last_name"] == "User"
         member["role"] == "dummy"
 
-    def test_multiple_members(self):
+    @patch("api.user.utils.StaffSSO.get_user_details_by_id")
+    def test_add_existing_user_without_profile_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
+        mock_sso_user.return_value = self.sso_user_data_1
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "resolved_status": 4,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+
+        members_url = reverse("list-members", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(members_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 1
+
+        # create a user but no profle object
+        a_user = create_test_user(
+            first_name="Diff",
+            last_name="User",
+            email="diff_user@Useri.com",
+            username="",
+        )
+
+        add_mem_response = self.api_client.post(
+            members_url,
+            format="json",
+            data={
+                "user": {
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                    }
+                },
+                "role": "dummy"
+            }
+        )
+
+        assert add_mem_response.status_code == status.HTTP_201_CREATED
+        mem_response = self.api_client.get(members_url)
+        assert mem_response.status_code == status.HTTP_200_OK
+        assert mem_response.data["count"] == 2
+        member = mem_response.data["results"][0]
+        assert member["user"]["email"] == "Testo@Useri.com"
+        assert member["user"]["first_name"] == "Testo"
+        assert member["user"]["last_name"] == "Useri"
+        assert member["role"] == "Barrier creator"
+
+        member = mem_response.data["results"][1]
+        member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
+        member["user"]["email"] == "diff_user@Useri.com"
+        member["user"]["first_name"] == "Diff"
+        member["user"]["last_name"] == "User"
+        member["role"] == "dummy"
+
+    @patch("api.user.utils.StaffSSO.get_user_details_by_id")
+    def test_add_new_user_as_member(self, mock_sso_user):
+        """Test adding a new member, already existing in the db"""
+        mock_sso_user.return_value = self.sso_user_data_1
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
             list_report_url,
@@ -253,38 +421,18 @@ class TestListTeamMembers(APITestMixin):
             format="json",
             data={
                 "user": {
-                    "email": "user1@example.com",
-                    "first_name": "first",
-                    "last_name": "last"
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                    }
                 },
                 "role": "dummy"
             }
         )
 
         assert add_mem_response.status_code == status.HTTP_201_CREATED
-
-        a_user = create_test_user(
-            first_name="Diff", last_name="User", email="diff_user@Useri.com", username=""
-        )
-
-        add_mem_response = self.api_client.post(
-            members_url,
-            format="json",
-            data={
-                "user": {
-                    "email": "diff_user@Useri.com",
-                    "first_name": "Diff",
-                    "last_name": "User"
-                },
-                "role": "dummy"
-            }
-        )
-
-        assert add_mem_response.status_code == status.HTTP_201_CREATED
-
         mem_response = self.api_client.get(members_url)
         assert mem_response.status_code == status.HTTP_200_OK
-        assert mem_response.data["count"] == 3
+        assert mem_response.data["count"] == 2
         member = mem_response.data["results"][0]
         assert member["user"]["email"] == "Testo@Useri.com"
         assert member["user"]["first_name"] == "Testo"
@@ -292,19 +440,16 @@ class TestListTeamMembers(APITestMixin):
         assert member["role"] == "Barrier creator"
 
         member = mem_response.data["results"][1]
-        member["user"]["email"] == "user1@example.com"
-        member["user"]["first_name"] == "first"
-        member["user"]["last_name"] == "last"
+        member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
+        member["user"]["email"] == self.sso_user_data_1["email"]
+        member["user"]["first_name"] == self.sso_user_data_1["first_name"]
+        member["user"]["last_name"] == self.sso_user_data_1["last_name"]
         member["role"] == "dummy"
 
-        member = mem_response.data["results"][2]
-        member["user"]["email"] == "diff_user@Useri.com"
-        member["user"]["first_name"] == "Diff"
-        member["user"]["last_name"] == "User"
-        member["role"] == "dummy"
-
-    def test_delete_member(self):
+    @patch("api.user.utils.StaffSSO.get_user_details_by_id")
+    def test_multiple_members(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
+        mock_sso_user.side_effect = [self.sso_user_data_1, self.sso_user_data_2]
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
             list_report_url,
@@ -352,9 +497,9 @@ class TestListTeamMembers(APITestMixin):
             format="json",
             data={
                 "user": {
-                    "email": "user1@example.com",
-                    "first_name": "first",
-                    "last_name": "last"
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                    }
                 },
                 "role": "dummy"
             }
@@ -363,7 +508,11 @@ class TestListTeamMembers(APITestMixin):
         assert add_mem_response.status_code == status.HTTP_201_CREATED
 
         a_user = create_test_user(
-            first_name="Diff", last_name="User", email="diff_user@Useri.com", username=""
+            first_name="Diff",
+            last_name="User",
+            email="diff_user@Useri.com",
+            username="",
+            sso_user_id=self.sso_user_data_2["user_id"]
         )
 
         add_mem_response = self.api_client.post(
@@ -371,9 +520,9 @@ class TestListTeamMembers(APITestMixin):
             format="json",
             data={
                 "user": {
-                    "email": "diff_user@Useri.com",
-                    "first_name": "Diff",
-                    "last_name": "User"
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_2["user_id"],                        
+                    }
                 },
                 "role": "dummy"
             }
@@ -391,15 +540,124 @@ class TestListTeamMembers(APITestMixin):
         assert member["role"] == "Barrier creator"
 
         member = mem_response.data["results"][1]
-        member["user"]["email"] == "user1@example.com"
-        member["user"]["first_name"] == "first"
-        member["user"]["last_name"] == "last"
+        member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
+        member["user"]["email"] == self.sso_user_data_1["email"]
+        member["user"]["first_name"] == self.sso_user_data_1["first_name"]
+        member["user"]["last_name"] == self.sso_user_data_1["last_name"]
         member["role"] == "dummy"
 
         member = mem_response.data["results"][2]
-        member["user"]["email"] == "diff_user@Useri.com"
-        member["user"]["first_name"] == "Diff"
-        member["user"]["last_name"] == "User"
+        member["user"]["profile"]["sso_user_id"] == self.sso_user_data_2["user_id"]
+        member["user"]["email"] == self.sso_user_data_2["email"]
+        member["user"]["first_name"] == self.sso_user_data_2["first_name"]
+        member["user"]["last_name"] == self.sso_user_data_2["last_name"]
+        member["role"] == "dummy"
+
+    @patch("api.user.utils.StaffSSO.get_user_details_by_id")
+    def test_delete_member(self, mock_sso_user):
+        """Test deleting a member"""
+        mock_sso_user.side_effect = [self.sso_user_data_1, self.sso_user_data_2]
+        list_report_url = reverse("list-reports")
+        list_report_response = self.api_client.post(
+            list_report_url,
+            format="json",
+            data={
+                "problem_status": 2,
+                "is_resolved": True,
+                "resolved_date": "2018-09-10",
+                "resolved_status": 4,
+                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "OTHER",
+                "other_source": "Other source",
+                "barrier_title": "Some title",
+                "problem_description": "Some problem_description",
+                "status_summary": "some status summary",
+                "eu_exit_related": 1,
+            },
+        )
+
+        assert list_report_response.status_code == status.HTTP_201_CREATED
+        instance = BarrierInstance.objects.first()
+        assert list_report_response.data["id"] == str(instance.id)
+
+        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
+        assert submit_response.status_code == status.HTTP_200_OK
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+
+        members_url = reverse("list-members", kwargs={"pk": instance.id})
+        int_response = self.api_client.get(members_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["count"] == 1
+
+        add_mem_response = self.api_client.post(
+            members_url,
+            format="json",
+            data={
+                "user": {
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                    }
+                },
+                "role": "dummy"
+            }
+        )
+
+        assert add_mem_response.status_code == status.HTTP_201_CREATED
+
+        a_user = create_test_user(
+            first_name="Diff",
+            last_name="User",
+            email="diff_user@Useri.com",
+            username="",
+            sso_user_id=self.sso_user_data_2["user_id"]
+        )
+
+        add_mem_response = self.api_client.post(
+            members_url,
+            format="json",
+            data={
+                "user": {
+                    "profile": {
+                        "sso_user_id": self.sso_user_data_2["user_id"],                        
+                    }
+                },
+                "role": "dummy"
+            }
+        )
+
+        assert add_mem_response.status_code == status.HTTP_201_CREATED
+
+        mem_response = self.api_client.get(members_url)
+        assert mem_response.status_code == status.HTTP_200_OK
+        assert mem_response.data["count"] == 3
+        member = mem_response.data["results"][0]
+        assert member["user"]["email"] == "Testo@Useri.com"
+        assert member["user"]["first_name"] == "Testo"
+        assert member["user"]["last_name"] == "Useri"
+        assert member["role"] == "Barrier creator"
+
+        member = mem_response.data["results"][1]
+        member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
+        member["user"]["email"] == self.sso_user_data_1["email"]
+        member["user"]["first_name"] == self.sso_user_data_1["first_name"]
+        member["user"]["last_name"] == self.sso_user_data_1["last_name"]
+        member["role"] == "dummy"
+
+        member = mem_response.data["results"][2]
+        member["user"]["profile"]["sso_user_id"] == self.sso_user_data_2["user_id"]
+        member["user"]["email"] == self.sso_user_data_2["email"]
+        member["user"]["first_name"] == self.sso_user_data_2["first_name"]
+        member["user"]["last_name"] == self.sso_user_data_2["last_name"]
         member["role"] == "dummy"
 
         mem_id = member["id"]
