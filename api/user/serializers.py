@@ -104,3 +104,18 @@ class WhoAmISerializer(serializers.ModelSerializer):
         if sso_me is not None:
             return sso_me.get('permitted_applications', None)
         return None
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = ["sso_user_id"]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer()
+
+    class Meta:
+        model = UserModel
+        fields = ['profile', 'email', 'first_name', 'last_name']
