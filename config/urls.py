@@ -35,7 +35,7 @@ urlpatterns = [
     path("counts", barrier_count, name="barrier-count"),
     path("ping.xml", ping, name="ping"),
     path("whoami", who_am_i, name="who_am_i"),
-    path("users/<uuid:sso_user_id", UserDetail.as_view(), name="get-user"),
+    path("users/<uuid:sso_user_id>", UserDetail.as_view(), name="get-user"),
     path("reports", BarrierReportList.as_view(), name="list-reports"),
     path("reports/<uuid:pk>", BarrierReportDetail.as_view(), name="get-report"),
     path(
