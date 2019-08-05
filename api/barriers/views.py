@@ -57,8 +57,10 @@ from api.user.utils import has_profile
 
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
+from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
+sso = StaffSSO()
 
 
 class Echo:
@@ -242,6 +244,16 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 created_by=self.request.user,
             ).save()
         # add submitted_by as default team member
+        token = self.request.auth.token
+        context = {"token": token}
+        sso_user = sso.get_logged_in_user_details(context)
+        self.request.user.username = sso_user["email"]
+        self.request.user.email = sso_user["email"]
+        self.request.user.first_name = sso_user["first_name"]
+        self.request.user.last_name = sso_user["last_name"]
+        self.request.user.save()
+        self.request.user.profile.sso_user_id = sso_user["user_id"]
+        self.request.user.profile.save()
         TeamMember(
             barrier=barrier_obj,
             user=self.request.user,

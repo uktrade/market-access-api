@@ -33,7 +33,7 @@ class StaffSSO:
     def get_user_details_by_id(self, user_id):
         if not settings.SSO_ENABLED:
             return None
-        url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_INTROSPECTION_URL"]
+        url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"]
         token = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"]
         auth_string = f"Bearer {token}"
         params = {

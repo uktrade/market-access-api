@@ -15,7 +15,7 @@ from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
 logger = getLogger(__name__)
-sso = StaffSSO
+sso = StaffSSO()
 
 
 class WhoAmISerializer(serializers.ModelSerializer):
