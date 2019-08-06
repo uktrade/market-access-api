@@ -1,5 +1,6 @@
 import json
 import uuid
+import pytest
 
 from unittest.mock import patch
 
@@ -59,12 +60,14 @@ class TestListTeamMembers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
 
-    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    def _test_add_existing_user_with_profile_with_sso_user_id_as_member(self, mock_sso_user, mock_creator):
+    @pytest.mark.django_db
+    def _test_add_existing_user_with_profile_with_sso_user_id_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
-        client = self.api_client
-        mock_creator.return_value = self.sso_creator
+        creator_user = create_test_user(
+            sso_user_id=self.sso_creator["user_id"]
+        )
+        client = self.create_api_client(creator_user)
         mock_sso_user.return_value = self.sso_user_data_1
         list_report_url = reverse("list-reports")
         list_report_response = client.post(
@@ -109,9 +112,9 @@ class TestListTeamMembers(APITestMixin):
         assert int_response.data["count"] == 1
 
         a_user = create_test_user(
-            first_name="Diff",
-            last_name="User",
-            email="diff_user@Useri.com",
+            first_name=self.sso_user_data_1["first_name"],
+            last_name=self.sso_user_data_1["last_name"],
+            email=self.sso_user_data_1["email"],
             username="",
             sso_user_id=self.sso_user_data_1["user_id"]
         )
@@ -134,15 +137,16 @@ class TestListTeamMembers(APITestMixin):
         assert mem_response.status_code == status.HTTP_200_OK
         assert mem_response.data["count"] == 2
         member = mem_response.data["results"][0]
-        assert member["user"]["email"] == "barrier.creator@unittest.uk"
-        assert member["user"]["first_name"] == "Barrier"
-        assert member["user"]["last_name"] == "Creator"
+        assert member["user"]["profile"]["sso_user_id"] == self.sso_creator["user_id"]
+        assert member["user"]["email"] == creator_user.email
+        assert member["user"]["first_name"] == creator_user.first_name
+        assert member["user"]["last_name"] == creator_user.last_name
         assert member["role"] == "Barrier creator"
 
         member = mem_response.data["results"][1]
-        member["user"]["email"] == "diff_user@Useri.com"
-        member["user"]["first_name"] == "Diff"
-        member["user"]["last_name"] == "User"
+        member["user"]["email"] == self.sso_user_data_1["email"]
+        member["user"]["first_name"] == self.sso_user_data_1["first_name"]
+        member["user"]["last_name"] == self.sso_user_data_1["last_name"]
         member["role"] == "dummy"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
@@ -504,7 +508,7 @@ class TestListTeamMembers(APITestMixin):
         member["role"] == "dummy"
 
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    def _test_delete_member(self, mock_sso_user):
+    def test_delete_member(self, mock_sso_user):
         """Test deleting a member"""
         a_user = create_test_user(
             sso_user_id=self.sso_creator["user_id"]
@@ -624,7 +628,7 @@ class TestListTeamMembers(APITestMixin):
         get_mem_url = reverse("get-member", kwargs={"pk": mem_id})
         get_mem_response = client.get(get_mem_url)
         assert get_mem_response.status_code == status.HTTP_200_OK
-        assert get_mem_response.data["user"]["email"] == "diff_user@Useri.com"
+        assert get_mem_response.data["user"]["email"] == self.sso_user_data_2["email"]
 
         delete_mem_response = client.delete(get_mem_url)
         assert delete_mem_response.status_code == status.HTTP_204_NO_CONTENT

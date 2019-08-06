@@ -27,6 +27,21 @@ def get_default_test_user():
         )
     return test_user
 
+def create_simple_user(
+    **user_attrs
+):
+    user_defaults = {
+        "first_name": factory.Faker("first_name").generate({}),
+        "last_name": factory.Faker("last_name").generate({}),
+        "email": factory.Faker("email").generate({}),
+        "date_joined": now(),
+        "username": factory.Faker("name").generate({}),
+    }
+    user_defaults.update(user_attrs)
+
+    user_model = get_user_model()
+    user = user_model(**user_defaults)
+    user.save()
 
 def create_test_user(
     permission_codenames=(),
