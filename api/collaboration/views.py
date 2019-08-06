@@ -2,9 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
-from rest_framework import generics, serializers, status
+from rest_framework import generics, serializers
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
 
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
@@ -26,13 +25,6 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk")).order_by("created_on")
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
         barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
