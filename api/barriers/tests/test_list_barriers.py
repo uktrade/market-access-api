@@ -483,7 +483,7 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 2
 
-    def add_multiple_barriers(self, count):
+    def add_multiple_barriers(self, count, client):
         sectors = [
             "af959812-6095-e211-a939-e4115bead28a",
             "75debee7-a182-410e-bde0-3098e4f7b822",
@@ -501,7 +501,7 @@ class TestListBarriers(APITestMixin):
             ).evaluate(2, None, False)
             with freeze_time(date):
                 list_report_url = reverse("list-reports")
-                list_report_response = self.api_client.post(
+                list_report_response = client.post(
                     list_report_url,
                     format="json",
                     data={
@@ -526,14 +526,14 @@ class TestListBarriers(APITestMixin):
 
                 instance_id = list_report_response.data["id"]
                 submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-                submit_response = self.api_client.put(
+                submit_response = client.put(
                     submit_url, format="json", data={}
                 )
                 assert submit_response.status_code == status.HTTP_200_OK
 
                 get_url = reverse("get-barrier", kwargs={"pk": instance_id})
                 barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
-                edit_type_response = self.api_client.put(
+                edit_type_response = client.put(
                     get_url,
                     format="json",
                     data={
@@ -544,8 +544,9 @@ class TestListBarriers(APITestMixin):
                 assert edit_type_response.status_code == status.HTTP_200_OK
 
     def test_list_barriers_get_multiple_barriers_country_filter(self):
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
@@ -556,7 +557,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"location": "a05f66a0-5d95-e211-a939-e4115bead28a"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             export_country="a05f66a0-5d95-e211-a939-e4115bead28a"
@@ -714,41 +715,44 @@ class TestListBarriers(APITestMixin):
         assert response.data["count"] == 0
 
     def test_list_barriers_status_2_filter(self):
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
         url = TestUtils.reverse_querystring("list-barriers", query_kwargs={"status": 2})
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status=2)
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_status_4_filter(self):
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
         url = TestUtils.reverse_querystring("list-barriers", query_kwargs={"status": 4})
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status=4)
         assert 0 < status_response.data["count"] < count
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_status_2_4_filter(self):
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -756,17 +760,18 @@ class TestListBarriers(APITestMixin):
             "list-barriers", query_kwargs={"status": "2,4"}
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status__in=[2, 4])
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_barrier_type_filter(self):
+        client = self.api_client
         count = 10
         barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -774,17 +779,18 @@ class TestListBarriers(APITestMixin):
             "list-barriers", query_kwargs={"barrier_type": barrier_type.id}
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(barrier_type=barrier_type.id)
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_sector_filter(self):
+        client = self.api_client
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -792,20 +798,21 @@ class TestListBarriers(APITestMixin):
             "list-barriers", query_kwargs={"sector": sector_id}
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(sectors__contains=[sector_id])
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_start_date_filter(self):
+        client = self.api_client
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
             end_date=datetime.date.today(),
         ).evaluate(2, None, False)
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -814,20 +821,21 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"reported_on_after": date.strftime("%Y-%m-%d")},
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status_date__gte=date)
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_end_date_filter(self):
+        client = self.api_client
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
             end_date=datetime.date.today(),
         ).evaluate(2, None, False)
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -836,21 +844,22 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"reported_on_before": date.strftime("%Y-%m-%d")},
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status_date__lte=date)
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_date_range_filter(self):
+        client = self.api_client
         count = 10
         start_date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
             end_date=datetime.date.today(),
         ).evaluate(2, None, False)
         end_date = start_date - datetime.timedelta(days=10)
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -862,7 +871,7 @@ class TestListBarriers(APITestMixin):
             },
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             status_date__range=[start_date, end_date]
@@ -877,11 +886,12 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def test_list_barriers_order_by(self, order_by):
+        client = self.api_client
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -889,7 +899,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers", query_kwargs={"ordering": order_by}
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.all().order_by(order_by)
         assert status_response.data["count"] == barriers.count()
@@ -905,10 +915,11 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def test_list_barriers_country_filter_order_by(self, order_by):
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -920,7 +931,7 @@ class TestListBarriers(APITestMixin):
             },
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             export_country="a05f66a0-5d95-e211-a939-e4115bead28a"
@@ -938,10 +949,11 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def test_list_barriers_status_filter_order_by_reported_on(self, order_by):
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -949,7 +961,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers", query_kwargs={"status": 2, "ordering": order_by}
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status=2).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
@@ -965,11 +977,12 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def test_list_barriers_barrier_type_filter_order_by_reported_on(self, order_by):
+        client = self.api_client
         count = 10
         barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -978,7 +991,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"barrier_type": barrier_type.id, "ordering": order_by},
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             barrier_type=barrier_type.id
@@ -996,11 +1009,12 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def test_list_barriers_sector_filter_order_by_reported_on(self, order_by):
+        client = self.api_client
         count = 10
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1008,7 +1022,7 @@ class TestListBarriers(APITestMixin):
             "list-barriers", query_kwargs={"sector": sector_id, "ordering": order_by}
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             sectors__contains=[sector_id]
@@ -1026,14 +1040,15 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def _test_list_barriers_start_date_filter_order_by_reported_on(self, order_by):
+        client = self.api_client
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
             end_date=datetime.date.today(),
         ).evaluate(2, None, False)
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1045,7 +1060,7 @@ class TestListBarriers(APITestMixin):
             },
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status_date__gte=date).order_by(
             order_by
@@ -1063,14 +1078,15 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def _test_list_barriers_end_date_filter_order_by_reported_on(self, order_by):
+        client = self.api_client
         count = 10
         date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
             end_date=datetime.date.today(),
         ).evaluate(2, None, False)
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1082,7 +1098,7 @@ class TestListBarriers(APITestMixin):
             },
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(status_date__lte=date).order_by(
             order_by
@@ -1100,15 +1116,16 @@ class TestListBarriers(APITestMixin):
         "export_country", "-export_country"
     ])
     def _test_list_barriers_date_range_filter_order_by_reported_on(self, order_by):
+        client = self.api_client
         count = 10
         start_date = FuzzyDate(
             start_date=datetime.date.today() - datetime.timedelta(days=45),
             end_date=datetime.date.today(),
         ).evaluate(2, None, False)
         end_date = start_date - datetime.timedelta(days=10)
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1121,7 +1138,7 @@ class TestListBarriers(APITestMixin):
             },
         )
 
-        status_response = self.api_client.get(url)
+        status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
             status_date__range=[start_date, end_date]
@@ -1294,10 +1311,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1306,7 +1324,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"location": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 10
 
@@ -1314,11 +1332,12 @@ class TestListBarriers(APITestMixin):
         """
         Test all except one in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
 
         list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
+        list_report_response = client.post(
             list_report_url,
             format="json",
             data={
@@ -1341,11 +1360,11 @@ class TestListBarriers(APITestMixin):
         assert list_report_response.status_code == status.HTTP_201_CREATED
         instance_id = list_report_response.data["id"]
         submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
+        submit_response = client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
 
@@ -1354,7 +1373,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"location": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 10
 
@@ -1362,11 +1381,12 @@ class TestListBarriers(APITestMixin):
         """
         Test all in South Asia
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
 
         list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
+        list_report_response = client.post(
             list_report_url,
             format="json",
             data={
@@ -1389,11 +1409,11 @@ class TestListBarriers(APITestMixin):
         assert list_report_response.status_code == status.HTTP_201_CREATED
         instance_id = list_report_response.data["id"]
         submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
+        submit_response = client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
 
@@ -1402,7 +1422,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"location": "12ed13cf-4b2c-4a46-b2f9-068e397d8c84"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
 
@@ -1410,11 +1430,12 @@ class TestListBarriers(APITestMixin):
         """
         Test all in Europe and South Asia
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
 
         list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
+        list_report_response = client.post(
             list_report_url,
             format="json",
             data={
@@ -1437,11 +1458,11 @@ class TestListBarriers(APITestMixin):
         assert list_report_response.status_code == status.HTTP_201_CREATED
         instance_id = list_report_response.data["id"]
         submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
+        submit_response = client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
 
@@ -1452,7 +1473,7 @@ class TestListBarriers(APITestMixin):
             },
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
 
@@ -1460,11 +1481,12 @@ class TestListBarriers(APITestMixin):
         """
         Test all in Europe and South Asia, except one
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
 
         list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
+        list_report_response = client.post(
             list_report_url,
             format="json",
             data={
@@ -1487,10 +1509,10 @@ class TestListBarriers(APITestMixin):
         assert list_report_response.status_code == status.HTTP_201_CREATED
         instance_id = list_report_response.data["id"]
         submit_url = reverse("submit-report", kwargs={"pk": instance_id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
+        submit_response = client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
-        list_report_response = self.api_client.post(
+        list_report_response = client.post(
             list_report_url,
             format="json",
             data={
@@ -1517,7 +1539,7 @@ class TestListBarriers(APITestMixin):
         assert submit_response.status_code == status.HTTP_200_OK
 
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 12
 
@@ -1528,7 +1550,7 @@ class TestListBarriers(APITestMixin):
             },
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 11
 
@@ -1536,10 +1558,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1548,7 +1571,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"text": "Some"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 10
 
@@ -1556,10 +1579,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1568,7 +1592,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"text": "testing"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
@@ -1576,10 +1600,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1588,7 +1613,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"text": "test2"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
@@ -1596,10 +1621,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1608,7 +1634,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"text": "SOME"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 10
 
@@ -1616,10 +1642,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1628,7 +1655,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"text": "problem_description"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 10
 
@@ -1636,10 +1663,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1648,7 +1676,7 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"text": "testing"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
@@ -1656,10 +1684,11 @@ class TestListBarriers(APITestMixin):
         """
         Test all barriers in Europe
         """
+        client = self.api_client
         count = 10
-        self.add_multiple_barriers(count)
+        self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == count
 
@@ -1668,6 +1697,6 @@ class TestListBarriers(APITestMixin):
             query_kwargs={"text": "Problem_Description"},
         )
 
-        response = self.api_client.get(url)
+        response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 10

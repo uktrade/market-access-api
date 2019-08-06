@@ -31,26 +31,13 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
         barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
         user = self.request.data.get("user")
         sso_user_id = user["profile"]["sso_user_id"]
-        try:
-            user_profile = Profile.objects.get(sso_user_id=sso_user_id)
-            user = user_profile.user
-        except Profile.DoesNotExist:
-            sso_user = sso.get_user_details_by_id(sso_user_id)
-            user = UserModel(
-                username=sso_user["email"],
-                email=sso_user["email"],
-                first_name=sso_user["first_name"],
-                last_name=sso_user["last_name"],
-            )
-            user.save()
-            user.profile.sso_user_id = sso_user_id
-            user.profile.save()
+        user_profile = get_object_or_404(Profile, sso_user_id=sso_user_id)
 
         role = self.request.data.get("role", None)
 
         serializer.save(
             barrier=barrier_obj,
-            user=user,
+            user=user_profile.user,
             role=role,
             created_by=self.request.user,
         )

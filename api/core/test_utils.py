@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 from secrets import token_hex
 import factory
@@ -69,10 +70,12 @@ def create_test_user(
         user.profile.save()
         user.save()
     
-    if sso_user_id:
-        user.profile.sso_user_id = sso_user_id
-        user.profile.save()
-        user.save()
+    if sso_user_id is None:
+        sso_user_id = uuid.uuid4()
+
+    user.profile.sso_user_id = sso_user_id
+    user.profile.save()
+    user.save()
 
     permissions = Permission.objects.filter(codename__in=permission_codenames)
     user.user_permissions.set(permissions)
@@ -123,6 +126,97 @@ class APITestMixin:
     """All the tests using the DB and accessing end points behind auth should use this class."""
 
     pytestmark = pytest.mark.django_db  # use db
+    sso_creator = {
+        "email": "barrier.creator@unittest.uk",
+        "user_id": "87419484-c6c1-4ab7-b124-a7c0376622c7",
+        "first_name": "Barrier",
+        "last_name": "Creator",
+        "related_emails": [
+            "barrier.creator@mocktest.uk"
+        ],
+        "groups": [],
+        "permitted_applications": [
+            {
+                "key": "app-one",
+                "url": "http://undefined",
+                "name": "App One"
+            },
+            {
+                "key": "app-two",
+                "url": "http://undefined",
+                "name": "App Two"
+            },
+            {
+                "key": "app-three",
+                "url": "http://undefined",
+                "name": "App Three"
+            },
+        ],
+        "access_profiles": [
+            "full-access"
+        ]
+    }
+    sso_user_data_1 = {
+        "email": "unit1.test1@unittest.uk",
+        "user_id": "907a7a2c-b6cd-454f-3764-a4388ec2a42b",
+        "first_name": "Unit1",
+        "last_name": "Test1",
+        "related_emails": [
+            "unit1.test1@mocktest.uk"
+        ],
+        "groups": [],
+        "permitted_applications": [
+            {
+                "key": "app-one",
+                "url": "http://undefined",
+                "name": "App One"
+            },
+            {
+                "key": "app-two",
+                "url": "http://undefined",
+                "name": "App Two"
+            },
+            {
+                "key": "app-three",
+                "url": "http://undefined",
+                "name": "App Three"
+            },
+        ],
+        "access_profiles": [
+            "full-access"
+        ]
+    }
+
+    sso_user_data_2 = {
+        "email": "unit2.test2@unittest.uk",
+        "user_id": "e5e9394c-daed-498e-b9f3-69228b44fbfa",
+        "first_name": "Unit2",
+        "last_name": "Test2",
+        "related_emails": [
+            "unit2.test2@mocktest.uk"
+        ],
+        "groups": [],
+        "permitted_applications": [
+            {
+                "key": "app-one",
+                "url": "http://undefined",
+                "name": "App One"
+            },
+            {
+                "key": "app-two",
+                "url": "http://undefined",
+                "name": "App Two"
+            },
+            {
+                "key": "app-three",
+                "url": "http://undefined",
+                "name": "App Three"
+            },
+        ],
+        "access_profiles": [
+            "full-access"
+        ]
+    }
 
     @property
     def user(self):

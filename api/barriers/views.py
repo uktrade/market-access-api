@@ -57,6 +57,7 @@ from api.user.utils import has_profile
 
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
+from api.user.models import Profile
 from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
@@ -244,7 +245,12 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 created_by=self.request.user,
             ).save()
         # add submitted_by as default team member
-        if not self.request.user.profile.sso_user_id:
+        try:
+            profile = self.request.user.profile
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=self.request.user)
+
+        if self.request.user.profile.sso_user_id is None:
             token = self.request.auth.token
             context = {"token": token}
             sso_user = sso.get_logged_in_user_details(context)

@@ -24,7 +24,7 @@ class Profile(models.Model):
         null=True, help_text="temporary field to hold sso profile json object"
     )
     sso_user_id = models.UUIDField(
-        null=True, help_text="Staff SSO UUID for reference"
+        null=True, unique=True, help_text="Staff SSO UUID for reference"
     )
 
 

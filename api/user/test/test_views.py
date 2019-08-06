@@ -12,37 +12,6 @@ from api.user.staff_sso import StaffSSO
 class TestUserView(APITestMixin):
     """User view test case."""
 
-    sso_user_data = {
-        "email": "unit.test@unittest.uk",
-        "user_id": "907a7a2c-b6cd-454f-3764-a4388ec2a42b",
-        "first_name": "Unit",
-        "last_name": "Test",
-        "related_emails": [
-            "unit.test@mocktest.uk"
-        ],
-        "groups": [],
-        "permitted_applications": [
-            {
-                "key": "app-one",
-                "url": "http://undefined",
-                "name": "App One"
-            },
-            {
-                "key": "app-two",
-                "url": "http://undefined",
-                "name": "App Two"
-            },
-            {
-                "key": "app-three",
-                "url": "http://undefined",
-                "name": "App Three"
-            },
-        ],
-        "access_profiles": [
-            "full-access"
-        ]
-    }
-
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_authenticated(self, mock_sso_api):
         """Who am I."""
@@ -50,7 +19,7 @@ class TestUserView(APITestMixin):
         user_test = create_test_user()
         api_client = self.create_api_client(user=user_test)
 
-        mock_sso_api.return_value = self.sso_user_data
+        mock_sso_api.return_value = self.sso_user_data_1
 
         url = reverse("who_am_i")
         response = api_client.get(url)
@@ -59,8 +28,8 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data["email"]
-        assert response_data["username"] == f"{self.sso_user_data['first_name']} {self.sso_user_data['last_name']}"
+        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_email_as_username(self, mock_sso_api):
@@ -68,7 +37,7 @@ class TestUserView(APITestMixin):
 
         user_test = create_test_user(username="Testo@Useri.com")
         api_client = self.create_api_client(user=user_test)
-        mock_sso_api.return_value = self.sso_user_data
+        mock_sso_api.return_value = self.sso_user_data_1
 
         url = reverse("who_am_i")
         response = api_client.get(url)
@@ -77,8 +46,8 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data["email"]
-        assert response_data["username"] == f"{self.sso_user_data['first_name']} {self.sso_user_data['last_name']}"
+        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username(self, mock_sso_api):
@@ -86,7 +55,7 @@ class TestUserView(APITestMixin):
 
         user_test = create_test_user(email="Test.Email@Useri.com", username="")
         api_client = self.create_api_client(user=user_test)
-        mock_sso_api.return_value = self.sso_user_data
+        mock_sso_api.return_value = self.sso_user_data_1
 
         url = reverse("who_am_i")
         response = api_client.get(url)
@@ -95,8 +64,8 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data["email"]
-        assert response_data["username"] == f"{self.sso_user_data['first_name']} {self.sso_user_data['last_name']}"
+        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username_no_email(self, mock_sso_api):
@@ -104,7 +73,7 @@ class TestUserView(APITestMixin):
 
         user_test = create_test_user(email="", username="")
         api_client = self.create_api_client(user=user_test)
-        mock_sso_api.return_value = self.sso_user_data
+        mock_sso_api.return_value = self.sso_user_data_1
 
         url = reverse("who_am_i")
         response = api_client.get(url)
@@ -113,8 +82,8 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data["email"]
-        assert response_data["username"] == f"{self.sso_user_data['first_name']} {self.sso_user_data['last_name']}"
+        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_sso_data_none(self, mock_sso_api):
