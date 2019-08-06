@@ -1,9 +1,10 @@
 from django.contrib.auth import get_user_model
-from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
-from rest_framework import generics
+from rest_framework import generics, serializers, status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
@@ -26,14 +27,25 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
     def get_queryset(self):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk")).order_by("created_on")
 
-    @transaction.atomic()
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
         user = self.request.data.get("user")
         sso_user_id = user["profile"]["sso_user_id"]
         user_profile = get_object_or_404(Profile, sso_user_id=sso_user_id)
-
         role = self.request.data.get("role", None)
+
+        barrier_member_count = TeamMember.objects.filter(
+            Q(barrier=barrier_obj) & Q(user=user_profile.user)
+        ).count()
+        if barrier_member_count > 0:
+            raise serializers.ValidationError("member already exists")
 
         serializer.save(
             barrier=barrier_obj,
