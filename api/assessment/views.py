@@ -1,6 +1,6 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status
+from rest_framework import generics, serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -20,7 +20,6 @@ class BarrierAssessmentDetail(generics.CreateAPIView,
     Allows the barrier assessment to be created and updated
     """
 
-    lookup_field = "pk"
     queryset = Assessment.objects.all()
     serializer_class = AssessmentSerializer
 
@@ -40,6 +39,10 @@ class BarrierAssessmentDetail(generics.CreateAPIView,
 
     def perform_create(self, serializer):
         barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+
+        if hasattr(barrier_obj, 'assessment'):
+            raise serializers.ValidationError("Assessment already exists")
+
         impact = self.request.data.get("impact", None)
         explanation = self.request.data.get("explanation", None)
         docs_in_req = self.request.data.get("documents", None)

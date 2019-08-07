@@ -22,6 +22,7 @@ from .utils import (
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
+    ASSESMENT_IMPACT,
     BARRIER_PENDING,
     BARRIER_SOURCE,
     BARRIER_STATUS,
@@ -65,6 +66,7 @@ class MetadataView(generics.GenericAPIView):
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
         timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
+        assessment_impact = dict((x, y) for x, y in ASSESMENT_IMPACT)
 
         dh_os_regions, dh_countries = get_os_regions_and_countries()
         dh_admin_areas = get_admin_areas()
@@ -98,6 +100,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_source": barrier_source,
             "timeline_events": timeline_events,
             "barrier_priorities": barrier_priorities,
+            "assessment_impact": assessment_impact,
         }
 
         return Response(results, status=status.HTTP_200_OK)
