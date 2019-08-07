@@ -26,6 +26,7 @@ from api.user.views import who_am_i
 from api.core.views import admin_override
 
 from api.interactions.urls import urlpatterns
+from api.assessment.urls import urlpatterns as assessment_urls
 
 urlpatterns = [
     path("admin/login/", admin_override, name="override"),
@@ -71,4 +72,4 @@ urlpatterns = [
     ),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
-] + urlpatterns
+] + urlpatterns + assessment_urls

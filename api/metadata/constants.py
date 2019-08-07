@@ -88,3 +88,10 @@ TIMELINE_EVENTS = Choices(
     ("BARRIER_CREATED", "Barrier Created"),
     ("BARRIER_STATUS_CHANGE", "Barrier Status Change"),
 )
+
+ASSESMENT_IMPACT = Choices(
+    ("HIGH", "High"),
+    ("MEDIUMHIGH", "Medium High"),
+    ("MEDIUMLOW", "Medium Low"),
+    ("LOW", "Low"),
+)
