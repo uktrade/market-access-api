@@ -52,6 +52,7 @@ class Assessment(BaseModel, ArchivableModel):
     value_to_economy = models.BigIntegerField(null=True)
     import_market_size = models.BigIntegerField(null=True)
     commercial_value = models.BigIntegerField(null=True)
+    export_value = models.BigIntegerField(null=True)
     is_active = models.BooleanField(default=True)
 
     history = HistoricalRecords()

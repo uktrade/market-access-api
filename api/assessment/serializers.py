@@ -19,6 +19,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "value_to_economy",
             "import_market_size",
             "commercial_value",
+            "export_value",
             "documents",
             "created_on",
             "created_by",
@@ -45,68 +46,6 @@ class AssessmentSerializer(serializers.ModelSerializer):
             for document in obj.documents.all()
         ]
 
-    # def partial_update(self, instance, validated_data):
-    #     instance.impact = validated_data.get("impact", instance.impact)
-    #     instance.explanation = validated_data.get(
-    #         "explanation",
-    #         instance.explanation
-    #     )
-    #     instance.value_to_economy = validated_data.get(
-    #         "value_to_economy",
-    #         instance.value_to_economy
-    #     )
-    #     instance.import_market_size = validated_data.get(
-    #         "import_market_size",
-    #         instance.import_market_size
-    #     )
-    #     instance.import_market_size = validated_data.get(
-    #         "commercial_value",
-    #         instance.commercial_value
-    #     )
-    #     instance.modified_by = self.context["request"].user
-    #     return instance
-
     def get_status(self, instance):
         """Get document status."""
         return instance.document.status
-
-
-# class DocumentSerializer(serializers.ModelSerializer):
-#     """Serializer for Document."""
-
-#     status = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = AssessmentDocument
-#         fields = ("id", "size", "mime_type", "original_filename", "url", "status")
-#         read_only_fields = ("url", "created_by", "created_on", "status")
-
-#     def create(self, validated_data):
-#         """Create my entity document."""
-#         doc = AssessmentDocument.objects.create(
-#             original_filename=validated_data["original_filename"],
-#             created_by=self.context["request"].user,
-#         )
-
-#         if "size" in validated_data:
-#             doc.size = validated_data["size"]
-
-#         if "mime_type" in validated_data:
-#             doc.mime_type = validated_data["mime_type"]
-
-#         doc.save()
-
-#         return doc
-
-#     def partial_update(self, instance, validated_data):
-#         instance.original_filename = validated_data.get(
-#             "original_filename", instance.original_filename
-#         )
-#         instance.size = validated_data.get("size", instance.size)
-#         instance.mime_type = validated_data.get("mime_type", instance.mime_type)
-#         instance.modified_by = self.context["request"].user
-#         return instance
-
-#     def get_status(self, instance):
-#         """Get document status."""
-#         return instance.document.status

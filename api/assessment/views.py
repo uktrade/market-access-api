@@ -13,26 +13,6 @@ from api.interactions.models import Document
 from api.metadata.constants import ASSESMENT_IMPACT
 
 
-# class DocumentViewSet(BaseEntityDocumentModelViewSet):
-#     """Document ViewSet."""
-
-#     serializer_class = DocumentSerializer
-#     queryset = AssessmentDocument.objects.all()
-
-#     def perform_destroy(self, instance):
-#         """
-#         Customise document delete,
-#         if it is actively attached to a note, raise validation error
-#         if it was detached already, skip it
-#         only if was never attached to any note, delete it from S3
-#         """
-#         doc = AssessmentDocument.objects.get(id=str(instance.pk))
-#         if Assessment.objects.filter(documents=doc.id).count() > 0:
-#             raise ValidationError()
-#         if not doc.detached:
-#             return super().perform_destroy(instance)
-
-
 class BarrierAssessmentDetail(generics.CreateAPIView,
                         generics.RetrieveUpdateAPIView):
     """
@@ -101,10 +81,6 @@ class BarrierAssessmentDetail(generics.CreateAPIView,
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def perform_update(self, serializer):
-        """
-        This needs to attach new set of documents
-        And detach the ones that not present in the request, but were previously attached
-        """
         assessment = self.get_object()
         if "documents" in self.request.data:
             docs_in_req = self.request.data.get("documents", None)
