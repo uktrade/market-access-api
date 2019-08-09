@@ -14,23 +14,6 @@ from api.interactions.models import Document
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
-# class AssessmentDocument(AbstractEntityDocumentModel):
-#     """ Document item related to assessment """
-
-#     size = models.IntegerField(null=True)
-#     mime_type = models.CharField(max_length=MAX_LENGTH, null=True)
-#     detached = models.BooleanField(default=False)
-
-#     history = HistoricalRecords()
-
-#     @property
-#     def url(self):
-#         """Returns URL to download endpoint."""
-#         return reverse(
-#             "barrier-document-item-download", kwargs={"entity_document_pk": self.pk}
-#         )
-
-
 class AssessmentManager(models.Manager):
     """ Manage barrier assessment within the model, with archived not False """
 
@@ -44,8 +27,8 @@ class Assessment(BaseModel, ArchivableModel):
     barrier = models.OneToOneField(
         BarrierInstance, on_delete=models.PROTECT
     )
-    impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25)
-    explanation = models.TextField()
+    impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, null=True)
+    explanation = models.TextField(null=True)
     documents = models.ManyToManyField(
         Document, related_name="assessment_documents", help_text="assessment documents"
     )
