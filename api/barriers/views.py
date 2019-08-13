@@ -301,6 +301,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     location = django_filters.Filter(method="location_filter")
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
+    team = django_filters.Filter(method="team_barriers")
 
     class Meta:
         model = BarrierInstance
@@ -372,7 +373,15 @@ class BarrierFilterSet(django_filters.FilterSet):
         if value:
             current_user = self.request.user
             return queryset.filter(
-                Q(created_by=self.request.user)
+                Q(created_by=current_user)
+            )
+        return queryset
+
+    def team_barriers(self, queryset, name, value):
+        if value:
+            current_user = self.request.user
+            return queryset.filter(
+                barrier_team__user=current_user
             )
         return queryset
 

@@ -11,15 +11,16 @@ from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
 from api.barriers.tests.test_utils import TestUtils
 
+pytestmark = [
+    pytest.mark.django_db
+]
+
 
 class TestListTeamMembers(APITestMixin):
-    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
-    def test_no_members_except_default(self, mock_creator):
-        """Test there are no barrier members using list"""
-        client = self.api_client
-        mock_creator.return_value = self.sso_creator
+    @pytest.fixture
+    def setup_barrier(self):
         list_report_url = reverse("list-reports")
-        list_report_response = client.post(
+        list_report_response = self.api_client.post(
             list_report_url,
             format="json",
             data={
@@ -48,20 +49,27 @@ class TestListTeamMembers(APITestMixin):
         assert list_report_response.data["id"] == str(instance.id)
 
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = client.put(submit_url, format="json", data={})
+        submit_response = self.api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_200_OK
 
         get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = client.get(get_url)
+        response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
+        return instance.id
 
-        members_url = reverse("list-members", kwargs={"pk": instance.id})
+    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
+    def test_no_members_except_default(self, mock_creator, setup_barrier):
+        """Test there are no barrier members using list"""
+        instance_id = setup_barrier
+        client = self.api_client
+        mock_creator.return_value = self.sso_creator
+
+        members_url = reverse("list-members", kwargs={"pk": instance_id})
         response = client.get(members_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
 
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    @pytest.mark.django_db
     def _test_add_existing_user_with_profile_with_sso_user_id_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
         creator_user = create_test_user(

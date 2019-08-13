@@ -1681,9 +1681,6 @@ class TestListBarriers(APITestMixin):
         assert response.data["count"] == 0
 
     def test_list_barriers_text_filter_based_on_summary_case_insensitive(self):
-        """
-        Test all barriers in Europe
-        """
         client = self.api_client
         count = 10
         self.add_multiple_barriers(count, client)
@@ -1700,3 +1697,53 @@ class TestListBarriers(APITestMixin):
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 10
+
+    def test_filter_barriers_my_barriers(self):
+        creator_user = create_test_user(
+            sso_user_id=self.sso_creator["user_id"]
+        )
+        client = self.create_api_client(creator_user)
+        count = 10
+        self.add_multiple_barriers(count, client)
+        url = reverse("list-barriers")
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == count
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"user": creator_user.id},
+        )
+
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10
+
+    def _test_filter_barriers_my_barriers_two_users(self):
+        creator_user = create_test_user()
+        client = self.create_api_client(creator_user)
+        count = 5
+        self.add_multiple_barriers(count, client)
+        url = reverse("list-barriers")
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 5
+
+        other_user = create_test_user()
+        other_client = self.create_api_client(other_user)
+        self.add_multiple_barriers(count, other_client)
+
+        url = reverse("list-barriers")
+        response = other_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 10
+
+        url = TestUtils.reverse_querystring(
+            "list-barriers",
+            query_kwargs={"user": True},
+        )
+
+        response = client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 5
+    
