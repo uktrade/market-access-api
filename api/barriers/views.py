@@ -427,6 +427,7 @@ class BarriertListExportView(BarrierList):
             "scope": "Scope",
             "barrier_types": "Barrier types",
             "source": "Source",
+            "team_count": "Team count",
             "reported_on": "Reported Date",
             "resolved_date": "Resolved Date",
             "modified_on": "Last updated",
