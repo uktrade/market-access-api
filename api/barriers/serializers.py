@@ -24,6 +24,7 @@ from api.metadata.utils import (
     get_countries,
     get_sectors,
 )
+from api.collaboration.models import TeamMember
 
 # pylint: disable=R0201
 
@@ -238,7 +239,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
         return None
 
     def get_team_count(self, obj):
-        return obj.barrier_team.count
+        return TeamMember.objects.filter(barrier=obj).count()
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
