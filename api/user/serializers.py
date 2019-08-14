@@ -115,7 +115,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
+    full_name = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
-        fields = ['profile', 'email', 'first_name', 'last_name']
+        fields = [
+            'profile',
+            'email',
+            'first_name',
+            'last_name',
+            'full_name',
+        ]
+
+    def get_full_name(self, obj):
+        return cleansed_username(obj)

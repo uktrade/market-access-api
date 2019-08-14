@@ -18,7 +18,8 @@ def get_sso_field(field_name, default=None, context=None):
 
 def get_username(user, context=None):
     username = cleansed_username(user)
-    sso_me = sso.get_logged_in_user_details(context)
-    if sso_me:
-        return f"{sso_me.get('first_name', '')} {sso_me.get('last_name', '')}"
+    if "." in username:
+        sso_me = sso.get_logged_in_user_details(context)
+        if sso_me:
+            return f"{sso_me.get('first_name', '')} {sso_me.get('last_name', '')}"
     return username
