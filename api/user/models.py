@@ -23,6 +23,9 @@ class Profile(models.Model):
     user_profile = JSONField(
         null=True, help_text="temporary field to hold sso profile json object"
     )
+    sso_user_id = models.UUIDField(
+        null=True, help_text="Staff SSO UUID for reference"
+    )
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)

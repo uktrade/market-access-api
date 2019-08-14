@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "api.documents",
     "api.interactions",
     "api.assessment",
+    "api.collaboration",
     "authbroker_client",
     "api.user_event_log",
 ]
@@ -198,6 +199,7 @@ if SSO_ENABLED:
     )
     OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"] = env("RESOURCE_SERVER_AUTH_TOKEN")
     OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"] = env("RESOURCE_SERVER_USER_INFO_URL")
+    OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"] = env("RESOURCE_SERVER_USER_INTROSPECT_URL")
 
 # DRF
 REST_FRAMEWORK = {

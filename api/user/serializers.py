@@ -10,14 +10,12 @@ from django.contrib.auth import get_user_model
 
 from api.user.models import Profile
 from api.core.utils import cleansed_username
-from api.user.utils import (
-    get_sso_field,
-    get_sso_user_data,
-    get_username
-)
+from api.user.utils import get_username
+from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
 logger = getLogger(__name__)
+sso = StaffSSO()
 
 
 class WhoAmISerializer(serializers.ModelSerializer):
@@ -48,22 +46,22 @@ class WhoAmISerializer(serializers.ModelSerializer):
         )
 
     def get_email(self, obj):
-        sso_me = get_sso_user_data(self.context)
+        sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
             return sso_me.get('email', None)
-        return None
+        return obj.email
 
     def get_first_name(self, obj):
-        sso_me = get_sso_user_data(self.context)
+        sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
             return sso_me.get('first_name', None)
-        return None
+        return obj.first_name
 
     def get_last_name(self, obj):
-        sso_me = get_sso_user_data(self.context)
+        sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
             return sso_me.get('last_name', None)
-        return None
+        return obj.last_name
 
     def get_username(self, obj):
         return get_username(obj, self.context)
@@ -102,7 +100,22 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return None
 
     def get_permitted_applications(self, obj):
-        sso_me = get_sso_user_data(self.context)
+        sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
             return sso_me.get('permitted_applications', None)
         return None
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = ["sso_user_id"]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer()
+
+    class Meta:
+        model = UserModel
+        fields = ['profile', 'email', 'first_name', 'last_name']

@@ -51,13 +51,17 @@ from api.metadata.models import BarrierType, BarrierPriority
 from api.metadata.utils import get_countries
 
 from api.interactions.models import Interaction
+from api.collaboration.models import TeamMember
 
 from api.user.utils import has_profile
 
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
+from api.user.models import Profile
+from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
+sso = StaffSSO()
 
 
 class Echo:
@@ -240,6 +244,29 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 kind=kind,
                 created_by=self.request.user,
             ).save()
+        # add submitted_by as default team member
+        try:
+            profile = self.request.user.profile
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=self.request.user)
+
+        if self.request.user.profile.sso_user_id is None:
+            token = self.request.auth.token
+            context = {"token": token}
+            sso_user = sso.get_logged_in_user_details(context)
+            self.request.user.username = sso_user["email"]
+            self.request.user.email = sso_user["email"]
+            self.request.user.first_name = sso_user["first_name"]
+            self.request.user.last_name = sso_user["last_name"]
+            self.request.user.save()
+            self.request.user.profile.sso_user_id = sso_user["user_id"]
+            self.request.user.profile.save()
+        TeamMember(
+            barrier=barrier_obj,
+            user=self.request.user,
+            role='Barrier creator',
+            default=True
+        ).save()
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -274,6 +301,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     location = django_filters.Filter(method="location_filter")
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
+    team = django_filters.Filter(method="team_barriers")
 
     class Meta:
         model = BarrierInstance
@@ -345,7 +373,15 @@ class BarrierFilterSet(django_filters.FilterSet):
         if value:
             current_user = self.request.user
             return queryset.filter(
-                Q(created_by=self.request.user)
+                Q(created_by=current_user)
+            )
+        return queryset
+
+    def team_barriers(self, queryset, name, value):
+        if value:
+            current_user = self.request.user
+            return queryset.filter(
+                barrier_team__user=current_user
             )
         return queryset
 
@@ -391,6 +427,7 @@ class BarriertListExportView(BarrierList):
             "scope": "Scope",
             "barrier_types": "Barrier types",
             "source": "Source",
+            "team_count": "Team count",
             "reported_on": "Reported Date",
             "resolved_date": "Resolved Date",
             "modified_on": "Last updated",

@@ -22,11 +22,12 @@ from api.barriers.views import (
     BarrierStatusHistory,
 )
 from api.interactions.views import BarrierInteractionList, BarrierIneractionDetail
-from api.user.views import who_am_i
+from api.user.views import who_am_i, UserDetail
 from api.core.views import admin_override
 
-from api.interactions.urls import urlpatterns
 from api.assessment.urls import urlpatterns as assessment_urls
+from api.collaboration.urls import urlpatterns as team_urls
+from api.interactions.urls import urlpatterns as interaction_urls
 
 urlpatterns = [
     path("admin/login/", admin_override, name="override"),
@@ -35,6 +36,7 @@ urlpatterns = [
     path("counts", barrier_count, name="barrier-count"),
     path("ping.xml", ping, name="ping"),
     path("whoami", who_am_i, name="who_am_i"),
+    path("users/<uuid:sso_user_id>", UserDetail.as_view(), name="get-user"),
     path("reports", BarrierReportList.as_view(), name="list-reports"),
     path("reports/<uuid:pk>", BarrierReportDetail.as_view(), name="get-report"),
     path(
@@ -72,4 +74,4 @@ urlpatterns = [
     ),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
-] + urlpatterns + assessment_urls
+] + interaction_urls + team_urls + assessment_urls
