@@ -22,12 +22,14 @@ class BarrierTeamSerializer(serializers.ModelSerializer):
             "user",
             "role",
             "is_active",
+            "default",
             "created_on",
             "created_by",
         )
         read_only_fields = (
             "id",
             "user",
+            "default",
             "created_by",
             "created_on"
         )
