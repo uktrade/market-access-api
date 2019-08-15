@@ -187,9 +187,9 @@ class TestBarrierDetail(APITestMixin):
         response = new_api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         barrier = response.data
-        assert barrier["reported_by"] == "Test.User"
+        assert barrier["reported_by"] == "Test User"
         assert barrier["created_on"] is not None
-        assert barrier["modified_by"] == "Test.User"
+        assert barrier["modified_by"] == "Test User"
         assert barrier["modified_by"] is not None
 
     def test_barrier_with_user_normal_username_and_email(self):
@@ -234,9 +234,9 @@ class TestBarrierDetail(APITestMixin):
         response = new_api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         barrier = response.data
-        assert barrier["reported_by"] == "Test.User"
+        assert barrier["reported_by"] == "Test User"
         assert barrier["created_on"] is not None
-        assert barrier["modified_by"] == "Test.User"
+        assert barrier["modified_by"] == "Test User"
         assert barrier["modified_by"] is not None
 
     def test_barrier_detail_submitted_open_edit_to_resolve(self):

@@ -87,4 +87,4 @@ class StaffSSO:
         except Exception as exc:
             logger.error(f"Error occurred while requesting user info from SSO, {exc}")
             return None
-    
+        

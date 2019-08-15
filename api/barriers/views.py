@@ -32,6 +32,7 @@ from rest_framework.response import Response
 
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
+from api.core.utils import cleansed_username
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
@@ -381,8 +382,8 @@ class BarrierFilterSet(django_filters.FilterSet):
         if value:
             current_user = self.request.user
             return queryset.filter(
-                barrier_team__user=current_user
-            )
+                Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
+            ).distinct()
         return queryset
 
 
@@ -573,15 +574,9 @@ class BarrierInstanceHistory(GenericAPIView):
 
 
 class BarrierStatusHistory(GenericAPIView):
-    def _username_from_user(self, user):
+    def _format_user(self, user):	
         if user is not None:
-            if user.username is not None and user.username.strip() != "":
-                if "@" in user.username:
-                    return {"id": user.id, "name": user.username.split("@")[0]}
-                else:
-                    return {"id": user.id, "name": user.username}
-            elif user.email is not None and user.email.strip() != "":
-                return user.email.split("@")[0]
+            return {"id": user.id, "name": cleansed_username(user)}
 
         return None
 
@@ -609,7 +604,7 @@ class BarrierStatusHistory(GenericAPIView):
                                         "field": change.field,
                                         "old_value": str(change.old),
                                         "new_value": str(change.new),
-                                        "user": self._username_from_user(
+                                        "user": self._format_user(
                                             new_record.history_user
                                         ),
                                         "field_info": {
@@ -626,7 +621,7 @@ class BarrierStatusHistory(GenericAPIView):
                                     "field": change.field,
                                     "old_value": str(change.old),
                                     "new_value": str(change.new),
-                                    "user": self._username_from_user(
+                                    "user": self._format_user(
                                         new_record.history_user
                                     ),
                                     "field_info": {
