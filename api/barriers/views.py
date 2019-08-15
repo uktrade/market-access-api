@@ -381,8 +381,8 @@ class BarrierFilterSet(django_filters.FilterSet):
         if value:
             current_user = self.request.user
             return queryset.filter(
-                barrier_team__user=current_user
-            )
+                Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
+            ).distinct()
         return queryset
 
 
