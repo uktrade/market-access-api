@@ -29,7 +29,7 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
+        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_email_as_username(self, mock_sso_api):
@@ -47,7 +47,7 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
+        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username(self, mock_sso_api):
@@ -65,7 +65,7 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
+        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username_no_email(self, mock_sso_api):
@@ -83,7 +83,7 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{self.sso_user_data_1['first_name']} {self.sso_user_data_1['last_name']}"
+        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     def test_who_am_sso_data_none(self, mock_sso_api):
@@ -101,7 +101,7 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == "Test.Email@Useri.com"
-        assert response_data["username"] == "Test.Email"
+        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
         assert response_data["first_name"] == user_test.first_name
         assert response_data["last_name"] == user_test.last_name
 

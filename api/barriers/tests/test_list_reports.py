@@ -1520,7 +1520,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"]["name"] == self.user.username
+        assert barrier["created_by"]["name"] == f"{self.user.first_name} {self.user.last_name}"
 
     def test_list_reports_get_one_barrier_with_user_empty_username(self):
         a_user = create_test_user(

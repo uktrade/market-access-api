@@ -116,6 +116,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
@@ -126,6 +127,11 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name',
             'full_name',
         ]
+
+    def get_email(self, obj):
+        if obj.email:
+            return obj.email
+        return obj.username
 
     def get_full_name(self, obj):
         return cleansed_username(obj)

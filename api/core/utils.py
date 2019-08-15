@@ -1,15 +1,15 @@
 def cleansed_username(user):
     if user is not None:
-        if user.first_name is not None and user.last_name is not None:
+        if user.first_name.strip() and user.last_name.strip():
             return f"{user.first_name} {user.last_name}"
         
-        if user.username is not None and user.username.strip() != "":
+        if user.username.strip():
             if "@" in user.username:
                 return user.username.split("@")[0]
             else:
                 return user.username
         
-        if user.email is not None and user.email.strip() != "":
+        if user.email.strip():
             return user.email.split("@")[0]
 
     return None
