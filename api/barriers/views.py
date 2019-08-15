@@ -32,6 +32,7 @@ from rest_framework.response import Response
 
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
+from api.core.utils import cleansed_username
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
@@ -573,17 +574,6 @@ class BarrierInstanceHistory(GenericAPIView):
 
 
 class BarrierStatusHistory(GenericAPIView):
-    def _username_from_user(self, user):
-        if user is not None:
-            if user.username is not None and user.username.strip() != "":
-                if "@" in user.username:
-                    return {"id": user.id, "name": user.username.split("@")[0]}
-                else:
-                    return {"id": user.id, "name": user.username}
-            elif user.email is not None and user.email.strip() != "":
-                return user.email.split("@")[0]
-
-        return None
 
     def get(self, request, pk):
         status_field = "status"
@@ -609,7 +599,7 @@ class BarrierStatusHistory(GenericAPIView):
                                         "field": change.field,
                                         "old_value": str(change.old),
                                         "new_value": str(change.new),
-                                        "user": self._username_from_user(
+                                        "user": cleansed_username(
                                             new_record.history_user
                                         ),
                                         "field_info": {
@@ -626,7 +616,7 @@ class BarrierStatusHistory(GenericAPIView):
                                     "field": change.field,
                                     "old_value": str(change.old),
                                     "new_value": str(change.new),
-                                    "user": self._username_from_user(
+                                    "user": cleansed_username(
                                         new_record.history_user
                                     ),
                                     "field_info": {
