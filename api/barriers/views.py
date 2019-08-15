@@ -574,6 +574,11 @@ class BarrierInstanceHistory(GenericAPIView):
 
 
 class BarrierStatusHistory(GenericAPIView):
+    def _format_user(self, user):	
+        if user is not None:
+            return {"id": user.id, "name": cleansed_username(user)}
+
+        return None
 
     def get(self, request, pk):
         status_field = "status"
@@ -599,7 +604,7 @@ class BarrierStatusHistory(GenericAPIView):
                                         "field": change.field,
                                         "old_value": str(change.old),
                                         "new_value": str(change.new),
-                                        "user": cleansed_username(
+                                        "user": self._format_user(
                                             new_record.history_user
                                         ),
                                         "field_info": {
@@ -616,7 +621,7 @@ class BarrierStatusHistory(GenericAPIView):
                                     "field": change.field,
                                     "old_value": str(change.old),
                                     "new_value": str(change.new),
-                                    "user": cleansed_username(
+                                    "user": self._format_user(
                                         new_record.history_user
                                     ),
                                     "field_info": {

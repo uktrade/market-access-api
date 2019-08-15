@@ -281,7 +281,7 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["reported_by"] == "Test.User"
+        assert barrier["reported_by"] == "Test User"
 
     def test_barrier_with_user_normal_username_and_email(self):
         a_user = create_test_user(
@@ -326,7 +326,7 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["reported_by"] == "Test.User"
+        assert barrier["reported_by"] == "Test User"
 
     def test_list_barriers_get_archived_barrier(self):
         list_report_url = reverse("list-reports")

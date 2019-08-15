@@ -1628,7 +1628,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"]["name"] == "Test.User"
+        assert barrier["created_by"]["name"] == "Test User"
 
     def test_list_reports_get_one_barrier_with_user_normal_username_and_email(self):
         a_user = create_test_user(
@@ -1664,7 +1664,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"]["name"] == "Test.User"
+        assert barrier["created_by"]["name"] == "Test User"
 
     def add_multiple_reports(self, count, api_client=None):
         if not api_client:
