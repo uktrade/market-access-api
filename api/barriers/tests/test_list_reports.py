@@ -1717,7 +1717,7 @@ class TestListReports(APITestMixin):
         list_report_url = reverse("list-reports")
         new_api_client = self.create_api_client(user=a_user)
 
-        count = 10
+        count = 5
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
         self.add_multiple_reports(count, new_api_client)
         url = reverse("list-reports")
