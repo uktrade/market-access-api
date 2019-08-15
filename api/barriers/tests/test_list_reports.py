@@ -1520,7 +1520,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"]["name"] == self.user.username
+        assert barrier["created_by"]["name"] == f"{self.user.first_name} {self.user.last_name}"
 
     def test_list_reports_get_one_barrier_with_user_empty_username(self):
         a_user = create_test_user(
@@ -1628,7 +1628,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"]["name"] == "Test.User"
+        assert barrier["created_by"]["name"] == "Test User"
 
     def test_list_reports_get_one_barrier_with_user_normal_username_and_email(self):
         a_user = create_test_user(
@@ -1664,7 +1664,7 @@ class TestListReports(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["created_by"]["name"] == "Test.User"
+        assert barrier["created_by"]["name"] == "Test User"
 
     def add_multiple_reports(self, count, api_client=None):
         if not api_client:
@@ -1717,7 +1717,7 @@ class TestListReports(APITestMixin):
         list_report_url = reverse("list-reports")
         new_api_client = self.create_api_client(user=a_user)
 
-        count = 10
+        count = 5
         sector_id = "af959812-6095-e211-a939-e4115bead28a"
         self.add_multiple_reports(count, new_api_client)
         url = reverse("list-reports")

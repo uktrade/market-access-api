@@ -18,7 +18,7 @@ jobs:
           POSTGRES_DB=market_access
       - image: ukti/mock-sso
         environment:
-          MOCK_SSO_PORT: 5000
+          MOCK_SSO_PORT: '5000'
           MOCK_SSO_USERNAME: test-user
           MOCK_SSO_SCOPE: test
 
@@ -34,6 +34,7 @@ jobs:
       RESOURCE_SERVER_INTROSPECTION_URL: 'http://localhost:5000/o/introspect/'
       RESOURCE_SERVER_AUTH_TOKEN: sso-token
       RESOURCE_SERVER_USER_INFO_URL: 'http://localhost:8080/api/v1/user/me/'
+      RESOURCE_SERVER_USER_INTROSPECT_URL: 'http://localhost:8080/api/v1/user/introspect/'
       FAKE_METADATA: 'True'
       DH_METADATA_URL: 'https://datahub-api-dev.london.cloudapps.digital/metadata/'
       HAWK_ENABLED: 'False'

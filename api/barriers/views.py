@@ -32,6 +32,7 @@ from rest_framework.response import Response
 
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
+from api.core.utils import cleansed_username
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
@@ -51,13 +52,17 @@ from api.metadata.models import BarrierType, BarrierPriority
 from api.metadata.utils import get_countries
 
 from api.interactions.models import Interaction
+from api.collaboration.models import TeamMember
 
 from api.user.utils import has_profile
 
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
+from api.user.models import Profile
+from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
+sso = StaffSSO()
 
 
 class Echo:
@@ -240,6 +245,29 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 kind=kind,
                 created_by=self.request.user,
             ).save()
+        # add submitted_by as default team member
+        try:
+            profile = self.request.user.profile
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=self.request.user)
+
+        if self.request.user.profile.sso_user_id is None:
+            token = self.request.auth.token
+            context = {"token": token}
+            sso_user = sso.get_logged_in_user_details(context)
+            self.request.user.username = sso_user["email"]
+            self.request.user.email = sso_user["email"]
+            self.request.user.first_name = sso_user["first_name"]
+            self.request.user.last_name = sso_user["last_name"]
+            self.request.user.save()
+            self.request.user.profile.sso_user_id = sso_user["user_id"]
+            self.request.user.profile.save()
+        TeamMember(
+            barrier=barrier_obj,
+            user=self.request.user,
+            role='Barrier creator',
+            default=True
+        ).save()
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -274,6 +302,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     location = django_filters.Filter(method="location_filter")
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
+    team = django_filters.Filter(method="team_barriers")
 
     class Meta:
         model = BarrierInstance
@@ -345,8 +374,16 @@ class BarrierFilterSet(django_filters.FilterSet):
         if value:
             current_user = self.request.user
             return queryset.filter(
-                Q(created_by=self.request.user)
+                Q(created_by=current_user)
             )
+        return queryset
+
+    def team_barriers(self, queryset, name, value):
+        if value:
+            current_user = self.request.user
+            return queryset.filter(
+                Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
+            ).distinct()
         return queryset
 
 
@@ -391,6 +428,7 @@ class BarriertListExportView(BarrierList):
             "scope": "Scope",
             "barrier_types": "Barrier types",
             "source": "Source",
+            "team_count": "Team count",
             "reported_on": "Reported Date",
             "resolved_date": "Resolved Date",
             "modified_on": "Last updated",
@@ -536,15 +574,9 @@ class BarrierInstanceHistory(GenericAPIView):
 
 
 class BarrierStatusHistory(GenericAPIView):
-    def _username_from_user(self, user):
+    def _format_user(self, user):	
         if user is not None:
-            if user.username is not None and user.username.strip() != "":
-                if "@" in user.username:
-                    return {"id": user.id, "name": user.username.split("@")[0]}
-                else:
-                    return {"id": user.id, "name": user.username}
-            elif user.email is not None and user.email.strip() != "":
-                return user.email.split("@")[0]
+            return {"id": user.id, "name": cleansed_username(user)}
 
         return None
 
@@ -572,7 +604,7 @@ class BarrierStatusHistory(GenericAPIView):
                                         "field": change.field,
                                         "old_value": str(change.old),
                                         "new_value": str(change.new),
-                                        "user": self._username_from_user(
+                                        "user": self._format_user(
                                             new_record.history_user
                                         ),
                                         "field_info": {
@@ -589,7 +621,7 @@ class BarrierStatusHistory(GenericAPIView):
                                     "field": change.field,
                                     "old_value": str(change.old),
                                     "new_value": str(change.new),
-                                    "user": self._username_from_user(
+                                    "user": self._format_user(
                                         new_record.history_user
                                     ),
                                     "field_info": {

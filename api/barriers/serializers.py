@@ -24,6 +24,7 @@ from api.metadata.utils import (
     get_countries,
     get_sectors,
 )
+from api.collaboration.models import TeamMember
 
 # pylint: disable=R0201
 
@@ -125,6 +126,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     resolved_date = serializers.SerializerMethodField()
+    team_count = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -142,6 +144,7 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
             "product",
             "source",
             "priority",
+            "team_count",
             "resolved_date",
             "reported_on",
             "modified_on",
@@ -234,6 +237,9 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
                 return obj.status_date
 
         return None
+
+    def get_team_count(self, obj):
+        return TeamMember.objects.filter(barrier=obj).count()
 
 
 class BarrierListSerializer(serializers.ModelSerializer):

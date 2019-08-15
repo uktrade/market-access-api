@@ -1,12 +1,24 @@
+def is_not_blank(s):
+    return bool(s and s.strip())
+
+def pretty_name(name):
+    if is_not_blank(name):
+        return ' '.join(map(str, [x.capitalize() for x in name.split(".")]))
+    return name
+
 def cleansed_username(user):
     if user is not None:
-        if user.username is not None and user.username.strip() != "":
+        if is_not_blank(user.first_name) and is_not_blank(user.last_name):
+            return f"{user.first_name} {user.last_name}"
+        
+        if is_not_blank(user.username):
             if "@" in user.username:
-                return user.username.split("@")[0]
+                return pretty_name(user.username.split("@")[0])
             else:
-                return user.username
-        elif user.email is not None and user.email.strip() != "":
-            return user.email.split("@")[0]
+                return pretty_name(user.username)
+        
+        if is_not_blank(user.email):
+            return pretty_name(user.email.split("@")[0])
 
     return None
 
