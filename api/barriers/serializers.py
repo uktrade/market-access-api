@@ -305,6 +305,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     priority = serializers.SerializerMethodField()
     barrier_types = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    has_assessment = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -334,6 +335,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "priority",
             "priority_summary",
             "eu_exit_related",
+            "has_assessment",
             "created_on",
             "modified_by",
             "modified_on",
@@ -381,6 +383,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             }
         else:
             return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
+
+    def get_has_assessment(self, obj):
+        return hasattr(obj, 'assessment')
 
     def _get_value(self, source1, source2, field_name):
         if field_name in source1:
