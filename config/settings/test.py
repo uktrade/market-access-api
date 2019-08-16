@@ -28,3 +28,7 @@ AV_V2_SERVICE_URL = "http://av-service/"
 DOCUMENT_BUCKET = "test-bucket"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
 CELERY_TASK_ALWAYS_EAGER = True
+
+# Stop WhiteNoise emitting warnings when running tests without running collectstatic first
+WHITENOISE_AUTOREFRESH = True
+WHITENOISE_USE_FINDERS = True
