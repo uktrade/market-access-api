@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # misc 3rd party
     "django_extensions",
+    "django_filters",
     "hawkrest",
     "raven.contrib.django.raven_compat",
     "simple_history",

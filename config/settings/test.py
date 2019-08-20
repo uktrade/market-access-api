@@ -21,8 +21,9 @@ LOGGING = {
     },
 }
 
-
-INSTALLED_APPS += ["api.documents.test.my_entity_document"]
+INSTALLED_APPS += [
+    "api.documents.test.my_entity_document",
+]
 
 AV_V2_SERVICE_URL = "http://av-service/"
 DOCUMENT_BUCKET = "test-bucket"
