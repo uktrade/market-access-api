@@ -9,6 +9,7 @@ from api.assessment.serializers import AssessmentSerializer
 from api.documents.views import BaseEntityDocumentModelViewSet
 
 from api.barriers.models import BarrierInstance
+from api.core.utils import cleansed_username
 from api.interactions.models import Document
 from api.metadata.constants import ASSESMENT_IMPACT
 
@@ -99,3 +100,60 @@ class BarrierAssessmentDetail(generics.CreateAPIView,
         else:
             serializer.save(modified_by=self.request.user)
         assessment.barrier.save()
+
+
+class BarrierAssessmentHistory(generics.GenericAPIView):
+    def _format_user(self, user):
+        if user is not None:
+            return {"id": user.id, "name": cleansed_username(user)}
+
+        return None
+
+    def _assessment_fields_added(self, history_record, fields):
+        for field in fields:
+            if hasattr(history_record, field):
+                return field
+
+    def get(self, request, pk):
+        barrier = BarrierInstance.barriers.get(id=pk)
+        barrier_history = barrier.history.all().order_by("history_date")
+        assessment = Assessment.objects.get(barrier=barrier)
+        assess_history = assessment.history.all().order_by("history_date")
+        results = []
+        old_record = None
+        timeline_fields = ["impact", "value_to_economy", "import_market_size", "commercial_value", "export_value"]
+        for new_record in assess_history:
+            if new_record.history_type == "+":
+                field_added = self._assessment_fields_added(new_record, timeline_fields)
+                if field_added in timeline_fields:
+                    status_change = {
+                        "date": new_record.history_date,
+                        "field": field_added,
+                        "old_value": None,
+                        "new_value": getattr(new_record, field_added),
+                        "user": self._format_user(
+                            new_record.history_user
+                        ),
+                        "field_info": {},
+                    }
+            else:
+                if old_record is not None:
+                    status_change = None
+                    delta = new_record.diff_against(old_record)
+                    for change in delta.changes:
+                        if change.field in timeline_fields:
+                            status_change = {
+                                "date": new_record.history_date,
+                                "field": change.field,
+                                "old_value": str(change.old),
+                                "new_value": str(change.new),
+                                "user": self._format_user(
+                                    new_record.history_user
+                                ),
+                                "field_info": {},
+                            }
+            if status_change:
+                results.append(status_change)
+            old_record = new_record
+        response = {"barrier_id": str(pk), "history": results}
+        return Response(response, status=status.HTTP_200_OK)

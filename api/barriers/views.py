@@ -25,7 +25,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.barriers.csv import create_csv_response
@@ -505,7 +504,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
         )
 
 
-class BarrierInstanceHistory(GenericAPIView):
+class BarrierInstanceHistory(generics.GenericAPIView):
     def _get_barrier(self, barrier_id):
         """ Get BarrierInstance object or False if invalid ID """
         try:
@@ -518,6 +517,7 @@ class BarrierInstanceHistory(GenericAPIView):
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
+        old_record = None
         for new_record in history:
             if new_record.history_type == "+":
                 results.append(
@@ -533,7 +533,7 @@ class BarrierInstanceHistory(GenericAPIView):
                         else "",
                     }
                 )
-            else:
+            elif old_record is not None:
                 delta = new_record.diff_against(old_record)
                 for change in delta.changes:
                     if change.field not in ignore_fields:
@@ -579,7 +579,7 @@ class BarrierInstanceHistory(GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class BarrierStatusHistory(GenericAPIView):
+class BarrierStatusHistory(generics.GenericAPIView):
     def _format_user(self, user):	
         if user is not None:
             return {"id": user.id, "name": cleansed_username(user)}
