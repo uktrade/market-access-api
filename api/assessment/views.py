@@ -134,7 +134,6 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
                         "user": self._format_user(
                             new_record.history_user
                         ),
-                        "field_info": {},
                     }
             else:
                 if old_record is not None:
@@ -145,12 +144,11 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
                             status_change = {
                                 "date": new_record.history_date,
                                 "field": change.field,
-                                "old_value": str(change.old),
-                                "new_value": str(change.new),
+                                "old_value": change.old,
+                                "new_value": change.new,
                                 "user": self._format_user(
                                     new_record.history_user
                                 ),
-                                "field_info": {},
                             }
             if status_change:
                 results.append(status_change)
