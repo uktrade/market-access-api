@@ -8,6 +8,7 @@ from oauth2_provider.contrib.rest_framework.permissions import (
     IsAuthenticatedOrTokenHasScope,
 )
 
+from api.assessment.models import Assessment
 from api.interactions.models import Document, Interaction
 from api.interactions.serializers import DocumentSerializer, InteractionSerializer
 from api.documents.views import BaseEntityDocumentModelViewSet
@@ -23,6 +24,12 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
     serializer_class = DocumentSerializer
     queryset = Document.objects.all()
 
+    def _is_document_attached(self, document):
+        if Interaction.objects.filter(documents=document.id).count() > 0 or \
+            Assessment.objects.filter(documents=document.id).count() > 0:
+            return True
+        return False
+
     def perform_destroy(self, instance):
         """
         Customise document delete,
@@ -31,7 +38,7 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
         only if was never attached to any note, delete it from S3
         """
         doc = Document.objects.get(id=str(instance.pk))
-        if Interaction.objects.filter(documents=doc.id).count() > 0:
+        if self._is_document_attached(doc):
             raise ValidationError()
         if not doc.detached:
             return super().perform_destroy(instance)
