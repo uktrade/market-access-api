@@ -117,7 +117,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
     def get(self, request, pk):
         barrier = BarrierInstance.barriers.get(id=pk)
         barrier_history = barrier.history.all().order_by("history_date")
-        assessment = Assessment.objects.get(barrier=barrier)
+        assessment = get_object_or_404(Assessment, barrier=barrier)
         assess_history = assessment.history.all().order_by("history_date")
         results = []
         old_record = None
