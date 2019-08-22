@@ -504,4 +504,72 @@ class TestAssessment(APITestMixin):
         assert edit_doc_response.data["documents"] is not None
         assert len(edit_doc_response.data["documents"]) == 1
         assert edit_doc_response.data["documents"][0]["id"] == uuid.UUID(otherfile_id)
-    
+
+    def test_add_assessment_with_document_check_deleting_document(self, setup_barrier):
+        """
+        Test add assessment with a document
+        Attempt to delete the document while it was attached
+        to assessment
+        It shouldn't be allowed, expect 400
+        """
+        instance_id = setup_barrier
+        docs_list_url = reverse("barrier-documents")
+        docs_list_report_response = self.api_client.post(
+            docs_list_url, format="json", data={"original_filename": "somefile.pdf"}
+        )
+
+        assert docs_list_report_response.status_code == status.HTTP_201_CREATED
+        document_id = docs_list_report_response.data["id"]
+
+        get_url = reverse("get-barrier", kwargs={"pk": instance_id})
+        get_response = self.api_client.get(get_url)
+        assert get_response.status_code == status.HTTP_200_OK
+
+        assessment_url = reverse("get-assessment", kwargs={"pk": instance_id})
+        response = self.api_client.get(assessment_url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        add_response = self.api_client.post(
+            assessment_url, format="json", data={
+                "impact": "MEDIUMHIGH",
+                "explanation": "sample assessment notes",
+                "documents": [document_id],
+            }
+        )
+        assert add_response.status_code == status.HTTP_201_CREATED
+
+        int_response = self.api_client.get(assessment_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["explanation"] == "sample assessment notes"
+        assert int_response.data["documents"] is not None
+        assert len(int_response.data["documents"]) == 1
+        assert int_response.data["documents"][0]["id"] == uuid.UUID(document_id)
+        assert int_response.data["value_to_economy"] is None
+        assert int_response.data["import_market_size"] is None
+        assert int_response.data["commercial_value"] is None
+        assert int_response.data["export_value"] is None
+
+        get_doc_url = reverse(
+            "barrier-document-item",
+            kwargs={"entity_document_pk": document_id}
+        )
+        get_doc_response = self.api_client.get(get_doc_url)
+        assert get_doc_response.status_code == status.HTTP_200_OK
+
+        get_doc_response = self.api_client.delete(get_doc_url)
+        assert get_doc_response.status_code == status.HTTP_400_BAD_REQUEST
+
+        int_response = self.api_client.get(assessment_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["explanation"] == "sample assessment notes"
+        assert int_response.data["documents"] is not None
+        assert len(int_response.data["documents"]) == 1
+        assert int_response.data["documents"][0]["id"] == uuid.UUID(document_id)
+
+        get_doc_response = self.api_client.get(get_doc_url)
+        assert get_doc_response.status_code == status.HTTP_200_OK
+
+        doc = Document.objects.get(id=document_id)
+        assert doc.detached is False
