@@ -111,7 +111,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
 
     def _assessment_fields_added(self, history_record, fields):
         for field in fields:
-            if hasattr(history_record, field):
+            if getattr(history_record, field):
                 return field
 
     def get(self, request, pk):
