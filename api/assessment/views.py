@@ -111,7 +111,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
 
     def _assessment_fields_added(self, history_record, fields):
         for field in fields:
-            if hasattr(history_record, field):
+            if getattr(history_record, field):
                 return field
 
     def get(self, request, pk):
@@ -123,26 +123,24 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
         old_record = None
         timeline_fields = ["impact", "value_to_economy", "import_market_size", "commercial_value", "export_value"]
         for new_record in assess_history:
-            status_change = None
             if new_record.history_type == "+":
                 field_added = self._assessment_fields_added(new_record, timeline_fields)
                 if field_added in timeline_fields:
-                    new_value = getattr(new_record, field_added)
-                    if new_value:
-                        status_change = {
-                            "date": new_record.history_date,
-                            "field": field_added,
-                            "old_value": None,
-                            "new_value": getattr(new_record, field_added),
-                            "user": self._format_user(
-                                new_record.history_user
-                            ),
-                        }
+                    status_change = {
+                        "date": new_record.history_date,
+                        "field": field_added,
+                        "old_value": None,
+                        "new_value": getattr(new_record, field_added),
+                        "user": self._format_user(
+                            new_record.history_user
+                        ),
+                    }
             else:
                 if old_record is not None:
+                    status_change = None
                     delta = new_record.diff_against(old_record)
                     for change in delta.changes:
-                        if change.field in timeline_fields and change.old and change.new:
+                        if change.field in timeline_fields:
                             status_change = {
                                 "date": new_record.history_date,
                                 "field": change.field,
