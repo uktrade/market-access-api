@@ -123,6 +123,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
         old_record = None
         timeline_fields = ["impact", "value_to_economy", "import_market_size", "commercial_value", "export_value"]
         for new_record in assess_history:
+            status_change = None
             if new_record.history_type == "+":
                 field_added = self._assessment_fields_added(new_record, timeline_fields)
                 if field_added in timeline_fields:
@@ -139,7 +140,6 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
                         }
             else:
                 if old_record is not None:
-                    status_change = None
                     delta = new_record.diff_against(old_record)
                     for change in delta.changes:
                         if change.field in timeline_fields and change.old and change.new:
