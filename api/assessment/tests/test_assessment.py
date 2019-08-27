@@ -100,6 +100,16 @@ class TestAssessment(APITestMixin):
         assert int_response.data["commercial_value"] is None
         assert int_response.data["export_value"] is None
 
+        url = reverse("assessment-history", kwargs={"pk": instance_id})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_id"] == str(instance_id)
+        assert len(response.data["history"]) == 1
+        assert response.data["history"][0]["field"] == "impact"
+        assert response.data["history"][0]["old_value"] is None
+        assert response.data["history"][0]["new_value"] == "MEDIUMHIGH"
+
+
     def test_add_assessment_with_document(self, setup_barrier):
         instance_id = setup_barrier
 
