@@ -22,7 +22,7 @@ from rest_framework.filters import OrderingFilter
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import filters, status, serializers, viewsets
+from rest_framework import filters, generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
