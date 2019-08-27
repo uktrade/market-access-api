@@ -126,21 +126,23 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
             if new_record.history_type == "+":
                 field_added = self._assessment_fields_added(new_record, timeline_fields)
                 if field_added in timeline_fields:
-                    status_change = {
-                        "date": new_record.history_date,
-                        "field": field_added,
-                        "old_value": None,
-                        "new_value": getattr(new_record, field_added),
-                        "user": self._format_user(
-                            new_record.history_user
-                        ),
-                    }
+                    new_value = getattr(new_record, field_added)
+                    if new_value:
+                        status_change = {
+                            "date": new_record.history_date,
+                            "field": field_added,
+                            "old_value": None,
+                            "new_value": getattr(new_record, field_added),
+                            "user": self._format_user(
+                                new_record.history_user
+                            ),
+                        }
             else:
                 if old_record is not None:
                     status_change = None
                     delta = new_record.diff_against(old_record)
                     for change in delta.changes:
-                        if change.field in timeline_fields:
+                        if change.field in timeline_fields and change.old and change.new:
                             status_change = {
                                 "date": new_record.history_date,
                                 "field": change.field,
