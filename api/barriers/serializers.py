@@ -138,6 +138,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     commercial_value = serializers.SerializerMethodField()
     export_value = serializers.SerializerMethodField()
 
+    resolved_date = serializers.SerializerMethodField()
+    team_count = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -156,6 +158,9 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "barrier_types",
             "source",
             "team_count",
+            "priority",
+            "team_count",
+            "resolved_date",
             "reported_on",
             "resolved_date",
             "modified_on",
@@ -280,6 +285,9 @@ class BarrierCsvExportSerializer(serializers.Serializer):
                 return obj.status_date
 
         return None
+
+    def get_team_count(self, obj):
+        return TeamMember.objects.filter(barrier=obj).count()
 
 
 class BarrierListSerializer(serializers.ModelSerializer):

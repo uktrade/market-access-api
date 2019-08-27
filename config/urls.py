@@ -75,4 +75,8 @@ urlpatterns = [
     ),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
+<<<<<<< HEAD
 ] + interaction_urls + team_urls + assessment_urls
+=======
+] + interaction_urls + team_urls
+>>>>>>> master
