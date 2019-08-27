@@ -3,13 +3,9 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-INSTALLED_APPS += ["api.documents.test.my_entity_document", "debug_toolbar"]
-
-MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
-
-DEBUG_TOOLBAR_CONFIG = {"JQUERY_URL": ""}
-
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
+
+INTERNAL_IPS = ("127.0.0.1",)
 
 LOGGING = {
     "version": 1,

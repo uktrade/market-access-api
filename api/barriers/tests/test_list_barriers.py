@@ -191,7 +191,6 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["reported_by"] == "Testo"
 
     def test_barrier_with_user_email_as_username(self):
         a_user = create_test_user(
@@ -236,7 +235,6 @@ class TestListBarriers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         barrier = response.data["results"][0]
-        assert barrier["reported_by"] == "Testo"
 
     def test_barrier_with_user_normal_username(self):
         a_user = create_test_user(
@@ -280,8 +278,6 @@ class TestListBarriers(APITestMixin):
         response = new_api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
-        barrier = response.data["results"][0]
-        assert barrier["reported_by"] == "Test User"
 
     def test_barrier_with_user_normal_username_and_email(self):
         a_user = create_test_user(
@@ -325,8 +321,6 @@ class TestListBarriers(APITestMixin):
         response = new_api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
-        barrier = response.data["results"][0]
-        assert barrier["reported_by"] == "Test User"
 
     def test_list_barriers_get_archived_barrier(self):
         list_report_url = reverse("list-reports")
@@ -1182,7 +1176,6 @@ class TestListBarriers(APITestMixin):
         assert barrier["id"] is not None
         assert barrier["code"] is not None
         assert barrier["reported_on"] is not None
-        assert barrier["reported_by"] is not None
         assert barrier["problem_status"] == 2
         assert barrier["is_resolved"] == False
         assert barrier["resolved_date"] is None
@@ -1235,7 +1228,6 @@ class TestListBarriers(APITestMixin):
         assert barrier["id"] is not None
         assert barrier["code"] is not None
         assert barrier["reported_on"] is not None
-        assert barrier["reported_by"] is not None
         assert barrier["problem_status"] == 2
         assert barrier["is_resolved"] == True
         assert barrier["resolved_date"] is not None
@@ -1289,7 +1281,6 @@ class TestListBarriers(APITestMixin):
         assert barrier["id"] is not None
         assert barrier["code"] is not None
         assert barrier["reported_on"] is not None
-        assert barrier["reported_by"] is not None
         assert barrier["problem_status"] == 2
         assert barrier["is_resolved"] == False
         assert barrier["barrier_title"] == "Some title"
@@ -1746,4 +1737,3 @@ class TestListBarriers(APITestMixin):
         response = client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 5
-    

@@ -9,7 +9,7 @@ def pretty_name(name):
 def cleansed_username(user):
     if user is not None:
         if is_not_blank(user.first_name) and is_not_blank(user.last_name):
-            return f"{user.first_name} {user.last_name}"
+            return pretty_name(f"{user.first_name}.{user.last_name}")
         
         if is_not_blank(user.username):
             if "@" in user.username:

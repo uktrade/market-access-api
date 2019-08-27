@@ -11,6 +11,7 @@ from api.barriers.models import BarrierInstance
 from api.core.validate_utils import DataCombiner
 from api.metadata.constants import (
     ADV_BOOLEAN,
+    ASSESMENT_IMPACT,
     BARRIER_SOURCE,
     BARRIER_STATUS,
     BARRIER_PENDING,
@@ -111,20 +112,32 @@ class BarrierReportSerializer(serializers.ModelSerializer):
     #     return data
 
 
-class BarrierCsvExportSerializer(serializers.ModelSerializer):
+class BarrierCsvExportSerializer(serializers.Serializer):
     """ Serializer for CSV export """
     
+    id = serializers.UUIDField()
+    code = serializers.CharField()
     scope = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    barrier_title = serializers.CharField()
     sectors = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
     barrier_types = serializers.SerializerMethodField()
+    product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
+    team_count = serializers.IntegerField()
+    resolved_date = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
+    assessment_impact = serializers.SerializerMethodField()
+    value_to_economy = serializers.SerializerMethodField()
+    import_market_size = serializers.SerializerMethodField()
+    commercial_value = serializers.SerializerMethodField()
+    export_value = serializers.SerializerMethodField()
+
     resolved_date = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
 
@@ -133,27 +146,62 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "code",
-            "scope",
-            "status",
             "barrier_title",
-            "sectors",
+            "status",
+            "priority",
             "overseas_region",
             "country",
             "admin_areas",
-            "barrier_types",
+            "sectors",
             "product",
+            "scope",
+            "barrier_types",
             "source",
+            "team_count",
             "priority",
             "team_count",
             "resolved_date",
             "reported_on",
+            "resolved_date",
             "modified_on",
+	        "assessment_impact",
+	        "value_to_economy",
+	        "import_market_size",
+	        "commercial_value",
+	        "export_value",
         )
 
     def get_scope(self, obj):
         """  Custom Serializer Method Field for exposing current problem scope display value """
+        print(obj.__dict__)
         problem_status_dict = dict(PROBLEM_STATUS_TYPES)
         return problem_status_dict.get(obj.problem_status, "Unknown")
+
+    def get_assessment_impact(self, obj):
+        if hasattr(obj, "assessment"):
+            impact_dict = dict(ASSESMENT_IMPACT)
+            return impact_dict.get(obj.assessment.impact, None)
+        return None
+    
+    def get_value_to_economy(self, obj):
+        if hasattr(obj, "assessment"):
+            return obj.assessment.value_to_economy
+        return None
+
+    def get_import_market_size(self, obj):
+        if hasattr(obj, "assessment"):
+            return obj.assessment.import_market_size
+        return None
+
+    def get_commercial_value(self, obj):
+        if hasattr(obj, "assessment"):
+            return obj.assessment.commercial_value
+        return None
+
+    def get_export_value(self, obj):
+        if hasattr(obj, "assessment"):
+            return obj.assessment.export_value
+        return None
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
@@ -245,7 +293,6 @@ class BarrierCsvExportSerializer(serializers.ModelSerializer):
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
 
-    reported_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
 
@@ -255,7 +302,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "id",
             "code",
             "reported_on",
-            "reported_by",
             "problem_status",
             "is_resolved",
             "resolved_date",
@@ -272,9 +318,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "created_on",
             "modified_on",
         )
-
-    def get_reported_by(self, obj):
-        return obj.created_user
 
     def get_status(self, obj):
         return {
@@ -305,6 +348,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     priority = serializers.SerializerMethodField()
     barrier_types = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    has_assessment = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -334,6 +378,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "priority",
             "priority_summary",
             "eu_exit_related",
+            "has_assessment",
             "created_on",
             "modified_by",
             "modified_on",
@@ -381,6 +426,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             }
         else:
             return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
+
+    def get_has_assessment(self, obj):
+        return hasattr(obj, 'assessment')
 
     def _get_value(self, source1, source2, field_name):
         if field_name in source1:

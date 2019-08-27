@@ -3,18 +3,16 @@ import json
 from collections import defaultdict
 from dateutil.parser import parse
 
-from django.core.cache import cache
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchVector
-from django.core.serializers.json import DjangoJSONEncoder
+from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.forms.models import model_to_dict
-from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.text import capfirst
 from django.utils.timezone import now
 
 import django_filters
@@ -27,7 +25,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.barriers.csv import create_csv_response
@@ -393,7 +390,7 @@ class BarrierList(generics.ListAPIView):
     with optional filtering and ordering defined
     """
 
-    queryset = BarrierInstance.barriers.all()
+    queryset = BarrierInstance.barriers.all().select_related('priority')
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)
@@ -413,6 +410,9 @@ class BarriertListExportView(BarrierList):
     with optional filtering and ordering defined
     """
 
+    queryset = BarrierInstance.barriers.annotate(
+            team_count=Count('barrier_team')
+        ).all().select_related('assessment')
     serializer_class = BarrierCsvExportSerializer
     field_titles = {
             "id": "id",
@@ -429,6 +429,11 @@ class BarriertListExportView(BarrierList):
             "barrier_types": "Barrier types",
             "source": "Source",
             "team_count": "Team count",
+	        "assessment_impact": "Assessment Impact",
+	        "value_to_economy": "Value to economy",
+	        "import_market_size": "Import market size",
+	        "commercial_value": "Commercial Value",
+	        "export_value": "Value of currently affected UK exports",
             "reported_on": "Reported Date",
             "resolved_date": "Resolved Date",
             "modified_on": "Last updated",
@@ -499,7 +504,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
         )
 
 
-class BarrierInstanceHistory(GenericAPIView):
+class BarrierInstanceHistory(generics.GenericAPIView):
     def _get_barrier(self, barrier_id):
         """ Get BarrierInstance object or False if invalid ID """
         try:
@@ -512,6 +517,7 @@ class BarrierInstanceHistory(GenericAPIView):
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
+        old_record = None
         for new_record in history:
             if new_record.history_type == "+":
                 results.append(
@@ -527,7 +533,7 @@ class BarrierInstanceHistory(GenericAPIView):
                         else "",
                     }
                 )
-            else:
+            elif old_record is not None:
                 delta = new_record.diff_against(old_record)
                 for change in delta.changes:
                     if change.field not in ignore_fields:
@@ -573,7 +579,7 @@ class BarrierInstanceHistory(GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class BarrierStatusHistory(GenericAPIView):
+class BarrierStatusHistory(generics.GenericAPIView):
     def _format_user(self, user):	
         if user is not None:
             return {"id": user.id, "name": cleansed_username(user)}
