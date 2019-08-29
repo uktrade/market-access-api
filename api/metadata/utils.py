@@ -80,4 +80,4 @@ def get_barrier_type_categories():
     )
 
 def get_reporting_stages():
-    return dict((stage.code, stage.description) for stage in Stage.objects.all())
+    return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))
