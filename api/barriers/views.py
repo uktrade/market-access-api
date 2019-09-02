@@ -253,7 +253,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
             context = {"token": token}
             sso_user = sso.get_logged_in_user_details(context)
             self.request.user.username = sso_user["email"]
-            self.request.user.email = sso_user["email"]
+            self.request.user.email = sso_user["contact_email"]
             self.request.user.first_name = sso_user["first_name"]
             self.request.user.last_name = sso_user["last_name"]
             self.request.user.save()
