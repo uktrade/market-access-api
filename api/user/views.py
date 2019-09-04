@@ -51,14 +51,14 @@ class UserDetail(generics.RetrieveDestroyAPIView):
             sso_user = sso.get_user_details_by_id(sso_user_id)
             try:
                 user = UserModel.objects.get(username=sso_user["email"])
-                user.email = sso_user["email"]
+                user.email = sso_user["contact_email"]
                 user.first_name = sso_user["first_name"]
                 user.last_name = sso_user["last_name"]
                 user.save()
             except UserModel.DoesNotExist:
                 user = UserModel(
                     username=sso_user["email"],
-                    email=sso_user["email"],
+                    email=sso_user["contact_email"],
                     first_name=sso_user["first_name"],
                     last_name=sso_user["last_name"],
                 )
