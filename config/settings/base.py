@@ -71,7 +71,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "hawkrest.middleware.HawkResponseMiddleware",
-    "api.core.middleware.AdminIpRestrictionMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
 

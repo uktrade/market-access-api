@@ -19,6 +19,7 @@ import django_filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import LimitOffsetPagination
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -253,7 +254,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
             context = {"token": token}
             sso_user = sso.get_logged_in_user_details(context)
             self.request.user.username = sso_user["email"]
-            self.request.user.email = sso_user["email"]
+            self.request.user.email = sso_user["contact_email"]
             self.request.user.first_name = sso_user["first_name"]
             self.request.user.last_name = sso_user["last_name"]
             self.request.user.save()
@@ -404,7 +405,7 @@ class BarrierList(generics.ListAPIView):
     ordering = ("reported_on", "modified_on")
 
 
-class BarriertListExportView(BarrierList):
+class BarriertListExportView(generics.ListAPIView):
     """
     Return a streaming http response of all the BarrierInstances
     with optional filtering and ordering defined
@@ -414,6 +415,8 @@ class BarriertListExportView(BarrierList):
             team_count=Count('barrier_team')
         ).all().select_related('assessment')
     serializer_class = BarrierCsvExportSerializer
+    filterset_class = BarrierFilterSet
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
     field_titles = {
             "id": "id",
             "code": "code",
