@@ -385,11 +385,6 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset
 
 
-class BarrierListPagination(LimitOffsetPagination):
-    default_limit = settings.BARRIER_PAGE_SIZE
-    max_limit = settings.BARRIER_MAX_PAGE_LIMIT
-
-
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the BarrierInstances
@@ -408,7 +403,6 @@ class BarrierList(generics.ListAPIView):
         "export_country"
     )
     ordering = ("reported_on", "modified_on")
-    pagination_class = BarrierListPagination
 
 
 class BarriertListExportView(generics.ListAPIView):

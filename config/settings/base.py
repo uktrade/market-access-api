@@ -140,10 +140,6 @@ REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 1000)
 DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
-# Barrier pagination
-BARRIER_PAGE_SIZE = env.int("BARRIER_PAGE_SIZE", 100)
-BARRIER_MAX_PAGE_LIMIT = env.int("BARRIER_MAX_PAGE_LIMIT", 500)
-
 # Documents
 # CACHE / REDIS
 if "redis" in VCAP_SERVICES:
@@ -210,6 +206,8 @@ if SSO_ENABLED:
 # DRF
 REST_FRAMEWORK = {
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 400,
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication"
     ],
