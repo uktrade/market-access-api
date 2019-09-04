@@ -19,6 +19,7 @@ import django_filters
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import LimitOffsetPagination
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -384,6 +385,11 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset
 
 
+class BarrierListPagination(LimitOffsetPagination):
+    default_limit = settings.BARRIER_PAGE_SIZE
+    max_limit = settings.BARRIER_MAX_PAGE_LIMIT
+
+
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the BarrierInstances
@@ -402,9 +408,10 @@ class BarrierList(generics.ListAPIView):
         "export_country"
     )
     ordering = ("reported_on", "modified_on")
+    pagination_class = BarrierListPagination
 
 
-class BarriertListExportView(BarrierList):
+class BarriertListExportView(generics.ListAPIView):
     """
     Return a streaming http response of all the BarrierInstances
     with optional filtering and ordering defined
@@ -414,6 +421,8 @@ class BarriertListExportView(BarrierList):
             team_count=Count('barrier_team')
         ).all().select_related('assessment')
     serializer_class = BarrierCsvExportSerializer
+    filterset_class = BarrierFilterSet
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
     field_titles = {
             "id": "id",
             "code": "code",
