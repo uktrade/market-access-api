@@ -56,7 +56,7 @@ There are some machine to machine APIs that are called on the backend and we use
     ```
 7. Make sure you have redis running locally and that the REDIS_BASE_URL in your `.env` is up-to-date.
 
-8. Populate the database:
+8. Apply migrations:
 
     ```shell
     ./manage.py migrate
@@ -95,3 +95,56 @@ To run the linter:
 ```shell
 flake8
 ```
+
+## Granting access to the front end
+
+The [internal front end](https://github.com/uktrade/market-access-frontend) uses single sign-on. You should configure backend API as follows to use with the front end:
+
+* `SSO_ENABLED`: `True`
+* `RESOURCE_SERVER_INTROSPECTION_URL`: URL of the [RFC 7662](https://tools.ietf.org/html/rfc7662) introspection endpoint (should be the same server the front end is using). This is provided by a [Staff SSO](https://github.com/uktrade/staff-sso) instance.
+* `RESOURCE_SERVER_AUTH_TOKEN`: Access token for the introspection server.
+* `RESOURCE_SERVER_USER_INFO_URL`: URL of SSO endpoint to retreive logged in user information based on token provided in the header
+* `RESOURCE_SERVER_USER_INTROSPECT_URL`: URL of SSO endpoint to retrieve user information based on query param
+
+django-oauth-toolkit will create a user corresponding to the token if one does not already exist.
+
+## Machine to machine Hawk authentication between frontend and backend
+
+In general, [Hawk](https://github.com/hueniverse/hawk) authentication hashing the HTTP payload and `Content-Type` header, and using a nonce.
+
+There are some machine to machine APIs that are called on the backend and we use [Hawk](https://github.com/hueniverse/hawk) to secure those calls. You can share Hawk Key and ID with frontend to work in hawk mode. Alternatively, in dev mode, you can turn off Hawk using the `.env` settings.
+
+## Deployment
+
+Market Access API can run on any Heroku-style platform. Configuration is performed via the following environment variables:
+
+
+| Variable name | Required | Description |
+| ------------- | ------------- | ------------- |
+| `ALLOWED_ADMIN_IPS` | No | IP addresses (comma-separated) that can access the admin site when RESTRICT_ADMIN is True. |
+| `AV_V2_SERVICE_URL` | Yes | URL for ClamAV V2 service. If not configured, virus scanning will fail. |
+| `AWS_ACCESS_KEY_ID` | No | Used as part of [boto3 auto-configuration](http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials). |
+| `AWS_DEFAULT_REGION` | No | [Default region used by boto3.](http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variable-configuration) |
+| `AWS_SECRET_ACCESS_KEY` | No | Used as part of [boto3 auto-configuration](http://boto3.readthedocs.io/en/latest/guide/configuration.html#configuring-credentials). |
+| `CELERY_TASK_ALWAYS_EAGER` | No | Can be set to True when running the app locally to run Celery tasks started from the web process synchronously. Not for use in production. |
+| `DATABASE_URL`  | Yes | PostgreSQL server URL (with embedded credentials). |
+| `DEBUG`  | Yes | Whether Django's debug mode should be enabled. |
+| `SECRET_KEY`  | Yes | |
+| `SENTRY_DSN`  | Yes | |
+| `DEFAULT_BUCKET`  | Yes | S3 bucket for object storage. |
+| `DH_METADATA_URL` | Yes | Data Hub metadata URL for shared metadata. |
+| `HAWK_ENABLED` | No | To enable Hawk communication to access the Hawk-authenticated endpoints. |
+| `HAWK_KEY` | No | Key to be shared with other party when HAWK_ENABLED is True |
+| `HAWK_ID` | No | ID to be shared with other party when HAWK_ENABLED is True. |
+| `REDIS_BASE_URL`  | Yes | redis base URL for Celery functioning |
+| `RESOURCE_SERVER_INTROSPECTION_URL` | If SSO enabled | RFC 7662 token introspection URL used for signle sign-on |
+| `RESOURCE_SERVER_AUTH_TOKEN` | If SSO enabled | Access token for RFC 7662 token introspection server |
+| `RESOURCE_SERVER_USER_INFO_URL` | URL of SSO endpoint to retreive logged in user information based on token provided in the header |
+| `RESOURCE_SERVER_USER_INTROSPECT_URL` | URL of SSO endpoint to retrieve user information based on query param |
+| `RESTRICT_ADMIN` | No | Whether to restrict access to the admin site by IP address. |
+| `SSO_ENABLED` | Yes | Whether single sign-on via RFC 7662 token introspection is enabled |
+| `VCAP_SERVICES` | No | Set by GOV.UK PaaS when using their backing services. Contains connection details for Postgres, Redis etc. |
+
+## Management commands
+
+TBD
