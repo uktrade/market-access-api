@@ -129,9 +129,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
     def get_email(self, obj):
-        if obj.email:
-            return obj.email
-        return obj.username
+        return obj.email
 
     def get_full_name(self, obj):
         return cleansed_username(obj)
