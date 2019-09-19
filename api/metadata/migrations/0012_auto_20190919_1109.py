@@ -15,10 +15,14 @@ def remove_duplicate_barrier(apps, schema_editor):
         barrier_to_delete = BarrierInstance.objects.get(id=uuid)
         print(barrier_to_delete)
     except BarrierInstance.DoesNotExist:
+        pass
         # We don't care if the barrier isn't found
-        logger.info("Barrier with uuid %s was not found", uuid)
+        # logger.info("Nothing to do! Barrier with uuid %s was not found", uuid)
 
-    raise Exception('not implemented exception csharp luvvies')
+
+def fake_down(apps, schema_editor):
+    pass
+    # logger.info("This doesn't actually do anything")
 
 
 class Migration(migrations.Migration):
@@ -28,5 +32,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(remove_duplicate_barrier),
+        migrations.RunPython(remove_duplicate_barrier, fake_down),
     ]
