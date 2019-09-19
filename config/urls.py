@@ -25,6 +25,7 @@ from api.barriers.views import (
 from api.interactions.views import BarrierInteractionList, BarrierIneractionDetail
 from api.user.views import who_am_i, UserDetail
 from api.core.views import admin_override
+from api.dataset.views import BarrierListDataWorkspaceView
 
 from api.assessment.urls import urlpatterns as assessment_urls
 from api.collaboration.urls import urlpatterns as team_urls
@@ -46,6 +47,7 @@ urlpatterns = [
     path("metadata", MetadataView.as_view(), name="metadata"),
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/export", BarriertListExportView.as_view(), name="barriers-export"),
+    path("barriers/dataset", BarrierListDataWorkspaceView.as_view(), name="dataset-barriers"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path(
         "barriers/<uuid:pk>/full_history",

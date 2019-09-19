@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "api.collaboration",
     "authbroker_client",
     "api.user_event_log",
+    "api.dataset",
 ]
 
 MIDDLEWARE = [
