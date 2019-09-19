@@ -1,18 +1,17 @@
 import json
 
 from django.core.cache import cache
-
 from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance
+from api.collaboration.models import TeamMember
 from api.metadata.constants import (
     ADV_BOOLEAN,
     ASSESMENT_IMPACT,
+    BARRIER_PENDING,
     BARRIER_SOURCE,
     BARRIER_STATUS,
-    BARRIER_PENDING,
-    STAGE_STATUS,
-    PROBLEM_STATUS_TYPES
+    PROBLEM_STATUS_TYPES,
 )
 from api.metadata.utils import (
     get_admin_areas,
@@ -20,7 +19,6 @@ from api.metadata.utils import (
     get_countries,
     get_sectors,
 )
-from api.collaboration.models import TeamMember
 
 
 class BarrierDataSetSerializer(serializers.Serializer):
@@ -83,7 +81,9 @@ class BarrierDataSetSerializer(serializers.Serializer):
         )
 
     def get_scope(self, obj):
-        """  Custom Serializer Method Field for exposing current problem scope display value """
+        """
+        Custom Serializer Method Field for exposing current problem scope display value
+        """
         problem_status_dict = dict(PROBLEM_STATUS_TYPES)
         return problem_status_dict.get(obj.problem_status, "Unknown")
 
@@ -92,7 +92,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
             impact_dict = dict(ASSESMENT_IMPACT)
             return impact_dict.get(obj.assessment.impact, None)
         return None
-    
+
     def get_value_to_economy(self, obj):
         if hasattr(obj, "assessment"):
             return obj.assessment.value_to_economy
@@ -135,7 +135,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
                 return sectors
         else:
             return "N/A"
-    
+
     def get_country(self, obj):
         dh_countries = cache.get_or_set("dh_countries", get_countries, 72000)
         country = [c["name"] for c in dh_countries if c["id"] == str(obj.export_country)]
@@ -149,7 +149,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
             if overseas_region is not None:
                 return overseas_region["name"]
         return None
-    
+
     def get_admin_areas(self, obj):
         dh_areas = cache.get_or_set("dh_admin_areas", get_admin_areas, 72000)
         areas = []
@@ -167,17 +167,17 @@ class BarrierDataSetSerializer(serializers.Serializer):
         return btypes
 
     def get_eu_exit_related(self, obj):
-        """  Custom Serializer Method Field for exposing current eu_exit_related display value """
+        """Custom Serializer Method Field for exposing current eu_exit_related display value"""
         eu_dict = dict(ADV_BOOLEAN)
         return eu_dict.get(obj.eu_exit_related, "Unknown")
 
     def get_source(self, obj):
-        """  Custom Serializer Method Field for exposing source display value """
+        """Custom Serializer Method Field for exposing source display value"""
         source_dict = dict(BARRIER_SOURCE)
         return source_dict.get(obj.source, "Unknown")
 
     def get_priority(self, obj):
-        """  Custom Serializer Method Field for exposing barrier priority """
+        """Custom Serializer Method Field for exposing barrier priority"""
         if obj.priority:
             return obj.priority.name
         else:
@@ -185,8 +185,8 @@ class BarrierDataSetSerializer(serializers.Serializer):
 
     def get_resolved_date(self, obj):
         """
-        Customer field to return resolved_date if the barrier was resolved by the time it was reported
-        otherwise return status_date, if current status is resolved
+        Customer field to return resolved_date if the barrier was resolved by the time
+        it was reported otherwise return status_date, if current status is resolved
         """
         if obj.resolved_date:
             return obj.resolved_date
@@ -206,6 +206,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
         if obj.companies:
             companies_dict = json.loads(obj.companies)
             return list(companies_dict.values())
+        return None
 
     def get_company_ids(self, obj):
         """
@@ -214,3 +215,4 @@ class BarrierDataSetSerializer(serializers.Serializer):
         if obj.companies:
             companies_dict = json.loads(obj.companies)
             return list(companies_dict.keys())
+        return None
