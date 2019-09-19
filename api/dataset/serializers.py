@@ -68,7 +68,6 @@ class BarrierDataSetSerializer(serializers.Serializer):
             "scope",
             "barrier_types",
             "source",
-            "priority",
             "team_count",
             "resolved_date",
             "reported_on",
