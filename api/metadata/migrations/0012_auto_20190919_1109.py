@@ -9,11 +9,22 @@ def remove_duplicate_barrier(apps, schema_editor):
 
     BarrierInstance = apps.get_model("barriers", "BarrierInstance")
 
-    uuid = "9fad3fd0-8890-4684-9cb2-c17c80e07247"
+    uuid = "8b4fa045-3c3e-44c6-bfa9-9a213e3ff27e"
 
     try:
         barrier_to_delete = BarrierInstance.objects.get(id=uuid)
-        print(barrier_to_delete)
+        
+        # delete related fields first
+        barrier_to_delete.assessment.delete()
+        
+        barrier_to_delete.progress.all().delete()
+
+        barrier_to_delete.barrier_team.all().delete()
+
+        barrier_to_delete.interactions_documents.all().delete()
+
+        barrier_to_delete.delete()
+
     except BarrierInstance.DoesNotExist:
         pass
         # We don't care if the barrier isn't found
