@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-
 from urlobject import URLObject
 
 from django.conf import settings
@@ -15,9 +14,9 @@ from api.barriers.models import Stage
 from mohawk import Sender
 
 creds = {
-        'id' : settings.HAWK_ID,
-        'key' : settings.HAWK_CREDENTIALS[settings.HAWK_ID]["key"],
-        'algorithm' : 'sha256'}
+    'id': settings.HAWK_ID,
+    'key': settings.HAWK_CREDENTIALS[settings.HAWK_ID]["key"],
+    'algorithm': 'sha256'}
 
 
 def import_api_results(endpoint):
@@ -30,23 +29,24 @@ def import_api_results(endpoint):
     base_url = URLObject(settings.DH_METADATA_URL)
     meta_url = base_url.relative(f"./{endpoint}")
 
-    sender = Sender(creds, 
-        meta_url, 
-        'GET', 
-        content=None, 
-        content_type=None, 
-        always_hash_content=False,
-    )
-        
-    response = requests.get(meta_url, verify=not settings.DEBUG, 
-        headers = {
-            'Authorization' : sender.request_header
-        })
+    sender = Sender(creds,
+                    meta_url,
+                    'GET',
+                    content=None,
+                    content_type=None,
+                    always_hash_content=False,
+                    )
+
+    response = requests.get(meta_url, verify=not settings.DEBUG,
+                            headers={
+                                'Authorization': sender.request_header
+                            })
 
     if response.ok:
         return response.json()
 
     return None
+
 
 def get_os_regions_and_countries():
     dh_countries = import_api_results("country")
@@ -58,15 +58,19 @@ def get_os_regions_and_countries():
                 dh_os_regions.append(item["overseas_region"])
     return dh_os_regions, dh_countries
 
+
 def get_countries():
     dh_regions, dh_countries = get_os_regions_and_countries()
     return dh_countries
 
+
 def get_admin_areas():
     return import_api_results("administrative-area")
 
+
 def get_sectors():
     return import_api_results("sector")
+
 
 def get_barrier_types():
     barrier_goods = [
@@ -89,16 +93,19 @@ def get_barrier_types():
     ]
     return barrier_goods + barrier_services
 
+
 def get_barrier_priorities():
     return [
         {"code": priority.code, "name": priority.name, "order": priority.order}
         for priority in BarrierPriority.objects.all()
     ]
 
+
 def get_barrier_type_categories():
     return dict(
         (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
     )
+
 
 def get_reporting_stages():
     return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))
