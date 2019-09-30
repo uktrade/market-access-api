@@ -1,6 +1,8 @@
 import json
 import os
 import requests
+import logging
+
 from urlobject import URLObject
 
 from django.conf import settings
@@ -11,6 +13,13 @@ from api.metadata.constants import (
 from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers.models import Stage
 
+from mohawk import Sender
+
+creds = {
+        'id' : settings.HAWK_ID,
+        'key' : settings.HAWK_CREDENTIALS[settings.HAWK_ID]["key"],
+        'algorithm' : 'sha256'}
+
 
 def import_api_results(endpoint):
     # Avoid calling DH
@@ -18,10 +27,23 @@ def import_api_results(endpoint):
     if fake_it:
         file_path = os.path.join(settings.BASE_DIR, f"static/{endpoint}.json")
         return json.loads(open(file_path).read())
-    base_url = URLObject(settings.DH_METADATA_URL)
-    meta_url = base_url.relative(f"./{endpoint}/")
 
-    response = requests.get(meta_url, verify=not settings.DEBUG)
+    base_url = URLObject(settings.DH_METADATA_URL)
+    meta_url = base_url.relative(f"./{endpoint}")
+
+    sender = Sender(creds, 
+        meta_url, 
+        'GET', 
+        content=None, 
+        content_type=None, 
+        always_hash_content=False,
+    )
+        
+    response = requests.get(meta_url, verify=not settings.DEBUG, 
+        headers = {
+            'Authorization' : sender.request_header
+        })
+
     if response.ok:
         return response.json()
 

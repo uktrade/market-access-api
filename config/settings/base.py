@@ -226,6 +226,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 HAWK_ENABLED = env.bool("HAWK_ENABLED", True)
+HAWK_ID = env("HAWK_ID")
+
 HAWK_CREDENTIALS = {
     env("HAWK_ID"): {
         "id": env("HAWK_ID"),
