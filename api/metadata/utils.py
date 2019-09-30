@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-import logging
 
 from urlobject import URLObject
 
