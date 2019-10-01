@@ -25,6 +25,8 @@ jobs:
     environment:
       DATABASE_URL: 'postgresql://postgres@localhost/market_access'
       DATAHUB_SECRET: 'secret'
+      DH_HAWK_ID: 'dh_hawk_id'
+      DH_HAWK_KEY: 'dh_hawk_key'
       DJANGO_SETTINGS_MODULE: 'config.settings.test'
       DEBUG: 'True'
       SECRET_KEY: 'changeme'
