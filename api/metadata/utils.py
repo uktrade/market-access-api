@@ -13,11 +13,6 @@ from api.barriers.models import Stage
 
 from mohawk import Sender
 
-creds = {
-    'id': settings.HAWK_ID,
-    'key': settings.HAWK_CREDENTIALS[settings.HAWK_ID]["key"],
-    'algorithm': 'sha256'}
-
 
 def import_api_results(endpoint):
     # Avoid calling DH
@@ -27,9 +22,17 @@ def import_api_results(endpoint):
         return json.loads(open(file_path).read())
 
     base_url = URLObject(settings.DH_METADATA_URL)
+
+    # v4 endpoints do not have trailing forward slash
     meta_url = base_url.relative(f"./{endpoint}")
 
-    sender = Sender(creds,
+    credentials = {
+        'id': settings.HAWK_ID,
+        'key': settings.HAWK_CREDENTIALS[settings.HAWK_ID]["key"],
+        'algorithm': 'sha256'
+    }
+
+    sender = Sender(credentials,
                     meta_url,
                     'GET',
                     content=None,
