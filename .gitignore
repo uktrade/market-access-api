@@ -112,3 +112,5 @@ db.sqlite3
 
 # VS Code
 .vscode/
+docker-compose.env
+config/settings/static/

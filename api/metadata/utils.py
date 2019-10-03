@@ -11,6 +11,8 @@ from api.metadata.constants import (
 from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers.models import Stage
 
+from mohawk import Sender
+
 
 def import_api_results(endpoint):
     # Avoid calling DH
@@ -18,10 +20,27 @@ def import_api_results(endpoint):
     if fake_it:
         file_path = os.path.join(settings.BASE_DIR, f"static/{endpoint}.json")
         return json.loads(open(file_path).read())
-    base_url = URLObject(settings.DH_METADATA_URL)
-    meta_url = base_url.relative(f"./{endpoint}/")
 
-    response = requests.get(meta_url, verify=not settings.DEBUG)
+    base_url = URLObject(settings.DH_METADATA_URL)
+
+    # v4 endpoints do not have trailing forward slash
+    meta_url = base_url.relative(f"./{endpoint}")
+
+    credentials = settings.HAWK_CREDENTIALS[settings.DH_HAWK_ID]
+
+    sender = Sender(credentials,
+                    meta_url,
+                    'GET',
+                    content=None,
+                    content_type=None,
+                    always_hash_content=False,
+                    )
+
+    response = requests.get(meta_url, verify=not settings.DEBUG,
+                            headers={
+                                'Authorization': sender.request_header
+                            })
+
     if response.ok:
         return response.json()
 
