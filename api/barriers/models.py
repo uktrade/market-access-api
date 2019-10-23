@@ -127,14 +127,6 @@ class BarrierInstance(BaseModel, ArchivableModel):
         BarrierType, related_name="barrier_types", help_text="Barrier types"
     )
     
-    barrier_type_category = models.CharField(
-        choices=BARRIER_TYPE_CATEGORIES,
-        max_length=25,
-        null=True,
-        default=None,
-        help_text="barrier type category",
-    )
-
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     # Barrier status
