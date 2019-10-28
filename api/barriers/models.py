@@ -126,21 +126,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     barrier_types = models.ManyToManyField(
         BarrierType, related_name="barrier_types", help_text="Barrier types"
     )
-    barrier_type = models.ForeignKey(
-        BarrierType,
-        null=True,
-        default=None,
-        related_name="barrier_type",
-        on_delete=models.SET_NULL,
-    )
-    barrier_type_category = models.CharField(
-        choices=BARRIER_TYPE_CATEGORIES,
-        max_length=25,
-        null=True,
-        default=None,
-        help_text="barrier type category",
-    )
-
+    
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     # Barrier status

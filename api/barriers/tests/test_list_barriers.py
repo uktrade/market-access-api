@@ -775,7 +775,7 @@ class TestListBarriers(APITestMixin):
 
         status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.filter(barrier_type=barrier_type.id)
+        barriers = BarrierInstance.objects.filter(barrier_types=barrier_type.id)
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_sector_filter(self):
@@ -988,7 +988,7 @@ class TestListBarriers(APITestMixin):
         status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
-            barrier_type=barrier_type.id
+            barrier_types=barrier_type.id
         ).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]

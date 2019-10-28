@@ -295,7 +295,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
-    barrier_type = django_filters.BaseInFilter("barrier_type")
+    barrier_type = django_filters.BaseInFilter("barrier_types")
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.Filter(method="location_filter")
     text = django_filters.Filter(method="text_search")
