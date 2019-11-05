@@ -114,3 +114,9 @@ db.sqlite3
 .vscode/
 docker-compose.env
 config/settings/static/
+
+# PyCharm
+.idea/
+
+# SSO src commit pip install folder
+src/
