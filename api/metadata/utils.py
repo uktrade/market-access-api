@@ -26,7 +26,7 @@ def import_api_results(endpoint):
     # v4 endpoints do not have trailing forward slash
     meta_url = base_url.relative(f"./{endpoint}")
 
-    credentials = settings.HAWK_CREDENTIALS[settings.DH_HAWK_ID]
+    credentials = settings.HAWK_CREDENTIALS[settings.DATAHUB_HAWK_ID]
 
     sender = Sender(credentials,
                     meta_url,

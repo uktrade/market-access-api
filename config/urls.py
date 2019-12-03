@@ -6,7 +6,6 @@ from api.metadata.views import MetadataView
 from api.ping.views import ping
 from api.barriers.views import (
     barrier_count,
-    barriers_export,
     BarrierDetail,
     BarrierHibernate,
     BarrierInstanceHistory,
@@ -22,7 +21,6 @@ from api.barriers.views import (
     BarrierStatusChangeUnknown,
     BarrierStatusHistory,
 )
-from api.interactions.views import BarrierInteractionList, BarrierIneractionDetail
 from api.user.views import who_am_i, UserDetail
 from api.core.views import admin_override
 
@@ -30,8 +28,15 @@ from api.assessment.urls import urlpatterns as assessment_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.interactions.urls import urlpatterns as interaction_urls
 
-urlpatterns = [
-    path("admin/login/", admin_override, name="override"),
+urlpatterns = []
+
+# Allow regular login to admin panel for local development
+if settings.DJANGO_ENV != 'local':
+    urlpatterns += [
+        path("admin/login/", admin_override, name="override"),
+    ]
+
+urlpatterns += [
     path("admin/", admin.site.urls),
     path("auth/", include("authbroker_client.urls", namespace="authbroker")),
     path("counts", barrier_count, name="barrier-count"),

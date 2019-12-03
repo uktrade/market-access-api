@@ -2,6 +2,7 @@ from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+DJANGO_ENV = 'test'
 
 SSO_ENABLED = False
 HAWK_ENABLED = False
@@ -28,8 +29,13 @@ INSTALLED_APPS += [
 AV_V2_SERVICE_URL = "http://av-service/"
 DOCUMENT_BUCKET = "test-bucket"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
-CELERY_TASK_ALWAYS_EAGER = True
 
 # Stop WhiteNoise emitting warnings when running tests without running collectstatic first
 WHITENOISE_AUTOREFRESH = True
 WHITENOISE_USE_FINDERS = True
+
+# Celery
+# ---------------------------------------------------------------------------
+# During local development all tasks will be executed syncronously,
+# blocking the processes until the task returns
+CELERY_TASK_ALWAYS_EAGER = True

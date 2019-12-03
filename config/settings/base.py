@@ -1,8 +1,6 @@
-import logging
+import environ
 import os
 import ssl
-import sys
-import environ
 
 import dj_database_url
 
@@ -29,24 +27,25 @@ SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # drf
-    "rest_framework",
-    # misc 3rd party
+]
+
+THIRD_PARTY_APPS = [
     "django_extensions",
     "django_filters",
     "hawkrest",
-    "raven.contrib.django.raven_compat",
-    "simple_history",
-    # sso
     "oauth2_provider",
-    # local apps
+    "rest_framework",
+    "simple_history",
+]
+
+LOCAL_APPS = [
     "api.barriers",
     "api.core",
     "api.ping",
@@ -59,6 +58,8 @@ INSTALLED_APPS = [
     "authbroker_client",
     "api.user_event_log",
 ]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -95,36 +96,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # Sentry
-RAVEN_CONFIG = {
-    "dsn": env("SENTRY_DSN"),
-    # If you are using git, you can also automatically configure the
-    # release based on the git info.
-    # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
-}
+SENTRY_DSN = os.environ.get("SENTRY_DSN")
+if SENTRY_DSN:
+    RAVEN_CONFIG = {
+        "dsn": os.environ.get("SENTRY_DSN"),
+        # If you are using git, you can also automatically configure the
+        # release based on the git info.
+        # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
+    }
+    INSTALLED_APPS += ["raven.contrib.django.raven_compat"]
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
 DATABASES = {
-    "default": dj_database_url.config(
-        default="sqlite:////{0}".format(os.path.join(BASE_DIR, "db.sqlite3"))
-    )
+    "default": dj_database_url.config(env="DATABASE_URL", default="")
 }
 
 AUTH_USER_MODEL = "auth.User"
+
 # django-oauth-toolkit settings
-AUTHENTICATION_BACKENDS = [
-    "oauth2_provider.backends.OAuth2Backend",
-    "django.contrib.auth.backends.ModelBackend",
-    "authbroker_client.backends.AuthbrokerBackend",
-]
-
-AUTHENTICATION_BACKENDS = [
-    "oauth2_provider.backends.OAuth2Backend",
-    "django.contrib.auth.backends.ModelBackend",
-    "authbroker_client.backends.AuthbrokerBackend",
-]
-
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "authbroker_client.backends.AuthbrokerBackend",
@@ -135,6 +125,7 @@ VCAP_SERVICES = env.json("VCAP_SERVICES", default={})
 CHAR_FIELD_MAX_LENGTH = 255
 REF_CODE_LENGTH = env.int("REF_CODE_LENGTH", 3)
 REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 1000)
+
 # DataHub API
 DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
@@ -182,12 +173,13 @@ SERVER_SIDE_ENCRYPTION = env("SERVER_SIDE_ENCRYPTION", default="AES256")
 
 # Admin locking
 AUTHBROKER_URL = env("AUTHBROKER_URL")
-AUTHBROKER_CLIENT_ID = env("AUTHBROKER_CLIENT_ID")
-AUTHBROKER_CLIENT_SECRET = env("AUTHBROKER_CLIENT_SECRET")
+AUTHBROKER_CLIENT_ID = os.environ.get("AUTHBROKER_CLIENT_ID")
+AUTHBROKER_CLIENT_SECRET = os.environ.get("AUTHBROKER_CLIENT_SECRET")
 AUTHBROKER_SCOPES = "read write"
+
 LOGIN_REDIRECT_URL = "/admin/"
 RESTRICT_ADMIN = env.bool("RESTRICT_ADMIN", True)
-ALLOWED_ADMIN_IPS = env.list("ALLOWED_ADMIN_IPS")
+ALLOWED_ADMIN_IPS = os.environ.get("ALLOWED_ADMIN_IPS", "").split(",")
 # SECURE_PROXY_SSL_HEADER is needed to force the call back protocall to be https
 # setting this effects the Hawk hash generation.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -225,23 +217,31 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# HAWK settings
+HAWK_CREDENTIALS = {}
 HAWK_ENABLED = env.bool("HAWK_ENABLED", True)
-HAWK_ID = env("HAWK_ID")
 
-DH_HAWK_ID = env("DH_HAWK_ID")
+if HAWK_ENABLED:
+    HAWK_ID = os.environ.get('HAWK_ID')
+    HAWK_KEY = os.environ.get('HAWK_KEY')
+    HAWK_ALGORITHM = os.environ.get('HAWK_ALGORITHM', 'sha256')
 
-HAWK_CREDENTIALS = {
-    env("HAWK_ID"): {
-        "id": env("HAWK_ID"),
-        "key": env("HAWK_KEY"),
-        "algorithm": "sha256",
-    },
-    env("DH_HAWK_ID"): {
-        "id" : env("DH_HAWK_ID"),
-        "key" : env("DH_HAWK_KEY"),
-        "algorithm": "sha256",
+    DATAHUB_HAWK_ID = os.environ.get("DH_HAWK_ID")
+    DATAHUB_HAWK_KEY = os.environ.get('DH_HAWK_KEY')
+    DATAHUB_HAWK_ALGORITHM = os.environ.get('DH_HAWK_ALGORITHM', 'sha256')
+
+    HAWK_CREDENTIALS = {
+        HAWK_ID: {
+            "id": HAWK_ID,
+            "key": HAWK_KEY,
+            "algorithm": HAWK_ALGORITHM,
+        },
+        DATAHUB_HAWK_ID: {
+            "id": DATAHUB_HAWK_ID,
+            "key": DATAHUB_HAWK_KEY,
+            "algorithm": DATAHUB_HAWK_ALGORITHM,
+        }
     }
-}
 
 SLACK_WEBHOOK = env("SLACK_WEBHOOK", default="")
 
