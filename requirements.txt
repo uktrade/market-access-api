@@ -16,6 +16,7 @@ gunicorn==19.9.0
 hawkrest==1.0.1
 psycopg2-binary==2.7.5
 raven==6.9.0
+redis==2.10.6
 requests-toolbelt==0.8.0
 URLObject==2.4.3
 waitress==1.1.0
