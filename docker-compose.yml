@@ -1,34 +1,52 @@
-version: '3'
+version: '3.7'
 
 services:
+
+  db:
+    image: postgres
+    volumes:
+      - ./db:/var/lib/postgresql/data
+      - ./docker/local/postgres:/docker-entrypoint-initdb.d
+    ports:
+      - "8881:5432"
+    env_file: docker-compose.env
+    networks:
+      - webnet
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/local/Dockerfile
+    entrypoint: dockerize -wait tcp://db:5432 -timeout 60s docker/local/entrypoint.sh
+    volumes:
+      - .:/usr/src/app
+    env_file: docker-compose.env
+    ports:
+      - "8880:8000"
+      - "8882:22"
+    depends_on:
+      - db
+    networks:
+      - webnet
+
   redis:
     image: redis
     ports:
-      - "6379:6379"
-  db:
-    image: postgres
+      - "8889:6379"
+    networks:
+      - webnet
+
+  mocksso:
+    image: ukti/mock-sso
+    environment:
+      MOCK_SSO_PORT: "8888"
+      MOCK_SSO_SCOPE: "test"
+      MOCK_SSO_USERNAME: "test-user"
+      MOCK_SSO_TOKEN: "jkl-mno-pqr"
     ports:
-      - "5432:5432"
-    env_file: docker-compose.env
-  web:
-    build: .
-    command: python3 manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
-    env_file: docker-compose.env
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-  celery:
-    build:
-      context: .
-    volumes:
-      - .:/app
-    entrypoint: dockerize -wait tcp://web:8000 -timeout 60s
-    env_file: docker-compose.env
-    depends_on:
-      - web
-    links:
-      - web
-    command: celery worker -A config.celery -l info -B
+      - "8888:8888"
+    networks:
+      - webnet
+
+networks:
+  webnet:
