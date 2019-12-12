@@ -126,7 +126,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     barrier_types = models.ManyToManyField(
         BarrierType, related_name="barrier_types", help_text="Barrier types"
     )
-    
+
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     # Barrier status
@@ -247,7 +247,7 @@ class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="progress", on_delete=models.PROTECT
+        BarrierInstance, related_name="progress", on_delete=models.CASCADE
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
     status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
