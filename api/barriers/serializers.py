@@ -114,7 +114,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
 
 class BarrierCsvExportSerializer(serializers.Serializer):
     """ Serializer for CSV export """
-    
+
     id = serializers.UUIDField()
     code = serializers.CharField()
     scope = serializers.SerializerMethodField()
@@ -182,7 +182,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             impact_dict = dict(ASSESMENT_IMPACT)
             return impact_dict.get(obj.assessment.impact, None)
         return None
-    
+
     def get_value_to_economy(self, obj):
         if hasattr(obj, "assessment"):
             return obj.assessment.value_to_economy
@@ -225,7 +225,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
                 return sectors
         else:
             return "N/A"
-    
+
     def get_country(self, obj):
         dh_countries = cache.get_or_set("dh_countries", get_countries, 72000)
         country = [c["name"] for c in dh_countries if c["id"] == str(obj.export_country)]
@@ -239,7 +239,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             if overseas_region is not None:
                 return overseas_region["name"]
         return None
-    
+
     def get_admin_areas(self, obj):
         dh_areas = cache.get_or_set("dh_admin_areas", get_admin_areas, 72000)
         areas = []
@@ -317,6 +317,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "barrier_types",
             "created_on",
             "modified_on",
+            "archived",
+            "archived_on",
         )
 
     def get_status(self, obj):
@@ -343,6 +345,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
 
+    archived_by = serializers.SerializerMethodField()
+    archived_reason = serializers.CharField(source='get_archived_reason_display')
     reported_by = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
@@ -382,6 +386,11 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "created_on",
             "modified_by",
             "modified_on",
+            "archived",
+            "archived_on",
+            "archived_by",
+            "archived_reason",
+            "archived_explanation",
         )
         read_only_fields = (
             "id",
@@ -392,11 +401,16 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "created_on",
             "modified_on",
             "modifieds_by",
+            "archived_on",
+            "archived_by",
         )
         depth = 1
 
     def reported_on(self, obj):
         return obj.created_on
+
+    def get_archived_by(self, obj):
+        return obj.archived_user
 
     def get_reported_by(self, obj):
         return obj.created_user
@@ -460,6 +474,21 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         #         # ignore status_date if provided
         #         data["status_date"] = getattr(self.instance, "status_date")
         return data
+
+    def update(self, instance, validated_data):
+        if instance.archived is False and validated_data.get("archived") is True:
+            instance.archive(
+                user=self.user,
+                reason=validated_data.get("archived_reason"),
+                explanation=validated_data.get("archived_explanation"),
+            )
+        elif instance.archived is True and validated_data.get("archived") is False:
+            instance.unarchive()
+        return instance
+
+    def save(self, *args, **kwargs):
+        self.user = kwargs.get("modified_by")
+        super().save(*args, **kwargs)
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):

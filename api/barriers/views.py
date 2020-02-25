@@ -301,6 +301,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
+    archived = django_filters.BooleanFilter("archived")
 
     class Meta:
         model = BarrierInstance
@@ -311,6 +312,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             "reported_on",
             "status",
             "priority",
+            "archived",
         ]
 
     def sector_filter(self, queryset, name, value):

@@ -12,6 +12,7 @@ from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
+    ARCHIVED_REASON,
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
@@ -59,7 +60,7 @@ class BarrierManager(models.Manager):
         return (
             super(BarrierManager, self)
             .get_queryset()
-            .filter(~Q(status=0) & Q(archived=False))
+            .filter(~Q(status=0))
         )
 
 
@@ -126,7 +127,7 @@ class BarrierInstance(BaseModel, ArchivableModel):
     barrier_types = models.ManyToManyField(
         BarrierType, related_name="barrier_types", help_text="Barrier types"
     )
-    
+
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     # Barrier status
@@ -174,6 +175,11 @@ class BarrierInstance(BaseModel, ArchivableModel):
         help_text="Store reporting stages before submitting",
     )
 
+    archived_reason = models.CharField(
+        choices=ARCHIVED_REASON, max_length=25, null=True
+    )
+    archived_explanation = models.TextField(blank=True, null=True)
+
     history = HistoricalRecords()
 
     def __str__(self):
@@ -213,12 +219,20 @@ class BarrierInstance(BaseModel, ArchivableModel):
         return self
 
     @property
+    def archived_user(self):
+        return self._cleansed_username(self.archived_by)
+
+    @property
     def created_user(self):
         return self._cleansed_username(self.created_by)
 
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+    def archive(self, user, reason=None, explanation=None):
+        self.archived_explanation = explanation
+        super().archive(user, reason)
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
