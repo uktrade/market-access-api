@@ -47,12 +47,19 @@ class InteractionSerializer(serializers.ModelSerializer):
 class DocumentSerializer(serializers.ModelSerializer):
     """Serializer for Document."""
 
+    av_clean = serializers.SerializerMethodField()
+    av_reason = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
-        fields = ("id", "size", "mime_type", "original_filename", "url", "status")
-        read_only_fields = ("url", "created_by", "created_on", "status")
+        fields = (
+            "id", "size", "mime_type", "original_filename", "url", "status",
+            "av_clean", "av_reason",
+        )
+        read_only_fields = (
+            "url", "created_by", "created_on", "status", "av_clean", "av_reason",
+        )
 
     def create(self, validated_data):
         """Create my entity document."""
@@ -79,6 +86,12 @@ class DocumentSerializer(serializers.ModelSerializer):
         instance.mime_type = validated_data.get("mime_type", instance.mime_type)
         instance.modified_by = self.context["request"].user
         return instance
+
+    def get_av_clean(self, instance):
+        return instance.document.av_clean
+
+    def get_av_reason(self, instance):
+        return instance.document.av_reason
 
     def get_status(self, instance):
         """Get document status."""
