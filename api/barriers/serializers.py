@@ -346,7 +346,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
 
     archived_by = serializers.SerializerMethodField()
-    archived_reason = serializers.CharField(source='get_archived_reason_display')
     reported_by = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
