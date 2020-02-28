@@ -12,7 +12,6 @@ from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
-    ARCHIVED_REASON,
     BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
@@ -22,7 +21,7 @@ from api.metadata.constants import (
     RESOLVED_STATUS,
     STAGE_STATUS,
 )
-from api.core.models import ArchivableModel, BaseModel
+from api.core.models import BaseModel, FullyArchivableModel
 from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
@@ -64,7 +63,7 @@ class BarrierManager(models.Manager):
         )
 
 
-class BarrierInstance(BaseModel, ArchivableModel):
+class BarrierInstance(BaseModel, FullyArchivableModel):
     """ Barrier Instance, converted from a completed and accepted Report """
 
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -175,11 +174,6 @@ class BarrierInstance(BaseModel, ArchivableModel):
         help_text="Store reporting stages before submitting",
     )
 
-    archived_reason = models.CharField(
-        choices=ARCHIVED_REASON, max_length=25, null=True
-    )
-    archived_explanation = models.TextField(blank=True, null=True)
-
     history = HistoricalRecords()
 
     def __str__(self):
@@ -229,10 +223,6 @@ class BarrierInstance(BaseModel, ArchivableModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
-
-    def archive(self, user, reason=None, explanation=None):
-        self.archived_explanation = explanation
-        super().archive(user, reason)
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None

@@ -390,6 +390,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "archived_by",
             "archived_reason",
             "archived_explanation",
+            "unarchived_reason",
+            "unarchived_on",
+            "unarchived_by",
         )
         read_only_fields = (
             "id",
@@ -402,6 +405,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "modifieds_by",
             "archived_on",
             "archived_by",
+            "unarchived_on",
+            "unarchived_by",
         )
         depth = 1
 
@@ -482,7 +487,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 explanation=validated_data.get("archived_explanation"),
             )
         elif instance.archived is True and validated_data.get("archived") is False:
-            instance.unarchive()
+            instance.unarchive(
+                user=self.user,
+                reason=validated_data.get("unarchived_reason"),
+            )
         return instance
 
     def save(self, *args, **kwargs):

@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from api.core.utils import cleansed_username
+from api.metadata.constants import ARCHIVED_REASON
 
 
 class BaseModel(models.Model):
@@ -78,3 +79,35 @@ class ArchivableModel(models.Model):
         self.archived_by = None
         self.archived_on = None
         self.save()
+
+
+class FullyArchivableModel(ArchivableModel):
+    """ Archivable model with extra fields for explanation and unarchiving."""
+
+    archived_reason = models.CharField(
+        choices=ARCHIVED_REASON, max_length=25, null=True
+    )
+    archived_explanation = models.TextField(blank=True, null=True)
+
+    unarchived_reason = models.TextField(blank=True, null=True)
+    unarchived_on = models.DateTimeField(blank=True, null=True)
+    unarchived_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+    class Meta:
+        abstract = True
+
+    def archive(self, user, reason=None, explanation=None):
+        self.archived_explanation = explanation
+        super().archive(user, reason)
+
+    def unarchive(self, user, reason=None):
+        self.unarchived_by = user
+        self.unarchived_reason = reason
+        self.unarchived_on = timezone.now()
+        super().unarchive()

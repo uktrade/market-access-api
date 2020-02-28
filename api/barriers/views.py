@@ -581,6 +581,7 @@ class BarrierInstanceHistory(generics.GenericAPIView):
                         )
             old_record = new_record
             response = {"barrier_id": pk, "history": results}
+
         return Response(response, status=status.HTTP_200_OK)
 
 
@@ -644,20 +645,26 @@ class BarrierStatusHistory(generics.GenericAPIView):
                                 status_change = {
                                     "date": new_record.history_date,
                                     "field": change.field,
-                                    "old_value": str(change.old),
-                                    "new_value": str(change.new),
+                                    "old_value": change.old,
+                                    "new_value": change.new,
                                     "user": self._format_user(
                                         new_record.history_user
                                     ),
-                                    "field_info": {
+                                }
+                                if change.new is True:
+                                    status_change["field_info"] = {
                                         "archived_reason": new_record.archived_reason,
                                         "archived_explanation": new_record.archived_explanation,
-                                    },
-                                }
+                                    }
+                                else:
+                                    status_change["field_info"] = {
+                                        "unarchived_reason": new_record.unarchived_reason,
+                                    }
                     if status_change:
                         results.append(status_change)
             old_record = new_record
         response = {"barrier_id": str(pk), "history": results}
+
         return Response(response, status=status.HTTP_200_OK)
 
 
