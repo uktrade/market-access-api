@@ -22,6 +22,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.widgets import BooleanWidget
 
 from rest_framework import filters, generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
@@ -301,7 +302,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
-    archived = django_filters.BooleanFilter("archived")
+    archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
 
     class Meta:
         model = BarrierInstance
