@@ -491,7 +491,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 user=self.user,
                 reason=validated_data.get("unarchived_reason"),
             )
-        return instance
+        return super().update(instance, validated_data)
 
     def save(self, *args, **kwargs):
         self.user = kwargs.get("modified_by")
