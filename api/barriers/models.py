@@ -217,6 +217,10 @@ class BarrierInstance(BaseModel, FullyArchivableModel):
         return self._cleansed_username(self.archived_by)
 
     @property
+    def unarchived_user(self):
+        return self._cleansed_username(self.unarchived_by)
+
+    @property
     def created_user(self):
         return self._cleansed_username(self.created_by)
 

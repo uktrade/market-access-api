@@ -416,6 +416,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def get_archived_by(self, obj):
         return obj.archived_user
 
+    def get_unarchived_by(self, obj):
+        return obj.unarchived_user
+
     def get_reported_by(self, obj):
         return obj.created_user
 
