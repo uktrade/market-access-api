@@ -32,6 +32,7 @@ from rest_framework.response import Response
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
 from api.core.utils import cleansed_username
+from api.barriers.history_items import HistoryItem
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
@@ -510,78 +511,25 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
         )
 
 
-class BarrierInstanceHistory(generics.GenericAPIView):
-    def _get_barrier(self, barrier_id):
-        """ Get BarrierInstance object or False if invalid ID """
-        try:
-            return BarrierInstance.barriers.get(id=barrier_id)
-        except BarrierInstance.DoesNotExist:
-            return False
+class BarrierFullHistory(generics.GenericAPIView):
 
     def get(self, request, pk):
-        ignore_fields = ["modified_on"]
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
         old_record = None
+
         for new_record in history:
-            if new_record.history_type == "+":
-                results.append(
-                    {
-                        "date": new_record.history_date,
-                        "operation": "Add",
-                        "event": "Report created",
-                        "field": None,
-                        "old_value": None,
-                        "new_value": None,
-                        "user": new_record.history_user.email
-                        if new_record.history_user
-                        else "",
-                    }
-                )
-            elif old_record is not None:
-                delta = new_record.diff_against(old_record)
-                for change in delta.changes:
-                    if change.field not in ignore_fields:
-                        if change.old is None:
-                            operation = "Add"
-                            event = "{} added to {}".format(change.new, change.field)
-                            field = change.field
-                            old_value = None
-                            new_value = change.new
-                        elif change.old is not None and change.new is not None:
-                            operation = "Update"
-                            event = "{} changed from {} to {}".format(
-                                change.field, change.old, change.new
-                            )
-                            field = change.field
-                            old_value = change.old
-                            new_value = change.new
-                        else:
-                            operation = "Delete"
-                            event = "{} deleted".format(change.field)
-                            field = change.field
-                            old_value = change.old
-                            new_value = None
-                        if new_value and hasattr(new_value, "_meta"):
-                            new_value = model_to_dict(new_value)
-                        if old_value and hasattr(old_value, "_meta"):
-                            old_value = model_to_dict(old_value)
-                        results.append(
-                            {
-                                "date": new_record.history_date,
-                                "operation": operation,
-                                "field": field,
-                                "old_value": old_value,
-                                "new_value": new_value,
-                                "event": event,
-                                "user": new_record.history_user.email
-                                if new_record.history_user
-                                else "",
-                            }
-                        )
+            if new_record.history_type != "+":
+                if old_record is not None:
+                    delta = new_record.diff_against(old_record)
+                    for change in delta.changes:
+                        history_item = HistoryItem(change, new_record)
+                        if history_item.data:
+                            results.append(history_item.data)
+
             old_record = new_record
-            response = {"barrier_id": pk, "history": results}
+        response = {"barrier_id": str(pk), "history": results}
 
         return Response(response, status=status.HTTP_200_OK)
 

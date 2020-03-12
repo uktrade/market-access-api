@@ -8,7 +8,7 @@ from api.barriers.views import (
     barrier_count,
     BarrierDetail,
     BarrierHibernate,
-    BarrierInstanceHistory,
+    BarrierFullHistory,
     BarrierList,
     BarriertListExportView,
     BarrierResolveInFull,
@@ -54,7 +54,7 @@ urlpatterns += [
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path(
         "barriers/<uuid:pk>/full_history",
-        BarrierInstanceHistory.as_view(),
+        BarrierFullHistory.as_view(),
         name="history",
     ),
     path(
