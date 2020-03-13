@@ -41,7 +41,7 @@ class Interaction(BaseModel, ArchivableModel):
     """ Interaction records for each Barrier """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="interactions_documents", on_delete=models.PROTECT
+        BarrierInstance, related_name="interactions_documents", on_delete=models.CASCADE
     )
     kind = models.CharField(choices=BARRIER_INTERACTION_TYPE, max_length=25)
     text = models.TextField(null=True)
