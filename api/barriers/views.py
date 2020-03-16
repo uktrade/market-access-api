@@ -32,7 +32,8 @@ from rest_framework.response import Response
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
 from api.core.utils import cleansed_username
-from api.barriers.history_items import HistoryItem
+from api.barriers.exceptions import HistoryItemNotFound
+from api.barriers.history_items import BarrierHistoryItem, NotesHistoryItem
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
@@ -514,24 +515,48 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
 class BarrierFullHistory(generics.GenericAPIView):
 
     def get(self, request, pk):
-        barrier = BarrierInstance.barriers.get(id=pk)
-        history = barrier.history.all().order_by("history_date")
+        barrier_history = self.get_barrier_history()
+        notes_history = self.get_notes_history()
+        results = barrier_history + notes_history
+
+        response = {"barrier_id": str(pk), "history": results}
+        return Response(response, status=status.HTTP_200_OK)
+
+    def process_history(self, history, history_class):
         results = []
         old_record = None
 
         for new_record in history:
             if new_record.history_type != "+":
-                if old_record is not None:
+                if (
+                    old_record is not None
+                    and old_record.instance.pk == new_record.instance.pk
+                ):
                     delta = new_record.diff_against(old_record)
                     for change in delta.changes:
-                        history_item = HistoryItem(change, new_record)
-                        if history_item.data:
-                            results.append(history_item.data)
+                        try:
+                            history_item = history_class.create(change, new_record)
+                            if history_item.data is not None:
+                                results.append(history_item.data)
+                        except HistoryItemNotFound:
+                            pass
 
             old_record = new_record
-        response = {"barrier_id": str(pk), "history": results}
 
-        return Response(response, status=status.HTTP_200_OK)
+        return results
+
+    def get_barrier_history(self):
+        barrier_id = self.kwargs.get("pk")
+        barrier = BarrierInstance.barriers.get(id=barrier_id)
+        history = barrier.history.all().order_by("history_date")
+        return self.process_history(history, BarrierHistoryItem)
+
+    def get_notes_history(self):
+        barrier_id = self.kwargs.get("pk")
+        history = Interaction.history.filter(
+            barrier_id=barrier_id
+        ).order_by("id", "history_date")
+        return self.process_history(history, NotesHistoryItem)
 
 
 class BarrierStatusHistory(generics.GenericAPIView):

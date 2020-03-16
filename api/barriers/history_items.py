@@ -1,3 +1,4 @@
+from api.barriers.exceptions import HistoryItemNotFound
 from api.core.utils import cleansed_username
 
 
@@ -15,7 +16,18 @@ class BaseHistoryItem:
         return self._data
 
     def get_data(self):
-        return None
+        data = {
+            "date": self.new_record.history_date,
+            "field": self.change.field,
+            "old_value": str(self.change.old),
+            "new_value": str(self.change.new),
+            "user": self._format_user(
+                self.new_record.history_user
+            ),
+        }
+        if hasattr(self, "get_field_info"):
+            data['field_info'] = self.get_field_info()
+        return data
 
     def _format_user(self, user):
         if user is not None:
@@ -24,47 +36,49 @@ class BaseHistoryItem:
         return None
 
 
-class TitleHistoryItem(BaseHistoryItem):
-    field = "barrier_title"
-
-    def get_data(self):
-        return {
-            "date": self.new_record.history_date,
-            "field": self.change.field,
-            "old_value": str(self.change.old),
-            "new_value": str(self.change.new),
-            "user": self._format_user(
-                self.new_record.history_user
-            ),
-            "field_info": {
-
-            },
-        }
-
-
 class ArchivedHistoryItem(BaseHistoryItem):
     field = "archived"
 
-    def get_data(self):
-        data = {
-            "date": new_record.history_date,
-            "field": self.change.field,
-            "old_value": self.change.old,
-            "new_value": self.change.new,
-            "user": self._format_user(
-                self.new_record.history_user
-            ),
-        }
-        if change.new is True:
-            data["field_info"] = {
+    def get_field_info(self):
+        if self.change.new is True:
+            return {
                 "archived_reason": self.new_record.archived_reason,
                 "archived_explanation": self.new_record.archived_explanation,
             }
         else:
-            data["field_info"] = {
+            return {
                 "unarchived_reason": self.new_record.unarchived_reason,
             }
-        return data
+
+
+class DescriptionHistoryItem(BaseHistoryItem):
+    field = "problem_description"
+
+
+class EUExitRelatedHistoryItem(BaseHistoryItem):
+    field = "eu_exit_related"
+
+
+class PriorityHistoryItem(BaseHistoryItem):
+    field = "priority"
+
+    def get_field_info(self):
+        return {
+            "priority_date": self.new_record.priority_date,
+            "priority_summary": self.new_record.priority_summary,
+        }
+
+
+class ProductHistoryItem(BaseHistoryItem):
+    field = "product"
+
+
+class SectorsHistoryItem(BaseHistoryItem):
+    field = "sectors"
+
+
+class SourceHistoryItem(BaseHistoryItem):
+    field = "source"
 
 
 class StatusHistoryItem(BaseHistoryItem):
@@ -72,52 +86,64 @@ class StatusHistoryItem(BaseHistoryItem):
 
     def get_data(self):
         if not (self.change.old == 0 or self.change.old is None):
-            return {
-                "date": self.new_record.history_date,
-                "field": self.change.field,
-                "old_value": str(self.change.old),
-                "new_value": str(self.change.new),
-                "user": self._format_user(
-                    self.new_record.history_user
-                ),
-                "field_info": {
-                    "status_date": self.new_record.status_date,
-                    "status_summary": self.new_record.status_summary,
-                    "sub_status": self.new_record.sub_status,
-                    "sub_status_other": self.new_record.sub_status_other,
-                },
-            }
+            return super().get_data()
 
-
-class PriorityHistoryItem(BaseHistoryItem):
-    field = "priority"
-
-    def get_data(self):
+    def get_field_info(self):
         return {
-            "date": self.new_record.history_date,
-            "field": self.change.field,
-            "old_value": str(self.change.old),
-            "new_value": str(self.change.new),
-            "user": self._format_user(
-                self.new_record.history_user
-            ),
-            "field_info": {
-                "priority_date": self.new_record.priority_date,
-                "priority_summary": self.new_record.priority_summary,
-            },
+            "status_date": self.new_record.status_date,
+            "status_summary": self.new_record.status_summary,
+            "sub_status": self.new_record.sub_status,
+            "sub_status_other": self.new_record.sub_status_other,
         }
 
 
-class HistoryItem:
+class TitleHistoryItem(BaseHistoryItem):
+    field = "barrier_title"
+
+
+class NoteTextHistoryItem(BaseHistoryItem):
+    field = "text"
+
+
+class HistoryItemFactory:
+    history_item_classes = tuple()
+    class_lookup = {}
+
+    @classmethod
+    def create(cls, change, new_record):
+        if not cls.class_lookup:
+            cls.init_class_lookup()
+
+        history_item_class = cls.class_lookup.get(change.field)
+        if not history_item_class:
+            raise HistoryItemNotFound
+        return history_item_class(change, new_record)
+
+    @classmethod
+    def init_class_lookup(cls):
+        for history_item_class in cls.history_item_classes:
+            cls.class_lookup[history_item_class.field] = history_item_class
+
+
+class BarrierHistoryItem(HistoryItemFactory):
     """
-    Polymorphic wrapper for HistoryItem classes
+    Polymorphic wrapper for barrier HistoryItem classes
     """
+
+    class_lookup = {}
     history_item_classes = (
-        TitleHistoryItem, StatusHistoryItem, PriorityHistoryItem
+        TitleHistoryItem, StatusHistoryItem, PriorityHistoryItem,
+        ArchivedHistoryItem, EUExitRelatedHistoryItem, DescriptionHistoryItem,
+        ProductHistoryItem, SourceHistoryItem, SectorsHistoryItem,
     )
 
-    def __new__(cls, change, new_record):
-        for history_item_class in cls.history_item_classes:
-            if change.field == history_item_class.field:
-                return history_item_class(change, new_record)
-        return BaseHistoryItem(change, new_record)
+
+class NotesHistoryItem(HistoryItemFactory):
+    """
+    Polymorphic wrapper for note HistoryItem classes
+    """
+
+    class_lookup = {}
+    history_item_classes = (
+        NoteTextHistoryItem,
+    )
