@@ -245,12 +245,12 @@ if HAWK_ENABLED:
             "id": DATAHUB_HAWK_ID,
             "key": DATAHUB_HAWK_KEY,
             "algorithm": DATAHUB_HAWK_ALGORITHM,
-        }
+        },
         DATA_WORKSPACE_HAWK_ID: {
             "id": DATA_WORKSPACE_HAWK_ID,
             "key": DATA_WORKSPACE_HAWK_KEY,
             "algorithm": DATA_WORKSPACE_HAWK_ALGORITHM,
-        }
+        },
     }
 
 SLACK_WEBHOOK = env("SLACK_WEBHOOK", default="")
