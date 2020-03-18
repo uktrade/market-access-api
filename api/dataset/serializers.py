@@ -203,15 +203,11 @@ class BarrierDataSetSerializer(serializers.Serializer):
         Unpack companies json field into company names
         """
         if obj.companies:
-            companies_dict = json.loads(obj.companies)
-            return list(companies_dict.values())
-        return None
+            return [company['name'] for company in obj.companies]
 
     def get_company_ids(self, obj):
         """
         Unpack companies json field into company ids
         """
         if obj.companies:
-            companies_dict = json.loads(obj.companies)
-            return list(companies_dict.keys())
-        return None
+            return [company['id'] for company in obj.companies]
