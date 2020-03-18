@@ -31,7 +31,7 @@ from rest_framework.response import Response
 
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
-from api.core.utils import cleansed_username
+from api.core.utils import cleansed_username, history_diff
 from api.barriers.exceptions import HistoryItemNotFound
 from api.barriers.history_items import BarrierHistoryItem, NotesHistoryItem
 from api.barriers.models import BarrierInstance, BarrierReportStage
@@ -538,7 +538,7 @@ class BarrierFullHistory(generics.GenericAPIView):
                     old_record is not None
                     and old_record.instance.pk == new_record.instance.pk
                 ):
-                    delta = new_record.diff_against(old_record)
+                    delta = history_diff(new_record, old_record)
                     for change in delta.changes:
                         try:
                             history_item = history_class.create(change, new_record)

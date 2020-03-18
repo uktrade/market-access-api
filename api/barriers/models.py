@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from simple_history.models import HistoricalRecords
+from simple_history.models import HistoricalRecords, ModelChange
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
@@ -61,6 +61,35 @@ class BarrierManager(models.Manager):
             .get_queryset()
             .filter(~Q(status=0))
         )
+
+
+class BarrierHistoricalModel(models.Model):
+    """
+    Abstract model for history models tracking category changes.
+    """
+    categories_cache = ArrayField(
+        models.CharField(max_length=20),
+        blank=True,
+        null=True,
+        default=None,
+    )
+
+    def custom_diff_against(self, old_history):
+        delta = self.diff_against(old_history)
+
+        if self.categories_cache != old_history.categories_cache:
+            delta.changes.append(
+                ModelChange(
+                    "categories",
+                    old_history.categories_cache,
+                    self.categories_cache
+                )
+            )
+            delta.changed_fields.append("categories")
+        return delta
+
+    class Meta:
+        abstract = True
 
 
 class BarrierInstance(BaseModel, FullyArchivableModel):
@@ -174,7 +203,7 @@ class BarrierInstance(BaseModel, FullyArchivableModel):
         help_text="Store reporting stages before submitting",
     )
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
     def __str__(self):
         if self.barrier_title is None:

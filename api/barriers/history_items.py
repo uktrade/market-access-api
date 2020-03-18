@@ -51,6 +51,10 @@ class ArchivedHistoryItem(BaseHistoryItem):
             }
 
 
+class CategoriesHistoryItem(BaseHistoryItem):
+    field = "categories"
+
+
 class DescriptionHistoryItem(BaseHistoryItem):
     field = "problem_description"
 
@@ -135,6 +139,7 @@ class BarrierHistoryItem(HistoryItemFactory):
         TitleHistoryItem, StatusHistoryItem, PriorityHistoryItem,
         ArchivedHistoryItem, EUExitRelatedHistoryItem, DescriptionHistoryItem,
         ProductHistoryItem, SourceHistoryItem, SectorsHistoryItem,
+        CategoriesHistoryItem,
     )
 
 

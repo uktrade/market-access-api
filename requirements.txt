@@ -9,7 +9,7 @@ django-model-utils==3.1.2
 django-oauth-toolkit==1.2.0
 django-pglocks==1.0.2
 django-redis==4.9.0
-django-simple-history==2.4.0
+django-simple-history==2.8.0
 django-staff-sso-client==1.0.0
 djangorestframework==3.10.3
 gunicorn==19.9.0
