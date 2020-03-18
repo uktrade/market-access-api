@@ -57,6 +57,7 @@ LOCAL_APPS = [
     "api.collaboration",
     "authbroker_client",
     "api.user_event_log",
+    "api.dataset",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
