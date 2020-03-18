@@ -19,8 +19,8 @@ class BaseHistoryItem:
         data = {
             "date": self.new_record.history_date,
             "field": self.change.field,
-            "old_value": str(self.change.old),
-            "new_value": str(self.change.new),
+            "old_value": self.get_value(self.change.old),
+            "new_value": self.get_value(self.change.new),
             "user": self._format_user(
                 self.new_record.history_user
             ),
@@ -28,6 +28,9 @@ class BaseHistoryItem:
         if hasattr(self, "get_field_info"):
             data['field_info'] = self.get_field_info()
         return data
+
+    def get_value(self, value):
+        return value
 
     def _format_user(self, user):
         if user is not None:
@@ -66,6 +69,10 @@ class EUExitRelatedHistoryItem(BaseHistoryItem):
 class PriorityHistoryItem(BaseHistoryItem):
     field = "priority"
 
+    def get_value(self, value):
+        if value:
+            return str(value)
+
     def get_field_info(self):
         return {
             "priority_date": self.new_record.priority_date,
@@ -91,6 +98,10 @@ class StatusHistoryItem(BaseHistoryItem):
     def get_data(self):
         if not (self.change.old == 0 or self.change.old is None):
             return super().get_data()
+
+    def get_value(self, value):
+        if value:
+            return str(value)
 
     def get_field_info(self):
         return {
