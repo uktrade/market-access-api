@@ -58,12 +58,20 @@ class CategoriesHistoryItem(BaseHistoryItem):
     field = "categories"
 
 
+class CompaniesHistoryItem(BaseHistoryItem):
+    field = "companies"
+
+
 class DescriptionHistoryItem(BaseHistoryItem):
     field = "problem_description"
 
 
 class EUExitRelatedHistoryItem(BaseHistoryItem):
     field = "eu_exit_related"
+
+
+class LocationHistoryItem(BaseHistoryItem):
+    field = "location"
 
 
 class PriorityHistoryItem(BaseHistoryItem):
@@ -150,7 +158,7 @@ class BarrierHistoryItem(HistoryItemFactory):
         TitleHistoryItem, StatusHistoryItem, PriorityHistoryItem,
         ArchivedHistoryItem, EUExitRelatedHistoryItem, DescriptionHistoryItem,
         ProductHistoryItem, SourceHistoryItem, SectorsHistoryItem,
-        CategoriesHistoryItem,
+        CategoriesHistoryItem, CompaniesHistoryItem, LocationHistoryItem,
     )
 
 
