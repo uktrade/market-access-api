@@ -6,7 +6,7 @@ from rest_framework.reverse import reverse
 from api.core.test_utils import APITestMixin, create_test_user
 
 
-class TestBarrierTypes(APITestMixin):
+class TestCategories(APITestMixin):
     def test_metadata_dict(self):
         """Test all items are exposed using metadata"""
         url = reverse("metadata")

@@ -29,7 +29,7 @@ class ServicesManager(models.Manager):
         )
 
 
-class BarrierType(models.Model):
+class Category(models.Model):
     """
     Model representing type of a barrier
     Each type belongs to one or more categories

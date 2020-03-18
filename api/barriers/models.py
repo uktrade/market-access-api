@@ -22,7 +22,7 @@ from api.metadata.constants import (
     STAGE_STATUS,
 )
 from api.core.models import BaseModel, FullyArchivableModel
-from api.metadata.models import BarrierType, BarrierPriority
+from api.metadata.models import BarrierPriority, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -123,8 +123,8 @@ class BarrierInstance(BaseModel, FullyArchivableModel):
     next_steps_summary = models.TextField(null=True)
     eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
-    barrier_types = models.ManyToManyField(
-        BarrierType, related_name="barrier_types", help_text="Barrier types"
+    categories = models.ManyToManyField(
+        Category, related_name="barriers", help_text="Barrier categories"
     )
 
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)

@@ -49,7 +49,7 @@ from api.metadata.constants import (
     TIMELINE_EVENTS,
 )
 
-from api.metadata.models import BarrierType, BarrierPriority
+from api.metadata.models import Category, BarrierPriority
 from api.metadata.utils import get_countries
 
 from api.interactions.models import Interaction
@@ -276,8 +276,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle all necessary filters on Barriers
     reported_on_before: filter start date dd-mm-yyyy
     reported_on_after: filter end date dd-mm-yyyy
-    barrier_type: int, one or more comma seperated barrier type ids
-        ex: barrier_type=1 or barrier_type=1,2
+    cateogory: int, one or more comma seperated category ids
+        ex: category=1 or category=1,2
     sector: uuid, one or more comma seperated sector UUIDs
         ex:
         sector=af959812-6095-e211-a939-e4115bead28a
@@ -298,7 +298,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
-    barrier_type = django_filters.BaseInFilter("barrier_types")
+    barrier_type = django_filters.BaseInFilter("categories")
+    category = django_filters.BaseInFilter("categories")
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.Filter(method="location_filter")
     text = django_filters.Filter(method="text_search")
@@ -311,6 +312,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         fields = [
             "export_country",
             "barrier_type",
+            "category",
             "sector",
             "reported_on",
             "status",
@@ -434,7 +436,7 @@ class BarriertListExportView(generics.ListAPIView):
             "sectors": "Sectors",
             "product": "Product",
             "scope": "Scope",
-            "barrier_types": "Barrier types",
+            "categories": "Barrier categories",
             "source": "Source",
             "team_count": "Team count",
 	        "assessment_impact": "Assessment Impact",
@@ -493,11 +495,15 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
-        barrier_types = barrier.barrier_types.all()
-        if self.request.data.get("barrier_types", None) is not None:
-            barrier_types = [
-                get_object_or_404(BarrierType, pk=barrier_type_id)
-                for barrier_type_id in self.request.data.get("barrier_types")
+        categories = barrier.categories.all()
+        category_ids = self.request.data.get(
+            "barrier_types",
+            self.request.data.get("categories", None)
+        )
+        if category_ids is not None:
+            categories = [
+                get_object_or_404(Category, pk=category_id)
+                for category_id in category_ids
             ]
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
@@ -506,7 +512,7 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             )
 
         serializer.save(
-            barrier_types=barrier_types,
+            categories=categories,
             priority=barrier_priority,
             modified_by=self.request.user,
         )

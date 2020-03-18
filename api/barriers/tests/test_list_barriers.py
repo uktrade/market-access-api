@@ -10,7 +10,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyDate
 
 from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
-from api.metadata.models import BarrierType
+from api.metadata.models import Category
 from api.metadata.constants import PROBLEM_STATUS_TYPES
 from .test_utils import TestUtils
 
@@ -526,13 +526,13 @@ class TestListBarriers(APITestMixin):
                 assert submit_response.status_code == status.HTTP_200_OK
 
                 get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-                barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
+                category = FuzzyChoice(Category.objects.all()).fuzz()
                 edit_type_response = client.put(
                     get_url,
                     format="json",
                     data={
-                        "barrier_type": barrier_type.id,
-                        "barrier_type_category": barrier_type.category,
+                        "category": category.id,
+                        "category_category": category.category,
                     },
                 )
                 assert edit_type_response.status_code == status.HTTP_200_OK
@@ -759,10 +759,10 @@ class TestListBarriers(APITestMixin):
         barriers = BarrierInstance.objects.filter(status__in=[2, 4])
         assert status_response.data["count"] == barriers.count()
 
-    def test_list_barriers_barrier_type_filter(self):
+    def test_list_barriers_category_filter(self):
         client = self.api_client
         count = 10
-        barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
+        category = FuzzyChoice(Category.objects.all()).fuzz()
         self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
         response = client.get(url)
@@ -770,12 +770,12 @@ class TestListBarriers(APITestMixin):
         assert response.data["count"] == count
 
         url = TestUtils.reverse_querystring(
-            "list-barriers", query_kwargs={"barrier_type": barrier_type.id}
+            "list-barriers", query_kwargs={"category": category.id}
         )
 
         status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.filter(barrier_types=barrier_type.id)
+        barriers = BarrierInstance.objects.filter(categories=category.id)
         assert status_response.data["count"] == barriers.count()
 
     def test_list_barriers_sector_filter(self):
@@ -970,10 +970,10 @@ class TestListBarriers(APITestMixin):
         "priority", "-priority",
         "export_country", "-export_country"
     ])
-    def test_list_barriers_barrier_type_filter_order_by_reported_on(self, order_by):
+    def test_list_barriers_category_filter_order_by_reported_on(self, order_by):
         client = self.api_client
         count = 10
-        barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
+        category = FuzzyChoice(Category.objects.all()).fuzz()
         self.add_multiple_barriers(count, client)
         url = reverse("list-barriers")
         response = client.get(url)
@@ -982,13 +982,13 @@ class TestListBarriers(APITestMixin):
 
         url = TestUtils.reverse_querystring(
             "list-barriers",
-            query_kwargs={"barrier_type": barrier_type.id, "ordering": order_by},
+            query_kwargs={"category": category.id, "ordering": order_by},
         )
 
         status_response = client.get(url)
         assert status_response.status_code == status.HTTP_200_OK
         barriers = BarrierInstance.objects.filter(
-            barrier_types=barrier_type.id
+            categories=category.id
         ).order_by(order_by)
         assert status_response.data["count"] == barriers.count()
         response_list = [b["id"] for b in status_response.data["results"]]
@@ -1187,7 +1187,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["status"]["date"] is not None
         assert barrier["status"]["summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert len(barrier["barrier_types"]) == 0
+        assert len(barrier["categories"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 1
 
@@ -1239,7 +1239,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["status"]["date"] is not None
         assert barrier["status"]["summary"] is not None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert len(barrier["barrier_types"]) == 0
+        assert len(barrier["categories"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 2
 
@@ -1294,7 +1294,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["status"]["date"] is not None
         assert barrier["status"]["summary"] is None
         assert barrier["priority"]["code"] == "UNKNOWN"
-        assert len(barrier["barrier_types"]) == 0
+        assert len(barrier["categories"]) == 0
         assert barrier["created_on"] is not None
         assert barrier["eu_exit_related"] == 3
 
