@@ -34,11 +34,11 @@ from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
 from api.core.utils import cleansed_username
 from api.barriers.exceptions import HistoryItemNotFound
-from api.barriers.history_items import (
+from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
     NotesHistoryFactory,
-    TeamHistoryFactory,
+    TeamMemberHistoryFactory,
 )
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
@@ -559,7 +559,7 @@ class BarrierFullHistory(generics.GenericAPIView):
         history = TeamMember.history.filter(
             barrier_id=self.kwargs.get("pk")
         ).order_by("user", "history_date")
-        return self.process_history(history, TeamHistoryFactory)
+        return self.process_history(history, TeamMemberHistoryFactory)
 
     def process_history(self, history, history_class):
         results = []
