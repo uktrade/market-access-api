@@ -23,10 +23,10 @@ def cleansed_username(user):
     return None
 
 
-def history_diff(new_record, old_record):
-    if hasattr(new_record, "custom_diff_against"):
-        return new_record.custom_diff_against(old_record)
-    return new_record.diff_against(old_record)
+def get_changed_fields(new_record, old_record):
+    if hasattr(new_record, "get_changed_fields"):
+        return new_record.get_changed_fields(old_record)
+    return new_record.diff_against(old_record).changed_fields
 
 
 class EchoUTF8:

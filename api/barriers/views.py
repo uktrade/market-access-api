@@ -29,11 +29,17 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from api.assessment.models import Assessment
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
-from api.core.utils import cleansed_username, history_diff
+from api.core.utils import cleansed_username
 from api.barriers.exceptions import HistoryItemNotFound
-from api.barriers.history_items import BarrierHistoryItem, NotesHistoryItem
+from api.barriers.history_items import (
+    AssessmentHistoryFactory,
+    BarrierHistoryFactory,
+    NotesHistoryFactory,
+    TeamHistoryFactory,
+)
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
@@ -523,46 +529,47 @@ class BarrierFullHistory(generics.GenericAPIView):
     def get(self, request, pk):
         barrier_history = self.get_barrier_history()
         notes_history = self.get_notes_history()
-        results = barrier_history + notes_history
+        assessment_history = self.get_assessment_history()
+        team_history = self.get_team_history()
 
-        response = {"barrier_id": str(pk), "history": results}
+        history = barrier_history + notes_history + assessment_history + team_history
+
+        response = {"barrier_id": str(pk), "history": history}
         return Response(response, status=status.HTTP_200_OK)
+
+    def get_assessment_history(self):
+        history = Assessment.history.filter(
+            barrier_id=self.kwargs.get("pk")
+        ).order_by("history_date")
+        return self.process_history(history, AssessmentHistoryFactory)
+
+    def get_barrier_history(self):
+        history = BarrierInstance.history.filter(
+            id=self.kwargs.get("pk")
+        ).order_by("history_date")
+        return self.process_history(history, BarrierHistoryFactory)
+
+    def get_notes_history(self):
+        history = Interaction.history.filter(
+            barrier_id=self.kwargs.get("pk")
+        ).order_by("id", "history_date")
+        return self.process_history(history, NotesHistoryFactory)
+
+    def get_team_history(self):
+        history = TeamMember.history.filter(
+            barrier_id=self.kwargs.get("pk")
+        ).order_by("user", "history_date")
+        return self.process_history(history, TeamHistoryFactory)
 
     def process_history(self, history, history_class):
         results = []
         old_record = None
 
         for new_record in history:
-            if new_record.history_type != "+":
-                if (
-                    old_record is not None
-                    and old_record.instance.pk == new_record.instance.pk
-                ):
-                    delta = history_diff(new_record, old_record)
-                    for change in delta.changes:
-                        try:
-                            history_item = history_class.create(change, new_record)
-                            if history_item.data is not None:
-                                results.append(history_item.data)
-                        except HistoryItemNotFound:
-                            pass
-
+            results += history_class.get_history_data(new_record, old_record)
             old_record = new_record
 
         return results
-
-    def get_barrier_history(self):
-        barrier_id = self.kwargs.get("pk")
-        barrier = BarrierInstance.barriers.get(id=barrier_id)
-        history = barrier.history.all().order_by("history_date")
-        return self.process_history(history, BarrierHistoryItem)
-
-    def get_notes_history(self):
-        barrier_id = self.kwargs.get("pk")
-        history = Interaction.history.filter(
-            barrier_id=barrier_id
-        ).order_by("id", "history_date")
-        return self.process_history(history, NotesHistoryItem)
 
 
 class BarrierStatusHistory(generics.GenericAPIView):

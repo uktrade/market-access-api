@@ -1,13 +1,13 @@
 from api.barriers.exceptions import HistoryItemNotFound
-from api.core.utils import cleansed_username
+from api.core.utils import cleansed_username, get_changed_fields
 
 
 class BaseHistoryItem:
     _data = None
 
-    def __init__(self, change, new_record):
-        self.change = change
+    def __init__(self, new_record, old_record):
         self.new_record = new_record
+        self.old_record = old_record
 
     @property
     def data(self):
@@ -18,9 +18,9 @@ class BaseHistoryItem:
     def get_data(self):
         data = {
             "date": self.new_record.history_date,
-            "field": self.change.field,
-            "old_value": self.get_value(self.change.old),
-            "new_value": self.get_value(self.change.new),
+            "field": self.field,
+            "old_value": self.get_value(self.old_record),
+            "new_value": self.get_value(self.new_record),
             "user": self._format_user(
                 self.new_record.history_user
             ),
@@ -29,8 +29,8 @@ class BaseHistoryItem:
             data['field_info'] = self.get_field_info()
         return data
 
-    def get_value(self, value):
-        return value
+    def get_value(self, record):
+        return getattr(record, self.field)
 
     def _format_user(self, user):
         if user is not None:
@@ -57,6 +57,9 @@ class ArchivedHistoryItem(BaseHistoryItem):
 class CategoriesHistoryItem(BaseHistoryItem):
     field = "categories"
 
+    def get_value(self, record):
+        return record.categories_cache
+
 
 class CompaniesHistoryItem(BaseHistoryItem):
     field = "companies"
@@ -73,13 +76,19 @@ class EUExitRelatedHistoryItem(BaseHistoryItem):
 class LocationHistoryItem(BaseHistoryItem):
     field = "location"
 
+    def get_value(self, record):
+        return {
+            "country": record.export_country,
+            "admin_areas": record.country_admin_areas,
+        }
+
 
 class PriorityHistoryItem(BaseHistoryItem):
     field = "priority"
 
-    def get_value(self, value):
-        if value:
-            return str(value)
+    def get_value(self, record):
+        if record.priority:
+            return str(record.priority)
 
     def get_field_info(self):
         return {
@@ -104,12 +113,12 @@ class StatusHistoryItem(BaseHistoryItem):
     field = "status"
 
     def get_data(self):
-        if not (self.change.old == 0 or self.change.old is None):
+        if not (self.old_record.status == 0 or self.old_record.status is None):
             return super().get_data()
 
-    def get_value(self, value):
-        if value:
-            return str(value)
+    def get_value(self, record):
+        if record.status:
+            return str(record.status)
 
     def get_field_info(self):
         return {
@@ -133,22 +142,38 @@ class HistoryItemFactory:
     class_lookup = {}
 
     @classmethod
-    def create(cls, change, new_record):
+    def create(cls, field, new_record, old_record):
         if not cls.class_lookup:
             cls.init_class_lookup()
 
-        history_item_class = cls.class_lookup.get(change.field)
+        history_item_class = cls.class_lookup.get(field)
         if not history_item_class:
             raise HistoryItemNotFound
-        return history_item_class(change, new_record)
+        return history_item_class(new_record, old_record)
 
+    @classmethod
+    def get_history_data(cls, new_record, old_record):
+        if (
+            old_record is not None
+            and old_record.instance.pk == new_record.instance.pk
+        ):
+            if new_record.history_type != "+":
+                changed_fields = get_changed_fields(new_record, old_record)
+
+                for changed_field in changed_fields:
+                    try:
+                        history_item = cls.create(changed_field, new_record, old_record)
+                        if history_item.data is not None:
+                            yield history_item.data
+                    except HistoryItemNotFound:
+                        pass
     @classmethod
     def init_class_lookup(cls):
         for history_item_class in cls.history_item_classes:
             cls.class_lookup[history_item_class.field] = history_item_class
 
 
-class BarrierHistoryItem(HistoryItemFactory):
+class BarrierHistoryFactory(HistoryItemFactory):
     """
     Polymorphic wrapper for barrier HistoryItem classes
     """
@@ -162,7 +187,7 @@ class BarrierHistoryItem(HistoryItemFactory):
     )
 
 
-class NotesHistoryItem(HistoryItemFactory):
+class NotesHistoryFactory(HistoryItemFactory):
     """
     Polymorphic wrapper for note HistoryItem classes
     """
@@ -171,3 +196,29 @@ class NotesHistoryItem(HistoryItemFactory):
     history_item_classes = (
         NoteTextHistoryItem,
     )
+
+
+class TeamMemberHistoryItem(BaseHistoryItem):
+    field = "team_member"
+
+    def get_value(self, record):
+        if record and not record.archived:
+            return {
+                "user": self._format_user(record.user),
+                "role": record.role,
+            }
+
+
+class TeamHistoryFactory:
+    """
+    Polymorphic wrapper for team HistoryItem classes
+    """
+
+    @classmethod
+    def get_history_data(cls, new_record, old_record):
+        if new_record.history_type == "+":
+            return [TeamMemberHistoryItem(new_record, None).data]
+        if new_record.history_type == "~":
+            if new_record.user == old_record.user:
+                return [TeamMemberHistoryItem(new_record, old_record).data]
+        return []

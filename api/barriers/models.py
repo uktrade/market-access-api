@@ -74,51 +74,18 @@ class BarrierHistoricalModel(models.Model):
         default=None,
     )
 
-    def custom_diff_against(self, old_history):
-        delta = self.diff_against(old_history)
+    def get_changed_fields(self, old_history):
+        changed_fields = set(self.diff_against(old_history).changed_fields)
 
         if self.categories_cache != old_history.categories_cache:
-            self.add_categories_change(delta, old_history)
+            changed_fields.add("categories")
 
-        if (
-            "export_country" in delta.changed_fields
-            or "country_admin_areas" in delta.changed_fields
-        ):
-            self.squash_location_change(delta)
+        if changed_fields.intersection(("export_country", "country_admin_areas")):
+            changed_fields.discard("export_country")
+            changed_fields.discard("country_admin_areas")
+            changed_fields.add("location")
 
-        return delta
-
-    def add_categories_change(self, delta, old_history):
-        delta.changes.append(
-            ModelChange(
-                "categories",
-                old_history.categories_cache,
-                self.categories_cache
-            )
-        )
-        delta.changed_fields.append("categories")
-
-    def squash_location_change(self, delta):
-        changes = []
-        changed_fields = []
-        old_location = {}
-        new_location = {}
-
-        for change in delta.changes:
-            if change.field == "export_country":
-                old_location['country'] = change.old
-                new_location['country'] = change.new
-            elif change.field == "country_admin_areas":
-                old_location['admin_areas'] = change.old
-                new_location['admin_areas'] = change.new
-            else:
-                changes.append(change)
-                changed_fields.append(change.field)
-
-        changes.append(ModelChange("location", old_location, new_location))
-        changed_fields.append("location")
-        delta.changes = changes
-        delta.changed_fields = changed_fields
+        return list(changed_fields)
 
     class Meta:
         abstract = True
