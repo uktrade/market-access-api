@@ -137,6 +137,30 @@ class NoteTextHistoryItem(BaseHistoryItem):
     field = "text"
 
 
+class ValueToEconomyHistoryItem(BaseHistoryItem):
+    field = "value_to_economy"
+
+
+class ImportMarketSizeHistoryItem(BaseHistoryItem):
+    field = "import_market_size"
+
+
+class CommercialValueHistoryItem(BaseHistoryItem):
+    field = "commercial_value"
+
+
+class ExportValueHistoryItem(BaseHistoryItem):
+    field = "export_value"
+
+
+class ExplanationHistoryItem(BaseHistoryItem):
+    field = "explanation"
+
+
+class ImpactHistoryItem(BaseHistoryItem):
+    field = "impact"
+
+
 class HistoryItemFactory:
     history_item_classes = tuple()
     class_lookup = {}
@@ -167,6 +191,7 @@ class HistoryItemFactory:
                             yield history_item.data
                     except HistoryItemNotFound:
                         pass
+
     @classmethod
     def init_class_lookup(cls):
         for history_item_class in cls.history_item_classes:
@@ -195,6 +220,18 @@ class NotesHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
         NoteTextHistoryItem,
+    )
+
+
+class AssessmentHistoryFactory(HistoryItemFactory):
+    """
+    Polymorphic wrapper for assessment HistoryItem classes
+    """
+
+    class_lookup = {}
+    history_item_classes = (
+        ValueToEconomyHistoryItem, CommercialValueHistoryItem, ExportValueHistoryItem,
+        ImportMarketSizeHistoryItem, ExplanationHistoryItem, ImpactHistoryItem,
     )
 
 
