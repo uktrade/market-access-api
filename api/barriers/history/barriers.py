@@ -76,6 +76,10 @@ class ProductHistoryItem(BaseHistoryItem):
     field = "product"
 
 
+class ScopeHistoryItem(BaseHistoryItem):
+    field = "problem_status"
+
+
 class SectorsHistoryItem(BaseHistoryItem):
     field = "sectors"
 
@@ -123,6 +127,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         LocationHistoryItem,
         PriorityHistoryItem,
         ProductHistoryItem,
+        ScopeHistoryItem,
         SectorsHistoryItem,
         SourceHistoryItem,
         StatusHistoryItem,
