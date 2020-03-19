@@ -4,6 +4,19 @@ from .base import BaseHistoryItem, HistoryItemFactory
 class ArchivedHistoryItem(BaseHistoryItem):
     field = "archived"
 
+    def get_value(self, record):
+        if record.archived:
+            return {
+                "archived": True,
+                "archived_reason": record.archived_reason,
+                "archived_explanation": record.archived_explanation,
+            }
+        else:
+            return {
+                "archived": False,
+                "unarchived_reason": record.unarchived_reason,
+            }
+
     def get_field_info(self):
         if self.new_record.archived is True:
             return {
