@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
@@ -13,7 +14,7 @@ from api.documents.models import AbstractEntityDocumentModel
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
-class Document(AbstractEntityDocumentModel):
+class Document(AbstractEntityDocumentModel, ArchivableModel):
     """ Document item related to interaction """
 
     size = models.IntegerField(null=True)
@@ -37,6 +38,29 @@ class InteractionManager(models.Manager):
         return super(InteractionManager, self).get_queryset().filter(Q(archived=False))
 
 
+class InteractionHistoricalModel(models.Model):
+    """
+    Abstract model for history models tracking document changes.
+    """
+    documents_cache = ArrayField(
+        JSONField(),
+        blank=True,
+        null=True,
+        default=None,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = self.diff_against(old_history).changed_fields
+
+        if self.documents_cache != old_history.documents_cache:
+            changed_fields.append("documents")
+
+        return changed_fields
+
+    class Meta:
+        abstract = True
+
+
 class Interaction(BaseModel, ArchivableModel):
     """ Interaction records for each Barrier """
 
@@ -52,7 +76,7 @@ class Interaction(BaseModel, ArchivableModel):
         Document, related_name="documents", help_text="Interaction documents"
     )
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[InteractionHistoricalModel])
 
     objects = InteractionManager()
 
