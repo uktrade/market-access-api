@@ -1,6 +1,4 @@
-import datetime
 from uuid import uuid4
-from random import randrange
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
@@ -12,11 +10,9 @@ from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
-    BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
     BARRIER_PENDING,
-    BARRIER_TYPE_CATEGORIES,
     PROBLEM_STATUS_TYPES,
     RESOLVED_STATUS,
     STAGE_STATUS,
@@ -233,6 +229,13 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
 
+    def last_seen_by(self, user_id):
+        try:
+            hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
+            return hit.last_seen
+        except BarrierUserHit.DoesNotExist:
+            return None
+
     def archive(self, user, reason=None, explanation=None):
         self.archived_explanation = explanation
         self.unarchived_by = None
@@ -261,6 +264,16 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )
+
+
+class BarrierUserHit(models.Model):
+    """Record when a user has most recently seen a barrier."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    barrier = models.ForeignKey(BarrierInstance, on_delete=models.CASCADE)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'barrier']
 
 
 class BarrierReportStage(BaseModel):
