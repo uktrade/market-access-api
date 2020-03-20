@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
@@ -21,6 +22,29 @@ class AssessmentManager(models.Manager):
         return super(AssessmentManager, self).get_queryset().filter(Q(archived=False))
 
 
+class AssessmentHistoricalModel(models.Model):
+    """
+    Abstract model for history models tracking document changes.
+    """
+    documents_cache = ArrayField(
+        JSONField(),
+        blank=True,
+        null=True,
+        default=None,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = self.diff_against(old_history).changed_fields
+
+        if self.documents_cache != old_history.documents_cache:
+            changed_fields.append("documents")
+
+        return changed_fields
+
+    class Meta:
+        abstract = True
+
+
 class Assessment(BaseModel, ArchivableModel):
     """ Assessment record for a Barrier """
 
@@ -38,7 +62,7 @@ class Assessment(BaseModel, ArchivableModel):
     export_value = models.BigIntegerField(null=True)
     is_active = models.BooleanField(default=True)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[AssessmentHistoricalModel])
 
     objects = AssessmentManager()
 

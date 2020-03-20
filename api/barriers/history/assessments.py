@@ -25,10 +25,18 @@ class ImpactHistoryItem(BaseHistoryItem):
     field = "impact"
 
 
+class DocumentsHistoryItem(BaseHistoryItem):
+    field = "documents"
+
+    def get_value(self, record):
+        return record.documents_cache
+
+
 class AssessmentHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
         CommercialValueHistoryItem,
+        DocumentsHistoryItem,
         ExplanationHistoryItem,
         ExportValueHistoryItem,
         ImpactHistoryItem,
