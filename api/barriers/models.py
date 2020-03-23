@@ -21,7 +21,7 @@ from api.metadata.constants import (
     RESOLVED_STATUS,
     STAGE_STATUS,
 )
-from api.core.models import BaseModel, FullyArchivableModel
+from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
@@ -64,7 +64,7 @@ class BarrierManager(models.Manager):
         )
 
 
-class BarrierInstance(BaseModel, FullyArchivableModel):
+class BarrierInstance(FullyArchivableMixin, BaseModel):
     """ Barrier Instance, converted from a completed and accepted Report """
 
     id = models.UUIDField(primary_key=True, default=uuid4)

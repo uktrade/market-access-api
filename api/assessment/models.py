@@ -6,7 +6,7 @@ from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import ASSESMENT_IMPACT
-from api.core.models import ArchivableModel, BaseModel
+from api.core.models import ArchivableMixin, BaseModel
 from api.barriers.models import BarrierInstance
 from api.documents.models import AbstractEntityDocumentModel
 from api.interactions.models import Document
@@ -21,7 +21,7 @@ class AssessmentManager(models.Manager):
         return super(AssessmentManager, self).get_queryset().filter(Q(archived=False))
 
 
-class Assessment(BaseModel, ArchivableModel):
+class Assessment(ArchivableMixin, BaseModel):
     """ Assessment record for a Barrier """
 
     barrier = models.OneToOneField(

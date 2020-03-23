@@ -46,7 +46,7 @@ class BaseModel(models.Model):
         return cleansed_username(user)
 
 
-class ArchivableModel(models.Model):
+class ArchivableMixin(models.Model):
     """Handle model archivation."""
 
     archived = models.BooleanField(default=False)
@@ -80,8 +80,7 @@ class ArchivableModel(models.Model):
         self.save()
 
 
-class FullyArchivableModel(ArchivableModel):
-    """ Archivable model with extra fields for explanation and unarchiving."""
+class FullyArchivableMixin(ArchivableMixin):
     """ Archivable mixin with extra fields for unarchiving."""
 
     unarchived_reason = models.TextField(blank=True, null=True)

@@ -6,7 +6,7 @@ from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
-from api.core.models import ArchivableModel, BaseModel
+from api.core.models import ArchivableMixin, BaseModel
 from api.barriers.models import BarrierInstance
 from api.documents.models import AbstractEntityDocumentModel
 
@@ -37,7 +37,7 @@ class InteractionManager(models.Manager):
         return super(InteractionManager, self).get_queryset().filter(Q(archived=False))
 
 
-class Interaction(BaseModel, ArchivableModel):
+class Interaction(ArchivableMixin, BaseModel):
     """ Interaction records for each Barrier """
 
     barrier = models.ForeignKey(
