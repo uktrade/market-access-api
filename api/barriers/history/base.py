@@ -42,6 +42,10 @@ class BaseHistoryItem:
 
 
 class HistoryItemFactory:
+    """
+    Base class for generating history items for a barrier
+    """
+
     history_item_classes = tuple()
     class_lookup = {}
 
@@ -56,7 +60,30 @@ class HistoryItemFactory:
         return history_item_class(new_record, old_record)
 
     @classmethod
-    def get_history_data(cls, new_record, old_record):
+    def get_history(cls, barrier_id):
+        """ Fetch the history for a model """
+        raise NotImplementedError
+
+    @classmethod
+    def get_history_items(cls, barrier_id, fields=[]):
+        """ Gets HistoryItems for all changes made to the object"""
+        history_items = []
+        history = cls.get_history(barrier_id)
+        old_record = None
+
+        for new_record in history:
+            history_items += cls.create_history_items(new_record, old_record, fields)
+            old_record = new_record
+
+        return history_items
+
+    @classmethod
+    def create_history_items(cls, new_record, old_record, fields=[]):
+        """
+        Create a HistoryItem to reflect each change made to the object
+
+        If `fields` is supplied, only changes to those fields will be returned.
+        """
         if (
             old_record is not None
             and old_record.instance.pk == new_record.instance.pk
@@ -65,14 +92,18 @@ class HistoryItemFactory:
                 changed_fields = get_changed_fields(new_record, old_record)
 
                 for changed_field in changed_fields:
-                    try:
-                        history_item = cls.create(changed_field, new_record, old_record)
-                        if history_item.data is not None:
-                            yield history_item.data
-                    except HistoryItemNotFound:
-                        pass
+                    if not fields or changed_field in fields:
+                        try:
+                            history_item = cls.create(changed_field, new_record, old_record)
+                            if history_item.data is not None:
+                                yield history_item
+                        except HistoryItemNotFound:
+                            pass
 
     @classmethod
     def init_class_lookup(cls):
+        """
+        Initialise the class lookup so classes can be quickly fetched based on field
+        """
         for history_item_class in cls.history_item_classes:
             cls.class_lookup[history_item_class.field] = history_item_class

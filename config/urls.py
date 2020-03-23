@@ -6,6 +6,7 @@ from api.metadata.views import MetadataView
 from api.ping.views import ping
 from api.barriers.views import (
     barrier_count,
+    BarrierActivity,
     BarrierDetail,
     BarrierHibernate,
     BarrierFullHistory,
@@ -62,6 +63,7 @@ urlpatterns += [
         BarrierStatusHistory.as_view(),
         name="status-history",
     ),
+    path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),
     path(
         "barriers/<uuid:pk>/resolve-in-full", BarrierResolveInFull.as_view(), name="resolve-in-full"
     ),

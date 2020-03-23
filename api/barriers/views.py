@@ -524,7 +524,40 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
         )
 
 
-class BarrierFullHistory(generics.GenericAPIView):
+class HistoryMixin:
+    """
+    Mixin for getting barrier history items
+    """
+
+    def get_assessment_history(self, fields=[]):
+        return AssessmentHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+    def get_barrier_history(self, fields=[]):
+        return BarrierHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+    def get_notes_history(self, fields=[]):
+        return NotesHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+    def get_team_history(self, fields=[]):
+        return TeamMemberHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+
+class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
+    """
+    Full audit history of changes made to a barrier and related models
+    """
 
     def get(self, request, pk):
         barrier_history = self.get_barrier_history()
@@ -532,47 +565,54 @@ class BarrierFullHistory(generics.GenericAPIView):
         assessment_history = self.get_assessment_history()
         team_history = self.get_team_history()
 
-        history = barrier_history + notes_history + assessment_history + team_history
+        history_items = (
+            barrier_history + notes_history + assessment_history + team_history
+        )
 
-        response = {"barrier_id": str(pk), "history": history}
+        response = {
+            "barrier_id": str(pk),
+            "history": [item.data for item in history_items],
+        }
         return Response(response, status=status.HTTP_200_OK)
 
-    def get_assessment_history(self):
-        history = Assessment.history.filter(
-            barrier_id=self.kwargs.get("pk")
-        ).order_by("history_date")
-        return self.process_history(history, AssessmentHistoryFactory)
 
-    def get_barrier_history(self):
-        history = BarrierInstance.history.filter(
-            id=self.kwargs.get("pk")
-        ).order_by("history_date")
-        return self.process_history(history, BarrierHistoryFactory)
+class BarrierActivity(HistoryMixin, generics.GenericAPIView):
+    """
+    Returns history items used on the barrier activity stream
 
-    def get_notes_history(self):
-        history = Interaction.history.filter(
-            barrier_id=self.kwargs.get("pk")
-        ).order_by("id", "history_date")
-        return self.process_history(history, NotesHistoryFactory)
+    This will supersede the BarrierStatusHistory view below.
+    """
 
-    def get_team_history(self):
-        history = TeamMember.history.filter(
-            barrier_id=self.kwargs.get("pk")
-        ).order_by("user", "history_date")
-        return self.process_history(history, TeamMemberHistoryFactory)
+    def get(self, request, pk):
+        barrier_history = self.get_barrier_history(
+            fields=["archived", "priority", "status"],
+        )
+        assessment_history = self.get_assessment_history(
+            fields=[
+                "commercial_value",
+                "export_value",
+                "impact",
+                "import_market_size",
+                "value_to_economy",
+            ]
+        )
 
-    def process_history(self, history, history_class):
-        results = []
-        old_record = None
+        history_items = barrier_history + assessment_history
 
-        for new_record in history:
-            results += history_class.get_history_data(new_record, old_record)
-            old_record = new_record
-
-        return results
+        response = {
+            "barrier_id": str(pk),
+            "history": [item.data for item in history_items],
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class BarrierStatusHistory(generics.GenericAPIView):
+    """
+    Returns history items used on the barrier activity stream
+
+    This will be deprecated in favour of the BarrierActivity view above.
+    """
+
     def _format_user(self, user):
         if user is not None:
             return {"id": user.id, "name": cleansed_username(user)}

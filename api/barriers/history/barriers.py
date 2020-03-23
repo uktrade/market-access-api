@@ -1,3 +1,4 @@
+from api.barriers.models import BarrierInstance
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
@@ -137,3 +138,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         StatusHistoryItem,
         TitleHistoryItem,
     )
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        return BarrierInstance.history.filter(id=barrier_id).order_by("history_date")

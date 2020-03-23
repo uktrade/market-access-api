@@ -1,3 +1,4 @@
+from api.interactions.models import Interaction
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
@@ -22,3 +23,9 @@ class NotesHistoryFactory(HistoryItemFactory):
         DocumentsHistoryItem,
         NoteTextHistoryItem,
     )
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        return Interaction.history.filter(
+            barrier_id=barrier_id
+        ).order_by("id", "history_date")

@@ -1,3 +1,4 @@
+from api.assessment.models import Assessment
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
@@ -47,3 +48,7 @@ class AssessmentHistoryFactory(HistoryItemFactory):
         ImportMarketSizeHistoryItem,
         ValueToEconomyHistoryItem,
     )
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        return Assessment.history.filter(barrier_id=barrier_id).order_by("history_date")
