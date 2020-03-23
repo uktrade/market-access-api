@@ -1,35 +1,39 @@
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
-class ValueToEconomyHistoryItem(BaseHistoryItem):
-    field = "value_to_economy"
+class BaseAssessmentHistoryItem(BaseHistoryItem):
+    model = "assessment"
 
 
-class ImportMarketSizeHistoryItem(BaseHistoryItem):
-    field = "import_market_size"
-
-
-class CommercialValueHistoryItem(BaseHistoryItem):
+class CommercialValueHistoryItem(BaseAssessmentHistoryItem):
     field = "commercial_value"
 
 
-class ExportValueHistoryItem(BaseHistoryItem):
-    field = "export_value"
-
-
-class ExplanationHistoryItem(BaseHistoryItem):
-    field = "explanation"
-
-
-class ImpactHistoryItem(BaseHistoryItem):
-    field = "impact"
-
-
-class DocumentsHistoryItem(BaseHistoryItem):
+class DocumentsHistoryItem(BaseAssessmentHistoryItem):
     field = "documents"
 
     def get_value(self, record):
         return record.documents_cache
+
+
+class ExplanationHistoryItem(BaseAssessmentHistoryItem):
+    field = "explanation"
+
+
+class ExportValueHistoryItem(BaseAssessmentHistoryItem):
+    field = "export_value"
+
+
+class ImpactHistoryItem(BaseAssessmentHistoryItem):
+    field = "impact"
+
+
+class ImportMarketSizeHistoryItem(BaseAssessmentHistoryItem):
+    field = "import_market_size"
+
+
+class ValueToEconomyHistoryItem(BaseAssessmentHistoryItem):
+    field = "value_to_economy"
 
 
 class AssessmentHistoryFactory(HistoryItemFactory):

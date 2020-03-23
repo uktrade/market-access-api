@@ -1,11 +1,15 @@
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
-class NoteTextHistoryItem(BaseHistoryItem):
+class BaseNoteHistoryItem(BaseHistoryItem):
+    model = "note"
+
+
+class NoteTextHistoryItem(BaseNoteHistoryItem):
     field = "text"
 
 
-class DocumentsHistoryItem(BaseHistoryItem):
+class DocumentsHistoryItem(BaseNoteHistoryItem):
     field = "documents"
 
     def get_value(self, record):

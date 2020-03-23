@@ -600,6 +600,7 @@ class BarrierStatusHistory(generics.GenericAPIView):
                                     event = TIMELINE_REVERTED["Barrier Status Change"]
                                     status_change = {
                                         "date": new_record.history_date,
+                                        "model": "barrier",
                                         "field": change.field,
                                         "old_value": str(change.old),
                                         "new_value": str(change.new),
@@ -617,6 +618,7 @@ class BarrierStatusHistory(generics.GenericAPIView):
                             elif change.field == "priority":
                                 status_change = {
                                     "date": new_record.history_date,
+                                    "model": "barrier",
                                     "field": change.field,
                                     "old_value": str(change.old),
                                     "new_value": str(change.new),
@@ -631,6 +633,7 @@ class BarrierStatusHistory(generics.GenericAPIView):
                             elif change.field == "archived":
                                 status_change = {
                                     "date": new_record.history_date,
+                                    "model": "barrier",
                                     "field": change.field,
                                     "old_value": change.old,
                                     "new_value": change.new,

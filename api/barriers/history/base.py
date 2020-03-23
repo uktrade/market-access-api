@@ -19,6 +19,7 @@ class BaseHistoryItem:
     def get_data(self):
         data = {
             "date": self.new_record.history_date,
+            "model": self.model,
             "field": self.field,
             "old_value": self.get_value(self.old_record),
             "new_value": self.get_value(self.new_record),

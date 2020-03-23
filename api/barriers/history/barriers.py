@@ -1,7 +1,11 @@
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
-class ArchivedHistoryItem(BaseHistoryItem):
+class BaseBarrierHistoryItem(BaseHistoryItem):
+    model = "barrier"
+
+
+class ArchivedHistoryItem(BaseBarrierHistoryItem):
     field = "archived"
 
     def get_value(self, record):
@@ -29,26 +33,26 @@ class ArchivedHistoryItem(BaseHistoryItem):
             }
 
 
-class CategoriesHistoryItem(BaseHistoryItem):
+class CategoriesHistoryItem(BaseBarrierHistoryItem):
     field = "categories"
 
     def get_value(self, record):
         return record.categories_cache
 
 
-class CompaniesHistoryItem(BaseHistoryItem):
+class CompaniesHistoryItem(BaseBarrierHistoryItem):
     field = "companies"
 
 
-class DescriptionHistoryItem(BaseHistoryItem):
+class DescriptionHistoryItem(BaseBarrierHistoryItem):
     field = "problem_description"
 
 
-class EUExitRelatedHistoryItem(BaseHistoryItem):
+class EUExitRelatedHistoryItem(BaseBarrierHistoryItem):
     field = "eu_exit_related"
 
 
-class LocationHistoryItem(BaseHistoryItem):
+class LocationHistoryItem(BaseBarrierHistoryItem):
     field = "location"
 
     def get_value(self, record):
@@ -58,7 +62,7 @@ class LocationHistoryItem(BaseHistoryItem):
         }
 
 
-class PriorityHistoryItem(BaseHistoryItem):
+class PriorityHistoryItem(BaseBarrierHistoryItem):
     field = "priority"
 
     def get_value(self, record):
@@ -72,23 +76,23 @@ class PriorityHistoryItem(BaseHistoryItem):
         }
 
 
-class ProductHistoryItem(BaseHistoryItem):
+class ProductHistoryItem(BaseBarrierHistoryItem):
     field = "product"
 
 
-class ScopeHistoryItem(BaseHistoryItem):
+class ScopeHistoryItem(BaseBarrierHistoryItem):
     field = "problem_status"
 
 
-class SectorsHistoryItem(BaseHistoryItem):
+class SectorsHistoryItem(BaseBarrierHistoryItem):
     field = "sectors"
 
 
-class SourceHistoryItem(BaseHistoryItem):
+class SourceHistoryItem(BaseBarrierHistoryItem):
     field = "source"
 
 
-class StatusHistoryItem(BaseHistoryItem):
+class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
 
     def get_data(self):
@@ -108,7 +112,7 @@ class StatusHistoryItem(BaseHistoryItem):
         }
 
 
-class TitleHistoryItem(BaseHistoryItem):
+class TitleHistoryItem(BaseBarrierHistoryItem):
     field = "barrier_title"
 
 

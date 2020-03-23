@@ -2,7 +2,8 @@ from .base import BaseHistoryItem, HistoryItemFactory
 
 
 class TeamMemberHistoryItem(BaseHistoryItem):
-    field = "team_member"
+    model = "team_member"
+    field = "user"
 
     def get_value(self, record):
         if record and not record.archived:
