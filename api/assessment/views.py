@@ -119,6 +119,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
         barrier_history = barrier.history.all().order_by("history_date")
         assessment = get_object_or_404(Assessment, barrier=barrier)
         assess_history = assessment.history.all().order_by("history_date")
+        status_change = None
         results = []
         old_record = None
         timeline_fields = ["impact", "value_to_economy", "import_market_size", "commercial_value", "export_value"]
