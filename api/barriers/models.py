@@ -267,7 +267,7 @@ class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="progress", on_delete=models.PROTECT
+        BarrierInstance, related_name="progress", on_delete=models.CASCADE
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
     status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)

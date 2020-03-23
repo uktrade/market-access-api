@@ -21,7 +21,7 @@ class TeamMember(ArchivableMixin, BaseModel):
     """ TeamMember records for each Barrier """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="barrier_team", on_delete=models.PROTECT
+        BarrierInstance, related_name="barrier_team", on_delete=models.CASCADE
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

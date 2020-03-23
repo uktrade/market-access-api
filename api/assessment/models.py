@@ -25,7 +25,7 @@ class Assessment(ArchivableMixin, BaseModel):
     """ Assessment record for a Barrier """
 
     barrier = models.OneToOneField(
-        BarrierInstance, on_delete=models.PROTECT
+        BarrierInstance, on_delete=models.CASCADE
     )
     impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, null=True)
     explanation = models.TextField(null=True)

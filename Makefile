@@ -24,7 +24,7 @@ django-shell: ## Drop into django's shell (with iphython).
 
 .PHONY: django-test
 django-test: ## Run django tests.
-	docker-compose exec web bash -c "python3.6 /usr/src/app/manage.py test"
+	docker-compose exec web bash -c "python3.6 -m pytest api"
 
 .PHONY: django-tests-coverage
 django-tests-coverage: ## Run django tests and generate coverage report.
