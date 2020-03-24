@@ -21,11 +21,12 @@ from api.metadata.constants import (
     RESOLVED_STATUS,
     STAGE_STATUS,
 )
-from api.core.models import ArchivableModel, BaseModel
+from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierType, BarrierPriority
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
+from api.metadata.constants import BARRIER_ARCHIVED_REASON
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -59,11 +60,11 @@ class BarrierManager(models.Manager):
         return (
             super(BarrierManager, self)
             .get_queryset()
-            .filter(~Q(status=0) & Q(archived=False))
+            .filter(~Q(status=0))
         )
 
 
-class BarrierInstance(BaseModel, ArchivableModel):
+class BarrierInstance(FullyArchivableMixin, BaseModel):
     """ Barrier Instance, converted from a completed and accepted Report """
 
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -173,6 +174,10 @@ class BarrierInstance(BaseModel, ArchivableModel):
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting",
     )
+    archived_reason = models.CharField(
+        choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
+    )
+    archived_explanation = models.TextField(blank=True, null=True)
 
     history = HistoricalRecords()
 
@@ -213,12 +218,27 @@ class BarrierInstance(BaseModel, ArchivableModel):
         return self
 
     @property
+    def archived_user(self):
+        return self._cleansed_username(self.archived_by)
+
+    @property
+    def unarchived_user(self):
+        return self._cleansed_username(self.unarchived_by)
+
+    @property
     def created_user(self):
         return self._cleansed_username(self.created_by)
 
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+    def archive(self, user, reason=None, explanation=None):
+        self.archived_explanation = explanation
+        self.unarchived_by = None
+        self.unarchived_on = None
+        self.unarchived_reason = ""
+        super().archive(user, reason)
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None

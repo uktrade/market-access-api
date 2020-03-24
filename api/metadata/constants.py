@@ -95,3 +95,9 @@ ASSESMENT_IMPACT = Choices(
     ("MEDIUMLOW", "Medium Low"),
     ("LOW", "Low"),
 )
+
+BARRIER_ARCHIVED_REASON = Choices(
+    ("DUPLICATE", "Duplicate"),
+    ("NOT_A_BARRIER", "Not a barrier"),
+    ("OTHER", "Other"),
+)

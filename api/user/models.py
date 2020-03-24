@@ -6,8 +6,6 @@ from django.contrib.postgres.fields import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from api.core.models import ArchivableModel
-
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

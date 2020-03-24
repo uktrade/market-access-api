@@ -6,7 +6,7 @@ from django.db import models, transaction
 from django.utils.timezone import now
 from model_utils import Choices
 
-from api.core.models import ArchivableModel, BaseModel
+from api.core.models import ArchivableMixin, BaseModel
 from api.documents.tasks import virus_scan_document
 from api.documents.utils import sign_s3_url
 
@@ -23,7 +23,7 @@ UPLOAD_STATUSES = Choices(
 )
 
 
-class Document(BaseModel, ArchivableModel):
+class Document(ArchivableMixin, BaseModel):
     """General model for keeping track of user uploaded documents."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)

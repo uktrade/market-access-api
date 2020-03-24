@@ -22,6 +22,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.widgets import BooleanWidget
 
 from rest_framework import filters, generics, status, serializers, viewsets
 from rest_framework.decorators import api_view
@@ -282,7 +283,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     status: int, one or more status id's.
         ex: status=1 or status=1,2
     location: UUID, one or more comma seperated overseas region/country/state UUIDs
-        ex: 
+        ex:
         location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc
         location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc,955f66a0-5d95-e211-a939-e4115bead28a
     priority: priority code, one or more comma seperated priority codes
@@ -301,6 +302,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
+    archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
 
     class Meta:
         model = BarrierInstance
@@ -311,6 +313,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             "reported_on",
             "status",
             "priority",
+            "archived",
         ]
 
     def sector_filter(self, queryset, name, value):
@@ -579,11 +582,12 @@ class BarrierInstanceHistory(generics.GenericAPIView):
                         )
             old_record = new_record
             response = {"barrier_id": pk, "history": results}
+
         return Response(response, status=status.HTTP_200_OK)
 
 
 class BarrierStatusHistory(generics.GenericAPIView):
-    def _format_user(self, user):	
+    def _format_user(self, user):
         if user is not None:
             return {"id": user.id, "name": cleansed_username(user)}
 
@@ -591,7 +595,7 @@ class BarrierStatusHistory(generics.GenericAPIView):
 
     def get(self, request, pk):
         status_field = "status"
-        timeline_fields = ["status", "priority"]
+        timeline_fields = ["status", "priority", "archived"]
         barrier = BarrierInstance.barriers.get(id=pk)
         history = barrier.history.all().order_by("history_date")
         results = []
@@ -638,10 +642,30 @@ class BarrierStatusHistory(generics.GenericAPIView):
                                         "priority_summary": new_record.priority_summary,
                                     },
                                 }
+                            elif change.field == "archived":
+                                status_change = {
+                                    "date": new_record.history_date,
+                                    "field": change.field,
+                                    "old_value": change.old,
+                                    "new_value": change.new,
+                                    "user": self._format_user(
+                                        new_record.history_user
+                                    ),
+                                }
+                                if change.new is True:
+                                    status_change["field_info"] = {
+                                        "archived_reason": new_record.archived_reason,
+                                        "archived_explanation": new_record.archived_explanation,
+                                    }
+                                else:
+                                    status_change["field_info"] = {
+                                        "unarchived_reason": new_record.unarchived_reason,
+                                    }
                     if status_change:
                         results.append(status_change)
             old_record = new_record
         response = {"barrier_id": str(pk), "history": results}
+
         return Response(response, status=status.HTTP_200_OK)
 
 
