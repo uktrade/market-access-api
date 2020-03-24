@@ -57,6 +57,18 @@ class InteractionHistoricalModel(models.Model):
 
         return changed_fields
 
+    def update_documents(self):
+        self.documents_cache = [
+            {
+                "id": str(document["id"]),
+                "name": document["original_filename"],
+            } for document in instance.documents.values("id", "original_filename")
+        ]
+
+    def save(self, *args, **kwargs):
+        self.update_documents()
+        super().save(*args, **kwargs)
+
     class Meta:
         abstract = True
 

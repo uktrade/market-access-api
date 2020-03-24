@@ -87,6 +87,15 @@ class BarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
+    def update_categories(self):
+        self.categories_cache = list(
+            self.instance.categories.values_list("id", flat=True)
+        )
+
+    def save(self, *args, **kwargs):
+        self.update_categories()
+        super().save(*args, **kwargs)
+
     class Meta:
         abstract = True
 
