@@ -107,6 +107,8 @@ ENV/
 
 # Local DB
 db/
+db_old/
+docker/local/postgres/*_local_data_*
 
 .DS_Store
 
