@@ -8,6 +8,7 @@ def assessment_documents_changed(sender, instance, action, **kwargs):
     Ensure the historical record saves a copy of the documents.
     """
     if action in ("post_add", "post_remove"):
+        instance.save()
         historical_instance = HistoricalAssessment.objects.filter(id=instance.pk).latest()
         historical_instance.documents_cache = [
             {

@@ -37,7 +37,7 @@ from api.barriers.exceptions import HistoryItemNotFound
 from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
-    NotesHistoryFactory,
+    NoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
 from api.barriers.models import BarrierInstance, BarrierReportStage
@@ -542,7 +542,7 @@ class HistoryMixin:
         )
 
     def get_notes_history(self, fields=[]):
-        return NotesHistoryFactory.get_history_items(
+        return NoteHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
         )

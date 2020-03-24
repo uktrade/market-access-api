@@ -1,0 +1,39 @@
+[
+    {
+        "model": "interactions.document",
+        "pk": "eda7ee4e-4786-4507-a0ed-05a10169764b",
+        "fields": {
+            "created_on": "2018-11-29T14:51:25.942Z",
+            "modified_on": "2018-11-29T14:51:25.952Z",
+            "created_by": 1,
+            "modified_by": null,
+            "archived": false,
+            "archived_on": null,
+            "archived_reason": null,
+            "archived_by": null,
+            "original_filename": "cat.jpg",
+            "document": "d3cbc427-9fd0-4785-86ba-e50b5b4763bf",
+            "size": null,
+            "mime_type": null,
+            "detached": false
+        }
+    }, {
+        "model": "interactions.document",
+        "pk": "fdb0624e-a549-4f70-b9a2-68896e4d1141",
+        "fields": {
+            "created_on": "2019-03-20T15:26:40.235Z",
+            "modified_on": "2019-03-20T15:26:40.254Z",
+            "created_by": 1,
+            "modified_by": null,
+            "archived": false,
+            "archived_on": null,
+            "archived_reason": null,
+            "archived_by": null,
+            "original_filename": "dog.jpg",
+            "document": "f3e5ca2b-e300-4364-b61b-95a8d0594d80",
+            "size": 2849757,
+            "mime_type": null,
+            "detached": false
+        }
+    }
+]

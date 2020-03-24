@@ -14,10 +14,10 @@ class DocumentsHistoryItem(BaseNoteHistoryItem):
     field = "documents"
 
     def get_value(self, record):
-        return record.documents_cache
+        return record.documents_cache or []
 
 
-class NotesHistoryFactory(HistoryItemFactory):
+class NoteHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
         DocumentsHistoryItem,

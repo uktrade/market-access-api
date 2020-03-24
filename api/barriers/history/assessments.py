@@ -14,7 +14,7 @@ class DocumentsHistoryItem(BaseAssessmentHistoryItem):
     field = "documents"
 
     def get_value(self, record):
-        return record.documents_cache
+        return record.documents_cache or []
 
 
 class ExplanationHistoryItem(BaseAssessmentHistoryItem):

@@ -38,7 +38,7 @@ class CategoriesHistoryItem(BaseBarrierHistoryItem):
     field = "categories"
 
     def get_value(self, record):
-        return record.categories_cache
+        return record.categories_cache or []
 
 
 class CompaniesHistoryItem(BaseBarrierHistoryItem):
@@ -58,8 +58,10 @@ class LocationHistoryItem(BaseBarrierHistoryItem):
 
     def get_value(self, record):
         return {
-            "country": record.export_country,
-            "admin_areas": record.country_admin_areas,
+            "country": str(record.export_country),
+            "admin_areas":  [
+                str(admin_area) for admin_area in record.country_admin_areas or []
+            ],
         }
 
 
@@ -87,6 +89,9 @@ class ScopeHistoryItem(BaseBarrierHistoryItem):
 
 class SectorsHistoryItem(BaseBarrierHistoryItem):
     field = "sectors"
+
+    def get_value(self, record):
+        return [str(sector_id) for sector_id in record.sectors or []]
 
 
 class SourceHistoryItem(BaseBarrierHistoryItem):

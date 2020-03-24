@@ -1,0 +1,40 @@
+[
+    {
+        "model": "barriers.barrierinstance",
+        "pk": "c33dad08-b09c-4e19-ae1a-be47796a8882",
+        "fields": {
+            "created_on": "2020-03-01T10:00:00.000Z",
+            "modified_on": "2020-03-01T10:00:00.000Z",
+            "created_by": 1,
+            "modified_by": 1,
+            "archived": false,
+            "code": "B-19-MIB",
+            "problem_status": 2,
+            "is_resolved": false,
+            "resolved_date": null,
+            "resolved_status": null,
+            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "country_admin_areas": "[]",
+            "sectors_affected": true,
+            "all_sectors": null,
+            "sectors": "[\"af959812-6095-e211-a939-e4115bead28a\", \"9538cecc-5f95-e211-a939-e4115bead28a\"]",
+            "companies": null,
+            "product": "Some product",
+            "source": "OTHER",
+            "other_source": "Other source",
+            "barrier_title": "Some title",
+            "problem_description": "Some problem_description",
+            "next_steps_summary": "Test",
+            "eu_exit_related": 1,
+            "reported_on": "2020-03-01T10:00:00.000Z",
+            "status": 1,
+            "sub_status": null,
+            "sub_status_other": null,
+            "status_summary": null,
+            "status_date": "2019-04-09",
+            "priority": null,
+            "priority_summary": null,
+            "priority_date": "2019-04-24T10:08:24.174Z"
+        }
+    }
+]
