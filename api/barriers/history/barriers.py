@@ -22,17 +22,6 @@ class ArchivedHistoryItem(BaseBarrierHistoryItem):
                 "unarchived_reason": record.unarchived_reason,
             }
 
-    def get_field_info(self):
-        if self.new_record.archived is True:
-            return {
-                "archived_reason": self.new_record.archived_reason,
-                "archived_explanation": self.new_record.archived_explanation,
-            }
-        else:
-            return {
-                "unarchived_reason": self.new_record.unarchived_reason,
-            }
-
 
 class CategoriesHistoryItem(BaseBarrierHistoryItem):
     field = "categories"
@@ -69,13 +58,9 @@ class PriorityHistoryItem(BaseBarrierHistoryItem):
     field = "priority"
 
     def get_value(self, record):
-        if record.priority:
-            return str(record.priority)
-
-    def get_field_info(self):
         return {
-            "priority_date": self.new_record.priority_date,
-            "priority_summary": self.new_record.priority_summary,
+            "priority": str(record.priority),
+            "priority_summary": record.priority_summary,
         }
 
 
@@ -97,6 +82,12 @@ class SectorsHistoryItem(BaseBarrierHistoryItem):
 class SourceHistoryItem(BaseBarrierHistoryItem):
     field = "source"
 
+    def get_value(self, record):
+        return {
+            "source": record.source,
+            "other_source": record.other_source,
+        }
+
 
 class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
@@ -106,15 +97,12 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
             return super().get_data()
 
     def get_value(self, record):
-        if record.status:
-            return str(record.status)
-
-    def get_field_info(self):
         return {
-            "status_date": self.new_record.status_date,
-            "status_summary": self.new_record.status_summary,
-            "sub_status": self.new_record.sub_status,
-            "sub_status_other": self.new_record.sub_status_other,
+            "status": str(record.status),
+            "status_date": record.status_date,
+            "status_summary": record.status_summary,
+            "sub_status": record.sub_status,
+            "sub_status_other":record.sub_status_other,
         }
 
 
