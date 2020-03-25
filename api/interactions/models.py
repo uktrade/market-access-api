@@ -52,7 +52,9 @@ class InteractionHistoricalModel(models.Model):
     def get_changed_fields(self, old_history):
         changed_fields = self.diff_against(old_history).changed_fields
 
-        if self.documents_cache != old_history.documents_cache:
+        new_document_ids = [doc["id"] for doc in self.documents_cache or []]
+        old_document_ids = [doc["id"] for doc in old_history.documents_cache or []]
+        if set(new_document_ids) != set(old_document_ids):
             changed_fields.append("documents")
 
         return changed_fields
@@ -62,7 +64,7 @@ class InteractionHistoricalModel(models.Model):
             {
                 "id": str(document["id"]),
                 "name": document["original_filename"],
-            } for document in instance.documents.values("id", "original_filename")
+            } for document in self.instance.documents.values("id", "original_filename")
         ]
 
     def save(self, *args, **kwargs):

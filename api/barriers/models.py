@@ -77,7 +77,7 @@ class BarrierHistoricalModel(models.Model):
     def get_changed_fields(self, old_history):
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
-        if self.categories_cache != old_history.categories_cache:
+        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
 
         if changed_fields.intersection(("export_country", "country_admin_areas")):
