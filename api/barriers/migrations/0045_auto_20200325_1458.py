@@ -24,7 +24,7 @@ def populate_categories_history(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0042_auto_20200318_1220'),
+        ('barriers', '0044_auto_20200325_1220'),
     ]
 
     operations = [
