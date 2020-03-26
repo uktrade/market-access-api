@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.metadata.models import BarrierType
+from api.metadata.models import Category
 
 
 def add_multiple_barriers(count, client):
@@ -58,13 +58,13 @@ def add_multiple_barriers(count, client):
             assert submit_response.status_code == status.HTTP_200_OK
 
             get_url = reverse("get-barrier", kwargs={"pk": instance_id})
-            barrier_type = FuzzyChoice(BarrierType.objects.all()).fuzz()
+            category = FuzzyChoice(Category.objects.all()).fuzz()
             edit_type_response = client.put(
                 get_url,
                 format="json",
                 data={
-                    "barrier_type": barrier_type.id,
-                    "barrier_type_category": barrier_type.category,
+                    "barrier_type": category.id,
+                    "barrier_type_category": category.category,
                 },
             )
             assert edit_type_response.status_code == status.HTTP_200_OK
