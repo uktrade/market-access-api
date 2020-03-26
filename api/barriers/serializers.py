@@ -1,14 +1,8 @@
-from datetime import datetime
-from django.conf import settings
-
 from django.core.cache import cache
-from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
-from rest_framework.utils import model_meta
 
 from api.barriers.models import BarrierInstance
-from api.core.validate_utils import DataCombiner
 from api.metadata.constants import (
     ADV_BOOLEAN,
     ASSESMENT_IMPACT,
@@ -18,13 +12,14 @@ from api.metadata.constants import (
     STAGE_STATUS,
     PROBLEM_STATUS_TYPES
 )
-from api.core.validate_utils import DataCombiner
+
 from api.metadata.utils import (
     get_admin_areas,
     get_countries,
     get_sectors,
 )
 from api.collaboration.models import TeamMember
+from api.barriers.models import BarrierUserHit
 
 # pylint: disable=R0201
 
@@ -351,6 +346,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     has_assessment = serializers.SerializerMethodField()
+    last_seen_on = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -393,6 +389,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_reason",
             "unarchived_on",
             "unarchived_by",
+            "last_seen_on",
         )
         read_only_fields = (
             "id",
@@ -407,6 +404,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "archived_by",
             "unarchived_on",
             "unarchived_by",
+            "last_seen_on",
         )
         depth = 1
 
@@ -460,6 +458,22 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         if field_name in source2:
             return source2[field_name]
         return None
+
+    def get_last_seen_on(self, obj):
+        user = None
+        hit = None
+        last_seen = None
+
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            user = request.user
+            hit, _created = BarrierUserHit.objects.get_or_create(user=user, barrier=obj)
+            last_seen = hit.last_seen
+
+        if user:
+            hit.save()
+
+        return last_seen
 
     def validate(self, data):
         """

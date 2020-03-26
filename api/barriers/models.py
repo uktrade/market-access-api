@@ -1,6 +1,4 @@
-import datetime
 from uuid import uuid4
-from random import randrange
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
@@ -12,20 +10,19 @@ from simple_history.models import HistoricalRecords, ModelChange
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
-    BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
     BARRIER_PENDING,
-    BARRIER_TYPE_CATEGORIES,
     PROBLEM_STATUS_TYPES,
     RESOLVED_STATUS,
     STAGE_STATUS,
 )
-from api.core.models import BaseModel, FullyArchivableModel
+from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
+from api.metadata.constants import BARRIER_ARCHIVED_REASON
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -100,7 +97,7 @@ class BarrierHistoricalModel(models.Model):
         abstract = True
 
 
-class BarrierInstance(BaseModel, FullyArchivableModel):
+class BarrierInstance(FullyArchivableMixin, BaseModel):
     """ Barrier Instance, converted from a completed and accepted Report """
 
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -210,6 +207,10 @@ class BarrierInstance(BaseModel, FullyArchivableModel):
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting",
     )
+    archived_reason = models.CharField(
+        choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
+    )
+    archived_explanation = models.TextField(blank=True, null=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
@@ -265,6 +266,20 @@ class BarrierInstance(BaseModel, FullyArchivableModel):
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
 
+    def last_seen_by(self, user_id):
+        try:
+            hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
+            return hit.last_seen
+        except BarrierUserHit.DoesNotExist:
+            return None
+
+    def archive(self, user, reason=None, explanation=None):
+        self.archived_explanation = explanation
+        self.unarchived_by = None
+        self.unarchived_on = None
+        self.unarchived_reason = ""
+        super().archive(user, reason)
+
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
@@ -288,11 +303,21 @@ class BarrierInstance(BaseModel, FullyArchivableModel):
         )
 
 
+class BarrierUserHit(models.Model):
+    """Record when a user has most recently seen a barrier."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    barrier = models.ForeignKey(BarrierInstance, on_delete=models.CASCADE)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'barrier']
+
+
 class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="progress", on_delete=models.PROTECT
+        BarrierInstance, related_name="progress", on_delete=models.CASCADE
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
     status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)

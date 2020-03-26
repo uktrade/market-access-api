@@ -57,6 +57,7 @@ LOCAL_APPS = [
     "api.collaboration",
     "authbroker_client",
     "api.user_event_log",
+    "api.dataset",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -230,6 +231,10 @@ if HAWK_ENABLED:
     DATAHUB_HAWK_KEY = os.environ.get('DH_HAWK_KEY')
     DATAHUB_HAWK_ALGORITHM = os.environ.get('DH_HAWK_ALGORITHM', 'sha256')
 
+    DATA_WORKSPACE_HAWK_ID = os.environ.get("DATA_WORKSPACE_HAWK_ID")
+    DATA_WORKSPACE_HAWK_KEY = os.environ.get("DATA_WORKSPACE_HAWK_KEY")
+    DATA_WORKSPACE_HAWK_ALGORITHM = os.environ.get("DATA_WORKSPACE_HAWK_ALGORITHM", "sha256")
+
     HAWK_CREDENTIALS = {
         HAWK_ID: {
             "id": HAWK_ID,
@@ -240,7 +245,12 @@ if HAWK_ENABLED:
             "id": DATAHUB_HAWK_ID,
             "key": DATAHUB_HAWK_KEY,
             "algorithm": DATAHUB_HAWK_ALGORITHM,
-        }
+        },
+        DATA_WORKSPACE_HAWK_ID: {
+            "id": DATA_WORKSPACE_HAWK_ID,
+            "key": DATA_WORKSPACE_HAWK_KEY,
+            "algorithm": DATA_WORKSPACE_HAWK_ALGORITHM,
+        },
     }
 
 SLACK_WEBHOOK = env("SLACK_WEBHOOK", default="")

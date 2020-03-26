@@ -7,7 +7,7 @@ from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import ASSESMENT_IMPACT
-from api.core.models import ArchivableModel, BaseModel
+from api.core.models import ArchivableMixin, BaseModel
 from api.barriers.models import BarrierInstance
 from api.documents.models import AbstractEntityDocumentModel
 from api.interactions.models import Document
@@ -59,11 +59,11 @@ class AssessmentHistoricalModel(models.Model):
         abstract = True
 
 
-class Assessment(BaseModel, ArchivableModel):
+class Assessment(ArchivableMixin, BaseModel):
     """ Assessment record for a Barrier """
 
     barrier = models.OneToOneField(
-        BarrierInstance, on_delete=models.PROTECT
+        BarrierInstance, on_delete=models.CASCADE
     )
     impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, null=True)
     explanation = models.TextField(null=True)

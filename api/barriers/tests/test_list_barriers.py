@@ -493,7 +493,7 @@ class TestListBarriers(APITestMixin):
                 start_date=datetime.date.today() - datetime.timedelta(days=45),
                 end_date=datetime.date.today(),
             ).evaluate(2, None, False)
-            with freeze_time(date):
+            with freeze_time(date + datetime.timedelta(seconds=count)):
                 list_report_url = reverse("list-reports")
                 list_report_response = client.post(
                     list_report_url,

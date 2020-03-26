@@ -2,8 +2,6 @@
 
 from django.db import migrations
 
-from api.metadata.constants import ARCHIVED_REASON
-
 
 def populate_archived_reason(apps, schema_editor):
     BarrierInstance = apps.get_model('barriers', 'BarrierInstance')
@@ -11,7 +9,7 @@ def populate_archived_reason(apps, schema_editor):
         archived=True,
         archived_reason__isnull=True,
     ).update(
-        archived_reason=ARCHIVED_REASON.OTHER,
+        archived_reason="OTHER",
         archived_explanation="Archive reason unknown"
     )
 
@@ -20,7 +18,7 @@ def unpopulate_archived_reason(apps, schema_editor):
     BarrierInstance = apps.get_model('barriers', 'BarrierInstance')
     BarrierInstance.objects.filter(
         archived=True,
-        archived_reason=ARCHIVED_REASON.OTHER,
+        archived_reason="OTHER",
         archived_explanation="Archive reason unknown",
     ).update(
         archived_reason=None,
