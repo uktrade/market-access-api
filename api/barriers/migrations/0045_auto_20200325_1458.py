@@ -25,6 +25,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('barriers', '0044_auto_20200325_1220'),
+        ('metadata', '0012_auto_20200318_1036'),
     ]
 
     operations = [
