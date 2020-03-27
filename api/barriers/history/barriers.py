@@ -58,8 +58,11 @@ class PriorityHistoryItem(BaseBarrierHistoryItem):
     field = "priority"
 
     def get_value(self, record):
+        priority = record.priority
+        if priority is not None:
+            priority = str(priority)
         return {
-            "priority": str(record.priority),
+            "priority": priority,
             "priority_summary": record.priority_summary,
         }
 

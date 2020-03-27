@@ -488,12 +488,12 @@ class TestListBarriers(APITestMixin):
             "a75f66a0-5d95-e211-a939-e4115bead28a",
             "ad5f66a0-5d95-e211-a939-e4115bead28a",
         ]
-        for _ in range(count):
+        for i in range(count):
             date = FuzzyDate(
                 start_date=datetime.date.today() - datetime.timedelta(days=45),
                 end_date=datetime.date.today(),
             ).evaluate(2, None, False)
-            with freeze_time(date + datetime.timedelta(seconds=count)):
+            with freeze_time(date + datetime.timedelta(seconds=i)):
                 list_report_url = reverse("list-reports")
                 list_report_response = client.post(
                     list_report_url,

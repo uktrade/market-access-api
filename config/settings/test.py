@@ -4,8 +4,11 @@ from .base import *
 DEBUG = True
 DJANGO_ENV = 'test'
 
-SSO_ENABLED = False
+SSO_ENABLED = True
 HAWK_ENABLED = False
+FAKE_METADATA = True
+REDIS_BASE_URL: 'redis://localhost'
+AV_V2_SERVICE_URL: 'https://test:secret@av-api/scan'
 
 LOGGING = {
     "version": 1,
@@ -26,7 +29,6 @@ INSTALLED_APPS += [
     "api.documents.test.my_entity_document",
 ]
 
-AV_V2_SERVICE_URL = "http://av-service/"
 DOCUMENT_BUCKET = "test-bucket"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
 

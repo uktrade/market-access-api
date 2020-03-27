@@ -75,7 +75,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["sectors"] == ['Advanced Engineering', 'Aerospace']
         assert barrier["product"] == "Some product"
         assert barrier["scope"] == "A strategic barrier likely to affect multiple exports or sectors"
-        assert barrier["barrier_types"] == []
+        assert barrier["categories"] == []
         assert barrier["source"] == "Other"
         assert barrier["team_count"] == 1
         assert barrier["resolved_date"] == datetime.date(2018, 9, 10)

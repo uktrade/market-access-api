@@ -298,6 +298,10 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
                     loop_num += 1
                 else:
                     raise ValueError("Error generating a unique reference code.")
+
+        if self.source != BARRIER_SOURCE.OTHER:
+            self.other_source = None
+
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )

@@ -98,6 +98,7 @@ class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
                 docs_to_add = [get_object_or_404(Document, pk=id) for id in docs_in_req]
             docs_to_detach = list(set(interaction.documents.all()) - set(docs_to_add))
             serializer.save(documents=docs_to_add, modified_by=self.request.user)
+            interaction = self.get_object()
             for doc in docs_to_detach:
                 interaction.documents.remove(doc)
                 doc.detached = True

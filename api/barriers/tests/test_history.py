@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 from freezegun import freeze_time
 from rest_framework import status
@@ -123,8 +125,14 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "priority"
-        assert data["old_value"] is None
-        assert data["new_value"] == "HIGH"
+        assert data["old_value"] == {
+            "priority": None,
+            "priority_summary": None,
+        }
+        assert data["new_value"] == {
+            "priority": "HIGH",
+            "priority_summary": None,
+        }
 
     def test_product_history(self):
         self.barrier.product = "New product"
@@ -140,6 +148,8 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
     def test_status_history(self):
         self.barrier.status = 5
+        self.barrier.status_summary = "Summary"
+        self.barrier.sub_status = "UK_GOVT"
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
@@ -147,8 +157,20 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "status"
-        assert data["old_value"] == "1"
-        assert data["new_value"] == "5"
+        assert data["old_value"] == {
+            "status": "1",
+            "status_date":  datetime.date(2019, 4, 9),
+            "status_summary": None,
+            "sub_status": None,
+            "sub_status_other": None,
+        }
+        assert data["new_value"] == {
+            "status": "5",
+            "status_date":  datetime.date(2019, 4, 9),
+            "status_summary": "Summary",
+            "sub_status": "UK_GOVT",
+            "sub_status_other": None,
+        }
 
     def test_scope_history(self):
         self.barrier.problem_status = 1
@@ -186,8 +208,14 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "source"
-        assert data["old_value"] == "OTHER"
-        assert data["new_value"] == "COMPANY"
+        assert data["old_value"] == {
+            "source": "OTHER",
+            "other_source": "Other source",
+        }
+        assert data["new_value"] == {
+            "source": "COMPANY",
+            "other_source": None,
+        }
 
     def test_title_history(self):
         self.barrier.barrier_title = "New title"
@@ -425,6 +453,8 @@ class TestHistoryView(APITestMixin, TestCase):
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
+        self.barrier.status_summary = "Summary"
+        self.barrier.sub_status = "UK_GOVT"
         self.barrier.problem_status = 1
         self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.source = "COMPANY"
@@ -478,11 +508,7 @@ class TestHistoryView(APITestMixin, TestCase):
                 "archived_reason": "DUPLICATE",
                 "archived_explanation": "It was a duplicate"
             },
-            "user": None,
-            "field_info": {
-                "archived_reason": "DUPLICATE",
-                "archived_explanation": "It was a duplicate"
-            }
+            "user": None
         } in history
 
         assert {
@@ -522,15 +548,21 @@ class TestHistoryView(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "status",
-            "old_value": "1",
-            "new_value": "5",
-            "user": None,
-            "field_info": {
-                "status_date": "2019-04-09",
+            "old_value": {
+                "status": "1",
+                "status_date":  "2019-04-09",
                 "status_summary": None,
                 "sub_status": None,
-                "sub_status_other": None
-            }
+                "sub_status_other": None,
+            },
+            "new_value": {
+                "status": "5",
+                "status_date": "2019-04-09",
+                "status_summary": "Summary",
+                "sub_status": "UK_GOVT",
+                "sub_status_other": None,
+            },
+            "user": None,
         } in history
 
         assert {
@@ -546,21 +578,29 @@ class TestHistoryView(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "priority",
-            "old_value": None,
-            "new_value": "HIGH",
+            "old_value": {
+                "priority": None,
+                "priority_summary": None,
+            },
+            "new_value": {
+                "priority": "HIGH",
+                "priority_summary": None,
+            },
             "user": None,
-            "field_info": {
-                "priority_date": "2020-04-01T00:00:00Z",
-                "priority_summary": None
-            }
         } in history
 
         assert {
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "source",
-            "old_value": "OTHER",
-            "new_value": "COMPANY",
+            "old_value": {
+                "source": "OTHER",
+                "other_source": "Other source",
+            },
+            "new_value": {
+                "source": "COMPANY",
+                "other_source": None,
+            },
             "user": None
         } in history
 
