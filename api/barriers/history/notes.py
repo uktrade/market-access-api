@@ -5,27 +5,21 @@ from .base import BaseHistoryItem, HistoryItemFactory
 class BaseNoteHistoryItem(BaseHistoryItem):
     model = "note"
 
-    def get_new_value(self):
-        if self.new_record.archived:
-            return self.empty_value
-        return super().get_new_value()
-
-    def get_old_value(self):
-        if self.new_record.archived:
-            return super().get_old_value()
-        return self.empty_value
-
 
 class NoteTextHistoryItem(BaseNoteHistoryItem):
     field = "text"
-    empty_value = ""
 
+    def get_value(self, record):
+        if record.archived:
+            return ""
+        return record.text or ""
 
 class DocumentsHistoryItem(BaseNoteHistoryItem):
     field = "documents"
-    empty_value = []
 
     def get_value(self, record):
+        if record.archived:
+            return []
         return record.documents_cache or []
 
 

@@ -35,7 +35,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         )
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "archived"
@@ -53,7 +53,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.categories.add("109", "115")
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "categories"
@@ -65,7 +65,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "companies"
@@ -77,7 +77,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "problem_description"
@@ -89,7 +89,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "eu_exit_related"
@@ -103,7 +103,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "location"
@@ -121,7 +121,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "priority"
@@ -139,7 +139,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "product"
@@ -153,7 +153,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "status"
@@ -177,7 +177,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "problem_status"
@@ -189,7 +189,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "sectors"
@@ -204,7 +204,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "source"
@@ -222,7 +222,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "barrier"
         assert data["field"] == "barrier_title"
@@ -252,7 +252,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.save()
 
         items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "assessment"
         assert data["field"] == "explanation"
@@ -264,7 +264,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.save()
 
         items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "assessment"
         assert data["field"] == "impact"
@@ -276,7 +276,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
 
         items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
 
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "assessment"
         assert data["field"] == "documents"
@@ -293,7 +293,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.save()
 
         items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "assessment"
         assert data["field"] == "commercial_value"
@@ -305,7 +305,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.save()
 
         items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "assessment"
         assert data["field"] == "export_value"
@@ -317,7 +317,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.save()
 
         items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "assessment"
         assert data["field"] == "import_market_size"
@@ -329,7 +329,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.save()
 
         items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "assessment"
         assert data["field"] == "value_to_economy"
@@ -355,7 +355,7 @@ class TestNoteHistory(APITestMixin, TestCase):
         self.note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
 
         items = NoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "note"
         assert data["field"] == "documents"
@@ -372,7 +372,7 @@ class TestNoteHistory(APITestMixin, TestCase):
         self.note.save()
 
         items = NoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "note"
         assert data["field"] == "text"
@@ -397,7 +397,7 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
         )
 
         items = TeamMemberHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[0].data
+        data = items[-1].data
 
         assert data["model"] == "team_member"
         assert data["field"] == "user"
@@ -438,10 +438,6 @@ class TestHistoryView(APITestMixin, TestCase):
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == {
-            "barrier_id": "c33dad08-b09c-4e19-ae1a-be47796a8882",
-            "history": [],
-        }
 
         # Barrier changes
         self.barrier.categories.add("109", "115")
