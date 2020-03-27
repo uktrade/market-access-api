@@ -137,8 +137,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     sectors = ArrayField(
         models.UUIDField(),
         blank=True,
-        null=True,
-        default=None,
+        null=False,
+        default=list,
         help_text="list of sectors that are affected",
     )
     companies = JSONField(
