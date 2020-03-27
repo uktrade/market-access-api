@@ -40,10 +40,6 @@ class TestActivityView(APITestMixin, TestCase):
         url = reverse("activity", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data == {
-            'barrier_id': 'c33dad08-b09c-4e19-ae1a-be47796a8882',
-            'history': [],
-        }
 
         # Barrier changes
         self.barrier.categories.add("109", "115")

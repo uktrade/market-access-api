@@ -1181,7 +1181,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["resolved_date"] is None
         assert barrier["barrier_title"] == "Some title"
         assert barrier["sectors_affected"] == False
-        assert barrier["sectors"] is None
+        assert barrier["sectors"] == []
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
         assert barrier["status"]["id"] == 7
         assert barrier["status"]["date"] is not None
@@ -1233,7 +1233,7 @@ class TestListBarriers(APITestMixin):
         assert barrier["resolved_date"] is not None
         assert barrier["barrier_title"] == "Some title"
         assert barrier["sectors_affected"] == False
-        assert barrier["sectors"] is None
+        assert barrier["sectors"] == []
         assert barrier["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
         assert barrier["status"]["id"] == 4
         assert barrier["status"]["date"] is not None
