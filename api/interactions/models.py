@@ -46,11 +46,19 @@ class InteractionHistoricalModel(models.Model):
         JSONField(),
         blank=True,
         null=True,
-        default=None,
+        default=list,
     )
 
     def get_changed_fields(self, old_history):
         changed_fields = self.diff_against(old_history).changed_fields
+
+        if "archived" in changed_fields:
+            if self.documents_cache:
+                return ["text", "documents"]
+            return ["text"]
+
+        if "documents" in changed_fields:
+            changed_fields.remove("documents")
 
         new_document_ids = [doc["id"] for doc in self.documents_cache or []]
         old_document_ids = [doc["id"] for doc in old_history.documents_cache or []]

@@ -21,8 +21,8 @@ class BaseHistoryItem:
             "date": self.new_record.history_date,
             "model": self.model,
             "field": self.field,
-            "old_value": self.get_value(self.old_record),
-            "new_value": self.get_value(self.new_record),
+            "old_value": self.get_old_value(),
+            "new_value": self.get_new_value(),
             "user": self._format_user(
                 self.new_record.history_user
             ),
@@ -30,6 +30,12 @@ class BaseHistoryItem:
         if hasattr(self, "get_field_info"):
             data['field_info'] = self.get_field_info()
         return data
+
+    def get_new_value(self):
+        return self.get_value(self.new_record)
+
+    def get_old_value(self):
+        return self.get_value(self.old_record)
 
     def get_value(self, record):
         return getattr(record, self.field)
@@ -48,6 +54,7 @@ class HistoryItemFactory:
 
     history_item_classes = tuple()
     class_lookup = {}
+    history_types = ("+", "-", "~")
 
     @classmethod
     def create(cls, field, new_record, old_record):
@@ -84,21 +91,37 @@ class HistoryItemFactory:
 
         If `fields` is supplied, only changes to those fields will be returned.
         """
-        if (
-            old_record is not None
-            and old_record.instance.pk == new_record.instance.pk
-        ):
-            if new_record.history_type != "+":
-                changed_fields = get_changed_fields(new_record, old_record)
+        if not cls.is_valid_change(new_record, old_record):
+            return
 
-                for changed_field in changed_fields:
-                    if not fields or changed_field in fields:
-                        try:
-                            history_item = cls.create(changed_field, new_record, old_record)
-                            if history_item.data is not None:
-                                yield history_item
-                        except HistoryItemNotFound:
-                            pass
+        if new_record.history_type == "+":
+            old_record = new_record.__class__()
+
+        changed_fields = get_changed_fields(new_record, old_record)
+
+        for changed_field in changed_fields:
+            if not fields or changed_field in fields:
+                try:
+                    history_item = cls.create(changed_field, new_record, old_record)
+                    if history_item.data is not None:
+                        yield history_item
+                except HistoryItemNotFound:
+                    pass
+
+    @classmethod
+    def is_valid_change(cls, new_record, old_record):
+        if new_record.history_type not in cls.history_types:
+            return False
+
+        if new_record.history_type == "~":
+            if (
+                old_record is None or old_record.instance.pk != new_record.instance.pk
+            ):
+                return False
+
+        if new_record.history_type == "-":
+            return False
+        return True
 
     @classmethod
     def init_class_lookup(cls):

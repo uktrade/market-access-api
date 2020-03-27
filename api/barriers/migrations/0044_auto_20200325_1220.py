@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='historicalbarrierinstance',
             name='categories_cache',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=20), blank=True, default=None, null=True, size=None),
+            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=20), blank=True, default=list, null=True, size=None),
         ),
         migrations.AlterField(
             model_name='historicalbarrierinstance',

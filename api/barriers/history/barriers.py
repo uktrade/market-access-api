@@ -41,6 +41,10 @@ class DescriptionHistoryItem(BaseBarrierHistoryItem):
 class EUExitRelatedHistoryItem(BaseBarrierHistoryItem):
     field = "eu_exit_related"
 
+    def get_data(self):
+        if self.old_record.eu_exit_related:
+            return super().get_data()
+
 
 class LocationHistoryItem(BaseBarrierHistoryItem):
     field = "location"
@@ -77,6 +81,10 @@ class ScopeHistoryItem(BaseBarrierHistoryItem):
 
 class SectorsHistoryItem(BaseBarrierHistoryItem):
     field = "sectors"
+
+    def get_data(self):
+        if self.old_record or self.new_record:
+            return super().get_data()
 
     def get_value(self, record):
         return [str(sector_id) for sector_id in record.sectors or []]
@@ -134,6 +142,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         StatusHistoryItem,
         TitleHistoryItem,
     )
+    history_types = ("~", )
 
     @classmethod
     def get_history(cls, barrier_id):

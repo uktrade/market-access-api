@@ -68,7 +68,7 @@ class BarrierHistoricalModel(models.Model):
         models.CharField(max_length=20),
         blank=True,
         null=True,
-        default=None,
+        default=list,
     )
 
     def get_changed_fields(self, old_history):
