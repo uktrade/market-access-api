@@ -8,7 +8,7 @@ SSO_ENABLED = True
 HAWK_ENABLED = False
 FAKE_METADATA = True
 REDIS_BASE_URL: 'redis://localhost'
-AV_V2_SERVICE_URL: 'https://test:secret@av-api/scan'
+AV_V2_SERVICE_URL = "http://av-service/"
 
 LOGGING = {
     "version": 1,
