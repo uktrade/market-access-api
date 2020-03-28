@@ -1,23 +1,26 @@
 import json
 import os
 import requests
+
 from urlobject import URLObject
 
 from django.conf import settings
 
-from api.metadata.constants import (
-    BARRIER_TYPE_CATEGORIES
-)
-from api.metadata.models import Category, BarrierPriority
+from mohawk import Sender
+
 from api.barriers.models import Stage
 
-from mohawk import Sender
+from .constants import BARRIER_TYPE_CATEGORIES
+from .models import Category, BarrierPriority, BarrierTag
+from .serializers import BarrierTagSerializer
 
 
 def import_api_results(endpoint):
     # Avoid calling DH
     fake_it = settings.FAKE_METADATA
     if fake_it:
+        # TODO: fake all metadata, not just a part of it
+        #       currently only a few countries are made available
         file_path = os.path.join(settings.BASE_DIR, f"static/{endpoint}.json")
         return json.loads(open(file_path).read())
 
@@ -46,6 +49,7 @@ def import_api_results(endpoint):
 
     return None
 
+
 def get_os_regions_and_countries():
     dh_countries = import_api_results("country")
     dh_os_regions = []
@@ -56,15 +60,19 @@ def get_os_regions_and_countries():
                 dh_os_regions.append(item["overseas_region"])
     return dh_os_regions, dh_countries
 
+
 def get_countries():
     dh_regions, dh_countries = get_os_regions_and_countries()
     return dh_countries
 
+
 def get_admin_areas():
     return import_api_results("administrative-area")
 
+
 def get_sectors():
     return import_api_results("sector")
+
 
 def get_categories():
     barrier_goods = [
@@ -87,16 +95,31 @@ def get_categories():
     ]
     return barrier_goods + barrier_services
 
+
+def get_barrier_tags():
+    tags = BarrierTag.objects.all()
+    serializer = BarrierTagSerializer(tags, many=True)
+    return serializer.data
+
+
+def adjust_barrier_tags(barrier, tag_ids):
+    if type(tag_ids) is list:
+        tags = BarrierTag.objects.filter(id__in=tag_ids)
+        barrier.tags.set(tags)
+
+
 def get_barrier_priorities():
     return [
         {"code": priority.code, "name": priority.name, "order": priority.order}
         for priority in BarrierPriority.objects.all()
     ]
 
+
 def get_barrier_type_categories():
     return dict(
         (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
     )
+
 
 def get_reporting_stages():
     return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))

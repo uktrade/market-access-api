@@ -38,14 +38,6 @@ class DescriptionHistoryItem(BaseBarrierHistoryItem):
     field = "problem_description"
 
 
-class EUExitRelatedHistoryItem(BaseBarrierHistoryItem):
-    field = "eu_exit_related"
-
-    def get_data(self):
-        if self.old_record.eu_exit_related:
-            return super().get_data()
-
-
 class LocationHistoryItem(BaseBarrierHistoryItem):
     field = "location"
 
@@ -117,6 +109,13 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
         }
 
 
+class TagsHistoryItem(BaseBarrierHistoryItem):
+    field = "tags"
+
+    def get_value(self, record):
+        return record.tags_cache or []
+
+
 class TitleHistoryItem(BaseBarrierHistoryItem):
     field = "barrier_title"
 
@@ -132,7 +131,6 @@ class BarrierHistoryFactory(HistoryItemFactory):
         CategoriesHistoryItem,
         CompaniesHistoryItem,
         DescriptionHistoryItem,
-        EUExitRelatedHistoryItem,
         LocationHistoryItem,
         PriorityHistoryItem,
         ProductHistoryItem,
@@ -140,6 +138,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         SectorsHistoryItem,
         SourceHistoryItem,
         StatusHistoryItem,
+        TagsHistoryItem,
         TitleHistoryItem,
     )
     history_types = ("~", "+")

@@ -2,9 +2,9 @@ from django.core.cache import cache
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import BarrierInstance, BarrierUserHit
+from api.collaboration.models import TeamMember
 from api.metadata.constants import (
-    ADV_BOOLEAN,
     ASSESMENT_IMPACT,
     BARRIER_SOURCE,
     BARRIER_STATUS,
@@ -12,14 +12,13 @@ from api.metadata.constants import (
     STAGE_STATUS,
     PROBLEM_STATUS_TYPES
 )
-
+from api.metadata.serializers import BarrierTagSerializer
 from api.metadata.utils import (
+    adjust_barrier_tags,
     get_admin_areas,
     get_countries,
     get_sectors,
 )
-from api.collaboration.models import TeamMember
-from api.barriers.models import BarrierUserHit
 
 # pylint: disable=R0201
 
@@ -38,6 +37,7 @@ class BarrierReportStageListingField(serializers.RelatedField):
 class BarrierReportSerializer(serializers.ModelSerializer):
     progress = BarrierReportStageListingField(many=True, read_only=True)
     created_by = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -61,12 +61,12 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "barrier_title",
             "problem_description",
             "next_steps_summary",
-            "eu_exit_related",
             "progress",
             "created_by",
             "created_on",
             "modified_by",
             "modified_on",
+            "tags",
         )
         read_only_fields = (
             "id",
@@ -84,23 +84,28 @@ class BarrierReportSerializer(serializers.ModelSerializer):
 
         return {"id": obj.created_by.id, "name": obj.created_user}
 
-    # def validate(self, data):
-    #     """
-    #     Performs cross-field validation
-    #     """
-    #     combiner = DataCombiner(self.instance, data)
+    def get_tags(self, obj):
+        tags = obj.tags.all()
+        serializer = BarrierTagSerializer(tags, many=True)
+        return serializer.data
 
-    #     sectors_affected = combiner.get_value('sectors_affected')
-    #     all_sectors = combiner.get_value('all_sectors')
-    #     sectors = combiner.get_value('sectors')
+    def validate_tags(self, tag_ids=None):
+        if tag_ids is not None and type(tag_ids) is not list:
+            raise serializers.ValidationError('Expected a list of tag IDs.')
 
-    #     if sectors_affected and all_sectors is None and sectors is None:
-    #         raise serializers.ValidationError('missing data')
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        # Tags
+        tag_ids = self.context["request"].data.get("tags")
+        self.validate_tags(tag_ids)
 
-    #     if sectors_affected and all_sectors and sectors:
-    #         raise serializers.ValidationError('conflicting input')
+        return attrs
 
-    #     return data
+    def save(self, *args, **kwargs):
+        barrier = super().save(*args, **kwargs)
+        # Tags
+        tag_ids = self.initial_data.get("tags")
+        adjust_barrier_tags(barrier, tag_ids)
 
 
 class BarrierCsvExportSerializer(serializers.Serializer):
@@ -237,11 +242,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_categories(self, obj):
         return [category.title for category in obj.categories.all()]
 
-    def get_eu_exit_related(self, obj):
-        """  Custom Serializer Method Field for exposing current eu_exit_related display value """
-        eu_dict = dict(ADV_BOOLEAN)
-        return eu_dict.get(obj.eu_exit_related, "Unknown")
-
     def get_source(self, obj):
         """  Custom Serializer Method Field for exposing source display value """
         source_dict = dict(BARRIER_SOURCE)
@@ -264,6 +264,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
     priority = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
+    tags = BarrierTagSerializer(many=True)
 
     class Meta:
         model = BarrierInstance
@@ -278,12 +279,12 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "sectors",
             "export_country",
             "country_admin_areas",
-            "eu_exit_related",
             "status",
             "status_date",
             "status_summary",
             "priority",
             "categories",
+            "tags",
             "created_on",
             "modified_on",
             "archived",
@@ -326,6 +327,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -353,7 +355,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "status_date",
             "priority",
             "priority_summary",
-            "eu_exit_related",
             "has_assessment",
             "created_on",
             "modified_by",
@@ -367,6 +368,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_on",
             "unarchived_by",
             "last_seen_on",
+            "tags",
         )
         read_only_fields = (
             "id",
@@ -452,29 +454,23 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
         return last_seen
 
-    def validate(self, data):
-        """
-        Performs cross-field validation
-        status validations:
-        if status_summary is provided, status_date is mandatory
-            when current status is Resolved
-         if status_date is provided, status_summary is also expected
-        """
-        # status_summary = data.get('status_summary', None)
-        # status_date = data.get('status_date', None)
-        # if status_date is not None and status_summary is None:
-        #     raise serializers.ValidationError('missing data')
+    def get_tags(self, obj):
+        tags = obj.tags.all()
+        serializer = BarrierTagSerializer(tags, many=True)
+        return serializer.data
 
+    def validate_tags(self, tag_ids=None):
+        if tag_ids is not None and type(tag_ids) is not list:
+            raise serializers.ValidationError('Expected a list of tag IDs.')
 
-        # if status_summary is not None:
-        #     barrier = BarrierInstance.objects.get(id=self.instance.id)
-        #     if barrier.status == 4:
-        #         if status_date is None:
-        #             raise serializers.ValidationError('missing data')
-        #     else:
-        #         # ignore status_date if provided
-        #         data["status_date"] = getattr(self.instance, "status_date")
-        return data
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        # Tags
+        tag_ids = self.context["request"].data.get("tags")
+        self.validate_tags(tag_ids)
+
+        return attrs
 
     def update(self, instance, validated_data):
         if instance.archived is False and validated_data.get("archived") is True:
@@ -492,7 +488,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
     def save(self, *args, **kwargs):
         self.user = kwargs.get("modified_by")
-        super().save(*args, **kwargs)
+        barrier = super().save(*args, **kwargs)
+        # Tags
+        tag_ids = self.initial_data.get("tags")
+        adjust_barrier_tags(barrier, tag_ids)
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
