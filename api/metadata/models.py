@@ -1,10 +1,10 @@
 import json
-from uuid import uuid4
 
 from django.db import models
 from django.db.models import Q
 
 from api.metadata.constants import BARRIER_TYPE_CATEGORIES
+from api.core.models import BaseModel
 
 
 class GoodsManager(models.Manager):
@@ -46,8 +46,28 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
+    # TODO: remove - looks like this is not being used
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+class BarrierTag(BaseModel):
+    """
+    Model representing tags that can be applied to barriers.
+    """
+    title = models.CharField(max_length=25, unique=True)
+    description = models.CharField(
+        blank=True,
+        max_length=250,
+        help_text="Additional information about the tag to be shown to the end users. (optional)"
+    )
+    show_at_reporting = models.BooleanField(
+        default=False,
+        help_text="When set to True the tag is shown as an option during barrier reporting flow."
+    )
+
+    def __str__(self):
+        return self.title
 
 
 class BarrierPriority(models.Model):
@@ -63,5 +83,6 @@ class BarrierPriority(models.Model):
     def __str__(self):
         return self.code
 
+    # TODO: remove - looks like this is not being used
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)

@@ -24,7 +24,7 @@ django-shell: ## Drop into django's shell (with iphython).
 
 .PHONY: django-test
 django-test: ## Run django tests.
-	docker-compose exec web bash -c "python3.6 -m pytest api"
+	docker-compose exec web bash -c "python3.6 -m pytest tests/$(path) -p no:sugar"
 
 .PHONY: django-tests-coverage
 django-tests-coverage: ## Run django tests and generate coverage report.
@@ -69,6 +69,24 @@ pip-install: ## Install pip requirements inside the container.
 pip-deptree: ## Output pip dependecy tree.
 	@echo "$$(tput setaf 0)$$(tput setab 2)  🌳  Pip Dependency Tree  🌳   $$(tput sgr 0)"
 	@docker-compose exec web bash -c "pip3.6 install pipdeptree && pipdeptree -fl"
+
+__dumpfile := market_access_$(shell date +%Y%m%d_%H%M).gz
+.PHONY: pg-dump
+pg-dump: ## Creates a DB backup in ./db_dumps folder.
+	@echo "$$(tput setaf 3)🥟   Creating dump file ./db_dumps/$(__dumpfile)  🙈"
+	@docker-compose exec db bash -c "mkdir -p /var/lib/postgresql/dumps && pg_dump -U postgres market_access | gzip > /var/lib/postgresql/dumps/$(__dumpfile)"
+
+dumpfile =
+.PHONY: restore-db
+restore-db: ## Restores a DB backup
+ifeq ($(dumpfile),)
+	@echo "⚠️   Please use  dumpfile=<file-name>  to provide a filename from ./db_dumps"
+	@echo "You may pick from the following:\n"
+	@ls -1 ./db_dumps
+else
+	@echo "$$(tput setaf 3)🥟   Restoring DB from ./db_dumps/$(dumpfile)  🙈\n"
+	@docker-compose exec db bash -c "./docker-entrypoint-initdb.d/utils/drop_db_dmas_api.sh && ./docker-entrypoint-initdb.d/utils/create_db_dmas_api.sh && ./docker-entrypoint-initdb.d/utils/restore_dump_dmas_api.sh $(dumpfile)"
+endif
 
 
 # SSH COMMANDS (to debug via ssh)

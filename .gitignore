@@ -107,6 +107,7 @@ ENV/
 
 # Local DB
 db/
+db_dumps/
 db_old/
 docker/local/postgres/*_local_data_*
 

@@ -312,6 +312,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
+    tags = django_filters.Filter(method="tags_filter")
 
     class Meta:
         model = BarrierInstance
@@ -396,6 +397,10 @@ class BarrierFilterSet(django_filters.FilterSet):
                 Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
             ).distinct()
         return queryset
+
+    def tags_filter(self, queryset, name, value):
+        tag_ids = value.split(",")
+        return queryset.filter(tags__in=tag_ids)
 
 
 class BarrierList(generics.ListAPIView):
