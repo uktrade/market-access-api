@@ -43,8 +43,7 @@ def add_multiple_barriers(count, client):
                     "other_source": "Other source",
                     "barrier_title": "Some test title",
                     "problem_description": "Some test problem_description",
-                    "status_summary": "some status summary",
-                    "eu_exit_related": 1,
+                    "status_summary": "some status summary"
                 },
             )
 

@@ -46,14 +46,6 @@ class TestCategories(APITestMixin):
         assert response.data["stage_status"] is not None
         assert json.dumps(response.data["stage_status"]) == json.dumps(expected)
 
-    def test_adv_boolean(self):
-        expected = {"1": "Yes", "2": "No", "3": "Dont know"}
-        url = reverse("metadata")
-        response = self.api_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["adv_boolean"] is not None
-        assert json.dumps(response.data["adv_boolean"]) == json.dumps(expected)
-
     def test_govt_response(self):
         expected = {
             "1": "None, this is for our information only at this stage",

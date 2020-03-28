@@ -1,17 +1,18 @@
 import json
 import os
 import requests
+
 from urlobject import URLObject
 
 from django.conf import settings
 
-from api.metadata.constants import (
-    BARRIER_TYPE_CATEGORIES
-)
-from api.metadata.models import Category, BarrierPriority
+from mohawk import Sender
+
 from api.barriers.models import Stage
 
-from mohawk import Sender
+from .constants import BARRIER_TYPE_CATEGORIES
+from .models import Category, BarrierPriority, BarrierTag
+from .serializers import BarrierTagSerializer
 
 
 def import_api_results(endpoint):
@@ -46,6 +47,7 @@ def import_api_results(endpoint):
 
     return None
 
+
 def get_os_regions_and_countries():
     dh_countries = import_api_results("country")
     dh_os_regions = []
@@ -56,15 +58,19 @@ def get_os_regions_and_countries():
                 dh_os_regions.append(item["overseas_region"])
     return dh_os_regions, dh_countries
 
+
 def get_countries():
     dh_regions, dh_countries = get_os_regions_and_countries()
     return dh_countries
 
+
 def get_admin_areas():
     return import_api_results("administrative-area")
 
+
 def get_sectors():
     return import_api_results("sector")
+
 
 def get_categories():
     barrier_goods = [
@@ -87,16 +93,25 @@ def get_categories():
     ]
     return barrier_goods + barrier_services
 
+
+def get_barrier_tags():
+    tags = BarrierTag.objects.all()
+    serializer = BarrierTagSerializer(tags, many=True)
+    return serializer.data
+
+
 def get_barrier_priorities():
     return [
         {"code": priority.code, "name": priority.name, "order": priority.order}
         for priority in BarrierPriority.objects.all()
     ]
 
+
 def get_barrier_type_categories():
     return dict(
         (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
     )
+
 
 def get_reporting_stages():
     return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))

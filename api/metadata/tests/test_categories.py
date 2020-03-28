@@ -1,7 +1,4 @@
-from rest_framework import status
-from rest_framework.reverse import reverse
-
-from api.core.test_utils import APITestMixin, create_test_user
+from api.core.test_utils import APITestMixin
 
 from api.metadata.models import Category
 

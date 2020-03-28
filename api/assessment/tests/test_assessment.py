@@ -39,7 +39,6 @@ class TestAssessment(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -120,7 +119,7 @@ class TestAssessment(APITestMixin):
 
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
-    
+
         assessment_url = reverse("get-assessment", kwargs={"pk": instance_id})
         response = self.api_client.get(assessment_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -296,7 +295,7 @@ class TestAssessment(APITestMixin):
 
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
-    
+
         assessment_url = reverse("get-assessment", kwargs={"pk": instance_id})
         response = self.api_client.get(assessment_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND

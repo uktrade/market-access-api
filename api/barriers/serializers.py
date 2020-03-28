@@ -2,9 +2,10 @@ from django.core.cache import cache
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import BarrierInstance, BarrierUserHit
+from api.collaboration.models import TeamMember
+
 from api.metadata.constants import (
-    ADV_BOOLEAN,
     ASSESMENT_IMPACT,
     BARRIER_SOURCE,
     BARRIER_STATUS,
@@ -12,14 +13,12 @@ from api.metadata.constants import (
     STAGE_STATUS,
     PROBLEM_STATUS_TYPES
 )
-
+from api.metadata.serializers import BarrierTagSerializer
 from api.metadata.utils import (
     get_admin_areas,
     get_countries,
     get_sectors,
 )
-from api.collaboration.models import TeamMember
-from api.barriers.models import BarrierUserHit
 
 # pylint: disable=R0201
 
@@ -36,6 +35,7 @@ class BarrierReportStageListingField(serializers.RelatedField):
 
 
 class BarrierReportSerializer(serializers.ModelSerializer):
+    barrier_tags = BarrierTagSerializer(many=True)
     progress = BarrierReportStageListingField(many=True, read_only=True)
     created_by = serializers.SerializerMethodField()
 
@@ -60,9 +60,9 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "source",
             "other_source",
             "barrier_title",
+            "barrier_tags",
             "problem_description",
             "next_steps_summary",
-            "eu_exit_related",
             "progress",
             "created_by",
             "created_on",
@@ -245,11 +245,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_categories(self, obj):
         return [category.title for category in obj.categories.all()]
 
-    def get_eu_exit_related(self, obj):
-        """  Custom Serializer Method Field for exposing current eu_exit_related display value """
-        eu_dict = dict(ADV_BOOLEAN)
-        return eu_dict.get(obj.eu_exit_related, "Unknown")
-
     def get_source(self, obj):
         """  Custom Serializer Method Field for exposing source display value """
         source_dict = dict(BARRIER_SOURCE)
@@ -301,7 +296,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "sectors",
             "export_country",
             "country_admin_areas",
-            "eu_exit_related",
             "status",
             "priority",
             "categories",
@@ -347,6 +341,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
+    tags = BarrierTagSerializer(many=True)
 
     class Meta:
         model = BarrierInstance
@@ -376,7 +371,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "status_date",
             "priority",
             "priority_summary",
-            "eu_exit_related",
             "has_assessment",
             "created_on",
             "modified_by",
@@ -390,6 +384,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_on",
             "unarchived_by",
             "last_seen_on",
+            "tags",
         )
         read_only_fields = (
             "id",

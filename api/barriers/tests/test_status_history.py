@@ -25,7 +25,6 @@ class TestBarrierStatusHistory(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1,
             },
         )
 
@@ -67,7 +66,6 @@ class TestBarrierStatusHistory(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1,
             },
         )
 
@@ -107,7 +105,6 @@ class TestBarrierStatusHistory(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -144,7 +141,6 @@ class TestBarrierStatusHistory(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1,
             },
         )
 
@@ -204,7 +200,6 @@ class TestBarrierStatusHistory(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1,
             },
         )
 
@@ -291,7 +286,6 @@ class TestBarrierStatusHistory(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1,
             },
         )
 
@@ -352,7 +346,6 @@ class TestBarrierStatusHistory(APITestMixin):
                 "other_source": "Other source",
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
-                "eu_exit_related": 1,
             },
         )
 

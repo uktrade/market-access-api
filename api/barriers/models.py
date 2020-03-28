@@ -6,10 +6,9 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from simple_history.models import HistoricalRecords, ModelChange
+from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import (
-    ADV_BOOLEAN,
     BARRIER_STATUS,
     BARRIER_SOURCE,
     BARRIER_PENDING,
@@ -18,7 +17,7 @@ from api.metadata.constants import (
     STAGE_STATUS,
 )
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata.models import BarrierPriority, Category
+from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -155,7 +154,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(null=True)
-    eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
     categories = models.ManyToManyField(
         Category, related_name="barriers", help_text="Barrier categories"
@@ -200,9 +198,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     priority_date = models.DateTimeField(
         auto_now=True, null=True, help_text="date when priority was set"
     )
-
     stages = models.ManyToManyField(
-        "Stage",
+        Stage,
         related_name="report_stages",
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting",
@@ -213,6 +210,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     archived_explanation = models.TextField(blank=True, null=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
+
+    tags = models.ManyToManyField(BarrierTag)
 
     def __str__(self):
         if self.barrier_title is None:

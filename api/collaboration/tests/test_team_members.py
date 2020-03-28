@@ -40,7 +40,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -98,7 +97,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -133,7 +131,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                        "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -185,7 +183,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -221,7 +218,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                        "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -271,7 +268,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -306,7 +302,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                        "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -356,7 +352,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -383,7 +378,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                        "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -433,7 +428,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -460,7 +454,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                        "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -483,7 +477,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_2["user_id"],                        
+                        "sso_user_id": self.sso_user_data_2["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -544,7 +538,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 
@@ -578,7 +571,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_1["user_id"],                        
+                        "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -600,7 +593,7 @@ class TestListTeamMembers(APITestMixin):
             data={
                 "user": {
                     "profile": {
-                        "sso_user_id": self.sso_user_data_2["user_id"],                        
+                        "sso_user_id": self.sso_user_data_2["user_id"],
                     }
                 },
                 "role": "dummy"
@@ -672,7 +665,6 @@ class TestListTeamMembers(APITestMixin):
                 "barrier_title": "Some title",
                 "problem_description": "Some problem_description",
                 "status_summary": "some status summary",
-                "eu_exit_related": 1,
             },
         )
 

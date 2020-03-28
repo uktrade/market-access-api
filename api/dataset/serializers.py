@@ -6,7 +6,6 @@ from rest_framework import serializers
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
 from api.metadata.constants import (
-    ADV_BOOLEAN,
     ASSESMENT_IMPACT,
     BARRIER_PENDING,
     BARRIER_SOURCE,
@@ -158,11 +157,6 @@ class BarrierDataSetSerializer(serializers.Serializer):
 
     def get_categories(self, obj):
         return [category.title for category in obj.categories.all()]
-
-    def get_eu_exit_related(self, obj):
-        """Custom Serializer Method Field for exposing current eu_exit_related display value"""
-        eu_dict = dict(ADV_BOOLEAN)
-        return eu_dict.get(obj.eu_exit_related, "Unknown")
 
     def get_source(self, obj):
         """Custom Serializer Method Field for exposing source display value"""
