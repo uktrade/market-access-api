@@ -1,40 +1,30 @@
 import csv
 import datetime
-import json
 from collections import defaultdict
 from dateutil.parser import parse
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Count, Q
-from django.forms.models import model_to_dict
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import now
 
 import django_filters
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
-from rest_framework.pagination import LimitOffsetPagination
-from django_filters.fields import Lookup
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters.widgets import BooleanWidget
 
-from rest_framework import filters, generics, status, serializers, viewsets
+from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from api.assessment.models import Assessment
 from api.barriers.csv import create_csv_response
-from api.core.viewsets import CoreViewSet
 from api.core.utils import cleansed_username
-from api.barriers.exceptions import HistoryItemNotFound
 from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
@@ -52,7 +42,6 @@ from api.barriers.serializers import (
 )
 from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
-    BARRIER_STATUS,
     TIMELINE_EVENTS,
 )
 
@@ -188,7 +177,6 @@ class BarrierReportBase(object):
 
 
 class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
-    queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
     filter_backends = (OrderingFilter,)
     ordering_fields = ("created_on",)
@@ -313,6 +301,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
+    tags = django_filters.Filter(method="tags_filter")
 
     class Meta:
         model = BarrierInstance
@@ -385,9 +374,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     def my_barriers(self, queryset, name, value):
         if value:
             current_user = self.request.user
-            return queryset.filter(
-                Q(created_by=current_user)
-            )
+            qs = queryset.filter(created_by=current_user)
+            return qs
         return queryset
 
     def team_barriers(self, queryset, name, value):
@@ -397,6 +385,10 @@ class BarrierFilterSet(django_filters.FilterSet):
                 Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
             ).distinct()
         return queryset
+
+    def tags_filter(self, queryset, name, value):
+        tag_ids = value.split(",")
+        return queryset.filter(tags__in=tag_ids)
 
 
 class BarrierList(generics.ListAPIView):

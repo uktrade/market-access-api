@@ -274,5 +274,25 @@
             "name": "South Asia",
             "id": "12ed13cf-4b2c-4a46-b2f9-068e397d8c84"
         }
+    },
+    {
+        "id": "86756b9a-5d95-e211-a939-e4115bead28a",
+        "name": "Spain",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Europe",
+            "id": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        },
+        "iso_alpha2_code": "ES"
+    },
+    {
+        "id": "83756b9a-5d95-e211-a939-e4115bead28a",
+        "name": "Germany",
+        "disabled_on": null,
+        "overseas_region": {
+            "name": "Europe",
+            "id": "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        },
+        "iso_alpha2_code": "DE"
     }
 ]
