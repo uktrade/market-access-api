@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0045_auto_20200325_1458'),
+        ('barriers', '0045_populate_categories_history'),
     ]
 
     operations = [

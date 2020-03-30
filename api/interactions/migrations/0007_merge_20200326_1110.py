@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('interactions', '0004_auto_20191212_1542'),
-        ('interactions', '0006_auto_20200325_1637'),
+        ('interactions', '0006_populate_documents_history'),
     ]
 
     operations = [

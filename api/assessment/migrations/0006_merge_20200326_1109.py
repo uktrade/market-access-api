@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0005_auto_20200325_1601'),
+        ('assessment', '0005_populate_documents_history'),
         ('assessment', '0004_auto_20191212_1542'),
     ]
 
