@@ -10,13 +10,13 @@ def cleansed_username(user):
     if user is not None:
         if is_not_blank(user.first_name) and is_not_blank(user.last_name):
             return pretty_name(f"{user.first_name}.{user.last_name}")
-        
+
         if is_not_blank(user.username):
             if "@" in user.username:
                 return pretty_name(user.username.split("@")[0])
             else:
                 return pretty_name(user.username)
-        
+
         if is_not_blank(user.email):
             return pretty_name(user.email.split("@")[0])
 

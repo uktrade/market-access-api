@@ -6,7 +6,7 @@ from rest_framework.reverse import reverse
 from freezegun import freeze_time
 
 from api.barriers.models import BarrierInstance
-from api.metadata.models import BarrierType
+from api.metadata.models import Category
 from api.core.test_utils import APITestMixin, create_test_user
 
 
@@ -952,7 +952,7 @@ class TestBarrierDetail(APITestMixin):
         assert edit_barrier_response.data["id"] == str(instance.id)
         assert edit_barrier_response.data["priority"]["code"] == "LOW"
 
-    def test_barrier_detail_edit_barrier_types(self):
+    def test_barrier_detail_edit_categories(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
             list_report_url,
@@ -988,15 +988,15 @@ class TestBarrierDetail(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
         assert response.data["priority"]["code"] == "UNKNOWN"
-        assert len(response.data["barrier_types"]) == 0
+        assert len(response.data["categories"]) == 0
 
-        db_barrier_types = BarrierType.objects.all()[:2]
-        barrier_type_ids = [bt.id for bt in db_barrier_types]
+        db_categories = Category.objects.all()[:2]
+        category_ids = [bt.id for bt in db_categories]
         edit_type_response = self.api_client.put(
             get_url,
             format="json",
             data={
-                "barrier_types": barrier_type_ids
+                "categories": category_ids
             },
         )
 
@@ -1004,9 +1004,9 @@ class TestBarrierDetail(APITestMixin):
 
         response = self.api_client.get(get_url)
         assert response.data["id"] == str(instance.id)
-        assert response.data["barrier_types"] == barrier_type_ids
+        assert response.data["categories"] == category_ids
 
-    def test_barrier_detail_edit_priority_and_barrier_type(self):
+    def test_barrier_detail_edit_priority_and_category(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
             list_report_url,
@@ -1054,14 +1054,14 @@ class TestBarrierDetail(APITestMixin):
         assert edit_barrier_response.data["priority"]["code"] == "LOW"
 
         response = self.api_client.get(get_url)
-        assert len(response.data["barrier_types"]) == 0
+        assert len(response.data["categories"]) == 0
 
-        db_barrier_types = BarrierType.objects.all()[:2]
+        db_categories = Category.objects.all()[:2]
         edit_type_response = self.api_client.put(
             get_url,
             format="json",
             data={
-                "barrier_types": [bt.id for bt in db_barrier_types]
+                "categories": [bt.id for bt in db_categories]
             },
         )
 
@@ -1069,10 +1069,10 @@ class TestBarrierDetail(APITestMixin):
 
         response = self.api_client.get(get_url)
         assert response.data["id"] == str(instance.id)
-        assert response.data["barrier_types"] is not None
+        assert response.data["categories"] is not None
         assert response.data["priority"]["code"] == "LOW"
 
-    def test_barrier_detail_edit_barrier_type_then_priority(self):
+    def test_barrier_detail_edit_category_then_priority(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(
             list_report_url,
@@ -1110,14 +1110,14 @@ class TestBarrierDetail(APITestMixin):
         assert response.data["priority"]["code"] == "UNKNOWN"
 
         response = self.api_client.get(get_url)
-        assert len(response.data["barrier_types"]) == 0
+        assert len(response.data["categories"]) == 0
 
-        db_barrier_types = BarrierType.objects.all()[:2]
+        db_categories = Category.objects.all()[:2]
         edit_type_response = self.api_client.put(
             get_url,
             format="json",
             data={
-                "barrier_types": [bt.id for bt in db_barrier_types]
+                "categories": [bt.id for bt in db_categories]
             },
         )
 
@@ -1125,7 +1125,7 @@ class TestBarrierDetail(APITestMixin):
 
         response = self.api_client.get(get_url)
         assert response.data["id"] == str(instance.id)
-        assert len(response.data["barrier_types"]) == 2
+        assert len(response.data["categories"]) == 2
         assert response.data["priority"]["code"] == "UNKNOWN"
 
         edit_barrier_response = self.api_client.put(
@@ -1140,7 +1140,7 @@ class TestBarrierDetail(APITestMixin):
 
         response = self.api_client.get(get_url)
         assert response.data["id"] == str(instance.id)
-        assert len(response.data["barrier_types"]) == 2
+        assert len(response.data["categories"]) == 2
         assert response.data["priority"]["code"] == "LOW"
 
     def test_barrier_detail_next_steps_as_note(self):

@@ -15,7 +15,6 @@ from api.metadata.constants import (
 )
 from api.metadata.utils import (
     get_admin_areas,
-    get_barrier_types,
     get_countries,
     get_sectors,
 )
@@ -35,7 +34,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
     overseas_region = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
-    barrier_types = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
     product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
@@ -66,7 +65,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
             "sectors",
             "product",
             "scope",
-            "barrier_types",
+            "categories",
             "source",
             "team_count",
             "resolved_date",
@@ -157,13 +156,8 @@ class BarrierDataSetSerializer(serializers.Serializer):
                 areas.extend([a["name"] for a in dh_areas if a["id"] == str(area)])
         return areas
 
-    def get_barrier_types(self, obj):
-        dh_btypes = get_barrier_types()
-        btypes = []
-        if obj.barrier_types:
-            for btype in obj.barrier_types.all():
-                btypes.append(btype.title)
-        return btypes
+    def get_categories(self, obj):
+        return [category.title for category in obj.categories.all()]
 
     def get_eu_exit_related(self, obj):
         """Custom Serializer Method Field for exposing current eu_exit_related display value"""

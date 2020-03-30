@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
@@ -21,6 +22,46 @@ class AssessmentManager(models.Manager):
         return super(AssessmentManager, self).get_queryset().filter(Q(archived=False))
 
 
+class AssessmentHistoricalModel(models.Model):
+    """
+    Abstract model for history models tracking document changes.
+    """
+    documents_cache = ArrayField(
+        JSONField(),
+        blank=True,
+        null=True,
+        default=list,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = self.diff_against(old_history).changed_fields
+
+        if "documents" in changed_fields:
+            changed_fields.remove("documents")
+
+        new_document_ids = [doc["id"] for doc in self.documents_cache or []]
+        old_document_ids = [doc["id"] for doc in old_history.documents_cache or []]
+        if set(new_document_ids) != set(old_document_ids):
+            changed_fields.append("documents")
+
+        return changed_fields
+
+    def update_documents(self):
+        self.documents_cache = [
+            {
+                "id": str(document["id"]),
+                "name": document["original_filename"],
+            } for document in self.instance.documents.values("id", "original_filename")
+        ]
+
+    def save(self, *args, **kwargs):
+        self.update_documents()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
 class Assessment(ArchivableMixin, BaseModel):
     """ Assessment record for a Barrier """
 
@@ -38,7 +79,7 @@ class Assessment(ArchivableMixin, BaseModel):
     export_value = models.BigIntegerField(null=True)
     is_active = models.BooleanField(default=True)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[AssessmentHistoricalModel])
 
     objects = AssessmentManager()
 

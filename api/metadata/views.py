@@ -16,7 +16,7 @@ from .utils import (
     get_sectors,
     get_barrier_priorities,
     get_barrier_type_categories,
-    get_barrier_types,
+    get_categories,
     get_reporting_stages
 )
 
@@ -38,7 +38,7 @@ from api.metadata.constants import (
     SUPPORT_TYPE,
     TIMELINE_EVENTS,
 )
-from api.metadata.models import BarrierType, BarrierPriority
+from api.metadata.models import BarrierPriority
 from api.barriers.models import Stage
 
 
@@ -73,7 +73,7 @@ class MetadataView(generics.GenericAPIView):
         dh_sectors = get_sectors()
 
         report_stages = get_reporting_stages()
-        barrier_types = get_barrier_types()
+        categories = get_categories()
         barrier_type_cat = get_barrier_type_categories()
         barrier_priorities = get_barrier_priorities()
 
@@ -87,7 +87,8 @@ class MetadataView(generics.GenericAPIView):
             "report_status": report_status,
             "report_stages": report_stages,
             "support_type": support_type,
-            "barrier_types": barrier_types,
+            "barrier_types": categories,
+            "categories": categories,
             "overseas_regions": dh_os_regions,
             "countries": dh_countries,
             "country_admin_areas": dh_admin_areas,

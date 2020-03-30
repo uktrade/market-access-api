@@ -1,15 +1,15 @@
 from django.contrib import admin
 
-from api.metadata.models import BarrierType
+from api.metadata.models import Category
 
 
-class BarrierTypeAdmin(admin.ModelAdmin):
+class CategoryAdmin(admin.ModelAdmin):
     """
     ModelAdmin class for customised behaviour for
-    allowing BarrierType edits.
+    allowing Category edits.
     """
 
     list_display = ("title", "category")
 
 
-admin.site.register(BarrierType, BarrierTypeAdmin)
+admin.site.register(Category, CategoryAdmin)

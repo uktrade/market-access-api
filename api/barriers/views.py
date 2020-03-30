@@ -29,9 +29,17 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
+from api.assessment.models import Assessment
 from api.barriers.csv import create_csv_response
 from api.core.viewsets import CoreViewSet
 from api.core.utils import cleansed_username
+from api.barriers.exceptions import HistoryItemNotFound
+from api.barriers.history import (
+    AssessmentHistoryFactory,
+    BarrierHistoryFactory,
+    NoteHistoryFactory,
+    TeamMemberHistoryFactory,
+)
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
     BarrierStaticStatusSerializer,
@@ -47,7 +55,7 @@ from api.metadata.constants import (
     TIMELINE_EVENTS,
 )
 
-from api.metadata.models import BarrierType, BarrierPriority
+from api.metadata.models import Category, BarrierPriority
 from api.metadata.utils import get_countries
 
 from api.interactions.models import Interaction
@@ -274,8 +282,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle all necessary filters on Barriers
     reported_on_before: filter start date dd-mm-yyyy
     reported_on_after: filter end date dd-mm-yyyy
-    barrier_type: int, one or more comma seperated barrier type ids
-        ex: barrier_type=1 or barrier_type=1,2
+    cateogory: int, one or more comma seperated category ids
+        ex: category=1 or category=1,2
     sector: uuid, one or more comma seperated sector UUIDs
         ex:
         sector=af959812-6095-e211-a939-e4115bead28a
@@ -296,7 +304,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
-    barrier_type = django_filters.BaseInFilter("barrier_types")
+    barrier_type = django_filters.BaseInFilter("categories")
+    category = django_filters.BaseInFilter("categories")
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.Filter(method="location_filter")
     text = django_filters.Filter(method="text_search")
@@ -309,6 +318,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         fields = [
             "export_country",
             "barrier_type",
+            "category",
             "sector",
             "reported_on",
             "status",
@@ -432,7 +442,7 @@ class BarriertListExportView(generics.ListAPIView):
             "sectors": "Sectors",
             "product": "Product",
             "scope": "Scope",
-            "barrier_types": "Barrier types",
+            "categories": "Barrier categories",
             "source": "Source",
             "team_count": "Team count",
 	        "assessment_impact": "Assessment Impact",
@@ -491,11 +501,15 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
-        barrier_types = barrier.barrier_types.all()
-        if self.request.data.get("barrier_types", None) is not None:
-            barrier_types = [
-                get_object_or_404(BarrierType, pk=barrier_type_id)
-                for barrier_type_id in self.request.data.get("barrier_types")
+        categories = barrier.categories.all()
+        category_ids = self.request.data.get(
+            "barrier_types",
+            self.request.data.get("categories", None)
+        )
+        if category_ids is not None:
+            categories = [
+                get_object_or_404(Category, pk=category_id)
+                for category_id in category_ids
             ]
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
@@ -504,89 +518,101 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             )
 
         serializer.save(
-            barrier_types=barrier_types,
+            categories=categories,
             priority=barrier_priority,
             modified_by=self.request.user,
         )
 
 
-class BarrierInstanceHistory(generics.GenericAPIView):
-    def _get_barrier(self, barrier_id):
-        """ Get BarrierInstance object or False if invalid ID """
-        try:
-            return BarrierInstance.barriers.get(id=barrier_id)
-        except BarrierInstance.DoesNotExist:
-            return False
+class HistoryMixin:
+    """
+    Mixin for getting barrier history items
+    """
+
+    def get_assessment_history(self, fields=[]):
+        return AssessmentHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+    def get_barrier_history(self, fields=[]):
+        return BarrierHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+    def get_notes_history(self, fields=[]):
+        return NoteHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+    def get_team_history(self, fields=[]):
+        return TeamMemberHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+        )
+
+
+class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
+    """
+    Full audit history of changes made to a barrier and related models
+    """
 
     def get(self, request, pk):
-        ignore_fields = ["modified_on"]
-        barrier = BarrierInstance.barriers.get(id=pk)
-        history = barrier.history.all().order_by("history_date")
-        results = []
-        old_record = None
-        for new_record in history:
-            if new_record.history_type == "+":
-                results.append(
-                    {
-                        "date": new_record.history_date,
-                        "operation": "Add",
-                        "event": "Report created",
-                        "field": None,
-                        "old_value": None,
-                        "new_value": None,
-                        "user": new_record.history_user.email
-                        if new_record.history_user
-                        else "",
-                    }
-                )
-            elif old_record is not None:
-                delta = new_record.diff_against(old_record)
-                for change in delta.changes:
-                    if change.field not in ignore_fields:
-                        if change.old is None:
-                            operation = "Add"
-                            event = "{} added to {}".format(change.new, change.field)
-                            field = change.field
-                            old_value = None
-                            new_value = change.new
-                        elif change.old is not None and change.new is not None:
-                            operation = "Update"
-                            event = "{} changed from {} to {}".format(
-                                change.field, change.old, change.new
-                            )
-                            field = change.field
-                            old_value = change.old
-                            new_value = change.new
-                        else:
-                            operation = "Delete"
-                            event = "{} deleted".format(change.field)
-                            field = change.field
-                            old_value = change.old
-                            new_value = None
-                        if new_value and hasattr(new_value, "_meta"):
-                            new_value = model_to_dict(new_value)
-                        if old_value and hasattr(old_value, "_meta"):
-                            old_value = model_to_dict(old_value)
-                        results.append(
-                            {
-                                "date": new_record.history_date,
-                                "operation": operation,
-                                "field": field,
-                                "old_value": old_value,
-                                "new_value": new_value,
-                                "event": event,
-                                "user": new_record.history_user.email
-                                if new_record.history_user
-                                else "",
-                            }
-                        )
-            old_record = new_record
-            response = {"barrier_id": pk, "history": results}
+        barrier_history = self.get_barrier_history()
+        notes_history = self.get_notes_history()
+        assessment_history = self.get_assessment_history()
+        team_history = self.get_team_history()
 
+        history_items = (
+            barrier_history + notes_history + assessment_history + team_history
+        )
+
+        response = {
+            "barrier_id": str(pk),
+            "history": [item.data for item in history_items],
+        }
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class BarrierActivity(HistoryMixin, generics.GenericAPIView):
+    """
+    Returns history items used on the barrier activity stream
+
+    This will supersede the BarrierStatusHistory view below.
+    """
+
+    def get(self, request, pk):
+        barrier_history = self.get_barrier_history(
+            fields=["archived", "priority", "status"],
+        )
+        assessment_history = self.get_assessment_history(
+            fields=[
+                "commercial_value",
+                "export_value",
+                "impact",
+                "import_market_size",
+                "value_to_economy",
+            ]
+        )
+
+        history_items = barrier_history + assessment_history
+
+        response = {
+            "barrier_id": str(pk),
+            "history": [item.data for item in history_items],
+        }
         return Response(response, status=status.HTTP_200_OK)
 
 
 class BarrierStatusHistory(generics.GenericAPIView):
+    """
+    Returns history items used on the barrier activity stream
+
+    This will be deprecated in favour of the BarrierActivity view above.
+    """
+
     def _format_user(self, user):
         if user is not None:
             return {"id": user.id, "name": cleansed_username(user)}
@@ -614,6 +640,7 @@ class BarrierStatusHistory(generics.GenericAPIView):
                                     event = TIMELINE_REVERTED["Barrier Status Change"]
                                     status_change = {
                                         "date": new_record.history_date,
+                                        "model": "barrier",
                                         "field": change.field,
                                         "old_value": str(change.old),
                                         "new_value": str(change.new),
@@ -631,6 +658,7 @@ class BarrierStatusHistory(generics.GenericAPIView):
                             elif change.field == "priority":
                                 status_change = {
                                     "date": new_record.history_date,
+                                    "model": "barrier",
                                     "field": change.field,
                                     "old_value": str(change.old),
                                     "new_value": str(change.new),
@@ -645,6 +673,7 @@ class BarrierStatusHistory(generics.GenericAPIView):
                             elif change.field == "archived":
                                 status_change = {
                                     "date": new_record.history_date,
+                                    "model": "barrier",
                                     "field": change.field,
                                     "old_value": change.old,
                                     "new_value": change.new,

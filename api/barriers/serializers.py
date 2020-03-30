@@ -15,7 +15,6 @@ from api.metadata.constants import (
 
 from api.metadata.utils import (
     get_admin_areas,
-    get_barrier_types,
     get_countries,
     get_sectors,
 )
@@ -119,7 +118,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     overseas_region = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
-    barrier_types = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
     product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
@@ -243,13 +242,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
                 areas.extend([a["name"] for a in dh_areas if a["id"] == str(area)])
         return areas
 
-    def get_barrier_types(self, obj):
-        dh_btypes = get_barrier_types()
-        btypes = []
-        if obj.barrier_types:
-            for btype in obj.barrier_types.all():
-                btypes.append(btype.title)
-        return btypes
+    def get_categories(self, obj):
+        return [category.title for category in obj.categories.all()]
 
     def get_eu_exit_related(self, obj):
         """  Custom Serializer Method Field for exposing current eu_exit_related display value """
@@ -290,6 +284,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
     priority = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -309,12 +304,15 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "eu_exit_related",
             "status",
             "priority",
-            "barrier_types",
+            "categories",
             "created_on",
             "modified_on",
             "archived",
             "archived_on",
         )
+
+    def get_categories(self, obj):
+        return [category.id for category in obj.categories.all()]
 
     def get_status(self, obj):
         return {
@@ -339,11 +337,13 @@ class BarrierListSerializer(serializers.ModelSerializer):
 
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
+
     archived_by = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     modified_by = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     barrier_types = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
@@ -368,6 +368,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "barrier_title",
             "problem_description",
             "barrier_types",
+            "categories",
             "reported_on",
             "reported_by",
             "status",
@@ -432,7 +433,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         }
 
     def get_barrier_types(self, obj):
-        return [barrier_type.id for barrier_type in obj.barrier_types.all()]
+        return self.get_categories(obj)
+
+    def get_categories(self, obj):
+        return [category.id for category in obj.categories.all()]
 
     def get_priority(self, obj):
         """  Custom Serializer Method Field for exposing barrier priority """

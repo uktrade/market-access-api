@@ -54,7 +54,7 @@ class ReportReadyForSubmitValidator:
         all_sectors = data_combiner.get_value('all_sectors')
         sectors = data_combiner.get_value('sectors')
 
-        if sectors_affected and all_sectors is None and sectors is None:
+        if sectors_affected and all_sectors is None and sectors == []:
             errors['sectors'] = 'missing data'
 
         if sectors_affected and all_sectors and sectors:

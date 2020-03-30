@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from simple_history.models import HistoricalRecords
+from simple_history.models import HistoricalRecords, ModelChange
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
@@ -18,7 +18,7 @@ from api.metadata.constants import (
     STAGE_STATUS,
 )
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata.models import BarrierType, BarrierPriority
+from api.metadata.models import BarrierPriority, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -58,6 +58,43 @@ class BarrierManager(models.Manager):
             .get_queryset()
             .filter(~Q(status=0))
         )
+
+
+class BarrierHistoricalModel(models.Model):
+    """
+    Abstract model for history models tracking category changes.
+    """
+    categories_cache = ArrayField(
+        models.CharField(max_length=20),
+        blank=True,
+        null=True,
+        default=list,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = set(self.diff_against(old_history).changed_fields)
+
+        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
+            changed_fields.add("categories")
+
+        if changed_fields.intersection(("export_country", "country_admin_areas")):
+            changed_fields.discard("export_country")
+            changed_fields.discard("country_admin_areas")
+            changed_fields.add("location")
+
+        return list(changed_fields)
+
+    def update_categories(self):
+        self.categories_cache = list(
+            self.instance.categories.values_list("id", flat=True)
+        )
+
+    def save(self, *args, **kwargs):
+        self.update_categories()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
 
 
 class BarrierInstance(FullyArchivableMixin, BaseModel):
@@ -100,8 +137,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     sectors = ArrayField(
         models.UUIDField(),
         blank=True,
-        null=True,
-        default=None,
+        null=False,
+        default=list,
         help_text="list of sectors that are affected",
     )
     companies = JSONField(
@@ -120,8 +157,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     next_steps_summary = models.TextField(null=True)
     eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
-    barrier_types = models.ManyToManyField(
-        BarrierType, related_name="barrier_types", help_text="Barrier types"
+    categories = models.ManyToManyField(
+        Category, related_name="barriers", help_text="Barrier categories"
     )
 
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
@@ -175,7 +212,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     )
     archived_explanation = models.TextField(blank=True, null=True)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
     def __str__(self):
         if self.barrier_title is None:
@@ -261,6 +298,10 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
                     loop_num += 1
                 else:
                     raise ValueError("Error generating a unique reference code.")
+
+        if self.source != BARRIER_SOURCE.OTHER:
+            self.other_source = None
+
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )

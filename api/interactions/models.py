@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
@@ -37,6 +38,51 @@ class InteractionManager(models.Manager):
         return super(InteractionManager, self).get_queryset().filter(Q(archived=False))
 
 
+class InteractionHistoricalModel(models.Model):
+    """
+    Abstract model for history models tracking document changes.
+    """
+    documents_cache = ArrayField(
+        JSONField(),
+        blank=True,
+        null=True,
+        default=list,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = self.diff_against(old_history).changed_fields
+
+        if "archived" in changed_fields:
+            if self.documents_cache:
+                return ["text", "documents"]
+            return ["text"]
+
+        if "documents" in changed_fields:
+            changed_fields.remove("documents")
+
+        new_document_ids = [doc["id"] for doc in self.documents_cache or []]
+        old_document_ids = [doc["id"] for doc in old_history.documents_cache or []]
+        if set(new_document_ids) != set(old_document_ids):
+            changed_fields.append("documents")
+
+        return changed_fields
+
+    def update_documents(self):
+        self.documents_cache = [
+            {
+                "id": str(document["id"]),
+                "name": document["original_filename"],
+            } for document in self.instance.documents.values("id", "original_filename")
+        ]
+
+    def save(self, *args, **kwargs):
+        self.update_documents()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
 class Interaction(ArchivableMixin, BaseModel):
     """ Interaction records for each Barrier """
 
@@ -52,7 +98,7 @@ class Interaction(ArchivableMixin, BaseModel):
         Document, related_name="documents", help_text="Interaction documents"
     )
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[InteractionHistoricalModel])
 
     objects = InteractionManager()
 
