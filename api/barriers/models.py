@@ -223,6 +223,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     reports = ReportManager()
     barriers = BarrierManager()
 
+    class Meta:
+        ordering = ["-reported_on"]
+
     def current_progress(self):
         """ checks current dataset to see how far reporting workflow is done """
         progress_list = []
