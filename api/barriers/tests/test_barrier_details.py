@@ -1879,7 +1879,7 @@ class TestBarrierDetail(APITestMixin):
         assert member["user"]["email"] == "Testo@Useri.com"
         assert member["user"]["first_name"] == "Testo"
         assert member["user"]["last_name"] == "Useri"
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"
 
     def test_barrier_submitted_by_user_as_default_team_member(self):
         list_report_url = reverse("list-reports")
@@ -1936,4 +1936,4 @@ class TestBarrierDetail(APITestMixin):
         assert member["user"]["email"] == "diff_user@Useri.com"
         assert member["user"]["first_name"] == "Diff"
         assert member["user"]["last_name"] == "User"
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"

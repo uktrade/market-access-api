@@ -272,7 +272,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         TeamMember(
             barrier=barrier_obj,
             user=self.request.user,
-            role='Barrier creator',
+            role='Reporter',
             default=True
         ).save()
 
