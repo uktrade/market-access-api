@@ -6,11 +6,15 @@ from django.db import migrations
 def change_creator_to_reporter(apps, schema_editor):
     TeamMember = apps.get_model('collaboration', 'TeamMember')
     TeamMember.objects.filter(role="Barrier creator").update(role="Reporter")
+    HistoricalTeamMember = apps.get_model('collaboration', 'HistoricalTeamMember')
+    HistoricalTeamMember.objects.filter(role="Barrier creator").update(role="Reporter")
 
 
 def change_reporter_to_creator(apps, schema_editor):
     TeamMember = apps.get_model('collaboration', 'TeamMember')
     TeamMember.objects.filter(role="Reporter").update(role="Barrier creator")
+    HistoricalTeamMember = apps.get_model('collaboration', 'HistoricalTeamMember')
+    HistoricalTeamMember.objects.filter(role="Reporter").update(role="Barrier creator")
 
 
 class Migration(migrations.Migration):
