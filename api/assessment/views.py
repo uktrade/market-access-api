@@ -129,6 +129,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
                 if field_added in timeline_fields:
                     status_change = {
                         "date": new_record.history_date,
+                        "model": "assessment",
                         "field": field_added,
                         "old_value": None,
                         "new_value": getattr(new_record, field_added),
@@ -144,6 +145,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
                         if change.field in timeline_fields:
                             status_change = {
                                 "date": new_record.history_date,
+                                "model": "assessment",
                                 "field": change.field,
                                 "old_value": change.old,
                                 "new_value": change.new,

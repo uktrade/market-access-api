@@ -2,6 +2,7 @@ from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", False)
+DJANGO_ENV = 'local'
 
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
@@ -19,3 +20,11 @@ LOGGING = {
         "": {"handlers": ["console"], "level": "DEBUG", "propagate": False},
     },
 }
+
+# Celery
+# ---------------------------------------------------------------------------
+# During local development all tasks will be executed syncronously,
+# blocking the processes until the task returns
+CELERY_TASK_ALWAYS_EAGER = True
+BROKER_URL = "redis://redis:6379/2"
+CELERY_RESULT_BACKEND = "redis://redis:6379/3"

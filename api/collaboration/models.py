@@ -4,7 +4,7 @@ from django.db.models import Q
 
 from simple_history.models import HistoricalRecords
 
-from api.core.models import ArchivableModel, BaseModel
+from api.core.models import ArchivableMixin, BaseModel
 from api.barriers.models import BarrierInstance
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -17,11 +17,11 @@ class TeamMemberManager(models.Manager):
         return super(TeamMemberManager, self).get_queryset().filter(Q(archived=False))
 
 
-class TeamMember(BaseModel, ArchivableModel):
+class TeamMember(ArchivableMixin, BaseModel):
     """ TeamMember records for each Barrier """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="barrier_team", on_delete=models.PROTECT
+        BarrierInstance, related_name="barrier_team", on_delete=models.CASCADE
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

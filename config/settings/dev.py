@@ -1,9 +1,8 @@
 from .base import *
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-SSO_ENABLED = env.bool("SSO_ENABLED", True)
+DEBUG = env.bool("DEBUG", False)
+DJANGO_ENV = 'dev'
 
 INTERNAL_IPS = ("127.0.0.1",)
 

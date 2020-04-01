@@ -1,7 +1,73 @@
-from rest_framework.reverse import reverse
-from django.utils.http import urlencode
+import datetime
 
-from api.barriers.models import BarrierInstance
+from django.utils.http import urlencode
+from factory.fuzzy import FuzzyChoice, FuzzyDate
+from freezegun import freeze_time
+from rest_framework import status
+from rest_framework.reverse import reverse
+
+from api.metadata.models import Category
+
+
+def add_multiple_barriers(count, client):
+    sectors = [
+        "af959812-6095-e211-a939-e4115bead28a",
+        "75debee7-a182-410e-bde0-3098e4f7b822",
+        "9538cecc-5f95-e211-a939-e4115bead28a",
+    ]
+    countries = [
+        "a05f66a0-5d95-e211-a939-e4115bead28a",
+        "a75f66a0-5d95-e211-a939-e4115bead28a",
+        "ad5f66a0-5d95-e211-a939-e4115bead28a",
+    ]
+    for _ in range(count):
+        date = FuzzyDate(
+            start_date=datetime.date.today() - datetime.timedelta(days=45),
+            end_date=datetime.date.today(),
+        ).evaluate(2, None, False)
+        with freeze_time(date):
+            list_report_url = reverse("list-reports")
+            list_report_response = client.post(
+                list_report_url,
+                format="json",
+                data={
+                    "problem_status": FuzzyChoice([1, 2]).fuzz(),
+                    "is_resolved": FuzzyChoice([True, False]).fuzz(),
+                    "resolved_date": date.strftime("%Y-%m-%d"),
+                    "resolved_status": 4,
+                    "export_country": FuzzyChoice(countries).fuzz(),
+                    "sectors_affected": True,
+                    "sectors": [FuzzyChoice(sectors).fuzz()],
+                    "product": "Some product",
+                    "source": "OTHER",
+                    "other_source": "Other source",
+                    "barrier_title": "Some test title",
+                    "problem_description": "Some test problem_description",
+                    "status_summary": "some status summary",
+                    "eu_exit_related": 1,
+                },
+            )
+
+            assert list_report_response.status_code == status.HTTP_201_CREATED
+
+            instance_id = list_report_response.data["id"]
+            submit_url = reverse("submit-report", kwargs={"pk": instance_id})
+            submit_response = client.put(
+                submit_url, format="json", data={}
+            )
+            assert submit_response.status_code == status.HTTP_200_OK
+
+            get_url = reverse("get-barrier", kwargs={"pk": instance_id})
+            category = FuzzyChoice(Category.objects.all()).fuzz()
+            edit_type_response = client.put(
+                get_url,
+                format="json",
+                data={
+                    "barrier_type": category.id,
+                    "barrier_type_category": category.category,
+                },
+            )
+            assert edit_type_response.status_code == status.HTTP_200_OK
 
 
 class TestUtils:

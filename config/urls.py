@@ -6,10 +6,10 @@ from api.metadata.views import MetadataView
 from api.ping.views import ping
 from api.barriers.views import (
     barrier_count,
-    barriers_export,
+    BarrierActivity,
     BarrierDetail,
     BarrierHibernate,
-    BarrierInstanceHistory,
+    BarrierFullHistory,
     BarrierList,
     BarriertListExportView,
     BarrierResolveInFull,
@@ -22,16 +22,23 @@ from api.barriers.views import (
     BarrierStatusChangeUnknown,
     BarrierStatusHistory,
 )
-from api.interactions.views import BarrierInteractionList, BarrierIneractionDetail
 from api.user.views import who_am_i, UserDetail
 from api.core.views import admin_override
+from api.dataset.views import BarrierListDataWorkspaceView
 
 from api.assessment.urls import urlpatterns as assessment_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.interactions.urls import urlpatterns as interaction_urls
 
-urlpatterns = [
-    path("admin/login/", admin_override, name="override"),
+urlpatterns = []
+
+# Allow regular login to admin panel for local development
+if settings.DJANGO_ENV != 'local':
+    urlpatterns += [
+        path("admin/login/", admin_override, name="override"),
+    ]
+
+urlpatterns += [
     path("admin/", admin.site.urls),
     path("auth/", include("authbroker_client.urls", namespace="authbroker")),
     path("counts", barrier_count, name="barrier-count"),
@@ -46,10 +53,11 @@ urlpatterns = [
     path("metadata", MetadataView.as_view(), name="metadata"),
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/export", BarriertListExportView.as_view(), name="barriers-export"),
+    path("barriers/dataset", BarrierListDataWorkspaceView.as_view(), name="dataset-barriers"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path(
         "barriers/<uuid:pk>/full_history",
-        BarrierInstanceHistory.as_view(),
+        BarrierFullHistory.as_view(),
         name="history",
     ),
     path(
@@ -57,6 +65,7 @@ urlpatterns = [
         BarrierStatusHistory.as_view(),
         name="status-history",
     ),
+    path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),
     path(
         "barriers/<uuid:pk>/resolve-in-full", BarrierResolveInFull.as_view(), name="resolve-in-full"
     ),

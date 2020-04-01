@@ -8,7 +8,7 @@ from django.conf import settings
 from api.metadata.constants import (
     BARRIER_TYPE_CATEGORIES
 )
-from api.metadata.models import BarrierType, BarrierPriority
+from api.metadata.models import Category, BarrierPriority
 from api.barriers.models import Stage
 
 from mohawk import Sender
@@ -26,7 +26,7 @@ def import_api_results(endpoint):
     # v4 endpoints do not have trailing forward slash
     meta_url = base_url.relative(f"./{endpoint}")
 
-    credentials = settings.HAWK_CREDENTIALS[settings.DH_HAWK_ID]
+    credentials = settings.HAWK_CREDENTIALS[settings.DATAHUB_HAWK_ID]
 
     sender = Sender(credentials,
                     meta_url,
@@ -66,24 +66,24 @@ def get_admin_areas():
 def get_sectors():
     return import_api_results("sector")
 
-def get_barrier_types():
+def get_categories():
     barrier_goods = [
         {
-            "id": barrier_type.id,
-            "title": barrier_type.title,
-            "description": barrier_type.description,
+            "id": category.id,
+            "title": category.title,
+            "description": category.description,
             "category": "GOODS",
         }
-        for barrier_type in BarrierType.goods.all()
+        for category in Category.goods.all()
     ]
     barrier_services = [
         {
-            "id": barrier_type.id,
-            "title": barrier_type.title,
-            "description": barrier_type.description,
+            "id": category.id,
+            "title": category.title,
+            "description": category.description,
             "category": "SERVICES",
         }
-        for barrier_type in BarrierType.services.all()
+        for category in Category.services.all()
     ]
     return barrier_goods + barrier_services
 

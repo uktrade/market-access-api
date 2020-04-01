@@ -105,8 +105,10 @@ ENV/
 # mypy
 .mypy_cache/
 
-# temp db
-db.sqlite3
+# Local DB
+db/
+db_old/
+docker/local/postgres/*_local_data_*
 
 .DS_Store
 

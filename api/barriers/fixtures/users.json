@@ -1,0 +1,56 @@
+[
+    {
+        "model": "auth.user",
+        "pk": 1,
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "graham.veal@digital.trade.gov.uk",
+            "first_name": "Graham",
+            "last_name": "Veal",
+            "email": "graham.veal@digital.trade.gov.uk",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2018-05-11T15:07:31.021Z",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 2,
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "sekhar.panja@digital.trade.gov.uk",
+            "first_name": "Sekhar",
+            "last_name": "Panja",
+            "email": "sekhar.panja@digital.trade.gov.uk",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2018-05-11T15:36:17.953Z",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "auth.user",
+        "pk": 3,
+        "fields": {
+            "password": "",
+            "last_login": null,
+            "is_superuser": false,
+            "username": "reupen.shah@digital.trade.gov.uk",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "is_staff": false,
+            "is_active": true,
+            "date_joined": "2018-05-11T23:59:37.568Z",
+            "groups": [],
+            "user_permissions": []
+        }
+    }
+]

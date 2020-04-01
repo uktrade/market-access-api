@@ -3,18 +3,18 @@ from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin, create_test_user
 
-from api.metadata.models import BarrierType
+from api.metadata.models import Category
 
 
-class TestBarrierTypes(APITestMixin):
-    def test_barrier_types_count(self):
-        barrier_types_count = BarrierType.objects.count()
-        assert barrier_types_count == 33
+class TestCategories(APITestMixin):
+    def test_categories_count(self):
+        categories_count = Category.objects.count()
+        assert categories_count == 33
 
-    def test_barrier_types_goods_count(self):
-        barrier_types_count = BarrierType.goods.count()
-        assert barrier_types_count == 26
+    def test_categories_goods_count(self):
+        categories_count = Category.goods.count()
+        assert categories_count == 26
 
-    def test_barrier_types_services_count(self):
-        barrier_types_count = BarrierType.services.count()
-        assert barrier_types_count == 22
+    def test_categories_services_count(self):
+        categories_count = Category.services.count()
+        assert categories_count == 22

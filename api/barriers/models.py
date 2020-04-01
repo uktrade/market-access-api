@@ -1,6 +1,4 @@
-import datetime
 from uuid import uuid4
-from random import randrange
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
@@ -8,24 +6,23 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from simple_history.models import HistoricalRecords
+from simple_history.models import HistoricalRecords, ModelChange
 
 from api.metadata.constants import (
     ADV_BOOLEAN,
-    BARRIER_INTERACTION_TYPE,
     BARRIER_STATUS,
     BARRIER_SOURCE,
     BARRIER_PENDING,
-    BARRIER_TYPE_CATEGORIES,
     PROBLEM_STATUS_TYPES,
     RESOLVED_STATUS,
     STAGE_STATUS,
 )
-from api.core.models import ArchivableModel, BaseModel
-from api.metadata.models import BarrierType, BarrierPriority
+from api.core.models import BaseModel, FullyArchivableMixin
+from api.metadata.models import BarrierPriority, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
+from api.metadata.constants import BARRIER_ARCHIVED_REASON
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -59,11 +56,48 @@ class BarrierManager(models.Manager):
         return (
             super(BarrierManager, self)
             .get_queryset()
-            .filter(~Q(status=0) & Q(archived=False))
+            .filter(~Q(status=0))
         )
 
 
-class BarrierInstance(BaseModel, ArchivableModel):
+class BarrierHistoricalModel(models.Model):
+    """
+    Abstract model for history models tracking category changes.
+    """
+    categories_cache = ArrayField(
+        models.CharField(max_length=20),
+        blank=True,
+        null=True,
+        default=list,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = set(self.diff_against(old_history).changed_fields)
+
+        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
+            changed_fields.add("categories")
+
+        if changed_fields.intersection(("export_country", "country_admin_areas")):
+            changed_fields.discard("export_country")
+            changed_fields.discard("country_admin_areas")
+            changed_fields.add("location")
+
+        return list(changed_fields)
+
+    def update_categories(self):
+        self.categories_cache = list(
+            self.instance.categories.values_list("id", flat=True)
+        )
+
+    def save(self, *args, **kwargs):
+        self.update_categories()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
+class BarrierInstance(FullyArchivableMixin, BaseModel):
     """ Barrier Instance, converted from a completed and accepted Report """
 
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -103,8 +137,8 @@ class BarrierInstance(BaseModel, ArchivableModel):
     sectors = ArrayField(
         models.UUIDField(),
         blank=True,
-        null=True,
-        default=None,
+        null=False,
+        default=list,
         help_text="list of sectors that are affected",
     )
     companies = JSONField(
@@ -123,10 +157,10 @@ class BarrierInstance(BaseModel, ArchivableModel):
     next_steps_summary = models.TextField(null=True)
     eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
-    barrier_types = models.ManyToManyField(
-        BarrierType, related_name="barrier_types", help_text="Barrier types"
+    categories = models.ManyToManyField(
+        Category, related_name="barriers", help_text="Barrier categories"
     )
-    
+
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     # Barrier status
@@ -173,8 +207,12 @@ class BarrierInstance(BaseModel, ArchivableModel):
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting",
     )
+    archived_reason = models.CharField(
+        choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
+    )
+    archived_explanation = models.TextField(blank=True, null=True)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
     def __str__(self):
         if self.barrier_title is None:
@@ -213,12 +251,34 @@ class BarrierInstance(BaseModel, ArchivableModel):
         return self
 
     @property
+    def archived_user(self):
+        return self._cleansed_username(self.archived_by)
+
+    @property
+    def unarchived_user(self):
+        return self._cleansed_username(self.unarchived_by)
+
+    @property
     def created_user(self):
         return self._cleansed_username(self.created_by)
 
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+    def last_seen_by(self, user_id):
+        try:
+            hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
+            return hit.last_seen
+        except BarrierUserHit.DoesNotExist:
+            return None
+
+    def archive(self, user, reason=None, explanation=None):
+        self.archived_explanation = explanation
+        self.unarchived_by = None
+        self.unarchived_on = None
+        self.unarchived_reason = ""
+        super().archive(user, reason)
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -238,16 +298,30 @@ class BarrierInstance(BaseModel, ArchivableModel):
                     loop_num += 1
                 else:
                     raise ValueError("Error generating a unique reference code.")
+
+        if self.source != BARRIER_SOURCE.OTHER:
+            self.other_source = None
+
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )
+
+
+class BarrierUserHit(models.Model):
+    """Record when a user has most recently seen a barrier."""
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    barrier = models.ForeignKey(BarrierInstance, on_delete=models.CASCADE)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['user', 'barrier']
 
 
 class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="progress", on_delete=models.PROTECT
+        BarrierInstance, related_name="progress", on_delete=models.CASCADE
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
     status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)

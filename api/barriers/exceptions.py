@@ -1,0 +1,2 @@
+class HistoryItemNotFound(Exception):
+    pass
