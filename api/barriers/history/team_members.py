@@ -22,7 +22,7 @@ class TeamMemberHistoryFactory(HistoryItemFactory):
     @classmethod
     def create_history_items(cls, new_record, old_record, fields=[]):
         if new_record.history_type == "+":
-            return [TeamMemberHistoryItem(new_record, old_record)]
+            return [TeamMemberHistoryItem(new_record, None)]
         if new_record.history_type == "~":
             if new_record.user == old_record.user:
                 return [TeamMemberHistoryItem(new_record, old_record)]
