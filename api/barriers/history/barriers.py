@@ -146,4 +146,15 @@ class BarrierHistoryFactory(HistoryItemFactory):
 
     @classmethod
     def get_history(cls, barrier_id):
-        return BarrierInstance.history.filter(id=barrier_id).order_by("history_date")
+        """
+        Only show history after the reported_on date
+
+        Note that history_date is set slightly after reported_on when submitting,
+        so this will still return one history item for when the barrier was submitted,
+        - we need this to compare subsequent history items against.
+        """
+        barrier = BarrierInstance.objects.get(id=barrier_id)
+        return BarrierInstance.history.filter(
+            id=barrier_id,
+            history_date__gt=barrier.reported_on,
+        ).order_by("history_date")
