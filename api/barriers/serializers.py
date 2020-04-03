@@ -51,6 +51,8 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "status",
             "status_summary",
             "status_date",
+            "sub_status",
+            "sub_status_other",
             "export_country",
             "country_admin_areas",
             "sectors_affected",
@@ -72,8 +74,6 @@ class BarrierReportSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "code",
-            "status",
-            "status_date",
             "progress",
             "created_by",
             "created_on",

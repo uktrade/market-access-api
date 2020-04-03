@@ -109,6 +109,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         help_text="type of problem, long term or short term",
     )
 
+    # These 3 fields were previously to store status during 'add a barrier'
+    # They are now redundant and should be deprecated. Keeping for now to lower the risk
     is_resolved = models.NullBooleanField()
     resolved_date = models.DateField(null=True, default=None)
     resolved_status = models.CharField(
@@ -230,20 +232,16 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         return progress_list
 
     def submit_report(self, submitted_by=None):
-        """ submit a report, convert it into a barrier. Changing status, essentially """
+        """ submit a report, convert it into a barrier """
         for validator in [validators.ReportReadyForSubmitValidator()]:
             validator.set_instance(self)
             validator()
-        if self.is_resolved:
-            barrier_new_status = self.resolved_status
-            status_date = self.isodate_to_tz_datetime(self.resolved_date)
-        else:
-            barrier_new_status = 7  # Unknown
-            status_date = timezone.now()
+
+        if not self.status_date:
+            self.status_date = timezone.now()
+
         self.modified_by = submitted_by
-        self.status = barrier_new_status  # If all good, then accept the report for now
         self.reported_on = timezone.now()
-        self.status_date = status_date
         self.draft = False
         self.save()
         return self

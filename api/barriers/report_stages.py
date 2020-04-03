@@ -8,21 +8,28 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.1",
         "order": 1,
-        "required": ["problem_status", "is_resolved"],
+        "required": ["problem_status", "status"],
         "conditional": [
             {
-                "condition_field": "is_resolved",
-                "operator": operator.eq,
-                "value": True,
-                "non_null_field": "resolved_date",
-                "error_message": "resolved_date can not be null, when is_resolved is True",
+                "condition_field": "status",
+                "operator": operator.ne,
+                "value": 0,
+                "non_null_field": "status",
+                "error_message": "status can not be 0",
             },
             {
-                "condition_field": "is_resolved",
-                "operator": operator.eq,
-                "value": True,
-                "non_null_field": "resolved_status",
-                "error_message": "resolved_status can not be null, when is_resolved is True",
+                "condition_field": "status",
+                "operator": operator.contains,
+                "value": (3, 4),
+                "non_null_field": "status_summary",
+                "error_message": "status_summary can not be null when status is resolved",
+            },
+            {
+                "condition_field": "status",
+                "operator": operator.contains,
+                "value": (3, 4),
+                "non_null_field": "status_date",
+                "error_message": "status_date can not be null when status is resolved",
             }
         ],
     },
@@ -51,15 +58,7 @@ REPORT_CONDITIONS = [
         "stage": "1.5",
         "order": 5,
         "required": ["problem_description"],
-        "conditional": [
-            {
-                "condition_field": "is_resolved",
-                "operator": operator.eq,
-                "value": True,
-                "non_null_field": "status_summary",
-                "error_message": "status_summary can not be null, when is_resolved is True",
-            }
-        ],
+        "conditional": [],
     },
 ]
 
@@ -87,7 +86,7 @@ def conditional_field_value(instance, rule_item):
     non_null_value = data_combiner.get_value(rule_item["non_null_field"])
     relate = rule_item["operator"]
     value_to_check = rule_item["value"]
-    if condition_value and relate(condition_value, value_to_check):
+    if condition_value and relate(value_to_check, condition_value):
         if non_null_value is None:
             return False
 
