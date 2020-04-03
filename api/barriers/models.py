@@ -244,6 +244,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         self.reported_on = timezone.now()
         self.draft = False
         self.save()
+        self.progress.all().delete()
         return self
 
     @property
