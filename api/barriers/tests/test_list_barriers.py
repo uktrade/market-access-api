@@ -3,15 +3,13 @@ import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from django.utils.timezone import now
-
 from freezegun import freeze_time
 from factory.fuzzy import FuzzyChoice, FuzzyDate
 
 from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
 from api.metadata.models import Category
-from api.metadata.constants import PROBLEM_STATUS_TYPES
+
 from .test_utils import TestUtils
 
 

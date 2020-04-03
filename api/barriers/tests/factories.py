@@ -1,4 +1,5 @@
 import factory
+from django.utils import timezone
 from factory.fuzzy import FuzzyChoice
 
 from api.barriers.models import BarrierInstance
@@ -27,7 +28,8 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BarrierInstance
 
-    problem_status = 1
+    problem_status = 7
+    status_date = timezone.now()
     is_resolved = False
     export_country = fuzzy_country()
     sectors_affected = True
@@ -37,6 +39,21 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     barrier_title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
     problem_description = "Wibble wobble"
     next_steps_summary = "Some steps to be taken."
+
+    @factory.post_generation
+    def convert_to_barrier(self, create, extracted, **kwargs):
+        # a barrier is considered a report until it's submitted
+        self.submit_report()
+
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted:
+            # A list of tags were passed in, use them
+            self.tags.add(*extracted)
 
 
 class BarrierTagFactory(factory.django.DjangoModelFactory):

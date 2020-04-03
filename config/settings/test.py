@@ -1,29 +1,12 @@
 from .base import *
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 DJANGO_ENV = 'test'
 
 SSO_ENABLED = True
 HAWK_ENABLED = False
 FAKE_METADATA = True
-REDIS_BASE_URL: 'redis://localhost'
 AV_V2_SERVICE_URL = "http://av-service/"
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
-    "handlers": {"console": {"level": "DEBUG", "class": "logging.StreamHandler"}},
-    "loggers": {
-        "django.request": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": True,
-        },
-        "": {"handlers": ["console"], "level": "DEBUG", "propagate": False},
-    },
-}
 
 INSTALLED_APPS += [
     "api.documents.test.my_entity_document",

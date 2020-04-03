@@ -4,7 +4,6 @@ from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance, BarrierUserHit
 from api.collaboration.models import TeamMember
-
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
     BARRIER_SOURCE,
@@ -15,6 +14,7 @@ from api.metadata.constants import (
 )
 from api.metadata.serializers import BarrierTagSerializer
 from api.metadata.utils import (
+    adjust_barrier_tags,
     get_admin_areas,
     get_countries,
     get_sectors,
@@ -341,7 +341,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
-    tags = BarrierTagSerializer(many=True)
+    tags = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -400,6 +400,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_on",
             "unarchived_by",
             "last_seen_on",
+            "tags",
         )
         depth = 1
 
@@ -470,29 +471,23 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
         return last_seen
 
-    def validate(self, data):
-        """
-        Performs cross-field validation
-        status validations:
-        if status_summary is provided, status_date is mandatory
-            when current status is Resolved
-         if status_date is provided, status_summary is also expected
-        """
-        # status_summary = data.get('status_summary', None)
-        # status_date = data.get('status_date', None)
-        # if status_date is not None and status_summary is None:
-        #     raise serializers.ValidationError('missing data')
+    def get_tags(self, obj):
+        tags = obj.tags.all()
+        serializer = BarrierTagSerializer(tags, many=True)
+        return serializer.data
 
+    def validate_tags(self, tag_ids=None):
+        if type(tag_ids) is not list:
+            raise serializers.ValidationError('Expected a list of tag IDs.')
 
-        # if status_summary is not None:
-        #     barrier = BarrierInstance.objects.get(id=self.instance.id)
-        #     if barrier.status == 4:
-        #         if status_date is None:
-        #             raise serializers.ValidationError('missing data')
-        #     else:
-        #         # ignore status_date if provided
-        #         data["status_date"] = getattr(self.instance, "status_date")
-        return data
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+
+        # Tags
+        tag_ids = self.context["request"].data.get("tags", ())
+        self.validate_tags(tag_ids)
+
+        return attrs
 
     def update(self, instance, validated_data):
         if instance.archived is False and validated_data.get("archived") is True:
@@ -510,7 +505,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
     def save(self, *args, **kwargs):
         self.user = kwargs.get("modified_by")
-        super().save(*args, **kwargs)
+        barrier = super().save(*args, **kwargs)
+        # Tags
+        tag_ids = self.initial_data.get("tags")
+        adjust_barrier_tags(barrier, tag_ids)
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):
