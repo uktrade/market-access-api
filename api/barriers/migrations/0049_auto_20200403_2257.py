@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0049_convert_to_tags'),
+        ('barriers', '0048_convert_to_tags'),
     ]
 
     operations = [
