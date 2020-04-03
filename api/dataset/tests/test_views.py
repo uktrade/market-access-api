@@ -18,9 +18,8 @@ class TestBarriersDataset(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "a05f66a0-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
@@ -78,7 +77,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["categories"] == []
         assert barrier["source"] == "Other"
         assert barrier["team_count"] == 1
-        assert barrier["resolved_date"] == datetime.date(2018, 9, 10)
+        assert barrier["status_date"] == "2018-09-10"
         assert barrier["assessment_impact"] is None
         assert barrier["value_to_economy"] is None
         assert barrier["import_market_size"] is None

@@ -32,9 +32,8 @@ def add_multiple_barriers(count, client):
                 format="json",
                 data={
                     "problem_status": FuzzyChoice([1, 2]).fuzz(),
-                    "is_resolved": FuzzyChoice([True, False]).fuzz(),
-                    "resolved_date": date.strftime("%Y-%m-%d"),
-                    "resolved_status": 4,
+                    "status_date": date.strftime("%Y-%m-%d"),
+                    "status": FuzzyChoice([2, 4]).fuzz(),
                     "export_country": FuzzyChoice(countries).fuzz(),
                     "sectors_affected": True,
                     "sectors": [FuzzyChoice(sectors).fuzz()],
@@ -78,9 +77,8 @@ class TestUtils:
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [

@@ -451,7 +451,7 @@ class BarriertListExportView(generics.ListAPIView):
 	        "commercial_value": "Commercial Value",
 	        "export_value": "Value of currently affected UK exports",
             "reported_on": "Reported Date",
-            "resolved_date": "Resolved Date",
+            "status_date": "Status Date",
             "modified_on": "Last updated",
         }
 

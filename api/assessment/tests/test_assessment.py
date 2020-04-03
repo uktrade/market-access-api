@@ -24,9 +24,8 @@ class TestAssessment(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -120,7 +119,7 @@ class TestAssessment(APITestMixin):
 
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
-    
+
         assessment_url = reverse("get-assessment", kwargs={"pk": instance_id})
         response = self.api_client.get(assessment_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -296,7 +295,7 @@ class TestAssessment(APITestMixin):
 
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
-    
+
         assessment_url = reverse("get-assessment", kwargs={"pk": instance_id})
         response = self.api_client.get(assessment_url)
         assert response.status_code == status.HTTP_404_NOT_FOUND

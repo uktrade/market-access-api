@@ -23,7 +23,7 @@ class UnresolvedReportFactory(factory.django.DjangoModelFactory):
 
     id = factory.LazyFunction(uuid.uuid4)
     problem_status = FuzzyChoice([1, 2]).fuzz()
-    is_resolved = False
+    status = 1
     export_country = FuzzyChoice(countries).fuzz()
     sectors_affected = True
     sectors = [FuzzyChoice(sectors).fuzz()]

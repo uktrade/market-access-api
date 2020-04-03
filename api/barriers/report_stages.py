@@ -8,13 +8,12 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.1",
         "order": 1,
-        "required": ["problem_status", "status"],
+        "required": ["problem_status"],
         "conditional": [
             {
                 "condition_field": "status",
                 "operator": operator.ne,
                 "value": 0,
-                "non_null_field": "status",
                 "error_message": "status can not be 0",
             },
             {
@@ -83,14 +82,17 @@ def conditional_field_value(instance, rule_item):
     data_combiner = DataCombiner(instance, None)
 
     condition_value = data_combiner.get_value(rule_item["condition_field"])
-    non_null_value = data_combiner.get_value(rule_item["non_null_field"])
     relate = rule_item["operator"]
     value_to_check = rule_item["value"]
-    if condition_value and relate(value_to_check, condition_value):
-        if non_null_value is None:
-            return False
 
-        return True
+    if "non_null_field" in rule_item:
+        if condition_value is not None and relate(value_to_check, condition_value):
+            non_null_value = data_combiner.get_value(rule_item["non_null_field"])
+            if non_null_value is None:
+                return False
+            return True
+    else:
+        return relate(value_to_check, condition_value)
 
 
 def report_stage_status(instance, stage_condition):
