@@ -39,25 +39,21 @@ class Stage(models.Model):
 
 
 class ReportManager(models.Manager):
-    """ Manage reports within the model, with status 0 """
+    """ Manage reports within the model, with draft=True """
 
     def get_queryset(self):
         return (
             super(ReportManager, self)
             .get_queryset()
-            .filter(Q(status=0) & Q(archived=False))
+            .filter(Q(draft=True) & Q(archived=False))
         )
 
 
 class BarrierManager(models.Manager):
-    """ Manage barriers within the model, with status not 0 """
+    """ Manage barriers within the model, with draft=False """
 
     def get_queryset(self):
-        return (
-            super(BarrierManager, self)
-            .get_queryset()
-            .filter(~Q(status=0))
-        )
+        return super(BarrierManager, self).get_queryset().filter(draft=False)
 
 
 class BarrierHistoricalModel(models.Model):
@@ -211,6 +207,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
     )
     archived_explanation = models.TextField(blank=True, null=True)
+    draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
@@ -247,6 +244,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         self.status = barrier_new_status  # If all good, then accept the report for now
         self.reported_on = timezone.now()
         self.status_date = status_date
+        self.draft = False
         self.save()
         return self
 
