@@ -109,14 +109,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         help_text="type of problem, long term or short term",
     )
 
-    # These 3 fields were previously to store status during 'add a barrier'
-    # They are now redundant and should be deprecated. Keeping for now to lower the risk
-    is_resolved = models.NullBooleanField()
-    resolved_date = models.DateField(null=True, default=None)
-    resolved_status = models.CharField(
-        choices=RESOLVED_STATUS, max_length=25, null=True
-    )
-
     export_country = models.UUIDField(null=True)
     country_admin_areas = ArrayField(
         models.UUIDField(),
