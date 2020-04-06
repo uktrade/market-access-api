@@ -400,7 +400,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def tags_filter(self, queryset, name, value):
         tag_ids = value.split(",")
-        return queryset.filter(tags__title__in=tag_ids)
+        return queryset.filter(tags__in=tag_ids)
 
 
 class BarrierList(generics.ListAPIView):
