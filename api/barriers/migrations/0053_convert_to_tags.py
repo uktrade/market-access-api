@@ -9,8 +9,10 @@ DEFAULT_TAGS = [
     },
     {
         "title": "covid-19",
-        "description": "Use to indicate any barrier or measure taken in response to the Covid-19 crisis. \
-                       For example restrictions related to medical supplies or food supply chains.",
+        "description": (
+            "Use to indicate any barrier or measure taken in response to the Covid-19 crisis. "
+            "For example restrictions related to medical supplies or food supply chains."
+        ),
         "show_at_reporting": True,
     },
 ]
