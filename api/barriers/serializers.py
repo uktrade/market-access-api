@@ -259,6 +259,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
     priority = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
+    tags = BarrierTagSerializer(many=True)
 
     class Meta:
         model = BarrierInstance
@@ -278,6 +279,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "status_summary",
             "priority",
             "categories",
+            "tags",
             "created_on",
             "modified_on",
             "archived",
