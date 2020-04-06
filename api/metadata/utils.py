@@ -101,13 +101,8 @@ def get_barrier_tags():
 
 
 def adjust_barrier_tags(barrier, tag_ids):
-    if type(tag_ids) is not list:
-        return
-    else:
-        tags_to_remove = barrier.tags.exclude(id__in=tag_ids)
-        tags_to_add = BarrierTag.objects.filter(id__in=tag_ids)
-        barrier.tags.remove(*tags_to_remove)
-        barrier.tags.add(*tags_to_add)
+    if type(tag_ids) is list:
+        barrier.tags.set(tag_ids)
 
 
 def get_barrier_priorities():
