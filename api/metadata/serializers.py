@@ -9,5 +9,6 @@ class BarrierTagSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "title",
+            "description",
             "show_at_reporting",
         )

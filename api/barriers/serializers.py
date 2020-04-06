@@ -379,7 +379,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_on",
             "unarchived_by",
             "last_seen_on",
-            "tags",
         )
         depth = 1
 
