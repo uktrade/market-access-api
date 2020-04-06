@@ -18,9 +18,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -61,9 +60,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -109,9 +107,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -156,9 +153,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -203,9 +199,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -246,7 +241,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -274,7 +269,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -295,7 +290,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -323,7 +318,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -344,9 +339,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -396,7 +390,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -424,7 +418,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("unknown-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -445,9 +439,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -498,9 +491,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -550,7 +542,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -578,7 +570,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
         assert response.data["problem_status"] == 2
         assert response.data["barrier_title"] == "Some title"
         assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
@@ -603,7 +595,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -631,7 +623,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
         assert response.data["problem_status"] == 2
         assert response.data["barrier_title"] == "Some title"
         assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
@@ -658,7 +650,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -686,7 +678,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
         assert response.data["problem_status"] == 2
         assert response.data["barrier_title"] == "Some title"
         assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
@@ -698,7 +690,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -726,7 +718,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
         assert response.data["sectors_affected"] == True
         assert len(response.data["sectors"]) == 2
 
@@ -745,7 +737,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "all_sectors": True,
@@ -770,7 +762,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
         assert response.data["sectors_affected"] == True
 
         edit_barrier_response = self.api_client.put(
@@ -791,7 +783,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "product": "Some product",
@@ -818,7 +810,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -865,7 +857,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -912,7 +904,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -959,7 +951,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1013,7 +1005,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1079,7 +1071,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1150,7 +1142,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1184,7 +1176,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
@@ -1196,7 +1188,7 @@ class TestBarrierDetail(APITestMixin):
             list_report_url,
             format="json",
             data={
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1237,7 +1229,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1265,7 +1257,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 7
+        assert get_response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1288,7 +1280,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1316,7 +1308,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1338,7 +1330,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1366,7 +1358,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1389,7 +1381,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1417,7 +1409,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 7
+        assert get_response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1441,7 +1433,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1469,7 +1461,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 7
+        assert get_response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1493,7 +1485,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1521,7 +1513,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 7
+        assert get_response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1545,7 +1537,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1573,7 +1565,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 7
+        assert get_response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1597,7 +1589,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1625,7 +1617,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1647,7 +1639,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1675,7 +1667,7 @@ class TestBarrierDetail(APITestMixin):
         response = self.api_client.get(get_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
+        assert response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1697,7 +1689,7 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": False,
+                "status": 1,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1725,7 +1717,7 @@ class TestBarrierDetail(APITestMixin):
         get_response = self.api_client.get(get_url)
         assert get_response.status_code == status.HTTP_200_OK
         assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 7
+        assert get_response.data["status"]["id"] == 1
 
         resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
         resolve_barrier_response = self.api_client.put(
@@ -1752,9 +1744,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1796,9 +1787,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 3,
+                "status_date": "2018-09-10",
+                "status": 3,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1836,9 +1826,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [
@@ -1889,9 +1878,8 @@ class TestBarrierDetail(APITestMixin):
             format="json",
             data={
                 "problem_status": 2,
-                "is_resolved": True,
-                "resolved_date": "2018-09-10",
-                "resolved_status": 4,
+                "status_date": "2018-09-10",
+                "status": 4,
                 "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
                 "sectors_affected": True,
                 "sectors": [

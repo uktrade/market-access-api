@@ -39,25 +39,21 @@ class Stage(models.Model):
 
 
 class ReportManager(models.Manager):
-    """ Manage reports within the model, with status 0 """
+    """ Manage reports within the model, with draft=True """
 
     def get_queryset(self):
         return (
             super(ReportManager, self)
             .get_queryset()
-            .filter(Q(status=0) & Q(archived=False))
+            .filter(Q(draft=True) & Q(archived=False))
         )
 
 
 class BarrierManager(models.Manager):
-    """ Manage barriers within the model, with status not 0 """
+    """ Manage barriers within the model, with draft=False """
 
     def get_queryset(self):
-        return (
-            super(BarrierManager, self)
-            .get_queryset()
-            .filter(~Q(status=0))
-        )
+        return super(BarrierManager, self).get_queryset().filter(draft=False)
 
 
 class BarrierHistoricalModel(models.Model):
@@ -111,12 +107,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=PROBLEM_STATUS_TYPES,
         null=True,
         help_text="type of problem, long term or short term",
-    )
-
-    is_resolved = models.NullBooleanField()
-    resolved_date = models.DateField(null=True, default=None)
-    resolved_status = models.CharField(
-        choices=RESOLVED_STATUS, max_length=25, null=True
     )
 
     export_country = models.UUIDField(null=True)
@@ -211,6 +201,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
     )
     archived_explanation = models.TextField(blank=True, null=True)
+    draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
@@ -233,21 +224,19 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         return progress_list
 
     def submit_report(self, submitted_by=None):
-        """ submit a report, convert it into a barrier. Changing status, essentially """
+        """ submit a report, convert it into a barrier """
         for validator in [validators.ReportReadyForSubmitValidator()]:
             validator.set_instance(self)
             validator()
-        if self.is_resolved:
-            barrier_new_status = self.resolved_status
-            status_date = self.isodate_to_tz_datetime(self.resolved_date)
-        else:
-            barrier_new_status = 7  # Unknown
-            status_date = timezone.now()
+
+        if not self.status_date:
+            self.status_date = timezone.now()
+
         self.modified_by = submitted_by
-        self.status = barrier_new_status  # If all good, then accept the report for now
         self.reported_on = timezone.now()
-        self.status_date = status_date
+        self.draft = False
         self.save()
+        self.progress.all().delete()
         return self
 
     @property

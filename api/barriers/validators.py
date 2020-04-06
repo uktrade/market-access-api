@@ -41,14 +41,19 @@ class ReportReadyForSubmitValidator:
                     errors[field_name] = [self.message]
 
             for item in stage["conditional"]:
-                field_name = item["non_null_field"]
                 condition_value = data_combiner.get_value(item["condition_field"])
-                non_null_value = data_combiner.get_value(item["non_null_field"])
                 relate = item["operator"]
                 value_to_check = item["value"]
-                if condition_value and relate(condition_value, value_to_check):
-                    if non_null_value is None:
-                        errors[field_name] = [item["error_message"]]
+
+                if "non_null_field" in item:
+                    if condition_value and relate(value_to_check, condition_value):
+                        non_null_value = data_combiner.get_value(item["non_null_field"])
+                        if non_null_value is None:
+                            field_name = item["non_null_field"]
+                            errors[field_name] = [item["error_message"]]
+                elif not relate(value_to_check, condition_value):
+                    field_name = item["condition_field"]
+                    errors[field_name] = [item["error_message"]]
 
         sectors_affected = data_combiner.get_value('sectors_affected')
         all_sectors = data_combiner.get_value('all_sectors')
@@ -59,11 +64,6 @@ class ReportReadyForSubmitValidator:
 
         if sectors_affected and all_sectors and sectors:
             errors['sectors'] = 'conflicting input'
-
-        is_resolved = data_combiner.get_value('is_resolved')
-        resolved_status = data_combiner.get_value('resolved_status')
-        if is_resolved and resolved_status not in ['3', '4']:
-            errors['resolved_status'] = 'incorrect data'
 
         if errors:
             raise ValidationError(errors)

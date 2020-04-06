@@ -38,7 +38,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
     product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
-    resolved_date = serializers.SerializerMethodField()
+    status_date = serializers.DateField(format="%Y-%m-%d")
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     assessment_impact = serializers.SerializerMethodField()
@@ -46,7 +46,6 @@ class BarrierDataSetSerializer(serializers.Serializer):
     import_market_size = serializers.SerializerMethodField()
     commercial_value = serializers.SerializerMethodField()
     export_value = serializers.SerializerMethodField()
-    resolved_date = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     company_names = serializers.SerializerMethodField()
     company_ids = serializers.SerializerMethodField()
@@ -68,7 +67,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
             "categories",
             "source",
             "team_count",
-            "resolved_date",
+            "status_date",
             "reported_on",
             "modified_on",
             "assessment_impact",
@@ -175,19 +174,6 @@ class BarrierDataSetSerializer(serializers.Serializer):
             return obj.priority.name
         else:
             return "Unknown"
-
-    def get_resolved_date(self, obj):
-        """
-        Customer field to return resolved_date if the barrier was resolved by the time
-        it was reported otherwise return status_date, if current status is resolved
-        """
-        if obj.resolved_date:
-            return obj.resolved_date
-        else:
-            if obj.status == 4:
-                return obj.status_date
-
-        return None
 
     def get_team_count(self, obj):
         return TeamMember.objects.filter(barrier=obj).count()

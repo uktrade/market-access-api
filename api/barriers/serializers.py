@@ -45,12 +45,11 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "id",
             "code",
             "problem_status",
-            "is_resolved",
-            "resolved_date",
-            "resolved_status",
             "status",
             "status_summary",
             "status_date",
+            "sub_status",
+            "sub_status_other",
             "export_country",
             "country_admin_areas",
             "sectors_affected",
@@ -72,8 +71,6 @@ class BarrierReportSerializer(serializers.ModelSerializer):
         read_only_fields = (
             "id",
             "code",
-            "status",
-            "status_date",
             "progress",
             "created_by",
             "created_on",
@@ -123,7 +120,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     team_count = serializers.IntegerField()
-    resolved_date = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     assessment_impact = serializers.SerializerMethodField()
@@ -131,8 +127,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     import_market_size = serializers.SerializerMethodField()
     commercial_value = serializers.SerializerMethodField()
     export_value = serializers.SerializerMethodField()
-
-    resolved_date = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -154,9 +148,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "team_count",
             "priority",
             "team_count",
-            "resolved_date",
             "reported_on",
-            "resolved_date",
             "modified_on",
 	        "assessment_impact",
 	        "value_to_economy",
@@ -262,19 +254,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         else:
             return "Unknown"
 
-    def get_resolved_date(self, obj):
-        """
-        Customer field to return resolved_date if the barrier was resolved by the time it was reported
-        otherwise return status_date, if current status is resolved
-        """
-        if obj.resolved_date:
-            return obj.resolved_date
-        else:
-            if obj.status == 4:
-                return obj.status_date
-
-        return None
-
     def get_team_count(self, obj):
         return TeamMember.objects.filter(barrier=obj).count()
 
@@ -293,8 +272,6 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "code",
             "reported_on",
             "problem_status",
-            "is_resolved",
-            "resolved_date",
             "barrier_title",
             "sectors_affected",
             "all_sectors",
@@ -303,6 +280,8 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "country_admin_areas",
             "eu_exit_related",
             "status",
+            "status_date",
+            "status_summary",
             "priority",
             "categories",
             "created_on",
@@ -354,8 +333,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "id",
             "code",
             "problem_status",
-            "is_resolved",
-            "resolved_date",
             "export_country",
             "country_admin_areas",
             "sectors_affected",
