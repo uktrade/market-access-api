@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
     Non reversible migration - converting eu_exit_related field to a tag where applicable
     """
     dependencies = [
-        ('barriers', '0047_auto_20200331_0643'),
+        ('barriers', '0052_auto_20200331_0643'),
     ]
 
     operations = [

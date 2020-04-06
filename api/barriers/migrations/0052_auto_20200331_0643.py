@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('metadata', '0013_barriertag'),
-        ('barriers', '0046_auto_20200327_1600'),
+        ('barriers', '0051_auto_20200403_1611'),
     ]
 
     operations = [

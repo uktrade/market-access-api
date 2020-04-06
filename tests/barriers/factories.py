@@ -41,8 +41,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
         model = BarrierInstance
 
     problem_status = FuzzyChoice([1, 2, 7]).fuzz()
-    status_date = timezone.now()
-    is_resolved = False
+    status = 1
     export_country = fuzzy_country()
     sectors_affected = True
     sectors = [fuzzy_sector()]
