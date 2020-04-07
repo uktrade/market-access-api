@@ -21,3 +21,20 @@ def barrier_categories_changed(sender, instance, action, **kwargs):
         else:
             instance.categories_history_saved = True
             instance.save()
+
+
+def barrier_tags_changed(sender, instance, action, **kwargs):
+    """
+    Triggered when barriers.tags (m2m field) is changed
+    """
+
+    if action in ("post_add", "post_remove"):
+        if hasattr(instance, "tags_history_saved"):
+            historical_instance = HistoricalBarrierInstance.objects.filter(
+                id=instance.pk
+            ).latest()
+            historical_instance.update_tags()
+            historical_instance.save()
+        else:
+            instance.tags_history_saved = True
+            instance.save()

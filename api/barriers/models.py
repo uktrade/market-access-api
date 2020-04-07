@@ -65,12 +65,20 @@ class BarrierHistoricalModel(models.Model):
         null=True,
         default=list,
     )
+    tags_cache = ArrayField(
+        models.IntegerField(),
+        null=True,
+        default=list,
+    )
 
     def get_changed_fields(self, old_history):
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
+
+        if set(self.tags_cache or []) != set(old_history.tags_cache or []):
+            changed_fields.add("tags")
 
         if changed_fields.intersection(("export_country", "country_admin_areas")):
             changed_fields.discard("export_country")
@@ -84,8 +92,12 @@ class BarrierHistoricalModel(models.Model):
             self.instance.categories.values_list("id", flat=True)
         )
 
+    def update_tags(self):
+        self.tags_cache = list(self.instance.tags.values_list("id", flat=True))
+
     def save(self, *args, **kwargs):
         self.update_categories()
+        self.update_tags()
         super().save(*args, **kwargs)
 
     class Meta:

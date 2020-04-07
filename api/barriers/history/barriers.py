@@ -109,6 +109,13 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
         }
 
 
+class TagsHistoryItem(BaseBarrierHistoryItem):
+    field = "tags"
+
+    def get_value(self, record):
+        return record.tags_cache or []
+
+
 class TitleHistoryItem(BaseBarrierHistoryItem):
     field = "barrier_title"
 
@@ -131,6 +138,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         SectorsHistoryItem,
         SourceHistoryItem,
         StatusHistoryItem,
+        TagsHistoryItem,
         TitleHistoryItem,
     )
     history_types = ("~", )
