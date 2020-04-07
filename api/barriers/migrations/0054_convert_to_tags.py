@@ -1,6 +1,10 @@
 from django.db import migrations
 
+
 BREXIT_TAG_TITLE = "Brexit"
+
+COVID_TAG_TITLE = "COVID-19"
+
 DEFAULT_TAGS = [
     {
         "title": BREXIT_TAG_TITLE,
@@ -8,9 +12,9 @@ DEFAULT_TAGS = [
         "show_at_reporting": True,
     },
     {
-        "title": "Covid-19",
+        "title": COVID_TAG_TITLE,
         "description": (
-            "Use to indicate any barrier or measure taken in response to the Covid-19 crisis. "
+            "Barrier imposed because of the Coronavirus (COVID-19) pandemic. "
             "For example restrictions related to medical supplies or food supply chains."
         ),
         "show_at_reporting": True,
