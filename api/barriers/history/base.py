@@ -72,7 +72,7 @@ class HistoryItemFactory:
         raise NotImplementedError
 
     @classmethod
-    def get_history_items(cls, barrier_id, fields=[], start_date=None):
+    def get_history_items(cls, barrier_id, fields=(), start_date=None):
         """ Gets HistoryItems for all changes made to the object"""
         history_items = []
         history = cls.get_history(barrier_id, start_date=start_date)
@@ -85,7 +85,7 @@ class HistoryItemFactory:
         return history_items
 
     @classmethod
-    def create_history_items(cls, new_record, old_record, fields=[]):
+    def create_history_items(cls, new_record, old_record, fields=()):
         """
         Create a HistoryItem to reflect each change made to the object
 

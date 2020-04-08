@@ -530,28 +530,28 @@ class HistoryMixin:
     Mixin for getting barrier history items
     """
 
-    def get_assessment_history(self, fields=[], start_date=None):
+    def get_assessment_history(self, fields=(), start_date=None):
         return AssessmentHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
             start_date=start_date,
         )
 
-    def get_barrier_history(self, fields=[], start_date=None):
+    def get_barrier_history(self, fields=(), start_date=None):
         return BarrierHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
             start_date=start_date,
         )
 
-    def get_notes_history(self, fields=[], start_date=None):
+    def get_notes_history(self, fields=(), start_date=None):
         return NoteHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
             start_date=start_date,
         )
 
-    def get_team_history(self, fields=[], start_date=None):
+    def get_team_history(self, fields=(), start_date=None):
         return TeamMemberHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
