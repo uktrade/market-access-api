@@ -104,7 +104,7 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
 
     def get_data(self):
-        if not (self.old_record.status == 0 or self.old_record.status is None):
+        if not (self.old_record.status == 0 and self.new_record.status == 7):
             return super().get_data()
 
     def get_value(self, record):
@@ -142,10 +142,10 @@ class BarrierHistoryFactory(HistoryItemFactory):
         StatusHistoryItem,
         TitleHistoryItem,
     )
-    history_types = ("~", )
+    history_types = ("~", "+")
 
     @classmethod
-    def get_history(cls, barrier_id):
+    def get_history(cls, barrier_id, start_date=None):
         """
         Only show history after the reported_on date
 
@@ -153,8 +153,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         so this will still return one history item for when the barrier was submitted,
         - we need this to compare subsequent history items against.
         """
-        barrier = BarrierInstance.objects.get(id=barrier_id)
-        return BarrierInstance.history.filter(
-            id=barrier_id,
-            history_date__gt=barrier.reported_on,
-        ).order_by("history_date")
+        history = BarrierInstance.history.filter(id=barrier_id)
+        if start_date:
+            history = history.filter(history_date__gt=start_date)
+        return history.order_by("history_date")

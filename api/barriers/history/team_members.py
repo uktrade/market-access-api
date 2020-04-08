@@ -1,6 +1,3 @@
-import datetime
-
-from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
 from .base import BaseHistoryItem, HistoryItemFactory
 
@@ -20,7 +17,7 @@ class TeamMemberHistoryItem(BaseHistoryItem):
 class TeamMemberHistoryFactory(HistoryItemFactory):
 
     @classmethod
-    def create_history_items(cls, new_record, old_record, fields=[]):
+    def create_history_items(cls, new_record, old_record, fields=()):
         if new_record.history_type == "+":
             return [TeamMemberHistoryItem(new_record, None)]
         if new_record.history_type == "~":
@@ -29,15 +26,8 @@ class TeamMemberHistoryFactory(HistoryItemFactory):
         return []
 
     @classmethod
-    def get_history(cls, barrier_id):
-        """
-        Only show history after the reported_on date
-
-        The 'Reporter' role is created slightly after reported_on - we want to exclude
-        this from the history, so allow an extra second in the comparison.
-        """
-        barrier = BarrierInstance.objects.get(id=barrier_id)
-        return TeamMember.history.filter(
-            barrier_id=barrier_id,
-            history_date__gt=barrier.reported_on + datetime.timedelta(seconds=1),
-        ).order_by("user", "history_date")
+    def get_history(cls, barrier_id, start_date=None):
+        history = TeamMember.history.filter(barrier_id=barrier_id)
+        if start_date:
+            history = history.filter(history_date__gt=start_date)
+        return history.order_by("user", "history_date")
