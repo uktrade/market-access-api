@@ -38,14 +38,6 @@ class DescriptionHistoryItem(BaseBarrierHistoryItem):
     field = "problem_description"
 
 
-class EUExitRelatedHistoryItem(BaseBarrierHistoryItem):
-    field = "eu_exit_related"
-
-    def get_data(self):
-        if self.old_record.eu_exit_related:
-            return super().get_data()
-
-
 class LocationHistoryItem(BaseBarrierHistoryItem):
     field = "location"
 
@@ -104,7 +96,7 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
 
     def get_data(self):
-        if not (self.old_record.status == 0 or self.old_record.status is None):
+        if not (self.old_record.status == 0 and self.new_record.status == 7):
             return super().get_data()
 
     def get_value(self, record):
@@ -115,6 +107,13 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
             "sub_status": record.sub_status,
             "sub_status_other":record.sub_status_other,
         }
+
+
+class TagsHistoryItem(BaseBarrierHistoryItem):
+    field = "tags"
+
+    def get_value(self, record):
+        return record.tags_cache or []
 
 
 class TitleHistoryItem(BaseBarrierHistoryItem):
@@ -132,7 +131,6 @@ class BarrierHistoryFactory(HistoryItemFactory):
         CategoriesHistoryItem,
         CompaniesHistoryItem,
         DescriptionHistoryItem,
-        EUExitRelatedHistoryItem,
         LocationHistoryItem,
         PriorityHistoryItem,
         ProductHistoryItem,
@@ -140,10 +138,21 @@ class BarrierHistoryFactory(HistoryItemFactory):
         SectorsHistoryItem,
         SourceHistoryItem,
         StatusHistoryItem,
+        TagsHistoryItem,
         TitleHistoryItem,
     )
-    history_types = ("~", )
+    history_types = ("~", "+")
 
     @classmethod
-    def get_history(cls, barrier_id):
-        return BarrierInstance.history.filter(id=barrier_id).order_by("history_date")
+    def get_history(cls, barrier_id, start_date=None):
+        """
+        Only show history after the reported_on date
+
+        Note that history_date is set slightly after reported_on when submitting,
+        so this will still return one history item for when the barrier was submitted,
+        - we need this to compare subsequent history items against.
+        """
+        history = BarrierInstance.history.filter(id=barrier_id)
+        if start_date:
+            history = history.filter(history_date__gt=start_date)
+        return history.order_by("history_date")

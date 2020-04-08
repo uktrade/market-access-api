@@ -6,7 +6,6 @@ from rest_framework import serializers
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
 from api.metadata.constants import (
-    ADV_BOOLEAN,
     ASSESMENT_IMPACT,
     BARRIER_PENDING,
     BARRIER_SOURCE,
@@ -38,7 +37,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
     product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
-    resolved_date = serializers.SerializerMethodField()
+    status_date = serializers.DateField(format="%Y-%m-%d")
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     assessment_impact = serializers.SerializerMethodField()
@@ -46,7 +45,6 @@ class BarrierDataSetSerializer(serializers.Serializer):
     import_market_size = serializers.SerializerMethodField()
     commercial_value = serializers.SerializerMethodField()
     export_value = serializers.SerializerMethodField()
-    resolved_date = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     company_names = serializers.SerializerMethodField()
     company_ids = serializers.SerializerMethodField()
@@ -68,7 +66,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
             "categories",
             "source",
             "team_count",
-            "resolved_date",
+            "status_date",
             "reported_on",
             "modified_on",
             "assessment_impact",
@@ -159,11 +157,6 @@ class BarrierDataSetSerializer(serializers.Serializer):
     def get_categories(self, obj):
         return [category.title for category in obj.categories.all()]
 
-    def get_eu_exit_related(self, obj):
-        """Custom Serializer Method Field for exposing current eu_exit_related display value"""
-        eu_dict = dict(ADV_BOOLEAN)
-        return eu_dict.get(obj.eu_exit_related, "Unknown")
-
     def get_source(self, obj):
         """Custom Serializer Method Field for exposing source display value"""
         source_dict = dict(BARRIER_SOURCE)
@@ -175,19 +168,6 @@ class BarrierDataSetSerializer(serializers.Serializer):
             return obj.priority.name
         else:
             return "Unknown"
-
-    def get_resolved_date(self, obj):
-        """
-        Customer field to return resolved_date if the barrier was resolved by the time
-        it was reported otherwise return status_date, if current status is resolved
-        """
-        if obj.resolved_date:
-            return obj.resolved_date
-        else:
-            if obj.status == 4:
-                return obj.status_date
-
-        return None
 
     def get_team_count(self, obj):
         return TeamMember.objects.filter(barrier=obj).count()

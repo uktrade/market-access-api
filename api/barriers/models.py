@@ -9,7 +9,6 @@ from django.utils import timezone
 from simple_history.models import HistoricalRecords, ModelChange
 
 from api.metadata.constants import (
-    ADV_BOOLEAN,
     BARRIER_STATUS,
     BARRIER_SOURCE,
     BARRIER_PENDING,
@@ -18,7 +17,7 @@ from api.metadata.constants import (
     STAGE_STATUS,
 )
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata.models import BarrierPriority, Category
+from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -39,25 +38,17 @@ class Stage(models.Model):
 
 
 class ReportManager(models.Manager):
-    """ Manage reports within the model, with status 0 """
+    """ Manage reports within the model, with draft=True """
 
     def get_queryset(self):
-        return (
-            super(ReportManager, self)
-            .get_queryset()
-            .filter(Q(status=0) & Q(archived=False))
-        )
+        return super().get_queryset().filter(Q(draft=True) & Q(archived=False))
 
 
 class BarrierManager(models.Manager):
-    """ Manage barriers within the model, with status not 0 """
+    """ Manage barriers within the model, with draft=False """
 
     def get_queryset(self):
-        return (
-            super(BarrierManager, self)
-            .get_queryset()
-            .filter(~Q(status=0))
-        )
+        return super(BarrierManager, self).get_queryset().filter(draft=False)
 
 
 class BarrierHistoricalModel(models.Model):
@@ -70,12 +61,20 @@ class BarrierHistoricalModel(models.Model):
         null=True,
         default=list,
     )
+    tags_cache = ArrayField(
+        models.IntegerField(),
+        null=True,
+        default=list,
+    )
 
     def get_changed_fields(self, old_history):
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
+
+        if set(self.tags_cache or []) != set(old_history.tags_cache or []):
+            changed_fields.add("tags")
 
         if changed_fields.intersection(("export_country", "country_admin_areas")):
             changed_fields.discard("export_country")
@@ -89,8 +88,12 @@ class BarrierHistoricalModel(models.Model):
             self.instance.categories.values_list("id", flat=True)
         )
 
+    def update_tags(self):
+        self.tags_cache = list(self.instance.tags.values_list("id", flat=True))
+
     def save(self, *args, **kwargs):
         self.update_categories()
+        self.update_tags()
         super().save(*args, **kwargs)
 
     class Meta:
@@ -111,12 +114,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=PROBLEM_STATUS_TYPES,
         null=True,
         help_text="type of problem, long term or short term",
-    )
-
-    is_resolved = models.NullBooleanField()
-    resolved_date = models.DateField(null=True, default=None)
-    resolved_status = models.CharField(
-        choices=RESOLVED_STATUS, max_length=25, null=True
     )
 
     export_country = models.UUIDField(null=True)
@@ -155,7 +152,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(null=True)
-    eu_exit_related = models.PositiveIntegerField(choices=ADV_BOOLEAN, null=True)
 
     categories = models.ManyToManyField(
         Category, related_name="barriers", help_text="Barrier categories"
@@ -200,9 +196,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     priority_date = models.DateTimeField(
         auto_now=True, null=True, help_text="date when priority was set"
     )
-
     stages = models.ManyToManyField(
-        "Stage",
+        Stage,
         related_name="report_stages",
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting",
@@ -211,8 +206,11 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
     )
     archived_explanation = models.TextField(blank=True, null=True)
+    draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
+
+    tags = models.ManyToManyField(BarrierTag)
 
     def __str__(self):
         if self.barrier_title is None:
@@ -236,21 +234,19 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         return progress_list
 
     def submit_report(self, submitted_by=None):
-        """ submit a report, convert it into a barrier. Changing status, essentially """
+        """ submit a report, convert it into a barrier """
         for validator in [validators.ReportReadyForSubmitValidator()]:
             validator.set_instance(self)
             validator()
-        if self.is_resolved:
-            barrier_new_status = self.resolved_status
-            status_date = self.isodate_to_tz_datetime(self.resolved_date)
-        else:
-            barrier_new_status = 7  # Unknown
-            status_date = timezone.now()
+
+        if not self.status_date:
+            self.status_date = timezone.now()
+
         self.modified_by = submitted_by
-        self.status = barrier_new_status  # If all good, then accept the report for now
         self.reported_on = timezone.now()
-        self.status_date = status_date
+        self.draft = False
         self.save()
+        self.progress.all().delete()
         return self
 
     @property

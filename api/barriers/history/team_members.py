@@ -17,16 +17,17 @@ class TeamMemberHistoryItem(BaseHistoryItem):
 class TeamMemberHistoryFactory(HistoryItemFactory):
 
     @classmethod
-    def create_history_items(cls, new_record, old_record, fields=[]):
+    def create_history_items(cls, new_record, old_record, fields=()):
         if new_record.history_type == "+":
-            return [TeamMemberHistoryItem(new_record, old_record)]
+            return [TeamMemberHistoryItem(new_record, None)]
         if new_record.history_type == "~":
             if new_record.user == old_record.user:
                 return [TeamMemberHistoryItem(new_record, old_record)]
         return []
 
     @classmethod
-    def get_history(cls, barrier_id):
-        return TeamMember.history.filter(
-            barrier_id=barrier_id
-        ).order_by("user", "history_date")
+    def get_history(cls, barrier_id, start_date=None):
+        history = TeamMember.history.filter(barrier_id=barrier_id)
+        if start_date:
+            history = history.filter(history_date__gt=start_date)
+        return history.order_by("user", "history_date")

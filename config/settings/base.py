@@ -43,6 +43,7 @@ THIRD_PARTY_APPS = [
     "oauth2_provider",
     "rest_framework",
     "simple_history",
+    "ordered_model",
 ]
 
 LOCAL_APPS = [

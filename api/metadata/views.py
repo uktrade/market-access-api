@@ -1,7 +1,4 @@
-import json
-
 from django.conf import settings
-from django.shortcuts import render
 
 from hawkrest import HawkAuthentication
 
@@ -9,24 +6,11 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .utils import (
-    import_api_results,
-    get_os_regions_and_countries,
-    get_admin_areas,
-    get_sectors,
-    get_barrier_priorities,
-    get_barrier_type_categories,
-    get_categories,
-    get_reporting_stages
-)
-
-from api.metadata.constants import (
-    ADV_BOOLEAN,
+from .constants import (
     ASSESMENT_IMPACT,
     BARRIER_PENDING,
     BARRIER_SOURCE,
     BARRIER_STATUS,
-    BARRIER_TYPE_CATEGORIES,
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
     ESTIMATED_LOSS_RANGE,
@@ -38,8 +22,16 @@ from api.metadata.constants import (
     SUPPORT_TYPE,
     TIMELINE_EVENTS,
 )
-from api.metadata.models import BarrierPriority
-from api.barriers.models import Stage
+from .utils import (
+    get_admin_areas,
+    get_barrier_priorities,
+    get_barrier_tags,
+    get_barrier_type_categories,
+    get_categories,
+    get_os_regions_and_countries,
+    get_reporting_stages,
+    get_sectors,
+)
 
 
 class MetadataView(generics.GenericAPIView):
@@ -50,12 +42,10 @@ class MetadataView(generics.GenericAPIView):
         authentication_classes = ()
         permission_classes = ()
 
-
     def get(self, request):
         status_types = dict((x, y) for x, y in PROBLEM_STATUS_TYPES)
         loss_range = dict((x, y) for x, y in ESTIMATED_LOSS_RANGE)
         stage_status = dict((x, y) for x, y in STAGE_STATUS)
-        adv_boolean = dict((x, y) for x, y in ADV_BOOLEAN)
         govt_response = dict((x, y) for x, y in GOVT_RESPONSE)
         publish_response = dict((x, y) for x, y in PUBLISH_RESPONSE)
         report_status = dict((x, y) for x, y in REPORT_STATUS)
@@ -77,11 +67,12 @@ class MetadataView(generics.GenericAPIView):
         barrier_type_cat = get_barrier_type_categories()
         barrier_priorities = get_barrier_priorities()
 
+        barrier_tags = get_barrier_tags()
+
         results = {
             "status_types": status_types,
             "loss_range": loss_range,
             "stage_status": stage_status,
-            "adv_boolean": adv_boolean,
             "govt_response": govt_response,
             "publish_response": publish_response,
             "report_status": report_status,
@@ -95,6 +86,7 @@ class MetadataView(generics.GenericAPIView):
             "sectors": dh_sectors,
             "barrier_status": barrier_status,
             "barrier_pending": barrier_pending,
+            "barrier_tags": barrier_tags,
             "barrier_type_categories": barrier_type_cat,
             "barrier_chance_of_success": barrier_chance,
             "barrier_interaction_types": barrier_inter_type,
