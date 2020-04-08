@@ -411,7 +411,7 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
 class TestHistoryView(APITestMixin, TestCase):
     fixtures = ["categories", "documents", "users", "barriers"]
 
-    @freeze_time("2020-03-01")
+    @freeze_time("2020-03-02")
     def setUp(self):
         self.barrier = BarrierInstance.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
