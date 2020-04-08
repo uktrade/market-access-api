@@ -1,4 +1,5 @@
 import csv
+import datetime
 import json
 from collections import defaultdict
 from dateutil.parser import parse
@@ -529,28 +530,32 @@ class HistoryMixin:
     Mixin for getting barrier history items
     """
 
-    def get_assessment_history(self, fields=[]):
+    def get_assessment_history(self, fields=[], start_date=None):
         return AssessmentHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
+            start_date=start_date,
         )
 
-    def get_barrier_history(self, fields=[]):
+    def get_barrier_history(self, fields=[], start_date=None):
         return BarrierHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
+            start_date=start_date,
         )
 
-    def get_notes_history(self, fields=[]):
+    def get_notes_history(self, fields=[], start_date=None):
         return NoteHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
+            start_date=start_date,
         )
 
-    def get_team_history(self, fields=[]):
+    def get_team_history(self, fields=[], start_date=None):
         return TeamMemberHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
             fields=fields,
+            start_date=start_date,
         )
 
 
@@ -560,10 +565,14 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
     """
 
     def get(self, request, pk):
-        barrier_history = self.get_barrier_history()
-        notes_history = self.get_notes_history()
-        assessment_history = self.get_assessment_history()
-        team_history = self.get_team_history()
+        barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
+
+        barrier_history = self.get_barrier_history(start_date=barrier.reported_on)
+        notes_history = self.get_notes_history(start_date=barrier.reported_on)
+        assessment_history = self.get_assessment_history(start_date=barrier.reported_on)
+        team_history = self.get_team_history(
+            start_date=barrier.reported_on + datetime.timedelta(seconds=1)
+        )
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history

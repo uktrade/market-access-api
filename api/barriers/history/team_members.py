@@ -26,7 +26,8 @@ class TeamMemberHistoryFactory(HistoryItemFactory):
         return []
 
     @classmethod
-    def get_history(cls, barrier_id):
-        return TeamMember.history.filter(
-            barrier_id=barrier_id
-        ).order_by("user", "history_date")
+    def get_history(cls, barrier_id, start_date=None):
+        history = TeamMember.history.filter(barrier_id=barrier_id)
+        if start_date:
+            history = history.filter(history_date__gt=start_date)
+        return history.order_by("user", "history_date")

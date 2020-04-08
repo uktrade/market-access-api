@@ -67,15 +67,15 @@ class HistoryItemFactory:
         return history_item_class(new_record, old_record)
 
     @classmethod
-    def get_history(cls, barrier_id):
+    def get_history(cls, barrier_id, start_date=None):
         """ Fetch the history for a model """
         raise NotImplementedError
 
     @classmethod
-    def get_history_items(cls, barrier_id, fields=[]):
+    def get_history_items(cls, barrier_id, fields=[], start_date=None):
         """ Gets HistoryItems for all changes made to the object"""
         history_items = []
-        history = cls.get_history(barrier_id)
+        history = cls.get_history(barrier_id, start_date=start_date)
         old_record = None
 
         for new_record in history:
