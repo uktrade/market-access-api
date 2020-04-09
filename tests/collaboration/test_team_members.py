@@ -110,7 +110,7 @@ class TestListTeamMembers(APITestMixin):
         assert member["user"]["email"] == creator_user.email
         assert member["user"]["first_name"] == creator_user.first_name
         assert member["user"]["last_name"] == creator_user.last_name
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"
 
         member = mem_response.data["results"][1]
         member["user"]["email"] == self.sso_user_data_1["email"]
@@ -195,7 +195,7 @@ class TestListTeamMembers(APITestMixin):
         assert member["user"]["email"] == "Testo@Useri.com"
         assert member["user"]["first_name"] == "Testo"
         assert member["user"]["last_name"] == "Useri"
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"
 
         member = mem_response.data["results"][1]
         member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
@@ -278,7 +278,7 @@ class TestListTeamMembers(APITestMixin):
         assert member["user"]["email"] == "Testo@Useri.com"
         assert member["user"]["first_name"] == "Testo"
         assert member["user"]["last_name"] == "Useri"
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"
 
         member = mem_response.data["results"][1]
         member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
@@ -353,7 +353,7 @@ class TestListTeamMembers(APITestMixin):
         assert member["user"]["email"] == "Testo@Useri.com"
         assert member["user"]["first_name"] == "Testo"
         assert member["user"]["last_name"] == "Useri"
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"
 
         member = mem_response.data["results"][1]
         member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
@@ -452,7 +452,7 @@ class TestListTeamMembers(APITestMixin):
         assert member["user"]["email"] == "Testo@Useri.com"
         assert member["user"]["first_name"] == "Testo"
         assert member["user"]["last_name"] == "Useri"
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"
 
         member = mem_response.data["results"][1]
         member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
@@ -567,7 +567,7 @@ class TestListTeamMembers(APITestMixin):
         assert member["user"]["email"] == "Testo@Useri.com"
         assert member["user"]["first_name"] == "Testo"
         assert member["user"]["last_name"] == "Useri"
-        assert member["role"] == "Barrier creator"
+        assert member["role"] == "Reporter"
 
         member = mem_response.data["results"][1]
         member["user"]["profile"]["sso_user_id"] == self.sso_user_data_1["user_id"]
@@ -650,7 +650,7 @@ class TestListTeamMembers(APITestMixin):
         assert get_mem_response.data["user"]["email"] == "Testo@Useri.com"
         assert get_mem_response.data["user"]["first_name"] == "Testo"
         assert get_mem_response.data["user"]["last_name"] == "Useri"
-        assert get_mem_response.data["role"] == "Barrier creator"
+        assert get_mem_response.data["role"] == "Reporter"
 
         delete_mem_response = client.delete(get_mem_url)
         assert delete_mem_response.status_code == status.HTTP_403_FORBIDDEN
