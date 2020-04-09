@@ -42,6 +42,8 @@ from api.barriers.serializers import (
 )
 from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
+    BREXIT_TAG_TITLE,
+    COVID_TAG_TITLE,
     TIMELINE_EVENTS,
 )
 
@@ -446,6 +448,8 @@ class BarriertListExportView(generics.ListAPIView):
             "reported_on": "Reported Date",
             "status_date": "Status Date",
             "modified_on": "Last updated",
+            "brexit": BREXIT_TAG_TITLE,
+            "covid": COVID_TAG_TITLE,
         }
 
     def _get_rows(self, queryset):
