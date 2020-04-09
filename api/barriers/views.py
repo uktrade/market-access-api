@@ -23,7 +23,6 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
-from api.assessment.models import Assessment
 from api.barriers.csv import create_csv_response
 from api.core.utils import cleansed_username
 from api.barriers.history import (

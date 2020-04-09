@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
-from simple_history.models import HistoricalRecords, ModelChange
+from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import (
     BARRIER_STATUS,

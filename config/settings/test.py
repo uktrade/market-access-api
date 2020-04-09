@@ -1,13 +1,11 @@
 from .base import *
 
 DEBUG = False
-
 DJANGO_ENV = 'test'
 
 SSO_ENABLED = True
 HAWK_ENABLED = False
 FAKE_METADATA = True
-
 AV_V2_SERVICE_URL = "http://av-service/"
 
 # TODO: figure out what this is! :D
