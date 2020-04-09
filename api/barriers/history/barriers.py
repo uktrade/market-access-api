@@ -38,6 +38,10 @@ class DescriptionHistoryItem(BaseBarrierHistoryItem):
     field = "problem_description"
 
 
+class IsSummarySensitiveHistoryItem(BaseBarrierHistoryItem):
+    field = "is_summary_sensitive"
+
+
 class LocationHistoryItem(BaseBarrierHistoryItem):
     field = "location"
 
@@ -131,6 +135,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         CategoriesHistoryItem,
         CompaniesHistoryItem,
         DescriptionHistoryItem,
+        IsSummarySensitiveHistoryItem,
         LocationHistoryItem,
         PriorityHistoryItem,
         ProductHistoryItem,

@@ -360,6 +360,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "other_source",
             "barrier_title",
             "problem_description",
+            "is_summary_sensitive",
             "barrier_types",
             "categories",
             "reported_on",
