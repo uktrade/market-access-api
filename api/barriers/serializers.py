@@ -65,6 +65,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "barrier_title",
             "problem_description",
             "summary",
+            "is_summary_sensitive",
             "next_steps_summary",
             "progress",
             "created_by",
