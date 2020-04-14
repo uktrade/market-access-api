@@ -53,12 +53,14 @@ REPORT_CONDITIONS = [
             }
         ],
     },
-    {
-        "stage": "1.5",
-        "order": 5,
-        "required": ["problem_description"],
-        "conditional": [],
-    },
+    # TODO: Reinstate this after deploy.
+    # This check should always pass as the frontend won't submit without a summary
+    # {
+    #     "stage": "1.5",
+    #     "order": 5,
+    #     "required": ["summary"],
+    #     "conditional": [],
+    # },
 ]
 
 

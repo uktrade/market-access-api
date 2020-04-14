@@ -364,11 +364,11 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         custom text search against multiple fields
             full value of code
-            full text search on problem_description
+            full text search on summary
             partial search on barrier_title
         """
         return queryset.annotate(
-            search=SearchVector('problem_description')
+            search=SearchVector('summary')
         ).filter(
             Q(code=value) | Q(search=value) | Q(barrier_title__icontains=value)
         )

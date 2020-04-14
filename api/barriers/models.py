@@ -148,9 +148,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     )
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
     barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
-    problem_description = models.TextField(null=True)
+    summary = models.TextField(null=True)
     is_summary_sensitive = models.NullBooleanField(
-        help_text="Does the summary (problem_description) contain sensitive information"
+        help_text="Does the summary contain sensitive information"
     )
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
