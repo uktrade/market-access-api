@@ -346,7 +346,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     last_seen_on = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
     # TODO: deprecate this field (use summary instead)
-    problem_description = serializers.CharField(source="summary")
+    problem_description = serializers.CharField(source="summary", required=False)
 
     class Meta:
         model = BarrierInstance

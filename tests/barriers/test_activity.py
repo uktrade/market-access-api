@@ -44,7 +44,7 @@ class TestActivityView(APITestMixin, TestCase):
         # Barrier changes
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
-        self.barrier.problem_description = "New problem_description"
+        self.barrier.summary = "New summary"
         self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
         self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
         self.barrier.priority_id = 2
@@ -102,7 +102,7 @@ class TestActivityView(APITestMixin, TestCase):
 
         assert ("barrier", "categories") not in fields
         assert ("barrier", "companies") not in fields
-        assert ("barrier", "problem_description") not in fields
+        assert ("barrier", "summary") not in fields
         assert ("barrier", "location") not in fields
         assert ("barrier", "product") not in fields
         assert ("barrier", "problem_status") not in fields

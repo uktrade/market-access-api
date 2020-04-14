@@ -73,16 +73,16 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["new_value"] == ["1", "2", "3"]
 
     def test_description_history(self):
-        self.barrier.problem_description = "New problem_description"
+        self.barrier.summary = "New summary"
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
         assert data["model"] == "barrier"
-        assert data["field"] == "problem_description"
-        assert data["old_value"] == "Some problem_description"
-        assert data["new_value"] == "New problem_description"
+        assert data["field"] == "summary"
+        assert data["old_value"] == "Some summary"
+        assert data["new_value"] == "New summary"
 
     def test_location_history(self):
         self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
@@ -431,7 +431,7 @@ class TestHistoryView(APITestMixin, TestCase):
         # Barrier changes
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
-        self.barrier.problem_description = "New problem_description"
+        self.barrier.summary = "New summary"
         self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
         self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
         self.barrier.priority_id = 2
@@ -522,9 +522,9 @@ class TestHistoryView(APITestMixin, TestCase):
         assert {
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
-            "field": "problem_description",
-            "old_value": "Some problem_description",
-            "new_value": "New problem_description",
+            "field": "summary",
+            "old_value": "Some summary",
+            "new_value": "New summary",
             "user": None
         } in history
 

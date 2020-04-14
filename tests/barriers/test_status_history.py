@@ -24,7 +24,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -65,7 +65,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -102,7 +102,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -139,7 +139,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -198,7 +198,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -284,7 +284,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -344,7 +344,7 @@ class TestBarrierStatusHistory(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 

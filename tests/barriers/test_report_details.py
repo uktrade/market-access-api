@@ -512,7 +512,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] is None
         assert detail_response.data["other_source"] is None
         assert detail_response.data["barrier_title"] is None
-        assert detail_response.data["problem_description"] is None
+        assert detail_response.data["summary"] is None
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -549,7 +549,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] == "GOVT"
         assert detail_response.data["other_source"] is None
         assert detail_response.data["barrier_title"] is None
-        assert detail_response.data["problem_description"] is None
+        assert detail_response.data["summary"] is None
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -586,7 +586,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] == "OTHER"
         assert detail_response.data["other_source"] is None
         assert detail_response.data["barrier_title"] is None
-        assert detail_response.data["problem_description"] is None
+        assert detail_response.data["summary"] is None
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -625,7 +625,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] is None
         assert detail_response.data["other_source"] is None
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] is None
+        assert detail_response.data["summary"] is None
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -647,7 +647,7 @@ class TestReportDetail(APITestMixin):
         submit_response = self.api_client.put(submit_url, format="json", data={})
         assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_submit_stage_4_in_progress_problem_description(self):
+    def test_submit_stage_4_in_progress_summary(self):
         url = reverse("list-reports")
         response = self.api_client.post(
             url,
@@ -655,7 +655,7 @@ class TestReportDetail(APITestMixin):
             data={
                 "status": 4,
                 "status_date": "2018-09-10",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -670,7 +670,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] is None
         assert detail_response.data["other_source"] is None
         assert detail_response.data["barrier_title"] is None
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -705,7 +705,7 @@ class TestReportDetail(APITestMixin):
                 "product": "Some product",
                 "source": "OTHER",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -720,7 +720,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] == "OTHER"
         assert detail_response.data["other_source"] is None
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -752,7 +752,7 @@ class TestReportDetail(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Not sure",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -767,7 +767,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] == "OTHER"
         assert detail_response.data["other_source"] == "Not sure"
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -798,7 +798,7 @@ class TestReportDetail(APITestMixin):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -812,7 +812,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["product"] == "Some product"
         assert detail_response.data["source"] == "GOVT"
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -851,7 +851,7 @@ class TestReportDetail(APITestMixin):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -876,7 +876,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["product"] == "Some product"
         assert detail_response.data["source"] == "GOVT"
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -916,7 +916,7 @@ class TestReportDetail(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -942,7 +942,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] == "OTHER"
         assert detail_response.data["other_source"] == "Other source"
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -983,7 +983,7 @@ class TestReportDetail(APITestMixin):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -1012,7 +1012,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["source"] == "OTHER"
         assert detail_response.data["other_source"] == "Other source"
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         stage_1 = [
             d for d in detail_response.data["progress"] if d["stage_code"] == "1.1"
         ]
@@ -1043,7 +1043,7 @@ class TestReportDetail(APITestMixin):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -1057,7 +1057,7 @@ class TestReportDetail(APITestMixin):
         assert detail_response.data["product"] == "Some product"
         assert detail_response.data["source"] == "GOVT"
         assert detail_response.data["barrier_title"] == "Some title"
-        assert detail_response.data["problem_description"] == "Some problem_description"
+        assert detail_response.data["summary"] == "Some summary"
         assert detail_response.data["code"] != ""
 
     def test_report_deletion(self):
@@ -1069,7 +1069,7 @@ class TestReportDetail(APITestMixin):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -1105,7 +1105,7 @@ class TestReportDetail(APITestMixin):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
