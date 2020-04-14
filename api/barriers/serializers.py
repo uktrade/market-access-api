@@ -263,13 +263,13 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_brexit(self, obj):
         if obj.tags.filter(title=BREXIT_TAG_TITLE).exists():
-            return 1
-        return 0
+            return "Yes"
+        return "No"
 
     def get_covid(self, obj):
         if obj.tags.filter(title=COVID_TAG_TITLE).exists():
-            return 1
-        return 0
+            return "Yes"
+        return "No"
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
