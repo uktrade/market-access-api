@@ -71,6 +71,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "modified_by",
             "modified_on",
             "tags",
+            "trade_direction",
         )
         read_only_fields = (
             "id",
@@ -295,6 +296,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "priority",
             "categories",
             "tags",
+            "trade_direction",
             "created_on",
             "modified_on",
             "archived",
@@ -383,6 +385,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_by",
             "last_seen_on",
             "tags",
+            "trade_direction",
             "end_date",
         )
         read_only_fields = (
@@ -477,6 +480,11 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def validate_tags(self, tag_ids=None):
         if tag_ids is not None and type(tag_ids) is not list:
             raise serializers.ValidationError('Expected a list of tag IDs.')
+
+    def validate_trade_direction(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError('Field is not nullable.')
+        return attrs
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

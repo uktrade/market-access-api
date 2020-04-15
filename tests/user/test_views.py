@@ -1,3 +1,4 @@
+import pytest
 import requests_mock
 
 from unittest.mock import patch
@@ -105,7 +106,8 @@ class TestUserView(APITestMixin):
         assert response_data["first_name"] == user_test.first_name
         assert response_data["last_name"] == user_test.last_name
 
-    def _test_user_country(self):
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    def test_user_country(self):
         """Test user's country"""
 
         user_test = create_test_user(location="ba6ee1ca-5d95-e211-a939-e4115bead28a")
@@ -131,7 +133,8 @@ class TestUserView(APITestMixin):
             "user_profile": None,
         }
 
-    def _test_user_internal(self):
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    def test_user_internal(self):
         """Test user's internal flag"""
 
         user_test = create_test_user(internal=True)
@@ -157,7 +160,8 @@ class TestUserView(APITestMixin):
             "user_profile": None,
         }
 
-    def _test_user_profile(self):
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    def test_user_profile(self):
         """Test user's internal flag"""
         profile = {
             "internal": False,
@@ -197,7 +201,8 @@ class TestUserView(APITestMixin):
             },
         }
 
-    def _test_user_edit_add_new_profile(self):
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    def test_user_edit_add_new_profile(self):
         """Test user's internal flag"""
 
         user_test = create_test_user(internal=True)

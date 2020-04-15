@@ -32,7 +32,12 @@ REPORT_CONDITIONS = [
             }
         ],
     },
-    {"stage": "1.2", "order": 2, "required": ["export_country"], "conditional": []},
+    {
+        "stage": "1.2",
+        "order": 2,
+        "required": ("export_country", "trade_direction",),
+        "conditional": []
+    },
     {
         "stage": "1.3",
         "order": 3,

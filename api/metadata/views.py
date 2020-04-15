@@ -21,7 +21,7 @@ from .constants import (
     STAGE_STATUS,
     SUPPORT_TYPE,
     TIMELINE_EVENTS,
-)
+    TRADE_DIRECTION_CHOICES)
 from .utils import (
     get_admin_areas,
     get_barrier_priorities,
@@ -66,8 +66,8 @@ class MetadataView(generics.GenericAPIView):
         categories = get_categories()
         barrier_type_cat = get_barrier_type_categories()
         barrier_priorities = get_barrier_priorities()
-
         barrier_tags = get_barrier_tags()
+        trade_direction = dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES)
 
         results = {
             "status_types": status_types,
@@ -94,6 +94,7 @@ class MetadataView(generics.GenericAPIView):
             "timeline_events": timeline_events,
             "barrier_priorities": barrier_priorities,
             "assessment_impact": assessment_impact,
+            "trade_direction": trade_direction,
         }
 
         return Response(results, status=status.HTTP_200_OK)

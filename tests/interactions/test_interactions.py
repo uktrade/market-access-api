@@ -1,95 +1,42 @@
 import json
 import uuid
 
+import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.test import APITestCase
 
 from api.core.test_utils import APITestMixin
-from api.barriers.models import BarrierInstance
 from api.interactions.models import Document
+from tests.barriers.factories import ReportFactory
 
 
-class TestListInteractions(APITestMixin):
+class TestListInteractions(APITestMixin, APITestCase):
+
+    def _submit_report(self, report):
+        url = reverse("submit-report", kwargs={"pk": report.id})
+        return self.api_client.put(url, format="json", data={})
+
+    def setUp(self):
+        # NULL next_steps_summary as that creates an interaction when the report is submitted
+        self.report = ReportFactory(next_steps_summary=None)
+
     def test_no_interactions(self):
         """Test there are no barrier interactions using list"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
+        response = self._submit_report(self.report)
         assert response.status_code == status.HTTP_200_OK
 
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         response = self.api_client.get(interactions_url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 0
 
     def test_add_interactions_no_pin(self):
         """Test there is one interaction without pinning"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -109,42 +56,10 @@ class TestListInteractions(APITestMixin):
 
     def test_add_interactions_pinned(self):
         """Test there are one interaction with pinning"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -166,42 +81,10 @@ class TestListInteractions(APITestMixin):
 
     def test_add_interactions_multiple(self):
         """Test multiple interactions for barrier"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -226,42 +109,10 @@ class TestListInteractions(APITestMixin):
 
     def test_add_interactions_multiple_mixed_pinning(self):
         """Test multiple interactions with mixed pinning"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -299,42 +150,10 @@ class TestListInteractions(APITestMixin):
 
     def test_get_interaction(self):
         """Test retreiving an interaction"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -364,42 +183,10 @@ class TestListInteractions(APITestMixin):
 
     def test_edit_interaction(self):
         """Test editing an interaction"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -441,42 +228,10 @@ class TestListInteractions(APITestMixin):
 
     def test_edit_interaction_pin_it(self):
         """Test edit interaction with pinning"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -517,42 +272,10 @@ class TestListInteractions(APITestMixin):
 
     def test_edit_interaction_unpin_it(self):
         """Test edit interaction un pin it"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -627,7 +350,8 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.data["status"] == "not_virus_scanned"
         assert docs_list_report_response.data["signed_upload_url"] is not None
 
-    def _test_add_document_with__size_mime_type(self):
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    def test_add_document_with__size_mime_type(self):
         """Test add a document with size and mime type"""
         docs_list_url = reverse("barrier-documents")
         docs_list_report_response = self.api_client.post(
@@ -655,42 +379,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -727,42 +419,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -817,42 +477,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         anotherfile_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -907,42 +535,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         otherfile_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1004,42 +600,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         file4_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1113,42 +677,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         file4_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1197,42 +729,10 @@ class TestListInteractions(APITestMixin):
 
     def test_archive_interaction(self):
         """Test archiving an interaction"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1268,42 +768,10 @@ class TestListInteractions(APITestMixin):
 
     def test_archive_edited_interaction(self):
         """Test archiving an edited interaction"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1359,42 +827,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1429,42 +865,10 @@ class TestListInteractions(APITestMixin):
 
     def test_add_interactions_null_document(self):
         """Test there is one interaction without pinning"""
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1493,42 +897,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1577,42 +949,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1666,42 +1006,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1800,42 +1108,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id_2 = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
@@ -1936,42 +1212,10 @@ class TestListInteractions(APITestMixin):
         assert docs_list_report_response.status_code == status.HTTP_201_CREATED
         document_id_2 = docs_list_report_response.data["id"]
 
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
+        response = self._submit_report(self.report)
+        assert response.status_code == status.HTTP_200_OK
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
+        interactions_url = reverse("list-interactions", kwargs={"pk": self.report.id})
         int_response = self.api_client.get(interactions_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 0
