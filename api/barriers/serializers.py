@@ -38,6 +38,8 @@ class BarrierReportSerializer(serializers.ModelSerializer):
     progress = BarrierReportStageListingField(many=True, read_only=True)
     created_by = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    # TODO: deprecate this field (use summary instead)
+    problem_description = serializers.CharField(source="summary", required=False)
 
     class Meta:
         model = BarrierInstance
@@ -60,6 +62,8 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "other_source",
             "barrier_title",
             "problem_description",
+            "summary",
+            "is_summary_sensitive",
             "next_steps_summary",
             "progress",
             "created_by",
@@ -332,6 +336,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    # TODO: deprecate this field (use summary instead)
+    problem_description = serializers.CharField(source="summary", required=False)
 
     class Meta:
         model = BarrierInstance
@@ -350,6 +356,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "other_source",
             "barrier_title",
             "problem_description",
+            "summary",
+            "is_summary_sensitive",
             "barrier_types",
             "categories",
             "reported_on",

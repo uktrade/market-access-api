@@ -52,7 +52,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -86,7 +86,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -125,7 +125,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -167,7 +167,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -209,7 +209,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -251,7 +251,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -293,7 +293,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -331,7 +331,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -375,7 +375,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "source": "OTHER",
                 "other_source": "Other source",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -572,7 +572,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -618,7 +618,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
@@ -669,7 +669,7 @@ class TestListBarriers(APITestMixin, TestCase):
                 "product": "Some product",
                 "source": "GOVT",
                 "barrier_title": "Some title",
-                "problem_description": "Some problem_description",
+                "summary": "Some summary",
             },
         )
 
@@ -765,10 +765,10 @@ class TestListBarriers(APITestMixin, TestCase):
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier1.id), str(barrier3.id)} == set(barrier_ids)
 
-    def test_list_barriers_text_filter_based_on_problem_description(self):
-        _barrier1 = BarrierFactory(problem_description="Wibble summary about the blockade.")
-        barrier2 = BarrierFactory(problem_description="Wobble blockade")
-        barrier3 = BarrierFactory(problem_description="Look ma, wibble-wobble in the middle.")
+    def test_list_barriers_text_filter_based_on_summary(self):
+        _barrier1 = BarrierFactory(summary="Wibble summary about the blockade.")
+        barrier2 = BarrierFactory(summary="Wobble blockade")
+        barrier3 = BarrierFactory(summary="Look ma, wibble-wobble in the middle.")
 
         assert 3 == BarrierInstance.objects.count()
 

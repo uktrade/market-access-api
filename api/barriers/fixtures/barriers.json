@@ -20,7 +20,7 @@
             "source": "OTHER",
             "other_source": "Other source",
             "barrier_title": "Some title",
-            "problem_description": "Some problem_description",
+            "summary": "Some summary",
             "next_steps_summary": "Test",
             "reported_on": "2020-03-01T10:00:00.000Z",
             "status": 1,

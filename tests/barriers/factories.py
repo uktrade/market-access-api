@@ -46,7 +46,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     product = factory.Sequence(lambda n: "Product {}".format(n + 1))
     source = "COMPANY"
     barrier_title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
-    problem_description = "Some problem description."
+    summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
 
     @factory.post_generation
@@ -82,7 +82,7 @@ class ReportFactory(factory.django.DjangoModelFactory):
     product = factory.Sequence(lambda n: "Product {}".format(n + 1))
     source = "COMPANY"
     barrier_title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
-    problem_description = "Some problem description."
+    summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
 
     @factory.post_generation

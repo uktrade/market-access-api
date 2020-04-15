@@ -34,8 +34,8 @@ class CompaniesHistoryItem(BaseBarrierHistoryItem):
     field = "companies"
 
 
-class DescriptionHistoryItem(BaseBarrierHistoryItem):
-    field = "problem_description"
+class IsSummarySensitiveHistoryItem(BaseBarrierHistoryItem):
+    field = "is_summary_sensitive"
 
 
 class LocationHistoryItem(BaseBarrierHistoryItem):
@@ -109,6 +109,10 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
         }
 
 
+class SummaryHistoryItem(BaseBarrierHistoryItem):
+    field = "summary"
+
+
 class TagsHistoryItem(BaseBarrierHistoryItem):
     field = "tags"
 
@@ -130,7 +134,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         ArchivedHistoryItem,
         CategoriesHistoryItem,
         CompaniesHistoryItem,
-        DescriptionHistoryItem,
+        IsSummarySensitiveHistoryItem,
         LocationHistoryItem,
         PriorityHistoryItem,
         ProductHistoryItem,
@@ -138,6 +142,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         SectorsHistoryItem,
         SourceHistoryItem,
         StatusHistoryItem,
+        SummaryHistoryItem,
         TagsHistoryItem,
         TitleHistoryItem,
     )

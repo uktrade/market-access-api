@@ -56,7 +56,7 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.5",
         "order": 5,
-        "required": ["problem_description"],
+        "required": ["summary"],
         "conditional": [],
     },
 ]
