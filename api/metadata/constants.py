@@ -99,7 +99,3 @@ BARRIER_ARCHIVED_REASON = Choices(
     ("NOT_A_BARRIER", "Not a barrier"),
     ("OTHER", "Other"),
 )
-
-BREXIT_TAG_TITLE = "Brexit"
-
-COVID_TAG_TITLE = "COVID-19"

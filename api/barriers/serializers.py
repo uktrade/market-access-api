@@ -9,8 +9,6 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_STATUS,
     BARRIER_PENDING,
-    BREXIT_TAG_TITLE,
-    COVID_TAG_TITLE,
     STAGE_STATUS,
     PROBLEM_STATUS_TYPES
 )
@@ -135,8 +133,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     commercial_value = serializers.SerializerMethodField()
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
-    brexit = serializers.SerializerMethodField()
-    covid = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -261,15 +258,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_team_count(self, obj):
         return TeamMember.objects.filter(barrier=obj).count()
 
-    def get_brexit(self, obj):
-        if obj.tags.filter(title=BREXIT_TAG_TITLE).exists():
-            return "Yes"
-        return "No"
-
-    def get_covid(self, obj):
-        if obj.tags.filter(title=COVID_TAG_TITLE).exists():
-            return "Yes"
-        return "No"
+    def get_tags(self, obj):
+        return ", ".join(obj.tags.values_list("title", flat=True))
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
