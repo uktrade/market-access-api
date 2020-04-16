@@ -209,6 +209,10 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
     )
     archived_explanation = models.TextField(blank=True, null=True)
+
+    is_temporary = models.NullBooleanField(help_text="Is the barrier temporary?")
+    end_date = models.DateField(null=True, help_text="Date the barrier ends")
+
     draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
