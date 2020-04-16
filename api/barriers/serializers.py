@@ -381,7 +381,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_by",
             "last_seen_on",
             "tags",
-            "is_temporary",
             "end_date",
         )
         read_only_fields = (
