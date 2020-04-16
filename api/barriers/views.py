@@ -492,6 +492,12 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierInstanceSerializer
 
+    def get_object(self):
+        if "code" in self.kwargs:
+            self.lookup_url_kwarg = "code"
+            self.lookup_field = "code"
+        return super().get_object()
+
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
