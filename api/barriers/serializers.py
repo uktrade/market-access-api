@@ -138,6 +138,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    end_date = serializers.DateTimeField(format="%Y-%m-%d")
 
     class Meta:
         model = BarrierInstance
@@ -165,6 +166,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 	        "import_market_size",
 	        "commercial_value",
 	        "export_value",
+            "end_date",
         )
 
     def get_scope(self, obj):
@@ -381,6 +383,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_by",
             "last_seen_on",
             "tags",
+            "end_date",
         )
         read_only_fields = (
             "id",

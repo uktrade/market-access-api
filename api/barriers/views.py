@@ -447,6 +447,7 @@ class BarriertListExportView(generics.ListAPIView):
             "status_date": "Status Date",
             "modified_on": "Last updated",
             "tags": "Tags",
+            "end_date": "End date",
         }
 
     def _get_rows(self, queryset):
