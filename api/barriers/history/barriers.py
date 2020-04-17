@@ -34,6 +34,10 @@ class CompaniesHistoryItem(BaseBarrierHistoryItem):
     field = "companies"
 
 
+class EndDateHistoryItem(BaseBarrierHistoryItem):
+    field = "end_date"
+
+
 class IsSummarySensitiveHistoryItem(BaseBarrierHistoryItem):
     field = "is_summary_sensitive"
 
@@ -134,6 +138,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         ArchivedHistoryItem,
         CategoriesHistoryItem,
         CompaniesHistoryItem,
+        EndDateHistoryItem,
         IsSummarySensitiveHistoryItem,
         LocationHistoryItem,
         PriorityHistoryItem,
