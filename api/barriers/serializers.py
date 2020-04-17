@@ -138,7 +138,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
-    end_date = serializers.DateTimeField(format="%Y-%m-%d")
+    end_date = serializers.DateField(format="%Y-%m-%d")
 
     class Meta:
         model = BarrierInstance
