@@ -109,6 +109,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         null=True,
         unique=True,
         help_text="readable reference code",
+        db_index=True,
     )
     problem_status = models.PositiveIntegerField(
         choices=PROBLEM_STATUS_TYPES,

@@ -9,8 +9,17 @@ from api.barriers.models import BarrierInstance
 from api.metadata.models import Category
 from api.core.test_utils import APITestMixin, create_test_user
 
+from tests.barriers.factories import BarrierFactory
+
 
 class TestBarrierDetail(APITestMixin):
+    def test_barrier_detail_by_code(self):
+        barrier = BarrierFactory()
+        url = reverse("barrier_detail_code", kwargs={"code": barrier.code})
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert str(barrier.id) == response.data["id"]
+
     def test_barriers_with_sso_kind_user(self):
         list_report_url = reverse("list-reports")
         list_report_response = self.api_client.post(

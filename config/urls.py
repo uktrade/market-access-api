@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 from api.metadata.views import MetadataView
 from api.ping.views import ping
@@ -55,6 +55,7 @@ urlpatterns += [
     path("barriers/export", BarriertListExportView.as_view(), name="barriers-export"),
     path("barriers/dataset", BarrierListDataWorkspaceView.as_view(), name="dataset-barriers"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
+    re_path("barriers/(?P<code>[A-Z]-[0-9]{2}-[A-Z0-9]{3})", BarrierDetail.as_view(), name="barrier_detail_code"),
     path(
         "barriers/<uuid:pk>/full_history",
         BarrierFullHistory.as_view(),
