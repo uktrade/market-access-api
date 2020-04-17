@@ -211,7 +211,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
     )
     archived_explanation = models.TextField(blank=True, null=True)
-
     draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
