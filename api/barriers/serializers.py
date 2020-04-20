@@ -19,6 +19,8 @@ from api.metadata.utils import (
     get_countries,
     get_sectors,
 )
+from api.wto.models import WTOProfile
+from api.wto.serializers import WTOProfileSerializer
 
 # pylint: disable=R0201
 
@@ -340,6 +342,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     # TODO: deprecate this field (use summary instead)
     problem_description = serializers.CharField(source="summary", required=False)
+    wto_profile = WTOProfileSerializer()
 
     class Meta:
         model = BarrierInstance
@@ -384,6 +387,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "last_seen_on",
             "tags",
             "end_date",
+            "wto_profile",
         )
         read_only_fields = (
             "id",
@@ -488,6 +492,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
+        if "wto_profile" in validated_data:
+            self.update_wto_profile(instance, validated_data)
+
         if instance.archived is False and validated_data.get("archived") is True:
             instance.archive(
                 user=self.user,
@@ -500,6 +507,11 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 reason=validated_data.get("unarchived_reason"),
             )
         return super().update(instance, validated_data)
+
+    def update_wto_profile(self, instance, validated_data):
+        wto_profile = validated_data.pop('wto_profile')
+        if wto_profile:
+            WTOProfile.objects.update_or_create(barrier=instance, defaults=wto_profile)
 
     def save(self, *args, **kwargs):
         self.user = kwargs.get("modified_by")

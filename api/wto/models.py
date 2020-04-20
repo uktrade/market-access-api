@@ -1,0 +1,73 @@
+from uuid import uuid4
+
+from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
+from django.db import models
+
+MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
+
+
+class WTOCommitteeGroup(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    name = models.CharField(max_length=MAX_LENGTH)
+
+    class Meta:
+        ordering = ("name", )
+
+
+class WTOCommittee(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    wto_committee_group = models.ForeignKey(
+        "WTOCommitteeGroup",
+        related_name="committees",
+        on_delete=models.PROTECT,
+    )
+    name = models.CharField(max_length=MAX_LENGTH)
+
+    class Meta:
+        ordering = ("name", )
+
+
+class WTOProfile(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+
+    wto_has_been_notified = models.BooleanField()
+    wto_should_be_notified = models.NullBooleanField()
+
+    committee_notified = models.ForeignKey(
+        "WTOCommittee",
+        related_name="committee_notified_wto_profiles",
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    committee_notification_link = models.CharField(
+        max_length=MAX_LENGTH,
+        null=True,
+        blank=True
+    )
+    committee_notification_document = models.ForeignKey(
+        "documents.Document",
+        related_name="committee_notification_wto_profiles",
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    member_states = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        null=True,
+        default=list,
+    )
+    committee_raised_in = models.ForeignKey(
+        "WTOCommittee",
+        related_name="committee_raised_in_wto_profiles",
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    meeting_minutes = models.ForeignKey(
+        "documents.Document",
+        related_name="meeting_minutes_wto_profiles",
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    raised_date = models.DateField(null=True)
+    case_number = models.CharField(max_length=MAX_LENGTH, null=True, blank=True)
