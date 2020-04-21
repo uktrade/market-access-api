@@ -10,7 +10,8 @@ from api.metadata.constants import (
     BARRIER_STATUS,
     BARRIER_PENDING,
     STAGE_STATUS,
-    PROBLEM_STATUS_TYPES
+    PROBLEM_STATUS_TYPES,
+    TRADE_DIRECTION_CHOICES,
 )
 from api.metadata.serializers import BarrierTagSerializer
 from api.metadata.utils import (
@@ -139,6 +140,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    trade_direction = serializers.SerializerMethodField()
     end_date = serializers.DateField(format="%Y-%m-%d")
 
     class Meta:
@@ -267,6 +269,14 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_tags(self, obj):
         return ", ".join(obj.tags.values_list("title", flat=True))
+
+    def get_trade_direction(self, obj):
+        if obj.trade_direction:
+            trade_directions = dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES)
+            return trade_directions.get(str(obj.trade_direction))
+        else:
+            return None
+
 
 
 class BarrierListSerializer(serializers.ModelSerializer):

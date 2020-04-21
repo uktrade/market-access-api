@@ -448,6 +448,7 @@ class BarriertListExportView(generics.ListAPIView):
             "status_date": "Status Date",
             "modified_on": "Last updated",
             "tags": "Tags",
+            "trade_direction": "Trade direction",
             "end_date": "End date",
         }
 
