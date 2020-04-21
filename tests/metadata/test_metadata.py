@@ -117,3 +117,16 @@ class TestCategories(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["countries"] is not None
         assert bool(response.data["countries"]) is True
+
+    def test_trade_direction(self):
+        key = "trade_direction"
+        expected = {
+            "1": "Exporting from the UK",
+            "2": "Importing into the UK",
+        }
+
+        url = reverse("metadata")
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data[key] is not None
+        assert expected == response.data[key]

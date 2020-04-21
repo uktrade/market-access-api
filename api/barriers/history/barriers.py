@@ -128,6 +128,10 @@ class TitleHistoryItem(BaseBarrierHistoryItem):
     field = "barrier_title"
 
 
+class TradeDirectionHistoryItem(BaseBarrierHistoryItem):
+    field = "trade_direction"
+
+
 class BarrierHistoryFactory(HistoryItemFactory):
     """
     Polymorphic wrapper for barrier HistoryItem classes
@@ -150,6 +154,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         SummaryHistoryItem,
         TagsHistoryItem,
         TitleHistoryItem,
+        TradeDirectionHistoryItem,
     )
     history_types = ("~", "+")
 

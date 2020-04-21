@@ -302,6 +302,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     team = django_filters.Filter(method="team_barriers")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
     tags = django_filters.Filter(method="tags_filter")
+    trade_direction = django_filters.BaseInFilter("trade_direction")
 
     class Meta:
         model = BarrierInstance
@@ -447,6 +448,7 @@ class BarriertListExportView(generics.ListAPIView):
             "status_date": "Status Date",
             "modified_on": "Last updated",
             "tags": "Tags",
+            "trade_direction": "Trade direction",
             "end_date": "End date",
         }
 

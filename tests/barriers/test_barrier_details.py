@@ -1,1897 +1,292 @@
-from unittest.mock import patch
-
+from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 
 from freezegun import freeze_time
+from rest_framework.test import APITestCase
 
 from api.barriers.models import BarrierInstance
-from api.metadata.models import Category
-from api.core.test_utils import APITestMixin, create_test_user
-
+from api.metadata.models import Category, BarrierPriority
+from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
 
 
-class TestBarrierDetail(APITestMixin):
+class TestBarrierDetails(APITestMixin, APITestCase):
+
+    def setUp(self):
+        self.barrier = BarrierFactory()
+        self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
+
+    def test_get_barrier_details(self):
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert str(self.barrier.id) == response.data["id"]
+
     def test_barrier_detail_by_code(self):
-        barrier = BarrierFactory()
-        url = reverse("barrier_detail_code", kwargs={"code": barrier.code})
+        url = reverse("barrier_detail_code", kwargs={"code": self.barrier.code})
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert str(barrier.id) == response.data["id"]
-
-    def test_barriers_with_sso_kind_user(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-        # assert response["reported_by"] == self.user.username
-
-    def test_barrier_with_user_empty_username(self):
-        a_user = create_test_user(
-            first_name="", last_name="", email="Testo@Useri.com", username=""
-        )
-        list_report_url = reverse("list-reports")
-        new_api_client = self.create_api_client(user=a_user)
-        list_report_response = new_api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = new_api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = new_api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        barrier = response.data
-        assert barrier["status"]["id"] == 4
-        assert barrier["reported_by"] == "Testo"
-        assert barrier["created_on"] is not None
-        assert barrier["modified_by"] == "Testo"
-        assert barrier["modified_by"] is not None
-
-    def test_barrier_with_user_email_as_username(self):
-        a_user = create_test_user(
-            first_name="", last_name="", email="", username="Testo@Useri.com"
-        )
-        list_report_url = reverse("list-reports")
-        new_api_client = self.create_api_client(user=a_user)
-        list_report_response = new_api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = new_api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = new_api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        barrier = response.data
-        assert barrier["reported_by"] == "Testo"
-        assert barrier["created_on"] is not None
-        assert barrier["modified_by"] == "Testo"
-        assert barrier["modified_by"] is not None
-
-    def test_barrier_with_user_normal_username(self):
-        a_user = create_test_user(
-            first_name="", last_name="", email="", username="Test.User"
-        )
-        list_report_url = reverse("list-reports")
-        new_api_client = self.create_api_client(user=a_user)
-        list_report_response = new_api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = new_api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = new_api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        barrier = response.data
-        assert barrier["reported_by"] == "Test User"
-        assert barrier["created_on"] is not None
-        assert barrier["modified_by"] == "Test User"
-        assert barrier["modified_by"] is not None
-
-    def test_barrier_with_user_normal_username_and_email(self):
-        a_user = create_test_user(
-            first_name="", last_name="", email="Testo@Useri.com", username="Test.User"
-        )
-        list_report_url = reverse("list-reports")
-        new_api_client = self.create_api_client(user=a_user)
-        list_report_response = new_api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = new_api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = new_api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        barrier = response.data
-        assert barrier["reported_by"] == "Test User"
-        assert barrier["created_on"] is not None
-        assert barrier["modified_by"] == "Test User"
-        assert barrier["modified_by"] is not None
-
-    def test_barrier_detail_submitted_open_edit_to_resolve(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 4
-
-    def test_barrier_detail_submitted_open_edit_to_hibernate(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 5
-
-    def test_barrier_detail_submitted_resolved_edit_to_hibernate(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 4
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-11", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 5
-
-    def test_barrier_detail_submitted_open_edit_to_unknown(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("unknown-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
-
-    def test_barrier_detail_submitted_resolved_edit_to_unknown(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 4
-
-        unknown_barrier_url = reverse("unknown-barrier", kwargs={"pk": instance.id})
-        unknown_barrier_response = self.api_client.put(
-            unknown_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-11", "status_summary": "dummy summary"},
-        )
-        assert unknown_barrier_response.status_code == status.HTTP_200_OK
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 7
-
-    def test_barrier_detail_submitted_resolved_edit_to_open(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 4
-
-        resolve_barrier_url = reverse("open-in-progress", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-11", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 2
-
-    def test_barrier_detail_edit_barrier_headline_1(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-        assert response.data["problem_status"] == 2
-        assert response.data["barrier_title"] == "Some title"
-        assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-
-        edit_barrier_response = self.api_client.put(
-            get_url, format="json", data={"barrier_title": "a different title"}
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-        assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["barrier_title"] == "a different title"
-        assert edit_barrier_response.data["problem_status"] == 2
-        assert (
-            edit_barrier_response.data["export_country"]
-            == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        )
-
-    def test_barrier_detail_edit_barrier_headline_2(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-        assert response.data["problem_status"] == 2
-        assert response.data["barrier_title"] == "Some title"
-        assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"problem_status": 1, "barrier_title": "a different title"},
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-        assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["barrier_title"] == "a different title"
-        assert edit_barrier_response.data["problem_status"] == 1
-        assert (
-            edit_barrier_response.data["export_country"]
-            == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-        )
-
-    def test_barrier_detail_incorrect_problem_status(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-        assert response.data["problem_status"] == 2
-        assert response.data["barrier_title"] == "Some title"
-        assert response.data["export_country"] == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
-
-    def test_barrier_detail_conflicting_all_sectors(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-        assert response.data["sectors_affected"] == True
-        assert len(response.data["sectors"]) == 2
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"all_sectors": True},
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-
-    def test_barrier_detail_conflicting_sectors(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "all_sectors": True,
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-        assert response.data["sectors_affected"] == True
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ]},
-            )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-
-    def test_barrier_detail_missing_all_sectors_and_sectors(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
-
-    def test_barrier_detail_edit_priority_high(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["priority"]["code"] == "UNKNOWN"
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"priority": "HIGH", "priority_summary": "some priority summary"},
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-        assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["priority"]["code"] == "HIGH"
-
-    def test_barrier_detail_edit_priority_MEDIUM(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["priority"]["code"] == "UNKNOWN"
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"priority": "MEDIUM", "priority_summary": "some priority summary"},
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-        assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["priority"]["code"] == "MEDIUM"
-
-    def test_barrier_detail_edit_priority_low(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["priority"]["code"] == "UNKNOWN"
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"priority": "LOW", "priority_summary": "some priority summary"},
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-        assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["priority"]["code"] == "LOW"
-
-    def test_barrier_detail_edit_categories(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["priority"]["code"] == "UNKNOWN"
-        assert len(response.data["categories"]) == 0
-
-        db_categories = Category.objects.all()[:2]
-        category_ids = [bt.id for bt in db_categories]
-        edit_type_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={
-                "categories": category_ids
-            },
-        )
-
-        assert edit_type_response.status_code == status.HTTP_200_OK
-
-        response = self.api_client.get(get_url)
-        assert response.data["id"] == str(instance.id)
-        assert response.data["categories"] == category_ids
-
-    def test_barrier_detail_edit_priority_and_category(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["priority"]["code"] == "UNKNOWN"
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"priority": "LOW", "priority_summary": "some priority summary"},
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-        assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["priority"]["code"] == "LOW"
-
-        response = self.api_client.get(get_url)
-        assert len(response.data["categories"]) == 0
-
-        db_categories = Category.objects.all()[:2]
-        edit_type_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={
-                "categories": [bt.id for bt in db_categories]
-            },
-        )
-
-        assert edit_type_response.status_code == status.HTTP_200_OK
-
-        response = self.api_client.get(get_url)
-        assert response.data["id"] == str(instance.id)
-        assert response.data["categories"] is not None
-        assert response.data["priority"]["code"] == "LOW"
-
-    def test_barrier_detail_edit_category_then_priority(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["priority"]["code"] == "UNKNOWN"
-
-        response = self.api_client.get(get_url)
-        assert len(response.data["categories"]) == 0
-
-        db_categories = Category.objects.all()[:2]
-        edit_type_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={
-                "categories": [bt.id for bt in db_categories]
-            },
-        )
-
-        assert edit_type_response.status_code == status.HTTP_200_OK
-
-        response = self.api_client.get(get_url)
-        assert response.data["id"] == str(instance.id)
-        assert len(response.data["categories"]) == 2
-        assert response.data["priority"]["code"] == "UNKNOWN"
-
-        edit_barrier_response = self.api_client.put(
-            get_url,
-            format="json",
-            data={"priority": "LOW", "priority_summary": "some priority summary"},
-        )
-
-        assert edit_barrier_response.status_code == status.HTTP_200_OK
-        assert edit_barrier_response.data["id"] == str(instance.id)
-        assert edit_barrier_response.data["priority"]["code"] == "LOW"
-
-        response = self.api_client.get(get_url)
-        assert response.data["id"] == str(instance.id)
-        assert len(response.data["categories"]) == 2
-        assert response.data["priority"]["code"] == "LOW"
-
-    def test_barrier_detail_next_steps_as_note(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "next_steps_summary": "Some next steps",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
-        int_response = self.api_client.get(interactions_url)
-        assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["count"] == 0
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        int_response = self.api_client.get(interactions_url)
-        assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["count"] == 1
-
-    def test_barrier_detail_next_steps_as_note_not_added_400_bad_submit(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "next_steps_summary": "Some next steps",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        interactions_url = reverse("list-interactions", kwargs={"pk": instance.id})
-        int_response = self.api_client.get(interactions_url)
-        assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["count"] == 0
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
-
-        int_response = self.api_client.get(interactions_url)
-        assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["count"] == 0
-
-    def test_barrier_detail_submitted_open_and_resolve_edit_status_summary(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-        assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        resolve_response = self.api_client.get(get_url)
-        assert resolve_response.status_code == status.HTTP_200_OK
-        assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"]["id"] == 4
-        assert resolve_response.data["status"]["summary"] == "dummy summary"
-        assert resolve_response.data["status"]["date"] == "2018-09-10"
-
-    def test_barrier_detail_submitted_open_and_resolve_edit_summary_no_status_date_400(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 4
-        assert response.data["status"]["summary"] == "dummy summary"
-
-    def test_barrier_detail_submitted_open_and_resolve_edit_status_no_status_summary_400(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 4
-        assert response.data["status"]["summary"] == "dummy summary"
-
-    @freeze_time("2018-11-10")
-    def test_barrier_detail_submitted_open_and_hibernate_edit_status_summary_1(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-        assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_summary": "dummy summary"},
-        )
-
-        resolve_response = self.api_client.get(get_url)
-        assert resolve_response.status_code == status.HTTP_200_OK
-        assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"]["id"] == 5
-        assert resolve_response.data["status"]["summary"] == "dummy summary"
-        assert resolve_response.data["status"]["date"] == "2018-11-10"
-
-    @freeze_time("2018-11-10")
-    def test_barrier_detail_submitted_open_and_hibernate_edit_status_summary_2(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-        assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_summary": "dummy summary"},
-        )
-
-        resolve_response = self.api_client.get(get_url)
-        assert resolve_response.status_code == status.HTTP_200_OK
-        assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"]["id"] == 5
-        assert resolve_response.data["status"]["summary"] == "dummy summary"
-        assert resolve_response.data["status"]["date"] == "2018-11-10"
-
-    @freeze_time("2018-11-10")
-    def test_barrier_detail_submitted_open_and_hibernate_edit_status_summary_2(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-        assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_summary": "dummy summary"},
-        )
-
-        resolve_response = self.api_client.get(get_url)
-        assert resolve_response.status_code == status.HTTP_200_OK
-        assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"]["id"] == 5
-        assert resolve_response.data["status"]["summary"] == "dummy summary"
-        assert resolve_response.data["status"]["date"] == "2018-11-10"
-
-    @freeze_time("2018-11-10")
-    def test_barrier_detail_submitted_open_and_hibernate_edit_status_summary_and_status_date(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-        assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        resolve_response = self.api_client.get(get_url)
-        assert resolve_response.status_code == status.HTTP_200_OK
-        assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"]["id"] == 5
-        assert resolve_response.data["status"]["summary"] == "dummy summary"
-        assert resolve_response.data["status"]["date"] == "2018-11-10"
-
-    @freeze_time("2018-11-10")
-    def test_barrier_detail_submitted_open_and_hibernate_edit_summary_no_status_date_400(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 5
-        assert response.data["status"]["summary"] == "dummy summary"
-
-    def test_barrier_detail_submitted_open_and_hibernate_edit_status_no_status_summary_400(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("hibernate-barrier", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        assert response.data["id"] == str(instance.id)
-        assert response.data["status"]["id"] == 5
-        assert response.data["status"]["summary"] == "dummy summary"
-
-    def test_barrier_detail_submitted_open_and_resolve_edit_status_ignore(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status": 1,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = self.api_client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-        assert get_response.data["id"] == str(instance.id)
-        assert get_response.data["status"]["id"] == 1
-
-        resolve_barrier_url = reverse("resolve-in-full", kwargs={"pk": instance.id})
-        resolve_barrier_response = self.api_client.put(
-            resolve_barrier_url,
-            format="json",
-            data={"status_date": "2018-09-10", "status_summary": "dummy summary"},
-        )
-
-        resolve_response = self.api_client.get(get_url)
-        assert resolve_response.status_code == status.HTTP_200_OK
-        assert resolve_response.data["id"] == str(instance.id)
-        assert resolve_response.data["status"]["id"] == 4
-        assert resolve_response.data["status"]["summary"] == "dummy summary"
-        assert resolve_response.data["status"]["date"] == "2018-09-10"
-
-    def test_barrier_with_report_resolved_in_full(self):
-        a_user = create_test_user(
-            first_name="", last_name="", email="Testo@Useri.com", username=""
-        )
-        list_report_url = reverse("list-reports")
-        new_api_client = self.create_api_client(user=a_user)
-        list_report_response = new_api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = new_api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = new_api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        barrier = response.data
-        assert barrier["status"]["id"] == 4
-
-    def test_barrier_with_report_resolved_in_part(self):
-        a_user = create_test_user(
-            first_name="", last_name="", email="Testo@Useri.com", username=""
-        )
-        list_report_url = reverse("list-reports")
-        new_api_client = self.create_api_client(user=a_user)
-        list_report_response = new_api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 3,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = new_api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = new_api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-        barrier = response.data
-        assert barrier["status"]["id"] == 3
-
-    def test_barrier_created_by_as_default_team_member(self):
-        list_report_url = reverse("list-reports")
-        list_report_response = self.api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        members_url = reverse("list-members", kwargs={"pk": instance.id})
-        mem_response = self.api_client.get(members_url)
-        assert mem_response.status_code == status.HTTP_200_OK
-        assert mem_response.data["count"] == 0
-
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = self.api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = self.api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-
-        mem_response = self.api_client.get(members_url)
-        assert mem_response.status_code == status.HTTP_200_OK
-        assert mem_response.data["count"] == 1
-        member = mem_response.data["results"][0]
-        assert member["user"]["email"] == "Testo@Useri.com"
-        assert member["user"]["first_name"] == "Testo"
-        assert member["user"]["last_name"] == "Useri"
-        assert member["role"] == "Reporter"
-
-    def test_barrier_submitted_by_user_as_default_team_member(self):
-        list_report_url = reverse("list-reports")
-        api_client = self.create_api_client()
-        list_report_response = api_client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
-
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
-
-        members_url = reverse("list-members", kwargs={"pk": instance.id})
-        mem_response = self.api_client.get(members_url)
-        assert mem_response.status_code == status.HTTP_200_OK
-        assert mem_response.data["count"] == 0
-
-        a_user = create_test_user(
-            first_name="Diff", last_name="User", email="diff_user@Useri.com", username=""
-        )
-        new_api_client = self.create_api_client(user=a_user)
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = new_api_client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = new_api_client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-
-        mem_response = self.api_client.get(members_url)
-        assert mem_response.status_code == status.HTTP_200_OK
-        assert mem_response.data["count"] == 1
-        member = mem_response.data["results"][0]
-        assert member["user"]["email"] == "diff_user@Useri.com"
-        assert member["user"]["first_name"] == "Diff"
-        assert member["user"]["last_name"] == "User"
-        assert member["role"] == "Reporter"
+        assert str(self.barrier.id) == response.data["id"]
+
+    def test_patch_barrier_status_to_resolved_in_full(self):
+        assert 1 == self.barrier.status
+        status_date = "2018-09-10"
+        status_summary = "some status summary"
+        resolved_in_full = 4
+
+        url = reverse("resolve-in-full", kwargs={"pk": self.barrier.id})
+        payload = {
+            "status_date": status_date,
+            "status_summary": status_summary,
+        }
+        response = self.api_client.put(url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert resolved_in_full == self.barrier.status
+        assert status_date == self.barrier.status_date.strftime('%Y-%m-%d')
+        assert status_summary == self.barrier.status_summary
+
+    @freeze_time("2020-02-22")
+    def test_unknown_barrier_endpoint_sets_status_to_unknown(self):
+        assert 1 == self.barrier.status
+        status_summary = "some status summary"
+        unknown = 7
+
+        url = reverse("unknown-barrier", kwargs={"pk": self.barrier.id})
+        payload = {
+            "status_summary": status_summary,
+        }
+        response = self.api_client.put(url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert unknown == self.barrier.status
+        assert "2020-02-22" == self.barrier.status_date.strftime('%Y-%m-%d')
+        assert status_summary == self.barrier.status_summary
+
+    @freeze_time("2020-02-22")
+    def test_open_in_progress_endpoint_sets_status_to_open_in_progress(self):
+        assert 1 == self.barrier.status
+        status_summary = "some status summary"
+        open_in_progress = 2
+
+        url = reverse("open-in-progress", kwargs={"pk": self.barrier.id})
+        payload = {
+            "status_summary": status_summary,
+        }
+        response = self.api_client.put(url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert open_in_progress == self.barrier.status
+        assert "2020-02-22" == self.barrier.status_date.strftime('%Y-%m-%d')
+        assert status_summary == self.barrier.status_summary
+
+    def test_patch_barrier_title(self):
+        title = "Just a new title"
+        payload = {
+            "barrier_title": title
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert str(self.barrier.id) == response.data["id"]
+        assert title == response.data["barrier_title"]
+
+    def test_patch_barrier_problem_status(self):
+        assert 1 == self.barrier.problem_status
+
+        test_parameters = [
+            {"problem_status": None, "status_code": status.HTTP_200_OK, "expected_problem_status": None},
+            {"problem_status": 2, "status_code": status.HTTP_200_OK, "expected_problem_status": 2},
+            {"problem_status": 1, "status_code": status.HTTP_200_OK, "expected_problem_status": 1},
+            {"problem_status": 0, "status_code": status.HTTP_400_BAD_REQUEST, "expected_problem_status": 1},
+            {"problem_status": "ahoy!", "status_code": status.HTTP_400_BAD_REQUEST, "expected_problem_status": 1},
+            {"problem_status": "987", "status_code": status.HTTP_400_BAD_REQUEST, "expected_problem_status": 1},
+        ]
+
+        for tp in test_parameters:
+            with self.subTest(tp=tp):
+                payload = {"problem_status": tp["problem_status"],}
+                response = self.api_client.patch(self.url, format="json", data=payload)
+
+                self.barrier.refresh_from_db()
+                assert tp["status_code"] == response.status_code, f"Test params: {tp}"
+                assert tp["expected_problem_status"] == self.barrier.problem_status, f"Test params: {tp}"
+
+    def test_patch_barrier_to_affect_all_sectors(self):
+        assert not self.barrier.all_sectors
+        assert 1 == len(self.barrier.sectors)
+
+        payload = {"all_sectors": True}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert str(self.barrier.id) == response.data["id"]
+        assert response.data["all_sectors"] is True
+        assert self.barrier.sectors == response.data["sectors"]
+
+    def test_patch_barrier_priority(self):
+        unknown_priority = BarrierPriority.objects.get(code="UNKNOWN")
+        assert unknown_priority == self.barrier.priority
+
+        priorities = ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]
+
+        for priority in priorities:
+            with self.subTest(priority=priority):
+                payload = {
+                    "priority": priority,
+                    "priority_summary": "wibble wobble"
+                }
+
+                response = self.api_client.patch(self.url, format="json", data=payload)
+
+                assert status.HTTP_200_OK == response.status_code
+                assert str(self.barrier.id) == response.data["id"]
+                assert priority == response.data["priority"]["code"]
+
+    def test_add_barrier_categories(self):
+        categories = Category.objects.all()
+        category1 = categories[0]
+        category2 = categories[1]
+        self.barrier.categories.add(category1)
+
+        self.barrier.refresh_from_db()
+        assert 1 == self.barrier.categories.count()
+
+        payload = {
+            "categories": (category1.id, category2.id)
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert {category1.id, category2.id} == set(response.data["categories"])
+
+    def test_replace_barrier_categories(self):
+        categories = Category.objects.all()
+        category1 = categories[0]
+        category2 = categories[1]
+        category3 = categories[2]
+        self.barrier.categories.add(category1)
+
+        self.barrier.refresh_from_db()
+        assert 1 == self.barrier.categories.count()
+
+        payload = {
+            "categories": (category2.id, category3.id)
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert {category2.id, category3.id} == set(response.data["categories"])
+
+    def test_flush_barrier_categories(self):
+        categories = Category.objects.all()
+        category1 = categories[0]
+        self.barrier.categories.add(category1)
+
+        self.barrier.refresh_from_db()
+        assert 1 == self.barrier.categories.count()
+
+        payload = {
+            "categories": ()
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert not response.data["categories"]
+
+
+class TestHibernateEndpoint(APITestMixin, TestCase):
+
+    def setUp(self):
+        self.barrier = BarrierFactory()
+        self.url = reverse("hibernate-barrier", kwargs={"pk": self.barrier.id})
+
+    @freeze_time("2020-02-22")
+    def test_hibernate_barrier_endpoint_sets_status_to_dormant(self):
+        """
+        Barrier status should be set to DORMANT when it gets hibernated.
+        Also status date should be updated.
+        """
+        expected_status_date = "2020-02-22"
+        dormant = 5
+        assert 1 == self.barrier.status
+
+        response = self.api_client.put(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert dormant == self.barrier.status
+        assert expected_status_date == self.barrier.status_date.strftime('%Y-%m-%d')
+
+    def test_update_barrier_through_hibernate_barrier_endpoint(self):
+        """
+        Users should be able to update status summary while hibernating a barrier.
+        """
+        status_summary = "some status summary"
+
+        payload = {"status_summary": status_summary}
+        response = self.api_client.put(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert status_summary == self.barrier.status_summary
+
+
+class TestBarrierTradeDirection(APITestMixin, TestCase):
+
+    def setUp(self):
+        self.barrier = BarrierFactory()
+        self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
+
+    def test_get_barrier_without_trade_direction(self):
+        """
+        By default all existing barriers start with trade_direction not begin set.
+        """
+        self.barrier.trade_direction = None
+        self.barrier.save()
+
+        assert 1 == BarrierInstance.objects.count()
+        assert self.barrier.trade_direction is None
+
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data["trade_direction"] is None
+
+    def test_get_barrier_with_trade_direction(self):
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["trade_direction"]
+
+    def test_set_trade_direction_to_none(self):
+        """
+        Trade direction cannot be set to None.
+        """
+        payload = {"trade_direction": None}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_400_BAD_REQUEST == response.status_code
+        assert 1 == self.barrier.trade_direction
+
+    def test_patch_trade_direction(self):
+        payload = {"trade_direction": 2}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["trade_direction"]
+
+    def test_patch_trade_direction_with_invalid_values(self):
+        invalid_values = [0, 14, "123", "Wibble", [], {"a": 6}, "null"]
+
+        for value in invalid_values:
+            with self.subTest(value=value):
+                payload = {"trade_direction": value}
+                response = self.api_client.patch(self.url, format="json", data=payload)
+
+                assert status.HTTP_400_BAD_REQUEST == response.status_code, \
+                    f"Expected 400 when value is {value}"

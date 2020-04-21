@@ -13,9 +13,10 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
-    RESOLVED_STATUS,
     STAGE_STATUS,
+    TRADE_DIRECTION_CHOICES
 )
+
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.barriers import validators
@@ -45,10 +46,13 @@ class ReportManager(models.Manager):
 
 
 class BarrierManager(models.Manager):
-    """ Manage barriers within the model, with draft=False """
+    """
+    Manage barriers within the model, with draft=False
+    Keep archived filter off from here to allow to filter for archived barriers only.
+    """
 
     def get_queryset(self):
-        return super(BarrierManager, self).get_queryset().filter(draft=False)
+        return super().get_queryset().filter(draft=False)
 
 
 class BarrierHistoricalModel(models.Model):
@@ -125,6 +129,12 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         null=True,
         default=None,
         help_text="list of states, provinces, regions etc within a country",
+    )
+    trade_direction = models.SmallIntegerField(
+        choices=TRADE_DIRECTION_CHOICES,
+        blank=False,
+        null=True,
+        default=None
     )
 
     sectors_affected = models.NullBooleanField(
