@@ -123,3 +123,18 @@ def get_barrier_type_categories():
 
 def get_reporting_stages():
     return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))
+
+
+def get_wto_committee_groups():
+    committee_groups = []
+    for group in WTOCommitteeGroup.objects.all():
+        committee_groups.append({
+            "id": str(group.id),
+            "name": group.name,
+            "wto_committees": [
+                {
+                    "id": str(committee.id),
+                    "name": committee.name,
+                } for committee in group.committees.all()
+            ],
+        })
