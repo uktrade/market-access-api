@@ -99,7 +99,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         assert 1 == response.data["count"]
 
-    def test_cannot_see_archived_barriers(self):
+    def test_include_archived_barriers(self):
         user = create_test_user()
         barrier = BarrierFactory()
 
@@ -111,6 +111,22 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         barrier.archive(user=user)
         response = self.api_client.get(self.url)
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+
+    def test_list_barrier_without_archived_barriers(self):
+        url = f"{self.url}?archived=0"
+        user = create_test_user()
+        barrier = BarrierFactory()
+
+        assert 1 == BarrierInstance.objects.count()
+
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+
+        barrier.archive(user=user)
+        response = self.api_client.get(url)
         assert status.HTTP_200_OK == response.status_code
         assert 0 == response.data["count"]
 

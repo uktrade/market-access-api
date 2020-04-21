@@ -46,10 +46,13 @@ class ReportManager(models.Manager):
 
 
 class BarrierManager(models.Manager):
-    """ Manage barriers within the model, with draft=False """
+    """
+    Manage barriers within the model, with draft=False
+    Keep archived filter off from here to allow to filter for archived barriers only.
+    """
 
     def get_queryset(self):
-        return super().get_queryset().filter(Q(draft=False) & Q(archived=False))
+        return super().get_queryset().filter(draft=False)
 
 
 class BarrierHistoricalModel(models.Model):
