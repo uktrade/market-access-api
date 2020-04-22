@@ -10,7 +10,8 @@ from api.metadata.constants import (
     BARRIER_STATUS,
     BARRIER_PENDING,
     STAGE_STATUS,
-    PROBLEM_STATUS_TYPES
+    PROBLEM_STATUS_TYPES,
+    TRADE_DIRECTION_CHOICES,
 )
 from api.metadata.serializers import BarrierTagSerializer
 from api.metadata.utils import (
@@ -73,6 +74,7 @@ class BarrierReportSerializer(serializers.ModelSerializer):
             "modified_by",
             "modified_on",
             "tags",
+            "trade_direction",
         )
         read_only_fields = (
             "id",
@@ -140,6 +142,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    trade_direction = serializers.SerializerMethodField()
     end_date = serializers.DateField(format="%Y-%m-%d")
 
     class Meta:
@@ -269,6 +272,14 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_tags(self, obj):
         return ", ".join(obj.tags.values_list("title", flat=True))
 
+    def get_trade_direction(self, obj):
+        if obj.trade_direction:
+            trade_directions = dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES)
+            return trade_directions.get(str(obj.trade_direction))
+        else:
+            return None
+
+
 
 class BarrierListSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers """
@@ -297,6 +308,7 @@ class BarrierListSerializer(serializers.ModelSerializer):
             "priority",
             "categories",
             "tags",
+            "trade_direction",
             "created_on",
             "modified_on",
             "archived",
@@ -386,6 +398,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "unarchived_by",
             "last_seen_on",
             "tags",
+            "trade_direction",
             "end_date",
             "wto_profile",
         )
@@ -481,6 +494,11 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def validate_tags(self, tag_ids=None):
         if tag_ids is not None and type(tag_ids) is not list:
             raise serializers.ValidationError('Expected a list of tag IDs.')
+
+    def validate_trade_direction(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError('Field is not nullable.')
+        return attrs
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

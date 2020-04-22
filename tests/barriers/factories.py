@@ -1,9 +1,12 @@
 import datetime
 
 import factory
+from django.utils import timezone
 from factory.fuzzy import FuzzyChoice, FuzzyDate
+from pytz import UTC
 
 from api.barriers.models import BarrierInstance
+from api.metadata.models import BarrierPriority
 
 
 def fuzzy_sector():
@@ -38,9 +41,10 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BarrierInstance
 
-    problem_status = FuzzyChoice([1, 2, 7]).fuzz()
+    problem_status = 1
     status = 1
     export_country = fuzzy_country()
+    trade_direction = 1
     sectors_affected = True
     sectors = [fuzzy_sector()]
     product = factory.Sequence(lambda n: "Product {}".format(n + 1))
@@ -48,6 +52,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     barrier_title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
+    priority = None
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
@@ -64,6 +69,26 @@ class BarrierFactory(factory.django.DjangoModelFactory):
             # A list of tags were passed in, use them
             self.tags.add(*extracted)
 
+    @factory.post_generation
+    def priority(self, create, extracted, **kwargs):
+        """
+        Assigning priority to barrier.
+        Available options are as per /api/metadata/migrations/0009_auto_20181205_1432.py:
+            - "UNKNOWN"
+            - "HIGH"
+            - "MEDIUM"
+            - "LOW"
+        """
+        if not create:
+            # Simple build, do nothing.
+            return
+        else:
+            priority_code = "UNKNOWN"
+            if extracted:
+                priority_code = extracted
+            self.priority = BarrierPriority.objects.get(code=priority_code)
+            self.save()
+
 
 class ReportFactory(factory.django.DjangoModelFactory):
     """
@@ -74,9 +99,10 @@ class ReportFactory(factory.django.DjangoModelFactory):
 
     draft = True
     archived = False
-    problem_status = FuzzyChoice([1, 2, 7]).fuzz()
+    problem_status = 1
     status = 1
     export_country = fuzzy_country()
+    trade_direction = 1
     sectors_affected = True
     sectors = [fuzzy_sector()]
     product = factory.Sequence(lambda n: "Product {}".format(n + 1))
@@ -94,3 +120,10 @@ class ReportFactory(factory.django.DjangoModelFactory):
         if extracted:
             # A list of tags were passed in, use them
             self.tags.add(*extracted)
+
+
+class MinReportFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BarrierInstance
+
+    problem_status = None

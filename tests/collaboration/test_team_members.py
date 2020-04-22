@@ -8,11 +8,7 @@ from rest_framework.reverse import reverse
 from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
-from tests.barriers.factories import BarrierFactory
-
-pytestmark = [
-    pytest.mark.django_db
-]
+from tests.barriers.factories import BarrierFactory, ReportFactory
 
 
 class TestListTeamMembers(APITestMixin):
@@ -32,8 +28,9 @@ class TestListTeamMembers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert 1 == response.data["count"]
 
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    def _test_add_existing_user_with_profile_with_sso_user_id_as_member(self, mock_sso_user):
+    def test_add_existing_user_with_profile_with_sso_user_id_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
         creator_user = create_test_user(
             sso_user_id=self.sso_creator["user_id"]
@@ -118,9 +115,10 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == self.sso_user_data_1["last_name"]
         member["role"] == "dummy"
 
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
     @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    def _test_add_existing_user_with_profile_without_sso_user_id_as_member(self, mock_sso_user, mock_creator):
+    def test_add_existing_user_with_profile_without_sso_user_id_as_member(self, mock_sso_user, mock_creator):
         """Test adding a new member, already existing in the db"""
         client = self.api_client
         mock_creator.return_value = self.sso_creator
@@ -204,8 +202,9 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == "User"
         member["role"] == "dummy"
 
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    def _test_add_existing_user_without_profile_as_member(self, mock_sso_user):
+    def test_add_existing_user_without_profile_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
         client = self.api_client
         mock_sso_user.return_value = self.sso_user_data_1
@@ -287,8 +286,9 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == "User"
         member["role"] == "dummy"
 
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    def _test_add_new_user_as_member(self, mock_sso_user):
+    def test_add_new_user_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
         client = self.api_client
         mock_sso_user.return_value = self.sso_user_data_1
@@ -362,8 +362,9 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == self.sso_user_data_1["last_name"]
         member["role"] == "dummy"
 
+    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
     @patch("api.user.utils.StaffSSO.get_user_details_by_id")
-    def _test_multiple_members(self, mock_sso_user):
+    def test_multiple_members(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
         client = self.api_client
         mock_sso_user.side_effect = [self.sso_user_data_1, self.sso_user_data_2]
@@ -476,42 +477,12 @@ class TestListTeamMembers(APITestMixin):
         )
         client = self.create_api_client(a_user)
         mock_sso_user.side_effect = [self.sso_user_data_1, self.sso_user_data_2]
-        list_report_url = reverse("list-reports")
-        list_report_response = client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
+        report = ReportFactory(created_by=a_user)
+        url = reverse("submit-report", kwargs={"pk": report.id})
+        client.put(url, format="json", data={})
 
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        get_response = client.get(get_url)
-        assert get_response.status_code == status.HTTP_200_OK
-
-        members_url = reverse("list-members", kwargs={"pk": instance.id})
+        members_url = reverse("list-members", kwargs={"pk": report.id})
         int_response = client.get(members_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["count"] == 1
@@ -602,42 +573,12 @@ class TestListTeamMembers(APITestMixin):
     def test_delete_default_member(self):
         """Test there are no barrier members using list"""
         client = self.api_client
-        list_report_url = reverse("list-reports")
-        list_report_response = client.post(
-            list_report_url,
-            format="json",
-            data={
-                "problem_status": 2,
-                "status_date": "2018-09-10",
-                "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
-                "sectors_affected": True,
-                "sectors": [
-                    "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a",
-                ],
-                "product": "Some product",
-                "source": "OTHER",
-                "other_source": "Other source",
-                "barrier_title": "Some title",
-                "summary": "Some summary",
-                "status_summary": "some status summary",
-            },
-        )
 
-        assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
-        assert list_report_response.data["id"] == str(instance.id)
+        report = ReportFactory()
+        url = reverse("submit-report", kwargs={"pk": report.id})
+        client.put(url, format="json", data={})
 
-        submit_url = reverse("submit-report", kwargs={"pk": instance.id})
-        submit_response = client.put(submit_url, format="json", data={})
-        assert submit_response.status_code == status.HTTP_200_OK
-
-        get_url = reverse("get-barrier", kwargs={"pk": instance.id})
-        response = client.get(get_url)
-        assert response.status_code == status.HTTP_200_OK
-
-        members_url = reverse("list-members", kwargs={"pk": instance.id})
+        members_url = reverse("list-members", kwargs={"pk": report.id})
         mem_response = client.get(members_url)
         assert mem_response.status_code == status.HTTP_200_OK
         assert mem_response.data["count"] == 1
