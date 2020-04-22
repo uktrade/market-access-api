@@ -304,6 +304,37 @@ class BarrierFilterSet(django_filters.FilterSet):
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
     tags = django_filters.Filter(method="tags_filter")
 
+    wto_has_been_notified = django_filters.BooleanFilter(
+        "wto_has_been_notified",
+        method="wto_has_been_notified_filter",
+        widget=BooleanWidget,
+    )
+    wto_should_be_notified = django_filters.BooleanFilter(
+        "wto_should_be_notified",
+        method="wto_should_be_notified_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_raised_date = django_filters.BooleanFilter(
+        "has_wto_raised_date",
+        method="has_wto_raised_date_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_committee_raised_in = django_filters.BooleanFilter(
+        "has_wto_committee_raised_in",
+        method="has_wto_committee_raised_in_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_case_number = django_filters.BooleanFilter(
+        "has_wto_case_number",
+        method="has_wto_case_number_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_profile = django_filters.BooleanFilter(
+        "has_wto_profile",
+        method="has_wto_profile_filter",
+        widget=BooleanWidget,
+    )
+
     class Meta:
         model = BarrierInstance
         fields = [
@@ -390,6 +421,28 @@ class BarrierFilterSet(django_filters.FilterSet):
     def tags_filter(self, queryset, name, value):
         tag_ids = value.split(",")
         return queryset.filter(tags__in=tag_ids)
+
+    def wto_has_been_notified_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__wto_has_been_notified=value)
+
+    def wto_should_be_notified_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__wto_should_be_notified=value)
+
+    def has_wto_raised_date_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__raised_date__isnull=not value)
+
+    def has_wto_committee_raised_in_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__committee_raised_in__isnull=not value)
+
+    def has_wto_case_number_filter(self, queryset, name, value):
+        if value is True:
+            return queryset.filter(
+                wto_profile__isnull=not value
+            ).exclude(wto_profile__case_number="")
+        return queryset
+
+    def has_wto_profile_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__isnull=not value)
 
 
 class BarrierList(generics.ListAPIView):
