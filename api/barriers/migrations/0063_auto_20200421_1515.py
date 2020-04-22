@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('wto', '0001_initial'),
-        ('barriers', '0061_auto_20200417_0940'),
+        ('barriers', '0062_auto_20200421_1013'),
     ]
 
     operations = [
