@@ -30,6 +30,7 @@ from api.barriers.history import (
     BarrierHistoryFactory,
     NoteHistoryFactory,
     TeamMemberHistoryFactory,
+    WTOHistoryFactory,
 )
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
@@ -558,6 +559,13 @@ class HistoryMixin:
             start_date=start_date,
         )
 
+    def get_wto_history(self, fields=(), start_date=None):
+        return WTOHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+            start_date=start_date,
+        )
+
 
 class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
     """
@@ -573,9 +581,11 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
         team_history = self.get_team_history(
             start_date=barrier.reported_on + datetime.timedelta(seconds=1)
         )
+        wto_history = self.get_wto_history(start_date=barrier.reported_on)
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history
+            + wto_history
         )
 
         response = {

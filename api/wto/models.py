@@ -4,6 +4,8 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from simple_history.models import HistoricalRecords
+
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
@@ -26,6 +28,23 @@ class WTOCommittee(models.Model):
 
     class Meta:
         ordering = ("name", )
+
+
+class WTOProfileHistoricalModel(models.Model):
+
+    def get_changed_fields(self, old_history):
+        changed_fields = set(self.diff_against(old_history).changed_fields)
+
+        if changed_fields.intersection(("wto_has_been_notified", "wto_should_be_notified")):
+            changed_fields.discard("wto_has_been_notified")
+            changed_fields.discard("wto_should_be_notified")
+            changed_fields.add("wto_notified_status")
+
+        return list(changed_fields)
+
+    class Meta:
+        abstract = True
+
 
 
 class WTOProfile(models.Model):
@@ -71,3 +90,5 @@ class WTOProfile(models.Model):
     )
     raised_date = models.DateField(null=True)
     case_number = models.CharField(max_length=MAX_LENGTH, null=True, blank=True)
+
+    history = HistoricalRecords(bases=[WTOProfileHistoricalModel])
