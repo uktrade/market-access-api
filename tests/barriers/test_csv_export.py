@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
 
-from barriers.serializers import BarrierCsvExportSerializer
-from core.test_utils import APITestMixin
+from api.barriers.serializers import BarrierCsvExportSerializer
+from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
 
 
