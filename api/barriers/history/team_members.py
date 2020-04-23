@@ -21,12 +21,10 @@ class TeamMemberHistoryFactory(HistoryItemFactory):
         if new_record.history_type == "+":
             return [TeamMemberHistoryItem(new_record, None)]
         if new_record.history_type == "~":
-            if new_record.user == old_record.user:
-                return [TeamMemberHistoryItem(new_record, old_record)]
+            return [TeamMemberHistoryItem(new_record, old_record)]
         return []
 
     @classmethod
-    def get_history(cls, barrier_id):
-        return TeamMember.history.filter(
-            barrier_id=barrier_id
-        ).order_by("user", "history_date")
+    def get_history(cls, barrier_id, start_date=None):
+        history = TeamMember.history.filter(barrier_id=barrier_id)
+        return history.order_by("id", "history_date")

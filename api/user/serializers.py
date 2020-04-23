@@ -1,21 +1,16 @@
 from logging import getLogger
 
-import time
-from django.conf import settings
-from django.core.cache import cache
-
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
-from api.user.models import Profile
 from api.core.utils import cleansed_username
-from api.user.utils import get_username
-from api.user.staff_sso import StaffSSO
+from api.user.helpers import get_username
+from api.user.models import Profile
+from api.user.staff_sso import sso
 
 UserModel = get_user_model()
 logger = getLogger(__name__)
-sso = StaffSSO()
 
 
 class WhoAmISerializer(serializers.ModelSerializer):

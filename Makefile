@@ -80,6 +80,17 @@ pg-dump: ## Creates a DB backup in ./db_dumps folder.
 	@echo "$$(tput setaf 3)🥟   Creating dump file ./db_dumps/$(__dumpfile)  🙈"
 	@docker-compose exec db bash -c "mkdir -p /var/lib/postgresql/dumps && pg_dump -U postgres market_access | gzip > /var/lib/postgresql/dumps/$(__dumpfile)"
 
+__devdumpfile := DEV_market_access_$(shell date +%Y%m%d_%H%M).gz
+.PHONY: pg-dump-dev
+pg-dump-dev: ## Creates a DB backup of DEV in ./db_dumps folder.
+	@echo "$$(tput setaf 10)=========="
+	@echo "$$(tput setaf 10)Hints:"
+	@echo "$$(tput setaf 10)  - requires you to be logged into cf with the correct [org] and [space] selected "
+	@echo "$$(tput setaf 10)  - requires conduit plugin to be istalled (cf install-plugin conduit) "
+	@echo "$$(tput setaf 10)=========="
+	@echo "🥟   $$(tput setab 4)$$(tput setaf 0)[ DEV ]$$(tput sgr 0)$$(tput setaf 3) Creating dump file ./db_dumps/$(__devdumpfile)  🙈"
+	@cf conduit market-access-dev-db -- pg_dump | gzip > db_dumps/$(__devdumpfile)
+
 dumpfile =
 .PHONY: restore-db
 restore-db: ## Restores a DB backup
