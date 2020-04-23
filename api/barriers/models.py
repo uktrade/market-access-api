@@ -282,7 +282,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
 
     @property
     def has_assessment(self):
-        return hasattr(self, 'asesssment')
+        return hasattr(self, 'assessment')
 
     def last_seen_by(self, user_id):
         try:
