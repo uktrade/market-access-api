@@ -1,9 +1,7 @@
 import datetime
 
 import factory
-from django.utils import timezone
 from factory.fuzzy import FuzzyChoice, FuzzyDate
-from pytz import UTC
 
 from api.barriers.models import BarrierInstance
 from api.metadata.models import BarrierPriority

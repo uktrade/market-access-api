@@ -4,6 +4,7 @@ from rest_framework.test import APITestCase
 
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.core.test_utils import APITestMixin
+from tests.assessment.factories import AssessmentFactory
 from tests.barriers.factories import BarrierFactory
 
 
@@ -30,3 +31,20 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert expected_link == serializer.data["link"]
+
+    def test_economic_assessment(self):
+        """ Include Assessment Explanation in the CSV """
+        expected_explanation = "Wibble wobble!"
+        barrier = BarrierFactory()
+        AssessmentFactory(barrier=barrier, explanation=expected_explanation)
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert expected_explanation == serializer.data["economic_assessment_explanation"]
+
+    def test_ecomomic_assessment_is_none(self):
+        """ Default to None if there's no Assessment for the Barrier """
+        expected_explanation = None
+        barrier = BarrierFactory()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert expected_explanation == serializer.data["economic_assessment_explanation"]

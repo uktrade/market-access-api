@@ -280,6 +280,10 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
 
+    @property
+    def has_assessment(self):
+        return hasattr(self, 'asesssment')
+
     def last_seen_by(self, user_id):
         try:
             hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
