@@ -438,7 +438,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     def has_wto_case_number_filter(self, queryset, name, value):
         if value is True:
             return queryset.filter(
-                wto_profile__isnull=not value
+                wto_profile__isnull=False
             ).exclude(wto_profile__case_number="")
         return queryset
 

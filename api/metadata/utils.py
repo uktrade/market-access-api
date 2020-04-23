@@ -9,6 +9,7 @@ from django.conf import settings
 from mohawk import Sender
 
 from api.barriers.models import Stage
+from api.wto.models import WTOCommitteeGroup
 
 from .constants import BARRIER_TYPE_CATEGORIES
 from .models import Category, BarrierPriority, BarrierTag
