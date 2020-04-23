@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.cache import cache
 
 from rest_framework import serializers
@@ -143,6 +144,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
     end_date = serializers.DateField(format="%Y-%m-%d")
+    link = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -171,6 +173,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 	        "commercial_value",
 	        "export_value",
             "end_date",
+            "link",
         )
 
     def get_scope(self, obj):
@@ -284,6 +287,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         else:
             return None
 
+    def get_link(self, obj):
+        return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
 
 
 class BarrierListSerializer(serializers.ModelSerializer):

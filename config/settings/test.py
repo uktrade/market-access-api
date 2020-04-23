@@ -25,3 +25,5 @@ WHITENOISE_USE_FINDERS = True
 # During local development all tasks will be executed syncronously,
 # blocking the processes until the task returns
 CELERY_TASK_ALWAYS_EAGER = True
+
+DMAS_BASE_URL = "https://dummy.market-access.net"

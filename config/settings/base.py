@@ -132,6 +132,9 @@ REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 1000)
 DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
+# DMAS Frontend
+DMAS_BASE_URL = env("DMAS_BASE_URL")
+
 # Documents
 # CACHE / REDIS
 if "redis" in VCAP_SERVICES:
