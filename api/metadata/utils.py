@@ -139,3 +139,4 @@ def get_wto_committee_groups():
                 } for committee in group.committees.all()
             ],
         })
+    return committee_groups
