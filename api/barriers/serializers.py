@@ -145,6 +145,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     trade_direction = serializers.SerializerMethodField()
     end_date = serializers.DateField(format="%Y-%m-%d")
     link = serializers.SerializerMethodField()
+    economic_assessment_explanation = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -174,6 +175,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 	        "export_value",
             "end_date",
             "link",
+            "economic_assessment_explanation",
         )
 
     def get_scope(self, obj):
@@ -289,6 +291,12 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_link(self, obj):
         return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
+
+    def get_economic_assessment_explanation(self, obj):
+        if obj.has_assessment:
+            return obj.assessment.explanation
+        else:
+            return None
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
