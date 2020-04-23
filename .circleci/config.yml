@@ -53,6 +53,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: 'access_secret'
       AWS_DEFAULT_REGION: 'eu-west-2'
       REDIS_BASE_URL: 'redis://localhost'
+      DMAS_BASE_URL: 'https://dummy.market-access.net'
 
     working_directory: ~/repo
 

@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from rest_framework.test import APITestCase
 
 from api.barriers.serializers import BarrierCsvExportSerializer
@@ -20,3 +22,11 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert expected_summary == serializer.data["summary"]
+
+    def test_link(self):
+        """ Use barrier code for the link in the CSV """
+        barrier = BarrierFactory()
+        expected_link = f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}"
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert expected_link == serializer.data["link"]
