@@ -4,6 +4,8 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from api.interactions.models import Document
+
 from simple_history.models import HistoricalRecords
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -65,7 +67,7 @@ class WTOProfile(models.Model):
         blank=True
     )
     committee_notification_document = models.ForeignKey(
-        "documents.Document",
+        Document,
         related_name="committee_notification_wto_profiles",
         null=True,
         on_delete=models.SET_NULL,
@@ -83,7 +85,7 @@ class WTOProfile(models.Model):
         on_delete=models.SET_NULL,
     )
     meeting_minutes = models.ForeignKey(
-        "documents.Document",
+        Document,
         related_name="meeting_minutes_wto_profiles",
         null=True,
         on_delete=models.SET_NULL,

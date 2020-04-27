@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance, BarrierUserHit
 from api.collaboration.models import TeamMember
+from api.interactions.models import Document
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
     BARRIER_SOURCE,
@@ -529,6 +530,17 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def update_wto_profile(self, instance, validated_data):
         wto_profile = validated_data.pop('wto_profile')
         if wto_profile:
+            document_fields = ("committee_notification_document", "meeting_minutes")
+            for field_name in document_fields:
+                if field_name in self.initial_data["wto_profile"]:
+                    document_id = self.initial_data["wto_profile"].get(field_name)
+                    if document_id:
+                        try:
+                            Document.objects.get(pk=document_id)
+                        except Document.DoesNotExist:
+                            continue
+                    wto_profile[f"{field_name}_id"] = document_id
+
             WTOProfile.objects.update_or_create(barrier=instance, defaults=wto_profile)
 
     def save(self, *args, **kwargs):
