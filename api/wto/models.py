@@ -62,8 +62,7 @@ class WTOProfile(models.Model):
     )
     committee_notification_link = models.CharField(
         max_length=MAX_LENGTH,
-        null=True,
-        blank=True
+        blank=True,
     )
     committee_notification_document = models.ForeignKey(
         Document,
@@ -90,6 +89,6 @@ class WTOProfile(models.Model):
         on_delete=models.SET_NULL,
     )
     raised_date = models.DateField(null=True)
-    case_number = models.CharField(max_length=MAX_LENGTH, null=True, blank=True)
+    case_number = models.CharField(max_length=MAX_LENGTH, blank=True)
 
     history = HistoricalRecords(bases=[WTOProfileHistoricalModel])
