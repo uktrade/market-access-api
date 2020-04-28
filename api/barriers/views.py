@@ -504,6 +504,9 @@ class BarriertListExportView(generics.ListAPIView):
             "tags": "Tags",
             "trade_direction": "Trade direction",
             "end_date": "End date",
+            "summary": "Summary",
+            "link": "Link",
+            "economic_assessment_explanation": "Economic assessment",
         }
 
     def _get_rows(self, queryset):

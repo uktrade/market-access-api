@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.cache import cache
 
 from rest_framework import serializers
@@ -124,6 +125,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     code = serializers.CharField()
     scope = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    summary = serializers.SerializerMethodField()
     barrier_title = serializers.CharField()
     sectors = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
@@ -145,6 +147,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
     end_date = serializers.DateField(format="%Y-%m-%d")
+    link = serializers.SerializerMethodField()
+    economic_assessment_explanation = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -173,6 +177,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 	        "commercial_value",
 	        "export_value",
             "end_date",
+            "link",
+            "economic_assessment_explanation",
         )
 
     def get_scope(self, obj):
@@ -215,6 +221,12 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         if status == "Open: Pending action":
             status = f"{status} ({sub_status_dict.get(obj.sub_status, 'Unknown')})"
         return status
+
+    def get_summary(self, obj):
+        if obj.is_summary_sensitive:
+            return "OFFICIAL-SENSITIVE (see it on DMAS)"
+        else:
+            return obj.summary or None
 
     def get_sectors(self, obj):
         if obj.sectors_affected:
@@ -280,6 +292,14 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         else:
             return None
 
+    def get_link(self, obj):
+        return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
+
+    def get_economic_assessment_explanation(self, obj):
+        if obj.has_assessment:
+            return obj.assessment.explanation
+        else:
+            return None
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
