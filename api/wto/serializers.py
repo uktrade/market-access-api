@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 class WTOProfileSerializer(serializers.ModelSerializer):
     committee_notification_document = serializers.SerializerMethodField()
+    meeting_minutes = serializers.SerializerMethodField()
 
     class Meta:
         model = WTOProfile
@@ -23,14 +24,17 @@ class WTOProfileSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", )
 
-    def get_committee_notification_document(self, obj):
-        if obj.committee_notification_document is None:
-            return None
+    def get_serialized_document(self, document):
+        if document is not None:
+            return {
+                "id": document.id,
+                "name": document.original_filename,
+                "size": document.size,
+                "status": document.document.status,
+            }
 
-        document = obj.committee_notification_document
-        return {
-            "id": document.id,
-            "name": document.original_filename,
-            "size": document.size,
-            "status": document.document.status,
-        }
+    def get_committee_notification_document(self, obj):
+        return self.get_serialized_document(obj.committee_notification_document)
+
+    def get_meeting_minutes(self, obj):
+        return self.get_serialized_document(obj.meeting_minutes)
