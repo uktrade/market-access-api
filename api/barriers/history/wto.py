@@ -14,6 +14,13 @@ class CaseNumberHistoryItem(BaseWTOHistoryItem):
 class CommitteeNotificationDocumentHistoryItem(BaseWTOHistoryItem):
     field = "committee_notification_document"
 
+    def get_value(self, record):
+        if record.committee_notification_document:
+            return {
+                "id": str(record.committee_notification_document.id),
+                "name": record.committee_notification_document.original_filename,
+            }
+
 
 class CommitteeNotificationLinkHistoryItem(BaseWTOHistoryItem):
     field = "committee_notification_link"
@@ -43,6 +50,13 @@ class CommitteeRaisedInHistoryItem(BaseWTOHistoryItem):
 
 class MeetingMinutesHistoryItem(BaseWTOHistoryItem):
     field = "meeting_minutes"
+
+    def get_value(self, record):
+        if record.meeting_minutes:
+            return {
+                "id": str(record.meeting_minutes.id),
+                "name": record.meeting_minutes.original_filename,
+            }
 
 
 class MemberStatesHistoryItem(BaseWTOHistoryItem):

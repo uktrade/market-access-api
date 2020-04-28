@@ -48,7 +48,6 @@ class WTOProfileHistoricalModel(models.Model):
         abstract = True
 
 
-
 class WTOProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
 
