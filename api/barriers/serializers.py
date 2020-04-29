@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance, BarrierUserHit
 from api.collaboration.models import TeamMember
+from api.interactions.models import Document
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
     BARRIER_SOURCE,
@@ -21,6 +22,8 @@ from api.metadata.utils import (
     get_countries,
     get_sectors,
 )
+from api.wto.models import WTOProfile
+from api.wto.serializers import WTOProfileSerializer
 
 # pylint: disable=R0201
 
@@ -372,6 +375,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     # TODO: deprecate this field (use summary instead)
     problem_description = serializers.CharField(source="summary", required=False)
+    wto_profile = WTOProfileSerializer()
 
     class Meta:
         model = BarrierInstance
@@ -417,6 +421,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "tags",
             "trade_direction",
             "end_date",
+            "wto_profile",
         )
         read_only_fields = (
             "id",
@@ -526,6 +531,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
+        if "wto_profile" in validated_data:
+            self.update_wto_profile(instance, validated_data)
+
         if instance.archived is False and validated_data.get("archived") is True:
             instance.archive(
                 user=self.user,
@@ -538,6 +546,22 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 reason=validated_data.get("unarchived_reason"),
             )
         return super().update(instance, validated_data)
+
+    def update_wto_profile(self, instance, validated_data):
+        wto_profile = validated_data.pop('wto_profile')
+        if wto_profile:
+            document_fields = ("committee_notification_document", "meeting_minutes")
+            for field_name in document_fields:
+                if field_name in self.initial_data["wto_profile"]:
+                    document_id = self.initial_data["wto_profile"].get(field_name)
+                    if document_id:
+                        try:
+                            Document.objects.get(pk=document_id)
+                        except Document.DoesNotExist:
+                            continue
+                    wto_profile[f"{field_name}_id"] = document_id
+
+            WTOProfile.objects.update_or_create(barrier=instance, defaults=wto_profile)
 
     def save(self, *args, **kwargs):
         self.user = kwargs.get("modified_by")

@@ -31,6 +31,7 @@ from .utils import (
     get_os_regions_and_countries,
     get_reporting_stages,
     get_sectors,
+    get_wto_committee_groups,
 )
 
 
@@ -68,6 +69,7 @@ class MetadataView(generics.GenericAPIView):
         barrier_priorities = get_barrier_priorities()
         barrier_tags = get_barrier_tags()
         trade_direction = dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES)
+        wto_committee_groups = get_wto_committee_groups()
 
         results = {
             "status_types": status_types,
@@ -95,6 +97,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_priorities": barrier_priorities,
             "assessment_impact": assessment_impact,
             "trade_direction": trade_direction,
+            "wto_committee_groups": wto_committee_groups,
         }
 
         return Response(results, status=status.HTTP_200_OK)

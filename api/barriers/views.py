@@ -30,6 +30,7 @@ from api.barriers.history import (
     BarrierHistoryFactory,
     NoteHistoryFactory,
     TeamMemberHistoryFactory,
+    WTOHistoryFactory,
 )
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
@@ -304,6 +305,37 @@ class BarrierFilterSet(django_filters.FilterSet):
     tags = django_filters.Filter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
 
+    wto_has_been_notified = django_filters.BooleanFilter(
+        "wto_has_been_notified",
+        method="wto_has_been_notified_filter",
+        widget=BooleanWidget,
+    )
+    wto_should_be_notified = django_filters.BooleanFilter(
+        "wto_should_be_notified",
+        method="wto_should_be_notified_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_raised_date = django_filters.BooleanFilter(
+        "has_wto_raised_date",
+        method="has_wto_raised_date_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_committee_raised_in = django_filters.BooleanFilter(
+        "has_wto_committee_raised_in",
+        method="has_wto_committee_raised_in_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_case_number = django_filters.BooleanFilter(
+        "has_wto_case_number",
+        method="has_wto_case_number_filter",
+        widget=BooleanWidget,
+    )
+    has_wto_profile = django_filters.BooleanFilter(
+        "has_wto_profile",
+        method="has_wto_profile_filter",
+        widget=BooleanWidget,
+    )
+
     class Meta:
         model = BarrierInstance
         fields = [
@@ -390,6 +422,28 @@ class BarrierFilterSet(django_filters.FilterSet):
     def tags_filter(self, queryset, name, value):
         tag_ids = value.split(",")
         return queryset.filter(tags__in=tag_ids)
+
+    def wto_has_been_notified_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__wto_has_been_notified=value)
+
+    def wto_should_be_notified_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__wto_should_be_notified=value)
+
+    def has_wto_raised_date_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__raised_date__isnull=not value)
+
+    def has_wto_committee_raised_in_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__committee_raised_in__isnull=not value)
+
+    def has_wto_case_number_filter(self, queryset, name, value):
+        if value is True:
+            return queryset.filter(
+                wto_profile__isnull=False
+            ).exclude(wto_profile__case_number="")
+        return queryset
+
+    def has_wto_profile_filter(self, queryset, name, value):
+        return queryset.filter(wto_profile__isnull=not value)
 
 
 class BarrierList(generics.ListAPIView):
@@ -563,6 +617,13 @@ class HistoryMixin:
             start_date=start_date,
         )
 
+    def get_wto_history(self, fields=(), start_date=None):
+        return WTOHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+            start_date=start_date,
+        )
+
 
 class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
     """
@@ -578,9 +639,11 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
         team_history = self.get_team_history(
             start_date=barrier.reported_on + datetime.timedelta(seconds=1)
         )
+        wto_history = self.get_wto_history(start_date=barrier.reported_on)
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history
+            + wto_history
         )
 
         response = {

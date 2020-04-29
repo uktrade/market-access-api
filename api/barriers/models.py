@@ -221,6 +221,12 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
     )
     archived_explanation = models.TextField(blank=True, null=True)
+    wto_profile = models.OneToOneField(
+        "wto.WTOProfile",
+        null=True,
+        related_name="barrier",
+        on_delete=models.SET_NULL,
+    )
     draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])

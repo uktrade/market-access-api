@@ -5,6 +5,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyDate
 
 from api.barriers.models import BarrierInstance
 from api.metadata.models import BarrierPriority
+from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
 
 
 def fuzzy_sector():
@@ -35,6 +36,26 @@ def fuzzy_date():
     ).evaluate(2, None, False)
 
 
+class WTOCommitteeGroupFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = WTOCommitteeGroup
+
+
+class WTOCommitteeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = WTOCommittee
+
+    wto_committee_group = factory.SubFactory(WTOCommitteeGroupFactory)
+
+
+class WTOProfileFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = WTOProfile
+
+    wto_has_been_notified = False
+    committee_raised_in = factory.SubFactory(WTOCommitteeFactory)
+
+
 class BarrierFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BarrierInstance
@@ -51,6 +72,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
     priority = None
+    wto_profile = factory.SubFactory(WTOProfileFactory)
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):

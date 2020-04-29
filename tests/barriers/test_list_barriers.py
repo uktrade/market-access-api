@@ -442,3 +442,89 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier2.id), str(barrier3.id)} == set(barrier_ids)
+
+    def test_wto_has_been_notified_filter(self):
+        barrier1 = BarrierFactory(wto_profile__wto_has_been_notified=True)
+        barrier2 = BarrierFactory(wto_profile__wto_has_been_notified=False)
+        barrier3 = BarrierFactory(wto_profile=None)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?wto_has_been_notified=1'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        assert str(barrier1.id) == response.data["results"][0]["id"]
+
+    def test_wto_should_be_notified_filter(self):
+        barrier1 = BarrierFactory(wto_profile__wto_should_be_notified=True)
+        barrier2 = BarrierFactory(wto_profile__wto_should_be_notified=False)
+        barrier3 = BarrierFactory(wto_profile=None)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?wto_should_be_notified=1'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        assert str(barrier1.id) == response.data["results"][0]["id"]
+
+    def test_has_wto_raised_date_filter(self):
+        barrier1 = BarrierFactory(wto_profile__raised_date="2020-01-31")
+        barrier2 = BarrierFactory(wto_profile__raised_date=None)
+        barrier3 = BarrierFactory(wto_profile=None)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?has_wto_raised_date=1'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        assert str(barrier1.id) == response.data["results"][0]["id"]
+
+    def test_has_wto_committee_raised_in_filter(self):
+        barrier1 = BarrierFactory(wto_profile__committee_raised_in__name="Committee X")
+        barrier2 = BarrierFactory(wto_profile__committee_raised_in=None)
+        barrier3 = BarrierFactory(wto_profile=None)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?has_wto_committee_raised_in=1'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        assert str(barrier1.id) == response.data["results"][0]["id"]
+
+    def test_has_wto_case_number_filter(self):
+        barrier1 = BarrierFactory(wto_profile__case_number="CASE123")
+        barrier2 = BarrierFactory(wto_profile__case_number="")
+        barrier3 = BarrierFactory(wto_profile=None)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?has_wto_case_number=1'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        assert str(barrier1.id) == response.data["results"][0]["id"]
+
+    def test_has_wto_profile_filter(self):
+        barrier1 = BarrierFactory(wto_profile__case_number="CASE123")
+        barrier2 = BarrierFactory(wto_profile__wto_should_be_notified=True)
+        barrier3 = BarrierFactory(wto_profile=None)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?has_wto_profile=1'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+        barrier_ids = [result["id"] for result in response.data["results"]]
+        assert str(barrier1.id) in barrier_ids
+        assert str(barrier2.id) in barrier_ids
