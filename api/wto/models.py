@@ -61,7 +61,7 @@ class WTOProfile(models.Model):
         on_delete=models.SET_NULL,
     )
     committee_notification_link = models.CharField(
-        max_length=MAX_LENGTH,
+        max_length=2048,
         blank=True,
     )
     committee_notification_document = models.ForeignKey(
