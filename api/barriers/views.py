@@ -507,6 +507,14 @@ class BarriertListExportView(generics.ListAPIView):
             "summary": "Summary",
             "link": "Link",
             "economic_assessment_explanation": "Economic assessment",
+            "wto_has_been_notified": "WTO Notified",
+            "wto_should_be_notified": "WTO Should Notify",
+            "wto_committee_notified": "WTO Committee Notified",
+            "wto_committee_notification_link": "WTO Committee Notified Link",
+            "wto_member_states": "WTO Raised Members",
+            "wto_committee_raised_in": "WTO Raised Committee",
+            "wto_raised_date": "WTO Raised Date",
+            "wto_case_number": "WTO Case Number",
         }
 
     def _get_rows(self, queryset):
