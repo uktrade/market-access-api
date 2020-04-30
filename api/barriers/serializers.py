@@ -149,6 +149,30 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     end_date = serializers.DateField(format="%Y-%m-%d")
     link = serializers.SerializerMethodField()
     economic_assessment_explanation = serializers.SerializerMethodField()
+    wto_has_been_notified = serializers.SerializerMethodField()
+    wto_should_be_notified = serializers.SerializerMethodField()
+    wto_committee_notified = serializers.CharField(
+        source="wto_profile.committee_notified.name",
+        default="",
+    )
+    wto_committee_notification_link = serializers.CharField(
+        source="wto_profile.committee_notification_link",
+        default="",
+    )
+    wto_member_states = serializers.SerializerMethodField()
+    wto_committee_raised_in = serializers.CharField(
+        source="wto_profile.committee_raised_in.name",
+        default="",
+    )
+    wto_raised_date = serializers.DateField(
+        source="wto_profile.raised_date",
+        default="",
+        format="%Y-%m-%d",
+    )
+    wto_case_number = serializers.CharField(
+        source="wto_profile.case_number",
+        default="",
+    )
 
     class Meta:
         model = BarrierInstance
@@ -300,6 +324,30 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return obj.assessment.explanation
         else:
             return None
+
+    def get_wto_has_been_notified(self, obj):
+        if obj.wto_profile:
+            if obj.wto_profile.wto_has_been_notified is True:
+                return "Yes"
+            elif obj.wto_profile.wto_has_been_notified is False:
+                return "No"
+
+    def get_wto_should_be_notified(self, obj):
+        if obj.wto_profile:
+            if obj.wto_profile.wto_should_be_notified is True:
+                return "Yes"
+            elif obj.wto_profile.wto_should_be_notified is False:
+                return "No"
+
+    def get_wto_member_states(self, obj):
+        if obj.wto_profile:
+            dh_countries = cache.get_or_set("dh_countries", get_countries, 7200)
+            member_states_ids = [str(id) for id in obj.wto_profile.member_states]
+            member_states_names = [
+                c["name"] for c in dh_countries
+                if c["id"] in member_states_ids
+            ]
+            return ", ".join(member_states_names)
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
