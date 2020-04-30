@@ -547,7 +547,7 @@ class BarriertListExportView(generics.ListAPIView):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         base_filename = self._get_base_filename()
-        return create_csv_response(serializer.data, self.field_titles, base_filename)
+        return create_csv_response(serializer.data * 10, self.field_titles, base_filename)
 
 
 class BarrierDetail(generics.RetrieveUpdateAPIView):
