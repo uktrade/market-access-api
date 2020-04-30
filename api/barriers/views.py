@@ -16,7 +16,7 @@ from django.utils.timezone import now
 import django_filters
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.widgets import BooleanWidget
+from django_filters.widgets import BooleanWidget, QueryArrayWidget
 
 from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
@@ -304,37 +304,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
     tags = django_filters.Filter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
-
-    wto_has_been_notified = django_filters.BooleanFilter(
-        "wto_has_been_notified",
-        method="wto_has_been_notified_filter",
-        widget=BooleanWidget,
-    )
-    wto_should_be_notified = django_filters.BooleanFilter(
-        "wto_should_be_notified",
-        method="wto_should_be_notified_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_raised_date = django_filters.BooleanFilter(
-        "has_wto_raised_date",
-        method="has_wto_raised_date_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_committee_raised_in = django_filters.BooleanFilter(
-        "has_wto_committee_raised_in",
-        method="has_wto_committee_raised_in_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_case_number = django_filters.BooleanFilter(
-        "has_wto_case_number",
-        method="has_wto_case_number_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_profile = django_filters.BooleanFilter(
-        "has_wto_profile",
-        method="has_wto_profile_filter",
-        widget=BooleanWidget,
-    )
+    wto = django_filters.Filter(method="wto_filter", widget=QueryArrayWidget)
 
     class Meta:
         model = BarrierInstance
@@ -423,27 +393,33 @@ class BarrierFilterSet(django_filters.FilterSet):
         tag_ids = value.split(",")
         return queryset.filter(tags__in=tag_ids)
 
-    def wto_has_been_notified_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__wto_has_been_notified=value)
+    def wto_filter(self, queryset, name, value):
+        wto_queryset = queryset.none()
 
-    def wto_should_be_notified_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__wto_should_be_notified=value)
-
-    def has_wto_raised_date_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__raised_date__isnull=not value)
-
-    def has_wto_committee_raised_in_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__committee_raised_in__isnull=not value)
-
-    def has_wto_case_number_filter(self, queryset, name, value):
-        if value is True:
-            return queryset.filter(
+        if "wto_has_been_notified" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__wto_has_been_notified=True
+            )
+        if "wto_should_be_notified" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__wto_should_be_notified=True
+            )
+        if "has_raised_date" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__raised_date__isnull=False
+            )
+        if "has_committee_raised_in" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__committee_raised_in__isnull=False
+            )
+        if "has_case_number" in value:
+            wto_queryset = wto_queryset | queryset.filter(
                 wto_profile__isnull=False
             ).exclude(wto_profile__case_number="")
-        return queryset
+        if "has_no_information" in value:
+            wto_queryset = wto_queryset | queryset.filter(wto_profile__isnull=True)
 
-    def has_wto_profile_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__isnull=not value)
+        return queryset & wto_queryset
 
 
 class BarrierList(generics.ListAPIView):
