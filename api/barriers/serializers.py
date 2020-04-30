@@ -306,10 +306,10 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return "Unknown"
 
     def get_team_count(self, obj):
-        return TeamMember.objects.filter(barrier=obj).count()
+        return obj.team_count
 
     def get_tags(self, obj):
-        return ", ".join(obj.tags.values_list("title", flat=True))
+        return [tag.title for tag in obj.tags.all()]
 
     def get_trade_direction(self, obj):
         if obj.trade_direction:
