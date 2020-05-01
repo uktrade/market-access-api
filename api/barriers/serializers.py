@@ -18,9 +18,9 @@ from api.metadata.constants import (
 from api.metadata.serializers import BarrierTagSerializer
 from api.metadata.utils import (
     adjust_barrier_tags,
-    get_admin_areas,
-    get_countries,
-    get_sectors,
+    get_admin_area,
+    get_country,
+    get_sector,
 )
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
@@ -207,7 +207,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_scope(self, obj):
         """  Custom Serializer Method Field for exposing current problem scope display value """
-        print(obj.__dict__)
         problem_status_dict = dict(PROBLEM_STATUS_TYPES)
         return problem_status_dict.get(obj.problem_status, "Unknown")
 
@@ -257,36 +256,29 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             if obj.all_sectors:
                 return "All"
             else:
-                dh_sectors = cache.get_or_set("dh_sectors", get_sectors, 72000)
-                sectors = []
-                if obj.sectors:
-                    for sector in obj.sectors:
-                        sectors.extend([s["name"] for s in dh_sectors if s["id"] == str(sector)])
-                return sectors
+                return [get_sector(str(sector)).get("name") for sector in obj.sectors]
         else:
             return "N/A"
 
     def get_country(self, obj):
-        dh_countries = cache.get_or_set("dh_countries", get_countries, 72000)
-        country = [c["name"] for c in dh_countries if c["id"] == str(obj.export_country)]
-        return country
+        country = get_country(str(obj.export_country))
+        if country:
+            return country.get("name")
 
     def get_overseas_region(self, obj):
-        dh_countries = cache.get_or_set("dh_countries", get_countries, 72000)
-        country = [c for c in dh_countries if c["id"] == str(obj.export_country)]
-        if len(country) > 0:
-            overseas_region = country[0].get("overseas_region", None)
-            if overseas_region is not None:
-                return overseas_region["name"]
-        return None
+        country = get_country(str(obj.export_country))
+        if country:
+            overseas_region = country.get("overseas_region")
+            if overseas_region:
+                return overseas_region.get("name")
 
     def get_admin_areas(self, obj):
-        dh_areas = cache.get_or_set("dh_admin_areas", get_admin_areas, 72000)
-        areas = []
-        if obj.country_admin_areas:
-            for area in obj.country_admin_areas:
-                areas.extend([a["name"] for a in dh_areas if a["id"] == str(area)])
-        return areas
+        admin_area_names = []
+        for admin_area in obj.country_admin_areas or []:
+            admin_area = get_admin_area(str(admin_area))
+            if admin_area and admin_area.get("name"):
+                admin_area_names.append(admin_area.get("name"))
+        return admin_area_names
 
     def get_categories(self, obj):
         return [category.title for category in obj.categories.all()]
@@ -304,10 +296,12 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return "Unknown"
 
     def get_team_count(self, obj):
+        if hasattr(obj, "team_count"):
+            return obj.team_count
         return TeamMember.objects.filter(barrier=obj).count()
 
     def get_tags(self, obj):
-        return ", ".join(obj.tags.values_list("title", flat=True))
+        return [tag.title for tag in obj.tags.all()]
 
     def get_trade_direction(self, obj):
         if obj.trade_direction:
@@ -341,13 +335,10 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_wto_member_states(self, obj):
         if obj.wto_profile:
-            dh_countries = cache.get_or_set("dh_countries", get_countries, 7200)
-            member_states_ids = [str(id) for id in obj.wto_profile.member_states]
-            member_states_names = [
-                c["name"] for c in dh_countries
-                if c["id"] in member_states_ids
+            return [
+                get_country(str(country_id)).get("name")
+                for country_id in obj.wto_profile.member_states
             ]
-            return ", ".join(member_states_names)
 
 
 class BarrierListSerializer(serializers.ModelSerializer):
