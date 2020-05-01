@@ -256,7 +256,12 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             if obj.all_sectors:
                 return "All"
             else:
-                return [get_sector(str(sector)).get("name") for sector in obj.sectors]
+                sector_names = []
+                for sector_id in obj.sectors:
+                    sector = get_sector(str(sector_id))
+                    if sector and sector.get("name"):
+                        sector_names.append(sector.get("name"))
+                return sector_names
         else:
             return "N/A"
 
