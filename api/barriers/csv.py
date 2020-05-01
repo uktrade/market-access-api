@@ -22,6 +22,7 @@ def csv_iterator(rows, field_titles):
         yield BOM_UTF8
         writer = DictWriter(
             EchoUTF8(),
+            extrasaction="ignore",
             fieldnames=field_titles.keys(),
             quoting=csv.QUOTE_MINIMAL
         )
