@@ -207,7 +207,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_scope(self, obj):
         """  Custom Serializer Method Field for exposing current problem scope display value """
-        print(obj.__dict__)
         problem_status_dict = dict(PROBLEM_STATUS_TYPES)
         return problem_status_dict.get(obj.problem_status, "Unknown")
 
@@ -250,15 +249,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         if obj.is_summary_sensitive:
             return "OFFICIAL-SENSITIVE (see it on DMAS)"
         else:
-            return """
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque bibendum quam at sodales commodo. Nunc porta condimentum mauris, nec euismod est ullamcorper a. Suspendisse sit amet eros eu sapien posuere vulputate non eget mauris. Ut vitae libero nisl. Aenean lectus arcu, viverra ultricies consectetur ac, pulvinar ac urna. Etiam mollis sapien ex, eu egestas ante sollicitudin vel. Mauris ac massa sed nulla cursus faucibus. Donec elementum mi vel imperdiet hendrerit. Nulla tristique vehicula dui, vehicula volutpat neque lobortis eu. Morbi vitae libero at arcu finibus commodo sed ut velit. Donec orci augue, maximus sit amet feugiat sed, luctus at dolor. Fusce ac fringilla libero.
-
-            Cras fringilla sem felis, non porttitor nulla porttitor sit amet. Praesent vitae cursus justo, et placerat purus. Ut maximus dolor id faucibus iaculis. Etiam dictum semper consequat. Fusce laoreet scelerisque gravida. Integer lobortis placerat pretium. Integer imperdiet lorem velit, bibendum feugiat neque varius nec. Quisque tempor porta lorem. Fusce efficitur, tellus id molestie cursus, lectus diam scelerisque orci, id consectetur diam massa vel libero. Suspendisse sem leo, tempor eu eros sit amet, semper suscipit lorem. Phasellus ac augue sit amet massa pharetra sollicitudin. Maecenas a purus eu nisl hendrerit blandit. Integer ultricies diam non nibh ornare viverra. Pellentesque sapien sapien, faucibus ac egestas eu, ullamcorper quis felis. Nullam eleifend dapibus nisi, in ullamcorper dui condimentum id. Vivamus ac cursus ligula.
-
-            Quisque convallis mauris nec lorem bibendum pharetra. Phasellus convallis eleifend lacus non dapibus. Suspendisse risus augue, porttitor non imperdiet ut, dictum at justo. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Aliquam eleifend nibh vitae ante hendrerit ultricies. Donec dictum nisl lorem, eget fermentum urna tincidunt sed. Proin magna justo, maximus ac vehicula ut, faucibus sit amet diam. Sed hendrerit turpis libero, non porttitor mi luctus a. Duis ornare in mauris eu fringilla.
-
-            Maecenas ac iaculis metus. Sed pharetra, nisi ac ultricies mollis, augue lacus luctus nisi, vel gravida quam ante eget enim. Cras lobortis, urna vel luctus sodales, mi nunc molestie elit, eu feugiat mi orci porta mi. Cras cursus quam ac dui vulputate interdum. Duis vehicula aliquam massa. Cras ut volutpat mi. Quisque sed eleifend felis. In convallis libero at nisl varius placerat. Duis porta justo sodales nisi viverra placerat.
-            """
             return obj.summary or None
 
     def get_sectors(self, obj):
