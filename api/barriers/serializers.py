@@ -296,7 +296,9 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return "Unknown"
 
     def get_team_count(self, obj):
-        return obj.team_count
+        if hasattr(obj, "team_count"):
+            return obj.team_count
+        return TeamMember.objects.filter(barrier=obj).count()
 
     def get_tags(self, obj):
         return [tag.title for tag in obj.tags.all()]
