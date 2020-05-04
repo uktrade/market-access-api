@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
 
-from api.user.models import Profile
+from api.user.models import Profile, SavedSearch
 from api.core.utils import cleansed_username
 from api.user.utils import get_username
 from api.user.staff_sso import StaffSSO
@@ -133,3 +133,16 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return cleansed_username(obj)
+
+
+class SavedSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedSearch
+        fields = [
+            'id',
+            'name',
+            'filters',
+            'barrier_count',
+            'new_count',
+            'updated_count',
+        ]

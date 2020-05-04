@@ -56,7 +56,7 @@ from api.user.utils import has_profile
 
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
-from api.user.models import Profile
+from api.user.models import Profile, SavedSearch
 from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
@@ -420,7 +420,10 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset
 
     def tags_filter(self, queryset, name, value):
-        tag_ids = value.split(",")
+        if isinstance(value, str):
+            tag_ids = value.split(",")
+        else:
+            tag_ids = value
         return queryset.filter(tags__in=tag_ids)
 
     def wto_has_been_notified_filter(self, queryset, name, value):
@@ -464,6 +467,23 @@ class BarrierList(generics.ListAPIView):
         "export_country"
     )
     ordering = ("reported_on", "modified_on")
+
+    def update_saved_search(self, search_id, barriers):
+        try:
+            saved_search = SavedSearch.objects.get(pk=search_id, user=self.request.user)
+        except SavedSearch.DoesNotExist:
+            return
+
+        saved_search.last_viewed_on = datetime.datetime.utcnow()
+        saved_search.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
+        saved_search.save()
+
+    def get_serializer(self, *args, **kwargs):
+        serializer = super().get_serializer(*args, **kwargs)
+        search_id = self.request.GET.get("search_id")
+        if search_id:
+            self.update_saved_search(search_id, serializer.data)
+        return serializer
 
 
 class BarriertListExportView(generics.ListAPIView):

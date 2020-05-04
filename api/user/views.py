@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from api.user.models import Profile
-from api.user.serializers import WhoAmISerializer, UserSerializer
+from api.user.serializers import WhoAmISerializer, UserSerializer, SavedSearchSerializer
 from api.user.staff_sso import StaffSSO
 
 TOKEN_SESSION_KEY = '_authbroker_token'
@@ -70,3 +70,17 @@ class UserDetail(generics.RetrieveDestroyAPIView):
             user.profile.sso_user_id = sso_user_id
             user.profile.save()
         return user
+
+
+class SavedSearchList(generics.ListCreateAPIView):
+    serializer_class = SavedSearchSerializer
+
+    def get_queryset(self):
+        return self.request.user.saved_searches.all()
+
+
+class SavedSearchDetail(generics.RetrieveAPIView):
+    serializer_class = SavedSearchSerializer
+
+    def get_queryset(self):
+        return self.request.user.saved_searches.all()
