@@ -97,11 +97,10 @@ class WTOHistoryFactory(HistoryItemFactory):
     history_types = ("~", "+")
 
     @classmethod
-    def get_history(cls, barrier_id, start_date=None):
+    def get_history(cls, barrier_id):
         barrier = BarrierInstance.objects.get(pk=barrier_id)
         if barrier.wto_profile:
-            history = WTOProfile.history.filter(id=barrier.wto_profile.id)
-            if start_date:
-                history = history.filter(history_date__gt=start_date)
-            return history.order_by("history_date")
+            return WTOProfile.history.filter(
+                id=barrier.wto_profile.id
+            ).order_by("history_date")
         return []
