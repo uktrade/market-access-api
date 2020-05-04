@@ -449,8 +449,14 @@ class BarriertListExportView(generics.ListAPIView):
     """
 
     queryset = BarrierInstance.barriers.annotate(
-            team_count=Count('barrier_team')
-        ).all().select_related('assessment')
+        team_count=Count('barrier_team')
+    ).all().select_related("assessment").select_related(
+        "wto_profile__committee_notified"
+    ).select_related(
+        "wto_profile__committee_raised_in"
+    ).select_related(
+        "priority"
+    ).prefetch_related("tags").prefetch_related("categories")
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)

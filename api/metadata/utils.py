@@ -5,6 +5,7 @@ import requests
 from urlobject import URLObject
 
 from django.conf import settings
+from django.core.cache import cache
 
 from mohawk import Sender
 
@@ -62,13 +63,39 @@ def get_os_regions_and_countries():
     return dh_os_regions, dh_countries
 
 
+def get_country(country_id):
+    country_lookup = cache.get("dh_country_lookup")
+    if not country_lookup:
+        country_lookup = {country["id"]: country for country in get_countries()}
+        cache.set("dh_country_lookup", country_lookup, 7200)
+    return country_lookup.get(country_id)
+
+
 def get_countries():
     dh_regions, dh_countries = get_os_regions_and_countries()
     return dh_countries
 
 
+def get_admin_area(admin_area_id):
+    admin_area_lookup = cache.get("dh_admin_area_lookup")
+    if not admin_area_lookup:
+        admin_area_lookup = {
+            admin_area["id"]: admin_area for admin_area in get_admin_areas()
+        }
+        cache.set("dh_admin_area_lookup", admin_area_lookup, 7200)
+    return admin_area_lookup.get(admin_area_id)
+
+
 def get_admin_areas():
     return import_api_results("administrative-area")
+
+
+def get_sector(sector_id):
+    sector_lookup = cache.get("dh_sector_lookup")
+    if not sector_lookup:
+        sector_lookup = {sector["id"]: sector for sector in get_sectors()}
+        cache.set("dh_sector_lookup", sector_lookup, 7200)
+    return sector_lookup.get(sector_id)
 
 
 def get_sectors():
