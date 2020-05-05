@@ -537,7 +537,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == BarrierInstance.objects.count()
 
-        url = f'{reverse("list-barriers")}?wto=has_case_number&wto=has_raised_date'
+        url = f'{reverse("list-barriers")}?wto=has_case_number,has_raised_date'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
