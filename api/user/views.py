@@ -79,7 +79,7 @@ class SavedSearchList(generics.ListCreateAPIView):
         return self.request.user.saved_searches.all()
 
 
-class SavedSearchDetail(generics.RetrieveAPIView):
+class SavedSearchDetail(generics.RetrieveUpdateAPIView):
     serializer_class = SavedSearchSerializer
 
     def get_queryset(self):
