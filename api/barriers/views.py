@@ -424,7 +424,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             tag_ids = value.split(",")
         else:
             tag_ids = value
-        return queryset.filter(tags__in=tag_ids)
+        return queryset.filter(tags__in=tag_ids).distinct()
 
     def wto_has_been_notified_filter(self, queryset, name, value):
         return queryset.filter(wto_profile__wto_has_been_notified=value)
