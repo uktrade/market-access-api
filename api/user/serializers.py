@@ -143,6 +143,8 @@ class SavedSearchSerializer(serializers.ModelSerializer):
             'name',
             'filters',
             'barrier_count',
+            'new_barrier_ids',
             'new_count',
+            'updated_barrier_ids',
             'updated_count',
         ]

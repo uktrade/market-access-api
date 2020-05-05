@@ -43,6 +43,7 @@ class SavedSearch(models.Model):
     )
     last_viewed_on = models.DateTimeField()
     created_on = models.DateTimeField(auto_now_add=True)
+
     _barriers = None
 
     @property
@@ -66,22 +67,30 @@ class SavedSearch(models.Model):
         return self.barriers.count()
 
     @property
-    def new_count(self):
+    def new_barrier_ids(self):
         barrier_ids = set(
             [barrier.id for barrier in self.barriers.exclude(created_by=self.user)]
         )
         new_barrier_ids = barrier_ids.difference(set(self.last_viewed_barrier_ids))
-        return len(new_barrier_ids)
+        return list(new_barrier_ids)
+
+    @property
+    def new_count(self):
+        return len(self.new_barrier_ids)
+
+    @property
+    def updated_barrier_ids(self):
+        # TODO: Include related model changes
+        # TODO: Exclude changes this user has made
+        updated_barrier_ids = []
+        for barrier in self.barriers:
+            if barrier.modified_on > self.last_viewed_on:
+                updated_barrier_ids.append(barrier.id)
+        return updated_barrier_ids
 
     @property
     def updated_count(self):
-        # TODO: Include related model changes
-        # TODO: Exclude changes this user has made
-        count = 0
-        for barrier in self.barriers:
-            if barrier.modified_on > self.last_viewed_on:
-                count += 1
-        return count
+        return len(self.updated_barrier_ids)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
