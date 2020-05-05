@@ -450,7 +450,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == BarrierInstance.objects.count()
 
-        url = f'{reverse("list-barriers")}?wto_has_been_notified=1'
+        url = f'{reverse("list-barriers")}?wto=wto_has_been_notified'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
@@ -464,7 +464,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == BarrierInstance.objects.count()
 
-        url = f'{reverse("list-barriers")}?wto_should_be_notified=1'
+        url = f'{reverse("list-barriers")}?wto=wto_should_be_notified'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
@@ -478,7 +478,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == BarrierInstance.objects.count()
 
-        url = f'{reverse("list-barriers")}?has_wto_raised_date=1'
+        url = f'{reverse("list-barriers")}?wto=has_raised_date'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
@@ -492,7 +492,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == BarrierInstance.objects.count()
 
-        url = f'{reverse("list-barriers")}?has_wto_committee_raised_in=1'
+        url = f'{reverse("list-barriers")}?wto=has_committee_raised_in'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
@@ -506,21 +506,38 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == BarrierInstance.objects.count()
 
-        url = f'{reverse("list-barriers")}?has_wto_case_number=1'
+        url = f'{reverse("list-barriers")}?wto=has_case_number'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
         assert 1 == response.data["count"]
         assert str(barrier1.id) == response.data["results"][0]["id"]
 
-    def test_has_wto_profile_filter(self):
+    def test_has_no_information_filter(self):
         barrier1 = BarrierFactory(wto_profile__case_number="CASE123")
         barrier2 = BarrierFactory(wto_profile__wto_should_be_notified=True)
         barrier3 = BarrierFactory(wto_profile=None)
 
         assert 3 == BarrierInstance.objects.count()
 
-        url = f'{reverse("list-barriers")}?has_wto_profile=1'
+        url = f'{reverse("list-barriers")}?wto=has_no_information'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        barrier_ids = [result["id"] for result in response.data["results"]]
+        assert str(barrier1.id) not in barrier_ids
+        assert str(barrier2.id) not in barrier_ids
+        assert str(barrier3.id) in barrier_ids
+
+    def test_wto_filters_or_together(self):
+        barrier1 = BarrierFactory(wto_profile__case_number="CASE123")
+        barrier2 = BarrierFactory(wto_profile__raised_date="2020-01-31")
+        barrier3 = BarrierFactory(wto_profile=None)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?wto=has_case_number,has_raised_date'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
@@ -528,3 +545,4 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier_ids = [result["id"] for result in response.data["results"]]
         assert str(barrier1.id) in barrier_ids
         assert str(barrier2.id) in barrier_ids
+        assert str(barrier3.id) not in barrier_ids
