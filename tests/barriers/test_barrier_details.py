@@ -5,6 +5,7 @@ from rest_framework.reverse import reverse
 from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
+from api.barriers.helpers import get_team_members
 from api.barriers.models import BarrierInstance
 from api.metadata.models import Category, BarrierPriority
 from api.core.test_utils import APITestMixin
@@ -197,6 +198,18 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert not response.data["categories"]
+
+    def test_update_barrier_adds_user_as_contributor(self):
+        """ Users who edit a barrier should be  added as a Contributor automatically. """
+        assert not get_team_members(self.barrier)
+
+        payload = {"barrier_title": "Wibble wobble"}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        team_members = get_team_members(self.barrier)
+        assert 1 == team_members.count()
+        assert "Contributor" == team_members.first().role
 
 
 class TestHibernateEndpoint(APITestMixin, TestCase):

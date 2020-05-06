@@ -32,8 +32,7 @@ class NoteHistoryFactory(HistoryItemFactory):
     history_types = ("+", "~")
 
     @classmethod
-    def get_history(cls, barrier_id, start_date=None):
-        history = Interaction.history.filter(barrier_id=barrier_id)
-        if start_date:
-            history = history.filter(history_date__gt=start_date)
-        return history.order_by("id", "history_date")
+    def get_history(cls, barrier_id):
+        return Interaction.history.filter(
+            barrier_id=barrier_id
+        ).order_by("id", "history_date")

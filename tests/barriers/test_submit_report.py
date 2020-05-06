@@ -19,8 +19,13 @@ class TestSubmitReport(APITestMixin, APITestCase):
         barrier = BarrierInstance.objects.get(id=report.id)
         assert resolved_in_full == barrier.status
 
-    def test_submit_report_records_user_as_reporter(self):
-        expected_role = "Reporter"
+    def test_submit_report_creates_default_members(self):
+        """
+        When a user submits the report the user should be added as reporter and owner as well.
+        The members are reverse ordered by their role in the response.
+        """
+        reporter = "Reporter"
+        owner = "Owner"
         user = create_test_user(
             first_name="Marty", last_name="Bloggs", email="marty@wibble.com", username="marty.bloggs"
         )
@@ -38,12 +43,19 @@ class TestSubmitReport(APITestMixin, APITestCase):
 
         response = api_client.get(members_url)
         assert status.HTTP_200_OK == response.status_code
-        assert 1 == response.data["count"]
+        assert 2 == response.data["count"]
+        # Assert Reporter
         member = response.data["results"][0]
         assert user.email == member["user"]["email"]
         assert user.first_name == member["user"]["first_name"]
         assert user.last_name == member["user"]["last_name"]
-        assert expected_role == member["role"]
+        assert reporter == member["role"]
+        # Assert Owner
+        member = response.data["results"][1]
+        assert user.email == member["user"]["email"]
+        assert user.first_name == member["user"]["first_name"]
+        assert user.last_name == member["user"]["last_name"]
+        assert owner == member["role"]
 
     def test_submit_report_without_all_sectors_and_sectors(self):
         report = ReportFactory(sectors=[], sectors_affected=True)

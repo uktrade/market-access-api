@@ -1,9 +1,9 @@
 import csv
 import datetime
 from collections import defaultdict
+
 from dateutil.parser import parse
 
-from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.db import transaction
@@ -16,12 +16,13 @@ from django.utils.timezone import now
 import django_filters
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.widgets import BooleanWidget
+from django_filters.widgets import BooleanWidget, QueryArrayWidget
 
 from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
 from api.core.utils import cleansed_username
@@ -52,16 +53,12 @@ from api.metadata.utils import get_countries
 from api.interactions.models import Interaction
 from api.collaboration.models import TeamMember
 
-from api.user.utils import has_profile
+from api.user.helpers import has_profile, update_user_profile
+from api.user.models import Profile, SavedSearch
+from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
-from api.user.models import Profile, SavedSearch
-from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
-from api.user.staff_sso import StaffSSO
-
-UserModel = get_user_model()
-sso = StaffSSO()
 
 
 class Echo:
@@ -71,6 +68,7 @@ class Echo:
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
+
 
 @api_view(["GET"])
 def barriers_export(request):
@@ -89,6 +87,7 @@ def barriers_export(request):
     )
     response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
     return response
+
 
 @api_view(["GET"])
 def barrier_count(request):
@@ -233,7 +232,9 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         """
         # validate and submit a report
         report = self.get_object()
-        barrier_obj = report.submit_report(self.request.user)
+        user = self.request.user
+        barrier_obj = report.submit_report(user)
+
         # add next steps, if exists, as a new COMMENT note
         if barrier_obj.next_steps_summary is not None:
             kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
@@ -241,31 +242,20 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 barrier=barrier_obj,
                 text=barrier_obj.next_steps_summary,
                 kind=kind,
-                created_by=self.request.user,
+                created_by=user,
             ).save()
-        # add submitted_by as default team member
-        try:
-            profile = self.request.user.profile
-        except Profile.DoesNotExist:
-            Profile.objects.create(user=self.request.user)
 
-        if self.request.user.profile.sso_user_id is None:
-            token = self.request.auth.token
-            context = {"token": token}
-            sso_user = sso.get_logged_in_user_details(context)
-            self.request.user.username = sso_user["email"]
-            self.request.user.email = sso_user["contact_email"]
-            self.request.user.first_name = sso_user["first_name"]
-            self.request.user.last_name = sso_user["last_name"]
-            self.request.user.save()
-            self.request.user.profile.sso_user_id = sso_user["user_id"]
-            self.request.user.profile.save()
-        TeamMember(
-            barrier=barrier_obj,
-            user=self.request.user,
-            role='Reporter',
-            default=True
-        ).save()
+        Profile.objects.get_or_create(user=user)
+        if user.profile.sso_user_id is None:
+            update_user_profile(user, self.request.auth.token)
+
+        # Create default team members
+        new_members = (
+            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.REPORTER, default=True),
+            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.OWNER, default=True),
+        )
+        # using a helper here due to - https://django-simple-history.readthedocs.io/en/2.8.0/common_issues.html
+        bulk_create_with_history(new_members, TeamMember)
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -302,40 +292,11 @@ class BarrierFilterSet(django_filters.FilterSet):
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
+    member = django_filters.Filter(method="member_filter")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
-    tags = django_filters.Filter(method="tags_filter")
+    tags = django_filters.BaseInFilter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
-
-    wto_has_been_notified = django_filters.BooleanFilter(
-        "wto_has_been_notified",
-        method="wto_has_been_notified_filter",
-        widget=BooleanWidget,
-    )
-    wto_should_be_notified = django_filters.BooleanFilter(
-        "wto_should_be_notified",
-        method="wto_should_be_notified_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_raised_date = django_filters.BooleanFilter(
-        "has_wto_raised_date",
-        method="has_wto_raised_date_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_committee_raised_in = django_filters.BooleanFilter(
-        "has_wto_committee_raised_in",
-        method="has_wto_committee_raised_in_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_case_number = django_filters.BooleanFilter(
-        "has_wto_case_number",
-        method="has_wto_case_number_filter",
-        widget=BooleanWidget,
-    )
-    has_wto_profile = django_filters.BooleanFilter(
-        "has_wto_profile",
-        method="has_wto_profile_filter",
-        widget=BooleanWidget,
-    )
+    wto = django_filters.BaseInFilter(method="wto_filter")
 
     class Meta:
         model = BarrierInstance
@@ -431,34 +392,42 @@ class BarrierFilterSet(django_filters.FilterSet):
             ).distinct()
         return queryset
 
-    def tags_filter(self, queryset, name, value):
-        if isinstance(value, str):
-            tag_ids = value.split(",")
-        else:
-            tag_ids = value
-        return queryset.filter(tags__in=tag_ids).distinct()
-
-    def wto_has_been_notified_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__wto_has_been_notified=value)
-
-    def wto_should_be_notified_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__wto_should_be_notified=value)
-
-    def has_wto_raised_date_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__raised_date__isnull=not value)
-
-    def has_wto_committee_raised_in_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__committee_raised_in__isnull=not value)
-
-    def has_wto_case_number_filter(self, queryset, name, value):
-        if value is True:
-            return queryset.filter(
-                wto_profile__isnull=False
-            ).exclude(wto_profile__case_number="")
+    def member_filter(self, queryset, name, value):
+        if value:
+            member = get_object_or_404(TeamMember, pk=value)
+            return queryset.filter(barrier_team__user=member.user)
         return queryset
 
-    def has_wto_profile_filter(self, queryset, name, value):
-        return queryset.filter(wto_profile__isnull=not value)
+    def tags_filter(self, queryset, name, value):
+        return queryset.filter(tags__in=value).distinct()
+
+    def wto_filter(self, queryset, name, value):
+        wto_queryset = queryset.none()
+
+        if "wto_has_been_notified" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__wto_has_been_notified=True
+            )
+        if "wto_should_be_notified" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__wto_should_be_notified=True
+            )
+        if "has_raised_date" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__raised_date__isnull=False
+            )
+        if "has_committee_raised_in" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__committee_raised_in__isnull=False
+            )
+        if "has_case_number" in value:
+            wto_queryset = wto_queryset | queryset.filter(
+                wto_profile__isnull=False
+            ).exclude(wto_profile__case_number="")
+        if "has_no_information" in value:
+            wto_queryset = wto_queryset | queryset.filter(wto_profile__isnull=True)
+
+        return queryset & wto_queryset
 
 
 class BarrierList(generics.ListAPIView):
@@ -626,9 +595,18 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             self.lookup_field = "code"
         return super().get_object()
 
+    def update_contributors(self, barrier):
+        if self.request.user:
+            TeamMember.objects.get_or_create(
+                barrier=barrier,
+                user=self.request.user,
+                defaults={"role": TeamMember.CONTRIBUTOR}
+            )
+
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
+        # Update Categories
         categories = barrier.categories.all()
         category_ids = self.request.data.get(
             "barrier_types",
@@ -639,12 +617,14 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
                 get_object_or_404(Category, pk=category_id)
                 for category_id in category_ids
             ]
+        # Update Priority
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
             barrier_priority = get_object_or_404(
                 BarrierPriority, code=self.request.data.get("priority")
             )
-
+        # Update Team members
+        self.update_contributors(barrier)
         serializer.save(
             categories=categories,
             priority=barrier_priority,
