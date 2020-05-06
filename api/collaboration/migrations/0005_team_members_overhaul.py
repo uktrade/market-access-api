@@ -29,7 +29,7 @@ def add_missing_reporters_and_collaborators(apps, schema_editor):
                     user=barrier.created_by,
                     role=REPORTER,
                     default=True,
-                    type="+",
+                    history_type="+",
                 )
         # Contributors
         history_records = HistoricalBarrierInstance.objects.filter(id=barrier.id)
@@ -50,7 +50,7 @@ def add_missing_reporters_and_collaborators(apps, schema_editor):
                             barrier=barrier,
                             user=history_record.history_user,
                             role=CONTRIBUTOR,
-                            type="+",
+                            history_type="+",
                         )
                 except TeamMember.MultipleObjectsReturned:
                     # The user is already a team member (multiple times)
@@ -84,7 +84,7 @@ def add_reporter_as_owner(apps, schema_editor):
             user=reporter.user,
             role=OWNER,
             default=True,
-            type="+"
+            history_type="+"
         )
 
 
