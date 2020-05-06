@@ -57,6 +57,7 @@ from api.user.utils import has_profile
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
 from api.user.models import Profile, SavedSearch
+from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 from api.user.staff_sso import StaffSSO
 
 UserModel = get_user_model()
@@ -349,6 +350,17 @@ class BarrierFilterSet(django_filters.FilterSet):
             "archived",
         ]
 
+    def __init__(self, *args, **kwargs):
+        if kwargs.get("user"):
+            self.user = kwargs.pop("user")
+        return super().__init__(*args, **kwargs)
+
+    def get_user(self):
+        if hasattr(self, "user"):
+            return self.user
+        if self.request is not None:
+            return self.request.user
+
     def sector_filter(self, queryset, name, value):
         """
         custom filter for multi-select filtering of Sectors field,
@@ -406,14 +418,14 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def my_barriers(self, queryset, name, value):
         if value:
-            current_user = self.request.user
+            current_user = self.get_user()
             qs = queryset.filter(created_by=current_user)
             return qs
         return queryset
 
     def team_barriers(self, queryset, name, value):
         if value:
-            current_user = self.request.user
+            current_user = self.get_user()
             return queryset.filter(
                 Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
             ).distinct()
@@ -468,21 +480,43 @@ class BarrierList(generics.ListAPIView):
     )
     ordering = ("reported_on", "modified_on")
 
-    def update_saved_search(self, search_id, barriers):
-        try:
-            saved_search = SavedSearch.objects.get(pk=search_id, user=self.request.user)
-        except SavedSearch.DoesNotExist:
-            return
+    def is_my_barriers_search(self):
+        # TODO should be False if other filters also applied
+        if self.request.GET.get("user") == "1":
+            return True
+        return False
 
-        saved_search.last_viewed_on = datetime.datetime.utcnow()
-        saved_search.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
-        saved_search.save()
+    def is_team_barriers_search(self):
+        # TODO should be False if other filters also applied
+        if self.request.GET.get("team") == "1":
+            return True
+        return False
+
+    def get_saved_search(self, search_id):
+        try:
+            return SavedSearch.objects.get(pk=search_id, user=self.request.user)
+        except SavedSearch.DoesNotExist:
+            pass
+
+    def update_saved_search_if_required(self, barriers):
+        search_id = self.request.GET.get("search_id")
+
+        if search_id:
+            saved_search = self.get_saved_search(search_id)
+            if saved_search:
+                saved_search.update_barriers(barriers)
+
+        if self.is_my_barriers_search():
+            saved_search = get_my_barriers_saved_search(self.request.user)
+            saved_search.update_barriers(barriers)
+
+        if self.is_team_barriers_search():
+            saved_search = get_team_barriers_saved_search(self.request.user)
+            saved_search.update_barriers(barriers)
 
     def get_serializer(self, *args, **kwargs):
         serializer = super().get_serializer(*args, **kwargs)
-        search_id = self.request.GET.get("search_id")
-        if search_id:
-            self.update_saved_search(search_id, serializer.data)
+        self.update_saved_search_if_required(serializer.data)
         return serializer
 
 

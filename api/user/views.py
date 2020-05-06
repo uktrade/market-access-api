@@ -5,6 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from api.user.models import Profile
+from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 from api.user.serializers import WhoAmISerializer, UserSerializer, SavedSearchSerializer
 from api.user.staff_sso import StaffSSO
 
@@ -81,6 +82,15 @@ class SavedSearchList(generics.ListCreateAPIView):
 
 class SavedSearchDetail(generics.RetrieveUpdateAPIView):
     serializer_class = SavedSearchSerializer
+
+    def get_object(self):
+        if self.kwargs.get("id") == "my-barriers":
+            return get_my_barriers_saved_search(self.request.user)
+
+        if self.kwargs.get("id") == "team-barriers":
+            return get_team_barriers_saved_search(self.request.user)
+
+        return super().get_object()
 
     def get_queryset(self):
         return self.request.user.saved_searches.all()

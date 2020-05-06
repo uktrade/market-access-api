@@ -1,3 +1,4 @@
+import datetime
 from uuid import uuid4
 
 from django.db import models
@@ -26,25 +27,26 @@ class Profile(models.Model):
     )
 
 
-class SavedSearch(models.Model):
+class BaseSavedSearch(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name="saved_searches",
-        on_delete=models.CASCADE,
-    )
-    name = models.CharField(max_length=MAX_LENGTH)
-    filters = JSONField()
     last_viewed_barrier_ids = ArrayField(
         models.UUIDField(),
         blank=True,
         null=False,
         default=list,
     )
-    last_viewed_on = models.DateTimeField()
+    last_viewed_on = models.DateTimeField(auto_now_add=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     _barriers = None
+
+    class Meta:
+        abstract = True
+
+    def update_barriers(self, barriers):
+        self.last_viewed_on = datetime.datetime.utcnow()
+        self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
+        self.save()
 
     @property
     def barriers(self):
@@ -53,7 +55,7 @@ class SavedSearch(models.Model):
         if self._barriers is None:
             from api.barriers.views import BarrierFilterSet
             from api.barriers.models import BarrierInstance
-            filterset = BarrierFilterSet()
+            filterset = BarrierFilterSet(user=self.user)
             barriers = BarrierInstance.barriers.filter(archived=False)
 
             for name, value in self.filters.items():
@@ -91,6 +93,52 @@ class SavedSearch(models.Model):
     @property
     def updated_count(self):
         return len(self.updated_barrier_ids)
+
+
+class SavedSearch(BaseSavedSearch):
+    name = models.CharField(max_length=MAX_LENGTH)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="saved_searches",
+        on_delete=models.CASCADE,
+    )
+    filters = JSONField()
+
+
+class MyBarriersSavedSearch(BaseSavedSearch):
+    name = "My barriers"
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        related_name="my_barriers_saved_search",
+        on_delete=models.CASCADE,
+    )
+    filters = {"user": "1"}
+
+
+def get_my_barriers_saved_search(user):
+    # TODO: Move to model? Use AutoOneToOneField?
+    try:
+        return user.my_barriers_saved_search
+    except MyBarriersSavedSearch.DoesNotExist:
+        return MyBarriersSavedSearch.objects.create(user=user)
+
+
+class TeamBarriersSavedSearch(BaseSavedSearch):
+    name = "Team barriers"
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        related_name="team_barriers_saved_search",
+        on_delete=models.CASCADE,
+    )
+    filters = {"team": "1"}
+
+
+def get_team_barriers_saved_search(user):
+    # TODO: Move to model? Use AutoOneToOneField?
+    try:
+        return user.team_barriers_saved_search
+    except TeamBarriersSavedSearch.DoesNotExist:
+        return TeamBarriersSavedSearch.objects.create(user=user)
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
