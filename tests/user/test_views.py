@@ -13,7 +13,7 @@ from api.user.staff_sso import StaffSSO
 class TestUserView(APITestMixin):
     """User view test case."""
 
-    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
+    @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_authenticated(self, mock_sso_api):
         """Who am I."""
 
@@ -32,7 +32,7 @@ class TestUserView(APITestMixin):
         assert response_data["email"] == self.sso_user_data_1["email"]
         assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
-    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
+    @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_email_as_username(self, mock_sso_api):
         """Who am I, when email is set in username"""
 
@@ -50,7 +50,7 @@ class TestUserView(APITestMixin):
         assert response_data["email"] == self.sso_user_data_1["email"]
         assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
-    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
+    @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username(self, mock_sso_api):
         """Who am I, when email is set in username"""
 
@@ -68,7 +68,7 @@ class TestUserView(APITestMixin):
         assert response_data["email"] == self.sso_user_data_1["email"]
         assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
-    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
+    @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username_no_email(self, mock_sso_api):
         """Who am I, when email is set in username"""
 
@@ -86,7 +86,7 @@ class TestUserView(APITestMixin):
         assert response_data["email"] == self.sso_user_data_1["email"]
         assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
 
-    @patch("api.user.utils.StaffSSO.get_logged_in_user_details")
+    @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_sso_data_none(self, mock_sso_api):
         """Who am I, when email is set in username"""
 

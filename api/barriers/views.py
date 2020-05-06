@@ -1,9 +1,9 @@
 import csv
 import datetime
 from collections import defaultdict
+
 from dateutil.parser import parse
 
-from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.db import transaction
@@ -22,6 +22,7 @@ from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
 from api.core.utils import cleansed_username
@@ -52,15 +53,11 @@ from api.metadata.utils import get_countries
 from api.interactions.models import Interaction
 from api.collaboration.models import TeamMember
 
-from api.user.utils import has_profile
+from api.user.helpers import has_profile, update_user_profile
+from api.user.models import Profile
 
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
-from api.user.models import Profile
-from api.user.staff_sso import StaffSSO
-
-UserModel = get_user_model()
-sso = StaffSSO()
 
 
 class Echo:
@@ -70,6 +67,7 @@ class Echo:
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
+
 
 @api_view(["GET"])
 def barriers_export(request):
@@ -88,6 +86,7 @@ def barriers_export(request):
     )
     response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
     return response
+
 
 @api_view(["GET"])
 def barrier_count(request):
@@ -232,7 +231,9 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         """
         # validate and submit a report
         report = self.get_object()
-        barrier_obj = report.submit_report(self.request.user)
+        user = self.request.user
+        barrier_obj = report.submit_report(user)
+
         # add next steps, if exists, as a new COMMENT note
         if barrier_obj.next_steps_summary is not None:
             kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
@@ -240,31 +241,20 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 barrier=barrier_obj,
                 text=barrier_obj.next_steps_summary,
                 kind=kind,
-                created_by=self.request.user,
+                created_by=user,
             ).save()
-        # add submitted_by as default team member
-        try:
-            profile = self.request.user.profile
-        except Profile.DoesNotExist:
-            Profile.objects.create(user=self.request.user)
 
-        if self.request.user.profile.sso_user_id is None:
-            token = self.request.auth.token
-            context = {"token": token}
-            sso_user = sso.get_logged_in_user_details(context)
-            self.request.user.username = sso_user["email"]
-            self.request.user.email = sso_user["contact_email"]
-            self.request.user.first_name = sso_user["first_name"]
-            self.request.user.last_name = sso_user["last_name"]
-            self.request.user.save()
-            self.request.user.profile.sso_user_id = sso_user["user_id"]
-            self.request.user.profile.save()
-        TeamMember(
-            barrier=barrier_obj,
-            user=self.request.user,
-            role='Reporter',
-            default=True
-        ).save()
+        Profile.objects.get_or_create(user=user)
+        if user.profile.sso_user_id is None:
+            update_user_profile(user, self.request.auth.token)
+
+        # Create default team members
+        new_members = (
+            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.REPORTER, default=True),
+            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.OWNER, default=True),
+        )
+        # using a helper here due to - https://django-simple-history.readthedocs.io/en/2.8.0/common_issues.html
+        bulk_create_with_history(new_members, TeamMember)
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -301,6 +291,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
+    member = django_filters.Filter(method="member_filter")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
     tags = django_filters.BaseInFilter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
@@ -387,6 +378,12 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.filter(
                 Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
             ).distinct()
+        return queryset
+
+    def member_filter(self, queryset, name, value):
+        if value:
+            member = get_object_or_404(TeamMember, pk=value)
+            return queryset.filter(barrier_team__user=member.user)
         return queryset
 
     def tags_filter(self, queryset, name, value):
@@ -547,9 +544,18 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             self.lookup_field = "code"
         return super().get_object()
 
+    def update_contributors(self, barrier):
+        if self.request.user:
+            TeamMember.objects.get_or_create(
+                barrier=barrier,
+                user=self.request.user,
+                defaults={"role": TeamMember.CONTRIBUTOR}
+            )
+
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
+        # Update Categories
         categories = barrier.categories.all()
         category_ids = self.request.data.get(
             "barrier_types",
@@ -560,12 +566,14 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
                 get_object_or_404(Category, pk=category_id)
                 for category_id in category_ids
             ]
+        # Update Priority
         barrier_priority = barrier.priority
         if self.request.data.get("priority", None) is not None:
             barrier_priority = get_object_or_404(
                 BarrierPriority, code=self.request.data.get("priority")
             )
-
+        # Update Team members
+        self.update_contributors(barrier)
         serializer.save(
             categories=categories,
             priority=barrier_priority,

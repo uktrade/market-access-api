@@ -116,6 +116,7 @@ docker/local/postgres/*_local_data_*
 # VS Code
 .vscode/
 docker-compose.env
+docker-compose.dev.env
 config/settings/static/
 
 # PyCharm

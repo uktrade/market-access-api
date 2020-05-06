@@ -1,12 +1,7 @@
-from django.contrib.auth import get_user_model
-
 from rest_framework import serializers
 
 from api.collaboration.models import TeamMember
-from api.user.models import Profile
 from api.user.serializers import UserSerializer
-
-UserModel = get_user_model()
 
 
 class BarrierTeamSerializer(serializers.ModelSerializer):

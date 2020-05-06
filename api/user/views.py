@@ -1,16 +1,14 @@
 from django.contrib.auth import get_user_model
 
-from rest_framework import generics, status
+from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
+from api.user.helpers import get_django_user_by_sso_user_id
 from api.user.models import Profile
 from api.user.serializers import WhoAmISerializer, UserSerializer
-from api.user.staff_sso import StaffSSO
 
-TOKEN_SESSION_KEY = '_authbroker_token'
 UserModel = get_user_model()
-sso = StaffSSO()
 
 
 @api_view(['GET', 'POST', 'PATCH'])
@@ -44,29 +42,4 @@ class UserDetail(generics.RetrieveDestroyAPIView):
 
     def get_object(self):
         sso_user_id = self.kwargs.get("sso_user_id")
-        try:
-            user_profile = Profile.objects.get(sso_user_id=sso_user_id)
-            user = user_profile.user
-        except Profile.DoesNotExist:
-            sso_user = sso.get_user_details_by_id(sso_user_id)
-            email = sso_user.get("email")
-            contact_email = sso_user.get("contact_email") or email
-            first_name = sso_user.get("first_name")
-            last_name = sso_user.get("last_name")
-            try:
-                user = UserModel.objects.get(username=email)
-                user.email = contact_email
-                user.first_name = first_name
-                user.last_name = last_name
-                user.save()
-            except UserModel.DoesNotExist:
-                user = UserModel(
-                    username=email,
-                    email=contact_email,
-                    first_name=first_name,
-                    last_name=last_name,
-                )
-                user.save()
-            user.profile.sso_user_id = sso_user_id
-            user.profile.save()
-        return user
+        return get_django_user_by_sso_user_id(sso_user_id)

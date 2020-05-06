@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
 from tests.barriers.factories import BarrierFactory, ReportFactory
+from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory, BarrierPriorityFactory
 
 
@@ -546,3 +547,21 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert str(barrier1.id) in barrier_ids
         assert str(barrier2.id) in barrier_ids
         assert str(barrier3.id) not in barrier_ids
+
+    def test_member_filter(self):
+        user1 = create_test_user()
+        _barrier0 = BarrierFactory()
+        barrier1 = BarrierFactory(created_by=user1)
+        member1 = TeamMemberFactory(barrier=barrier1, user=user1, role="Reporter", default=True)
+        barrier2 = BarrierFactory(created_by=user1)
+        TeamMemberFactory(barrier=barrier2, user=user1, role="Contributor")
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?member={member1.id}'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+        barrier_ids = [b["id"] for b in response.data["results"]]
+        assert {str(barrier1.id), str(barrier2.id)} == set(barrier_ids)
