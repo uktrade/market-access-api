@@ -22,6 +22,7 @@ from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
 from api.core.utils import cleansed_username
@@ -248,12 +249,12 @@ class BarrierReportSubmit(generics.UpdateAPIView):
             update_user_profile(user, self.request.auth.token)
 
         # Create default team members
-        TeamMember.objects.bulk_create(
-            (
-                TeamMember(barrier=barrier_obj, user=user, role=TeamMember.REPORTER, default=True),
-                TeamMember(barrier=barrier_obj, user=user, role=TeamMember.OWNER, default=True)
-            ),
+        new_members = (
+            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.REPORTER, default=True),
+            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.OWNER, default=True),
         )
+        # using a helper here due to - https://django-simple-history.readthedocs.io/en/2.8.0/common_issues.html
+        bulk_create_with_history(new_members, TeamMember)
 
 
 class BarrierFilterSet(django_filters.FilterSet):
