@@ -16,7 +16,7 @@ from django.utils.timezone import now
 import django_filters
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.widgets import BooleanWidget, QueryArrayWidget
+from django_filters.widgets import BooleanWidget
 
 from rest_framework import generics, status, serializers
 from rest_framework.decorators import api_view
@@ -546,11 +546,15 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
 
     def update_contributors(self, barrier):
         if self.request.user:
-            TeamMember.objects.get_or_create(
-                barrier=barrier,
-                user=self.request.user,
-                defaults={"role": TeamMember.CONTRIBUTOR}
-            )
+            try:
+                TeamMember.objects.get_or_create(
+                    barrier=barrier,
+                    user=self.request.user,
+                    defaults={"role": TeamMember.CONTRIBUTOR}
+                )
+            except TeamMember.MultipleObjectsReturned:
+                # There might be multiple members associated with the user (e.g. Reporter/Owner)
+                pass
 
     @transaction.atomic()
     def perform_update(self, serializer):
