@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -44,7 +45,7 @@ class BaseSavedSearch(models.Model):
         abstract = True
 
     def update_barriers(self, barriers):
-        self.last_viewed_on = datetime.datetime.utcnow()
+        self.last_viewed_on = timezone.now()
         self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
         self.save()
 

@@ -143,3 +143,7 @@ class SavedSearchSerializer(serializers.ModelSerializer):
             'updated_barrier_ids',
             'updated_count',
         ]
+
+    def create(self, validated_data):
+        validated_data["user"] = self.context['request'].user
+        return super().create(validated_data)
