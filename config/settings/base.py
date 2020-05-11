@@ -142,10 +142,10 @@ REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 1000)
 
 # DataHub API
 DH_METADATA_URL = env("DH_METADATA_URL")
-FAKE_METADATA = True#env.bool("FAKE_METADATA", False)
+FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
 # DMAS Frontend
-DMAS_BASE_URL = "aaa"#env("DMAS_BASE_URL")
+DMAS_BASE_URL = env("DMAS_BASE_URL")
 
 # Documents
 # CACHE / REDIS
