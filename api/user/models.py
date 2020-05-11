@@ -49,17 +49,28 @@ class BaseSavedSearch(models.Model):
         self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
         self.save()
 
+    def get_api_parameters(self):
+        mapping = {
+            "type": "category",
+            "search": "text",
+        }
+        params = {mapping.get(k, k): v for k, v in self.filters.items()}
+        if "country" in params or "region" in params:
+            params["location"] = params.pop("country", []) + params.pop("region", [])
+
+        params["archived"] = params.pop("only_archived", "0") or "0"
+        return params
+
     @property
     def barriers(self):
-        # TODO: archived shouldn't always be False
         # TODO: fix circular imports
         if self._barriers is None:
             from api.barriers.views import BarrierFilterSet
             from api.barriers.models import BarrierInstance
             filterset = BarrierFilterSet(user=self.user)
-            barriers = BarrierInstance.barriers.filter(archived=False)
+            barriers = BarrierInstance.barriers.all()
 
-            for name, value in self.filters.items():
+            for name, value in self.get_api_parameters().items():
                 barriers = filterset.filters[name].filter(barriers, value)
 
             self._barriers = barriers
