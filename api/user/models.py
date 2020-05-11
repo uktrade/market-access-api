@@ -8,6 +8,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
+from api.barriers.filters import BarrierFilterSet
+from api.barriers.models import BarrierInstance
+
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -63,10 +66,7 @@ class BaseSavedSearch(models.Model):
 
     @property
     def barriers(self):
-        # TODO: fix circular imports
         if self._barriers is None:
-            from api.barriers.views import BarrierFilterSet
-            from api.barriers.models import BarrierInstance
             filterset = BarrierFilterSet(user=self.user)
             barriers = BarrierInstance.barriers.all()
 
