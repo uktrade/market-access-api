@@ -1,6 +1,8 @@
 import datetime
 from uuid import uuid4
 
+from django_filters import BaseInFilter
+
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
@@ -11,6 +13,7 @@ from django.utils import timezone
 from api.barriers.filters import BarrierFilterSet
 from api.barriers.models import BarrierInstance
 
+from utils.tools import nested_sort
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -46,6 +49,18 @@ class BaseSavedSearch(models.Model):
 
     class Meta:
         abstract = True
+
+    def are_api_parameters_equal(self, query_dict):
+        ignore_keys = ('ordering', 'limit', 'offset', 'search_id')
+        query_dict = {k: v for k, v in query_dict.items() if k not in ignore_keys}
+        filterset = BarrierFilterSet(user=self.user)
+
+        for key, value in query_dict.items():
+            if isinstance(filterset.filters.get(key), BaseInFilter):
+                query_dict[key] = value.split(",")
+
+        api_parameters = self.get_api_parameters()
+        return nested_sort(query_dict) == nested_sort(api_parameters)
 
     def update_barriers(self, barriers):
         self.last_viewed_on = timezone.now()

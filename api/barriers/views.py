@@ -284,19 +284,22 @@ class BarrierList(generics.ListAPIView):
 
     def update_saved_search_if_required(self, barriers):
         search_id = self.request.GET.get("search_id")
+        query_dict = self.request.query_params.dict()
 
         if search_id:
             saved_search = self.get_saved_search(search_id)
-            if saved_search:
+            if saved_search and saved_search.are_api_parameters_equal(query_dict):
                 saved_search.update_barriers(barriers)
 
         if self.is_my_barriers_search():
             saved_search = get_my_barriers_saved_search(self.request.user)
-            saved_search.update_barriers(barriers)
+            if saved_search.are_api_parameters_equal(query_dict):
+                saved_search.update_barriers(barriers)
 
         if self.is_team_barriers_search():
             saved_search = get_team_barriers_saved_search(self.request.user)
-            saved_search.update_barriers(barriers)
+            if saved_search.are_api_parameters_equal(query_dict):
+                saved_search.update_barriers(barriers)
 
     def get_serializer(self, *args, **kwargs):
         serializer = super().get_serializer(*args, **kwargs)
