@@ -89,6 +89,7 @@ class BaseSavedSearch(models.Model):
                 barriers = filterset.filters[name].filter(barriers, value)
 
             self._barriers = barriers
+
         return self._barriers
 
     @property
@@ -109,11 +110,9 @@ class BaseSavedSearch(models.Model):
 
     @property
     def updated_barrier_ids(self):
-        # TODO: Include related model changes
-        # TODO: Exclude changes this user has made
         updated_barrier_ids = []
         for barrier in self.barriers:
-            if barrier.modified_on > self.last_viewed_on:
+            if barrier.get_latest_history_date(exclude=self.user) > self.last_viewed_on:
                 updated_barrier_ids.append(barrier.id)
         return updated_barrier_ids
 

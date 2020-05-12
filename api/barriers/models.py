@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
@@ -22,6 +23,10 @@ from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
+from api.interactions.models import Interaction
+from api.assessment.models import Assessment
+from api.collaboration.models import TeamMember
+from api.wto.models import WTOProfile
 from api.metadata.constants import BARRIER_ARCHIVED_REASON
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -289,6 +294,29 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     @property
     def has_assessment(self):
         return hasattr(self, 'assessment')
+
+    def get_latest_history_date(self, exclude):
+        history_querysets = [
+            BarrierInstance.history.all(),
+            Interaction.history.filter(barrier_id=self.id),
+            Assessment.history.filter(barrier_id=self.id),
+            TeamMember.history.filter(barrier_id=self.id),
+        ]
+        if self.wto_profile:
+            history_querysets.append(WTOProfile.history.filter(id=self.wto_profile.id))
+
+        history_dates = []
+        for history_queryset in history_querysets:
+            try:
+                history_dates.append(
+                    history_queryset.exclude(
+                        history_user=exclude
+                    ).latest("history_date").history_date
+                )
+            except ObjectDoesNotExist:
+                continue
+
+        return max(history_dates)
 
     def last_seen_by(self, user_id):
         try:

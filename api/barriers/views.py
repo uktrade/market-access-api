@@ -265,13 +265,11 @@ class BarrierList(generics.ListAPIView):
     ordering = ("reported_on", "modified_on")
 
     def is_my_barriers_search(self):
-        # TODO should be False if other filters also applied
         if self.request.GET.get("user") == "1":
             return True
         return False
 
     def is_team_barriers_search(self):
-        # TODO should be False if other filters also applied
         if self.request.GET.get("team") == "1":
             return True
         return False
