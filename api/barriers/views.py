@@ -2,30 +2,23 @@ import csv
 import datetime
 from collections import defaultdict
 
-from dateutil.parser import parse
-
-from django.contrib.postgres.search import SearchVector
-from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import now
 
-import django_filters
-from rest_framework.filters import OrderingFilter
+from dateutil.parser import parse
 from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.widgets import BooleanWidget
-
-from rest_framework import generics, status, serializers
+from rest_framework import generics, serializers, status
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
-from api.core.utils import cleansed_username
 from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
@@ -35,29 +28,24 @@ from api.barriers.history import (
 )
 from api.barriers.models import BarrierInstance, BarrierReportStage
 from api.barriers.serializers import (
-    BarrierStaticStatusSerializer,
-    BarrierInstanceSerializer,
     BarrierCsvExportSerializer,
+    BarrierInstanceSerializer,
     BarrierListSerializer,
-    BarrierResolveSerializer,
     BarrierReportSerializer,
+    BarrierResolveSerializer,
+    BarrierStaticStatusSerializer,
 )
-from api.metadata.constants import (
-    BARRIER_INTERACTION_TYPE,
-    TIMELINE_EVENTS,
-)
-
-from api.metadata.models import Category, BarrierPriority
-from api.metadata.utils import get_countries
-
-from api.interactions.models import Interaction
 from api.collaboration.models import TeamMember
-
+from api.core.utils import cleansed_username
+from api.interactions.models import Interaction
+from api.metadata.constants import BARRIER_INTERACTION_TYPE, TIMELINE_EVENTS
+from api.metadata.models import BarrierPriority, Category
 from api.user.helpers import has_profile, update_user_profile
-from api.user.models import Profile
-
+from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
+from api.user.models import Profile, SavedSearch
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
+from .filters import BarrierFilterSet
 
 
 class Echo:
@@ -257,167 +245,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         bulk_create_with_history(new_members, TeamMember)
 
 
-class BarrierFilterSet(django_filters.FilterSet):
-    """
-    Custom FilterSet to handle all necessary filters on Barriers
-    reported_on_before: filter start date dd-mm-yyyy
-    reported_on_after: filter end date dd-mm-yyyy
-    cateogory: int, one or more comma seperated category ids
-        ex: category=1 or category=1,2
-    sector: uuid, one or more comma seperated sector UUIDs
-        ex:
-        sector=af959812-6095-e211-a939-e4115bead28a
-        sector=af959812-6095-e211-a939-e4115bead28a,9538cecc-5f95-e211-a939-e4115bead28a
-    status: int, one or more status id's.
-        ex: status=1 or status=1,2
-    location: UUID, one or more comma seperated overseas region/country/state UUIDs
-        ex:
-        location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc
-        location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc,955f66a0-5d95-e211-a939-e4115bead28a
-    priority: priority code, one or more comma seperated priority codes
-        ex: priority=UNKNOWN or priority=UNKNOWN,LOW
-    text: combination custom search across multiple fields.
-        Searches for reference code,
-        barrier title and barrier summary
-    """
-
-    reported_on = django_filters.DateFromToRangeFilter("reported_on")
-    sector = django_filters.BaseInFilter(method="sector_filter")
-    status = django_filters.BaseInFilter("status")
-    barrier_type = django_filters.BaseInFilter("categories")
-    category = django_filters.BaseInFilter("categories")
-    priority = django_filters.BaseInFilter(method="priority_filter")
-    location = django_filters.Filter(method="location_filter")
-    text = django_filters.Filter(method="text_search")
-    user = django_filters.Filter(method="my_barriers")
-    team = django_filters.Filter(method="team_barriers")
-    member = django_filters.Filter(method="member_filter")
-    archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
-    tags = django_filters.BaseInFilter(method="tags_filter")
-    trade_direction = django_filters.BaseInFilter("trade_direction")
-    wto = django_filters.BaseInFilter(method="wto_filter")
-
-    class Meta:
-        model = BarrierInstance
-        fields = [
-            "export_country",
-            "barrier_type",
-            "category",
-            "sector",
-            "reported_on",
-            "status",
-            "priority",
-            "archived",
-        ]
-
-    def sector_filter(self, queryset, name, value):
-        """
-        custom filter for multi-select filtering of Sectors field,
-        which is ArrayField
-        """
-        return queryset.filter(
-            Q(all_sectors=True) | Q(sectors__overlap=value)
-        )
-
-    def priority_filter(self, queryset, name, value):
-        """
-        customer filter for multi-select of priorities field
-        by code rather than priority id.
-        UNKNOWN would either mean, UNKNOWN is set in the field
-        or priority is not yet set for that barrier
-        """
-        UNKNOWN = "UNKNOWN"
-        priorities = BarrierPriority.objects.filter(code__in=value)
-        if UNKNOWN in value:
-            return queryset.filter(
-                Q(priority__isnull=True) | Q(priority__in=priorities)
-            )
-        else:
-            return queryset.filter(priority__in=priorities)
-
-    def location_filter(self, queryset, name, value):
-        """
-        custom filter for retreiving barriers of all countries of an overseas region
-        """
-        countries = cache.get_or_set("dh_countries", get_countries, 72000)
-        items = value.split(',')
-        countries_for_region = [
-            item["id"]
-            for item in countries
-            if item["overseas_region"] and item["overseas_region"]["id"] in items
-        ]
-        return queryset.filter(
-            Q(export_country__in=items) |
-            Q(export_country__in=countries_for_region) |
-            Q(country_admin_areas__overlap=items)
-        )
-
-    def text_search(self, queryset, name, value):
-        """
-        custom text search against multiple fields
-            full value of code
-            full text search on summary
-            partial search on barrier_title
-        """
-        return queryset.annotate(
-            search=SearchVector('summary')
-        ).filter(
-            Q(code=value) | Q(search=value) | Q(barrier_title__icontains=value)
-        )
-
-    def my_barriers(self, queryset, name, value):
-        if value:
-            current_user = self.request.user
-            qs = queryset.filter(created_by=current_user)
-            return qs
-        return queryset
-
-    def team_barriers(self, queryset, name, value):
-        if value:
-            current_user = self.request.user
-            return queryset.filter(
-                Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
-            ).distinct()
-        return queryset
-
-    def member_filter(self, queryset, name, value):
-        if value:
-            member = get_object_or_404(TeamMember, pk=value)
-            return queryset.filter(barrier_team__user=member.user).distinct()
-        return queryset
-
-    def tags_filter(self, queryset, name, value):
-        return queryset.filter(tags__in=value).distinct()
-
-    def wto_filter(self, queryset, name, value):
-        wto_queryset = queryset.none()
-
-        if "wto_has_been_notified" in value:
-            wto_queryset = wto_queryset | queryset.filter(
-                wto_profile__wto_has_been_notified=True
-            )
-        if "wto_should_be_notified" in value:
-            wto_queryset = wto_queryset | queryset.filter(
-                wto_profile__wto_should_be_notified=True
-            )
-        if "has_raised_date" in value:
-            wto_queryset = wto_queryset | queryset.filter(
-                wto_profile__raised_date__isnull=False
-            )
-        if "has_committee_raised_in" in value:
-            wto_queryset = wto_queryset | queryset.filter(
-                wto_profile__committee_raised_in__isnull=False
-            )
-        if "has_case_number" in value:
-            wto_queryset = wto_queryset | queryset.filter(
-                wto_profile__isnull=False
-            ).exclude(wto_profile__case_number="")
-        if "has_no_information" in value:
-            wto_queryset = wto_queryset | queryset.filter(wto_profile__isnull=True)
-
-        return queryset & wto_queryset
-
-
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the BarrierInstances
@@ -436,6 +263,46 @@ class BarrierList(generics.ListAPIView):
         "export_country"
     )
     ordering = ("reported_on", "modified_on")
+
+    def is_my_barriers_search(self):
+        if self.request.GET.get("user") == "1":
+            return True
+        return False
+
+    def is_team_barriers_search(self):
+        if self.request.GET.get("team") == "1":
+            return True
+        return False
+
+    def get_saved_search(self, search_id):
+        try:
+            return SavedSearch.objects.get(pk=search_id, user=self.request.user)
+        except SavedSearch.DoesNotExist:
+            pass
+
+    def update_saved_search_if_required(self, barriers):
+        search_id = self.request.GET.get("search_id")
+        query_dict = self.request.query_params.dict()
+
+        if search_id:
+            saved_search = self.get_saved_search(search_id)
+            if saved_search and saved_search.are_api_parameters_equal(query_dict):
+                saved_search.update_barriers(barriers)
+
+        if self.is_my_barriers_search():
+            saved_search = get_my_barriers_saved_search(self.request.user)
+            if saved_search.are_api_parameters_equal(query_dict):
+                saved_search.update_barriers(barriers)
+
+        if self.is_team_barriers_search():
+            saved_search = get_team_barriers_saved_search(self.request.user)
+            if saved_search.are_api_parameters_equal(query_dict):
+                saved_search.update_barriers(barriers)
+
+    def get_serializer(self, *args, **kwargs):
+        serializer = super().get_serializer(*args, **kwargs)
+        self.update_saved_search_if_required(serializer.data)
+        return serializer
 
 
 class BarriertListExportView(generics.ListAPIView):
