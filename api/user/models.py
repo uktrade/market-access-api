@@ -47,6 +47,8 @@ class BaseSavedSearch(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     _barriers = None
+    _new_barrier_ids = None
+    _updated_barrier_ids = None
 
     class Meta:
         abstract = True
@@ -96,11 +98,14 @@ class BaseSavedSearch(models.Model):
 
     @property
     def new_barrier_ids(self):
-        barrier_ids = set(
-            [barrier.id for barrier in self.barriers.exclude(created_by=self.user)]
-        )
-        new_barrier_ids = barrier_ids.difference(set(self.last_viewed_barrier_ids))
-        return list(new_barrier_ids)
+        if self._new_barrier_ids is None:
+            barrier_ids = set(
+                [barrier.id for barrier in self.barriers.exclude(created_by=self.user)]
+            )
+            self._new_barrier_ids = list(
+                barrier_ids.difference(set(self.last_viewed_barrier_ids))
+            )
+        return self._new_barrier_ids
 
     @property
     def new_count(self):
@@ -108,11 +113,12 @@ class BaseSavedSearch(models.Model):
 
     @property
     def updated_barrier_ids(self):
-        updated_barrier_ids = []
-        for barrier in self.barriers:
-            if barrier.get_latest_history_date(exclude=self.user) > self.last_viewed_on:
-                updated_barrier_ids.append(barrier.id)
-        return updated_barrier_ids
+        if self._updated_barrier_ids is None:
+            self._updated_barrier_ids = []
+            for barrier in self.barriers:
+                if barrier.get_latest_history_date(exclude=self.user) > self.last_viewed_on:
+                    self._updated_barrier_ids.append(barrier.id)
+        return self._updated_barrier_ids
 
     @property
     def updated_count(self):
