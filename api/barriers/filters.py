@@ -42,6 +42,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     category = django_filters.BaseInFilter("categories")
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
+    search = django_filters.Filter(method="text_search")
     text = django_filters.Filter(method="text_search")
     user = django_filters.Filter(method="my_barriers")
     team = django_filters.Filter(method="team_barriers")
