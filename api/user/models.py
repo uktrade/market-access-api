@@ -54,7 +54,7 @@ class BaseSavedSearch(models.Model):
     def are_api_parameters_equal(self, query_dict):
         ignore_keys = ('ordering', 'limit', 'offset', 'search_id')
         query_dict = {k: v for k, v in query_dict.items() if k not in ignore_keys}
-        filterset = BarrierFilterSet(user=self.user)
+        filterset = BarrierFilterSet()
 
         for key, value in query_dict.items():
             if isinstance(filterset.filters.get(key), BaseInFilter):
