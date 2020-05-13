@@ -1,3 +1,4 @@
+import copy
 import datetime
 from uuid import uuid4
 
@@ -68,11 +69,8 @@ class BaseSavedSearch(models.Model):
         self.save()
 
     def get_api_parameters(self):
-        mapping = {
-            "type": "category",
-            "search": "text",
-        }
-        params = {mapping.get(k, k): v for k, v in self.filters.items()}
+        params = copy.deepcopy(self.filters)
+
         if "country" in params or "region" in params:
             params["location"] = params.pop("country", []) + params.pop("region", [])
 
