@@ -1,3 +1,4 @@
+import copy
 import datetime
 from uuid import uuid4
 
@@ -46,6 +47,8 @@ class BaseSavedSearch(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
     _barriers = None
+    _new_barrier_ids = None
+    _updated_barrier_ids = None
 
     class Meta:
         abstract = True
@@ -53,7 +56,7 @@ class BaseSavedSearch(models.Model):
     def are_api_parameters_equal(self, query_dict):
         ignore_keys = ('ordering', 'limit', 'offset', 'search_id')
         query_dict = {k: v for k, v in query_dict.items() if k not in ignore_keys}
-        filterset = BarrierFilterSet(user=self.user)
+        filterset = BarrierFilterSet()
 
         for key, value in query_dict.items():
             if isinstance(filterset.filters.get(key), BaseInFilter):
@@ -68,11 +71,8 @@ class BaseSavedSearch(models.Model):
         self.save()
 
     def get_api_parameters(self):
-        mapping = {
-            "type": "category",
-            "search": "text",
-        }
-        params = {mapping.get(k, k): v for k, v in self.filters.items()}
+        params = copy.deepcopy(self.filters)
+
         if "country" in params or "region" in params:
             params["location"] = params.pop("country", []) + params.pop("region", [])
 
@@ -98,11 +98,14 @@ class BaseSavedSearch(models.Model):
 
     @property
     def new_barrier_ids(self):
-        barrier_ids = set(
-            [barrier.id for barrier in self.barriers.exclude(created_by=self.user)]
-        )
-        new_barrier_ids = barrier_ids.difference(set(self.last_viewed_barrier_ids))
-        return list(new_barrier_ids)
+        if self._new_barrier_ids is None:
+            barrier_ids = set(
+                [barrier.id for barrier in self.barriers.exclude(created_by=self.user)]
+            )
+            self._new_barrier_ids = list(
+                barrier_ids.difference(set(self.last_viewed_barrier_ids))
+            )
+        return self._new_barrier_ids
 
     @property
     def new_count(self):
@@ -110,11 +113,12 @@ class BaseSavedSearch(models.Model):
 
     @property
     def updated_barrier_ids(self):
-        updated_barrier_ids = []
-        for barrier in self.barriers:
-            if barrier.get_latest_history_date(exclude=self.user) > self.last_viewed_on:
-                updated_barrier_ids.append(barrier.id)
-        return updated_barrier_ids
+        if self._updated_barrier_ids is None:
+            self._updated_barrier_ids = []
+            for barrier in self.barriers:
+                if barrier.get_latest_history_date(exclude=self.user) > self.last_viewed_on:
+                    self._updated_barrier_ids.append(barrier.id)
+        return self._updated_barrier_ids
 
     @property
     def updated_count(self):
