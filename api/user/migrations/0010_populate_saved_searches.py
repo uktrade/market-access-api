@@ -25,7 +25,7 @@ def convert_watchlists_to_saved_searches(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0009_savedsearch'),
+        ('user', '0009_saved_searches'),
     ]
 
     operations = [

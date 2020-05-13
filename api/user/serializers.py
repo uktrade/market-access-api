@@ -142,6 +142,8 @@ class SavedSearchSerializer(serializers.ModelSerializer):
             'new_count',
             'updated_barrier_ids',
             'updated_count',
+            'notify_about_additions',
+            'notify_about_updates',
         ]
 
     def create(self, validated_data):

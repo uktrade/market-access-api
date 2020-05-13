@@ -45,7 +45,7 @@ def clean_saved_search_filters(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0011_mybarrierssavedsearch_teambarrierssavedsearch'),
+        ('user', '0010_populate_saved_searches'),
     ]
 
     operations = [
