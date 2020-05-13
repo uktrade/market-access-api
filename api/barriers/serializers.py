@@ -188,7 +188,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "sectors",
             "product",
             "scope",
-            "barrier_types",
             "source",
             "team_count",
             "priority",
