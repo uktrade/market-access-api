@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -49,6 +50,8 @@ class UserDetail(generics.RetrieveDestroyAPIView):
 
 class SavedSearchList(generics.ListCreateAPIView):
     serializer_class = SavedSearchSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["name"]
 
     def get_queryset(self):
         return self.request.user.saved_searches.all()
