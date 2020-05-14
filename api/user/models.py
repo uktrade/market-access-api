@@ -101,12 +101,15 @@ class BaseSavedSearch(models.Model):
     @property
     def new_barrier_ids(self):
         if self._new_barrier_ids is None:
-            barrier_ids = set(
-                [barrier.id for barrier in self.barriers.exclude(created_by=self.user)]
-            )
-            self._new_barrier_ids = list(
-                barrier_ids.difference(set(self.last_viewed_barrier_ids))
-            )
+            self._new_barrier_ids = []
+            new_barriers = self.barriers.exclude(pk__in=self.last_viewed_barrier_ids)
+            for barrier in new_barriers:
+                if barrier.has_changes(
+                    start_date=self.last_viewed_on,
+                    exclude_user=self.user
+                ):
+                    self._new_barrier_ids.append(barrier.id)
+
         return self._new_barrier_ids
 
     @property
@@ -118,7 +121,10 @@ class BaseSavedSearch(models.Model):
         if self._updated_barrier_ids is None:
             self._updated_barrier_ids = []
             for barrier in self.barriers:
-                if barrier.get_latest_history_date(exclude=self.user) > self.last_viewed_on:
+                if barrier.has_changes(
+                    start_date=self.last_viewed_on,
+                    exclude_user=self.user
+                ):
                     self._updated_barrier_ids.append(barrier.id)
         return self._updated_barrier_ids
 

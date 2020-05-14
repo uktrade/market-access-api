@@ -295,28 +295,24 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     def has_assessment(self):
         return hasattr(self, 'assessment')
 
-    def get_latest_history_date(self, exclude):
+    def has_changes(self, start_date, exclude_user):
         history_querysets = [
-            BarrierInstance.history.all(),
+            self.history.all(),
             Interaction.history.filter(barrier_id=self.id),
             Assessment.history.filter(barrier_id=self.id),
-            TeamMember.history.filter(barrier_id=self.id),
+            TeamMember.history.filter(barrier_id=self.id).exclude(user=exclude_user),
         ]
         if self.wto_profile:
             history_querysets.append(WTOProfile.history.filter(id=self.wto_profile.id))
 
-        history_dates = []
         for history_queryset in history_querysets:
-            try:
-                history_dates.append(
-                    history_queryset.exclude(
-                        history_user=exclude
-                    ).latest("history_date").history_date
-                )
-            except ObjectDoesNotExist:
-                continue
-
-        return max(history_dates)
+            if (
+                history_queryset.filter(
+                    history_date__gt=start_date
+                ).exclude(history_user=exclude_user).exists()
+            ):
+                return True
+        return False
 
     def last_seen_by(self, user_id):
         try:
