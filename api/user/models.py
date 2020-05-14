@@ -67,9 +67,14 @@ class BaseSavedSearch(models.Model):
         api_parameters = self.get_api_parameters()
         return nested_sort(query_dict) == nested_sort(api_parameters)
 
-    def update_barriers(self, barriers):
+    def mark_as_seen(self, barriers=None):
+        if barriers is None:
+            barriers = self.barriers
         self.last_viewed_on = timezone.now()
-        self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
+        if isinstance(barriers, list):
+            self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
+        else:
+            self.last_viewed_barrier_ids = [barrier.id for barrier in barriers]
         self.save()
 
     def get_api_parameters(self):
@@ -154,11 +159,12 @@ class MyBarriersSavedSearch(BaseSavedSearch):
 
 
 def get_my_barriers_saved_search(user):
-    # TODO: Move to model? Use AutoOneToOneField?
     try:
         return user.my_barriers_saved_search
     except MyBarriersSavedSearch.DoesNotExist:
-        return MyBarriersSavedSearch.objects.create(user=user)
+        saved_search = MyBarriersSavedSearch.objects.create(user=user)
+        saved_search.mark_as_seen()
+        return saved_search
 
 
 class TeamBarriersSavedSearch(BaseSavedSearch):
@@ -172,11 +178,12 @@ class TeamBarriersSavedSearch(BaseSavedSearch):
 
 
 def get_team_barriers_saved_search(user):
-    # TODO: Move to model? Use AutoOneToOneField?
     try:
         return user.team_barriers_saved_search
     except TeamBarriersSavedSearch.DoesNotExist:
-        return TeamBarriersSavedSearch.objects.create(user=user)
+        saved_search = TeamBarriersSavedSearch.objects.create(user=user)
+        saved_search.mark_as_seen()
+        return saved_search
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
