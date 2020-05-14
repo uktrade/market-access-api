@@ -67,9 +67,14 @@ class BaseSavedSearch(models.Model):
         api_parameters = self.get_api_parameters()
         return nested_sort(query_dict) == nested_sort(api_parameters)
 
-    def update_barriers(self, barriers):
+    def mark_as_seen(self, barriers=None):
+        if barriers is None:
+            barriers = self.barriers
         self.last_viewed_on = timezone.now()
-        self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
+        if isinstance(barriers, list):
+            self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
+        else:
+            self.last_viewed_barrier_ids = [barrier.id for barrier in barriers]
         self.save()
 
     def get_api_parameters(self):
@@ -101,12 +106,15 @@ class BaseSavedSearch(models.Model):
     @property
     def new_barrier_ids(self):
         if self._new_barrier_ids is None:
-            barrier_ids = set(
-                [barrier.id for barrier in self.barriers.exclude(created_by=self.user)]
-            )
-            self._new_barrier_ids = list(
-                barrier_ids.difference(set(self.last_viewed_barrier_ids))
-            )
+            self._new_barrier_ids = []
+            new_barriers = self.barriers.exclude(pk__in=self.last_viewed_barrier_ids)
+            for barrier in new_barriers:
+                if barrier.has_changes(
+                    start_date=self.last_viewed_on,
+                    exclude_user=self.user
+                ):
+                    self._new_barrier_ids.append(barrier.id)
+
         return self._new_barrier_ids
 
     @property
@@ -118,7 +126,10 @@ class BaseSavedSearch(models.Model):
         if self._updated_barrier_ids is None:
             self._updated_barrier_ids = []
             for barrier in self.barriers:
-                if barrier.get_latest_history_date(exclude=self.user) > self.last_viewed_on:
+                if barrier.has_changes(
+                    start_date=self.last_viewed_on,
+                    exclude_user=self.user
+                ):
                     self._updated_barrier_ids.append(barrier.id)
         return self._updated_barrier_ids
 
@@ -148,11 +159,12 @@ class MyBarriersSavedSearch(BaseSavedSearch):
 
 
 def get_my_barriers_saved_search(user):
-    # TODO: Move to model? Use AutoOneToOneField?
     try:
         return user.my_barriers_saved_search
     except MyBarriersSavedSearch.DoesNotExist:
-        return MyBarriersSavedSearch.objects.create(user=user)
+        saved_search = MyBarriersSavedSearch.objects.create(user=user)
+        saved_search.mark_as_seen()
+        return saved_search
 
 
 class TeamBarriersSavedSearch(BaseSavedSearch):
@@ -166,11 +178,12 @@ class TeamBarriersSavedSearch(BaseSavedSearch):
 
 
 def get_team_barriers_saved_search(user):
-    # TODO: Move to model? Use AutoOneToOneField?
     try:
         return user.team_barriers_saved_search
     except TeamBarriersSavedSearch.DoesNotExist:
-        return TeamBarriersSavedSearch.objects.create(user=user)
+        saved_search = TeamBarriersSavedSearch.objects.create(user=user)
+        saved_search.mark_as_seen()
+        return saved_search
 
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
