@@ -8,7 +8,6 @@ from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from api.core.models import ArchivableMixin, BaseModel
-from api.barriers.models import BarrierInstance
 from api.documents.models import AbstractEntityDocumentModel
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -87,7 +86,9 @@ class Interaction(ArchivableMixin, BaseModel):
     """ Interaction records for each Barrier """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="interactions_documents", on_delete=models.CASCADE
+        "barriers.BarrierInstance",
+        related_name="interactions_documents",
+        on_delete=models.CASCADE,
     )
     kind = models.CharField(choices=BARRIER_INTERACTION_TYPE, max_length=25)
     text = models.TextField(null=True)

@@ -29,6 +29,7 @@ from api.dataset.views import BarrierListDataWorkspaceView
 from api.assessment.urls import urlpatterns as assessment_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.interactions.urls import urlpatterns as interaction_urls
+from api.user.urls import urlpatterns as user_urls
 
 urlpatterns = []
 
@@ -85,4 +86,4 @@ urlpatterns += [
     ),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
-] + interaction_urls + team_urls + assessment_urls
+] + interaction_urls + team_urls + assessment_urls + user_urls
