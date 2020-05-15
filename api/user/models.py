@@ -67,14 +67,9 @@ class BaseSavedSearch(models.Model):
         api_parameters = self.get_api_parameters()
         return nested_sort(query_dict) == nested_sort(api_parameters)
 
-    def mark_as_seen(self, barriers=None):
-        if barriers is None:
-            barriers = self.barriers
+    def mark_as_seen(self):
         self.last_viewed_on = timezone.now()
-        if isinstance(barriers, list):
-            self.last_viewed_barrier_ids = [barrier["id"] for barrier in barriers]
-        else:
-            self.last_viewed_barrier_ids = [barrier.id for barrier in barriers]
+        self.last_viewed_barrier_ids = [barrier.id for barrier in self.barriers]
         self.save()
 
     def get_api_parameters(self):
@@ -147,6 +142,9 @@ class SavedSearch(BaseSavedSearch):
     )
     filters = JSONField()
 
+    class Meta:
+        ordering = ("name", )
+
 
 class MyBarriersSavedSearch(BaseSavedSearch):
     name = "My barriers"
@@ -168,7 +166,7 @@ def get_my_barriers_saved_search(user):
 
 
 class TeamBarriersSavedSearch(BaseSavedSearch):
-    name = "Team barriers"
+    name = "My team barriers"
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         related_name="team_barriers_saved_search",
