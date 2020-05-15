@@ -141,6 +141,17 @@ class ReportFactory(factory.django.DjangoModelFactory):
             # A list of tags were passed in, use them
             self.tags.add(*extracted)
 
+    @factory.post_generation
+    def priority(self, create, extracted, **kwargs):
+        if not create:
+            return
+        else:
+            priority_code = "UNKNOWN"
+            if extracted:
+                priority_code = extracted
+            self.priority = BarrierPriority.objects.get(code=priority_code)
+            self.save()
+
 
 class MinReportFactory(factory.django.DjangoModelFactory):
     class Meta:

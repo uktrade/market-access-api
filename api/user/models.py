@@ -142,6 +142,9 @@ class SavedSearch(BaseSavedSearch):
     )
     filters = JSONField()
 
+    class Meta:
+        ordering = ("name", )
+
 
 class MyBarriersSavedSearch(BaseSavedSearch):
     name = "My barriers"
