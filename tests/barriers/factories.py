@@ -143,13 +143,8 @@ class ReportFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def priority(self, create, extracted, **kwargs):
-        if not create:
-            return
-        else:
-            priority_code = "UNKNOWN"
-            if extracted:
-                priority_code = extracted
-            self.priority = BarrierPriority.objects.get(code=priority_code)
+        if create and extracted:
+            self.priority = BarrierPriority.objects.get(code=extracted)
             self.save()
 
 
