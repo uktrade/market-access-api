@@ -166,7 +166,7 @@ def get_my_barriers_saved_search(user):
 
 
 class TeamBarriersSavedSearch(BaseSavedSearch):
-    name = "Team barriers"
+    name = "My team barriers"
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         related_name="team_barriers_saved_search",
