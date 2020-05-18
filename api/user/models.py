@@ -44,13 +44,22 @@ class BaseSavedSearch(models.Model):
         default=list,
     )
     last_viewed_on = models.DateTimeField(auto_now_add=True)
+    last_notified_barrier_ids = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        null=False,
+        default=list,
+    )
+    last_notified_on = models.DateTimeField(auto_now_add=True)
     notify_about_additions = models.BooleanField(default=False)
     notify_about_updates = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
 
     _barriers = None
     _new_barrier_ids = None
+    _new_barriers_since_notified = None
     _updated_barrier_ids = None
+    _updated_barriers_since_notified = None
 
     class Meta:
         abstract = True
@@ -66,6 +75,11 @@ class BaseSavedSearch(models.Model):
 
         api_parameters = self.get_api_parameters()
         return nested_sort(query_dict) == nested_sort(api_parameters)
+
+    def mark_as_notified(self):
+        self.last_notified_on = timezone.now()
+        self.last_notified_barrier_ids = [barrier.id for barrier in self.barriers]
+        self.save()
 
     def mark_as_seen(self):
         self.last_viewed_on = timezone.now()
@@ -113,8 +127,26 @@ class BaseSavedSearch(models.Model):
         return self._new_barrier_ids
 
     @property
+    def new_barriers_since_notified(self):
+        if self._new_barriers_since_notified is None:
+            self._new_barriers_since_notified = []
+            new_barriers = self.barriers.exclude(pk__in=self.last_notified_barrier_ids)
+            for barrier in new_barriers:
+                if barrier.has_changes(
+                    start_date=self.last_notified_on,
+                    exclude_user=self.user
+                ):
+                    self._new_barriers_since_notified.append(barrier)
+
+        return self._new_barriers_since_notified
+
+    @property
     def new_count(self):
         return len(self.new_barrier_ids)
+
+    @property
+    def new_count_since_notified(self):
+        return len(self.new_barriers_since_notified)
 
     @property
     def updated_barrier_ids(self):
@@ -129,8 +161,31 @@ class BaseSavedSearch(models.Model):
         return self._updated_barrier_ids
 
     @property
+    def updated_barriers_since_notified(self):
+        if self._updated_barriers_since_notified is None:
+            self._updated_barriers_since_notified = []
+            for barrier in self.barriers:
+                if barrier.has_changes(
+                    start_date=self.last_notified_on,
+                    exclude_user=self.user
+                ):
+                    self._updated_barriers_since_notified.append(barrier)
+        return self._updated_barriers_since_notified
+
+    @property
     def updated_count(self):
         return len(self.updated_barrier_ids)
+
+    @property
+    def updated_count_since_notified(self):
+        return len(self.updated_barriers_since_notified)
+
+    def should_notify(self):
+        if self.notify_about_additions and self.new_count_since_notified > 0:
+            return True
+        if self.notify_about_updates and self.updated_count_since_notified > 0:
+            return True
+        return False
 
 
 class SavedSearch(BaseSavedSearch):
