@@ -29,6 +29,7 @@ jobs:
       DH_HAWK_KEY: 'dh_hawk_key'
       DJANGO_SETTINGS_MODULE: 'config.settings.test'
       DEBUG: 'False'
+      ELASTIC_APM_ENABLED: 'False'
       SECRET_KEY: 'changeme'
       SSO_ENABLED: 'True'
       SENTRY_DSN: ''

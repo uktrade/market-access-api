@@ -27,6 +27,16 @@ ALLOWED_HOSTS = ["*"]
 DEBUG = env.bool("DEBUG", False)
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
+ELASTIC_APM_ENABLED = env("ELASTIC_APM_ENABLED", default=not DEBUG)
+
+if ELASTIC_APM_ENABLED:
+    ELASTIC_APM = {
+        "SERVICE_NAME": "market-access-api",
+        "SECRET_TOKEN": env("ELASTIC_APM_SECRET_TOKEN"),
+        "SERVER_URL": env("ELASTIC_APM_URL"),
+        "ENVIRONMENT": env("ENVIRONMENT", default="dev"),
+    }
+
 # Application definition
 
 DJANGO_APPS = [
@@ -66,6 +76,9 @@ LOCAL_APPS = [
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+
+if ELASTIC_APM_ENABLED:
+    INSTALLED_APPS.append('elasticapm.contrib.django')
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
