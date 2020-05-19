@@ -158,12 +158,9 @@ if REDIS_BASE_URL:
         }
     }
 
-# CELERY (it does not understand rediss:// yet so extra work needed)
 if REDIS_BASE_URL:
-    # REDIS_BASIC_URL == REDIS_BASE_URL without the SSL
-    REDIS_BASIC_URL = REDIS_BASE_URL.replace("rediss://", "redis://")
     REDIS_CELERY_DB = env("REDIS_CELERY_DB", default=1)
-    CELERY_BROKER_URL = f"{REDIS_BASIC_URL}/{REDIS_CELERY_DB}"
+    CELERY_BROKER_URL = f"{REDIS_BASE_URL}/{REDIS_CELERY_DB}"
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     if "rediss://" in REDIS_BASE_URL:
         CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
