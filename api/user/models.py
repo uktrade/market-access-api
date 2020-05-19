@@ -64,6 +64,10 @@ class BaseSavedSearch(models.Model):
     class Meta:
         abstract = True
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_filters = self.filters
+
     def are_api_parameters_equal(self, query_dict):
         ignore_keys = ('ordering', 'limit', 'offset', 'search_id')
         query_dict = {k: v for k, v in query_dict.items() if k not in ignore_keys}
@@ -186,6 +190,12 @@ class BaseSavedSearch(models.Model):
         if self.notify_about_updates and self.updated_count_since_notified > 0:
             return True
         return False
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self._state.adding or self._original_filters != self.filters:
+            self.mark_as_notified()
+            self._original_filters = self.filters
 
 
 class SavedSearch(BaseSavedSearch):
