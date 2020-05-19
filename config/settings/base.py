@@ -2,6 +2,7 @@ import environ
 import os
 import ssl
 
+from celery.schedules import crontab
 import dj_database_url
 
 
@@ -135,6 +136,8 @@ REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 1000)
 DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
+NOTIFY_API_KEY = env("NOTIFY_API_KEY")
+NOTIFY_SAVED_SEARCHES_TEMPLATE_ID = env("NOTIFY_SAVED_SEARCHES_TEMPLATE_ID")
 # DMAS Frontend
 DMAS_BASE_URL = env("DMAS_BASE_URL")
 
@@ -282,3 +285,9 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 STATIC_URL = "/static/"
 
 CELERY_BEAT_SCHEDULE = {}
+
+if not DEBUG:
+    CELERY_BEAT_SCHEDULE['send_notification_emails'] = {
+        'task': 'user.tasks.send_notification_emails',
+        'schedule': crontab(minute=0, hour=6),
+    }
