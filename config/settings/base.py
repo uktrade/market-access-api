@@ -4,6 +4,7 @@ import ssl
 
 import dj_database_url
 
+
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -37,6 +38,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "django_celery_beat",
     "django_extensions",
     "django_filters",
     "hawkrest",
@@ -278,3 +280,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 STATIC_URL = "/static/"
+
+CELERY_BEAT_SCHEDULE = {}
