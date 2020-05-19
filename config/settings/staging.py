@@ -12,11 +12,11 @@ LOGGING = {
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "handlers": {
         "sentry": {
-            "level": "ERROR",
+            "level": "INFO",
             "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
         },
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler",
             "stream": sys.stdout,
         },
@@ -24,9 +24,9 @@ LOGGING = {
     "loggers": {
         "django.request": {
             "handlers": ["console"],
-            "level": "ERROR",
+            "level": "INFO",
             "propagate": True,
         },
-        "": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+        "": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
