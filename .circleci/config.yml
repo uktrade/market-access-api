@@ -54,6 +54,8 @@ jobs:
       AWS_DEFAULT_REGION: 'eu-west-2'
       REDIS_BASE_URL: 'redis://localhost'
       DMAS_BASE_URL: 'https://dummy.market-access.net'
+      NOTIFY_API_KEY: ''
+      NOTIFY_SAVED_SEARCHES_TEMPLATE_ID: ''
 
     working_directory: ~/repo
 
