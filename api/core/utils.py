@@ -1,10 +1,12 @@
 def is_not_blank(s):
     return bool(s and s.strip())
 
+
 def pretty_name(name):
     if is_not_blank(name):
         return ' '.join(map(str, [x.capitalize() for x in name.split(".")]))
     return name
+
 
 def cleansed_username(user):
     if user is not None:

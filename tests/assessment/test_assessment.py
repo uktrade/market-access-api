@@ -71,7 +71,6 @@ class TestAssessment(APITestMixin):
         assert response.data["history"][0]["old_value"] is None
         assert response.data["history"][0]["new_value"] == "MEDIUMHIGH"
 
-
     def test_add_assessment_with_document(self, setup_barrier):
         instance_id = setup_barrier
 

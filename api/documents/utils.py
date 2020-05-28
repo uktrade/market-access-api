@@ -1,7 +1,6 @@
 from functools import lru_cache
 from logging import getLogger
 
-import os
 import boto3
 
 from django.apps import apps

@@ -1,5 +1,4 @@
 import pytest
-import requests_mock
 
 from unittest.mock import patch
 
@@ -7,7 +6,6 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin, create_test_user
-from api.user.staff_sso import StaffSSO
 
 
 class TestUserView(APITestMixin):
@@ -244,4 +242,3 @@ class TestUserView(APITestMixin):
         )
 
         assert edit_response.status_code == status.HTTP_200_OK
-

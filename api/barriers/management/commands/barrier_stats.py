@@ -7,10 +7,8 @@ from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.humanize.templatetags.humanize import intword
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
-from django.db.models.aggregates import Sum
 from django.utils import timezone
 
 from ...models import BarrierInstance
@@ -65,9 +63,7 @@ class Command(BaseCommand):
             "reports": {"total_count": reports.count()},
             "users": {
                 "total_count": users.distinct().count(),
-                "active_count": users.filter(last_login__gt=days_ago)
-                .distinct()
-                .count(),
+                "active_count": users.filter(last_login__gt=days_ago).distinct().count(),
             },
         }
 
@@ -98,7 +94,7 @@ class Command(BaseCommand):
         stats_txt = """
             BARRIERS:
 
-            Number of barriers: 
+            Number of barriers:
             Total - {}
             Open - {}
             Resolved - {}

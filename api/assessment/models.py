@@ -2,13 +2,11 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
 from django.db.models import Q
-from django.urls import reverse
 
 from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import ASSESMENT_IMPACT
 from api.core.models import ArchivableMixin, BaseModel
-from api.documents.models import AbstractEntityDocumentModel
 from api.interactions.models import Document
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH

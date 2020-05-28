@@ -147,14 +147,14 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "status"
         assert data["old_value"] == {
             "status": "1",
-            "status_date":  datetime.date(2019, 4, 9),
+            "status_date": datetime.date(2019, 4, 9),
             "status_summary": None,
             "sub_status": None,
             "sub_status_other": None,
         }
         assert data["new_value"] == {
             "status": "5",
-            "status_date":  datetime.date(2019, 4, 9),
+            "status_date": datetime.date(2019, 4, 9),
             "status_summary": "Summary",
             "sub_status": "UK_GOVT",
             "sub_status_other": None,
@@ -534,7 +534,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "status",
             "old_value": {
                 "status": "1",
-                "status_date":  "2019-04-09",
+                "status_date": "2019-04-09",
                 "status_summary": None,
                 "sub_status": None,
                 "sub_status_other": None,
