@@ -65,8 +65,6 @@ jobs:
       - restore_cache:
           keys:
             - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
 
       - run:
           command: sudo pip install poetry==1.0.5
@@ -115,7 +113,7 @@ jobs:
           paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
 
-      - run: poetry run flake8 --count
+      - run: poetry run flake8 . --count
 
 workflows:
   version: 2
