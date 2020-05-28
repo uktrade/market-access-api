@@ -5,35 +5,43 @@
 
 .PHONY: help
 help: ## This help.
+	@echo "$$(tput setaf 6)$$(tput setab 0)═══════════════════════════════$$(tput sgr 0)"
+	@echo "$$(tput setaf 6)$$(tput setab 0)  🤜  Make commands help  🤛   $$(tput sgr 0)"
+	@echo "$$(tput setaf 6)$$(tput setab 0)═══════════════════════════════$$(tput sgr 0)"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@echo "$$(tput setaf 6)$$(tput setab 0)═══════════════════════════════$$(tput sgr 0)"
 
 
 # DEV COMMANDS
 # ==================================================
 .PHONY: django-run
 django-run: ## Run django's dev server (tailing).
-	docker-compose exec web bash -c "python3.6 /usr/src/app/manage.py runserver 0:8000"
+	docker-compose exec web ./manage.py runserver 0:8000
 
 .PHONY: django-run-detached
 django-run-detached: ## Run django's dev server (silently).
-	docker-compose exec -d web bash -c "python3.6 /usr/src/app/manage.py runserver 0:8000"
+	docker-compose exec -d web ./manage.py runserver 0:8000
 
 .PHONY: django-shell
 django-shell: ## Drop into django's shell (with iphython).
-	docker-compose exec web bash -c "pip install ipython &&  python3.6 ./manage.py shell_plus"
+	docker-compose exec web ./manage.py shell_plus
 
 .PHONY: django-test
 django-test: ## Run django tests (keeps existing test db).
-	docker-compose exec web bash -c "python3.6 -m pytest tests/$(path) -p no:sugar"
+	docker-compose exec web pytest tests/$(path)
 
 .PHONY: django-test-create-db
 django-test-create-db: ## Run django tests (recreates test db).
-	docker-compose exec web bash -c "python3.6 -m pytest --create-db tests/$(path) -p no:sugar"
+	docker-compose exec web pytest --create-db tests/$(path)
 
 .PHONY: django-tests-coverage
 django-tests-coverage: ## Run django tests and generate coverage report.
 	docker-compose exec web bash -c "coverage run --source='.' manage.py test"
 	docker-compose exec web bash -c "coverage report"
+
+.PHONY: django-gen-secretkey
+django-gen-secretkey: ## Generates a secret key (using django's util function)
+	@docker-compose exec web bash -c "./tools/secret_keygen.py"
 
 .PHONY: celery-run
 celery-run: ## Run the celery dev server.
@@ -50,29 +58,45 @@ git-hooks: ## Set up hooks for git.
 # ==================================================
 .PHONY: django-makemigrations
 django-makemigrations: ## Create django migrations
-	docker-compose exec web bash -c "python3.6 /usr/src/app/manage.py makemigrations"
+	docker-compose exec web ./manage.py makemigrations
 
 .PHONY: django-migrate
 django-migrate: ## Apply django migrations.
-	docker-compose exec web bash -c "python3.6 /usr/src/app/manage.py migrate"
+	docker-compose exec web ./manage.py migrate
 
 .PHONY: django-showmigrations
 django-showmigrations: ## Show django migrations.
-	docker-compose exec web bash -c "python3.6 /usr/src/app/manage.py showmigrations"
+	docker-compose exec web ./manage.py showmigrations
 # ==================================================
 
 
 # UTIL COMMANDS
 # ==================================================
+.PHONY: flake8
+flake8: ## Run pep8 checks on the project
+	@echo "$$(tput setaf 3)🙈  Running flake8  🙈"
+	@docker-compose exec web bash -c "flake8 . --exclude=./.venv --count --max-line-length=120"
+
+__timestamp = $(shell date +%F_%H-%M)
 .PHONY: pip-install
 pip-install: ## Install pip requirements inside the container.
-	@echo "$$(tput setaf 3)🙈  Installing Pip Packages  🙈"
-	@docker-compose exec web bash -c "pip3.6 install -r requirements.txt"
+	@echo "$$(tput setaf 3)🙈  Installing Pip Packages  🙈$$(tput sgr 0)"
+	@docker-compose exec web poetry lock
+	@docker-compose exec web poetry export --without-hashes -f requirements.txt -o requirements.txt
+	@docker-compose exec web poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt
+	@docker-compose exec web pip install -r requirements-dev.txt
+	@docker-compose exec web sed -i '1i# ======\n# DO NOT EDIT - use pyproject.toml instead!\n# Generated: $(__timestamp)\n# ======' requirements.txt
+	@docker-compose exec web sed -i '1i# ======\n# DO NOT EDIT - use pyproject.toml instead!\n# Generated: $(__timestamp)\n# ======' requirements-dev.txt
 
 .PHONY: pip-deptree
 pip-deptree: ## Output pip dependecy tree.
 	@echo "$$(tput setaf 0)$$(tput setab 2)  🌳  Pip Dependency Tree  🌳   $$(tput sgr 0)"
-	@docker-compose exec web bash -c "pip3.6 install pipdeptree && pipdeptree -fl"
+	@docker-compose exec web bash -c "poetry show --tree"
+
+.PHONY: pip-updates
+pip-updates: ## Output available updates for packages.
+	@echo "$$(tput setaf 2)  📦  Available Updates  📦   $$(tput sgr 0)"
+	@docker-compose exec web bash -c "poetry show -o"
 
 __dumpfile := market_access_$(shell date +%Y%m%d_%H%M).gz
 .PHONY: pg-dump
@@ -92,8 +116,8 @@ pg-dump-dev: ## Creates a DB backup of DEV in ./db_dumps folder.
 	@cf conduit market-access-dev-db -- pg_dump | gzip > db_dumps/$(__devdumpfile)
 
 dumpfile =
-.PHONY: restore-db
-restore-db: ## Restores a DB backup
+.PHONY: pg-restore-db
+pg-restore-db: ## Restores a DB backup
 ifeq ($(dumpfile),)
 	@echo "⚠️   Please use  dumpfile=<file-name>  to provide a filename from ./db_dumps"
 	@echo "You may pick from the following:\n"
