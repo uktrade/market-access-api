@@ -113,7 +113,7 @@ jobs:
           paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
 
-      - run: poetry run flake8 . --count
+      - run: poetry run flake8 . --config=.flake8 --count
 
 workflows:
   version: 2
