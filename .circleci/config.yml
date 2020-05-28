@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build:
+  tests:
     docker:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
@@ -90,29 +90,36 @@ jobs:
           path: test-reports
           destination: test-reports
 
-    pep8:
-      docker:
-        - image: circleci/python:3.7
+  pep8:
+    docker:
+      - image: circleci/python:3.7
 
-      working_directory: ~/market-access-api
-      steps:
-        - checkout
+    working_directory: ~/market-access-api
+    steps:
+      - checkout
 
-        - restore_cache:
-            keys:
-              - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
-        - run:
-            command: sudo pip install poetry
+      - run:
+          command: sudo pip install poetry
 
-        - run:
-            name: Install dependencies
-            command: |
-              poetry install
+      - run:
+          name: Install dependencies
+          command: |
+            poetry install
 
-        - save_cache:
-            key: v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
-            paths:
-              - /home/circleci/.cache/pypoetry/virtualenvs
+      - save_cache:
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
 
-        - run: poetry run flake8 --count
+      - run: poetry run flake8 --count
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - tests
+      - pep8
