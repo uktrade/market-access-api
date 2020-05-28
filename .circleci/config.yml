@@ -96,9 +96,10 @@ jobs:
     steps:
       - checkout
 
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
+# Restore it in a separate PR
+#      - restore_cache:
+#          keys:
+#            - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
       - run:
           command: sudo pip install poetry
