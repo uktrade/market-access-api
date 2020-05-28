@@ -96,9 +96,9 @@ jobs:
     steps:
       - checkout
 
-#      - restore_cache:
-#          keys:
-#            - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
       - run:
           command: sudo pip install poetry
@@ -113,7 +113,7 @@ jobs:
           paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
 
-      - run: ls -la && poetry run flake8 --count
+      - run: poetry run flake8 --count
 
 workflows:
   version: 2
