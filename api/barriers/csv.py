@@ -60,7 +60,7 @@ def _transform_csv_value(value):
     Transforms values before they are written to a CSV file for better compatibility with Excel.
 
     In particular, datetimes are formatted in a way that results in better compatibility with
-    Excel. Lists are converted to comma separated strings. Other values are passed through 
+    Excel. Lists are converted to comma separated strings. Other values are passed through
     unchanged (the csv module automatically formats None as an empty string).
 
     These transformations are specific to CSV files and won't necessarily apply to other file

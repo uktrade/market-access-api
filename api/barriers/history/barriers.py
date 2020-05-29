@@ -48,7 +48,7 @@ class LocationHistoryItem(BaseBarrierHistoryItem):
     def get_value(self, record):
         return {
             "country": str(record.export_country),
-            "admin_areas":  [
+            "admin_areas": [
                 str(admin_area) for admin_area in record.country_admin_areas or []
             ],
         }

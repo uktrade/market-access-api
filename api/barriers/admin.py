@@ -5,7 +5,7 @@ from .models import BarrierInstance
 
 class BarrierInstanceAdmin(admin.ModelAdmin):
     """
-    ModelAdmin class for customised behaviour for 
+    ModelAdmin class for customised behaviour for
     allowing BarrierInstance archivable.
     Admin shouldn't be able to add or delete objects
     """

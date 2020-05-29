@@ -27,8 +27,9 @@ def get_default_test_user():
         )
     return test_user
 
+
 def create_simple_user(
-    **user_attrs
+        **user_attrs
 ):
     user_defaults = {
         "first_name": factory.Faker("first_name").generate({}),
@@ -43,13 +44,14 @@ def create_simple_user(
     user = user_model(**user_defaults)
     user.save()
 
+
 def create_test_user(
-    permission_codenames=(),
-    location=None,
-    internal=False,
-    user_profile=None,
-    sso_user_id=None,
-    **user_attrs
+        permission_codenames=(),
+        location=None,
+        internal=False,
+        user_profile=None,
+        sso_user_id=None,
+        **user_attrs
 ):
     """
     :returns: user
@@ -84,7 +86,7 @@ def create_test_user(
         user.profile.user_profile = user_profile
         user.profile.save()
         user.save()
-    
+
     if sso_user_id is None:
         sso_user_id = uuid.uuid4()
 

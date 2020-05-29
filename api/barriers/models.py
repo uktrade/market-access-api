@@ -2,7 +2,6 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone

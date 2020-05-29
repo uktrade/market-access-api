@@ -324,43 +324,43 @@ class BarriertListExportView(generics.ListAPIView):
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)
     field_titles = {
-            "id": "id",
-            "code": "code",
-            "barrier_title": "Title",
-            "status": "Status",
-            "priority": "Priority",
-            "overseas_region": "Overseas Region",
-            "country": "Country",
-            "admin_areas": "Admin areas",
-            "sectors": "Sectors",
-            "product": "Product",
-            "scope": "Scope",
-            "categories": "Barrier categories",
-            "source": "Source",
-            "team_count": "Team count",
-	        "assessment_impact": "Assessment Impact",
-	        "value_to_economy": "Value to economy",
-	        "import_market_size": "Import market size",
-	        "commercial_value": "Commercial Value",
-	        "export_value": "Value of currently affected UK exports",
-            "reported_on": "Reported Date",
-            "status_date": "Status Date",
-            "modified_on": "Last updated",
-            "tags": "Tags",
-            "trade_direction": "Trade direction",
-            "end_date": "End date",
-            "summary": "Summary",
-            "link": "Link",
-            "economic_assessment_explanation": "Economic assessment",
-            "wto_has_been_notified": "WTO Notified",
-            "wto_should_be_notified": "WTO Should Notify",
-            "wto_committee_notified": "WTO Committee Notified",
-            "wto_committee_notification_link": "WTO Committee Notified Link",
-            "wto_member_states": "WTO Raised Members",
-            "wto_committee_raised_in": "WTO Raised Committee",
-            "wto_raised_date": "WTO Raised Date",
-            "wto_case_number": "WTO Case Number",
-        }
+        "id": "id",
+        "code": "code",
+        "barrier_title": "Title",
+        "status": "Status",
+        "priority": "Priority",
+        "overseas_region": "Overseas Region",
+        "country": "Country",
+        "admin_areas": "Admin areas",
+        "sectors": "Sectors",
+        "product": "Product",
+        "scope": "Scope",
+        "categories": "Barrier categories",
+        "source": "Source",
+        "team_count": "Team count",
+        "assessment_impact": "Assessment Impact",
+        "value_to_economy": "Value to economy",
+        "import_market_size": "Import market size",
+        "commercial_value": "Commercial Value",
+        "export_value": "Value of currently affected UK exports",
+        "reported_on": "Reported Date",
+        "status_date": "Status Date",
+        "modified_on": "Last updated",
+        "tags": "Tags",
+        "trade_direction": "Trade direction",
+        "end_date": "End date",
+        "summary": "Summary",
+        "link": "Link",
+        "economic_assessment_explanation": "Economic assessment",
+        "wto_has_been_notified": "WTO Notified",
+        "wto_should_be_notified": "WTO Should Notify",
+        "wto_committee_notified": "WTO Committee Notified",
+        "wto_committee_notification_link": "WTO Committee Notified Link",
+        "wto_member_states": "WTO Raised Members",
+        "wto_committee_raised_in": "WTO Raised Committee",
+        "wto_raised_date": "WTO Raised Date",
+        "wto_case_number": "WTO Case Number",
+    }
 
     def _get_rows(self, queryset):
         """
@@ -564,7 +564,8 @@ class BarrierStatusHistory(generics.GenericAPIView):
 
         return None
 
-    def get(self, request, pk):
+    def get(self, request, pk):     # noqa: C901
+        # TODO: refactor to remove complexity
         status_field = "status"
         timeline_fields = ["status", "priority", "archived"]
         barrier = BarrierInstance.barriers.get(id=pk)
@@ -787,7 +788,10 @@ class BarrierOpenActionRequired(BarrierStatusBase):
         errors = defaultdict(list)
         if self.request.data.get("sub_status", None) is None:
             errors["sub_status"] = "This field is required"
-        elif self.request.data.get("sub_status", None) == "OTHER" and self.request.data.get("sub_status_other", None) is None:
+        elif (
+            self.request.data.get("sub_status", None) == "OTHER"
+            and self.request.data.get("sub_status_other", None) is None
+        ):
             errors["sub_status_other"] = "This field is required"
         if self.request.data.get("status_summary", None) is None:
             errors["status_summary"] = "This field is required"

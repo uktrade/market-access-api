@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from api.assessment.models import Assessment
-from api.interactions.models import Document
 
 
 class AssessmentSerializer(serializers.ModelSerializer):

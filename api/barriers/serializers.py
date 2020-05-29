@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.cache import cache
 
 from rest_framework import serializers
 
@@ -24,6 +23,7 @@ from api.metadata.utils import (
 )
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
+
 
 # pylint: disable=R0201
 
@@ -194,11 +194,11 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "team_count",
             "reported_on",
             "modified_on",
-	        "assessment_impact",
-	        "value_to_economy",
-	        "import_market_size",
-	        "commercial_value",
-	        "export_value",
+            "assessment_impact",
+            "value_to_economy",
+            "import_market_size",
+            "commercial_value",
+            "export_value",
             "end_date",
             "link",
             "economic_assessment_explanation",

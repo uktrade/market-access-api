@@ -1,19 +1,12 @@
-from django.conf import settings
-from django.shortcuts import get_object_or_404, render
-from rest_framework import generics, status
+from django.shortcuts import get_object_or_404
+from rest_framework import generics
 from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
-
-from oauth2_provider.contrib.rest_framework.permissions import (
-    IsAuthenticatedOrTokenHasScope,
-)
 
 from api.assessment.models import Assessment
 from api.interactions.models import Document, Interaction
 from api.interactions.serializers import DocumentSerializer, InteractionSerializer
 from api.documents.views import BaseEntityDocumentModelViewSet
 
-from api.core.viewsets import CoreViewSet
 from api.barriers.models import BarrierInstance
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
@@ -24,9 +17,12 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
     serializer_class = DocumentSerializer
     queryset = Document.objects.all()
 
-    def _is_document_attached(self, document):
-        if Interaction.objects.filter(documents=document.id).count() > 0 or \
-            Assessment.objects.filter(documents=document.id).count() > 0:
+    @staticmethod
+    def _is_document_attached(document):
+        if (
+            Interaction.objects.filter(documents=document.id).count() > 0
+            or Assessment.objects.filter(documents=document.id).count() > 0
+        ):
             return True
         return False
 

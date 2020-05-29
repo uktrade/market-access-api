@@ -1,21 +1,20 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers, status
-from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from api.assessment.models import Assessment
 from api.assessment.serializers import AssessmentSerializer
-from api.documents.views import BaseEntityDocumentModelViewSet
 
 from api.barriers.models import BarrierInstance
 from api.core.utils import cleansed_username
 from api.interactions.models import Document
-from api.metadata.constants import ASSESMENT_IMPACT
 
 
-class BarrierAssessmentDetail(generics.CreateAPIView,
-                        generics.RetrieveUpdateAPIView):
+class BarrierAssessmentDetail(
+    generics.CreateAPIView,
+    generics.RetrieveUpdateAPIView
+):
     """
     Return details of a Barrier Assessment
     Allows the barrier assessment to be created and updated

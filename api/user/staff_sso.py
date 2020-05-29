@@ -18,7 +18,7 @@ class StaffSSO:
         headers = {
             'Authorization': auth_string,
             'Cache-Control': "no-cache"
-            }
+        }
         try:
             response = requests.request("GET", url, headers=headers)
             if response.status_code == 200:
@@ -42,7 +42,7 @@ class StaffSSO:
         headers = {
             'Authorization': auth_string,
             'Cache-Control': "no-cache"
-            }
+        }
         try:
             response = requests.request(
                 "GET",
@@ -71,7 +71,7 @@ class StaffSSO:
         headers = {
             'Authorization': auth_string,
             'Cache-Control': "no-cache"
-            }
+        }
         try:
             response = requests.request(
                 "GET",

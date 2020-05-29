@@ -20,7 +20,8 @@ class ReportReadyForSubmitValidator:
         """Set the current instance."""
         self.instance = instance
 
-    def __call__(self, data=None):
+    def __call__(self, data=None):      # noqa: C901
+        # TODO: refactor to remove complexity
         """Validate that all the fields required are set."""
         data_combiner = DataCombiner(self.instance, data)
 

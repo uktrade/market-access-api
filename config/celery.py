@@ -1,8 +1,6 @@
-import logging
 import os
 
 from celery import Celery
-from celery.signals import after_setup_logger
 from raven import Client
 from raven.contrib.celery import register_logger_signal, register_signal
 
