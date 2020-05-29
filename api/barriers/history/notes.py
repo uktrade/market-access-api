@@ -14,6 +14,7 @@ class NoteTextHistoryItem(BaseNoteHistoryItem):
             return ""
         return record.text or ""
 
+
 class DocumentsHistoryItem(BaseNoteHistoryItem):
     field = "documents"
 

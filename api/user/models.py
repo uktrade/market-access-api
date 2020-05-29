@@ -1,5 +1,5 @@
 import copy
-import datetime
+
 from uuid import uuid4
 
 from django_filters import BaseInFilter
@@ -14,7 +14,6 @@ from django.utils import timezone
 from api.barriers.filters import BarrierFilterSet
 from api.barriers.models import BarrierInstance
 from api.core.utils import nested_sort
-
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

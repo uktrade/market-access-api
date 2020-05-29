@@ -2,9 +2,8 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from api.barriers.models import BarrierInstance
-from api.core.test_utils import APITestMixin, create_test_user
-from tests.barriers.factories import MinReportFactory, ReportFactory
+from api.core.test_utils import APITestMixin
+from tests.barriers.factories import ReportFactory
 
 
 class TestBarrierStatusHistory(APITestMixin, APITestCase):

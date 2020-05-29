@@ -4,11 +4,11 @@
 #
 version: 2
 jobs:
-  build:
+  tests:
     docker:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:3.6.1
+      - image: circleci/python:3.7
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -58,7 +58,7 @@ jobs:
       NOTIFY_API_KEY: ''
       NOTIFY_SAVED_SEARCHES_TEMPLATE_ID: ''
 
-    working_directory: ~/repo
+    working_directory: ~/market-access-api
 
     steps:
       - checkout
@@ -66,34 +66,60 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "requirements.txt" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
       - run:
-          name: install dependencies
+          command: sudo pip install poetry==1.0.5
+
+      - run:
+          name: Install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-            pip install -r requirements-test.txt
+            poetry install
 
       - save_cache:
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+            - /home/circleci/.cache/pypoetry/virtualenvs
 
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
-            python -m pytest -p no:sugar
+            poetry run pytest tests
 
       - store_artifacts:
           path: test-reports
           destination: test-reports
+
+  pep8:
+    docker:
+      - image: circleci/python:3.7
+
+    working_directory: ~/market-access-api
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
+
+      - run:
+          command: sudo pip install poetry
+
+      - run:
+          name: Install dependencies
+          command: |
+            poetry install
+
+      - save_cache:
+          key: v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          paths:
+            - /home/circleci/.cache/pypoetry/virtualenvs
+
+      - run: poetry run flake8 --count
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - tests
+      - pep8

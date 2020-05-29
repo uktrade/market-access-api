@@ -294,6 +294,33 @@ USE_TZ = True
 STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 STATIC_URL = "/static/"
 
+
+# Logging
+# ============================================
+DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="info").upper()
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "json": {
+            "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "(asctime)(levelname)(message)(filename)(lineno)(threadName)(name)(thread)(created)(process)(processName)(relativeCreated)(module)(funcName)(levelno)(msecs)(pathname)",  # noqa
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json"
+        }
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": DJANGO_LOG_LEVEL
+        }
+    },
+}
+
 CELERY_BEAT_SCHEDULE = {}
 
 if not DEBUG:

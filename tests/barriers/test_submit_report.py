@@ -151,7 +151,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert 2 == response.data["problem_status"]
         assert "2020-02-02" == response.data["status_date"]
         assert "Some title" == response.data["barrier_title"]
-        assert False == response.data["sectors_affected"]
+        assert response.data["sectors_affected"] is False
         assert [] == response.data["sectors"]
         assert "66b795e0-ad71-4a65-9fa6-9f1e97e86d67" == response.data["export_country"]
         assert response.data["status"]["id"] == 2
@@ -190,7 +190,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert 2 == response.data["problem_status"]
         assert "2020-02-02" == response.data["status_date"]
         assert "Some title" == response.data["barrier_title"]
-        assert True == response.data["sectors_affected"]
+        assert response.data["sectors_affected"] is True
         assert ["af959812-6095-e211-a939-e4115bead28a"] == response.data["sectors"]
         assert "66b795e0-ad71-4a65-9fa6-9f1e97e86d67" == response.data["export_country"]
         assert response.data["status"]["id"] == 2
