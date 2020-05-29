@@ -10,5 +10,5 @@ class Command(BaseCommand):
         send_notification_emails()
 
         self.stdout.write(
-            self.style.SUCCESS(f"Saved search notification emails scheduled")
+            self.style.SUCCESS("Saved search notification emails scheduled")
         )
