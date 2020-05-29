@@ -13,8 +13,7 @@ from django.utils import timezone
 
 from api.barriers.filters import BarrierFilterSet
 from api.barriers.models import BarrierInstance
-
-from utils.tools import nested_sort
+from api.core.utils import nested_sort
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
