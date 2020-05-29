@@ -15,7 +15,7 @@ ignore =
 per-file-ignores =
     # Common imports for all files in api/barriers/history
     ./api/barriers/history/__init__.py:F401
-    ./config/settings/*:F403,F405
+    ./config/settings/*:F401,F403,F405
     */urls.py:E501
 
 # flake8-quotes - https://pypi.org/project/flake8-quotes/
@@ -29,4 +29,7 @@ max-line-length = 120
 
 exclude =
     src,
-    migrations
+    migrations,
+    __pycache__,
+    env,
+    venv

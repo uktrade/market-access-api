@@ -1,11 +1,11 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2020-05-28_12-29
+# Generated: 2020-05-29_09-56
 # ======
 amqp==2.5.2
 billiard==3.6.3.0
 boto3==1.13.18
-botocore==1.16.18
+botocore==1.16.19
 celery==4.4.2
 certifi==2020.4.5.1
 cffi==1.14.0; platform_python_implementation == "CPython" and sys_platform == "win32"
@@ -38,6 +38,7 @@ oauthlib==3.1.0
 psycopg2-binary==2.7.5
 pycparser==2.20; platform_python_implementation == "CPython" and sys_platform == "win32"
 python-dateutil==2.8.1
+python-json-logger==0.1.10
 pytz==2020.1
 raven==6.9.0
 redis==3.5.2
