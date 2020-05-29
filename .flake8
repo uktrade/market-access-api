@@ -29,4 +29,7 @@ max-line-length = 120
 
 exclude =
     src,
-    migrations
+    migrations,
+    __pycache__,
+    env,
+    venv
