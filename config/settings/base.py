@@ -297,7 +297,7 @@ STATIC_URL = "/static/"
 
 # Logging
 # ============================================
-DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="debug").upper()
+DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="info").upper()
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
