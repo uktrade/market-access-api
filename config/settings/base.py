@@ -325,6 +325,6 @@ CELERY_BEAT_SCHEDULE = {}
 
 if not DEBUG:
     CELERY_BEAT_SCHEDULE['send_notification_emails'] = {
-        'task': 'user.tasks.send_notification_emails',
+        'task': 'api.user.tasks.send_notification_emails',
         'schedule': crontab(minute='*/5'),
     }
