@@ -5,6 +5,11 @@ import ssl
 from celery.schedules import crontab
 import dj_database_url
 
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -117,13 +122,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Sentry
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
 if SENTRY_DSN:
-    RAVEN_CONFIG = {
-        "dsn": os.environ.get("SENTRY_DSN"),
-        # If you are using git, you can also automatically configure the
-        # release based on the git info.
-        # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
-    }
-    INSTALLED_APPS += ["raven.contrib.django.raven_compat"]
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
+    )
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
