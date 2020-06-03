@@ -4,6 +4,11 @@ from api.user.models import SavedSearch
 
 
 class Command(BaseCommand):
+    """
+    Marks all saved searches as notified
+
+    To be removed after deploy of saved search notifications.
+    """
     help = "Marks all saved searches as notified"
 
     def handle(self, *args, **options):
