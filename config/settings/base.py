@@ -2,7 +2,14 @@ import environ
 import os
 import ssl
 
+from celery.schedules import crontab
 import dj_database_url
+
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -47,6 +54,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "django_celery_beat",
     "django_extensions",
     "django_filters",
     "hawkrest",
@@ -114,13 +122,10 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Sentry
 SENTRY_DSN = os.environ.get("SENTRY_DSN")
 if SENTRY_DSN:
-    RAVEN_CONFIG = {
-        "dsn": os.environ.get("SENTRY_DSN"),
-        # If you are using git, you can also automatically configure the
-        # release based on the git info.
-        # 'release': raven.fetch_git_sha(os.path.dirname(__file__)),
-    }
-    INSTALLED_APPS += ["raven.contrib.django.raven_compat"]
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
+    )
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -146,6 +151,8 @@ REF_CODE_MAX_TRIES = env.int("REF_CODE_MAX_TRIES", 1000)
 DH_METADATA_URL = env("DH_METADATA_URL")
 FAKE_METADATA = env.bool("FAKE_METADATA", False)
 
+NOTIFY_API_KEY = env("NOTIFY_API_KEY")
+NOTIFY_SAVED_SEARCHES_TEMPLATE_ID = env("NOTIFY_SAVED_SEARCHES_TEMPLATE_ID")
 # DMAS Frontend
 DMAS_BASE_URL = env("DMAS_BASE_URL")
 
@@ -166,15 +173,12 @@ if REDIS_BASE_URL:
         }
     }
 
-# CELERY (it does not understand rediss:// yet so extra work needed)
 if REDIS_BASE_URL:
-    # REDIS_BASIC_URL == REDIS_BASE_URL without the SSL
-    REDIS_BASIC_URL = REDIS_BASE_URL.replace("rediss://", "redis://")
     REDIS_CELERY_DB = env("REDIS_CELERY_DB", default=1)
-    CELERY_BROKER_URL = f"{REDIS_BASIC_URL}/{REDIS_CELERY_DB}"
+    CELERY_BROKER_URL = f"{REDIS_BASE_URL}/{REDIS_CELERY_DB}"
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     if "rediss://" in REDIS_BASE_URL:
-        CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
+        CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_REQUIRED}
         CELERY_BROKER_USE_SSL = CELERY_REDIS_BACKEND_USE_SSL
 
 AV_V2_SERVICE_URL = env("AV_V2_SERVICE_URL", default="http://av-service/")
@@ -318,3 +322,11 @@ LOGGING = {
         }
     },
 }
+
+CELERY_BEAT_SCHEDULE = {}
+
+if not DEBUG:
+    CELERY_BEAT_SCHEDULE['send_notification_emails'] = {
+        'task': 'api.user.tasks.send_notification_emails',
+        'schedule': crontab(minute=0, hour=6),
+    }
