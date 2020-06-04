@@ -99,7 +99,10 @@ def get_sector(sector_id):
 
 
 def get_sectors():
-    return import_api_results("sector")
+    current_dir = os.path.dirname(__file__)
+    file_path = os.path.join(current_dir, "fixtures", "sectors.json")
+    with open(file_path, "r") as f:
+        return json.load(f)
 
 
 def get_categories():
