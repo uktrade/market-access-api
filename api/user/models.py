@@ -79,10 +79,11 @@ class BaseSavedSearch(models.Model):
         api_parameters = self.get_api_parameters()
         return nested_sort(query_dict) == nested_sort(api_parameters)
 
-    def mark_as_notified(self):
+    def mark_as_notified(self, commit=True):
         self.last_notified_on = timezone.now()
         self.last_notified_barrier_ids = [barrier.id for barrier in self.barriers]
-        self.save()
+        if commit:
+            self.save()
 
     def mark_as_seen(self):
         self.last_viewed_on = timezone.now()
@@ -191,10 +192,10 @@ class BaseSavedSearch(models.Model):
         return False
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
         if self._state.adding or self._original_filters != self.filters:
-            self.mark_as_notified()
+            self.mark_as_notified(commit=False)
             self._original_filters = self.filters
+        super().save(*args, **kwargs)
 
 
 class SavedSearch(BaseSavedSearch):
