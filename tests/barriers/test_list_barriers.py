@@ -565,3 +565,20 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier1.id), str(barrier2.id)} == set(barrier_ids)
+
+    def test_member_filter__distinct_records(self):
+        """
+        Only include the barrier once even if the user is listed multiple times as a member for a barrier.
+        """
+        user1 = create_test_user()
+        barrier1 = BarrierFactory(created_by=user1)
+        member1 = TeamMemberFactory(barrier=barrier1, user=user1, role="Reporter", default=True)
+        member2 = TeamMemberFactory(barrier=barrier1, user=user1, role="Owner", default=True)
+
+        assert 1 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?member={member1.id}'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]

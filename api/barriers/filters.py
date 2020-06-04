@@ -147,7 +147,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     def member_filter(self, queryset, name, value):
         if value:
             member = get_object_or_404(TeamMember, pk=value)
-            return queryset.filter(barrier_team__user=member.user)
+            return queryset.filter(barrier_team__user=member.user).distinct()
         return queryset
 
     def tags_filter(self, queryset, name, value):
