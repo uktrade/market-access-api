@@ -22,12 +22,12 @@ def get_saved_searches_markdown(saved_searches):
     markdown = ""
 
     for saved_search in saved_searches:
-        markdown += f"#{saved_search.name}\n"
+        markdown += f"#{saved_search.name}"
 
         if saved_search.notify_about_additions:
             new_count = saved_search.new_count_since_notified
             if new_count:
-                markdown += f"{new_count} new barrier{pluralize(new_count)}\n"
+                markdown += f"\n{new_count} new barrier{pluralize(new_count)}\n"
 
             for barrier in saved_search.new_barriers_since_notified:
                 markdown += f"\n{barrier.barrier_title}\n"
@@ -36,7 +36,7 @@ def get_saved_searches_markdown(saved_searches):
         if saved_search.notify_about_updates:
             updated_count = saved_search.updated_count_since_notified
             if updated_count:
-                markdown += f"{updated_count} barrier{pluralize(updated_count)} updated\n"
+                markdown += f"\n{updated_count} barrier{pluralize(updated_count)} updated\n"
 
             for barrier in saved_search.updated_barriers_since_notified:
                 markdown += f"\n{barrier.barrier_title}\n"
