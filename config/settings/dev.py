@@ -3,6 +3,7 @@ from .base import *
 
 from django_log_formatter_ecs import ECSFormatter
 
+# SECURITY WARNING: don't run with debug turned on in production!
 DJANGO_ENV = 'dev'
 SSO_ENABLED = True
 
