@@ -1,8 +1,10 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 
 from api.assessment.models import Assessment
+from api.collaboration.mixins import TeamMemberModelMixin
 from api.interactions.models import Document, Interaction
 from api.interactions.serializers import DocumentSerializer, InteractionSerializer
 from api.documents.views import BaseEntityDocumentModelViewSet
@@ -40,7 +42,7 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
             return super().perform_destroy(instance)
 
 
-class BarrierInteractionList(generics.ListCreateAPIView):
+class BarrierInteractionList(TeamMemberModelMixin, generics.ListCreateAPIView):
     """
     Handling Barrier interactions, such as notes
     """
@@ -52,22 +54,24 @@ class BarrierInteractionList(generics.ListCreateAPIView):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
         kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
         docs_in_req = self.request.data.get("documents", None)
         documents = []
         if docs_in_req:
             documents = [get_object_or_404(Document, pk=id) for id in docs_in_req]
         serializer.save(
-            barrier=barrier_obj,
+            barrier=barrier,
             kind=kind,
             documents=documents,
             created_by=self.request.user,
         )
-        barrier_obj.save()
+        # Update Team members
+        self.update_contributors(barrier)
 
 
-class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
+class BarrierInteractionDetail(TeamMemberModelMixin,
+                               generics.RetrieveUpdateDestroyAPIView):
     """
     Return details of a Barrier Interaction
     Allows the barrier interaction to be updated
@@ -81,6 +85,7 @@ class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
 
+    @transaction.atomic()
     def perform_update(self, serializer):
         """
         This needs to attach new set of documents
@@ -101,7 +106,8 @@ class BarrierIneractionDetail(generics.RetrieveUpdateDestroyAPIView):
                 doc.save()
         else:
             serializer.save(modified_by=self.request.user)
-        interaction.barrier.save()
+        # Update Team members
+        self.update_contributors(interaction.barrier)
 
     def perform_destroy(self, instance):
         instance.archive(self.request.user)

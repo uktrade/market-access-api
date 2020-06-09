@@ -35,6 +35,7 @@ from api.barriers.serializers import (
     BarrierResolveSerializer,
     BarrierStaticStatusSerializer,
 )
+from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
 from api.core.utils import cleansed_username
 from api.interactions.models import Interaction
@@ -395,7 +396,7 @@ class BarriertListExportView(generics.ListAPIView):
         return create_csv_response(serializer.data, self.field_titles, base_filename)
 
 
-class BarrierDetail(generics.RetrieveUpdateAPIView):
+class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     """
     Return details of a BarrierInstance
     Allows the barrier to be updated as well
@@ -410,18 +411,6 @@ class BarrierDetail(generics.RetrieveUpdateAPIView):
             self.lookup_url_kwarg = "code"
             self.lookup_field = "code"
         return super().get_object()
-
-    def update_contributors(self, barrier):
-        if self.request.user:
-            try:
-                TeamMember.objects.get_or_create(
-                    barrier=barrier,
-                    user=self.request.user,
-                    defaults={"role": TeamMember.CONTRIBUTOR}
-                )
-            except TeamMember.MultipleObjectsReturned:
-                # There might be multiple members associated with the user (e.g. Reporter/Owner)
-                pass
 
     @transaction.atomic()
     def perform_update(self, serializer):

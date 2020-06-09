@@ -3,7 +3,7 @@ from django.urls import path
 from api.interactions.views import (
     DocumentViewSet,
     BarrierInteractionList,
-    BarrierIneractionDetail,
+    BarrierInteractionDetail,
 )
 
 
@@ -41,7 +41,7 @@ urlpatterns = [
     ),
     path(
         "barriers/interactions/<int:pk>",
-        BarrierIneractionDetail.as_view(),
+        BarrierInteractionDetail.as_view(),
         name="get-interaction",
     ),
 ]
