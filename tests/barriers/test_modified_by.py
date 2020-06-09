@@ -89,38 +89,6 @@ class BarrierModifiedByTestCase(APITestMixin, APITestCase):
         self.barrier.refresh_from_db()
         assert self.barrier.modified_by == self.user2
 
-    def test_team_member_changes_barrier_modified_by(self):
-        assert self.barrier.modified_by != self.user1
-
-        # Create a new team member
-        create_url = reverse("list-members", kwargs={"pk": self.barrier.id})
-        response = self.api_client1.post(
-            create_url,
-            format="json",
-            data={
-                "user": {"profile": {"sso_user_id": self.user1.profile.sso_user_id}},
-                "role": "Contributor",
-            }
-        )
-        assert response.status_code == status.HTTP_201_CREATED
-        team_member_id = response.data.get("id")
-
-        self.barrier.refresh_from_db()
-        assert self.barrier.modified_by == self.user1
-
-        # Update the team member - only allowed to change the owner role
-        TeamMember.objects.filter(pk=team_member_id).update(role="Owner")
-        update_url = reverse("get-member", kwargs={"pk": team_member_id})
-        response = self.api_client2.patch(
-            update_url,
-            format="json",
-            data={"user": self.user2.profile.sso_user_id}
-        )
-        assert response.status_code == status.HTTP_200_OK
-
-        self.barrier.refresh_from_db()
-        assert self.barrier.modified_by == self.user2
-
     def test_wto_changes_barrier_modified_by(self):
         assert self.barrier.modified_by != self.user1
 
