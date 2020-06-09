@@ -445,12 +445,11 @@ class TestHistoryView(APITestMixin, TestCase):
         self.barrier.barrier_title = "New title"
         self.barrier.save()
 
-        with freeze_time("2020-04-02"):
-            self.barrier.archive(
-                user=self.user,
-                reason="DUPLICATE",
-                explanation="It was a duplicate"
-            )
+        self.barrier.archive(
+            user=self.user,
+            reason="DUPLICATE",
+            explanation="It was a duplicate"
+        )
 
         # Note changes
         self.note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
@@ -479,9 +478,8 @@ class TestHistoryView(APITestMixin, TestCase):
 
         history = response.json()["history"]
 
-        print(history)
         assert {
-            "date": "2020-04-02T00:00:00Z",
+            "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "archived",
             "old_value": {
