@@ -479,6 +479,7 @@ class TestHistoryView(APITestMixin, TestCase):
 
         history = response.json()["history"]
 
+        print(history)
         assert {
             "date": "2020-04-02T00:00:00Z",
             "model": "barrier",
