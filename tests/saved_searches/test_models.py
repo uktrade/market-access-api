@@ -86,18 +86,14 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         response = api_client.put(submit_url)
         assert status.HTTP_200_OK == response.status_code
 
-        report.history.update(history_user=user)
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         assert report.pk not in saved_search.new_barrier_ids
         assert saved_search.new_barrier_ids == []
 
         # Barriers changed by current user should be ignored
         barrier1.priority = BarrierPriority.objects.get(code="MEDIUM")
+        barrier1.modified_by = user
         barrier1.save()
-
-        history_item = barrier1.history.latest("history_date")
-        history_item.history_user = user
-        history_item.save()
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         assert barrier1.pk not in saved_search.new_barrier_ids
@@ -151,11 +147,8 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         assert saved_search.updated_barrier_ids == []
 
         barrier2.summary = "New summary"
+        barrier2.modified_by = user
         barrier2.save()
-
-        history_item = barrier2.history.latest("history_date")
-        history_item.history_user = user
-        history_item.save()
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         assert barrier2.pk not in saved_search.updated_barrier_ids
@@ -170,6 +163,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         barrier3 = BarrierFactory(priority="HIGH")
 
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
+        user2 = create_test_user(sso_user_id=self.sso_user_data_2["user_id"])
 
         saved_search = SavedSearch.objects.create(
             user=user,
@@ -178,16 +172,18 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         )
         saved_search.mark_as_notified()
 
-        assert saved_search.new_barriers_since_notified == []
+        assert saved_search.new_barriers_since_notified.exists() is False
 
         # Newly created barriers should be in the list
         barrier4 = BarrierFactory(priority="MEDIUM")
         barrier5 = BarrierFactory(priority="UNKNOWN")
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
-        assert saved_search.new_barriers_since_notified == [barrier4]
+        assert barrier4 in saved_search.new_barriers_since_notified
+        assert saved_search.new_barriers_since_notified.count() == 1
 
         # Existing barriers should be in the list
         barrier1.priority = BarrierPriority.objects.get(code="MEDIUM")
+        barrier1.modified_by = user2
         barrier1.save()
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
@@ -210,7 +206,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         )
         saved_search.mark_as_notified()
 
-        assert saved_search.new_barriers_since_notified == []
+        assert saved_search.new_barriers_since_notified.exists() is False
 
         # Barriers created by current user should be ignored
         api_client = self.create_api_client(user=user)
@@ -219,22 +215,18 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         response = api_client.put(submit_url)
         assert status.HTTP_200_OK == response.status_code
 
-        report.history.update(history_user=user)
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         assert report not in saved_search.new_barriers_since_notified
-        assert saved_search.new_barriers_since_notified == []
+        assert saved_search.new_barriers_since_notified.exists() is False
 
         # Barriers changed by current user should be ignored
         barrier1.priority = BarrierPriority.objects.get(code="MEDIUM")
+        barrier1.modified_by = user
         barrier1.save()
-
-        history_item = barrier1.history.latest("history_date")
-        history_item.history_user = user
-        history_item.save()
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         assert barrier1 not in saved_search.new_barriers_since_notified
-        assert saved_search.new_barriers_since_notified == []
+        assert saved_search.new_barriers_since_notified.exists() is False
 
     def test_updated_barriers_since_notified_other_user(self):
         """
@@ -253,7 +245,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         )
         saved_search.mark_as_notified()
 
-        assert saved_search.updated_barriers_since_notified == []
+        assert saved_search.updated_barriers_since_notified.exists() is False
 
         barrier1.summary = "New summary"
         barrier1.save()
@@ -262,7 +254,8 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         barrier2.save()
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
-        assert saved_search.updated_barriers_since_notified == [barrier2]
+        assert barrier2 in saved_search.updated_barriers_since_notified
+        assert saved_search.updated_barriers_since_notified.count() == 1
 
     def test_updated_barriers_since_notified_current_user(self):
         """
@@ -281,18 +274,15 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         )
         saved_search.mark_as_notified()
 
-        assert saved_search.updated_barriers_since_notified == []
+        assert saved_search.updated_barriers_since_notified.exists() is False
 
         barrier2.summary = "New summary"
+        barrier2.modified_by = user
         barrier2.save()
-
-        history_item = barrier2.history.latest("history_date")
-        history_item.history_user = user
-        history_item.save()
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         assert barrier2 not in saved_search.updated_barriers_since_notified
-        assert saved_search.updated_barriers_since_notified == []
+        assert saved_search.updated_barriers_since_notified.exists() is False
 
     def test_are_api_parameters_equal(self):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
@@ -329,8 +319,8 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
             filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_notified()
-        assert saved_search.new_barriers_since_notified == []
-        assert saved_search.updated_barriers_since_notified == []
+        assert saved_search.new_barriers_since_notified.exists() is False
+        assert saved_search.updated_barriers_since_notified.exists() is False
 
         barrier1.priority = BarrierPriority.objects.get(code="MEDIUM")
         barrier1.save()
@@ -339,14 +329,16 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         barrier2.save()
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
-        assert saved_search.new_barriers_since_notified == [barrier1]
-        assert barrier1 in saved_search.updated_barriers_since_notified
+        assert barrier1 in saved_search.new_barriers_since_notified
+        assert barrier2 not in saved_search.new_barriers_since_notified
+
+        assert barrier1 not in saved_search.updated_barriers_since_notified
         assert barrier2 in saved_search.updated_barriers_since_notified
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         saved_search.mark_as_notified()
-        assert saved_search.new_barriers_since_notified == []
-        assert saved_search.updated_barriers_since_notified == []
+        assert saved_search.new_barriers_since_notified.exists() is False
+        assert saved_search.updated_barriers_since_notified.exists() is False
 
     def test_mark_as_seen(self):
         """
@@ -374,8 +366,10 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         assert saved_search.new_barrier_ids == [barrier1.pk]
-        assert barrier1.pk in saved_search.updated_barrier_ids
-        assert barrier2.pk in saved_search.updated_barrier_ids
+        assert barrier1 in saved_search.new_barriers_since_notified
+        assert barrier1 not in saved_search.updated_barriers_since_notified
+        assert barrier2 not in saved_search.new_barriers_since_notified
+        assert barrier2 in saved_search.updated_barriers_since_notified
 
         saved_search = SavedSearch.objects.get(pk=saved_search.pk)
         saved_search.mark_as_seen()
@@ -434,7 +428,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         saved_search.notify_about_additions = False
         saved_search.notify_about_updates = True
         saved_search.save()
-        assert saved_search.should_notify() is True
+        assert saved_search.should_notify() is False
 
         # An update to a barrier in search search
         barrier2.summary = "New summary"

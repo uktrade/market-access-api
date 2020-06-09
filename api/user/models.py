@@ -119,18 +119,20 @@ class BaseSavedSearch(models.Model):
     @property
     def new_barrier_ids(self):
         if self._new_barrier_ids is None:
-            self._new_barrier_ids = self.barriers.filter(
-                modified_on__gt=self.last_viewed_on,
-            ).exclude(
-                pk__in=self.last_viewed_barrier_ids,
-            ).exclude(
-                modified_by=self.user,
-            ).values_list("id", flat=True)
+            self._new_barrier_ids = list(
+                self.barriers.filter(
+                    modified_on__gt=self.last_viewed_on,
+                ).exclude(
+                    pk__in=self.last_viewed_barrier_ids,
+                ).exclude(
+                    modified_by=self.user,
+                ).values_list("id", flat=True)
+            )
         return self._new_barrier_ids
 
     @property
     def new_barrier_ids_since_notified(self):
-        return self.new_barriers_since_notified.values_list("id", flat=True)
+        return [barrier.id for barrier in self.new_barriers_since_notified]
 
     @property
     def new_barriers_since_notified(self):
@@ -155,13 +157,15 @@ class BaseSavedSearch(models.Model):
     @property
     def updated_barrier_ids(self):
         if self._updated_barrier_ids is None:
-            self._updated_barrier_ids = self.barriers.filter(
-                modified_on__gt=self.last_viewed_on,
-            ).exclude(
-                pk__in=self.new_barrier_ids,
-            ).exclude(
-                modified_by=self.user,
-            ).values_list("id", flat=True)
+            self._updated_barrier_ids = list(
+                self.barriers.filter(
+                    modified_on__gt=self.last_viewed_on,
+                ).exclude(
+                    pk__in=self.new_barrier_ids,
+                ).exclude(
+                    modified_by=self.user,
+                ).values_list("id", flat=True)
+            )
         return self._updated_barrier_ids
 
     @property
