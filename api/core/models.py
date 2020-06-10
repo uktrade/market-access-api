@@ -43,6 +43,11 @@ class BaseModel(models.Model):
     def _cleansed_username(self, user):
         return cleansed_username(user)
 
+    def save(self, *args, **kwargs):
+        if self._state.adding and not self.modified_by:
+            self.modified_by = self.created_by
+        super().save(*args, **kwargs)
+
 
 class ArchivableMixin(models.Model):
     """Handle model archivation."""

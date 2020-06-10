@@ -6,9 +6,10 @@ from django.urls import reverse
 
 from simple_history.models import HistoricalRecords
 
-from api.metadata.constants import BARRIER_INTERACTION_TYPE
+from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
+from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -82,7 +83,7 @@ class InteractionHistoricalModel(models.Model):
         abstract = True
 
 
-class Interaction(ArchivableMixin, BaseModel):
+class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """ Interaction records for each Barrier """
 
     barrier = models.ForeignKey(

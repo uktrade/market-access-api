@@ -5,9 +5,10 @@ from django.db.models import Q
 
 from simple_history.models import HistoricalRecords
 
-from api.metadata.constants import ASSESMENT_IMPACT
+from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
 from api.interactions.models import Document
+from api.metadata.constants import ASSESMENT_IMPACT
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -59,7 +60,7 @@ class AssessmentHistoricalModel(models.Model):
         abstract = True
 
 
-class Assessment(ArchivableMixin, BaseModel):
+class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """ Assessment record for a Barrier """
 
     barrier = models.OneToOneField(

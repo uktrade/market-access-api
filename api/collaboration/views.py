@@ -68,6 +68,7 @@ class BarrierTeamMemberDetail(generics.RetrieveUpdateDestroyAPIView):
             user_id = self.request.data.get("user")
             user_profile = get_object_or_404(Profile, sso_user_id=user_id)
             instance.user = user_profile.user
+            instance.modified_by = self.request.user
             instance.save()
             serializer = BarrierTeamSerializer(instance)
             return Response(status=status.HTTP_200_OK, data=serializer.data)
