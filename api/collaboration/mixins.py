@@ -11,7 +11,10 @@ class TeamMemberModelMixin:
                 TeamMember.objects.get_or_create(
                     barrier=barrier,
                     user=self.request.user,
-                    defaults={"role": TeamMember.CONTRIBUTOR}
+                    defaults={
+                        "role": TeamMember.CONTRIBUTOR,
+                        "created_by": self.request.user,
+                    }
                 )
             except TeamMember.MultipleObjectsReturned:
                 # There might be multiple members associated with the user (e.g. Reporter/Owner)
