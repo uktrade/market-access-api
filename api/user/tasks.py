@@ -31,7 +31,7 @@ def get_saved_searches_markdown(saved_searches):
 
             for barrier in saved_search.new_barriers_since_notified:
                 markdown += f"\n* {barrier.barrier_title}\n"
-                markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}\n"
+                markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}?en=n\n"
 
         if saved_search.notify_about_updates:
             updated_count = saved_search.updated_count_since_notified
@@ -40,7 +40,7 @@ def get_saved_searches_markdown(saved_searches):
 
             for barrier in saved_search.updated_barriers_since_notified:
                 markdown += f"\n* {barrier.barrier_title}\n"
-                markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}\n"
+                markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}?en=u\n"
 
         markdown += "\n---\n"
 
