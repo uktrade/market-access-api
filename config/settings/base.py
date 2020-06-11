@@ -68,6 +68,7 @@ LOCAL_APPS = [
     "api.barriers",
     "api.core",
     "api.ping",
+    "api.healthcheck",
     "api.metadata",
     "api.user",
     "api.documents",
