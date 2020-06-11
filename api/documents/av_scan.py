@@ -55,10 +55,19 @@ def perform_virus_scan(document_pk: str, download_url: str):
     logger.info(f"Virus scanning of Document with ID {document_pk} started.")
 
     document = get_document_by_pk(document_pk)
-    if not document or document.scanned_on or document.scan_initiated_on:
+    if not document:
+        logger.info(f"No document")
+        return
+    elif document.scanned_on:
+        logger.info(f"Document already scanned")
+        return
+    elif document.scan_initiated_on:
+        logger.info(f"Document scan already initiated")
         return
 
+    logger.info(f"Marking scan as initiated...")
     document.mark_scan_initiated()
+    logger.info(f"Marked scan as initiated")
 
     try:
         result = _download_and_scan_file(str(document.pk), download_url)
@@ -68,7 +77,9 @@ def perform_virus_scan(document_pk: str, download_url: str):
         raise
 
     is_file_clean = not result["malware"]
+    logger.info(f"Marking document as scanned...")
     document.mark_as_scanned(is_file_clean, result.get("reason") or "")
+    logger.info(f"Marked document as scanned")
 
     logger.info(
         f"Virus scanning of Document with ID {document_pk} "
