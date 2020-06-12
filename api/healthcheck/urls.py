@@ -7,9 +7,10 @@ from .views import HealthCheckView
 app_name = "healthcheck"
 
 urlpatterns = [
-    path(
-        "check/",
-        decorator_from_middleware(StatsMiddleware)(HealthCheckView.as_view()),
-        name="check"
-    ),
+    # path(
+    #     "check/",
+    #     decorator_from_middleware(StatsMiddleware)(HealthCheckView.as_view()),
+    #     name="check"
+    # ),
+    path("check/", HealthCheckView.as_view(), name="check"),
 ]
