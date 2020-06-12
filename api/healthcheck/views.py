@@ -2,8 +2,6 @@ import time
 
 from django.conf import settings
 from hawkrest import HawkAuthentication
-from rest_framework import status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
@@ -21,8 +19,8 @@ class HealthCheckView(GenericAPIView):
 
     def get(self, request):
         data = {
-            "duration": str(time.time() - request.start_time),
+            "duration": time.time() - request.start_time,
             "status": db_check()
         }
 
-        return Response(data, status=status.HTTP_200_OK)
+        return Response(data=data)
