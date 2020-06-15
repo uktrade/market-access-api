@@ -67,7 +67,6 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "api.barriers",
     "api.core",
-    "api.ping",
     "api.healthcheck",
     "api.metadata",
     "api.user",
