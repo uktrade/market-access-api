@@ -6,6 +6,7 @@ from .views import HealthCheckView
 
 app_name = "healthcheck"
 
+
 urlpatterns = [
     path(
         "check/",
