@@ -3,7 +3,6 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 
 from api.metadata.views import MetadataView
-from api.ping.views import ping
 from api.barriers.views import (
     barrier_count,
     BarrierActivity,
@@ -43,8 +42,6 @@ urlpatterns += [
     path("admin/", admin.site.urls),
     path("auth/", include("authbroker_client.urls", namespace="authbroker")),
     path("counts", barrier_count, name="barrier-count"),
-    # TODO: remove ping.xml
-    path("ping.xml", ping, name="ping"),
     path("", include("api.healthcheck.urls", namespace="healthcheck")),
     path("whoami", who_am_i, name="who_am_i"),
     path("users/<uuid:sso_user_id>", UserDetail.as_view(), name="get-user"),
