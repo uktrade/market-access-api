@@ -465,6 +465,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "trade_direction",
             "end_date",
             "wto_profile",
+            "public_eligibility",
+            "public_eligibility_summary",
         )
         read_only_fields = (
             "id",
@@ -555,6 +557,22 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         serializer = BarrierTagSerializer(tags, many=True)
         return serializer.data
 
+    def validate_public_eligibility(self, attrs):
+        """ Check for permissions here """
+        if type(attrs) is not bool:
+            raise serializers.ValidationError('Expected a boolean.')
+
+        # TODO: check user permissions - this field should only be updated
+        #       by the publishing team
+
+        return attrs
+
+    def validate_public_eligibility_summary(self, attrs):
+        """ Check for permissions here """
+        # TODO: check user permissions - this field should only be updated
+        #       by the publishing team
+        return attrs
+
     def validate_tags(self, tag_ids=None):
         if tag_ids is not None and type(tag_ids) is not list:
             raise serializers.ValidationError('Expected a list of tag IDs.')
@@ -576,6 +594,10 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if "wto_profile" in validated_data:
             self.update_wto_profile(instance, validated_data)
+
+        if "public_eligibility" in validated_data:
+            if validated_data["public_eligibility"] is True:
+                validated_data["public_eligibility_summary"] = None
 
         if instance.archived is False and validated_data.get("archived") is True:
             instance.archive(

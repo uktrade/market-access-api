@@ -196,6 +196,12 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     status_date = models.DateField(
         null=True, help_text="date when status action occurred"
     )
+    public_eligibility = models.BooleanField(
+        default=None, null=True, help_text="Mark the barrier as either publishable or unpublishable to the public."
+    )
+    public_eligibility_summary = models.TextField(
+        null=True, default=None, help_text="Public eligibility summary if provided by user."
+    )
 
     # Barrier priority
     priority = models.ForeignKey(
