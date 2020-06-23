@@ -122,7 +122,7 @@ class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
-    groups = GroupSerializer(many=True)
+    groups = GroupSerializer(many=True, required=False)
 
     class Meta:
         model = UserModel
