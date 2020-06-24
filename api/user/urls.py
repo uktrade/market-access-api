@@ -1,6 +1,6 @@
 from django.urls import path, re_path
 
-from .views import PermissionGroupList, SavedSearchDetail, SavedSearchList, UserList
+from .views import GroupDetail, GroupList, SavedSearchDetail, SavedSearchList, UserList
 
 
 urlpatterns = [
@@ -9,6 +9,7 @@ urlpatterns = [
     re_path("saved-searches/(?P<id>my-barriers)", SavedSearchDetail.as_view(), name="my-barriers-saved-search"),
     re_path("saved-searches/(?P<id>team-barriers)", SavedSearchDetail.as_view(), name="team-barriers-saved-search"),
 
-    path("permission-groups", PermissionGroupList.as_view(), name="permission-group-list"),
+    path("groups", GroupList.as_view(), name="group-list"),
+    path("groups/<int:pk>", GroupDetail.as_view(), name="group-detail"),
     path("users", UserList.as_view(), name="user-list"),
 ]
