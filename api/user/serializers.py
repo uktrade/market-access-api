@@ -3,7 +3,8 @@ from logging import getLogger
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.db.models import Q
 
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
@@ -25,6 +26,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     internal = serializers.SerializerMethodField()
     user_profile = serializers.SerializerMethodField()
     permitted_applications = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
@@ -38,7 +40,10 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "location",
             "internal",
             "user_profile",
-            "permitted_applications"
+            "permitted_applications",
+            "permissions",
+            "is_active",
+            "is_superuser",
         )
 
     def get_email(self, obj):
@@ -100,6 +105,11 @@ class WhoAmISerializer(serializers.ModelSerializer):
         if sso_me is not None:
             return sso_me.get('permitted_applications', None)
         return None
+
+    def get_permissions(self, obj):
+        return Permission.objects.filter(
+            Q(user=obj) | Q(group__user=obj)
+        ).distinct().values_list('codename', flat=True)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
