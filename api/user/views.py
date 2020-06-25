@@ -11,7 +11,7 @@ from api.user.helpers import get_django_user_by_sso_user_id
 from api.user.models import Profile
 from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 from api.user.serializers import (
-    PermissionGroupSerializer,
+    GroupSerializer,
     SavedSearchSerializer,
     UserSerializer,
     WhoAmISerializer,
@@ -84,8 +84,8 @@ class SavedSearchDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class GroupList(generics.ListAPIView):
     queryset = Group.objects.all()
-    serializer_class = PermissionGroupSerializer
 
+    serializer_class = GroupSerializer
 
 class GroupDetail(generics.RetrieveAPIView):
     queryset = Group.objects.all()

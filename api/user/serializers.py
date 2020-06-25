@@ -119,7 +119,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["sso_user_id"]
 
 
-class GroupSerializer(serializers.ModelSerializer):
+class NestedGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = [
@@ -132,7 +132,7 @@ class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
-    groups = GroupSerializer(many=True, required=False)
+    groups = NestedGroupSerializer(many=True, required=False)
 
     class Meta:
         model = UserModel
@@ -189,7 +189,7 @@ class SavedSearchSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class PermissionGroupSerializer(serializers.ModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
     users = UserSerializer(source="user_set", many=True, read_only=True)
 
     class Meta:
