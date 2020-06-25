@@ -12,7 +12,7 @@ def add_permission_groups(apps, schema_editor):
 
 
 def delete_permission_groups(apps, schema_editor):
-    pass
+    Group.objects.delete(name__in=("Sifter", "Editor", "Publisher", "Administrator"))
 
 
 class Migration(migrations.Migration):
