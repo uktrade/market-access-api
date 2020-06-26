@@ -26,9 +26,9 @@ def assign_permissions(apps, schema_editor):
         }
     )
 
-    administrator_group = Group.objects.get(name="Administrator")
-    administrator_group.permissions.add(change_user_permission)
-    administrator_group.permissions.add(list_users_permission)
+    # administrator_group = Group.objects.get(name="Administrator")
+    # administrator_group.permissions.add(change_user_permission)
+    # administrator_group.permissions.add(list_users_permission)
 
 
 class Migration(migrations.Migration):
