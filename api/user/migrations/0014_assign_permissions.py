@@ -3,24 +3,28 @@
 from django.db import migrations
 
 
-def create_permissions(apps, schema_editor):
-    ContentType = apps.get_model("contenttypes", "ContentType")
-    Permission = apps.get_model("auth", "Permission")
-    User = apps.get_model("auth", "User")
-
-    user_content_type = ContentType.objects.get_for_model(User)
-    Permission.objects.create(
-        codename="list_users",
-        name='Can list users',
-        content_type=user_content_type,
-    )
-
-
 def assign_permissions(apps, schema_editor):
     Permission = apps.get_model("auth", "Permission")
     Group = apps.get_model("auth", "Group")
-    change_user_permission = Permission.objects.get(codename="change_user")
-    list_users_permission = Permission.objects.get(codename="list_users")
+    ContentType = apps.get_model("contenttypes", "ContentType")
+    User = apps.get_model("auth", "User")
+
+    user_content_type = ContentType.objects.get_for_model(User)
+
+    change_user_permission = Permission.objects.get_or_create(
+        codename="change_user",
+        defaults={
+            "name": "Can change user",
+            "context_type": user_content_type
+        }
+    )
+    list_users_permission = Permission.objects.get_or_create(
+        codename="list_users",
+        defaults={
+            "name": "Can list users",
+            "context_type": user_content_type
+        }
+    )
 
     administrator_group = Group.objects.get(name="Administrator")
     administrator_group.permissions.add(change_user_permission)
@@ -34,6 +38,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_permissions, reverse_code=migrations.RunPython.noop),
         migrations.RunPython(assign_permissions, reverse_code=migrations.RunPython.noop),
     ]
