@@ -38,5 +38,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(assign_permissions, reverse_code=migrations.RunPython.noop),
+        # migrations.RunPython(assign_permissions, reverse_code=migrations.RunPython.noop),
     ]
