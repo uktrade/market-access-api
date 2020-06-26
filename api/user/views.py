@@ -84,12 +84,12 @@ class SavedSearchDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class GroupList(generics.ListAPIView):
     queryset = Group.objects.all()
-
     serializer_class = GroupSerializer
+
 
 class GroupDetail(generics.RetrieveAPIView):
     queryset = Group.objects.all()
-    serializer_class = PermissionGroupSerializer
+    serializer_class = GroupSerializer
 
 
 class UserList(generics.ListAPIView):
