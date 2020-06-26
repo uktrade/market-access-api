@@ -11,14 +11,14 @@ def assign_permissions(apps, schema_editor):
 
     user_content_type = ContentType.objects.get_for_model(User)
 
-    change_user_permission = Permission.objects.get_or_create(
+    change_user_permission, created = Permission.objects.get_or_create(
         codename="change_user",
         defaults={
             "name": "Can change user",
             "content_type": user_content_type
         }
     )
-    list_users_permission = Permission.objects.get_or_create(
+    list_users_permission, created = Permission.objects.get_or_create(
         codename="list_users",
         defaults={
             "name": "Can list users",
@@ -28,13 +28,12 @@ def assign_permissions(apps, schema_editor):
 
     administrator_group = Group.objects.get(name="Administrator")
     administrator_group.permissions.add(change_user_permission)
-    # administrator_group.permissions.add(list_users_permission)
+    administrator_group.permissions.add(list_users_permission)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0001_initial'),
         ('contenttypes', '0001_initial'),
         ('user', '0013_add_permission_groups'),
     ]
