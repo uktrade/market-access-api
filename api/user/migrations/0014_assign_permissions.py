@@ -15,14 +15,14 @@ def assign_permissions(apps, schema_editor):
         codename="change_user",
         defaults={
             "name": "Can change user",
-            "context_type": user_content_type
+            "content_type": user_content_type
         }
     )
     list_users_permission = Permission.objects.get_or_create(
         codename="list_users",
         defaults={
             "name": "Can list users",
-            "context_type": user_content_type
+            "content_type": user_content_type
         }
     )
 
