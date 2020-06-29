@@ -128,29 +128,34 @@ class NestedGroupSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserDetailSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
-    email = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
     groups = NestedGroupSerializer(many=True, required=False)
 
     class Meta:
         model = UserModel
-        fields = [
-            'id',
-            'profile',
-            'email',
-            'first_name',
-            'last_name',
-            'full_name',
-            'groups',
-        ]
-
-    def get_email(self, obj):
-        return obj.email
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "profile",
+            "permissions",
+            "groups",
+            "is_active",
+            "is_superuser",
+        )
 
     def get_full_name(self, obj):
         return cleansed_username(obj)
+
+    def get_permissions(self, obj):
+        return Permission.objects.filter(
+            Q(user=obj) | Q(group__user=obj)
+        ).distinct().values_list('codename', flat=True)
 
     def get_validated_group_ids(self):
         group_ids = []
@@ -166,6 +171,27 @@ class UserSerializer(serializers.ModelSerializer):
             group_ids = self.get_validated_group_ids()
             instance.groups.set(group_ids)
         return super().update(instance, validated_data)
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer()
+    full_name = serializers.SerializerMethodField()
+    groups = NestedGroupSerializer(many=True, required=False, read_only=True)
+
+    class Meta:
+        model = UserModel
+        fields = [
+            'id',
+            'profile',
+            'email',
+            'first_name',
+            'last_name',
+            'full_name',
+            'groups',
+        ]
+
+    def get_full_name(self, obj):
+        return cleansed_username(obj)
 
 
 class SavedSearchSerializer(serializers.ModelSerializer):
@@ -190,7 +216,7 @@ class SavedSearchSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-    users = UserSerializer(source="user_set", many=True, read_only=True)
+    users = UserListSerializer(source="user_set", many=True, read_only=True)
 
     class Meta:
         model = Group
