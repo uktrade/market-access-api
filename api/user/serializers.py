@@ -3,6 +3,8 @@ from logging import getLogger
 from rest_framework import serializers
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
+from django.db.models import Q
 
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
@@ -24,6 +26,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     internal = serializers.SerializerMethodField()
     user_profile = serializers.SerializerMethodField()
     permitted_applications = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
@@ -37,7 +40,10 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "location",
             "internal",
             "user_profile",
-            "permitted_applications"
+            "permitted_applications",
+            "permissions",
+            "is_active",
+            "is_superuser",
         )
 
     def get_email(self, obj):
@@ -100,6 +106,11 @@ class WhoAmISerializer(serializers.ModelSerializer):
             return sso_me.get('permitted_applications', None)
         return None
 
+    def get_permissions(self, obj):
+        return Permission.objects.filter(
+            Q(user=obj) | Q(group__user=obj)
+        ).distinct().values_list('codename', flat=True)
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
 
@@ -108,19 +119,31 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["sso_user_id"]
 
 
+class NestedGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "name",
+        ]
+
+
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
     email = serializers.SerializerMethodField()
+    groups = NestedGroupSerializer(many=True, required=False)
 
     class Meta:
         model = UserModel
         fields = [
+            'id',
             'profile',
             'email',
             'first_name',
             'last_name',
             'full_name',
+            'groups',
         ]
 
     def get_email(self, obj):
@@ -128,6 +151,21 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_full_name(self, obj):
         return cleansed_username(obj)
+
+    def get_validated_group_ids(self):
+        group_ids = []
+        for group in self.initial_data.get("groups"):
+            try:
+                group_ids.append(int(group.get("id")))
+            except ValueError:
+                continue
+        return Group.objects.filter(pk__in=group_ids).values_list("id", flat=True)
+
+    def update(self, instance, validated_data):
+        if validated_data.pop("groups") is not None:
+            group_ids = self.get_validated_group_ids()
+            instance.groups.set(group_ids)
+        return super().update(instance, validated_data)
 
 
 class SavedSearchSerializer(serializers.ModelSerializer):
@@ -149,3 +187,15 @@ class SavedSearchSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["user"] = self.context['request'].user
         return super().create(validated_data)
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    users = UserSerializer(source="user_set", many=True, read_only=True)
+
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "name",
+            "users",
+        ]
