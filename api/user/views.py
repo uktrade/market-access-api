@@ -99,3 +99,7 @@ class UserList(generics.ListAPIView):
     filter_backends = [OrderingFilter]
     ordering_fields = ("last_name", "first_name", "email")
     ordering = ("last_name", "first_name", "email")
+
+    def list(self, request, *args, **kwargs):
+        self.paginator.default_limit = 5000
+        return super().list(request, *args, **kwargs)
