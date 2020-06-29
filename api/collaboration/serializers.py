@@ -1,14 +1,14 @@
 from rest_framework import serializers
 
 from api.collaboration.models import TeamMember
-from api.user.serializers import UserSerializer
+from api.user.serializers import UserListSerializer
 
 
 class BarrierTeamSerializer(serializers.ModelSerializer):
     """ Serializer for listing Barriers team members """
 
     created_by = serializers.SerializerMethodField()
-    user = UserSerializer()
+    user = UserListSerializer()
 
     class Meta:
         model = TeamMember

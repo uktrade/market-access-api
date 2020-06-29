@@ -13,7 +13,8 @@ from api.user.models import get_my_barriers_saved_search, get_team_barriers_save
 from api.user.serializers import (
     GroupSerializer,
     SavedSearchSerializer,
-    UserSerializer,
+    UserDetailSerializer,
+    UserListSerializer,
     WhoAmISerializer,
 )
 
@@ -48,7 +49,7 @@ def who_am_i(request):
 
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserModel.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserDetailSerializer
 
     def get_object(self):
         sso_user_id = self.kwargs.get("sso_user_id")
@@ -94,7 +95,7 @@ class GroupDetail(generics.RetrieveAPIView):
 
 class UserList(generics.ListAPIView):
     queryset = UserModel.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserListSerializer
     filter_backends = [OrderingFilter]
     ordering_fields = ("last_name", "first_name", "email")
     ordering = ("last_name", "first_name", "email")
