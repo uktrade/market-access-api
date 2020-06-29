@@ -39,7 +39,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
-    category = django_filters.BaseInFilter("categories")
+    category = django_filters.BaseInFilter("categories", distinct=True)
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
     search = django_filters.Filter(method="text_search")
