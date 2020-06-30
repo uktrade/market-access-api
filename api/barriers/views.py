@@ -11,11 +11,12 @@ from django.utils.timezone import now
 
 from dateutil.parser import parse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, serializers, status
-from rest_framework.decorators import api_view
+from rest_framework import generics, serializers, status, mixins
+from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
@@ -26,7 +27,7 @@ from api.barriers.history import (
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
-from api.barriers.models import BarrierInstance, BarrierReportStage
+from api.barriers.models import BarrierInstance, BarrierReportStage, PublicBarrier
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierInstanceSerializer,
@@ -34,12 +35,13 @@ from api.barriers.serializers import (
     BarrierReportSerializer,
     BarrierResolveSerializer,
     BarrierStaticStatusSerializer,
+    PublicBarrierSerializer,
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
 from api.core.utils import cleansed_username
 from api.interactions.models import Interaction
-from api.metadata.constants import BARRIER_INTERACTION_TYPE, TIMELINE_EVENTS
+from api.metadata.constants import BARRIER_INTERACTION_TYPE, TIMELINE_EVENTS, PublicBarrierStatus
 from api.metadata.models import BarrierPriority, Category
 from api.user.helpers import has_profile, update_user_profile
 from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
@@ -797,3 +799,61 @@ class BarrierOpenActionRequired(BarrierStatusBase):
             summary=self.request.data.get("status_summary"),
             status_date=self.request.data.get("status_date")
         )
+
+
+class PublicBarrierViewSet(mixins.RetrieveModelMixin,
+                           mixins.UpdateModelMixin,
+                           GenericViewSet):
+    """
+    Manage public data for barriers.
+    """
+    barriers_qs = BarrierInstance.barriers.all()
+    http_method_names = ["get", "post", "patch",  "head", "options"]
+
+    def get_serializer_class(self):
+        # TODO: do the validation, sifters should have a
+        #       restricted serializer that only allows them to read public barriers
+        # if self.request.user.is_sifter:
+        #     return ReadOnlyPublicBarrierSerializer
+        return PublicBarrierSerializer
+
+    def get_object(self):
+        barrier = get_object_or_404(self.barriers_qs, pk=self.kwargs.get("pk"))
+        public_barrier, created = PublicBarrier.objects.get_or_create(
+            barrier=barrier,
+            defaults={
+                "status": barrier.status,
+                "country": barrier.export_country,
+                "sectors": barrier.sectors,
+            }
+        )
+        if created:
+            public_barrier.categories.set(barrier.categories.all())
+        # TODO: is there a need to flag if there are changes for fields that cannot be edited?
+        # else:
+        #     if public_barrier.modified_on < barrier.modified_on:
+        #         public_barrier.status = barrier.status
+        #         public_barrier.country = barrier.export_country
+        #         public_barrier.sectors = barrier.sectors
+        #         public_barrier.save()
+        #         public_barrier.categories.set(barrier.categories.all())
+
+        return public_barrier
+
+    # TODO: add permission classes to restrict this action to Publishers
+    @action(methods=["post"], detail=True)
+    def publish(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.public_view_status = PublicBarrierStatus.PUBLISHED
+        public_barrier.save()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    # TODO: add permission classes to restrict this action to Publishers
+    @action(methods=["post"], detail=True)
+    def unpublish(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.public_view_status = PublicBarrierStatus.UNPUBLISHED
+        public_barrier.save()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)

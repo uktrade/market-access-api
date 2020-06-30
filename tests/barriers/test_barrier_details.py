@@ -6,10 +6,12 @@ from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_team_members
-from api.barriers.models import BarrierInstance
+from api.barriers.models import BarrierInstance, PublicBarrier
+from api.metadata.constants import PublicBarrierStatus
 from api.metadata.models import Category, BarrierPriority
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
+from tests.metadata.factories import CategoryFactory
 
 
 class TestBarrierDetails(APITestMixin, APITestCase):
@@ -378,3 +380,121 @@ class TestBarrierPublicEligibility(APITestMixin, TestCase):
 
     def test_patch_public_eligibility_without_permissions(self):
         pass
+
+
+class TestPublicBarrier(APITestMixin, TestCase):
+    def setUp(self):
+        self.barrier = BarrierFactory()
+        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
+    def test_public_barrier_gets_created_at_fetch(self):
+        """
+        If a barrier doesn't have a corresponding public barrier it gets created when
+        details of that being fetched.
+        """
+        assert 1 == BarrierInstance.objects.count()
+        assert 0 == PublicBarrier.objects.count()
+
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+
+        assert 1 == BarrierInstance.objects.count()
+        assert 1 == PublicBarrier.objects.count()
+
+    def test_public_barrier_default_values_at_creation(self):
+        """
+        Defaults should be set when the public barrier gets created.
+        """
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert not response.data["title"]["public"]
+        assert self.barrier.barrier_title == response.data["title"]["internal"]
+        assert not response.data["summary"]["public"]
+        assert self.barrier.summary == response.data["summary"]["internal"]
+        assert self.barrier.export_country == response.data["country"]
+        assert self.barrier.sectors == response.data["sectors"]
+        assert not response.data["categories"]
+
+    def test_public_barrier_default_categories_at_creation(self):
+        """
+        Check that all categories are being set for the public barrier.
+        """
+        categories_count = 3
+        categories = CategoryFactory.create_batch(categories_count)
+        expected_categories = [c.title for c in categories]
+        self.barrier.categories.add(*categories)
+
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert categories_count == len(response.data["categories"])
+        assert set(expected_categories) == set(response.data["categories"])
+
+    # === PATCH ===
+    def test_public_barrier_patch_as_regular_user(self):
+        """ Regular users cannot patch public barriers """
+        pass
+
+    def test_public_barrier_patch_as_sifter(self):
+        """ Sifters cannot patch public barriers """
+        pass
+
+    def test_public_barrier_patch_as_editor(self):
+        """ Editors can patch public barriers """
+        pass
+
+    def test_public_barrier_patch_title_as_publisher(self):
+        """ Publishers can patch public barriers """
+        public_title = "New public facing title!"
+        payload = {"title": public_title}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert self.barrier.barrier_title == response.data["title"]["internal"]
+        assert public_title == response.data["title"]["public"]
+
+    def test_public_barrier_patch_summary_as_publisher(self):
+        """ Publishers can patch public barriers """
+        public_summary = "New public facing summary!"
+        payload = {"summary": public_summary}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert self.barrier.summary == response.data["summary"]["internal"]
+        assert public_summary == response.data["summary"]["public"]
+
+    # === PUBLISH ====
+    def test_public_barrier_publish_as_regular_user(self):
+        """ Regular users cannot publish public barriers """
+        pass
+
+    def test_public_barrier_publish_as_sifter(self):
+        """ Sifters cannot publish public barriers """
+        pass
+
+    def test_public_barrier_publish_as_editor(self):
+        """ Editors cannot publish public barriers """
+        pass
+
+    def test_public_barrier_publish_as_publisher(self):
+        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert PublicBarrierStatus.PUBLISHED == response.data["public_view_status"]
+        assert response.data["first_published_on"]
+        assert response.data["last_published_on"]
+        assert not response.data["unpublished_on"]
+
+    # === UNPUBLISH ===
+    # TODO: wrap this up
+
+    def test_public_barrier_unpublish_as_publisher(self):
+        url = reverse("public-barriers-unpublish", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert PublicBarrierStatus.UNPUBLISHED == response.data["public_view_status"]
+        assert response.data["unpublished_on"]

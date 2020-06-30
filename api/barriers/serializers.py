@@ -1,8 +1,10 @@
 from django.conf import settings
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from api.barriers.models import BarrierInstance, BarrierUserHit
+from api.barriers.mixins import ToReprMixin
+from api.barriers.models import BarrierInstance, BarrierUserHit, PublicBarrier
 from api.collaboration.models import TeamMember
 from api.interactions.models import Document
 from api.metadata.constants import (
@@ -596,6 +598,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             self.update_wto_profile(instance, validated_data)
 
         if "public_eligibility" in validated_data:
+            # TODO: this has changed now both True/False has summary
+            #   so only flush if summary is not provided in the payload
             if validated_data["public_eligibility"] is True:
                 validated_data["public_eligibility_summary"] = None
 
@@ -675,3 +679,69 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
             "created_on",
             "created_by",
         )
+
+
+class PublicBarrierCharField(serializers.Field):
+    """
+    Field serializer to include both public barrier and internal barrier data
+    for the given field.
+    """
+
+    # Map fields from PublicBarrier to BarrierInstance
+    field_map = {
+        "title": "barrier_title",
+    }
+
+    def to_representation(self, value):
+        field_name = self.field_map.get(self.field_name, self.field_name)
+        internal_value = getattr(self.parent.instance.barrier, field_name)
+        return {
+            "internal": internal_value,
+            "public": value
+        }
+
+    def to_internal_value(self, data):
+        if not isinstance(data, str):
+            msg = 'Incorrect type. Expected a string, but got %s'
+            raise ValidationError(msg % type(data).__name__)
+        return data
+
+
+class PublicBarrierSerializer(ToReprMixin, serializers.ModelSerializer):
+    """
+    Generic serializer for barrier public data.
+    Note: to be used within Market Access Service exclusively.
+    """
+    title = PublicBarrierCharField()
+    summary = PublicBarrierCharField()
+    categories = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PublicBarrier
+        fields = (
+            "id",
+            "title",
+            "summary",
+            "status",
+            "country",
+            "sectors",
+            "categories",
+            "public_view_status",
+            "first_published_on",
+            "last_published_on",
+            "unpublished_on",
+        )
+        read_only_fields = (
+            "id",
+            "status",
+            "country",
+            "sectors",
+            "categories",
+            "public_view_status",
+            "first_published_on",
+            "last_published_on",
+            "unpublished_on",
+        )
+
+    def get_categories(self, obj):
+        return [category.title for category in obj.categories.all()]

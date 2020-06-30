@@ -48,6 +48,24 @@ BARRIER_STATUS = Choices(
     (7, 'Unknown'),
 ) + RESOLVED_STATUS
 
+
+class PublicBarrierStatus:
+    UNKNOWN = 0
+    INELIGIBLE = 10
+    ELIGIBLE = 20
+    READY = 30
+    PUBLISHED = 40
+    UNPUBLISHED = 50
+
+    choices = Choices(
+            (UNKNOWN, "To be decided"),
+            (INELIGIBLE, "Not for public view"),
+            (ELIGIBLE, "Allowed"),
+            (READY, "Ready"),
+            (PUBLISHED, "Published"),
+            (UNPUBLISHED, "Unpublished")
+        )
+
 BARRIER_PENDING = Choices(
     ("UK_GOVT", "UK government"),
     ("FOR_GOVT", "Foreign government"),

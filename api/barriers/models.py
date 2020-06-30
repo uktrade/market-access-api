@@ -1,9 +1,10 @@
+import datetime
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, CASCADE
 from django.utils import timezone
 
 from simple_history.models import HistoricalRecords
@@ -14,7 +15,8 @@ from api.metadata.constants import (
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
-    TRADE_DIRECTION_CHOICES
+    TRADE_DIRECTION_CHOICES,
+    PublicBarrierStatus
 )
 
 from api.core.models import BaseModel, FullyArchivableMixin
@@ -335,6 +337,51 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )
+
+
+class PublicBarrier(FullyArchivableMixin, BaseModel):
+    """
+    Public barriers are the representation of a barrier (as the name suggests) to the public.
+    This table should not be exposed to the public however only to the DMAS frontend which requires login.
+    Transfer the data to a flat file or another service which can safely expose the data.
+    """
+    barrier = models.ForeignKey(BarrierInstance, on_delete=CASCADE)
+    title = models.CharField(null=True, max_length=MAX_LENGTH)
+    summary = models.TextField(null=True)
+    status = models.PositiveIntegerField(choices=BARRIER_STATUS, default=0)
+    country = models.UUIDField()
+    sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
+    categories = models.ManyToManyField(Category, related_name="public_barriers")
+
+    _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
+    first_published_on = models.DateTimeField(null=True, blank=True)
+    last_published_on = models.DateTimeField(null=True, blank=True)
+    unpublished_on = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def public_view_status(self):
+        return self._public_view_status
+
+    @public_view_status.setter
+    def public_view_status(self, value):
+        """ Set relevant date automatically """
+        status = int(value)
+        self._public_view_status = status
+        # auto update date fields based on the new status
+        now = datetime.datetime.now()
+        if status == PublicBarrierStatus.PUBLISHED:
+            self.first_published_on = self.first_published_on or now
+            self.last_published_on = now
+        if status == PublicBarrierStatus.UNPUBLISHED:
+            self.unpublished_on = now
+
+    # # Ready to be published should reflect if there are underlying changes to any of the fields
+    # # TODO:
+    # #  - either set this back to False when any of the tracked fields change on self.barrier
+    # #  - or have a method field / helper - with that you still need a filed for manually setting it to be publishable though
+    # ready_to_be_published = models.BooleanField(default=False)
+
+    history = HistoricalRecords()
 
 
 class BarrierUserHit(models.Model):
