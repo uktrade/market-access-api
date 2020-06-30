@@ -378,7 +378,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     # # Ready to be published should reflect if there are underlying changes to any of the fields
     # # TODO:
     # #  - either set this back to False when any of the tracked fields change on self.barrier
-    # #  - or have a method field / helper - with that you still need a filed for manually setting it to be publishable though
+    # #  - or have a method field / helper - with that you still need a filed for
+    # #    manually setting it to be publishable though
     # ready_to_be_published = models.BooleanField(default=False)
 
     history = HistoricalRecords()

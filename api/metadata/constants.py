@@ -58,13 +58,14 @@ class PublicBarrierStatus:
     UNPUBLISHED = 50
 
     choices = Choices(
-            (UNKNOWN, "To be decided"),
-            (INELIGIBLE, "Not for public view"),
-            (ELIGIBLE, "Allowed"),
-            (READY, "Ready"),
-            (PUBLISHED, "Published"),
-            (UNPUBLISHED, "Unpublished")
-        )
+        (UNKNOWN, "To be decided"),
+        (INELIGIBLE, "Not for public view"),
+        (ELIGIBLE, "Allowed"),
+        (READY, "Ready"),
+        (PUBLISHED, "Published"),
+        (UNPUBLISHED, "Unpublished")
+    )
+
 
 BARRIER_PENDING = Choices(
     ("UK_GOVT", "UK government"),

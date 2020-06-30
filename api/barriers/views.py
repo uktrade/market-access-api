@@ -808,7 +808,7 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
     Manage public data for barriers.
     """
     barriers_qs = BarrierInstance.barriers.all()
-    http_method_names = ["get", "post", "patch",  "head", "options"]
+    http_method_names = ["get", "post", "patch", "head", "options"]
 
     def get_serializer_class(self):
         # TODO: do the validation, sifters should have a
