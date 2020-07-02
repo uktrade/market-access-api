@@ -23,7 +23,7 @@ from api.dataset.views import BarrierListDataWorkspaceView
 
 app_name = "barriers"
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 # Important Notice: Public barriers should only be used within Market Access Service exclusively!
 router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barriers")
 

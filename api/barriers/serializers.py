@@ -595,11 +595,11 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         if "wto_profile" in validated_data:
             self.update_wto_profile(instance, validated_data)
 
-        if "public_eligibility" in validated_data:
-            # TODO: this has changed now both True/False has summary
-            #   so only flush if summary is not provided in the payload
-            if validated_data["public_eligibility"] is True:
-                validated_data["public_eligibility_summary"] = None
+        if (
+            "public_eligibility" in validated_data
+            and "public_eligibility_summary" not in validated_data
+        ):
+            validated_data["public_eligibility_summary"] = None
 
         if instance.archived is False and validated_data.get("archived") is True:
             instance.archive(

@@ -202,7 +202,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=None, null=True, help_text="Mark the barrier as either publishable or unpublishable to the public."
     )
     public_eligibility_summary = models.TextField(
-        null=True, default=None, help_text="Public eligibility summary if provided by user."
+        default=None, null=True, blank=True, help_text="Public eligibility summary if provided by user."
     )
 
     # Barrier priority
