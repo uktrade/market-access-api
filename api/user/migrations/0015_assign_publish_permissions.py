@@ -6,11 +6,41 @@ from django.db import migrations
 def assign_permissions(apps, schema_editor):
     Permission = apps.get_model("auth", "Permission")
     Group = apps.get_model("auth", "Group")
+    Barrier = apps.get_model("barriers", "BarrierInstance")
+    PublicBarrier = apps.get_model("barriers", "PublicBarrier")
+    ContentType = apps.get_model("contenttypes", "ContentType")
 
-    change_barrier_public_eligibility = Permission.objects.get(codename="change_barrier_public_eligibility")
-    change_publicbarrier = Permission.objects.get(codename="change_publicbarrier")
-    mark_barrier_as_ready_for_publishing = Permission.objects.get(codename="mark_barrier_as_ready_for_publishing")
-    publish_barrier = Permission.objects.get(codename="publish_barrier")
+    barrier_content_type = ContentType.objects.get_for_model(Barrier)
+    public_barrier_content_type = ContentType.objects.get_for_model(PublicBarrier)
+
+    change_barrier_public_eligibility, created = Permission.objects.get_or_create(
+        codename="change_barrier_public_eligibility",
+            defaults={
+            "name": "Can change barrier public eligibility",
+            "content_type": barrier_content_type
+        }
+    )
+    change_publicbarrier, created = Permission.objects.get_or_create(
+        codename="change_publicbarrier",
+            defaults={
+            "name": "Can change public barrier",
+            "content_type": public_barrier_content_type
+        }
+    )
+    mark_barrier_as_ready_for_publishing, created = Permission.objects.get_or_create(
+        codename="mark_barrier_as_ready_for_publishing",
+            defaults={
+            "name": "Can mark barrier as ready for publishing",
+            "content_type": public_barrier_content_type
+        }
+    )
+    publish_barrier, created = Permission.objects.get_or_create(
+        codename="publish_barrier",
+            defaults={
+            "name": "Can publish barrier",
+            "content_type": public_barrier_content_type
+        }
+    )
 
     administrator_group = Group.objects.get(name="Administrator")
     administrator_group.permissions.add(
