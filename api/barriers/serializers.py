@@ -1,9 +1,7 @@
 from django.conf import settings
 
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
-from api.barriers.mixins import ToReprMixin
 from api.barriers.models import BarrierInstance, BarrierUserHit, PublicBarrier
 from api.collaboration.models import TeamMember
 from api.interactions.models import Document
@@ -681,39 +679,12 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
         )
 
 
-class PublicBarrierCharField(serializers.Field):
-    """
-    Field serializer to include both public barrier and internal barrier data
-    for the given field.
-    """
-
-    # Map fields from PublicBarrier to BarrierInstance
-    field_map = {
-        "title": "barrier_title",
-    }
-
-    def to_representation(self, value):
-        field_name = self.field_map.get(self.field_name, self.field_name)
-        internal_value = getattr(self.parent.instance.barrier, field_name)
-        return {
-            "internal": internal_value,
-            "public": value
-        }
-
-    def to_internal_value(self, data):
-        if not isinstance(data, str):
-            msg = 'Incorrect type. Expected a string, but got %s'
-            raise ValidationError(msg % type(data).__name__)
-        return data
-
-
-class PublicBarrierSerializer(ToReprMixin, serializers.ModelSerializer):
+class PublicBarrierSerializer(serializers.ModelSerializer):
     """
     Generic serializer for barrier public data.
-    Note: to be used within Market Access Service exclusively.
     """
-    title = PublicBarrierCharField()
-    summary = PublicBarrierCharField()
+    internal_title_changed = serializers.SerializerMethodField()
+    internal_summary_changed = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
 
     class Meta:
@@ -721,7 +692,9 @@ class PublicBarrierSerializer(ToReprMixin, serializers.ModelSerializer):
         fields = (
             "id",
             "title",
+            "internal_title_changed",
             "summary",
+            "internal_summary_changed",
             "status",
             "country",
             "sectors",
@@ -733,6 +706,8 @@ class PublicBarrierSerializer(ToReprMixin, serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
+            "internal_title_changed",
+            "internal_summary_changed",
             "status",
             "country",
             "sectors",
@@ -745,3 +720,9 @@ class PublicBarrierSerializer(ToReprMixin, serializers.ModelSerializer):
 
     def get_categories(self, obj):
         return [category.title for category in obj.categories.all()]
+
+    def get_internal_title_changed(self, obj):
+        return obj.internal_title_changed
+
+    def get_internal_summary_changed(self, obj):
+        return obj.internal_summary_changed

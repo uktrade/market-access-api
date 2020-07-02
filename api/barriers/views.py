@@ -840,20 +840,35 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
 
         return public_barrier
 
-    # TODO: add permission classes to restrict this action to Publishers
-    @action(methods=["post"], detail=True)
-    def publish(self, request, *args, **kwargs):
+    def update_status_action(self, public_view_status):
+        """
+        Helper to set status of a public barrier through actions.
+        :param public_view_status: Desired status
+        :return: Response with serialized data
+        """
         public_barrier = self.get_object()
-        public_barrier.public_view_status = PublicBarrierStatus.PUBLISHED
+        public_barrier.public_view_status = public_view_status
         public_barrier.save()
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
+    # TODO: add permission classes
+    @action(methods=["post"], detail=True)
+    def ready(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.READY)
+
+    # TODO: add permission classes
+    @action(methods=["post"], detail=True)
+    def unprepared(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.ELIGIBLE)
+
+    # TODO: add permission classes to restrict this action to Publishers
+    @action(methods=["post"], detail=True)
+    def publish(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.PUBLISHED)
+
     # TODO: add permission classes to restrict this action to Publishers
     @action(methods=["post"], detail=True)
     def unpublish(self, request, *args, **kwargs):
-        public_barrier = self.get_object()
-        public_barrier.public_view_status = PublicBarrierStatus.UNPUBLISHED
-        public_barrier.save()
-        serializer = PublicBarrierSerializer(public_barrier)
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+        return self.update_status_action(PublicBarrierStatus.UNPUBLISHED)
+

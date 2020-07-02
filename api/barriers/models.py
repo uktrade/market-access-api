@@ -375,6 +375,14 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         if status == PublicBarrierStatus.UNPUBLISHED:
             self.unpublished_on = now
 
+    @property
+    def internal_title_changed(self):
+        return True
+
+    @property
+    def internal_summary_changed(self):
+        return False
+
     # # Ready to be published should reflect if there are underlying changes to any of the fields
     # # TODO:
     # #  - either set this back to False when any of the tracked fields change on self.barrier

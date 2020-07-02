@@ -409,10 +409,8 @@ class TestPublicBarrier(APITestMixin, TestCase):
         response = self.api_client.get(self.url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert not response.data["title"]["public"]
-        assert self.barrier.barrier_title == response.data["title"]["internal"]
-        assert not response.data["summary"]["public"]
-        assert self.barrier.summary == response.data["summary"]["internal"]
+        assert not response.data["title"]
+        assert not response.data["summary"]
         assert self.barrier.export_country == response.data["country"]
         assert self.barrier.sectors == response.data["sectors"]
         assert not response.data["categories"]
@@ -464,6 +462,24 @@ class TestPublicBarrier(APITestMixin, TestCase):
         assert status.HTTP_200_OK == response.status_code
         assert self.barrier.summary == response.data["summary"]["internal"]
         assert public_summary == response.data["summary"]["public"]
+
+    # === READY ====
+    def test_public_barrier_marked_ready_as_editor(self):
+        """ Editors can mark public barriers unprepared (not ready) """
+        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert PublicBarrierStatus.READY == response.data["public_view_status"]
+
+    # === UNPREPARED ====
+    def test_public_barrier_marked_unprepared_as_editor(self):
+        """ Editors can mark a public barriers unprepared (not ready) """
+        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
 
     # === PUBLISH ====
     def test_public_barrier_publish_as_regular_user(self):
