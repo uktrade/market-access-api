@@ -252,6 +252,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
 
     class Meta:
         ordering = ["-reported_on"]
+        permissions = [
+            ('change_barrier_public_eligibility', 'Can change barrier public eligibility'),
+        ]
 
     def current_progress(self):
         """ checks current dataset to see how far reporting workflow is done """
@@ -357,6 +360,12 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        permissions = [
+            ('publish_barrier', 'Can publish barrier'),
+            ('mark_barrier_as_ready_for_publishing', 'Can mark barrier as ready for publishing'),
+        ]
 
     @property
     def public_view_status(self):
