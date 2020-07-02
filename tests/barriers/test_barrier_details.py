@@ -443,15 +443,15 @@ class TestPublicBarrier(APITestMixin, TestCase):
         """ Editors can patch public barriers """
         pass
 
-    def test_public_barrier_patch_title_as_publisher(self):
+    def test_public_barrier_patch_as_publisher(self):
         """ Publishers can patch public barriers """
         public_title = "New public facing title!"
         payload = {"title": public_title}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert self.barrier.barrier_title == response.data["title"]["internal"]
-        assert public_title == response.data["title"]["public"]
+        assert public_title == response.data["title"]
+        assert not response.data["summary"]
 
     def test_public_barrier_patch_summary_as_publisher(self):
         """ Publishers can patch public barriers """
@@ -460,8 +460,8 @@ class TestPublicBarrier(APITestMixin, TestCase):
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert self.barrier.summary == response.data["summary"]["internal"]
-        assert public_summary == response.data["summary"]["public"]
+        assert public_summary == response.data["summary"]
+        assert not response.data["title"]
 
     # === READY ====
     def test_public_barrier_marked_ready_as_editor(self):

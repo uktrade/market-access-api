@@ -871,4 +871,3 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
     @action(methods=["post"], detail=True)
     def unpublish(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.UNPUBLISHED)
-
