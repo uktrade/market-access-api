@@ -24,6 +24,7 @@ from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
     NoteHistoryFactory,
+    PublicBarrierHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
@@ -515,8 +516,6 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
 class BarrierActivity(HistoryMixin, generics.GenericAPIView):
     """
     Returns history items used on the barrier activity stream
-
-    This will supersede the BarrierStatusHistory view below.
     """
 
     def get(self, request, pk):
@@ -541,97 +540,17 @@ class BarrierActivity(HistoryMixin, generics.GenericAPIView):
         }
         return Response(response, status=status.HTTP_200_OK)
 
-
-class BarrierStatusHistory(generics.GenericAPIView):
+class PublicBarrierActivity(HistoryMixin, generics.GenericAPIView):
     """
     Returns history items used on the barrier activity stream
-
-    This will be deprecated in favour of the BarrierActivity view above.
     """
 
-    def _format_user(self, user):
-        if user is not None:
-            return {"id": user.id, "name": cleansed_username(user)}
-
-        return None
-
-    def get(self, request, pk):     # noqa: C901
-        # TODO: refactor to remove complexity
-        status_field = "status"
-        timeline_fields = ["status", "priority", "archived"]
-        barrier = BarrierInstance.barriers.get(id=pk)
-        history = barrier.history.all().order_by("history_date")
-        results = []
-        old_record = None
-        TIMELINE_REVERTED = {v: k for k, v in TIMELINE_EVENTS}
-        for new_record in history:
-            if new_record.history_type != "+":
-                if old_record is not None:
-                    status_change = None
-                    delta = new_record.diff_against(old_record)
-                    for change in delta.changes:
-                        if change.field in timeline_fields:
-                            if change.field == "status":
-                                # ignore default status setup, during report submission
-                                if not (change.old == 0 or change.old is None):
-                                    event = TIMELINE_REVERTED["Barrier Status Change"]
-                                    status_change = {
-                                        "date": new_record.history_date,
-                                        "model": "barrier",
-                                        "field": change.field,
-                                        "old_value": str(change.old),
-                                        "new_value": str(change.new),
-                                        "user": self._format_user(
-                                            new_record.history_user
-                                        ),
-                                        "field_info": {
-                                            "status_date": new_record.status_date,
-                                            "status_summary": new_record.status_summary,
-                                            "sub_status": new_record.sub_status,
-                                            "sub_status_other": new_record.sub_status_other,
-                                            "event": event,
-                                        },
-                                    }
-                            elif change.field == "priority":
-                                status_change = {
-                                    "date": new_record.history_date,
-                                    "model": "barrier",
-                                    "field": change.field,
-                                    "old_value": str(change.old),
-                                    "new_value": str(change.new),
-                                    "user": self._format_user(
-                                        new_record.history_user
-                                    ),
-                                    "field_info": {
-                                        "priority_date": new_record.priority_date,
-                                        "priority_summary": new_record.priority_summary,
-                                    },
-                                }
-                            elif change.field == "archived":
-                                status_change = {
-                                    "date": new_record.history_date,
-                                    "model": "barrier",
-                                    "field": change.field,
-                                    "old_value": change.old,
-                                    "new_value": change.new,
-                                    "user": self._format_user(
-                                        new_record.history_user
-                                    ),
-                                }
-                                if change.new is True:
-                                    status_change["field_info"] = {
-                                        "archived_reason": new_record.archived_reason,
-                                        "archived_explanation": new_record.archived_explanation,
-                                    }
-                                else:
-                                    status_change["field_info"] = {
-                                        "unarchived_reason": new_record.unarchived_reason,
-                                    }
-                    if status_change:
-                        results.append(status_change)
-            old_record = new_record
-        response = {"barrier_id": str(pk), "history": results}
-
+    def get(self, request, pk):
+        history_items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.kwargs.get("pk"))
+        response = {
+            "barrier_id": str(pk),
+            "history": [item.data for item in history_items],
+        }
         return Response(response, status=status.HTTP_200_OK)
 
 
