@@ -470,6 +470,13 @@ class HistoryMixin:
             start_date=start_date,
         )
 
+    def get_public_barrier_history(self, fields=(), start_date=None):
+        return PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+            start_date=start_date,
+        )
+
     def get_team_history(self, fields=(), start_date=None):
         return TeamMemberHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
@@ -500,10 +507,11 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
             start_date=barrier.reported_on + datetime.timedelta(seconds=1)
         )
         wto_history = self.get_wto_history(start_date=barrier.reported_on)
+        public_history = self.get_public_barrier_history(start_date=barrier.reported_on)
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history
-            + wto_history
+            + wto_history + public_history
         )
 
         response = {
@@ -540,13 +548,14 @@ class BarrierActivity(HistoryMixin, generics.GenericAPIView):
         }
         return Response(response, status=status.HTTP_200_OK)
 
+
 class PublicBarrierActivity(HistoryMixin, generics.GenericAPIView):
     """
-    Returns history items used on the barrier activity stream
+    Returns history items used on the public barrier activity stream
     """
 
     def get(self, request, pk):
-        history_items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.kwargs.get("pk"))
+        history_items = self.get_public_barrier_history()
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],

@@ -25,6 +25,10 @@ class LocationHistoryItem(BaseBarrierHistoryItem):
         }
 
 
+class PublicViewStatusHistoryItem(BaseBarrierHistoryItem):
+    field = "_public_view_status"
+
+
 class SectorsHistoryItem(BaseBarrierHistoryItem):
     field = "sectors"
 
@@ -44,13 +48,7 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
             return super().get_data()
 
     def get_value(self, record):
-        return {
-            "status": str(record.status),
-            "status_date": record.status_date,
-            "status_summary": record.status_summary,
-            "sub_status": record.sub_status,
-            "sub_status_other":record.sub_status_other,
-        }
+        return {"status": str(record.status)}
 
 
 class SummaryHistoryItem(BaseBarrierHistoryItem):
@@ -64,8 +62,9 @@ class TitleHistoryItem(BaseBarrierHistoryItem):
 class PublicBarrierHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
-        #CategoriesHistoryItem,
+        CategoriesHistoryItem,
         LocationHistoryItem,
+        PublicViewStatusHistoryItem,
         SectorsHistoryItem,
         StatusHistoryItem,
         SummaryHistoryItem,
