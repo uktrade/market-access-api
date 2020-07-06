@@ -342,6 +342,38 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         )
 
 
+class PublicBarrierHistoricalModel(models.Model):
+    """
+    Abstract model for tracking m2m changes for PublicBarrier.
+    """
+    categories_cache = ArrayField(
+        models.CharField(max_length=20),
+        blank=True,
+        null=True,
+        default=list,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = set(self.diff_against(old_history).changed_fields)
+
+        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
+            changed_fields.add("categories")
+
+        return list(changed_fields)
+
+    def update_categories(self):
+        self.categories_cache = list(
+            self.instance.categories.values_list("id", flat=True)
+        )
+
+    def save(self, *args, **kwargs):
+        self.update_categories()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
 class PublicBarrier(FullyArchivableMixin, BaseModel):
     """
     Public barriers are the representation of a barrier (as the name suggests) to the public.
@@ -399,7 +431,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     # #    manually setting it to be publishable though
     # ready_to_be_published = models.BooleanField(default=False)
 
-    history = HistoricalRecords()
+    history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 
 
 class BarrierUserHit(models.Model):
