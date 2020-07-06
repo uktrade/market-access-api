@@ -40,9 +40,8 @@ from api.barriers.serializers import (
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
-from api.core.utils import cleansed_username
 from api.interactions.models import Interaction
-from api.metadata.constants import BARRIER_INTERACTION_TYPE, TIMELINE_EVENTS, PublicBarrierStatus
+from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
 from api.metadata.models import BarrierPriority, Category
 from api.user.helpers import has_profile, update_user_profile
 from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search

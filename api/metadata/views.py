@@ -20,7 +20,6 @@ from .constants import (
     REPORT_STATUS,
     STAGE_STATUS,
     SUPPORT_TYPE,
-    TIMELINE_EVENTS,
     TRADE_DIRECTION_CHOICES)
 from .utils import (
     get_admin_areas,
@@ -56,7 +55,6 @@ class MetadataView(generics.GenericAPIView):
         barrier_chance = dict((x, y) for x, y in BARRIER_CHANCE_OF_SUCCESS)
         barrier_inter_type = dict((x, y) for x, y in BARRIER_INTERACTION_TYPE)
         barrier_source = dict((x, y) for x, y in BARRIER_SOURCE)
-        timeline_events = dict((x, y) for x, y in TIMELINE_EVENTS)
         assessment_impact = dict((x, y) for x, y in ASSESMENT_IMPACT)
 
         dh_os_regions, dh_countries = get_os_regions_and_countries()
@@ -93,7 +91,6 @@ class MetadataView(generics.GenericAPIView):
             "barrier_chance_of_success": barrier_chance,
             "barrier_interaction_types": barrier_inter_type,
             "barrier_source": barrier_source,
-            "timeline_events": timeline_events,
             "barrier_priorities": barrier_priorities,
             "assessment_impact": assessment_impact,
             "trade_direction": trade_direction,

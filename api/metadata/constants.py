@@ -100,12 +100,6 @@ BARRIER_SOURCE = Choices(
     ("OTHER", "Other"),
 )
 
-TIMELINE_EVENTS = Choices(
-    ("REPORT_CREATED", "Report Created"),
-    ("BARRIER_CREATED", "Barrier Created"),
-    ("BARRIER_STATUS_CHANGE", "Barrier Status Change"),
-)
-
 ASSESMENT_IMPACT = Choices(
     ("HIGH", "High"),
     ("MEDIUMHIGH", "Medium High"),
