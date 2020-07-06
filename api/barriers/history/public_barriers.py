@@ -2,34 +2,22 @@ from api.barriers.models import PublicBarrier
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
-class BaseBarrierHistoryItem(BaseHistoryItem):
+class BasePublicBarrierHistoryItem(BaseHistoryItem):
     model = "public_barrier"
 
 
-class CategoriesHistoryItem(BaseBarrierHistoryItem):
+class CategoriesHistoryItem(BasePublicBarrierHistoryItem):
     field = "categories"
 
     def get_value(self, record):
         return record.categories_cache or []
 
 
-class LocationHistoryItem(BaseBarrierHistoryItem):
-    field = "location"
-
-    def get_value(self, record):
-        return {
-            "country": str(record.export_country),
-            "admin_areas": [
-                str(admin_area) for admin_area in record.country_admin_areas or []
-            ],
-        }
-
-
-class PublicViewStatusHistoryItem(BaseBarrierHistoryItem):
+class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
     field = "_public_view_status"
 
 
-class SectorsHistoryItem(BaseBarrierHistoryItem):
+class SectorsHistoryItem(BasePublicBarrierHistoryItem):
     field = "sectors"
 
     def get_data(self):
@@ -40,22 +28,18 @@ class SectorsHistoryItem(BaseBarrierHistoryItem):
         return [str(sector_id) for sector_id in record.sectors or []]
 
 
-class StatusHistoryItem(BaseBarrierHistoryItem):
+class StatusHistoryItem(BasePublicBarrierHistoryItem):
     field = "status"
-
-    def get_data(self):
-        if not (self.old_record.status == 0 and self.new_record.status == 7):
-            return super().get_data()
 
     def get_value(self, record):
         return {"status": str(record.status)}
 
 
-class SummaryHistoryItem(BaseBarrierHistoryItem):
+class SummaryHistoryItem(BasePublicBarrierHistoryItem):
     field = "summary"
 
 
-class TitleHistoryItem(BaseBarrierHistoryItem):
+class TitleHistoryItem(BasePublicBarrierHistoryItem):
     field = "title"
 
 
@@ -63,7 +47,6 @@ class PublicBarrierHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
         CategoriesHistoryItem,
-        LocationHistoryItem,
         PublicViewStatusHistoryItem,
         SectorsHistoryItem,
         StatusHistoryItem,
