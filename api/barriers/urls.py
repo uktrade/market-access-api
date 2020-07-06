@@ -13,10 +13,10 @@ from api.barriers.views import (
     BarrierOpenInProgress,
     BarrierOpenActionRequired,
     BarrierStatusChangeUnknown,
-    BarrierStatusHistory,
     BarrierReportList,
     BarrierReportDetail,
     BarrierReportSubmit,
+    PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count)
 from api.dataset.views import BarrierListDataWorkspaceView
@@ -35,7 +35,6 @@ urlpatterns = router.urls + [
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),
     path("barriers/<uuid:pk>/full_history", BarrierFullHistory.as_view(), name="history"),
-    path("barriers/<uuid:pk>/history", BarrierStatusHistory.as_view(), name="status-history"),
     path("barriers/<uuid:pk>/hibernate", BarrierHibernate.as_view(), name="hibernate-barrier"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
@@ -46,4 +45,5 @@ urlpatterns = router.urls + [
     path("reports", BarrierReportList.as_view(), name="list-reports"),
     path("reports/<uuid:pk>", BarrierReportDetail.as_view(), name="get-report"),
     path("reports/<uuid:pk>/submit", BarrierReportSubmit.as_view(), name="submit-report"),
+    path("public-barriers/<uuid:pk>/activity", PublicBarrierActivity.as_view(), name="public-activity")
 ]
