@@ -290,7 +290,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "summary"
-        assert data["old_value"] == None
+        assert data["old_value"] is None
         assert data["new_value"] == "New summary"
 
     def test_title_history(self):
@@ -302,7 +302,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "title"
-        assert data["old_value"] == None
+        assert data["old_value"] is None
         assert data["new_value"] == "New title"
 
 
