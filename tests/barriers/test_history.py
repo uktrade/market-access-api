@@ -239,7 +239,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         if created:
             self.public_barrier.categories.set(self.barrier.categories.all())
 
-    def test_pcategories_history(self):
+    def test_categories_history(self):
         self.public_barrier.categories.add("109", "115")
 
         items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
