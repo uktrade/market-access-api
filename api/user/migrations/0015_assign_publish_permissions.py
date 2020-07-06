@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('contenttypes', '0001_initial'),
-        ('barriers', '0067_public_barrier_permissions'),
+        ('barriers', '0068_public_barrier_permissions'),
         ('user', '0014_assign_permissions'),
     ]
 
