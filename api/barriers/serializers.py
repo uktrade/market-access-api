@@ -142,6 +142,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     value_to_economy = serializers.SerializerMethodField()
     import_market_size = serializers.SerializerMethodField()
     commercial_value = serializers.SerializerMethodField()
+    commercial_value_explanation = serializers.SerializerMethodField()
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
@@ -198,6 +199,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "value_to_economy",
             "import_market_size",
             "commercial_value",
+            "commercial_value_explanation",
             "export_value",
             "end_date",
             "link",
@@ -218,6 +220,11 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_value_to_economy(self, obj):
         if hasattr(obj, "assessment"):
             return obj.assessment.value_to_economy
+        return None
+
+    def get_commercial_value_explanation(self, obj):
+        if hasattr(obj, "assessment"):
+            return obj.assessment.commercial_value_explanation
         return None
 
     def get_import_market_size(self, obj):
