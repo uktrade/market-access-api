@@ -18,6 +18,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             "value_to_economy",
             "import_market_size",
             "commercial_value",
+            "commercial_value_explanation",
             "export_value",
             "documents",
             "created_on",

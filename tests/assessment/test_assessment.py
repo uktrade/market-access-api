@@ -247,6 +247,33 @@ class TestAssessment(APITestMixin):
         assert int_response.data["commercial_value"] == 1500000
         assert int_response.data["export_value"] is None
 
+    def test_add_commercial_value_explanation(self, setup_barrier):
+        instance_id = setup_barrier
+        expected_explanation = "Wibble wobble"
+
+        assessment_url = reverse("get-assessment", kwargs={"pk": instance_id})
+        response = self.api_client.get(assessment_url)
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+        add_response = self.api_client.post(
+            assessment_url,
+            format="json",
+            data={
+                "commercial_value_explanation": expected_explanation,
+            }
+        )
+
+        assert add_response.status_code == status.HTTP_201_CREATED
+        int_response = self.api_client.get(assessment_url)
+        assert int_response.status_code == status.HTTP_200_OK
+        assert int_response.data["impact"] is None
+        assert int_response.data["explanation"] is None
+        assert int_response.data["documents"] == []
+        assert int_response.data["value_to_economy"] is None
+        assert int_response.data["import_market_size"] is None
+        assert int_response.data["commercial_value_explanation"] == expected_explanation
+        assert int_response.data["export_value"] is None
+
     def test_add_eco_assessment_edit_add_rest(self, setup_barrier):
         instance_id = setup_barrier
 
