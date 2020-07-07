@@ -74,7 +74,7 @@ class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     value_to_economy = models.BigIntegerField(null=True)
     import_market_size = models.BigIntegerField(null=True)
     commercial_value = models.BigIntegerField(null=True)
-    commercial_value_explanation = models.TextField(null=True, default=None)
+    commercial_value_explanation = models.TextField(blank=True, default="")
     export_value = models.BigIntegerField(null=True)
     is_active = models.BooleanField(default=True)
 

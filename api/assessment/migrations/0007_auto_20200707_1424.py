@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assessment',
             name='commercial_value_explanation',
-            field=models.TextField(default=None, null=True),
+            field=models.TextField(blank=True, default=''),
         ),
         migrations.AddField(
             model_name='historicalassessment',
             name='commercial_value_explanation',
-            field=models.TextField(default=None, null=True),
+            field=models.TextField(blank=True, default=''),
         ),
     ]
