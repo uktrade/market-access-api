@@ -443,6 +443,7 @@ class TestPublicBarrier(APITestMixin, TestCase):
         """ Editors can patch public barriers """
         pass
 
+    @freeze_time("2020-02-02")
     def test_public_barrier_patch_as_publisher(self):
         """ Publishers can patch public barriers """
         public_title = "New public facing title!"
@@ -451,8 +452,11 @@ class TestPublicBarrier(APITestMixin, TestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert public_title == response.data["title"]
+        assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
         assert not response.data["summary"]
+        assert not response.data["summary_updated_on"]
 
+    @freeze_time("2020-02-02")
     def test_public_barrier_patch_summary_as_publisher(self):
         """ Publishers can patch public barriers """
         public_summary = "New public facing summary!"
@@ -461,7 +465,9 @@ class TestPublicBarrier(APITestMixin, TestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert public_summary == response.data["summary"]
+        assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
         assert not response.data["title"]
+        assert not response.data["title_updated_on"]
 
     # === READY ====
     def test_public_barrier_marked_ready_as_editor(self):
@@ -480,6 +486,17 @@ class TestPublicBarrier(APITestMixin, TestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
+
+    # === IGNORE ALL CHANGES ====
+    @freeze_time("2020-02-02")
+    def test_public_barrier_ignore_all_changes_as_publisher(self):
+        """ Publishers can ignore all changes """
+        url = reverse("public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
+        assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
 
     # === PUBLISH ====
     def test_public_barrier_publish_as_regular_user(self):

@@ -683,6 +683,8 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
     """
     Generic serializer for barrier public data.
     """
+    title = serializers.CharField()
+    summary = serializers.CharField()
     internal_title_changed = serializers.SerializerMethodField()
     internal_summary_changed = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
@@ -692,12 +694,15 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "title",
+            "title_updated_on",
             "internal_title_changed",
             "summary",
+            "summary_updated_on",
             "internal_summary_changed",
             "status",
             "country",
             "sectors",
+            "all_sectors",
             "categories",
             "public_view_status",
             "first_published_on",
@@ -706,11 +711,14 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "id",
+            "title_updated_on",
             "internal_title_changed",
+            "summary_updated_on",
             "internal_summary_changed",
             "status",
             "country",
             "sectors",
+            "all_sectors",
             "categories",
             "public_view_status",
             "first_published_on",

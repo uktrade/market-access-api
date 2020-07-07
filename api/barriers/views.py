@@ -752,6 +752,7 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
                 "status": barrier.status,
                 "country": barrier.export_country,
                 "sectors": barrier.sectors,
+                "all_sectors": barrier.all_sectors,
             }
         )
         if created:
@@ -788,6 +789,16 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
     @action(methods=["post"], detail=True)
     def unprepared(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.ELIGIBLE)
+
+    # TODO: add permission classes
+    @action(methods=["post"], detail=True, url_path="ignore-all-changes")
+    def ignore_all_changes(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.title = public_barrier.title
+        public_barrier.summary = public_barrier.summary
+        public_barrier.save()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
 
     # TODO: add permission classes to restrict this action to Publishers
     @action(methods=["post"], detail=True)

@@ -381,11 +381,17 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     Transfer the data to a flat file or another service which can safely expose the data.
     """
     barrier = models.ForeignKey(BarrierInstance, on_delete=CASCADE)
-    title = models.CharField(null=True, max_length=MAX_LENGTH)
-    summary = models.TextField(null=True)
+
+    _title = models.CharField(null=True, max_length=MAX_LENGTH)
+    title_updated_on = models.DateTimeField(null=True, blank=True)
+
+    _summary = models.TextField(null=True)
+    summary_updated_on = models.DateTimeField(null=True, blank=True)
+
     status = models.PositiveIntegerField(choices=BARRIER_STATUS, default=0)
     country = models.UUIDField()
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
+    all_sectors = models.NullBooleanField()
     categories = models.ManyToManyField(Category, related_name="public_barriers")
 
     _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
@@ -398,6 +404,24 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             ('publish_barrier', 'Can publish barrier'),
             ('mark_barrier_as_ready_for_publishing', 'Can mark barrier as ready for publishing'),
         ]
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+        self.title_updated_on = datetime.datetime.now()
+
+    @property
+    def summary(self):
+        return self._summary
+
+    @summary.setter
+    def summary(self, value):
+        self._summary = value
+        self.summary_updated_on = datetime.datetime.now()
 
     @property
     def public_view_status(self):
@@ -427,7 +451,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     # # Ready to be published should reflect if there are underlying changes to any of the fields
     # # TODO:
     # #  - either set this back to False when any of the tracked fields change on self.barrier
-    # #  - or have a method field / helper - with that you still need a filed for
+    # #  - or have a method field / helper - with that you still need a field for
     # #    manually setting it to be publishable though
     # ready_to_be_published = models.BooleanField(default=False)
 

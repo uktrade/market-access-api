@@ -234,6 +234,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
                 "status": self.barrier.status,
                 "country": self.barrier.export_country,
                 "sectors": self.barrier.sectors,
+                "all_sectors": self.barrier.all_sectors,
             }
         )
         if created:
