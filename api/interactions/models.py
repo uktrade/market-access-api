@@ -111,3 +111,26 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+
+class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    public_barrier = models.ForeignKey(
+        "barriers.PublicBarrier",
+        related_name="notes",
+        on_delete=models.CASCADE,
+    )
+    text = models.TextField(blank=True)
+
+    history = HistoricalRecords()
+
+    @property
+    def barrier(self):
+        return self.public_barrier.barrier
+
+    @property
+    def created_user(self):
+        return self._cleansed_username(self.created_by)
+
+    @property
+    def modified_user(self):
+        return self._cleansed_username(self.modified_by)
