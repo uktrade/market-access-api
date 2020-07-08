@@ -119,7 +119,7 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         related_name="notes",
         on_delete=models.CASCADE,
     )
-    text = models.TextField(blank=True)
+    text = models.TextField()
 
     history = HistoricalRecords()
 
