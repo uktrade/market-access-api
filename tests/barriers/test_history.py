@@ -182,11 +182,11 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "sectors"
-        assert data["old_value"] == [
+        assert data["old_value"]["sectors"] == [
             "af959812-6095-e211-a939-e4115bead28a",
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
-        assert data["new_value"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
 
     def test_source_history(self):
         self.barrier.source = "COMPANY"
@@ -288,11 +288,11 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "sectors"
-        assert data["old_value"] == [
+        assert data["old_value"]["sectors"] == [
             "af959812-6095-e211-a939-e4115bead28a",
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
-        assert data["new_value"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
 
     def test_summary_history(self):
         self.public_barrier.summary = "New summary"
@@ -710,11 +710,17 @@ class TestHistoryView(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "sectors",
-            "old_value": [
-                "af959812-6095-e211-a939-e4115bead28a",
-                "9538cecc-5f95-e211-a939-e4115bead28a"
-            ],
-            "new_value": ["9538cecc-5f95-e211-a939-e4115bead28a"],
+            "old_value": {
+                "all_sectors": None,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a"
+                ],
+            },
+            "new_value": {
+                "all_sectors": None,
+                "sectors": ["9538cecc-5f95-e211-a939-e4115bead28a"],
+            },
             "user": None
         } in history
 
