@@ -251,6 +251,18 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["old_value"] == []
         assert set(data["new_value"]) == {"109", "115"}
 
+    def test_country_history(self):
+        self.public_barrier.country = "570507cc-1592-4a99-afca-915d13a437d0"
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "country"
+        assert str(data["old_value"]) == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        assert str(data["new_value"]) == "570507cc-1592-4a99-afca-915d13a437d0"
+
     def test_status_history(self):
         self.public_barrier.status = 5
         self.public_barrier.save()

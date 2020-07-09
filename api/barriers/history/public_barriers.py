@@ -13,6 +13,10 @@ class CategoriesHistoryItem(BasePublicBarrierHistoryItem):
         return record.categories_cache or []
 
 
+class CountryHistoryItem(BasePublicBarrierHistoryItem):
+    field = "country"
+
+
 class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
     field = "_public_view_status"
 
@@ -50,6 +54,7 @@ class PublicBarrierHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
         CategoriesHistoryItem,
+        CountryHistoryItem,
         PublicViewStatusHistoryItem,
         SectorsHistoryItem,
         StatusHistoryItem,
