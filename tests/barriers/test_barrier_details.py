@@ -531,3 +531,90 @@ class TestPublicBarrier(APITestMixin, TestCase):
         assert status.HTTP_200_OK == response.status_code
         assert PublicBarrierStatus.UNPUBLISHED == response.data["public_view_status"]
         assert response.data["unpublished_on"]
+
+    def test_update_eligibility_on_attr_access(self):
+        test_parameters = [
+            {
+                "case_id": 10,
+                "public_eligibility": None,
+                "public_view_status": PublicBarrierStatus.UNKNOWN,
+                "expected_public_view_status": PublicBarrierStatus.UNKNOWN
+            },
+            {
+                "case_id": 20,
+                "public_eligibility": True,
+                "public_view_status": PublicBarrierStatus.UNKNOWN,
+                "expected_public_view_status": PublicBarrierStatus.ELIGIBLE
+            },
+            {
+                "case_id": 30,
+                "public_eligibility": False,
+                "public_view_status": PublicBarrierStatus.UNKNOWN,
+                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE
+            },
+            {
+                "case_id": 40,
+                "public_eligibility": False,
+                "public_view_status": PublicBarrierStatus.ELIGIBLE,
+                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE
+            },
+            {
+                "case_id": 50,
+                "public_eligibility": True,
+                "public_view_status": PublicBarrierStatus.INELIGIBLE,
+                "expected_public_view_status": PublicBarrierStatus.ELIGIBLE
+            },
+            {
+                "case_id": 60,
+                "public_eligibility": True,
+                "public_view_status": PublicBarrierStatus.READY,
+                "expected_public_view_status": PublicBarrierStatus.READY
+            },
+            {
+                "case_id": 70,
+                "public_eligibility": False,
+                "public_view_status": PublicBarrierStatus.READY,
+                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE
+            },
+            # Published state is protected and cannot change without unpublishing first
+            {
+                "case_id": 80,
+                "public_eligibility": True,
+                "public_view_status": PublicBarrierStatus.PUBLISHED,
+                "expected_public_view_status": PublicBarrierStatus.PUBLISHED
+            },
+            {
+                "case_id": 90,
+                "public_eligibility": False,
+                "public_view_status": PublicBarrierStatus.PUBLISHED,
+                "expected_public_view_status": PublicBarrierStatus.PUBLISHED
+            },
+            {
+                "case_id": 100,
+                "public_eligibility": False,
+                "public_view_status": PublicBarrierStatus.UNPUBLISHED,
+                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE
+            },
+        ]
+
+        for params in test_parameters:
+            with self.subTest(params=params):
+                barrier = BarrierFactory()
+                url = reverse("public-barriers-detail", kwargs={"pk": barrier.id})
+                payload = {
+                    "public_view_status": params["public_view_status"],
+                }
+                response = self.api_client.get(url)
+                public_barrier = PublicBarrier.objects.get(pk=response.data["id"])
+                public_barrier.public_view_status = params["public_view_status"]
+                public_barrier.save()
+
+                # Now check that changing the public eligibility on the internal barrier
+                # affects the public barrier status the way it's expected
+                barrier.public_eligibility = params["public_eligibility"]
+                barrier.save()
+
+                response = self.api_client.get(url)
+
+                assert params["expected_public_view_status"] == response.data["public_view_status"], \
+                    f"Failed at Case {params['case_id']}"

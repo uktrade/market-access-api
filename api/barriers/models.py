@@ -382,18 +382,24 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     """
     barrier = models.ForeignKey(BarrierInstance, on_delete=CASCADE)
 
+    # === Title related fields =====
     _title = models.CharField(null=True, max_length=MAX_LENGTH)
     title_updated_on = models.DateTimeField(null=True, blank=True)
+    internal_title_at_update = models.CharField(null=True, max_length=MAX_LENGTH)
 
+    # === Summary related fields =====
     _summary = models.TextField(null=True)
     summary_updated_on = models.DateTimeField(null=True, blank=True)
+    internal_summary_at_update = models.CharField(null=True, max_length=MAX_LENGTH)
 
+    # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BARRIER_STATUS, default=0)
     country = models.UUIDField()
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     all_sectors = models.NullBooleanField()
     categories = models.ManyToManyField(Category, related_name="public_barriers")
 
+    # === Status and timestamps ====
     _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
@@ -412,6 +418,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     @title.setter
     def title(self, value):
         self._title = value
+        self.internal_title_at_update = self.barrier.barrier_title
         self.title_updated_on = datetime.datetime.now()
 
     @property
@@ -421,10 +428,40 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     @summary.setter
     def summary(self, value):
         self._summary = value
+        self.internal_summary_at_update = self.barrier.summary
         self.summary_updated_on = datetime.datetime.now()
 
     @property
     def public_view_status(self):
+        # set default if eligibility is avail on the internal barrier
+        if (self._public_view_status == PublicBarrierStatus.UNKNOWN):
+            if self.barrier.public_eligibility is True:
+                self._public_view_status = PublicBarrierStatus.ELIGIBLE
+            if self.barrier.public_eligibility is False:
+                self._public_view_status = PublicBarrierStatus.INELIGIBLE
+
+        # The internal barrier might get withdrawn from the public domain
+        # in which case it will be marked as ineligible for public view
+        # and the public barrier view status should update as well
+        #
+        # Note: cannot automatically change from published
+        #       the public barrier would need to be unpublished first
+        if self._public_view_status != PublicBarrierStatus.PUBLISHED:
+            # Marking the public barrier ineligible
+            if (
+                self.barrier.public_eligibility is False
+                and self._public_view_status != PublicBarrierStatus.INELIGIBLE
+            ):
+                self._public_view_status = PublicBarrierStatus.INELIGIBLE
+                self.save()
+            # Marking the public barrier eligible
+            if (
+                self.barrier.public_eligibility is True
+                and self._public_view_status == PublicBarrierStatus.INELIGIBLE
+            ):
+                self._public_view_status = PublicBarrierStatus.ELIGIBLE
+                self.save()
+
         return self._public_view_status
 
     @public_view_status.setter
@@ -442,11 +479,52 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_title_changed(self):
-        return True
+        return self.barrier.barrier_title != self.internal_title_at_update
 
     @property
     def internal_summary_changed(self):
-        return False
+        return self.barrier.summary != self.internal_summary_at_update
+
+    @property
+    def internal_status(self):
+        return self.barrier.status
+
+    @property
+    def internal_status_changed(self):
+        return self.barrier.status != self.status
+
+    @property
+    def internal_country(self):
+        return self.barrier.export_country
+
+    @property
+    def internal_country_changed(self):
+        return self.barrier.export_country != self.country
+
+    @property
+    def internal_sectors(self):
+        return self.barrier.sectors
+
+    @property
+    def internal_sectors_changed(self):
+        return self.barrier.sectors != self.sectors
+
+    @property
+    def internal_all_sectors(self):
+        return self.barrier.all_sectors
+
+    @property
+    def internal_all_sectors_changed(self):
+        return self.barrier.all_sectors != self.all_sectors
+
+    @property
+    def internal_categories(self):
+        return self.barrier.categories
+
+    @property
+    def internal_categories_changed(self):
+        # TODO: consider other options
+        return set(self.barrier.categories.all()) != set(self.categories.all())
 
     # # Ready to be published should reflect if there are underlying changes to any of the fields
     # # TODO:

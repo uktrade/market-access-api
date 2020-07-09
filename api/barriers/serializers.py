@@ -688,6 +688,7 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
     internal_title_changed = serializers.SerializerMethodField()
     internal_summary_changed = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
+    internal_categories = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrier
@@ -696,14 +697,26 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
             "title",
             "title_updated_on",
             "internal_title_changed",
+            "internal_title_at_update",
             "summary",
             "summary_updated_on",
             "internal_summary_changed",
+            "internal_summary_at_update",
             "status",
+            "internal_status",
+            "internal_status_changed",
             "country",
+            "internal_country",
+            "internal_country_changed",
             "sectors",
+            "internal_sectors",
+            "internal_sectors_changed",
             "all_sectors",
+            "internal_all_sectors",
+            "internal_all_sectors_changed",
             "categories",
+            "internal_categories",
+            "internal_categories_changed",
             "public_view_status",
             "first_published_on",
             "last_published_on",
@@ -713,13 +726,25 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
             "id",
             "title_updated_on",
             "internal_title_changed",
+            "internal_title_at_update",
             "summary_updated_on",
             "internal_summary_changed",
+            "internal_summary_at_update",
             "status",
+            "internal_status",
+            "internal_status_changed",
             "country",
+            "internal_country",
+            "internal_country_changed",
             "sectors",
+            "internal_sectors",
+            "internal_sectors_changed",
             "all_sectors",
+            "internal_all_sectors",
+            "internal_all_sectors_changed",
             "categories",
+            "internal_categories",
+            "internal_categories_changed",
             "public_view_status",
             "first_published_on",
             "last_published_on",
@@ -728,6 +753,9 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
 
     def get_categories(self, obj):
         return [category.title for category in obj.categories.all()]
+
+    def get_internal_categories(self, obj):
+        return [category.title for category in obj.internal_categories.all()]
 
     def get_internal_title_changed(self, obj):
         return obj.internal_title_changed
