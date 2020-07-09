@@ -11,12 +11,13 @@ from api.barriers.history import (
     BarrierHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
+    PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
 from api.barriers.models import BarrierInstance, PublicBarrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.interactions.models import Interaction
+from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
 
 
@@ -330,6 +331,44 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "title"
         assert data["old_value"] is None
         assert data["new_value"] == "New title"
+
+    def test_note_text_history(self):
+        note = PublicBarrierNote.objects.create(
+            public_barrier=self.public_barrier,
+            text="Original note",
+        )
+        note.text = "Edited note"
+        note.save()
+
+        items = PublicBarrierNoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier_note"
+        assert data["field"] == "text"
+        assert data["old_value"] == "Original note"
+        assert data["new_value"] == "Edited note"
+
+    def test_note_archived_history(self):
+        note = PublicBarrierNote.objects.create(
+            public_barrier=self.public_barrier,
+            text="Original note",
+        )
+        note.archived = True
+        note.save()
+
+        items = PublicBarrierNoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier_note"
+        assert data["field"] == "archived"
+        assert data["old_value"] == {
+            "archived": False,
+            "text": "Original note",
+        }
+        assert data["new_value"] == {
+            "archived": True,
+            "text": "Original note",
+        }
 
 
 class TestAssessmentHistory(APITestMixin, TestCase):
