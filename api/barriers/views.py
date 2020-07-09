@@ -25,6 +25,7 @@ from api.barriers.history import (
     BarrierHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
+    PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
@@ -476,6 +477,13 @@ class HistoryMixin:
             start_date=start_date,
         )
 
+    def get_public_barrier_notes_history(self, fields=(), start_date=None):
+        return PublicBarrierNoteHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+            start_date=start_date,
+        )
+
     def get_team_history(self, fields=(), start_date=None):
         return TeamMemberHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
@@ -506,11 +514,12 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
             start_date=barrier.reported_on + datetime.timedelta(seconds=1)
         )
         wto_history = self.get_wto_history(start_date=barrier.reported_on)
-        public_history = self.get_public_barrier_history(start_date=barrier.reported_on)
+        public_barrier_history = self.get_public_barrier_history(start_date=barrier.reported_on)
+        public_barrier_note_history = self.get_public_barrier_notes_history(start_date=barrier.reported_on)
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history
-            + wto_history + public_history
+            + wto_history + public_barrier_history + public_barrier_note_history
         )
 
         response = {
