@@ -36,11 +36,11 @@ class StatusHistoryItem(BasePublicBarrierHistoryItem):
 
 
 class SummaryHistoryItem(BasePublicBarrierHistoryItem):
-    field = "summary"
+    field = "_summary"
 
 
 class TitleHistoryItem(BasePublicBarrierHistoryItem):
-    field = "title"
+    field = "_title"
 
 
 class PublicBarrierHistoryFactory(HistoryItemFactory):
