@@ -18,7 +18,7 @@ class CountryHistoryItem(BasePublicBarrierHistoryItem):
 
 
 class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
-    field = "_public_view_status"
+    field = "public_view_status"
 
 
 class SectorsHistoryItem(BasePublicBarrierHistoryItem):

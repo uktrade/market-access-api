@@ -17,6 +17,7 @@ from api.barriers.models import BarrierInstance, PublicBarrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Interaction
+from api.metadata.constants import PublicBarrierStatus
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
@@ -293,6 +294,18 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
         assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
+
+    def test_public_view_status_history(self):
+        self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "public_view_status"
+        assert data["old_value"] == PublicBarrierStatus.UNKNOWN
+        assert data["new_value"] == PublicBarrierStatus.ELIGIBLE
 
     def test_summary_history(self):
         self.public_barrier.summary = "New summary"

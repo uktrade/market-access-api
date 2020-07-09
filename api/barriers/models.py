@@ -367,12 +367,36 @@ class PublicBarrierHistoricalModel(models.Model):
             changed_fields.discard("all_sectors")
             changed_fields.add("sectors")
 
+        if "_title" in changed_fields:
+            changed_fields.discard("_title")
+            changed_fields.add("title")
+
+        if "_summary" in changed_fields:
+            changed_fields.discard("_summary")
+            changed_fields.add("summary")
+
+        if "_public_view_status" in changed_fields:
+            changed_fields.discard("_public_view_status")
+            changed_fields.add("public_view_status")
+
         return list(changed_fields)
 
     def update_categories(self):
         self.categories_cache = list(
             self.instance.categories.values_list("id", flat=True)
         )
+
+    @property
+    def public_view_status(self):
+        return self._public_view_status
+
+    @property
+    def summary(self):
+        return self._summary
+
+    @property
+    def title(self):
+        return self._title
 
     def save(self, *args, **kwargs):
         self.update_categories()
