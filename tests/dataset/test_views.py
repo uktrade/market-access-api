@@ -56,6 +56,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["value_to_economy"] is None
         assert barrier["import_market_size"] is None
         assert barrier["commercial_value"] is None
+        assert barrier["commercial_value_explanation"] is None
         assert barrier["export_value"] is None
 
     def test_list_barriers_dataset(self):

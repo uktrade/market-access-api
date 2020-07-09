@@ -42,6 +42,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
     value_to_economy = serializers.SerializerMethodField()
     import_market_size = serializers.SerializerMethodField()
     commercial_value = serializers.SerializerMethodField()
+    commercial_value_explanation = serializers.SerializerMethodField()
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     company_names = serializers.SerializerMethodField()
@@ -71,6 +72,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
             "value_to_economy",
             "import_market_size",
             "commercial_value",
+            "commercial_value_explanation",
             "export_value",
         )
 
@@ -100,6 +102,11 @@ class BarrierDataSetSerializer(serializers.Serializer):
     def get_commercial_value(self, obj):
         if hasattr(obj, "assessment"):
             return obj.assessment.commercial_value
+        return None
+
+    def get_commercial_value_explanation(self, obj):
+        if hasattr(obj, "assessment"):
+            return obj.assessment.commercial_value_explanation
         return None
 
     def get_export_value(self, obj):
