@@ -10,6 +10,10 @@ class CommercialValueHistoryItem(BaseAssessmentHistoryItem):
     field = "commercial_value"
 
 
+class CommercialValueExplanationHistoryItem(BaseAssessmentHistoryItem):
+    field = "commercial_value_explanation"
+
+
 class DocumentsHistoryItem(BaseAssessmentHistoryItem):
     field = "documents"
 
@@ -41,6 +45,7 @@ class AssessmentHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
         CommercialValueHistoryItem,
+        CommercialValueExplanationHistoryItem,
         DocumentsHistoryItem,
         ExplanationHistoryItem,
         ExportValueHistoryItem,
