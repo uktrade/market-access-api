@@ -87,6 +87,10 @@ class BarrierHistoricalModel(models.Model):
             changed_fields.discard("country_admin_areas")
             changed_fields.add("location")
 
+        if "all_sectors" in changed_fields:
+            changed_fields.discard("all_sectors")
+            changed_fields.add("sectors")
+
         return list(changed_fields)
 
     def update_categories(self):
@@ -358,6 +362,10 @@ class PublicBarrierHistoricalModel(models.Model):
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
+
+        if "all_sectors" in changed_fields:
+            changed_fields.discard("all_sectors")
+            changed_fields.add("sectors")
 
         return list(changed_fields)
 
