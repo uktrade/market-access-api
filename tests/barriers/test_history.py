@@ -232,6 +232,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
             value_to_economy=10000,
             import_market_size=20000,
             commercial_value=30000,
+            commercial_value_explanation="wibble",
             export_value=40000,
         )
 
@@ -287,6 +288,18 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         assert data["field"] == "commercial_value"
         assert data["old_value"] == 30000
         assert data["new_value"] == 1111
+
+    def test_commercial_value_explanation_history(self):
+        self.assessment.commercial_value_explanation = "wobble"
+        self.assessment.save()
+
+        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "assessment"
+        assert data["field"] == "commercial_value_explanation"
+        assert data["old_value"] == "wibble"
+        assert data["new_value"] == "wobble"
 
     def test_export_value_history(self):
         self.assessment.export_value = 2222
