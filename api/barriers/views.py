@@ -343,7 +343,6 @@ class BarriertListExportView(generics.ListAPIView):
         "value_to_economy": "Value to economy",
         "import_market_size": "Import market size",
         "commercial_value": "Commercial Value",
-        "commercial_value_explanation": "Commercial value explanation",
         "export_value": "Value of currently affected UK exports",
         "reported_on": "Reported Date",
         "status_date": "Status Date",
