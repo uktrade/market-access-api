@@ -19,7 +19,7 @@ from api.metadata.utils import (
 
 class BarrierDataSetSerializer(serializers.Serializer):
     """
-    Serializer for CSV export
+    Serializer for Data Workspace View
     """
 
     id = serializers.UUIDField()
