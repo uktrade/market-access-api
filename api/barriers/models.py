@@ -10,13 +10,13 @@ from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import (
-    BARRIER_STATUS,
+    BarrierStatus,
     BARRIER_SOURCE,
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
     TRADE_DIRECTION_CHOICES,
-    PublicBarrierStatus
+    PublicBarrierStatus,
 )
 
 from api.core.models import BaseModel, FullyArchivableMixin
@@ -178,7 +178,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
 
     # Barrier status
     status = models.PositiveIntegerField(
-        choices=BARRIER_STATUS, default=0, help_text="status of the barrier instance"
+        choices=BarrierStatus.choices, default=0, help_text="status of the barrier instance"
     )
     sub_status = models.CharField(
         choices=BARRIER_PENDING,
@@ -393,11 +393,13 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     internal_summary_at_update = models.CharField(null=True, max_length=MAX_LENGTH)
 
     # === Non editable fields ====
-    status = models.PositiveIntegerField(choices=BARRIER_STATUS, default=0)
+    status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
     country = models.UUIDField()
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     all_sectors = models.NullBooleanField()
     categories = models.ManyToManyField(Category, related_name="public_barriers")
+
+    published_versions = JSONField(default=dict)
 
     # === Status and timestamps ====
     _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
@@ -410,6 +412,48 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             ('publish_barrier', 'Can publish barrier'),
             ('mark_barrier_as_ready_for_publishing', 'Can mark barrier as ready for publishing'),
         ]
+
+    def add_new_version(self):
+        # self.published_versions structure:
+        # {
+        #     "latest_version": 3,
+        #     "versions": {
+        #         1: {
+        #                "version": 1,
+        #                "published_on: "datetime",
+        #            },
+        #         2: {...},
+        #         3: {...}
+        #     }
+        # }
+        latest_version = self.published_versions.get("latest_version", "0")
+        new_version = str(int(latest_version) + 1)
+        entry = {
+            "version": new_version,
+            "published_on": self.last_published_on.isoformat()
+        }
+        if not self.published_versions:
+            self.published_versions = {"latest_version": "0", "versions": {}}
+        self.published_versions["latest_version"] = new_version
+        self.published_versions["versions"].setdefault(new_version, entry)
+
+    def get_published_version(self, version):
+        version = str(version)
+        if self.published_versions:
+            timestamp = self.published_versions["versions"][version]["published_on"]
+            historic_public_barrier = self.history.as_of(datetime.datetime.fromisoformat(timestamp))
+            return historic_public_barrier
+        else:
+            return None
+
+    @property
+    def latest_published_version(self):
+        return self.get_published_version(self.published_versions.get("latest_version", 0))
+
+    def publish(self):
+        self.public_view_status = PublicBarrierStatus.PUBLISHED
+        self.add_new_version()
+        self.save()
 
     @property
     def title(self):

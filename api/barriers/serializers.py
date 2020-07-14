@@ -8,7 +8,7 @@ from api.interactions.models import Document
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
     BARRIER_SOURCE,
-    BARRIER_STATUS,
+    BarrierStatus,
     BARRIER_PENDING,
     STAGE_STATUS,
     PROBLEM_STATUS_TYPES,
@@ -237,7 +237,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
-        status_dict = dict(BARRIER_STATUS)
+        status_dict = dict(BarrierStatus.choices)
         sub_status_dict = dict(BARRIER_PENDING)
         status = status_dict.get(obj.status, "Unknown")
         if status == "Open: Pending action":
@@ -689,6 +689,7 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
     internal_summary_changed = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     internal_categories = serializers.SerializerMethodField()
+    latest_published_version = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrier
@@ -721,6 +722,7 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
             "first_published_on",
             "last_published_on",
             "unpublished_on",
+            "latest_published_version",
         )
         read_only_fields = (
             "id",
@@ -749,6 +751,7 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
             "first_published_on",
             "last_published_on",
             "unpublished_on",
+            "latest_published_version",
         )
 
     def get_categories(self, obj):
@@ -762,3 +765,71 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
 
     def get_internal_summary_changed(self, obj):
         return obj.internal_summary_changed
+
+    def get_latest_published_version(self, obj):
+        return PublishedPublicBarrierSerializer(obj.latest_published_version).data
+
+
+class PublishedPublicBarrierSerializer(serializers.ModelSerializer):
+    title = serializers.CharField()
+    summary = serializers.CharField()
+    status = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    sectors = serializers.SerializerMethodField()
+    all_sectors = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PublicBarrier
+        fields = (
+            "id",
+            "title",
+            "summary",
+            "status",
+            "country",
+            "sectors",
+            "all_sectors",
+            "categories",
+        )
+
+    def get_status(self, obj):
+        return BarrierStatus.name(obj.status)
+
+    def get_country(self, obj):
+        return get_country(str(obj.country))
+
+    def get_sectors(self, obj):
+        def sector_name(sid):
+            sector = get_sector(str(sid)) or {}
+            return sector.get("name")
+
+        return [{"name": sector_name(str(sector_id))} for sector_id in obj.sectors if sector_name(str(sector_id))]
+
+    def get_all_sectors(self, obj):
+        return obj.all_sectors or False
+
+    def get_categories(self, obj):
+        return [{"name": category.title} for category in obj.categories.all()]
+
+
+# TODO: write a serializer that can be used to output the JSON blob onto S3
+# As per contract (from slack chat with Michal)
+# Public Barriers in the flat file should look as follows
+# {
+#     "barriers": [
+#         {
+#             "id": "1",
+#             "title": "Belgian chocolate...",
+#             "summary": "Lorem ipsum",
+#             "status": "Open: in progress,
+#             "country": "Belgium",
+#             "sectors: [
+#                 {"name": "Automotive"}
+#             ],
+#             "all_sectors": False,
+#             "categories": [
+#                 {"name": "Goods and Services"}
+#             ]
+#         }
+#     ]
+# }

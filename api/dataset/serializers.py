@@ -7,7 +7,7 @@ from api.metadata.constants import (
     ASSESMENT_IMPACT,
     BARRIER_PENDING,
     BARRIER_SOURCE,
-    BARRIER_STATUS,
+    BarrierStatus,
     PROBLEM_STATUS_TYPES,
 )
 from api.metadata.utils import (
@@ -109,7 +109,7 @@ class BarrierDataSetSerializer(serializers.Serializer):
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
-        status_dict = dict(BARRIER_STATUS)
+        status_dict = dict(BarrierStatus.choices)
         sub_status_dict = dict(BARRIER_PENDING)
         status = status_dict.get(obj.status, "Unknown")
         if status == "Open: Pending action":

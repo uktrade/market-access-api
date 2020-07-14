@@ -803,7 +803,10 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
     # TODO: add permission classes to restrict this action to Publishers
     @action(methods=["post"], detail=True)
     def publish(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.PUBLISHED)
+        public_barrier = self.get_object()
+        public_barrier.publish()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
 
     # TODO: add permission classes to restrict this action to Publishers
     @action(methods=["post"], detail=True)

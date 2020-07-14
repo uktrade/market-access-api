@@ -27,8 +27,8 @@ class BarrierFilterSet(django_filters.FilterSet):
         ex: status=1 or status=1,2
     location: UUID, one or more comma seperated overseas region/country/state UUIDs
         ex:
-        location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc
-        location=aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc,955f66a0-5d95-e211-a939-e4115bead28a
+        location=a25f66a0-5d95-e211-a939-e4115bead28a
+        location=a25f66a0-5d95-e211-a939-e4115bead28a,955f66a0-5d95-e211-a939-e4115bead28a
     priority: priority code, one or more comma seperated priority codes
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     text: combination custom search across multiple fields.

@@ -7,9 +7,10 @@ from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_team_members
 from api.barriers.models import BarrierInstance, PublicBarrier
-from api.metadata.constants import PublicBarrierStatus
+from api.metadata.constants import PublicBarrierStatus, BarrierStatus
 from api.metadata.models import Category, BarrierPriority
 from api.core.test_utils import APITestMixin
+from api.metadata.utils import get_country
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 
@@ -520,6 +521,101 @@ class TestPublicBarrier(APITestMixin, TestCase):
         assert response.data["first_published_on"]
         assert response.data["last_published_on"]
         assert not response.data["unpublished_on"]
+
+    def test_public_barrier_publish_creates_a_published_version(self):
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+
+        assert not pb.published_versions
+        assert not pb.latest_published_version
+
+        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
+        _response = self.api_client.post(url)
+
+        pb.refresh_from_db()
+        assert 1 == len(pb.published_versions["versions"])
+        assert '1' == pb.published_versions["latest_version"]
+        assert pb.latest_published_version
+
+    def test_public_barrier_new_published_version(self):
+        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        assert 1 == len(pb.published_versions["versions"])
+        assert '1' == pb.published_versions["latest_version"]
+        assert pb.latest_published_version
+
+        response = self.api_client.post(url)
+
+        pb.refresh_from_db()
+        assert 2 == len(pb.published_versions["versions"])
+        assert '2' == pb.published_versions["latest_version"]
+        assert pb.latest_published_version
+
+    def test_public_barrier_latest_published_version_attributes(self):
+        self.barrier.sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
+        expected_sectors = [{"name": "Chemicals"}]
+        category = CategoryFactory()
+        self.barrier.categories.add(category)
+        expected_categories = [{"name": category.title}]
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.title = "Title 1"
+        pb.summary = "Summary 1"
+        pb.save()
+
+        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert "Title 1" == response.data["latest_published_version"]["title"]
+        assert "Summary 1" == response.data["latest_published_version"]["summary"]
+        assert BarrierStatus.name(self.barrier.status) == response.data["latest_published_version"]["status"]
+        assert get_country(self.barrier.export_country) == response.data["latest_published_version"]["country"]
+        assert expected_sectors == response.data["latest_published_version"]["sectors"]
+        assert response.data["latest_published_version"]["all_sectors"] is False
+        assert expected_categories == response.data["latest_published_version"]["categories"]
+
+    def test_public_barrier_latest_published_version_not_affected_by_updates(self):
+        self.barrier.sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
+        expected_sectors = [{"name": "Chemicals"}]
+        category = CategoryFactory()
+        self.barrier.categories.add(category)
+        expected_categories = [{"name": category.title}]
+        expected_status = BarrierStatus.name(BarrierStatus.OPEN_PENDING)
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.title = "Title 1"
+        pb.summary = "Summary 1"
+        pb.save()
+
+        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+        pb.refresh_from_db()
+
+        # Let's do some mods to self.barrier and public barrier
+        self.barrier.status = BarrierStatus.OPEN_IN_PROGRESS
+        self.barrier.summary = "Updated internal barrier summary"
+        self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        self.barrier.save()
+        pb.title = "Title 2"
+        pb.save()
+
+        # There should be no new published versions, and the previous published version should keep its state
+        assert 1 == len(pb.published_versions["versions"])
+        assert '1' == pb.published_versions["latest_version"]
+
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert "Title 1" == response.data["latest_published_version"]["title"]
+        assert "Summary 1" == response.data["latest_published_version"]["summary"]
+        assert expected_status == response.data["latest_published_version"]["status"]
+        assert get_country(self.barrier.export_country) == response.data["latest_published_version"]["country"]
+        assert expected_sectors == response.data["latest_published_version"]["sectors"]
+        assert response.data["latest_published_version"]["all_sectors"] is False
+        assert expected_categories == response.data["latest_published_version"]["categories"]
 
     # === UNPUBLISH ===
     # TODO: wrap this up
