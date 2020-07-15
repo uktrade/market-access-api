@@ -18,7 +18,7 @@ from api.metadata.constants import (
 )
 
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata.models import BarrierPriority, BarrierTag, Category
+from api.metadata.models import BarrierPriority, BarrierTag, Category, HSCode
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -227,6 +227,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         related_name="barrier",
         on_delete=models.SET_NULL,
     )
+    hs_codes = models.ManyToManyField(HSCode)
     draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
