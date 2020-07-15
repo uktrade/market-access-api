@@ -11,12 +11,14 @@ from api.barriers.history import (
     BarrierHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
+    PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
 from api.barriers.models import BarrierInstance, PublicBarrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.interactions.models import Interaction
+from api.interactions.models import Interaction, PublicBarrierNote
+from api.metadata.constants import PublicBarrierStatus
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
@@ -182,11 +184,11 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "sectors"
-        assert data["old_value"] == [
+        assert data["old_value"]["sectors"] == [
             "af959812-6095-e211-a939-e4115bead28a",
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
-        assert data["new_value"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
 
     def test_source_history(self):
         self.barrier.source = "COMPANY"
@@ -251,6 +253,18 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["old_value"] == []
         assert set(data["new_value"]) == {"109", "115"}
 
+    def test_country_history(self):
+        self.public_barrier.country = "570507cc-1592-4a99-afca-915d13a437d0"
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "country"
+        assert str(data["old_value"]) == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        assert str(data["new_value"]) == "570507cc-1592-4a99-afca-915d13a437d0"
+
     def test_status_history(self):
         self.public_barrier.status = 5
         self.public_barrier.save()
@@ -276,11 +290,23 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "sectors"
-        assert data["old_value"] == [
+        assert data["old_value"]["sectors"] == [
             "af959812-6095-e211-a939-e4115bead28a",
             "9538cecc-5f95-e211-a939-e4115bead28a",
         ]
-        assert data["new_value"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
+
+    def test_public_view_status_history(self):
+        self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "public_view_status"
+        assert data["old_value"] == PublicBarrierStatus.UNKNOWN
+        assert data["new_value"] == PublicBarrierStatus.ELIGIBLE
 
     def test_summary_history(self):
         self.public_barrier.summary = "New summary"
@@ -305,6 +331,44 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "_title"
         assert data["old_value"] is None
         assert data["new_value"] == "New title"
+
+    def test_note_text_history(self):
+        note = PublicBarrierNote.objects.create(
+            public_barrier=self.public_barrier,
+            text="Original note",
+        )
+        note.text = "Edited note"
+        note.save()
+
+        items = PublicBarrierNoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier_note"
+        assert data["field"] == "text"
+        assert data["old_value"] == "Original note"
+        assert data["new_value"] == "Edited note"
+
+    def test_note_archived_history(self):
+        note = PublicBarrierNote.objects.create(
+            public_barrier=self.public_barrier,
+            text="Original note",
+        )
+        note.archived = True
+        note.save()
+
+        items = PublicBarrierNoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier_note"
+        assert data["field"] == "archived"
+        assert data["old_value"] == {
+            "archived": False,
+            "text": "Original note",
+        }
+        assert data["new_value"] == {
+            "archived": True,
+            "text": "Original note",
+        }
 
 
 class TestAssessmentHistory(APITestMixin, TestCase):
@@ -698,11 +762,17 @@ class TestHistoryView(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "sectors",
-            "old_value": [
-                "af959812-6095-e211-a939-e4115bead28a",
-                "9538cecc-5f95-e211-a939-e4115bead28a"
-            ],
-            "new_value": ["9538cecc-5f95-e211-a939-e4115bead28a"],
+            "old_value": {
+                "all_sectors": None,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                    "9538cecc-5f95-e211-a939-e4115bead28a"
+                ],
+            },
+            "new_value": {
+                "all_sectors": None,
+                "sectors": ["9538cecc-5f95-e211-a939-e4115bead28a"],
+            },
             "user": None
         } in history
 

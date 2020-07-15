@@ -25,6 +25,7 @@ from api.barriers.history import (
     BarrierHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
+    PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
@@ -476,6 +477,13 @@ class HistoryMixin:
             start_date=start_date,
         )
 
+    def get_public_barrier_notes_history(self, fields=(), start_date=None):
+        return PublicBarrierNoteHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+            start_date=start_date,
+        )
+
     def get_team_history(self, fields=(), start_date=None):
         return TeamMemberHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
@@ -506,12 +514,19 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
             start_date=barrier.reported_on + datetime.timedelta(seconds=1)
         )
         wto_history = self.get_wto_history(start_date=barrier.reported_on)
-        public_history = self.get_public_barrier_history(start_date=barrier.reported_on)
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history
-            + wto_history + public_history
+            + wto_history
         )
+
+        # TODO: Update this when PublicBarrier.barrier becomes a OneToOneField
+        if barrier.public_barriers.exists():
+            public_barrier = barrier.public_barriers.all()[:1].get()
+            history_items += self.get_public_barrier_history(
+                start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
+            )
+            history_items += self.get_public_barrier_notes_history()
 
         response = {
             "barrier_id": str(pk),
@@ -554,7 +569,10 @@ class PublicBarrierActivity(HistoryMixin, generics.GenericAPIView):
     """
 
     def get(self, request, pk):
-        history_items = self.get_public_barrier_history()
+        public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))
+        history_items = self.get_public_barrier_history(
+            start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
+        )
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],

@@ -13,8 +13,12 @@ class CategoriesHistoryItem(BasePublicBarrierHistoryItem):
         return record.categories_cache or []
 
 
+class CountryHistoryItem(BasePublicBarrierHistoryItem):
+    field = "country"
+
+
 class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
-    field = "_public_view_status"
+    field = "public_view_status"
 
 
 class SectorsHistoryItem(BasePublicBarrierHistoryItem):
@@ -25,7 +29,10 @@ class SectorsHistoryItem(BasePublicBarrierHistoryItem):
             return super().get_data()
 
     def get_value(self, record):
-        return [str(sector_id) for sector_id in record.sectors or []]
+        return {
+            "all_sectors": record.all_sectors,
+            "sectors": [str(sector_id) for sector_id in record.sectors or []],
+        }
 
 
 class StatusHistoryItem(BasePublicBarrierHistoryItem):
@@ -47,6 +54,7 @@ class PublicBarrierHistoryFactory(HistoryItemFactory):
     class_lookup = {}
     history_item_classes = (
         CategoriesHistoryItem,
+        CountryHistoryItem,
         PublicViewStatusHistoryItem,
         SectorsHistoryItem,
         StatusHistoryItem,

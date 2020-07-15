@@ -83,7 +83,10 @@ class SectorsHistoryItem(BaseBarrierHistoryItem):
             return super().get_data()
 
     def get_value(self, record):
-        return [str(sector_id) for sector_id in record.sectors or []]
+        return {
+            "all_sectors": record.all_sectors,
+            "sectors": [str(sector_id) for sector_id in record.sectors or []],
+        }
 
 
 class SourceHistoryItem(BaseBarrierHistoryItem):

@@ -87,6 +87,10 @@ class BarrierHistoricalModel(models.Model):
             changed_fields.discard("country_admin_areas")
             changed_fields.add("location")
 
+        if "all_sectors" in changed_fields:
+            changed_fields.discard("all_sectors")
+            changed_fields.add("sectors")
+
         return list(changed_fields)
 
     def update_categories(self):
@@ -359,12 +363,40 @@ class PublicBarrierHistoricalModel(models.Model):
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
 
+        if "all_sectors" in changed_fields:
+            changed_fields.discard("all_sectors")
+            changed_fields.add("sectors")
+
+        if "_title" in changed_fields:
+            changed_fields.discard("_title")
+            changed_fields.add("title")
+
+        if "_summary" in changed_fields:
+            changed_fields.discard("_summary")
+            changed_fields.add("summary")
+
+        if "_public_view_status" in changed_fields:
+            changed_fields.discard("_public_view_status")
+            changed_fields.add("public_view_status")
+
         return list(changed_fields)
 
     def update_categories(self):
         self.categories_cache = list(
             self.instance.categories.values_list("id", flat=True)
         )
+
+    @property
+    def public_view_status(self):
+        return self._public_view_status
+
+    @property
+    def summary(self):
+        return self._summary
+
+    @property
+    def title(self):
+        return self._title
 
     def save(self, *args, **kwargs):
         self.update_categories()
@@ -380,7 +412,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     This table should not be exposed to the public however only to the DMAS frontend which requires login.
     Transfer the data to a flat file or another service which can safely expose the data.
     """
-    barrier = models.ForeignKey(BarrierInstance, on_delete=CASCADE)
+    barrier = models.ForeignKey(BarrierInstance, on_delete=CASCADE, related_name="public_barriers")
 
     # === Title related fields =====
     _title = models.CharField(null=True, max_length=MAX_LENGTH)
