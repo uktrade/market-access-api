@@ -498,6 +498,17 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.title_updated_on = datetime.datetime.now()
 
     @property
+    def title_changed(self):
+        if self.title:
+            if self.latest_published_version:
+                return self.title != self.latest_published_version.title
+            else:
+                return True
+        else:
+            return False
+
+
+    @property
     def summary(self):
         return self._summary
 
@@ -506,6 +517,16 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self._summary = value
         self.internal_summary_at_update = self.barrier.summary
         self.summary_updated_on = datetime.datetime.now()
+
+    @property
+    def summary_changed(self):
+        if self.summary:
+            if self.latest_published_version:
+                return self.summary != self.latest_published_version.summary
+            else:
+                return True
+        else:
+            return False
 
     @property
     def public_view_status(self):
@@ -602,12 +623,24 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         # TODO: consider other options
         return set(self.barrier.categories.all()) != set(self.categories.all())
 
-    # # Ready to be published should reflect if there are underlying changes to any of the fields
-    # # TODO:
-    # #  - either set this back to False when any of the tracked fields change on self.barrier
-    # #  - or have a method field / helper - with that you still need a field for
-    # #    manually setting it to be publishable though
-    # ready_to_be_published = models.BooleanField(default=False)
+    @property
+    def ready_to_be_published(self):
+        status_check = self.public_view_status == PublicBarrierStatus.READY
+        changes_check = self.unpublished_changes
+        return status_check and changes_check
+
+    @property
+    def unpublished_changes(self):
+        return (
+            self.title_changed
+            or self.summary_changed
+            or self.internal_status_changed
+            or self.internal_country_changed
+            or self.internal_sectors_changed
+            or self.internal_all_sectors_changed
+            or self.internal_sectors_changed
+            or self.internal_categories_changed
+        )
 
     history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 

@@ -690,6 +690,8 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
     categories = serializers.SerializerMethodField()
     internal_categories = serializers.SerializerMethodField()
     latest_published_version = serializers.SerializerMethodField()
+    unpublished_changes = serializers.SerializerMethodField()
+    ready_to_be_published = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrier
@@ -723,6 +725,8 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
             "last_published_on",
             "unpublished_on",
             "latest_published_version",
+            "unpublished_changes",
+            "ready_to_be_published",
         )
         read_only_fields = (
             "id",
@@ -752,6 +756,8 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
             "last_published_on",
             "unpublished_on",
             "latest_published_version",
+            "unpublished_changes",
+            "ready_to_be_published",
         )
 
     def get_categories(self, obj):
@@ -768,6 +774,12 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
 
     def get_latest_published_version(self, obj):
         return PublishedPublicBarrierSerializer(obj.latest_published_version).data
+
+    def get_unpublished_changes(self, obj):
+        return obj.unpublished_changes
+
+    def get_ready_to_be_published(self, obj):
+        return obj.ready_to_be_published
 
 
 class PublishedPublicBarrierSerializer(serializers.ModelSerializer):
