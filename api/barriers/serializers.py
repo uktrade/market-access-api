@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance, BarrierUserHit
 from api.collaboration.models import TeamMember
+from api.hs_codes.serializers import HSCodeSerializer
 from api.interactions.models import Document
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
@@ -14,6 +15,7 @@ from api.metadata.constants import (
     PROBLEM_STATUS_TYPES,
     TRADE_DIRECTION_CHOICES,
 )
+from api.metadata.models import HSCode
 from api.metadata.serializers import BarrierTagSerializer
 from api.metadata.utils import (
     adjust_barrier_tags,
@@ -419,6 +421,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     # TODO: deprecate this field (use summary instead)
     problem_description = serializers.CharField(source="summary", required=False)
     wto_profile = WTOProfileSerializer()
+    hs_codes = HSCodeSerializer(many=True, required=False)
 
     class Meta:
         model = BarrierInstance
@@ -465,6 +468,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "trade_direction",
             "end_date",
             "wto_profile",
+            "hs_codes",
         )
         read_only_fields = (
             "id",
@@ -577,6 +581,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         if "wto_profile" in validated_data:
             self.update_wto_profile(instance, validated_data)
 
+        if "hs_codes" in validated_data:
+            self.update_hs_codes(instance, validated_data)
+
         if instance.archived is False and validated_data.get("archived") is True:
             instance.archive(
                 user=self.user,
@@ -589,6 +596,12 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 reason=validated_data.get("unarchived_reason"),
             )
         return super().update(instance, validated_data)
+
+    def update_hs_codes(self, instance, validated_data):
+        hs_codes = validated_data.pop('hs_codes')
+        codes = [hs_code.get("code") for hs_code in hs_codes]
+        hs_codes = HSCode.objects.filter(code__in=codes)
+        instance.hs_codes.set(hs_codes)
 
     def update_wto_profile(self, instance, validated_data):
         wto_profile = validated_data.pop('wto_profile')
