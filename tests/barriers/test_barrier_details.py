@@ -7,6 +7,7 @@ from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_team_members
 from api.barriers.models import BarrierInstance, PublicBarrier
+from api.barriers.serializers import PublicBarrierSerializer
 from api.metadata.constants import PublicBarrierStatus, BarrierStatus
 from api.metadata.models import Category, BarrierPriority
 from api.core.test_utils import APITestMixin
@@ -745,3 +746,86 @@ class TestPublicBarrier(APITestMixin, TestCase):
 
                 assert params["expected_public_view_status"] == response.data["public_view_status"], \
                     f"Failed at Case {params['case_id']}"
+
+
+class TestPublicBarrierSerializer(APITestMixin, TestCase):
+
+    def setUp(self):
+        self.barrier = BarrierFactory(
+            export_country="1f0be5c4-5d95-e211-a939-e4115bead28a",  # Singapore
+            sectors=['9b38cecc-5f95-e211-a939-e4115bead28a'],       # Chemicals
+            status=BarrierStatus.OPEN_PENDING
+        )
+        self.category = CategoryFactory()
+        self.barrier.categories.add(self.category)
+        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
+    def test_status_is_serialized_consistently(self):
+        expected_status = {
+            "id": BarrierStatus.OPEN_PENDING,
+            "name": BarrierStatus.name(BarrierStatus.OPEN_PENDING)
+        }
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        data = PublicBarrierSerializer(pb).data
+        assert expected_status == data["status"]
+        assert expected_status == data["internal_status"]
+        assert expected_status == data["latest_published_version"]["status"]
+
+    def test_country_is_serialized_consistently(self):
+        expected_country = {
+            "id": "1f0be5c4-5d95-e211-a939-e4115bead28a",
+            "name": "Singapore"
+        }
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        data = PublicBarrierSerializer(pb).data
+        assert expected_country == data["country"]
+        assert expected_country == data["internal_country"]
+        assert expected_country == data["latest_published_version"]["country"]
+
+    def test_sectors_is_serialized_consistently(self):
+        expected_sectors = [
+            {"id": "9b38cecc-5f95-e211-a939-e4115bead28a", "name": "Chemicals"}
+        ]
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        data = PublicBarrierSerializer(pb).data
+        assert expected_sectors == data["sectors"]
+        assert expected_sectors == data["internal_sectors"]
+        assert expected_sectors == data["latest_published_version"]["sectors"]
+
+    def test_all_sectors_is_serialized_consistently(self):
+        expected_all_sectors = False
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        data = PublicBarrierSerializer(pb).data
+        assert expected_all_sectors == data["all_sectors"]
+        assert expected_all_sectors == data["internal_all_sectors"]
+        assert expected_all_sectors == data["latest_published_version"]["all_sectors"]
+
+    def test_categories_is_serialized_consistently(self):
+        expected_categories = [
+            {"id": self.category.id, "title": self.category.title}
+        ]
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        data = PublicBarrierSerializer(pb).data
+        assert expected_categories == data["categories"]
+        assert expected_categories == data["internal_categories"]
+        assert expected_categories == data["latest_published_version"]["categories"]

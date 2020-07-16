@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from api.barriers.models import BarrierInstance, BarrierUserHit, PublicBarrier
 from api.collaboration.models import TeamMember
+from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.interactions.models import Document
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
@@ -679,7 +680,87 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
         )
 
 
-class PublicBarrierSerializer(serializers.ModelSerializer):
+class ReadOnlyStatusField(serializers.Field):
+    """
+    Field serializer to be used with read only status fields.
+    """
+
+    def to_representation(self, value):
+        return {
+            "id": value,
+            "name": BarrierStatus.name(value)
+        }
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyCountryField(serializers.Field):
+    """
+    Field serializer to be used with read only country / export_country fields.
+    """
+
+    def to_representation(self, value):
+        value = str(value)
+        country = get_country(value) or {}
+        return {
+            "id": value,
+            "name": country.get("name")
+        }
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlySectorsField(serializers.Field):
+    """
+    Field serializer to be used with read only sectors fields.
+    """
+
+    def to_representation(self, value):
+        def sector_name(sid):
+            sector = get_sector(str(sid)) or {}
+            return sector.get("name")
+
+        return [
+            {"id": str(sector_id), "name": sector_name(str(sector_id))}
+            for sector_id in value
+            if sector_name(str(sector_id))
+        ]
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyAllSectorsField(serializers.Field):
+    """
+    Field serializer to be used with read only all_sectors fields.
+    """
+
+    def to_representation(self, value):
+        return value or False
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyCategoriesField(serializers.Field):
+    """
+    Field serializer to be used with read only categories fields.
+    """
+
+    def to_representation(self, value):
+        return [
+            {"id": category.id, "title": category.title}
+            for category in value.all()
+        ]
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
+                              serializers.ModelSerializer):
     """
     Generic serializer for barrier public data.
     """
@@ -687,8 +768,16 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
     summary = serializers.CharField()
     internal_title_changed = serializers.SerializerMethodField()
     internal_summary_changed = serializers.SerializerMethodField()
-    categories = serializers.SerializerMethodField()
-    internal_categories = serializers.SerializerMethodField()
+    status = ReadOnlyStatusField()
+    internal_status = ReadOnlyStatusField()
+    country = ReadOnlyCountryField()
+    internal_country = ReadOnlyCountryField()
+    sectors = ReadOnlySectorsField()
+    internal_sectors = ReadOnlySectorsField()
+    all_sectors = ReadOnlyAllSectorsField()
+    internal_all_sectors = ReadOnlyAllSectorsField()
+    categories = ReadOnlyCategoriesField()
+    internal_categories = ReadOnlyCategoriesField()
     latest_published_version = serializers.SerializerMethodField()
     unpublished_changes = serializers.SerializerMethodField()
     ready_to_be_published = serializers.SerializerMethodField()
@@ -760,12 +849,6 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
             "ready_to_be_published",
         )
 
-    def get_categories(self, obj):
-        return [category.title for category in obj.categories.all()]
-
-    def get_internal_categories(self, obj):
-        return [category.title for category in obj.internal_categories.all()]
-
     def get_internal_title_changed(self, obj):
         return obj.internal_title_changed
 
@@ -773,7 +856,7 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
         return obj.internal_summary_changed
 
     def get_latest_published_version(self, obj):
-        return PublishedPublicBarrierSerializer(obj.latest_published_version).data
+        return PublishedVersionSerializer(obj.latest_published_version).data
 
     def get_unpublished_changes(self, obj):
         return obj.unpublished_changes
@@ -782,14 +865,15 @@ class PublicBarrierSerializer(serializers.ModelSerializer):
         return obj.ready_to_be_published
 
 
-class PublishedPublicBarrierSerializer(serializers.ModelSerializer):
+class PublishedVersionSerializer(AllowNoneAtToRepresentationMixin,
+                                 serializers.ModelSerializer):
     title = serializers.CharField()
     summary = serializers.CharField()
-    status = serializers.SerializerMethodField()
-    country = serializers.SerializerMethodField()
-    sectors = serializers.SerializerMethodField()
-    all_sectors = serializers.SerializerMethodField()
-    categories = serializers.SerializerMethodField()
+    status = ReadOnlyStatusField()
+    country = ReadOnlyCountryField()
+    sectors = ReadOnlySectorsField()
+    all_sectors = ReadOnlyAllSectorsField()
+    categories = ReadOnlyCategoriesField()
 
     class Meta:
         model = PublicBarrier
@@ -803,25 +887,6 @@ class PublishedPublicBarrierSerializer(serializers.ModelSerializer):
             "all_sectors",
             "categories",
         )
-
-    def get_status(self, obj):
-        return BarrierStatus.name(obj.status)
-
-    def get_country(self, obj):
-        return get_country(str(obj.country))
-
-    def get_sectors(self, obj):
-        def sector_name(sid):
-            sector = get_sector(str(sid)) or {}
-            return sector.get("name")
-
-        return [{"name": sector_name(str(sector_id))} for sector_id in obj.sectors if sector_name(str(sector_id))]
-
-    def get_all_sectors(self, obj):
-        return obj.all_sectors or False
-
-    def get_categories(self, obj):
-        return [{"name": category.title} for category in obj.categories.all()]
 
 
 # TODO: write a serializer that can be used to output the JSON blob onto S3
