@@ -617,6 +617,37 @@ class TestPublicBarrier(APITestMixin, TestCase):
         assert response.data["latest_published_version"]["all_sectors"] is False
         assert expected_categories == response.data["latest_published_version"]["categories"]
 
+    def test_public_barrier_publish_updates_non_editable_fields(self):
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+
+        assert not pb.categories.all()
+
+        # self.barrier.sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
+        category = CategoryFactory()
+        self.barrier.categories.add(category)
+        self.barrier.save()
+
+        # expected_categories = [{"name": category.title}]
+        # expected_sectors = [{"name": "Chemicals"}]
+        # expected_status = BarrierStatus.name(BarrierStatus.OPEN_PENDING)
+
+        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
+        response = self.api_client.post(url)
+
+        pb.refresh_from_db()
+        assert pb.categories.first()
+        assert category.id == pb.categories.first().id
+        # assert '1' == pb.published_versions["latest_version"]
+        # assert pb.latest_published_version
+
+        # response = self.api_client.post(url)
+
+        # pb.refresh_from_db()
+        # assert 2 == len(pb.published_versions["versions"])
+        # assert '2' == pb.published_versions["latest_version"]
+        # assert pb.latest_published_version
+
     # === UNPUBLISH ===
     # TODO: wrap this up
 

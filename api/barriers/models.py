@@ -482,10 +482,23 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def latest_published_version(self):
         return self.get_published_version(self.published_versions.get("latest_version", 0))
 
+    def update_non_editable_fields(self):
+        self.status = self.internal_status
+        self.country = self.internal_country
+        self.sectors = self.internal_sectors
+        self.all_sectors = self.internal_all_sectors
+        self.categories.set(self.internal_categories.all())
+
     def publish(self):
+        # TODO: add this check back
+        # if self.ready_to_be_published:
+        self.update_non_editable_fields()
         self.public_view_status = PublicBarrierStatus.PUBLISHED
         self.add_new_version()
         self.save()
+        return True
+        # else:
+        #     return False
 
     @property
     def title(self):

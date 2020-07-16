@@ -20,6 +20,7 @@ from rest_framework.viewsets import GenericViewSet
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
+from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
@@ -822,9 +823,12 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
     @action(methods=["post"], detail=True)
     def publish(self, request, *args, **kwargs):
         public_barrier = self.get_object()
-        public_barrier.publish()
-        serializer = PublicBarrierSerializer(public_barrier)
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+        published = public_barrier.publish()
+        if published:
+            serializer = PublicBarrierSerializer(public_barrier)
+            return Response(status=status.HTTP_200_OK, data=serializer.data)
+        else:
+            raise PublicBarrierPublishException()
 
     # TODO: add permission classes to restrict this action to Publishers
     @action(methods=["post"], detail=True)
