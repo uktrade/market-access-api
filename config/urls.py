@@ -24,7 +24,7 @@ from api.barriers.views import (
 from api.user.views import who_am_i, UserDetail
 from api.core.views import admin_override
 from api.dataset.views import BarrierListDataWorkspaceView
-from api.hs_codes.views import HSCodeDetail, HSCodeList
+from api.commodities.views import CommodityDetail, CommodityList
 
 from api.assessment.urls import urlpatterns as assessment_urls
 from api.collaboration.urls import urlpatterns as team_urls
@@ -87,7 +87,7 @@ urlpatterns += [
     ),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
-    path("hs-codes", HSCodeList.as_view(), name="hs-code-list"),
-    path("hs-codes/<str:code>", HSCodeDetail.as_view(), name="hs-code-detail"),
+    path("commodities", CommodityList.as_view(), name="hs-code-list"),
+    path("commodities/<str:code>", CommodityDetail.as_view(), name="hs-code-detail"),
 
 ] + interaction_urls + team_urls + assessment_urls + user_urls

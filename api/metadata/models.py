@@ -87,16 +87,3 @@ class BarrierPriority(models.Model):
     # TODO: remove - looks like this is not being used
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-
-
-class HSCode(models.Model):
-    code = models.CharField(max_length=10)
-    suffix = models.CharField(max_length=2)
-    level = models.IntegerField()
-    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
-    name = models.CharField(max_length=255)
-
-    def full_name(self):
-        if not self.parent:
-            return self.name
-        return f"{self.parent.name} - {self.name}"
