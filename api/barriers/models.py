@@ -490,15 +490,15 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.categories.set(self.internal_categories.all())
 
     def publish(self):
-        # TODO: add this check back
-        # if self.ready_to_be_published:
-        self.update_non_editable_fields()
-        self.public_view_status = PublicBarrierStatus.PUBLISHED
-        self.add_new_version()
-        self.save()
-        return True
-        # else:
-        #     return False
+        if self.ready_to_be_published:
+            self.update_non_editable_fields()
+            self.unpublished_on = None
+            self.public_view_status = PublicBarrierStatus.PUBLISHED
+            self.add_new_version()
+            self.save()
+            return True
+        else:
+            return False
 
     @property
     def title(self):
@@ -519,7 +519,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 return True
         else:
             return False
-
 
     @property
     def summary(self):
@@ -589,11 +588,17 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_title_changed(self):
-        return self.barrier.barrier_title != self.internal_title_at_update
+        if self.internal_title_at_update:
+            return self.barrier.barrier_title != self.internal_title_at_update
+        else:
+            return False
 
     @property
     def internal_summary_changed(self):
-        return self.barrier.summary != self.internal_summary_at_update
+        if self.internal_summary_at_update:
+            return self.barrier.summary != self.internal_summary_at_update
+        else:
+            return False
 
     @property
     def internal_status(self):
@@ -640,7 +645,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def ready_to_be_published(self):
         status_check = self.public_view_status == PublicBarrierStatus.READY
         changes_check = self.unpublished_changes
-        return status_check and changes_check
+        return status_check and changes_check and self.title and self.summary
 
     @property
     def unpublished_changes(self):
