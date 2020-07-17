@@ -412,7 +412,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     This table should not be exposed to the public however only to the DMAS frontend which requires login.
     Transfer the data to a flat file or another service which can safely expose the data.
     """
-    barrier = models.ForeignKey(BarrierInstance, on_delete=CASCADE, related_name="public_barriers")
+    barrier = models.OneToOneField(BarrierInstance, on_delete=CASCADE, related_name="public_barriers")
 
     # === Title related fields =====
     _title = models.CharField(null=True, max_length=MAX_LENGTH)
@@ -422,7 +422,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     # === Summary related fields =====
     _summary = models.TextField(null=True)
     summary_updated_on = models.DateTimeField(null=True, blank=True)
-    internal_summary_at_update = models.CharField(null=True, max_length=MAX_LENGTH)
+    internal_summary_at_update = models.TextField(null=True, max_length=MAX_LENGTH)
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)

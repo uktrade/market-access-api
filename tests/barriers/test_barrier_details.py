@@ -760,6 +760,28 @@ class TestPublicBarrierSerializer(APITestMixin, TestCase):
         self.barrier.categories.add(self.category)
         self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
 
+    def test_empty_title_field_gets_serialized_to_empty_string(self):
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        assert not pb.title
+
+        data = PublicBarrierSerializer(pb).data
+        assert "" == data["title"]
+
+    def test_empty_summary_field_gets_serialized_to_empty_string(self):
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        assert not pb.summary
+
+        data = PublicBarrierSerializer(pb).data
+        assert "" == data["summary"]
+
     def test_status_is_serialized_consistently(self):
         expected_status = {
             "id": BarrierStatus.OPEN_PENDING,

@@ -680,6 +680,15 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
         )
 
 
+class NoneToBlankCharField(serializers.CharField):
+
+    def to_representation(self, value):
+        if value is not None:
+            return str(value)
+        else:
+            return ""
+
+
 class ReadOnlyStatusField(serializers.Field):
     """
     Field serializer to be used with read only status fields.
@@ -764,8 +773,8 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
     """
     Generic serializer for barrier public data.
     """
-    title = serializers.CharField()
-    summary = serializers.CharField()
+    title = NoneToBlankCharField()
+    summary = NoneToBlankCharField()
     internal_title_changed = serializers.SerializerMethodField()
     internal_summary_changed = serializers.SerializerMethodField()
     status = ReadOnlyStatusField()
