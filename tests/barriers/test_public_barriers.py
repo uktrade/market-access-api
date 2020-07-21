@@ -415,6 +415,20 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert PublicBarrierStatus.UNPUBLISHED == response.data["public_view_status"]
         assert response.data["unpublished_on"]
 
+    def test_public_barrier_publish_resets_unpublished_on(self):
+        pb, response = self.publish_barrier()
+        assert status.HTTP_200_OK == response.status_code
+
+        url = reverse("public-barriers-unpublish", kwargs={"pk": pb.barrier.id})
+        response = self.api_client.post(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data["unpublished_on"]
+
+        pb, response = self.publish_barrier()
+        assert status.HTTP_200_OK == response.status_code
+        assert not response.data["unpublished_on"]
+        assert not pb.unpublished_on
+
     def test_update_eligibility_on_attr_access(self):
         test_parameters = [
             {
