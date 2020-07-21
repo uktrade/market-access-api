@@ -4,7 +4,6 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.models import PublicBarrier
 from api.core.test_utils import APITestMixin
 from api.interactions.models import PublicBarrierNote
 

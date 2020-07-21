@@ -15,7 +15,7 @@ from api.barriers.history import (
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
-from api.barriers.models import BarrierInstance, PublicBarrier
+from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Interaction, PublicBarrierNote

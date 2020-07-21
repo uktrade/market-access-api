@@ -7,7 +7,6 @@ from api.barriers.models import PublicBarrier, BarrierInstance
 from api.barriers.serializers import PublicBarrierSerializer
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import PublicBarrierStatus, BarrierStatus
-from api.metadata.utils import get_country
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 
