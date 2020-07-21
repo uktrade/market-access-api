@@ -19,8 +19,8 @@ class PublicBarrierBaseTestCase(APITestMixin, TestCase):
         response = self.api_client.get(url)
         return PublicBarrier.objects.get(pk=response.data["id"])
 
-    def publish_barrier(self, prepare=True):
-        pb = self.get_public_barrier()
+    def publish_barrier(self, pb=None, prepare=True):
+        pb = pb or self.get_public_barrier()
         if prepare:
             # make sure the pubic barrier is ready to be published
             pb.public_view_status = PublicBarrierStatus.READY
@@ -34,7 +34,7 @@ class PublicBarrierBaseTestCase(APITestMixin, TestCase):
         response = self.api_client.post(publish_url)
 
         pb.refresh_from_db()
-        return pb
+        return pb, response
 
 
 class TestPublicBarrier(PublicBarrierBaseTestCase):
@@ -66,8 +66,8 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_200_OK == response.status_code
         assert not response.data["title"]
         assert not response.data["summary"]
-        assert self.barrier.export_country == response.data["country"]
-        assert self.barrier.sectors == response.data["sectors"]
+        assert self.barrier.export_country == response.data["country"]["id"]
+        assert self.barrier.sectors == [s["id"] for s in response.data["sectors"]]
         assert not response.data["categories"]
 
     def test_public_barrier_default_categories_at_creation(self):
@@ -76,14 +76,14 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         """
         categories_count = 3
         categories = CategoryFactory.create_batch(categories_count)
-        expected_categories = [c.title for c in categories]
+        expected_category_ids = set([c.id for c in categories])
         self.barrier.categories.add(*categories)
 
         response = self.api_client.get(self.url)
 
         assert status.HTTP_200_OK == response.status_code
         assert categories_count == len(response.data["categories"])
-        assert set(expected_categories) == set(response.data["categories"])
+        assert expected_category_ids == set([c["id"] for c in response.data["categories"]])
 
     # === PATCH ===
     def test_public_barrier_patch_as_regular_user(self):
@@ -167,8 +167,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         pass
 
     def test_public_barrier_publish_as_publisher(self):
-        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
-        response = self.api_client.post(url)
+        pb, response = self.publish_barrier()
 
         assert status.HTTP_200_OK == response.status_code
         assert PublicBarrierStatus.PUBLISHED == response.data["public_view_status"]
@@ -177,76 +176,64 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["unpublished_on"]
 
     def test_public_barrier_publish_creates_a_published_version(self):
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb = self.get_public_barrier()
 
         assert not pb.published_versions
         assert not pb.latest_published_version
 
-        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
-        _response = self.api_client.post(url)
+        pb, _response = self.publish_barrier(pb=pb)
 
-        pb.refresh_from_db()
         assert 1 == len(pb.published_versions["versions"])
         assert '1' == pb.published_versions["latest_version"]
         assert pb.latest_published_version
 
     def test_public_barrier_new_published_version(self):
-        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
-        response = self.api_client.post(url)
+        pb, _response = self.publish_barrier()
 
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
         assert 1 == len(pb.published_versions["versions"])
         assert '1' == pb.published_versions["latest_version"]
         assert pb.latest_published_version
 
-        response = self.api_client.post(url)
+        pb.title = "Updating title to allow publishing."
+        pb.public_view_status = PublicBarrierStatus.READY
+        pb.save()
+        pb, _response = self.publish_barrier(pb=pb, prepare=False)
 
-        pb.refresh_from_db()
         assert 2 == len(pb.published_versions["versions"])
         assert '2' == pb.published_versions["latest_version"]
         assert pb.latest_published_version
 
     def test_public_barrier_latest_published_version_attributes(self):
-        self.barrier.sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
-        expected_sectors = [{"name": "Chemicals"}]
         category = CategoryFactory()
         self.barrier.categories.add(category)
-        expected_categories = [{"name": category.title}]
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-        pb.title = "Title 1"
-        pb.summary = "Summary 1"
-        pb.save()
+        self.barrier.sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
+        self.barrier.all_sectors = False
+        self.barrier.save()
 
-        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
-        response = self.api_client.post(url)
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb)
 
         assert status.HTTP_200_OK == response.status_code
-        assert "Title 1" == response.data["latest_published_version"]["title"]
-        assert "Summary 1" == response.data["latest_published_version"]["summary"]
-        assert BarrierStatus.name(self.barrier.status) == response.data["latest_published_version"]["status"]
-        assert get_country(self.barrier.export_country) == response.data["latest_published_version"]["country"]
-        assert expected_sectors == response.data["latest_published_version"]["sectors"]
-        assert response.data["latest_published_version"]["all_sectors"] is False
-        assert expected_categories == response.data["latest_published_version"]["categories"]
+        assert "Some title" == pb.latest_published_version.title
+        assert "Some summary" == pb.latest_published_version.summary
+        assert self.barrier.status == pb.latest_published_version.status
+        assert str(self.barrier.export_country) == str(pb.latest_published_version.country)
+        assert [str(s) for s in self.barrier.sectors] == [str(s) for s in pb.latest_published_version.sectors]
+        assert False is pb.latest_published_version.all_sectors
+        assert list(self.barrier.categories.all()) == list(pb.latest_published_version.categories.all())
 
     def test_public_barrier_latest_published_version_not_affected_by_updates(self):
-        self.barrier.sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
-        expected_sectors = [{"name": "Chemicals"}]
         category = CategoryFactory()
         self.barrier.categories.add(category)
-        expected_categories = [{"name": category.title}]
-        expected_status = BarrierStatus.name(BarrierStatus.OPEN_PENDING)
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-        pb.title = "Title 1"
-        pb.summary = "Summary 1"
-        pb.save()
+        self.barrier.sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
+        self.barrier.all_sectors = False
+        self.barrier.status = BarrierStatus.OPEN_PENDING
+        self.barrier.save()
+        expected_status = BarrierStatus.OPEN_PENDING
+        expected_sectors = ['9b38cecc-5f95-e211-a939-e4115bead28a']
 
-        url = reverse("public-barriers-publish", kwargs={"pk": self.barrier.id})
-        response = self.api_client.post(url)
-        pb.refresh_from_db()
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb)
 
         # Let's do some mods to self.barrier and public barrier
         self.barrier.status = BarrierStatus.OPEN_IN_PROGRESS
@@ -263,13 +250,13 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         response = self.api_client.get(self.url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert "Title 1" == response.data["latest_published_version"]["title"]
-        assert "Summary 1" == response.data["latest_published_version"]["summary"]
-        assert expected_status == response.data["latest_published_version"]["status"]
-        assert get_country(self.barrier.export_country) == response.data["latest_published_version"]["country"]
-        assert expected_sectors == response.data["latest_published_version"]["sectors"]
-        assert response.data["latest_published_version"]["all_sectors"] is False
-        assert expected_categories == response.data["latest_published_version"]["categories"]
+        assert "Some title" == pb.latest_published_version.title
+        assert "Some summary" == pb.latest_published_version.summary
+        assert expected_status == pb.latest_published_version.status
+        assert str(self.barrier.export_country) == str(pb.latest_published_version.country)
+        assert [str(s) for s in expected_sectors] == [str(s) for s in pb.latest_published_version.sectors]
+        assert False is pb.latest_published_version.all_sectors
+        assert list(self.barrier.categories.all()) == list(pb.latest_published_version.categories.all())
 
     def test_public_barrier_publish_updates_status(self):
         response = self.api_client.get(self.url)
@@ -556,10 +543,8 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
             "id": BarrierStatus.OPEN_PENDING,
             "name": BarrierStatus.name(BarrierStatus.OPEN_PENDING)
         }
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-        pb.publish()
-        pb.refresh_from_db()
+
+        pb, response = self.publish_barrier()
 
         data = PublicBarrierSerializer(pb).data
         assert expected_status == data["status"]
@@ -571,10 +556,9 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
             "id": "1f0be5c4-5d95-e211-a939-e4115bead28a",
             "name": "Singapore"
         }
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-        pb.publish()
-        pb.refresh_from_db()
+
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb=pb)
 
         data = PublicBarrierSerializer(pb).data
         assert expected_country == data["country"]
@@ -585,10 +569,9 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
         expected_sectors = [
             {"id": "9b38cecc-5f95-e211-a939-e4115bead28a", "name": "Chemicals"}
         ]
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-        pb.publish()
-        pb.refresh_from_db()
+
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb=pb)
 
         data = PublicBarrierSerializer(pb).data
         assert expected_sectors == data["sectors"]
@@ -597,10 +580,8 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
     def test_all_sectors_is_serialized_consistently(self):
         expected_all_sectors = False
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-        pb.publish()
-        pb.refresh_from_db()
+
+        pb, response = self.publish_barrier()
 
         data = PublicBarrierSerializer(pb).data
         assert expected_all_sectors == data["all_sectors"]
@@ -611,10 +592,9 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
         expected_categories = [
             {"id": self.category.id, "title": self.category.title}
         ]
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-        pb.publish()
-        pb.refresh_from_db()
+
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb=pb)
 
         data = PublicBarrierSerializer(pb).data
         assert expected_categories == data["categories"]
@@ -641,12 +621,12 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
 
     def test_title_changed_flag_returns_false(self):
         # There's no change to the title after publishing
-        pb = self.publish_barrier()
+        pb, _response = self.publish_barrier()
         assert False is pb.title_changed
 
     def test_title_changed_flag_returns_true(self):
         # There's an update to the title after publishing
-        pb = self.publish_barrier()
+        pb, _response = self.publish_barrier()
         pb.title = "New title!!"
         pb.save()
         pb.refresh_from_db()
@@ -655,12 +635,12 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
 
     def test_summary_changed_flag_returns_false(self):
         # There's no change to the summary after publishing
-        pb = self.publish_barrier()
+        pb, _response = self.publish_barrier()
         assert False is pb.summary_changed
 
     def test_summary_changed_flag_returns_true(self):
         # There's an update to the summary after publishing
-        pb = self.publish_barrier()
+        pb, _response = self.publish_barrier()
         pb.summary = "New summary!!"
         pb.save()
         pb.refresh_from_db()
@@ -682,7 +662,7 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
 
         for s in statuses:
             with self.subTest(s=s):
-                pb = self.publish_barrier()
+                pb, _response = self.publish_barrier()
                 pb.public_view_status = s
                 pb.save()
                 pb.refresh_from_db()
@@ -699,6 +679,6 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
         assert False is pb.ready_to_be_published
 
     def test_ready_to_be_published_is_false_when_no_unpublished_changes(self):
-        pb = self.publish_barrier()
+        pb, _response = self.publish_barrier()
         assert False is pb.unpublished_changes
         assert False is pb.ready_to_be_published

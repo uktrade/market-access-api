@@ -21,6 +21,7 @@ from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
 from api.barriers.exceptions import PublicBarrierPublishException
+from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
@@ -507,7 +508,6 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
 
     def get(self, request, pk):
         barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
-
         barrier_history = self.get_barrier_history(start_date=barrier.reported_on)
         notes_history = self.get_notes_history(start_date=barrier.reported_on)
         assessment_history = self.get_assessment_history(start_date=barrier.reported_on)
@@ -521,13 +521,11 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
             + wto_history
         )
 
-        # TODO: Update this when PublicBarrier.barrier becomes a OneToOneField
-        if barrier.public_barriers.exists():
-            public_barrier = barrier.public_barriers.all()[:1].get()
-            history_items += self.get_public_barrier_history(
-                start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
-            )
-            history_items += self.get_public_barrier_notes_history()
+        public_barrier, _created = get_or_create_public_barrier(barrier)
+        history_items += self.get_public_barrier_history(
+            start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
+        )
+        history_items += self.get_public_barrier_notes_history()
 
         response = {
             "barrier_id": str(pk),
@@ -765,26 +763,7 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
 
     def get_object(self):
         barrier = get_object_or_404(self.barriers_qs, pk=self.kwargs.get("pk"))
-        public_barrier, created = PublicBarrier.objects.get_or_create(
-            barrier=barrier,
-            defaults={
-                "status": barrier.status,
-                "country": barrier.export_country,
-                "sectors": barrier.sectors,
-                "all_sectors": barrier.all_sectors,
-            }
-        )
-        if created:
-            public_barrier.categories.set(barrier.categories.all())
-        # TODO: is there a need to flag if there are changes for fields that cannot be edited?
-        # else:
-        #     if public_barrier.modified_on < barrier.modified_on:
-        #         public_barrier.status = barrier.status
-        #         public_barrier.country = barrier.export_country
-        #         public_barrier.sectors = barrier.sectors
-        #         public_barrier.save()
-        #         public_barrier.categories.set(barrier.categories.all())
-
+        public_barrier, _created = get_or_create_public_barrier(barrier)
         return public_barrier
 
     def update_status_action(self, public_view_status):

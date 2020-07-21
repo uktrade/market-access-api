@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.assessment.models import Assessment
+from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
@@ -229,18 +230,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
-
-        self.public_barrier, created = PublicBarrier.objects.get_or_create(
-            barrier=self.barrier,
-            defaults={
-                "status": self.barrier.status,
-                "country": self.barrier.export_country,
-                "sectors": self.barrier.sectors,
-                "all_sectors": self.barrier.all_sectors,
-            }
-        )
-        if created:
-            self.public_barrier.categories.set(self.barrier.categories.all())
+        self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
     def test_categories_history(self):
         self.public_barrier.categories.add("109", "115")

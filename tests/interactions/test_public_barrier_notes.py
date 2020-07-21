@@ -3,6 +3,7 @@ from http import HTTPStatus
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
+from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import PublicBarrier
 from api.core.test_utils import APITestMixin
 from api.interactions.models import PublicBarrierNote
@@ -14,15 +15,7 @@ class PublicBarrierNoteTestCase(APITestMixin, APITestCase):
 
     def setUp(self):
         self.barrier = BarrierFactory(priority="LOW")
-        self.public_barrier, created = PublicBarrier.objects.get_or_create(
-            barrier=self.barrier,
-            defaults={
-                "status": self.barrier.status,
-                "country": self.barrier.export_country,
-                "sectors": self.barrier.sectors,
-                "all_sectors": self.barrier.all_sectors,
-            }
-        )
+        self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
         self.note1 = PublicBarrierNote.objects.create(
             public_barrier=self.public_barrier,
             text="Note 1"
