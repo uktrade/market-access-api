@@ -2,10 +2,10 @@ from django.conf import settings
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierInstance, BarrierUserHit
+from api.barriers.models import BarrierInstance, BarrierUserHit, BarrierCommodity
 from api.collaboration.models import TeamMember
 from api.commodities.models import Commodity
-from api.commodities.serializers import CommoditySerializer
+from api.commodities.serializers import BarrierCommoditySerializer
 from api.interactions.models import Document
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
@@ -429,7 +429,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     # TODO: deprecate this field (use summary instead)
     problem_description = serializers.CharField(source="summary", required=False)
     wto_profile = WTOProfileSerializer()
-    commodities = CommoditySerializer(many=True, required=False)
+    commodities = BarrierCommoditySerializer(source="barrier_commodities", many=True, required=False)
 
     class Meta:
         model = BarrierInstance
@@ -589,7 +589,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         if "wto_profile" in validated_data:
             self.update_wto_profile(instance, validated_data)
 
-        if "commodities" in validated_data:
+        if "barrier_commodities" in validated_data:
             self.update_commodities(instance, validated_data)
 
         if instance.archived is False and validated_data.get("archived") is True:
@@ -606,10 +606,18 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def update_commodities(self, instance, validated_data):
-        commodities_data = validated_data.pop('commodities')
+        commodities_data = validated_data.pop('barrier_commodities')
         codes = [commodity.get("code") for commodity in commodities_data]
-        commodities = Commodity.objects.filter(code__in=codes)
-        instance.commodities.set(commodities)
+        # TODO: avoid clearing unless necessary, make query more efficient
+        instance.commodities.clear()
+        for code in codes:
+            hs6_code = code[:6].ljust(10, "0")
+            commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest("version")
+            BarrierCommodity.objects.update_or_create(
+                barrier=self.instance,
+                commodity=commodity,
+                defaults={"code": code},
+            )
 
     def update_wto_profile(self, instance, validated_data):
         wto_profile = validated_data.pop('wto_profile')

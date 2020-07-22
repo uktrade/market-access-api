@@ -227,7 +227,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         related_name="barrier",
         on_delete=models.SET_NULL,
     )
-    commodities = models.ManyToManyField(Commodity)
+    commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
     draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
@@ -355,3 +355,10 @@ class BarrierReportStage(BaseModel):
 
     class Meta:
         unique_together = (("barrier", "stage"),)
+
+
+class BarrierCommodity(models.Model):
+    barrier = models.ForeignKey(BarrierInstance, related_name="barrier_commodities", on_delete=models.CASCADE)
+    commodity = models.ForeignKey(Commodity, related_name="barrier_commodities", on_delete=models.CASCADE)
+    code = models.CharField(max_length=10)
+    created_on = models.DateTimeField(auto_now=True)
