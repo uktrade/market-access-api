@@ -165,9 +165,9 @@ def migrate_sectors(apps, schema_editor):
     barriers = BarrierInstance.objects.all()
 
     for map in sectors_mapping:
-        src_sector_id = map["src_id"]
+        src_sector_id = uuid.UUID(map["src_id"])
         dest_sector_ids = [sector["id"] for sector in map["dest"]]
-        for barrier in barriers.filter(sectors__contains=uuid.UUID(src_sector_id)):
+        for barrier in barriers.filter(sectors__contains=[src_sector_id]):
             # Update barrier
             barrier.sectors.remove(src_sector_id)
             barrier.sectors.extend(dest_sector_ids)
@@ -176,12 +176,12 @@ def migrate_sectors(apps, schema_editor):
             # Update barrier's history items
             history_items = HistoricalBarrierInstance.objects.filter(
                 id=barrier.pk,
-                sectors__contains=uuid.UUID(src_sector_id)
+                sectors__contains=[src_sector_id]
             )
             for history_item in history_items:
                 history_item.sectors.remove(src_sector_id)
                 history_item.sectors.extend(dest_sector_ids)
-                history_items.save()
+                history_item.save()
 
 
 class Migration(migrations.Migration):
