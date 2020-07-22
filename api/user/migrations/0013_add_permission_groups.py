@@ -12,6 +12,7 @@ def add_permission_groups(apps, schema_editor):
 
 
 def delete_permission_groups(apps, schema_editor):
+    Group = apps.get_model("auth", "Group")
     Group.objects.delete(name__in=("Sifter", "Editor", "Publisher", "Administrator"))
 
 
