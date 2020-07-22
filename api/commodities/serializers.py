@@ -14,7 +14,8 @@ class CommoditySerializer(serializers.ModelSerializer):
             "suffix",
             "level",
             "description",
-            "full_name",
+            "full_description",
+        )
 
 
 class BarrierCommoditySerializer(serializers.ModelSerializer):
