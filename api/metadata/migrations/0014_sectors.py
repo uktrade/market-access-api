@@ -1,7 +1,6 @@
 import uuid
 from django.db import migrations
 
-
 sectors_mapping = [
     {
         'src': 'Clothing, Footwear and Fashion',
@@ -163,25 +162,23 @@ def migrate_sectors(apps, schema_editor):
     HistoricalBarrierInstance = apps.get_model("barriers", "HistoricalBarrierInstance")
 
     barriers = BarrierInstance.objects.all()
+    historical_barriers = HistoricalBarrierInstance.objects.all()
 
     for map in sectors_mapping:
         src_sector_id = uuid.UUID(map["src_id"])
         dest_sector_ids = [sector["id"] for sector in map["dest"]]
+
+        # Update barriers
         for barrier in barriers.filter(sectors__contains=[src_sector_id]):
-            # Update barrier
             barrier.sectors.remove(src_sector_id)
             barrier.sectors.extend(dest_sector_ids)
             barrier.save()
 
-            # Update barrier's history items
-            history_items = HistoricalBarrierInstance.objects.filter(
-                id=barrier.pk,
-                sectors__contains=[src_sector_id]
-            )
-            for history_item in history_items:
-                history_item.sectors.remove(src_sector_id)
-                history_item.sectors.extend(dest_sector_ids)
-                history_item.save()
+        # Update historic barriers
+        for historical_barrier in historical_barriers.filter(sectors__contains=[src_sector_id]):
+            historical_barrier.sectors.remove(src_sector_id)
+            historical_barrier.sectors.extend(dest_sector_ids)
+            historical_barrier.save()
 
 
 class Migration(migrations.Migration):
