@@ -29,7 +29,7 @@ class CommodityDetail(generics.RetrieveAPIView):
     serializer_class = CommoditySerializer
 
     def get_object(self):
-        zero_padded_code = self.kwargs.get("code").ljust(10, "0")
+        zero_padded_code = self.kwargs.get("code")[:6].ljust(10, "0")
 
         try:
             return Commodity.objects.filter(

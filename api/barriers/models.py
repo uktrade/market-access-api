@@ -361,4 +361,5 @@ class BarrierCommodity(models.Model):
     barrier = models.ForeignKey(BarrierInstance, related_name="barrier_commodities", on_delete=models.CASCADE)
     commodity = models.ForeignKey(Commodity, related_name="barrier_commodities", on_delete=models.CASCADE)
     code = models.CharField(max_length=10)
+    country = models.UUIDField()
     created_on = models.DateTimeField(auto_now=True)
