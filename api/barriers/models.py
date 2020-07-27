@@ -495,6 +495,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             self.unpublished_on = None
             self.public_view_status = PublicBarrierStatus.PUBLISHED
             self.add_new_version()
+            self._history_date = self.last_published_on
             self.save()
             return True
         else:
