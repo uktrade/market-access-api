@@ -20,17 +20,13 @@ class CommoditySerializer(serializers.ModelSerializer):
 
 
 class BarrierCommoditySerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='commodity.id')
-    description = serializers.ReadOnlyField(source='commodity.description')
-    full_description = serializers.ReadOnlyField(source='commodity.full_description')
     country = CountryField()
+    commodity = CommoditySerializer()
 
     class Meta:
         model = BarrierCommodity
         fields = (
-            "id",
+            "commodity",
             "code",
             "country",
-            "description",
-            "full_description",
         )
