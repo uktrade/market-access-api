@@ -8,6 +8,7 @@ from django_filters.widgets import BooleanWidget
 
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
+from api.metadata.constants import PublicBarrierStatus
 from api.metadata.models import BarrierPriority
 from api.metadata.utils import get_countries
 
@@ -48,6 +49,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     team = django_filters.Filter(method="team_barriers")
     member = django_filters.Filter(method="member_filter")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
+    public_view = django_filters.BaseInFilter(method="public_view_filter")
     tags = django_filters.BaseInFilter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
     wto = django_filters.BaseInFilter(method="wto_filter")
@@ -149,6 +151,18 @@ class BarrierFilterSet(django_filters.FilterSet):
             member = get_object_or_404(TeamMember, pk=value)
             return queryset.filter(barrier_team__user=member.user).distinct()
         return queryset
+
+    def public_view_filter(self, queryset, name, value):
+        status_lookup = {
+            "unknown": PublicBarrierStatus.UNKNOWN,
+            "ineligible": PublicBarrierStatus.INELIGIBLE,
+            "eligible": PublicBarrierStatus.ELIGIBLE,
+            "ready": PublicBarrierStatus.READY,
+            "published": PublicBarrierStatus.PUBLISHED,
+            "unpublished": PublicBarrierStatus.UNPUBLISHED,
+        }
+        statuses = [status_lookup.get(status) for status in value]
+        return queryset.filter(public_barrier___public_view_status__in=statuses)
 
     def tags_filter(self, queryset, name, value):
         return queryset.filter(tags__in=value).distinct()

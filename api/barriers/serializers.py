@@ -24,7 +24,7 @@ from api.metadata.utils import (
 )
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
-
+from .fields import PublicEligibilityField
 
 # pylint: disable=R0201
 
@@ -419,6 +419,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     # TODO: deprecate this field (use summary instead)
     problem_description = serializers.CharField(source="summary", required=False)
+    public_eligibility = PublicEligibilityField()
     wto_profile = WTOProfileSerializer()
 
     class Meta:

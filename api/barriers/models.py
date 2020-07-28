@@ -412,7 +412,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     This table should not be exposed to the public however only to the DMAS frontend which requires login.
     Transfer the data to a flat file or another service which can safely expose the data.
     """
-    barrier = models.OneToOneField(BarrierInstance, on_delete=CASCADE, related_name="public_barriers")
+    barrier = models.OneToOneField(BarrierInstance, on_delete=CASCADE, related_name="public_barrier")
 
     # === Title related fields =====
     _title = models.CharField(null=True, max_length=MAX_LENGTH)

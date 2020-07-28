@@ -521,11 +521,11 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
             + wto_history
         )
 
-        public_barrier, _created = get_or_create_public_barrier(barrier)
-        history_items += self.get_public_barrier_history(
-            start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
-        )
-        history_items += self.get_public_barrier_notes_history()
+        if hasattr(barrier, "public_barrier"):
+            history_items += self.get_public_barrier_history(
+                start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
+            )
+            history_items += self.get_public_barrier_notes_history()
 
         response = {
             "barrier_id": str(pk),
