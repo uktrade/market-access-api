@@ -49,6 +49,7 @@ from api.metadata.models import BarrierPriority, Category
 from api.user.helpers import has_profile, update_user_profile
 from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 from api.user.models import Profile, SavedSearch
+from api.user.permissions import IsPublisher, IsEditor, AllRetrieveAndEditorUpdateOnly
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
 from .filters import BarrierFilterSet
@@ -58,6 +59,7 @@ class Echo:
     """An object that implements just the write method of the file-like
     interface.
     """
+
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
@@ -192,7 +194,6 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 
 
 class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIView):
-
     lookup_field = "pk"
     queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
@@ -210,7 +211,6 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIVi
 
 
 class BarrierReportSubmit(generics.UpdateAPIView):
-
     queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
 
@@ -599,7 +599,6 @@ class BarrierStatusBase(generics.UpdateAPIView):
 
 
 class BarrierResolveInFull(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierResolveSerializer
 
@@ -630,7 +629,6 @@ class BarrierResolveInFull(BarrierStatusBase):
 
 
 class BarrierResolveInPart(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierResolveSerializer
 
@@ -661,7 +659,6 @@ class BarrierResolveInPart(BarrierStatusBase):
 
 
 class BarrierHibernate(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -678,7 +675,6 @@ class BarrierHibernate(BarrierStatusBase):
 
 
 class BarrierStatusChangeUnknown(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -695,7 +691,6 @@ class BarrierStatusChangeUnknown(BarrierStatusBase):
 
 
 class BarrierOpenInProgress(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -712,7 +707,6 @@ class BarrierOpenInProgress(BarrierStatusBase):
 
 
 class BarrierOpenActionRequired(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -753,13 +747,8 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
     """
     barriers_qs = BarrierInstance.barriers.all()
     http_method_names = ["get", "post", "patch", "head", "options"]
-
-    def get_serializer_class(self):
-        # TODO: do the validation, sifters should have a
-        #       restricted serializer that only allows them to read public barriers
-        # if self.request.user.is_sifter:
-        #     return ReadOnlyPublicBarrierSerializer
-        return PublicBarrierSerializer
+    permission_classes = (AllRetrieveAndEditorUpdateOnly,)
+    serializer_class = PublicBarrierSerializer
 
     def get_object(self):
         barrier = get_object_or_404(self.barriers_qs, pk=self.kwargs.get("pk"))
@@ -778,18 +767,20 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-    # TODO: add permission classes
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=(IsEditor,))
     def ready(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.READY)
 
-    # TODO: add permission classes
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=(IsEditor,))
     def unprepared(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.ELIGIBLE)
 
-    # TODO: add permission classes
-    @action(methods=["post"], detail=True, url_path="ignore-all-changes")
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsEditor,),
+        url_path="ignore-all-changes",
+    )
     def ignore_all_changes(self, request, *args, **kwargs):
         public_barrier = self.get_object()
         public_barrier.title = public_barrier.title
@@ -798,8 +789,7 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-    # TODO: add permission classes to restrict this action to Publishers
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=(IsPublisher,))
     def publish(self, request, *args, **kwargs):
         public_barrier = self.get_object()
         published = public_barrier.publish()
@@ -809,7 +799,6 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
         else:
             raise PublicBarrierPublishException()
 
-    # TODO: add permission classes to restrict this action to Publishers
-    @action(methods=["post"], detail=True)
+    @action(methods=["post"], detail=True, permission_classes=(IsPublisher,))
     def unpublish(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.UNPUBLISHED)
