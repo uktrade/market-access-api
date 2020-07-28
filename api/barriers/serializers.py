@@ -404,6 +404,17 @@ class BarrierListSerializer(serializers.ModelSerializer):
             return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
 
 
+class NestedPublicBarrierSerializer(serializers.ModelSerializer):
+    """
+    Simple serializer for use within BarrierInstanceSerializer.
+    """
+    class Meta:
+        model = PublicBarrier
+        fields = (
+            "public_view_status",
+        )
+
+
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
 
@@ -419,6 +430,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     # TODO: deprecate this field (use summary instead)
     problem_description = serializers.CharField(source="summary", required=False)
+    public_barrier = NestedPublicBarrierSerializer()
     public_eligibility = PublicEligibilityField()
     wto_profile = WTOProfileSerializer()
 
@@ -467,6 +479,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "trade_direction",
             "end_date",
             "wto_profile",
+            "public_barrier",
             "public_eligibility",
             "public_eligibility_summary",
         )
