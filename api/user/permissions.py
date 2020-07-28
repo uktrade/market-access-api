@@ -4,7 +4,6 @@ from rest_framework import permissions
 from api.user.constants import UserRoles
 
 
-# TODO: move these in to the base class?
 def _is_in_group(user, group_name):
     """
     Takes a user and a group name, and returns `True` if the user is in that group.
@@ -21,14 +20,29 @@ def _has_group_permission(user, required_groups):
 
 class BasePermission(permissions.BasePermission):
     required_groups = ()
+    allowed_actions = ()
 
     def has_permission(self, request, view):
-        has_group_permission = _has_group_permission(request.user, self.required_groups)
-        return bool(request.user and has_group_permission)
+        allowed_action = view.action in self.allowed_actions
+        user_has_group_permission = _has_group_permission(request.user, self.required_groups)
+        authenticated_user = request.user and request.user.is_authenticated
+        return bool(
+            authenticated_user and
+            (allowed_action or user_has_group_permission)
+        )
 
-    def has_object_permission(self, request, view, obj):
-        has_group_permission = _has_group_permission(request.user, self.required_groups)
-        return bool(request.user and has_group_permission)
+
+class AllRetrieveAndEditorUpdateOnly(BasePermission):
+    """
+    Allow GET to all authenticated users
+    Allow PATCH to authenticated editors, publishers and admins
+    """
+    allowed_actions = ('retrieve',)
+    required_groups = (
+        UserRoles.EDITOR,
+        UserRoles.PUBLISHER,
+        UserRoles.ADMIN,
+    )
 
 
 class IsSifter(BasePermission):
