@@ -15,10 +15,10 @@ class CommodityList(generics.ListAPIView):
 
         codes = self.request.query_params.get("codes")
         if codes:
-            hs6_codes = [code[:6].ljust(10, "0") for code in codes.split(",")]
+            cleaned_codes = [code[:10].ljust(10, "0") for code in codes.split(",")]
             latest_version = Commodity.objects.aggregate(Max('version')).get("version__max")
             queryset = queryset.filter(
-                code__in=hs6_codes,
+                code__in=cleaned_codes,
                 is_leaf=True,
                 version=latest_version,
             ).order_by("code")
@@ -29,11 +29,11 @@ class CommodityDetail(generics.RetrieveAPIView):
     serializer_class = CommoditySerializer
 
     def get_object(self):
-        zero_padded_code = self.kwargs.get("code")[:6].ljust(10, "0")
+        cleaned_code = self.kwargs.get("code")[:10].ljust(10, "0")
 
         try:
             return Commodity.objects.filter(
-                code=zero_padded_code,
+                code=cleaned_code,
                 is_leaf=True,
             ).latest("version")
         except Commodity.DoesNotExist:
