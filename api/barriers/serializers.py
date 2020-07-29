@@ -247,7 +247,10 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         return status
 
     def get_status_date(self, obj):
-        return obj.status_date.strftime("%Y-%m-%d")
+        if obj.status_date:
+            return obj.status_date.strftime("%Y-%m-%d")
+        else:
+            return None
 
     def get_summary(self, obj):
         if obj.is_summary_sensitive:
