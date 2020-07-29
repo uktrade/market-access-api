@@ -1,7 +1,6 @@
 import csv
 
 from django.core.management import BaseCommand
-from django.conf import settings
 
 from api.commodities.models import Commodity
 
@@ -20,7 +19,7 @@ class Command(BaseCommand):
     def import_commodities(self, csv_file, version):
         self.stdout.write("Importing commodities...")
 
-        with open(csv_file, 'r' ) as file:
+        with open(csv_file, 'r') as file:
             reader = csv.DictReader(file)
             i = 0
             for line in reader:
