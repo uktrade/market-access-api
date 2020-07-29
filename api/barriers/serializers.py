@@ -608,19 +608,22 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def update_commodities(self, instance, validated_data):
         commodities_data = validated_data.pop('barrier_commodities')
 
-        # TODO: avoid clearing unless necessary, make query more efficient
-        instance.commodities.clear()
+        added_commodities = []
+
         for commodity_data in commodities_data:
-            code = commodity_data.get("code")
+            code = commodity_data.get("code").ljust(10, "0")
             country = commodity_data.get("country")
             hs6_code = code[:6].ljust(10, "0")
             commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest("version")
-            BarrierCommodity.objects.update_or_create(
+            barrier_commodity, created = BarrierCommodity.objects.get_or_create(
                 barrier=self.instance,
                 commodity=commodity,
                 code=code,
-                defaults={"code": code, "country": country},
+                country=country,
             )
+            added_commodities.append(barrier_commodity.id)
+
+        BarrierCommodity.objects.filter(barrier=instance).exclude(id__in=added_commodities).delete()
 
     def update_wto_profile(self, instance, validated_data):
         wto_profile = validated_data.pop('wto_profile')
