@@ -125,6 +125,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     code = serializers.CharField()
     scope = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    status_date = serializers.SerializerMethodField()
     summary = serializers.SerializerMethodField()
     barrier_title = serializers.CharField()
     sectors = serializers.SerializerMethodField()
@@ -181,6 +182,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "code",
             "barrier_title",
             "status",
+            "status_date",
             "priority",
             "overseas_region",
             "country",
@@ -243,6 +245,12 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         if status == "Open: Pending action":
             status = f"{status} ({sub_status_dict.get(obj.sub_status, 'Unknown')})"
         return status
+
+    def get_status_date(self, obj):
+        if obj.status_date:
+            return obj.status_date.strftime("%Y-%m-%d")
+        else:
+            return None
 
     def get_summary(self, obj):
         if obj.is_summary_sensitive:
