@@ -87,7 +87,7 @@ urlpatterns += [
     ),
     path("barriers/<uuid:pk>/open-in-progress", BarrierOpenInProgress.as_view(), name="open-in-progress"),
     path("barriers/<uuid:pk>/open-action_required", BarrierOpenActionRequired.as_view(), name="open-action"),
-    path("commodities", CommodityList.as_view(), name="hs-code-list"),
-    path("commodities/<str:code>", CommodityDetail.as_view(), name="hs-code-detail"),
+    path("commodities", CommodityList.as_view(), name="commodity-list"),
+    path("commodities/<str:code>", CommodityDetail.as_view(), name="commodity-detail"),
 
 ] + interaction_urls + team_urls + assessment_urls + user_urls

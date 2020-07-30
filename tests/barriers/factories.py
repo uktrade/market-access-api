@@ -1,9 +1,11 @@
 import datetime
+import string
 
 import factory
-from factory.fuzzy import FuzzyChoice, FuzzyDate
+from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyInteger, FuzzyText
 
 from api.barriers.models import BarrierInstance
+from api.commodities.models import Commodity
 from api.metadata.models import BarrierPriority
 from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
 
@@ -34,6 +36,19 @@ def fuzzy_date():
         start_date=datetime.date.today() - datetime.timedelta(days=45),
         end_date=datetime.date.today(),
     ).evaluate(2, None, False)
+
+
+class CommodityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Commodity
+
+    code = FuzzyText(length=10, chars=string.digits)
+    level = 6
+    indent = 2
+    description = "Ice cream"
+    sid = FuzzyInteger(1000)
+    version = "2020-01-01"
+    is_leaf = True
 
 
 class WTOCommitteeGroupFactory(factory.django.DjangoModelFactory):
