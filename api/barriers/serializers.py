@@ -614,7 +614,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "public_eligibility" in validated_data
             and "public_eligibility_summary" not in validated_data
         ):
-            validated_data["public_eligibility_summary"] = None
+            validated_data["public_eligibility_summary"] = ""
 
         if instance.archived is False and validated_data.get("archived") is True:
             instance.archive(
