@@ -48,3 +48,12 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert expected_explanation == serializer.data["economic_assessment_explanation"]
+
+    def test_status_date_is_null(self):
+        expected_status_date = None
+        barrier = BarrierFactory()
+        barrier.status_date = None
+        barrier.save()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert expected_status_date == serializer.data["status_date"]
