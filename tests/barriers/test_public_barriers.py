@@ -3,6 +3,7 @@ from django.urls import reverse
 from freezegun import freeze_time
 from rest_framework import status
 
+from api.barriers.helpers import get_team_member_user_ids
 from api.barriers.models import PublicBarrier, BarrierInstance
 from api.barriers.serializers import PublicBarrierSerializer
 from api.core.test_utils import APITestMixin
@@ -929,3 +930,85 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
 
         assert False is pb.unpublished_changes
         assert True is pb.ready_to_be_published
+
+
+class TestPublicBarrierContributors(PublicBarrierBaseTestCase):
+    """
+    Users who make actions on the public barrier tab should be added
+    to the Barrier Team as contributors automatically.
+    """
+
+    def setUp(self):
+        self.publisher = self.create_publisher()
+        self.client = self.create_api_client(user=self.publisher)
+        self.barrier = BarrierFactory()
+        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
+    def test_public_barrier_views_wont_add_user_as_contributor(self):
+        assert 0 == get_team_member_user_ids(self.barrier.id).count()
+
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 0 == get_team_member_user_ids(self.barrier.id).count()
+
+    def test_public_barrier_patch_adds_user_as_contributor(self):
+        assert 0 == get_team_member_user_ids(self.barrier.id).count()
+
+        public_title = "New public facing title!"
+        payload = {"title": public_title}
+        response = self.client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        members = get_team_member_user_ids(self.barrier.id)
+        assert 1 == members.count()
+        assert self.publisher.id == members.first()
+
+    def test_public_barrier_marked_ready_adds_user_as_contributor(self):
+        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
+        response = self.client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        members = get_team_member_user_ids(self.barrier.id)
+        assert 1 == members.count()
+        assert self.publisher.id == members.first()
+
+    def test_public_barrier_marked_unprepared_adds_user_as_contributor(self):
+        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
+        response = self.client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        members = get_team_member_user_ids(self.barrier.id)
+        assert 1 == members.count()
+        assert self.publisher.id == members.first()
+
+    def test_public_barrier_ignore_all_changes_adds_user_as_contributor(self):
+        url = reverse("public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id})
+        response = self.client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        members = get_team_member_user_ids(self.barrier.id)
+        assert 1 == members.count()
+        assert self.publisher.id == members.first()
+
+    def test_public_barrier_publish_adds_user_as_contributor(self):
+        assert 0 == get_team_member_user_ids(self.barrier.id).count()
+
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb=pb, user=self.publisher)
+
+        assert status.HTTP_200_OK == response.status_code
+        members = get_team_member_user_ids(self.barrier.id)
+        assert 1 == members.count()
+        assert self.publisher.id == members.first()
+
+    def test_public_barrier_unpublish_adds_user_as_contributor(self):
+        assert 0 == get_team_member_user_ids(self.barrier.id).count()
+
+        url = reverse("public-barriers-unpublish", kwargs={"pk": self.barrier.id})
+        response = self.client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        members = get_team_member_user_ids(self.barrier.id)
+        assert 1 == members.count()
+        assert self.publisher.id == members.first()

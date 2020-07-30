@@ -742,7 +742,8 @@ class BarrierOpenActionRequired(BarrierStatusBase):
         )
 
 
-class PublicBarrierViewSet(mixins.RetrieveModelMixin,
+class PublicBarrierViewSet(TeamMemberModelMixin,
+                           mixins.RetrieveModelMixin,
                            mixins.UpdateModelMixin,
                            GenericViewSet):
     """
@@ -758,6 +759,11 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
         public_barrier, _created = get_or_create_public_barrier(barrier)
         return public_barrier
 
+    def update(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        self.update_contributors(public_barrier.barrier)
+        return super().update(request, *args, **kwargs)
+
     def update_status_action(self, public_view_status):
         """
         Helper to set status of a public barrier through actions.
@@ -767,6 +773,7 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
         public_barrier = self.get_object()
         public_barrier.public_view_status = public_view_status
         public_barrier.save()
+        self.update_contributors(public_barrier.barrier)
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
@@ -789,6 +796,7 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
         public_barrier.title = public_barrier.title
         public_barrier.summary = public_barrier.summary
         public_barrier.save()
+        self.update_contributors(public_barrier.barrier)
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
@@ -797,6 +805,7 @@ class PublicBarrierViewSet(mixins.RetrieveModelMixin,
         public_barrier = self.get_object()
         published = public_barrier.publish()
         if published:
+            self.update_contributors(public_barrier.barrier)
             serializer = PublicBarrierSerializer(public_barrier)
             return Response(status=status.HTTP_200_OK, data=serializer.data)
         else:
