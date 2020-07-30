@@ -644,9 +644,15 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def ready_to_be_published(self):
-        status_check = self.public_view_status == PublicBarrierStatus.READY
-        changes_check = self.unpublished_changes
-        return status_check and changes_check and self.title and self.summary
+        is_ready = self.public_view_status == PublicBarrierStatus.READY
+        is_republish = self.unpublished_on is not None
+        has_changes = self.unpublished_changes
+        has_title_and_summary = bool(self.title and self.summary)
+        return (
+            is_ready
+            and has_title_and_summary
+            and (is_republish or has_changes)
+        )
 
     @property
     def unpublished_changes(self):

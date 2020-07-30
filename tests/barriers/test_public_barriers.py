@@ -898,3 +898,34 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
         assert status.HTTP_200_OK == response.status_code
         assert False is pb.unpublished_changes
         assert False is pb.ready_to_be_published
+
+    def test_ready_to_be_published_is_true_for_republish(self):
+        """
+        The case when the public barrier gets unpublished then republished without changes
+        """
+        # 1. Publish the barrier
+        user = self.create_publisher()
+        pb, response = self.publish_barrier(user=user)
+        assert status.HTTP_200_OK == response.status_code
+
+        assert False is pb.unpublished_changes
+        assert False is pb.ready_to_be_published
+
+        # 2. Unpublish the barrier
+        url = reverse("public-barriers-unpublish", kwargs={"pk": pb.barrier.id})
+        client = self.create_api_client(user=user)
+        response = client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        pb.refresh_from_db()
+        assert pb.unpublished_on
+
+        # 3. Review the changes
+        #    once the changes are reviewed it should be ready to be published
+        #    even without unpublished changes
+        pb.public_view_status = PublicBarrierStatus.READY
+        pb.save()
+        pb.refresh_from_db()
+
+        assert False is pb.unpublished_changes
+        assert True is pb.ready_to_be_published
