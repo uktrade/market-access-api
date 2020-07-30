@@ -572,6 +572,9 @@ class PublicBarrierActivity(HistoryMixin, generics.GenericAPIView):
         history_items = self.get_public_barrier_history(
             start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
         )
+        history_items += self.get_barrier_history(
+            fields=["public_eligibility_summary"],
+        )
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
