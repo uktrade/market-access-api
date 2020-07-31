@@ -4,6 +4,8 @@ from api.interactions.views import (
     DocumentViewSet,
     BarrierInteractionList,
     BarrierInteractionDetail,
+    PublicBarrierNoteDetail,
+    PublicBarrierNoteList,
 )
 
 
@@ -43,5 +45,15 @@ urlpatterns = [
         "barriers/interactions/<int:pk>",
         BarrierInteractionDetail.as_view(),
         name="get-interaction",
+    ),
+    path(
+        "public-barriers/<uuid:barrier_id>/notes",
+        PublicBarrierNoteList.as_view(),
+        name="public-barrier-note-list",
+    ),
+    path(
+        "public-barrier-notes/<int:pk>",
+        PublicBarrierNoteDetail.as_view(),
+        name="public-barrier-note-detail",
     ),
 ]

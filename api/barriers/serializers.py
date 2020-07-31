@@ -2,13 +2,14 @@ from django.conf import settings
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierInstance, BarrierUserHit
+from api.barriers.models import BarrierInstance, BarrierUserHit, PublicBarrier
 from api.collaboration.models import TeamMember
+from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.interactions.models import Document
 from api.metadata.constants import (
     ASSESMENT_IMPACT,
     BARRIER_SOURCE,
-    BARRIER_STATUS,
+    BarrierStatus,
     BARRIER_PENDING,
     STAGE_STATUS,
     PROBLEM_STATUS_TYPES,
@@ -23,7 +24,7 @@ from api.metadata.utils import (
 )
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
-
+from .fields import PublicEligibilityField
 
 # pylint: disable=R0201
 
@@ -239,7 +240,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
-        status_dict = dict(BARRIER_STATUS)
+        status_dict = dict(BarrierStatus.choices)
         sub_status_dict = dict(BARRIER_PENDING)
         status = status_dict.get(obj.status, "Unknown")
         if status == "Open: Pending action":
@@ -411,6 +412,17 @@ class BarrierListSerializer(serializers.ModelSerializer):
             return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
 
 
+class NestedPublicBarrierSerializer(serializers.ModelSerializer):
+    """
+    Simple serializer for use within BarrierInstanceSerializer.
+    """
+    class Meta:
+        model = PublicBarrier
+        fields = (
+            "public_view_status",
+        )
+
+
 class BarrierInstanceSerializer(serializers.ModelSerializer):
     """ Serializer for Barrier Instance """
 
@@ -426,6 +438,8 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     # TODO: deprecate this field (use summary instead)
     problem_description = serializers.CharField(source="summary", required=False)
+    public_barrier = NestedPublicBarrierSerializer()
+    public_eligibility = PublicEligibilityField()
     wto_profile = WTOProfileSerializer()
 
     class Meta:
@@ -473,6 +487,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "trade_direction",
             "end_date",
             "wto_profile",
+            "public_barrier",
+            "public_eligibility",
+            "public_eligibility_summary",
         )
         read_only_fields = (
             "id",
@@ -563,6 +580,22 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         serializer = BarrierTagSerializer(tags, many=True)
         return serializer.data
 
+    def validate_public_eligibility(self, attrs):
+        """ Check for permissions here """
+        if type(attrs) is not bool:
+            raise serializers.ValidationError('Expected a boolean.')
+
+        # TODO: check user permissions - this field should only be updated
+        #       by the publishing team
+
+        return attrs
+
+    def validate_public_eligibility_summary(self, attrs):
+        """ Check for permissions here """
+        # TODO: check user permissions - this field should only be updated
+        #       by the publishing team
+        return attrs
+
     def validate_tags(self, tag_ids=None):
         if tag_ids is not None and type(tag_ids) is not list:
             raise serializers.ValidationError('Expected a list of tag IDs.')
@@ -584,6 +617,12 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if "wto_profile" in validated_data:
             self.update_wto_profile(instance, validated_data)
+
+        if (
+            "public_eligibility" in validated_data
+            and "public_eligibility_summary" not in validated_data
+        ):
+            validated_data["public_eligibility_summary"] = ""
 
         if instance.archived is False and validated_data.get("archived") is True:
             instance.archive(
@@ -661,3 +700,244 @@ class BarrierStaticStatusSerializer(serializers.ModelSerializer):
             "created_on",
             "created_by",
         )
+
+
+class NoneToBlankCharField(serializers.CharField):
+
+    def to_representation(self, value):
+        if value is not None:
+            return str(value)
+        else:
+            return ""
+
+
+class ReadOnlyStatusField(serializers.Field):
+    """
+    Field serializer to be used with read only status fields.
+    """
+
+    def to_representation(self, value):
+        return {
+            "id": value,
+            "name": BarrierStatus.name(value)
+        }
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyCountryField(serializers.Field):
+    """
+    Field serializer to be used with read only country / export_country fields.
+    """
+
+    def to_representation(self, value):
+        value = str(value)
+        country = get_country(value) or {}
+        return {
+            "id": value,
+            "name": country.get("name")
+        }
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlySectorsField(serializers.Field):
+    """
+    Field serializer to be used with read only sectors fields.
+    """
+
+    def to_representation(self, value):
+        def sector_name(sid):
+            sector = get_sector(str(sid)) or {}
+            return sector.get("name")
+
+        return [
+            {"id": str(sector_id), "name": sector_name(str(sector_id))}
+            for sector_id in value
+            if sector_name(str(sector_id))
+        ]
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyAllSectorsField(serializers.Field):
+    """
+    Field serializer to be used with read only all_sectors fields.
+    """
+
+    def to_representation(self, value):
+        return value or False
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyCategoriesField(serializers.Field):
+    """
+    Field serializer to be used with read only categories fields.
+    """
+
+    def to_representation(self, value):
+        return [
+            {"id": category.id, "title": category.title}
+            for category in value.all()
+        ]
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
+                              serializers.ModelSerializer):
+    """
+    Generic serializer for barrier public data.
+    """
+    title = NoneToBlankCharField()
+    summary = NoneToBlankCharField()
+    internal_title_changed = serializers.SerializerMethodField()
+    internal_summary_changed = serializers.SerializerMethodField()
+    status = ReadOnlyStatusField()
+    internal_status = ReadOnlyStatusField()
+    country = ReadOnlyCountryField()
+    internal_country = ReadOnlyCountryField()
+    sectors = ReadOnlySectorsField()
+    internal_sectors = ReadOnlySectorsField()
+    all_sectors = ReadOnlyAllSectorsField()
+    internal_all_sectors = ReadOnlyAllSectorsField()
+    categories = ReadOnlyCategoriesField()
+    internal_categories = ReadOnlyCategoriesField()
+    latest_published_version = serializers.SerializerMethodField()
+    unpublished_changes = serializers.SerializerMethodField()
+    ready_to_be_published = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PublicBarrier
+        fields = (
+            "id",
+            "title",
+            "title_updated_on",
+            "internal_title_changed",
+            "internal_title_at_update",
+            "summary",
+            "summary_updated_on",
+            "internal_summary_changed",
+            "internal_summary_at_update",
+            "status",
+            "internal_status",
+            "internal_status_changed",
+            "country",
+            "internal_country",
+            "internal_country_changed",
+            "sectors",
+            "internal_sectors",
+            "internal_sectors_changed",
+            "all_sectors",
+            "internal_all_sectors",
+            "internal_all_sectors_changed",
+            "categories",
+            "internal_categories",
+            "internal_categories_changed",
+            "public_view_status",
+            "first_published_on",
+            "last_published_on",
+            "unpublished_on",
+            "latest_published_version",
+            "unpublished_changes",
+            "ready_to_be_published",
+        )
+        read_only_fields = (
+            "id",
+            "title_updated_on",
+            "internal_title_changed",
+            "internal_title_at_update",
+            "summary_updated_on",
+            "internal_summary_changed",
+            "internal_summary_at_update",
+            "status",
+            "internal_status",
+            "internal_status_changed",
+            "country",
+            "internal_country",
+            "internal_country_changed",
+            "sectors",
+            "internal_sectors",
+            "internal_sectors_changed",
+            "all_sectors",
+            "internal_all_sectors",
+            "internal_all_sectors_changed",
+            "categories",
+            "internal_categories",
+            "internal_categories_changed",
+            "public_view_status",
+            "first_published_on",
+            "last_published_on",
+            "unpublished_on",
+            "latest_published_version",
+            "unpublished_changes",
+            "ready_to_be_published",
+        )
+
+    def get_internal_title_changed(self, obj):
+        return obj.internal_title_changed
+
+    def get_internal_summary_changed(self, obj):
+        return obj.internal_summary_changed
+
+    def get_latest_published_version(self, obj):
+        return PublishedVersionSerializer(obj.latest_published_version).data
+
+    def get_unpublished_changes(self, obj):
+        return obj.unpublished_changes
+
+    def get_ready_to_be_published(self, obj):
+        return obj.ready_to_be_published
+
+
+class PublishedVersionSerializer(AllowNoneAtToRepresentationMixin,
+                                 serializers.ModelSerializer):
+    title = serializers.CharField()
+    summary = serializers.CharField()
+    status = ReadOnlyStatusField()
+    country = ReadOnlyCountryField()
+    sectors = ReadOnlySectorsField()
+    all_sectors = ReadOnlyAllSectorsField()
+    categories = ReadOnlyCategoriesField()
+
+    class Meta:
+        model = PublicBarrier
+        fields = (
+            "id",
+            "title",
+            "summary",
+            "status",
+            "country",
+            "sectors",
+            "all_sectors",
+            "categories",
+        )
+
+
+# TODO: write a serializer that can be used to output the JSON blob onto S3
+# As per contract (from slack chat with Michal)
+# Public Barriers in the flat file should look as follows
+# {
+#     "barriers": [
+#         {
+#             "id": "1",
+#             "title": "Belgian chocolate...",
+#             "summary": "Lorem ipsum",
+#             "status": "Open: in progress,
+#             "country": "Belgium",
+#             "sectors: [
+#                 {"name": "Automotive"}
+#             ],
+#             "all_sectors": False,
+#             "categories": [
+#                 {"name": "Goods and Services"}
+#             ]
+#         }
+#     ]
+# }

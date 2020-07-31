@@ -303,3 +303,78 @@ class TestBarrierTradeDirection(APITestMixin, TestCase):
 
                 assert status.HTTP_400_BAD_REQUEST == response.status_code, \
                     f"Expected 400 when value is {value}"
+
+
+class TestBarrierPublicEligibility(APITestMixin, TestCase):
+    def setUp(self):
+        self.barrier = BarrierFactory()
+        self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
+
+    def test_get_barrier_without_public_eligibility(self):
+        """
+        By default all existing barriers start with public_eligibility not begin set.
+        """
+
+        assert 1 == BarrierInstance.objects.count()
+        assert self.barrier.public_eligibility is None
+
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data["public_eligibility"] is None
+
+    def test_patch_public_eligibility_with_valid_values(self):
+        valid_values = [True, False]
+
+        for value in valid_values:
+            with self.subTest(value=value):
+                payload = {"public_eligibility": value}
+                response = self.api_client.patch(self.url, format="json", data=payload)
+
+                assert status.HTTP_200_OK == response.status_code, \
+                    f"Expected 200 when value is {value}"
+                assert value == response.data["public_eligibility"], \
+                    f'Expected {value} in "public_eligibility" field.'
+
+    def test_patch_public_eligibility_with_invalid_values(self):
+        invalid_values = [None, "", 123, {"1": "test"}, [1, 2, 3]]
+
+        for value in invalid_values:
+            with self.subTest(value=value):
+                payload = {"public_eligibility": value}
+                response = self.api_client.patch(self.url, format="json", data=payload)
+
+                assert status.HTTP_400_BAD_REQUEST == response.status_code, \
+                    f"Expected 400 when value is {value}"
+
+    def test_patch_public_eligibility_summary(self):
+        summary = "Wibble wobble"
+        payload = {"public_eligibility_summary": summary}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code, \
+            f"Expected 200 when public_eligibility_summary is {summary}"
+        assert summary == response.data["public_eligibility_summary"]
+
+    def test_patch_public_eligibility_resets_public_eligibility_summary(self):
+        self.barrier.public_eligibility = False
+        self.barrier.public_eligibility_summary = "Wibble wobble"
+        self.barrier.save()
+
+        self.barrier.refresh_from_db()
+
+        assert not self.barrier.public_eligibility
+        assert self.barrier.public_eligibility_summary
+
+        payload = {"public_eligibility": True}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data["public_eligibility"]
+        assert not response.data["public_eligibility_summary"]
+
+    def test_patch_public_eligibility_with_permissions(self):
+        pass
+
+    def test_patch_public_eligibility_without_permissions(self):
+        pass

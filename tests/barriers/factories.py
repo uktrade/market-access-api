@@ -11,20 +11,19 @@ from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
 def fuzzy_sector():
     sectors = (
         "af959812-6095-e211-a939-e4115bead28a",     # Advanced Engineering
-        "75debee7-a182-410e-bde0-3098e4f7b822",
-        "9538cecc-5f95-e211-a939-e4115bead28a",
+        "9538cecc-5f95-e211-a939-e4115bead28a",     # Aerospace
+        "9b38cecc-5f95-e211-a939-e4115bead28a",     # Chemicals
     )
     return FuzzyChoice(sectors).fuzz()
 
 
 def fuzzy_country():
     countries = (
-        "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc",
-        "985f66a0-5d95-e211-a939-e4115bead28a",
-        "1f0be5c4-5d95-e211-a939-e4115bead28a",
-        "a05f66a0-5d95-e211-a939-e4115bead28a",
-        "a75f66a0-5d95-e211-a939-e4115bead28a",
-        "ad5f66a0-5d95-e211-a939-e4115bead28a",
+        "a25f66a0-5d95-e211-a939-e4115bead28a",     # The Bahamas
+        "985f66a0-5d95-e211-a939-e4115bead28a",     # Angola
+        "1f0be5c4-5d95-e211-a939-e4115bead28a",     # Singapore
+        "a05f66a0-5d95-e211-a939-e4115bead28a",     # Austria
+        "ad5f66a0-5d95-e211-a939-e4115bead28a",     # Bosnia and Herzegovina
     )
     return FuzzyChoice(countries).fuzz()
 

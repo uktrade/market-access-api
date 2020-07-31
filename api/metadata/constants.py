@@ -34,19 +34,60 @@ REPORT_STATUS = Choices(
     (4, "Archived"),
 )
 
-RESOLVED_STATUS = Choices(
-    (3, "Resolved: In part"),
-    (4, "Resolved: In full"),
-)
 
-BARRIER_STATUS = Choices(
-    (0, "Unfinished"),
-    (1, "Open: Pending action"),
-    (2, "Open: In progress"),
-    (5, "Dormant"),
-    (6, "Archived"),
-    (7, 'Unknown'),
-) + RESOLVED_STATUS
+class StatusNameMixin:
+    choices = Choices()
+
+    @classmethod
+    def name(cls, status):
+        """
+        Return the name/label of the gives status.
+        :param status: INT
+        :return:
+        """
+        d = dict(cls.choices)
+        return d[status]
+
+
+class BarrierStatus(StatusNameMixin):
+    UNFINISHED = 0
+    OPEN_PENDING = 1
+    OPEN_IN_PROGRESS = 2
+    RESOLVED_IN_PART = 3
+    RESOLVED_IN_FULL = 4
+    DORMANT = 5
+    ARCHIVED = 6
+    UNKNOWN = 7
+
+    choices = Choices(
+        (UNFINISHED, "Unfinished"),
+        (OPEN_PENDING, "Open: Pending action"),
+        (OPEN_IN_PROGRESS, "Open: In progress"),
+        (RESOLVED_IN_PART, "Resolved: In part"),
+        (RESOLVED_IN_FULL, "Resolved: In full"),
+        (DORMANT, "Dormant"),
+        (ARCHIVED, "Archived"),
+        (UNKNOWN, 'Unknown'),
+    )
+
+
+class PublicBarrierStatus(StatusNameMixin):
+    UNKNOWN = 0
+    INELIGIBLE = 10
+    ELIGIBLE = 20
+    READY = 30
+    PUBLISHED = 40
+    UNPUBLISHED = 50
+
+    choices = Choices(
+        (UNKNOWN, "To be decided"),
+        (INELIGIBLE, "Not for public view"),
+        (ELIGIBLE, "Allowed"),
+        (READY, "Ready"),
+        (PUBLISHED, "Published"),
+        (UNPUBLISHED, "Unpublished")
+    )
+
 
 BARRIER_PENDING = Choices(
     ("UK_GOVT", "UK government"),
@@ -79,12 +120,6 @@ BARRIER_SOURCE = Choices(
     ("TRADE", "Trade association"),
     ("GOVT", "Government entity"),
     ("OTHER", "Other"),
-)
-
-TIMELINE_EVENTS = Choices(
-    ("REPORT_CREATED", "Report Created"),
-    ("BARRIER_CREATED", "Barrier Created"),
-    ("BARRIER_STATUS_CHANGE", "Barrier Status Change"),
 )
 
 ASSESMENT_IMPACT = Choices(
