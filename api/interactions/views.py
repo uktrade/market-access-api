@@ -6,10 +6,13 @@ from rest_framework.exceptions import ValidationError
 from api.assessment.models import Assessment
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.interactions.models import Document, Interaction
-from api.interactions.serializers import DocumentSerializer, InteractionSerializer
+from api.interactions.serializers import (
+    DocumentSerializer, InteractionSerializer, PublicBarrierNoteSerializer
+)
 from api.documents.views import BaseEntityDocumentModelViewSet
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import BarrierInstance, PublicBarrier
+from api.interactions.models import PublicBarrierNote
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
 
@@ -108,6 +111,38 @@ class BarrierInteractionDetail(TeamMemberModelMixin,
             serializer.save(modified_by=self.request.user)
         # Update Team members
         self.update_contributors(interaction.barrier)
+
+    def perform_destroy(self, instance):
+        instance.archive(self.request.user)
+
+
+class PublicBarrierNoteList(TeamMemberModelMixin, generics.ListCreateAPIView):
+    serializer_class = PublicBarrierNoteSerializer
+
+    def get_queryset(self):
+        return PublicBarrierNote.objects.filter(
+            public_barrier__barrier_id=self.kwargs.get("barrier_id"),
+            archived=False,
+        )
+
+    def perform_create(self, serializer):
+        barrier_id = self.kwargs.get("barrier_id")
+        public_barrier = get_object_or_404(PublicBarrier, barrier_id=barrier_id)
+        serializer.save(public_barrier=public_barrier, created_by=self.request.user)
+        self.update_contributors(public_barrier.barrier)
+
+
+class PublicBarrierNoteDetail(
+    TeamMemberModelMixin,
+    generics.RetrieveUpdateDestroyAPIView,
+):
+    queryset = PublicBarrierNote.objects.all()
+    serializer_class = PublicBarrierNoteSerializer
+
+    def perform_update(self, serializer):
+        serializer.save(modified_by=self.request.user)
+        note = self.get_object()
+        self.update_contributors(note.public_barrier.barrier)
 
     def perform_destroy(self, instance):
         instance.archive(self.request.user)

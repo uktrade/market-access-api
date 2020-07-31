@@ -81,6 +81,10 @@ class ProductHistoryItem(BaseBarrierHistoryItem):
     field = "product"
 
 
+class PublicEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
+    field = "public_eligibility_summary"
+
+
 class ScopeHistoryItem(BaseBarrierHistoryItem):
     field = "problem_status"
 
@@ -93,7 +97,10 @@ class SectorsHistoryItem(BaseBarrierHistoryItem):
             return super().get_data()
 
     def get_value(self, record):
-        return [str(sector_id) for sector_id in record.sectors or []]
+        return {
+            "all_sectors": record.all_sectors,
+            "sectors": [str(sector_id) for sector_id in record.sectors or []],
+        }
 
 
 class SourceHistoryItem(BaseBarrierHistoryItem):
@@ -158,6 +165,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
         LocationHistoryItem,
         PriorityHistoryItem,
         ProductHistoryItem,
+        PublicEligibilitySummaryHistoryItem,
         ScopeHistoryItem,
         SectorsHistoryItem,
         SourceHistoryItem,

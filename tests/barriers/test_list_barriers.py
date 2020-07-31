@@ -295,7 +295,7 @@ class TestListBarriers(APITestMixin, APITestCase):
             "export_country", "-export_country"
         ]
         priorities = BarrierPriorityFactory.create_batch(3)
-        bahamas = "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc"
+        bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
         barrier1 = BarrierFactory(
             reported_on=datetime(2020, 1, 1, tzinfo=UTC),
             modified_on=datetime(2020, 1, 2, tzinfo=UTC),
@@ -345,7 +345,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         BarrierFactory(export_country=bhutan)
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         spain_barrier = BarrierFactory(export_country=spain)
-        bahamas = "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc"
+        bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
         BarrierFactory(export_country=bahamas)
 
         assert 3 == BarrierInstance.objects.count()
@@ -368,7 +368,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         bhutan_barrier = BarrierFactory(export_country=bhutan)
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         spain_barrier = BarrierFactory(export_country=spain)
-        bahamas = "aaab9c75-bd2a-43b0-a78b-7b5aad03bdbc"
+        bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
         BarrierFactory(export_country=bahamas)
 
         assert 3 == BarrierInstance.objects.count()

@@ -11,22 +11,27 @@ from django.utils.timezone import now
 
 from dateutil.parser import parse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, serializers, status
-from rest_framework.decorators import api_view
+from rest_framework import generics, serializers, status, mixins
+from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.csv import create_csv_response
+from api.barriers.exceptions import PublicBarrierPublishException
+from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.history import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
     NoteHistoryFactory,
+    PublicBarrierHistoryFactory,
+    PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
-from api.barriers.models import BarrierInstance, BarrierReportStage
+from api.barriers.models import BarrierInstance, BarrierReportStage, PublicBarrier
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierInstanceSerializer,
@@ -34,16 +39,17 @@ from api.barriers.serializers import (
     BarrierReportSerializer,
     BarrierResolveSerializer,
     BarrierStaticStatusSerializer,
+    PublicBarrierSerializer,
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
-from api.core.utils import cleansed_username
 from api.interactions.models import Interaction
-from api.metadata.constants import BARRIER_INTERACTION_TYPE, TIMELINE_EVENTS
+from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
 from api.metadata.models import BarrierPriority, Category
 from api.user.helpers import has_profile, update_user_profile
 from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 from api.user.models import Profile, SavedSearch
+from api.user.permissions import IsPublisher, IsEditor, AllRetrieveAndEditorUpdateOnly
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
 from .filters import BarrierFilterSet
@@ -53,6 +59,7 @@ class Echo:
     """An object that implements just the write method of the file-like
     interface.
     """
+
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
@@ -187,7 +194,6 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 
 
 class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIView):
-
     lookup_field = "pk"
     queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
@@ -205,7 +211,6 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIVi
 
 
 class BarrierReportSubmit(generics.UpdateAPIView):
-
     queryset = BarrierInstance.reports.all()
     serializer_class = BarrierReportSerializer
 
@@ -467,6 +472,20 @@ class HistoryMixin:
             start_date=start_date,
         )
 
+    def get_public_barrier_history(self, fields=(), start_date=None):
+        return PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+            start_date=start_date,
+        )
+
+    def get_public_barrier_notes_history(self, fields=(), start_date=None):
+        return PublicBarrierNoteHistoryFactory.get_history_items(
+            barrier_id=self.kwargs.get("pk"),
+            fields=fields,
+            start_date=start_date,
+        )
+
     def get_team_history(self, fields=(), start_date=None):
         return TeamMemberHistoryFactory.get_history_items(
             barrier_id=self.kwargs.get("pk"),
@@ -489,7 +508,6 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
 
     def get(self, request, pk):
         barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
-
         barrier_history = self.get_barrier_history(start_date=barrier.reported_on)
         notes_history = self.get_notes_history(start_date=barrier.reported_on)
         assessment_history = self.get_assessment_history(start_date=barrier.reported_on)
@@ -503,6 +521,12 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
             + wto_history
         )
 
+        if hasattr(barrier, "public_barrier"):
+            history_items += self.get_public_barrier_history(
+                start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
+            )
+            history_items += self.get_public_barrier_notes_history()
+
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
@@ -513,8 +537,6 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
 class BarrierActivity(HistoryMixin, generics.GenericAPIView):
     """
     Returns history items used on the barrier activity stream
-
-    This will supersede the BarrierStatusHistory view below.
     """
 
     def get(self, request, pk):
@@ -541,96 +563,23 @@ class BarrierActivity(HistoryMixin, generics.GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class BarrierStatusHistory(generics.GenericAPIView):
+class PublicBarrierActivity(HistoryMixin, generics.GenericAPIView):
     """
-    Returns history items used on the barrier activity stream
-
-    This will be deprecated in favour of the BarrierActivity view above.
+    Returns history items used on the public barrier activity stream
     """
 
-    def _format_user(self, user):
-        if user is not None:
-            return {"id": user.id, "name": cleansed_username(user)}
-
-        return None
-
-    def get(self, request, pk):     # noqa: C901
-        # TODO: refactor to remove complexity
-        status_field = "status"
-        timeline_fields = ["status", "priority", "archived"]
-        barrier = BarrierInstance.barriers.get(id=pk)
-        history = barrier.history.all().order_by("history_date")
-        results = []
-        old_record = None
-        TIMELINE_REVERTED = {v: k for k, v in TIMELINE_EVENTS}
-        for new_record in history:
-            if new_record.history_type != "+":
-                if old_record is not None:
-                    status_change = None
-                    delta = new_record.diff_against(old_record)
-                    for change in delta.changes:
-                        if change.field in timeline_fields:
-                            if change.field == "status":
-                                # ignore default status setup, during report submission
-                                if not (change.old == 0 or change.old is None):
-                                    event = TIMELINE_REVERTED["Barrier Status Change"]
-                                    status_change = {
-                                        "date": new_record.history_date,
-                                        "model": "barrier",
-                                        "field": change.field,
-                                        "old_value": str(change.old),
-                                        "new_value": str(change.new),
-                                        "user": self._format_user(
-                                            new_record.history_user
-                                        ),
-                                        "field_info": {
-                                            "status_date": new_record.status_date,
-                                            "status_summary": new_record.status_summary,
-                                            "sub_status": new_record.sub_status,
-                                            "sub_status_other": new_record.sub_status_other,
-                                            "event": event,
-                                        },
-                                    }
-                            elif change.field == "priority":
-                                status_change = {
-                                    "date": new_record.history_date,
-                                    "model": "barrier",
-                                    "field": change.field,
-                                    "old_value": str(change.old),
-                                    "new_value": str(change.new),
-                                    "user": self._format_user(
-                                        new_record.history_user
-                                    ),
-                                    "field_info": {
-                                        "priority_date": new_record.priority_date,
-                                        "priority_summary": new_record.priority_summary,
-                                    },
-                                }
-                            elif change.field == "archived":
-                                status_change = {
-                                    "date": new_record.history_date,
-                                    "model": "barrier",
-                                    "field": change.field,
-                                    "old_value": change.old,
-                                    "new_value": change.new,
-                                    "user": self._format_user(
-                                        new_record.history_user
-                                    ),
-                                }
-                                if change.new is True:
-                                    status_change["field_info"] = {
-                                        "archived_reason": new_record.archived_reason,
-                                        "archived_explanation": new_record.archived_explanation,
-                                    }
-                                else:
-                                    status_change["field_info"] = {
-                                        "unarchived_reason": new_record.unarchived_reason,
-                                    }
-                    if status_change:
-                        results.append(status_change)
-            old_record = new_record
-        response = {"barrier_id": str(pk), "history": results}
-
+    def get(self, request, pk):
+        public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))
+        history_items = self.get_public_barrier_history(
+            start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
+        )
+        history_items += self.get_barrier_history(
+            fields=["public_eligibility_summary"],
+        )
+        response = {
+            "barrier_id": str(pk),
+            "history": [item.data for item in history_items],
+        }
         return Response(response, status=status.HTTP_200_OK)
 
 
@@ -654,7 +603,6 @@ class BarrierStatusBase(generics.UpdateAPIView):
 
 
 class BarrierResolveInFull(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierResolveSerializer
 
@@ -685,7 +633,6 @@ class BarrierResolveInFull(BarrierStatusBase):
 
 
 class BarrierResolveInPart(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierResolveSerializer
 
@@ -716,7 +663,6 @@ class BarrierResolveInPart(BarrierStatusBase):
 
 
 class BarrierHibernate(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -733,7 +679,6 @@ class BarrierHibernate(BarrierStatusBase):
 
 
 class BarrierStatusChangeUnknown(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -750,7 +695,6 @@ class BarrierStatusChangeUnknown(BarrierStatusBase):
 
 
 class BarrierOpenInProgress(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -767,7 +711,6 @@ class BarrierOpenInProgress(BarrierStatusBase):
 
 
 class BarrierOpenActionRequired(BarrierStatusBase):
-
     queryset = BarrierInstance.barriers.all()
     serializer_class = BarrierStaticStatusSerializer
 
@@ -798,3 +741,77 @@ class BarrierOpenActionRequired(BarrierStatusBase):
             summary=self.request.data.get("status_summary"),
             status_date=self.request.data.get("status_date")
         )
+
+
+class PublicBarrierViewSet(TeamMemberModelMixin,
+                           mixins.RetrieveModelMixin,
+                           mixins.UpdateModelMixin,
+                           GenericViewSet):
+    """
+    Manage public data for barriers.
+    """
+    barriers_qs = BarrierInstance.barriers.all()
+    http_method_names = ["get", "post", "patch", "head", "options"]
+    permission_classes = (AllRetrieveAndEditorUpdateOnly,)
+    serializer_class = PublicBarrierSerializer
+
+    def get_object(self):
+        barrier = get_object_or_404(self.barriers_qs, pk=self.kwargs.get("pk"))
+        public_barrier, _created = get_or_create_public_barrier(barrier)
+        return public_barrier
+
+    def update(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        self.update_contributors(public_barrier.barrier)
+        return super().update(request, *args, **kwargs)
+
+    def update_status_action(self, public_view_status):
+        """
+        Helper to set status of a public barrier through actions.
+        :param public_view_status: Desired status
+        :return: Response with serialized data
+        """
+        public_barrier = self.get_object()
+        public_barrier.public_view_status = public_view_status
+        public_barrier.save()
+        self.update_contributors(public_barrier.barrier)
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(methods=["post"], detail=True, permission_classes=(IsEditor,))
+    def ready(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.READY)
+
+    @action(methods=["post"], detail=True, permission_classes=(IsEditor,))
+    def unprepared(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.ELIGIBLE)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsEditor,),
+        url_path="ignore-all-changes",
+    )
+    def ignore_all_changes(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.title = public_barrier.title
+        public_barrier.summary = public_barrier.summary
+        public_barrier.save()
+        self.update_contributors(public_barrier.barrier)
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(methods=["post"], detail=True, permission_classes=(IsPublisher,))
+    def publish(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        published = public_barrier.publish()
+        if published:
+            self.update_contributors(public_barrier.barrier)
+            serializer = PublicBarrierSerializer(public_barrier)
+            return Response(status=status.HTTP_200_OK, data=serializer.data)
+        else:
+            raise PublicBarrierPublishException()
+
+    @action(methods=["post"], detail=True, permission_classes=(IsPublisher,))
+    def unpublish(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.UNPUBLISHED)

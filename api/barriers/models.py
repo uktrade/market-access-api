@@ -1,20 +1,22 @@
+import datetime
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField, JSONField
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, CASCADE
 from django.utils import timezone
 
 from simple_history.models import HistoricalRecords
 
 from api.metadata.constants import (
-    BARRIER_STATUS,
+    BarrierStatus,
     BARRIER_SOURCE,
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
-    TRADE_DIRECTION_CHOICES
+    TRADE_DIRECTION_CHOICES,
+    PublicBarrierStatus,
 )
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
@@ -90,6 +92,10 @@ class BarrierHistoricalModel(models.Model):
             changed_fields.discard("export_country")
             changed_fields.discard("country_admin_areas")
             changed_fields.add("location")
+
+        if "all_sectors" in changed_fields:
+            changed_fields.discard("all_sectors")
+            changed_fields.add("sectors")
 
         return list(changed_fields)
 
@@ -198,7 +204,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
 
     # Barrier status
     status = models.PositiveIntegerField(
-        choices=BARRIER_STATUS, default=0, help_text="status of the barrier instance"
+        choices=BarrierStatus.choices, default=0, help_text="status of the barrier instance"
     )
     sub_status = models.CharField(
         choices=BARRIER_PENDING,
@@ -217,6 +223,12 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     )
     status_date = models.DateField(
         null=True, help_text="date when status action occurred"
+    )
+    public_eligibility = models.BooleanField(
+        default=None, null=True, help_text="Mark the barrier as either publishable or unpublishable to the public."
+    )
+    public_eligibility_summary = models.TextField(
+        blank=True, help_text="Public eligibility summary if provided by user."
     )
 
     # Barrier priority
@@ -267,6 +279,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
 
     class Meta:
         ordering = ["-reported_on"]
+        permissions = [
+            ('change_barrier_public_eligibility', 'Can change barrier public eligibility'),
+        ]
 
     def current_progress(self):
         """ checks current dataset to see how far reporting workflow is done """
@@ -352,6 +367,330 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )
+
+
+class PublicBarrierHistoricalModel(models.Model):
+    """
+    Abstract model for tracking m2m changes for PublicBarrier.
+    """
+    categories_cache = ArrayField(
+        models.CharField(max_length=20),
+        blank=True,
+        null=True,
+        default=list,
+    )
+
+    def get_changed_fields(self, old_history):
+        changed_fields = set(self.diff_against(old_history).changed_fields)
+
+        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
+            changed_fields.add("categories")
+
+        if "all_sectors" in changed_fields:
+            changed_fields.discard("all_sectors")
+            changed_fields.add("sectors")
+
+        if "_title" in changed_fields:
+            changed_fields.discard("_title")
+            changed_fields.add("title")
+
+        if "_summary" in changed_fields:
+            changed_fields.discard("_summary")
+            changed_fields.add("summary")
+
+        if "_public_view_status" in changed_fields:
+            changed_fields.discard("_public_view_status")
+            changed_fields.add("public_view_status")
+
+        return list(changed_fields)
+
+    def update_categories(self):
+        self.categories_cache = list(
+            self.instance.categories.values_list("id", flat=True)
+        )
+
+    @property
+    def public_view_status(self):
+        return self._public_view_status
+
+    @property
+    def summary(self):
+        return self._summary
+
+    @property
+    def title(self):
+        return self._title
+
+    def save(self, *args, **kwargs):
+        self.update_categories()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
+class PublicBarrier(FullyArchivableMixin, BaseModel):
+    """
+    Public barriers are the representation of a barrier (as the name suggests) to the public.
+    This table should not be exposed to the public however only to the DMAS frontend which requires login.
+    Transfer the data to a flat file or another service which can safely expose the data.
+    """
+    barrier = models.OneToOneField(BarrierInstance, on_delete=CASCADE, related_name="public_barrier")
+
+    # === Title related fields =====
+    _title = models.CharField(null=True, max_length=MAX_LENGTH)
+    title_updated_on = models.DateTimeField(null=True, blank=True)
+    internal_title_at_update = models.CharField(null=True, max_length=MAX_LENGTH)
+
+    # === Summary related fields =====
+    _summary = models.TextField(null=True)
+    summary_updated_on = models.DateTimeField(null=True, blank=True)
+    internal_summary_at_update = models.TextField(null=True, max_length=MAX_LENGTH)
+
+    # === Non editable fields ====
+    status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
+    country = models.UUIDField()
+    sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
+    all_sectors = models.NullBooleanField()
+    categories = models.ManyToManyField(Category, related_name="public_barriers")
+
+    published_versions = JSONField(default=dict)
+
+    # === Status and timestamps ====
+    _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
+    first_published_on = models.DateTimeField(null=True, blank=True)
+    last_published_on = models.DateTimeField(null=True, blank=True)
+    unpublished_on = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        permissions = [
+            ('publish_barrier', 'Can publish barrier'),
+            ('mark_barrier_as_ready_for_publishing', 'Can mark barrier as ready for publishing'),
+        ]
+
+    def add_new_version(self):
+        # self.published_versions structure:
+        # {
+        #     "latest_version": 3,
+        #     "versions": {
+        #         1: {
+        #                "version": 1,
+        #                "published_on: "datetime",
+        #            },
+        #         2: {...},
+        #         3: {...}
+        #     }
+        # }
+        latest_version = self.published_versions.get("latest_version", "0")
+        new_version = str(int(latest_version) + 1)
+        entry = {
+            "version": new_version,
+            "published_on": self.last_published_on.isoformat()
+        }
+        if not self.published_versions:
+            self.published_versions = {"latest_version": "0", "versions": {}}
+        self.published_versions["latest_version"] = new_version
+        self.published_versions["versions"].setdefault(new_version, entry)
+
+    def get_published_version(self, version):
+        version = str(version)
+        if self.published_versions:
+            timestamp = self.published_versions["versions"][version]["published_on"]
+            historic_public_barrier = self.history.as_of(datetime.datetime.fromisoformat(timestamp))
+            return historic_public_barrier
+        else:
+            return None
+
+    @property
+    def latest_published_version(self):
+        return self.get_published_version(self.published_versions.get("latest_version", 0))
+
+    def update_non_editable_fields(self):
+        self.status = self.internal_status
+        self.country = self.internal_country
+        self.sectors = self.internal_sectors
+        self.all_sectors = self.internal_all_sectors
+        self.categories.set(self.internal_categories.all())
+
+    def publish(self):
+        if self.ready_to_be_published:
+            self.update_non_editable_fields()
+            self.unpublished_on = None
+            self.public_view_status = PublicBarrierStatus.PUBLISHED
+            self.add_new_version()
+            self._history_date = self.last_published_on
+            self.save()
+            return True
+        else:
+            return False
+
+    @property
+    def title(self):
+        return self._title
+
+    @title.setter
+    def title(self, value):
+        self._title = value
+        self.internal_title_at_update = self.barrier.barrier_title
+        self.title_updated_on = datetime.datetime.now()
+
+    @property
+    def title_changed(self):
+        if self.title:
+            if self.latest_published_version:
+                return self.title != self.latest_published_version.title
+            else:
+                return True
+        else:
+            return False
+
+    @property
+    def summary(self):
+        return self._summary
+
+    @summary.setter
+    def summary(self, value):
+        self._summary = value
+        self.internal_summary_at_update = self.barrier.summary
+        self.summary_updated_on = datetime.datetime.now()
+
+    @property
+    def summary_changed(self):
+        if self.summary:
+            if self.latest_published_version:
+                return self.summary != self.latest_published_version.summary
+            else:
+                return True
+        else:
+            return False
+
+    @property
+    def public_view_status(self):
+        # set default if eligibility is avail on the internal barrier
+        if (self._public_view_status == PublicBarrierStatus.UNKNOWN):
+            if self.barrier.public_eligibility is True:
+                self._public_view_status = PublicBarrierStatus.ELIGIBLE
+            if self.barrier.public_eligibility is False:
+                self._public_view_status = PublicBarrierStatus.INELIGIBLE
+
+        # The internal barrier might get withdrawn from the public domain
+        # in which case it will be marked as ineligible for public view
+        # and the public barrier view status should update as well
+        #
+        # Note: cannot automatically change from published
+        #       the public barrier would need to be unpublished first
+        if self._public_view_status != PublicBarrierStatus.PUBLISHED:
+            # Marking the public barrier ineligible
+            if (
+                self.barrier.public_eligibility is False
+                and self._public_view_status != PublicBarrierStatus.INELIGIBLE
+            ):
+                self._public_view_status = PublicBarrierStatus.INELIGIBLE
+                self.save()
+            # Marking the public barrier eligible
+            if (
+                self.barrier.public_eligibility is True
+                and self._public_view_status == PublicBarrierStatus.INELIGIBLE
+            ):
+                self._public_view_status = PublicBarrierStatus.ELIGIBLE
+                self.save()
+
+        return self._public_view_status
+
+    @public_view_status.setter
+    def public_view_status(self, value):
+        """ Set relevant date automatically """
+        status = int(value)
+        self._public_view_status = status
+        # auto update date fields based on the new status
+        now = datetime.datetime.now()
+        if status == PublicBarrierStatus.PUBLISHED:
+            self.first_published_on = self.first_published_on or now
+            self.last_published_on = now
+        if status == PublicBarrierStatus.UNPUBLISHED:
+            self.unpublished_on = now
+
+    @property
+    def internal_title_changed(self):
+        if self.internal_title_at_update:
+            return self.barrier.barrier_title != self.internal_title_at_update
+        else:
+            return False
+
+    @property
+    def internal_summary_changed(self):
+        if self.internal_summary_at_update:
+            return self.barrier.summary != self.internal_summary_at_update
+        else:
+            return False
+
+    @property
+    def internal_status(self):
+        return self.barrier.status
+
+    @property
+    def internal_status_changed(self):
+        return self.barrier.status != self.status
+
+    @property
+    def internal_country(self):
+        return self.barrier.export_country
+
+    @property
+    def internal_country_changed(self):
+        return self.barrier.export_country != self.country
+
+    @property
+    def internal_sectors(self):
+        return self.barrier.sectors
+
+    @property
+    def internal_sectors_changed(self):
+        return self.barrier.sectors != self.sectors
+
+    @property
+    def internal_all_sectors(self):
+        return self.barrier.all_sectors
+
+    @property
+    def internal_all_sectors_changed(self):
+        return self.barrier.all_sectors != self.all_sectors
+
+    @property
+    def internal_categories(self):
+        return self.barrier.categories
+
+    @property
+    def internal_categories_changed(self):
+        # TODO: consider other options
+        return set(self.barrier.categories.all()) != set(self.categories.all())
+
+    @property
+    def ready_to_be_published(self):
+        is_ready = self.public_view_status == PublicBarrierStatus.READY
+        is_republish = self.unpublished_on is not None
+        has_changes = self.unpublished_changes
+        has_title_and_summary = bool(self.title and self.summary)
+        return (
+            is_ready
+            and has_title_and_summary
+            and (is_republish or has_changes)
+        )
+
+    @property
+    def unpublished_changes(self):
+        return (
+            self.title_changed
+            or self.summary_changed
+            or self.internal_status_changed
+            or self.internal_country_changed
+            or self.internal_sectors_changed
+            or self.internal_all_sectors_changed
+            or self.internal_sectors_changed
+            or self.internal_categories_changed
+        )
+
+    history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 
 
 class BarrierUserHit(models.Model):
