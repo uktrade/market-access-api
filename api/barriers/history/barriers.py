@@ -1,4 +1,5 @@
 from api.barriers.models import BarrierInstance
+from api.metadata.utils import get_country
 from .base import BaseHistoryItem, HistoryItemFactory
 
 
@@ -28,6 +29,15 @@ class CategoriesHistoryItem(BaseBarrierHistoryItem):
 
     def get_value(self, record):
         return record.categories_cache or []
+
+
+class CommoditiesHistoryItem(BaseBarrierHistoryItem):
+    field = "commodities"
+
+    def get_value(self, record):
+        for commodity in record.commodities_cache or []:
+            commodity["country"] = get_country(commodity["country"].get("id"))
+        return record.commodities_cache
 
 
 class CompaniesHistoryItem(BaseBarrierHistoryItem):
@@ -148,6 +158,7 @@ class BarrierHistoryFactory(HistoryItemFactory):
     history_item_classes = (
         ArchivedHistoryItem,
         CategoriesHistoryItem,
+        CommoditiesHistoryItem,
         CompaniesHistoryItem,
         EndDateHistoryItem,
         IsSummarySensitiveHistoryItem,

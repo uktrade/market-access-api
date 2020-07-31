@@ -2,8 +2,10 @@ from django.conf import settings
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierInstance, BarrierUserHit, PublicBarrier
+from api.barriers.models import BarrierInstance, BarrierUserHit, BarrierCommodity, PublicBarrier
 from api.collaboration.models import TeamMember
+from api.commodities.models import Commodity
+from api.commodities.serializers import BarrierCommoditySerializer
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.interactions.models import Document
 from api.metadata.constants import (
@@ -441,6 +443,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
     public_barrier = NestedPublicBarrierSerializer()
     public_eligibility = PublicEligibilityField()
     wto_profile = WTOProfileSerializer()
+    commodities = BarrierCommoditySerializer(source="barrier_commodities", many=True, required=False)
 
     class Meta:
         model = BarrierInstance
@@ -487,6 +490,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
             "trade_direction",
             "end_date",
             "wto_profile",
+            "commodities",
             "public_barrier",
             "public_eligibility",
             "public_eligibility_summary",
@@ -618,6 +622,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         if "wto_profile" in validated_data:
             self.update_wto_profile(instance, validated_data)
 
+        if "barrier_commodities" in validated_data:
+            self.update_commodities(instance, validated_data)
+
         if (
             "public_eligibility" in validated_data
             and "public_eligibility_summary" not in validated_data
@@ -636,6 +643,26 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 reason=validated_data.get("unarchived_reason"),
             )
         return super().update(instance, validated_data)
+
+    def update_commodities(self, instance, validated_data):
+        commodities_data = validated_data.pop('barrier_commodities')
+
+        added_commodities = []
+
+        for commodity_data in commodities_data:
+            code = commodity_data.get("code").ljust(10, "0")
+            country = commodity_data.get("country")
+            hs6_code = code[:6].ljust(10, "0")
+            commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest("version")
+            barrier_commodity, created = BarrierCommodity.objects.get_or_create(
+                barrier=self.instance,
+                commodity=commodity,
+                code=code,
+                country=country,
+            )
+            added_commodities.append(barrier_commodity.id)
+
+        BarrierCommodity.objects.filter(barrier=instance).exclude(id__in=added_commodities).delete()
 
     def update_wto_profile(self, instance, validated_data):
         wto_profile = validated_data.pop('wto_profile')

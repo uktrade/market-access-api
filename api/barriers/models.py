@@ -18,7 +18,7 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     PublicBarrierStatus,
 )
-
+from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.barriers import validators
@@ -67,6 +67,7 @@ class BarrierHistoricalModel(models.Model):
         null=True,
         default=list,
     )
+    commodities_cache = ArrayField(JSONField(), default=list)
     tags_cache = ArrayField(
         models.IntegerField(),
         null=True,
@@ -78,6 +79,11 @@ class BarrierHistoricalModel(models.Model):
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
+
+        commodity_codes = [c.get("code") for c in self.commodities_cache]
+        old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
+        if set(commodity_codes) != set(old_commodity_codes):
+            changed_fields.add("commodities")
 
         if set(self.tags_cache or []) != set(old_history.tags_cache or []):
             changed_fields.add("tags")
@@ -98,11 +104,27 @@ class BarrierHistoricalModel(models.Model):
             self.instance.categories.values_list("id", flat=True)
         )
 
+    def update_commodities(self):
+        self.commodities_cache = [
+            {
+                "code": barrier_commodity.code,
+                "country": {"id": str(barrier_commodity.country)},
+                "commodity": {
+                    "code": barrier_commodity.commodity.code,
+                    "description": barrier_commodity.commodity.description,
+                    "full_description": barrier_commodity.commodity.full_description,
+                    "version": barrier_commodity.commodity.version,
+                }
+            }
+            for barrier_commodity in self.instance.barrier_commodities.all()
+        ]
+
     def update_tags(self):
         self.tags_cache = list(self.instance.tags.values_list("id", flat=True))
 
     def save(self, *args, **kwargs):
         self.update_categories()
+        self.update_commodities()
         self.update_tags()
         super().save(*args, **kwargs)
 
@@ -239,6 +261,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         related_name="barrier",
         on_delete=models.SET_NULL,
     )
+    commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
     draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
@@ -693,3 +716,11 @@ class BarrierReportStage(BaseModel):
 
     class Meta:
         unique_together = (("barrier", "stage"),)
+
+
+class BarrierCommodity(models.Model):
+    barrier = models.ForeignKey(BarrierInstance, related_name="barrier_commodities", on_delete=models.CASCADE)
+    commodity = models.ForeignKey(Commodity, related_name="barrier_commodities", on_delete=models.CASCADE)
+    code = models.CharField(max_length=10)
+    country = models.UUIDField()
+    created_on = models.DateTimeField(auto_now_add=True)

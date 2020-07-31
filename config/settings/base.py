@@ -74,6 +74,7 @@ LOCAL_APPS = [
     "api.interactions",
     "api.assessment",
     "api.collaboration",
+    "api.commodities",
     "authbroker_client",
     "api.user_event_log",
     "api.dataset",

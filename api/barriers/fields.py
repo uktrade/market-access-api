@@ -2,10 +2,18 @@ from rest_framework import serializers
 
 from api.barriers.helpers import get_or_create_public_barrier
 from api.metadata.constants import PublicBarrierStatus
+from api.metadata.utils import get_country
+
+
+class CountryField(serializers.Field):
+    def to_representation(self, value):
+        return get_country(str(value))
+
+    def to_internal_value(self, data):
+        return data
 
 
 class PublicEligibilityField(serializers.BooleanField):
-
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
         public_barrier, created = get_or_create_public_barrier(self.parent.instance)
