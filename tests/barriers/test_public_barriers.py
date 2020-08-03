@@ -6,6 +6,7 @@ from rest_framework import status
 from api.barriers.helpers import get_team_member_user_ids
 from api.barriers.models import PublicBarrier, BarrierInstance
 from api.barriers.serializers import PublicBarrierSerializer
+from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import PublicBarrierStatus, BarrierStatus
 from tests.barriers.factories import BarrierFactory
@@ -1012,3 +1013,52 @@ class TestPublicBarrierContributors(PublicBarrierBaseTestCase):
         members = get_team_member_user_ids(self.barrier.id)
         assert 1 == members.count()
         assert self.publisher.id == members.first()
+
+
+class TestArchivingBarriers(PublicBarrierBaseTestCase):
+
+    def setUp(self):
+        self.publisher = self.create_publisher()
+        self.client = self.create_api_client(user=self.publisher)
+        self.barrier = BarrierFactory()
+        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
+    def test_can_archive_a_barrier_without_public_barrier(self):
+        assert not self.barrier.archived
+        assert not self.barrier.archived_on
+
+        self.barrier.archive(self.publisher)
+
+        assert self.barrier.archived
+        assert self.barrier.archived_on
+
+    def test_archiving_barrier_raises_when_published(self):
+        assert not self.barrier.archived
+        assert not self.barrier.archived_on
+
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb=pb, user=self.publisher)
+        assert status.HTTP_200_OK == response.status_code
+
+        with self.assertRaises(ArchivingException):
+            self.barrier.archive(self.publisher)
+
+            assert not self.barrier.archived
+            assert not self.barrier.archived_on
+
+    def test_archiving_barrier_when_unpublished(self):
+        assert not self.barrier.archived
+        assert not self.barrier.archived_on
+
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb=pb, user=self.publisher)
+        assert status.HTTP_200_OK == response.status_code
+
+        url = reverse("public-barriers-unpublish", kwargs={"pk": self.barrier.id})
+        response = self.client.post(url)
+        assert status.HTTP_200_OK == response.status_code
+
+        self.barrier.archive(self.publisher)
+
+        assert self.barrier.archived
+        assert self.barrier.archived_on
