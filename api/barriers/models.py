@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from simple_history.models import HistoricalRecords
 
+from api.core.exceptions import ArchivingException
 from api.metadata.constants import (
     BarrierStatus,
     BARRIER_SOURCE,
@@ -336,6 +337,11 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
             return None
 
     def archive(self, user, reason=None, explanation=None):
+        try:
+            if self.public_barrier.public_view_status == PublicBarrierStatus.PUBLISHED:
+                raise ArchivingException("Public barrier should be unpublished first.")
+        except PublicBarrier.DoesNotExist:
+            pass
         self.archived_explanation = explanation
         self.unarchived_by = None
         self.unarchived_on = None
