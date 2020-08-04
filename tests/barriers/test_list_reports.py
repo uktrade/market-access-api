@@ -125,7 +125,7 @@ class TestListReports(APITestMixin, APITestCase):
 
     def test_post_export_country_name_gives_400(self):
         response = self.api_client.post(
-            self.url, format="json", data={"export_country": "China"}
+            self.url, format="json", data={"country": "China"}
         )
         assert status.HTTP_400_BAD_REQUEST == response.status_code
 

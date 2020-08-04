@@ -11,12 +11,10 @@ from api.barriers.fields import (
 from api.barriers.models import PublicBarrier
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 
-# pylint: disable=R0201
-
 
 class NestedPublicBarrierSerializer(serializers.ModelSerializer):
     """
-    Simple serializer for use within BarrierInstanceSerializer.
+    Simple serializer for use within BarrierDetailSerializer.
     """
     class Meta:
         model = PublicBarrier

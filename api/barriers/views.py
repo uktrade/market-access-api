@@ -34,7 +34,7 @@ from api.barriers.history import (
 from api.barriers.models import BarrierInstance, BarrierReportStage, PublicBarrier
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
-    BarrierInstanceSerializer,
+    BarrierDetailSerializer,
     BarrierListSerializer,
     BarrierReportSerializer,
     BarrierResolveSerializer,
@@ -45,7 +45,6 @@ from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
 from api.interactions.models import Interaction
 from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
-from api.metadata.models import BarrierPriority, Category
 from api.user.helpers import has_profile, update_user_profile
 from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 from api.user.models import Profile, SavedSearch
@@ -409,7 +408,7 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
 
     lookup_field = "pk"
     queryset = BarrierInstance.barriers.all()
-    serializer_class = BarrierInstanceSerializer
+    serializer_class = BarrierDetailSerializer
 
     def get_object(self):
         if "code" in self.kwargs:
@@ -420,30 +419,8 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     @transaction.atomic()
     def perform_update(self, serializer):
         barrier = self.get_object()
-        # Update Categories
-        categories = barrier.categories.all()
-        category_ids = self.request.data.get(
-            "barrier_types",
-            self.request.data.get("categories", None)
-        )
-        if category_ids is not None:
-            categories = [
-                get_object_or_404(Category, pk=category_id)
-                for category_id in category_ids
-            ]
-        # Update Priority
-        barrier_priority = barrier.priority
-        if self.request.data.get("priority", None) is not None:
-            barrier_priority = get_object_or_404(
-                BarrierPriority, code=self.request.data.get("priority")
-            )
-        # Update Team members
         self.update_contributors(barrier)
-        serializer.save(
-            categories=categories,
-            priority=barrier_priority,
-            modified_by=self.request.user,
-        )
+        serializer.save(modified_by=self.request.user)
 
 
 class HistoryMixin:
@@ -728,7 +705,6 @@ class BarrierOpenActionRequired(BarrierStatusBase):
             errors["sub_status_other"] = "This field is required"
         if self.request.data.get("status_summary", None) is None:
             errors["status_summary"] = "This field is required"
-
         if errors:
             message = {"fields": errors}
             raise serializers.ValidationError(message)

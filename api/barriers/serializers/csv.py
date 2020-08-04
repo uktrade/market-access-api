@@ -20,8 +20,6 @@ from api.metadata.utils import (
     get_sector,
 )
 
-# pylint: disable=R0201
-
 
 class BarrierCsvExportSerializer(serializers.Serializer):
     """ Serializer for CSV export """

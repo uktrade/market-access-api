@@ -154,8 +154,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     country_admin_areas = ArrayField(
         models.UUIDField(),
         blank=True,
-        null=True,
-        default=None,
+        default=list,
         help_text="list of states, provinces, regions etc within a country",
     )
     trade_direction = models.SmallIntegerField(
@@ -234,10 +233,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     # Barrier priority
     priority = models.ForeignKey(
         BarrierPriority,
-        null=True,
-        default=None,
-        related_name="barrier_priority",
-        on_delete=models.SET_NULL,
+        default=1,
+        related_name="barrier",
+        on_delete=models.PROTECT,
     )
     priority_summary = models.TextField(
         null=True, default=None, help_text="priority summary if provided by user"

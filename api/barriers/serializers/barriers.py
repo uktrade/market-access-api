@@ -1,161 +1,70 @@
 from rest_framework import serializers
 
+from api.assessment.serializers import AssessmentSerializer
+from api.barriers.fields import (
+    AdminAreasField,
+    BarrierPriorityField,
+    CategoriesField,
+    CountryField,
+    ScopeField,
+    SectorsField,
+    SourceField,
+    StatusField,
+    TagsField,
+    UsernameField,
+)
 from api.barriers.models import BarrierInstance, BarrierUserHit, BarrierCommodity
-
+from api.collaboration.models import TeamMember
 from api.commodities.models import Commodity
 from api.commodities.serializers import BarrierCommoditySerializer
-
 from api.interactions.models import Document
-
-from api.metadata.serializers import BarrierTagSerializer
-from api.metadata.utils import (
-    adjust_barrier_tags,
-)
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
 from api.barriers.fields import PublicEligibilityField
 from .public_barriers import NestedPublicBarrierSerializer
 
-# pylint: disable=R0201
 
-
-class BarrierInstanceSerializer(serializers.ModelSerializer):
-    """ Serializer for Barrier Instance """
-
-    archived_by = serializers.SerializerMethodField()
-    reported_by = serializers.SerializerMethodField()
-    modified_by = serializers.SerializerMethodField()
-    priority = serializers.SerializerMethodField()
-    barrier_types = serializers.SerializerMethodField()
-    categories = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
+class BarrierSerializerBase(serializers.ModelSerializer):
+    admin_areas = AdminAreasField(source="country_admin_areas", required=False)
+    archived_by = UsernameField(required=False)
+    assessment = AssessmentSerializer(required=False)
+    categories = CategoriesField(required=False)
+    commodities = BarrierCommoditySerializer(source="barrier_commodities", many=True, required=False)
+    country = CountryField(source="export_country", required=False)
+    created_by = UsernameField(required=False)
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
-    tags = serializers.SerializerMethodField()
-    # TODO: deprecate this field (use summary instead)
-    problem_description = serializers.CharField(source="summary", required=False)
+    modified_by = UsernameField(required=False)
+    priority = BarrierPriorityField(required=False)
+    sectors = SectorsField(required=False)
+    source = SourceField(required=False)
+    status = StatusField(required=False)
     public_barrier = NestedPublicBarrierSerializer()
-    public_eligibility = PublicEligibilityField()
+    public_eligibility = PublicEligibilityField(required=False)
+    scope = ScopeField(source="problem_status")
+    tags = TagsField(required=False)
+    title = serializers.CharField(source="barrier_title", required=False)
     wto_profile = WTOProfileSerializer()
-    commodities = BarrierCommoditySerializer(source="barrier_commodities", many=True, required=False)
 
     class Meta:
         model = BarrierInstance
-        fields = (
-            "id",
+        read_only_fields = (
+            "archived_by",
+            "archived_on",
             "code",
-            "problem_status",
-            "export_country",
-            "country_admin_areas",
-            "sectors_affected",
-            "all_sectors",
-            "sectors",
-            "companies",
-            "product",
-            "source",
-            "other_source",
-            "barrier_title",
-            "problem_description",
-            "summary",
-            "is_summary_sensitive",
-            "barrier_types",
-            "categories",
-            "reported_on",
-            "reported_by",
-            "status",
-            "status_summary",
-            "status_date",
-            "priority",
-            "priority_summary",
-            "has_assessment",
+            "created_by",
             "created_on",
+            "id",
+            "last_seen_on",
             "modified_by",
             "modified_on",
-            "archived",
-            "archived_on",
-            "archived_by",
-            "archived_reason",
-            "archived_explanation",
-            "unarchived_reason",
-            "unarchived_on",
-            "unarchived_by",
-            "last_seen_on",
-            "tags",
-            "trade_direction",
-            "end_date",
-            "wto_profile",
-            "commodities",
-            "public_barrier",
-            "public_eligibility",
-            "public_eligibility_summary",
-        )
-        read_only_fields = (
-            "id",
-            "code",
-            "reported_on",
-            "reported_by",
             "priority_date",
-            "created_on",
-            "modified_on",
-            "modifieds_by",
-            "archived_on",
-            "archived_by",
-            "unarchived_on",
             "unarchived_by",
-            "last_seen_on",
+            "unarchived_on",
         )
-        depth = 1
-
-    def reported_on(self, obj):
-        return obj.created_on
-
-    def get_archived_by(self, obj):
-        return obj.archived_user
-
-    def get_unarchived_by(self, obj):
-        return obj.unarchived_user
-
-    def get_reported_by(self, obj):
-        return obj.created_user
-
-    def get_modified_by(self, obj):
-        return obj.modified_user
-
-    def get_status(self, obj):
-        return {
-            "id": obj.status,
-            "sub_status": obj.sub_status,
-            "sub_status_text": obj.sub_status_other,
-            "date": obj.status_date.strftime('%Y-%m-%d'),
-            "summary": obj.status_summary,
-        }
-
-    def get_barrier_types(self, obj):
-        return self.get_categories(obj)
-
-    def get_categories(self, obj):
-        return [category.id for category in obj.categories.all()]
-
-    def get_priority(self, obj):
-        """  Custom Serializer Method Field for exposing barrier priority """
-        if obj.priority:
-            return {
-                "code": obj.priority.code,
-                "name": obj.priority.name,
-                "order": obj.priority.order,
-            }
-        else:
-            return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
 
     def get_has_assessment(self, obj):
         return hasattr(obj, 'assessment')
-
-    def _get_value(self, source1, source2, field_name):
-        if field_name in source1:
-            return source1[field_name]
-        if field_name in source2:
-            return source2[field_name]
-        return None
 
     def get_last_seen_on(self, obj):
         user = None
@@ -173,11 +82,6 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
         return last_seen
 
-    def get_tags(self, obj):
-        tags = obj.tags.all()
-        serializer = BarrierTagSerializer(tags, many=True)
-        return serializer.data
-
     def validate_public_eligibility(self, attrs):
         """ Check for permissions here """
         if type(attrs) is not bool:
@@ -194,22 +98,9 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
         #       by the publishing team
         return attrs
 
-    def validate_tags(self, tag_ids=None):
-        if tag_ids is not None and type(tag_ids) is not list:
-            raise serializers.ValidationError('Expected a list of tag IDs.')
-
     def validate_trade_direction(self, attrs):
         if not attrs:
             raise serializers.ValidationError('Field is not nullable.')
-        return attrs
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-
-        # Tags
-        tag_ids = self.context["request"].data.get("tags")
-        self.validate_tags(tag_ids)
-
         return attrs
 
     def update(self, instance, validated_data):
@@ -236,6 +127,7 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
                 user=self.user,
                 reason=validated_data.get("unarchived_reason"),
             )
+
         return super().update(instance, validated_data)
 
     def update_commodities(self, instance, validated_data):
@@ -276,68 +168,116 @@ class BarrierInstanceSerializer(serializers.ModelSerializer):
 
     def save(self, *args, **kwargs):
         self.user = kwargs.get("modified_by")
-        barrier = super().save(*args, **kwargs)
-        # Tags
-        tag_ids = self.initial_data.get("tags")
-        adjust_barrier_tags(barrier, tag_ids)
+        return super().save(*args, **kwargs)
 
 
-class BarrierListSerializer(serializers.ModelSerializer):
-    """ Serializer for listing Barriers """
-
-    priority = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
-    categories = serializers.SerializerMethodField()
-    tags = BarrierTagSerializer(many=True)
-
-    class Meta:
-        model = BarrierInstance
+class BarrierDetailSerializer(BarrierSerializerBase):
+    class Meta(BarrierSerializerBase.Meta):
         fields = (
-            "id",
-            "code",
-            "reported_on",
-            "problem_status",
-            "barrier_title",
-            "sectors_affected",
+            "admin_areas",
+            "assessment",
             "all_sectors",
+            "archived",
+            "archived_by",
+            "archived_explanation",
+            "archived_on",
+            "archived_reason",
+            "barrier_title",
+            "categories",
+            "code",
+            "commodities",
+            "companies",
+            "country",
+            "created_by",
+            "created_on",
+            "end_date",
+            "has_assessment",
+            "id",
+            "is_summary_sensitive",
+            "last_seen_on",
+            "modified_by",
+            "modified_on",
+            "other_source",
+            "priority",
+            "priority_summary",
+            "problem_status",
+            "product",
+            "public_barrier",
+            "public_eligibility",
+            "public_eligibility_summary",
+            "scope",
             "sectors",
-            "export_country",
-            "country_admin_areas",
+            "sectors_affected",
+            "source",
             "status",
             "status_date",
             "status_summary",
-            "priority",
-            "categories",
+            "sub_status",
+            "sub_status_other",
+            "summary",
             "tags",
+            "title",
             "trade_direction",
-            "created_on",
-            "modified_on",
-            "archived",
-            "archived_on",
+            "unarchived_by",
+            "unarchived_on",
+            "unarchived_reason",
+            "wto_profile",
         )
 
-    def get_categories(self, obj):
-        return [category.id for category in obj.categories.all()]
 
-    def get_status(self, obj):
-        return {
-            "id": obj.status,
-            "sub_status": obj.sub_status,
-            "sub_status_text": obj.sub_status_other,
-            "date": obj.status_date.strftime('%Y-%m-%d'),
-            "summary": obj.status_summary,
-        }
+class BarrierListSerializer(BarrierSerializerBase):
+    class Meta(BarrierSerializerBase.Meta):
+        fields = (
+            "admin_areas",
+            "all_sectors",
+            "archived",
+            "archived_on",
+            "categories",
+            "code",
+            "country",
+            "created_on",
+            "id",
+            "modified_on",
+            "priority",
+            "problem_status",
+            "reported_on",
+            "sectors",
+            "sectors_affected",
+            "status",
+            "status_date",
+            "status_summary",
+            "tags",
+            "title",
+            "trade_direction",
+        )
 
-    def get_priority(self, obj):
-        """  Custom Serializer Method Field for exposing barrier priority """
-        if obj.priority:
-            return {
-                "code": obj.priority.code,
-                "name": obj.priority.name,
-                "order": obj.priority.order,
-            }
-        else:
-            return {"code": "UNKNOWN", "name": "Unknown", "order": 0}
+
+class DataWorkspaceSerializer(BarrierSerializerBase):
+    team_count = serializers.SerializerMethodField()
+
+    class Meta(BarrierSerializerBase.Meta):
+        fields = (
+            "admin_areas",
+            "assessment",
+            "categories",
+            "code",
+            "companies",
+            "country",
+            "id",
+            "modified_on",
+            "priority",
+            "product",
+            "scope",
+            "sectors",
+            "source",
+            "status",
+            "status_date",
+            "team_count",
+            "title",
+        )
+
+    def get_team_count(self, obj):
+        return TeamMember.objects.filter(barrier=obj).count()
 
 
 class BarrierResolveSerializer(serializers.ModelSerializer):

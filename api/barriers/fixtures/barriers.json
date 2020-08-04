@@ -10,7 +10,7 @@
             "archived": false,
             "code": "B-19-MIB",
             "problem_status": 2,
-            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
             "country_admin_areas": "[]",
             "sectors_affected": true,
             "all_sectors": null,
@@ -28,7 +28,7 @@
             "sub_status_other": null,
             "status_summary": null,
             "status_date": "2019-04-09",
-            "priority": null,
+            "priority": 1,
             "priority_summary": null,
             "priority_date": "2019-04-24T10:08:24.174Z"
         }

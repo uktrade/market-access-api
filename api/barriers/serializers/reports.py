@@ -1,87 +1,38 @@
-from rest_framework import serializers
-
 from api.barriers.fields import BarrierReportStageListingField
 from api.barriers.models import BarrierInstance
-from api.metadata.serializers import BarrierTagSerializer
-from api.metadata.utils import adjust_barrier_tags
-
-# pylint: disable=R0201
+from .barriers import BarrierSerializerBase
 
 
-class BarrierReportSerializer(serializers.ModelSerializer):
+class BarrierReportSerializer(BarrierSerializerBase):
     progress = BarrierReportStageListingField(many=True, read_only=True)
-    created_by = serializers.SerializerMethodField()
-    tags = serializers.SerializerMethodField()
-    # TODO: deprecate this field (use summary instead)
-    problem_description = serializers.CharField(source="summary", required=False)
 
-    class Meta:
-        model = BarrierInstance
+    class Meta(BarrierSerializerBase.Meta):
         fields = (
-            "id",
+            "admin_areas",
+            "all_sectors",
             "code",
+            "country",
+            "created_by",
+            "created_on",
+            "id",
+            "is_summary_sensitive",
+            "modified_by",
+            "modified_on",
+            "next_steps_summary",
+            "other_source",
             "problem_status",
+            "product",
+            "progress",
+            "sectors",
+            "sectors_affected",
+            "source",
             "status",
-            "status_summary",
             "status_date",
+            "status_summary",
             "sub_status",
             "sub_status_other",
-            "export_country",
-            "country_admin_areas",
-            "sectors_affected",
-            "all_sectors",
-            "sectors",
-            "product",
-            "source",
-            "other_source",
-            "barrier_title",
-            "problem_description",
             "summary",
-            "is_summary_sensitive",
-            "next_steps_summary",
-            "progress",
-            "created_by",
-            "created_on",
-            "modified_by",
-            "modified_on",
             "tags",
+            "title",
             "trade_direction",
         )
-        read_only_fields = (
-            "id",
-            "code",
-            "progress",
-            "created_by",
-            "created_on",
-            "modified_by",
-            "modified_on",
-        )
-
-    def get_created_by(self, obj):
-        if obj.created_by is None:
-            return None
-
-        return {"id": obj.created_by.id, "name": obj.created_user}
-
-    def get_tags(self, obj):
-        tags = obj.tags.all()
-        serializer = BarrierTagSerializer(tags, many=True)
-        return serializer.data
-
-    def validate_tags(self, tag_ids=None):
-        if tag_ids is not None and type(tag_ids) is not list:
-            raise serializers.ValidationError('Expected a list of tag IDs.')
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        # Tags
-        tag_ids = self.context["request"].data.get("tags")
-        self.validate_tags(tag_ids)
-
-        return attrs
-
-    def save(self, *args, **kwargs):
-        barrier = super().save(*args, **kwargs)
-        # Tags
-        tag_ids = self.initial_data.get("tags")
-        adjust_barrier_tags(barrier, tag_ids)

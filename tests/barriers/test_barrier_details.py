@@ -127,7 +127,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         assert str(self.barrier.id) == response.data["id"]
         assert response.data["all_sectors"] is True
-        assert self.barrier.sectors == response.data["sectors"]
+        assert self.barrier.sectors == [sector["id"] for sector in response.data["sectors"]]
 
     def test_patch_barrier_priority(self):
         unknown_priority = BarrierPriority.objects.get(code="UNKNOWN")
@@ -163,7 +163,9 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert {category1.id, category2.id} == set(response.data["categories"])
+        assert {category1.id, category2.id} == set([
+            category["id"] for category in response.data["categories"]
+        ])
 
     def test_replace_barrier_categories(self):
         categories = Category.objects.all()
@@ -181,7 +183,9 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert {category2.id, category3.id} == set(response.data["categories"])
+        assert {category2.id, category3.id} == set([
+            category["id"] for category in response.data["categories"]
+        ])
 
     def test_flush_barrier_categories(self):
         categories = Category.objects.all()

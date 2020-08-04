@@ -131,7 +131,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         report = MinReportFactory(**{
             "problem_status": 2,
             "status": 2,
-            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
             "trade_direction": 1,
             "sectors_affected": False,
             "product": "Some product",
@@ -147,16 +147,15 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"]
         assert response.data["code"]
-        assert response.data["reported_on"]
         assert 2 == response.data["problem_status"]
         assert "2020-02-02" == response.data["status_date"]
         assert "Some title" == response.data["barrier_title"]
         assert response.data["sectors_affected"] is False
         assert [] == response.data["sectors"]
-        assert "66b795e0-ad71-4a65-9fa6-9f1e97e86d67" == response.data["export_country"]
+        assert "82756b9a-5d95-e211-a939-e4115bead28a" == response.data["country"]["id"]
         assert response.data["status"]["id"] == 2
-        assert response.data["status"]["date"]
-        assert not response.data["status"]["summary"]
+        assert response.data["status_date"]
+        assert not response.data["status_summary"]
         assert "UNKNOWN" == response.data["priority"]["code"]
         assert 0 == len(response.data["categories"])
         assert response.data["created_on"]
@@ -167,7 +166,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
             "status_date": "2020-02-02",
             "status": 2,
             "status_summary": "some status summary",
-            "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
             "trade_direction": 2,
             "sectors_affected": True,
             "sectors": [
@@ -186,16 +185,17 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"]
         assert response.data["code"]
-        assert response.data["reported_on"]
         assert 2 == response.data["problem_status"]
         assert "2020-02-02" == response.data["status_date"]
         assert "Some title" == response.data["barrier_title"]
         assert response.data["sectors_affected"] is True
-        assert ["af959812-6095-e211-a939-e4115bead28a"] == response.data["sectors"]
-        assert "66b795e0-ad71-4a65-9fa6-9f1e97e86d67" == response.data["export_country"]
+        assert ["af959812-6095-e211-a939-e4115bead28a"] == [
+            sector["id"] for sector in response.data["sectors"]
+        ]
+        assert "82756b9a-5d95-e211-a939-e4115bead28a" == response.data["country"]["id"]
         assert response.data["status"]["id"] == 2
-        assert response.data["status"]["date"]
-        assert "some status summary" == response.data["status"]["summary"]
+        assert response.data["status_date"]
+        assert "some status summary" == response.data["status_summary"]
         assert "UNKNOWN" == response.data["priority"]["code"]
         assert 0 == len(response.data["categories"])
         assert response.data["created_on"]

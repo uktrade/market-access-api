@@ -1,5 +1,5 @@
 from .barriers import (  # noqa
-    BarrierInstanceSerializer,
+    BarrierDetailSerializer,
     BarrierListSerializer,
     BarrierResolveSerializer,
     BarrierStaticStatusSerializer,
