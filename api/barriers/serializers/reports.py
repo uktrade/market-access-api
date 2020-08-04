@@ -1,5 +1,4 @@
 from api.barriers.fields import BarrierReportStageListingField
-from api.barriers.models import BarrierInstance
 from .barriers import BarrierSerializerBase
 
 

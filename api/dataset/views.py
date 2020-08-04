@@ -4,6 +4,7 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
 from api.barriers.models import BarrierInstance
+from api.barriers.serializers import DataWorkspaceSerializer
 from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 from api.dataset.serializers import BarrierDataSetSerializer
 
@@ -24,3 +25,17 @@ class BarrierListDataWorkspaceView(generics.ListAPIView):
 
     queryset = BarrierInstance.barriers.all().select_related('priority').order_by('reported_on')
     serializer_class = BarrierDataSetSerializer
+
+
+class BarrierList(generics.ListAPIView):
+    if settings.HAWK_ENABLED:
+        authentication_classes = (HawkAuthentication,)
+        permission_classes = (IsAuthenticated,)
+    else:
+        authentication_classes = ()
+        permission_classes = ()
+
+    pagination_class = MarketAccessDatasetViewCursorPagination
+
+    queryset = BarrierInstance.barriers.all().select_related('priority').order_by('reported_on')
+    serializer_class = DataWorkspaceSerializer
