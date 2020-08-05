@@ -113,7 +113,7 @@ class TestListReports(APITestMixin, APITestCase):
 
     def test_post_invalid_problem_status_gives_400(self):
         response = self.api_client.post(
-            self.url, format="json", data={"problem_status": 3}
+            self.url, format="json", data={"term": 3}
         )
         assert status.HTTP_400_BAD_REQUEST == response.status_code
 

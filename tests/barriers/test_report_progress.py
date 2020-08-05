@@ -83,7 +83,7 @@ class TestReportProgress(BaseReportTestCase):
             {
                 "case": 0,
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_SINGLE,
+                    "term": ProblemStatus.AFFECTING_SINGLE,
                 },
                 "expected_status": self.IN_PROGRESS
             },
@@ -98,7 +98,7 @@ class TestReportProgress(BaseReportTestCase):
             {
                 "case": 11,
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_SINGLE,
+                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.UNFINISHED,
                 },
                 "expected_status": self.IN_PROGRESS
@@ -107,7 +107,7 @@ class TestReportProgress(BaseReportTestCase):
                 "case": 20,
                 "hints": "Cannot get COMPLETED without problem_status.",
                 "payload": {
-                    "problem_status": None,
+                    "term": None,
                     "status": BarrierStatus.OPEN_PENDING_ACTION,
                 },
                 "expected_status": self.IN_PROGRESS
@@ -115,7 +115,7 @@ class TestReportProgress(BaseReportTestCase):
             {
                 "case": 30,
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_SINGLE,
+                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.OPEN_PENDING_ACTION,
                 },
                 "expected_status": self.COMPLETED
@@ -124,7 +124,7 @@ class TestReportProgress(BaseReportTestCase):
                 "case": 40,
                 "hints": "Cannot get COMPLETED without status_date and status_summary.",
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_MULTIPLE,
+                    "term": ProblemStatus.AFFECTING_MULTIPLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                 },
                 "expected_status": self.IN_PROGRESS
@@ -133,7 +133,7 @@ class TestReportProgress(BaseReportTestCase):
                 "case": 50,
                 "hints": "Cannot get COMPLETED without status_summary.",
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_SINGLE,
+                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                     "status_date": "2020-02-02",
                 },
@@ -142,7 +142,7 @@ class TestReportProgress(BaseReportTestCase):
             {
                 "case": 60,
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_SINGLE,
+                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                     "status_date": "2020-02-02",
                     "status_summary": "wibble wobble"
@@ -419,7 +419,7 @@ class TestReportProgress(BaseReportTestCase):
             {
                 "case": 0,
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_MULTIPLE,
+                    "term": ProblemStatus.AFFECTING_MULTIPLE,
                     "status": BarrierStatus.OPEN_PENDING_ACTION,
                     "country": "82756b9a-5d95-e211-a939-e4115bead28a",
                     "trade_direction": TradeDirections.IMPORT,
@@ -435,7 +435,7 @@ class TestReportProgress(BaseReportTestCase):
             {
                 "case": 10,
                 "payload": {
-                    "problem_status": ProblemStatus.AFFECTING_SINGLE,
+                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                     "status_date": "2020-02-02",
                     "status_summary": "wibble wobble",

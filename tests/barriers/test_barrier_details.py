@@ -88,34 +88,34 @@ class TestBarrierDetails(APITestMixin, APITestCase):
     def test_patch_barrier_title(self):
         title = "Just a new title"
         payload = {
-            "barrier_title": title
+            "title": title
         }
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
         assert str(self.barrier.id) == response.data["id"]
-        assert title == response.data["barrier_title"]
+        assert title == response.data["title"]
 
     def test_patch_barrier_problem_status(self):
         assert 1 == self.barrier.problem_status
 
         test_parameters = [
-            {"problem_status": None, "status_code": status.HTTP_200_OK, "expected_problem_status": None},
-            {"problem_status": 2, "status_code": status.HTTP_200_OK, "expected_problem_status": 2},
-            {"problem_status": 1, "status_code": status.HTTP_200_OK, "expected_problem_status": 1},
-            {"problem_status": 0, "status_code": status.HTTP_400_BAD_REQUEST, "expected_problem_status": 1},
-            {"problem_status": "ahoy!", "status_code": status.HTTP_400_BAD_REQUEST, "expected_problem_status": 1},
-            {"problem_status": "987", "status_code": status.HTTP_400_BAD_REQUEST, "expected_problem_status": 1},
+            {"term": None, "status_code": status.HTTP_200_OK, "expected_term": None},
+            {"term": 2, "status_code": status.HTTP_200_OK, "expected_term": 2},
+            {"term": 1, "status_code": status.HTTP_200_OK, "expected_term": 1},
+            {"term": 0, "status_code": status.HTTP_400_BAD_REQUEST, "expected_term": 1},
+            {"term": "ahoy!", "status_code": status.HTTP_400_BAD_REQUEST, "expected_term": 1},
+            {"term": "987", "status_code": status.HTTP_400_BAD_REQUEST, "expected_term": 1},
         ]
 
         for tp in test_parameters:
             with self.subTest(tp=tp):
-                payload = {"problem_status": tp["problem_status"],}
+                payload = {"term": tp["term"],}
                 response = self.api_client.patch(self.url, format="json", data=payload)
 
                 self.barrier.refresh_from_db()
                 assert tp["status_code"] == response.status_code, f"Test params: {tp}"
-                assert tp["expected_problem_status"] == self.barrier.problem_status, f"Test params: {tp}"
+                assert tp["expected_term"] == self.barrier.problem_status, f"Test params: {tp}"
 
     def test_patch_barrier_to_affect_all_sectors(self):
         assert not self.barrier.all_sectors
@@ -278,7 +278,7 @@ class TestBarrierTradeDirection(APITestMixin, TestCase):
         response = self.api_client.get(self.url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 1 == response.data["trade_direction"]
+        assert 1 == response.data["trade_direction"]["id"]
 
     def test_set_trade_direction_to_none(self):
         """
@@ -295,7 +295,7 @@ class TestBarrierTradeDirection(APITestMixin, TestCase):
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 2 == response.data["trade_direction"]
+        assert 2 == response.data["trade_direction"]["id"]
 
     def test_patch_trade_direction_with_invalid_values(self):
         invalid_values = [0, 14, "123", "Wibble", [], {"a": 6}, "null"]

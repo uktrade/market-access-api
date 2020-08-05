@@ -147,9 +147,9 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"]
         assert response.data["code"]
-        assert 2 == response.data["problem_status"]
+        assert 2 == response.data["term"]["id"]
         assert "2020-02-02" == response.data["status_date"]
-        assert "Some title" == response.data["barrier_title"]
+        assert "Some title" == response.data["title"]
         assert response.data["sectors_affected"] is False
         assert [] == response.data["sectors"]
         assert "82756b9a-5d95-e211-a939-e4115bead28a" == response.data["country"]["id"]
@@ -185,9 +185,9 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"]
         assert response.data["code"]
-        assert 2 == response.data["problem_status"]
+        assert 2 == response.data["term"]["id"]
         assert "2020-02-02" == response.data["status_date"]
-        assert "Some title" == response.data["barrier_title"]
+        assert "Some title" == response.data["title"]
         assert response.data["sectors_affected"] is True
         assert ["af959812-6095-e211-a939-e4115bead28a"] == [
             sector["id"] for sector in response.data["sectors"]
