@@ -40,7 +40,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     status = StatusField(required=False)
     public_barrier = NestedPublicBarrierSerializer()
     public_eligibility = PublicEligibilityField(required=False)
-    term = TermField(source="problem_status")
+    term = TermField(source="problem_status", required=False, allow_null=True)
     tags = TagsField(required=False)
     title = serializers.CharField(source="barrier_title", required=False)
     trade_direction = TradeDirectionField(required=False)
