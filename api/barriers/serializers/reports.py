@@ -1,5 +1,5 @@
 from api.barriers.fields import BarrierReportStageListingField
-from .barriers import BarrierSerializerBase
+from .base import BarrierSerializerBase
 
 
 class BarrierReportSerializer(BarrierSerializerBase):
@@ -19,7 +19,6 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "modified_on",
             "next_steps_summary",
             "other_source",
-            "problem_status",
             "product",
             "progress",
             "sectors",
@@ -32,6 +31,7 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "sub_status_other",
             "summary",
             "tags",
+            "term",
             "title",
             "trade_direction",
         )
