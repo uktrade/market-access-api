@@ -253,8 +253,11 @@ class BarrierList(generics.ListAPIView):
     Return a list of all the BarrierInstances
     with optional filtering and ordering defined
     """
-
-    queryset = BarrierInstance.barriers.all().select_related('priority')
+    queryset = BarrierInstance.barriers.all().select_related(
+        "priority"
+    ).prefetch_related(
+        "tags"
+    )
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)
