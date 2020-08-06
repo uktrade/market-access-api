@@ -38,7 +38,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     sectors = SectorsField(required=False)
     source = SourceField(required=False)
     status = StatusField(required=False)
-    public_barrier = NestedPublicBarrierSerializer()
+    public_barrier = NestedPublicBarrierSerializer(required=False)
     public_eligibility = PublicEligibilityField(required=False)
     term = TermField(source="problem_status", required=False, allow_null=True)
     tags = TagsField(required=False)

@@ -37,8 +37,6 @@ from api.barriers.serializers import (
     BarrierDetailSerializer,
     BarrierListSerializer,
     BarrierReportSerializer,
-    BarrierResolveSerializer,
-    BarrierStaticStatusSerializer,
     PublicBarrierSerializer,
 )
 from api.collaboration.mixins import TeamMemberModelMixin
@@ -407,7 +405,16 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     """
 
     lookup_field = "pk"
-    queryset = BarrierInstance.barriers.all()
+    queryset = BarrierInstance.barriers.all().select_related(
+        "assessment"
+    ).select_related(
+        "priority"
+    ).prefetch_related(
+        "tags"
+    ).prefetch_related(
+        "categories"
+    ).prefetch_related("barrier_commodities")
+
     serializer_class = BarrierDetailSerializer
 
     def get_object(self):
@@ -581,7 +588,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
 
 class BarrierResolveInFull(BarrierStatusBase):
     queryset = BarrierInstance.barriers.all()
-    serializer_class = BarrierResolveSerializer
+    serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
@@ -611,7 +618,7 @@ class BarrierResolveInFull(BarrierStatusBase):
 
 class BarrierResolveInPart(BarrierStatusBase):
     queryset = BarrierInstance.barriers.all()
-    serializer_class = BarrierResolveSerializer
+    serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
@@ -641,7 +648,7 @@ class BarrierResolveInPart(BarrierStatusBase):
 
 class BarrierHibernate(BarrierStatusBase):
     queryset = BarrierInstance.barriers.all()
-    serializer_class = BarrierStaticStatusSerializer
+    serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
@@ -657,7 +664,7 @@ class BarrierHibernate(BarrierStatusBase):
 
 class BarrierStatusChangeUnknown(BarrierStatusBase):
     queryset = BarrierInstance.barriers.all()
-    serializer_class = BarrierStaticStatusSerializer
+    serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
@@ -673,7 +680,7 @@ class BarrierStatusChangeUnknown(BarrierStatusBase):
 
 class BarrierOpenInProgress(BarrierStatusBase):
     queryset = BarrierInstance.barriers.all()
-    serializer_class = BarrierStaticStatusSerializer
+    serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
@@ -689,7 +696,7 @@ class BarrierOpenInProgress(BarrierStatusBase):
 
 class BarrierOpenActionRequired(BarrierStatusBase):
     queryset = BarrierInstance.barriers.all()
-    serializer_class = BarrierStaticStatusSerializer
+    serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
         return self.queryset.filter(id=self.kwargs.get("pk"))
