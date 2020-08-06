@@ -3,6 +3,7 @@ from rest_framework import serializers
 from api.assessment.serializers import AssessmentSerializer
 from api.barriers.fields import (
     ArchivedField,
+    ArchivedReasonField,
     BarrierPriorityField,
     CategoriesField,
     CommoditiesField,
@@ -10,6 +11,7 @@ from api.barriers.fields import (
     SectorsField,
     SourceField,
     StatusField,
+    SubStatusField,
     TagsField,
     TermField,
     TradeDirectionField,
@@ -26,6 +28,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     admin_areas = AdminAreasField(source="country_admin_areas", required=False)
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
+    archived_reason = ArchivedReasonField(required=False)
     assessment = AssessmentSerializer(required=False)
     categories = CategoriesField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
@@ -38,6 +41,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     sectors = SectorsField(required=False)
     source = SourceField(required=False)
     status = StatusField(required=False)
+    sub_status = SubStatusField(required=False)
     public_barrier = NestedPublicBarrierSerializer(required=False)
     public_eligibility = PublicEligibilityField(required=False)
     term = TermField(source="problem_status", required=False, allow_null=True)

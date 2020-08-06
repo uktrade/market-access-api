@@ -1,16 +1,19 @@
 from rest_framework import serializers
 
-from api.metadata.models import BarrierPriority, BarrierTag, Category
+from .fields import CategoryGroupField
+from .models import BarrierPriority, BarrierTag, Category
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    group = CategoryGroupField(source="category", required=False)
+
     class Meta:
         model = Category
         fields = (
             "id",
             "title",
             "description",
-            "category",
+            "group",
         )
 
 

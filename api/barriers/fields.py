@@ -7,6 +7,8 @@ from api.commodities.models import Commodity
 from api.core.utils import cleansed_username
 from api.interactions.models import Document
 from api.metadata.constants import (
+    BARRIER_ARCHIVED_REASON,
+    BARRIER_PENDING,
     BARRIER_SOURCE,
     BarrierStatus,
     PublicBarrierStatus,
@@ -38,6 +40,18 @@ class ArchivedField(serializers.BooleanField):
                 user=user,
                 reason=validated_data.pop("unarchived_reason"),
             )
+
+
+class ArchivedReasonField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=BARRIER_ARCHIVED_REASON, **kwargs)
+
+    def to_representation(self, value):
+        reason_lookup = dict(BARRIER_ARCHIVED_REASON)
+        return {
+            "code": value,
+            "name": reason_lookup.get(value),
+        }
 
 
 class BarrierPriorityField(serializers.Field):
@@ -139,6 +153,19 @@ class StatusField(serializers.ChoiceField):
             "id": value,
             "name": status_lookup.get(value, "Unknown"),
         }
+
+
+class SubStatusField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=BARRIER_PENDING, **kwargs)
+
+    def to_representation(self, value):
+        sub_status_lookup = dict(BARRIER_PENDING)
+        return {
+            "code": value,
+            "name": sub_status_lookup.get(value),
+        }
+
 
 
 class TagsField(serializers.ListField):

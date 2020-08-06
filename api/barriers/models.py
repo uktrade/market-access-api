@@ -12,6 +12,7 @@ from simple_history.models import HistoricalRecords
 from api.core.exceptions import ArchivingException
 from api.metadata.constants import (
     BarrierStatus,
+    BARRIER_ARCHIVED_REASON,
     BARRIER_SOURCE,
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
@@ -25,7 +26,6 @@ from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
-from api.metadata.constants import BARRIER_ARCHIVED_REASON
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
