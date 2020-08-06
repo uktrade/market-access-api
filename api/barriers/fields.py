@@ -167,7 +167,6 @@ class SubStatusField(serializers.ChoiceField):
         }
 
 
-
 class TagsField(serializers.ListField):
     def to_representation(self, value):
         serializer = BarrierTagSerializer(value.all(), many=True)
