@@ -1,6 +1,3 @@
-from rest_framework import serializers
-
-from api.barriers.models import BarrierInstance
 from .base import BarrierSerializerBase
 
 
@@ -63,7 +60,6 @@ class BarrierListSerializer(BarrierSerializerBase):
             "all_sectors",
             "archived",
             "archived_on",
-            "categories",
             "code",
             "country",
             "created_on",
