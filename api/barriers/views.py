@@ -546,7 +546,6 @@ class BarrierActivity(HistoryMixin, generics.GenericAPIView):
         assessment_history = self.get_assessment_history(
             fields=[
                 "commercial_value",
-                "commercial_value_explanation",
                 "export_value",
                 "impact",
                 "import_market_size",
