@@ -1,5 +1,6 @@
 from api.barriers.models import PublicBarrier
 from api.collaboration.models import TeamMember
+from api.metadata.constants import PublicBarrierStatus
 
 
 def get_team_members(barrier_id):
@@ -28,3 +29,7 @@ def get_or_create_public_barrier(barrier):
         public_barrier.categories.set(barrier.categories.all())
 
     return public_barrier, created
+
+
+def get_published_public_barriers():
+    return PublicBarrier.objects.filter(_public_view_status=PublicBarrierStatus.PUBLISHED)

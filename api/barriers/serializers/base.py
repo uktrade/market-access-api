@@ -21,10 +21,11 @@ from api.barriers.fields import (
 from api.barriers.models import BarrierInstance, BarrierUserHit
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
+from .mixins import LocationFieldMixin
 from .public_barriers import NestedPublicBarrierSerializer
 
 
-class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
+class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.ModelSerializer):
     admin_areas = AdminAreasField(source="country_admin_areas", required=False)
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
@@ -62,6 +63,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
             "created_on",
             "id",
             "last_seen_on",
+            "location",
             "modified_by",
             "modified_on",
             "priority_date",

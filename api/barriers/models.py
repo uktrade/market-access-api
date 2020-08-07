@@ -8,6 +8,7 @@ from django.db.models import Q, CASCADE
 from django.utils import timezone
 
 from simple_history.models import HistoricalRecords
+
 from api.core.exceptions import ArchivingException
 from api.metadata.constants import (
     BarrierStatus,
@@ -15,15 +16,15 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
+    PublicBarrierStatus,
     STAGE_STATUS,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
-    PublicBarrierStatus,
 )
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category
-from api.metadata.utils import get_trading_bloc_by_country_id
+from api.metadata.utils import get_trading_bloc_by_country_id, get_location_text
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -304,6 +305,15 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         if self.export_country:
             return get_trading_bloc_by_country_id(str(self.export_country))
 
+    @property
+    def location(self):
+        return get_location_text(
+            country_id=self.export_country,
+            trading_bloc=self.trading_bloc,
+            caused_by_trading_bloc=self.caused_by_trading_bloc,
+            admin_area_ids=self.country_admin_areas,
+        )
+
     def current_progress(self):
         """ checks current dataset to see how far reporting workflow is done """
         progress_list = []
@@ -356,12 +366,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     @property
     def has_wto_profile(self):
         return hasattr(self, 'wto_profile')
-
-    @property
-    def location(self):
-        if self.export_country:
-            return self.export_country
-        return self.trading_bloc
 
     def last_seen_by(self, user_id):
         try:
@@ -441,6 +445,10 @@ class PublicBarrierHistoricalModel(models.Model):
             changed_fields.discard("trading_bloc")
             changed_fields.add("location")
 
+        if "caused_by_trading_bloc" in changed_fields:
+            if self.caused_by_trading_bloc or old_history.caused_by_trading_bloc:
+                changed_fields.add("location")
+
         if "_title" in changed_fields:
             changed_fields.discard("_title")
             changed_fields.add("title")
@@ -501,6 +509,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
     country = models.UUIDField(null=True)
+    # caused_by_country_trading_bloc = models.BooleanField(null=True)
+    caused_by_trading_bloc = models.BooleanField(null=True)
     trading_bloc = models.CharField(
         choices=TRADING_BLOC_CHOICES,
         max_length=7,
@@ -564,6 +574,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def update_non_editable_fields(self):
         self.status = self.internal_status
         self.country = self.internal_country
+        # self.caused_by_country_trading_bloc = self.internal_caused_by_trading_bloc
+        self.caused_by_trading_bloc = self.internal_caused_by_trading_bloc
         self.trading_bloc = self.internal_trading_bloc
         self.sectors = self.internal_sectors
         self.all_sectors = self.internal_all_sectors
@@ -620,6 +632,14 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 return True
         else:
             return False
+
+    @property
+    def location(self):
+        return get_location_text(
+            country_id=self.country,
+            trading_bloc=self.trading_bloc,
+            caused_by_trading_bloc=self.caused_by_trading_bloc,
+        )
 
     @property
     def public_view_status(self):
@@ -698,12 +718,29 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return self.barrier.export_country != self.country
 
     @property
+    def internal_caused_by_trading_bloc(self):
+        return self.barrier.caused_by_trading_bloc
+
+    @property
+    def internal_caused_by_trading_bloc_changed(self):
+        # return self.barrier.caused_by_trading_bloc != self.caused_by_country_trading_bloc
+        return self.barrier.caused_by_trading_bloc != self.caused_by_trading_bloc
+
+    @property
     def internal_trading_bloc(self):
         return self.barrier.trading_bloc
 
     @property
     def internal_trading_bloc_changed(self):
         return self.barrier.trading_bloc != self.trading_bloc
+
+    @property
+    def internal_location(self):
+        return self.barrier.location
+
+    @property
+    def internal_location_changed(self):
+        return self.barrier.location != self.location
 
     @property
     def internal_sectors(self):
@@ -748,8 +785,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             self.title_changed
             or self.summary_changed
             or self.internal_status_changed
-            or self.internal_country_changed
-            or self.internal_trading_bloc_changed
+            or self.internal_location_changed
             or self.internal_sectors_changed
             or self.internal_all_sectors_changed
             or self.internal_sectors_changed

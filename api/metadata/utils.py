@@ -84,7 +84,7 @@ def get_admin_area(admin_area_id):
             admin_area["id"]: admin_area for admin_area in get_admin_areas()
         }
         cache.set("dh_admin_area_lookup", admin_area_lookup, 7200)
-    return admin_area_lookup.get(admin_area_id)
+    return admin_area_lookup.get(str(admin_area_id))
 
 
 def get_admin_areas():
@@ -96,7 +96,7 @@ def get_sector(sector_id):
     if not sector_lookup:
         sector_lookup = {sector["id"]: sector for sector in get_sectors()}
         cache.set("dh_sector_lookup", sector_lookup, 7200)
-    return sector_lookup.get(sector_id)
+    return sector_lookup.get(str(sector_id))
 
 
 def get_sectors():
@@ -187,3 +187,29 @@ def get_wto_committee_groups():
             ],
         })
     return committee_groups
+
+
+def get_location_text(country_id, trading_bloc=None, caused_by_trading_bloc=None, admin_area_ids=()):
+    if not country_id:
+        if trading_bloc:
+            return TRADING_BLOCS.get(trading_bloc, {}).get("name")
+        return None
+
+    country = get_country(str(country_id))
+    if not country:
+        return None
+    country_name = country["name"]
+
+    if caused_by_trading_bloc and country.get("trading_bloc"):
+        trading_bloc = country.get("trading_bloc", {}).get("name", "")
+        return f"{country_name} ({trading_bloc})"
+
+    if admin_area_ids:
+        def admin_area_name(admin_area_id):
+            admin_area = get_admin_area(admin_area_id) or {}
+            return admin_area.get("name", "")
+
+        admin_areas_string = ", ".join(admin_area_name(_id) for _id in admin_area_ids)
+        return f"{admin_areas_string} ({country_name})"
+
+    return country_name

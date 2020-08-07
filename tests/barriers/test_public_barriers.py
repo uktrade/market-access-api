@@ -1,14 +1,30 @@
-from django.test import TestCase
+from datetime import datetime
+
+import boto3
+import json
+
+from django.conf import settings
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from freezegun import freeze_time
+from mock import patch
 from rest_framework import status
 
 from api.barriers.helpers import get_team_member_user_ids
 from api.barriers.models import PublicBarrier, BarrierInstance
 from api.barriers.serializers import PublicBarrierSerializer
+from api.barriers.serializers.public_barriers import public_barriers_to_json
+from api.barriers.public_data import (
+    public_barrier_data_json_file_content,
+    versioned_folder,
+)
 from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
+from api.core.utils import read_file_from_s3
 from api.metadata.constants import PublicBarrierStatus, BarrierStatus
+
+from moto import mock_s3
+
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 from tests.user.factories import UserFactoryMixin
@@ -758,7 +774,8 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
     def test_country_is_serialized_consistently(self):
         expected_country = {
             "id": "1f0be5c4-5d95-e211-a939-e4115bead28a",
-            "name": "Singapore"
+            "name": "Singapore",
+            "trading_bloc": None
         }
 
         user = self.create_publisher()
@@ -1062,3 +1079,133 @@ class TestArchivingBarriers(PublicBarrierBaseTestCase):
 
         assert self.barrier.archived
         assert self.barrier.archived_on
+
+
+class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
+
+    def setUp(self):
+        self.publisher = self.create_publisher()
+        self.client = self.create_api_client(user=self.publisher)
+        self.barrier = BarrierFactory()
+        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
+    def create_mock_s3_bucket(self):
+        conn = boto3.resource(
+            's3',
+            region_name=settings.PUBLIC_DATA_BUCKET_REGION
+        )
+        conn.create_bucket(Bucket=settings.PUBLIC_DATA_BUCKET)
+
+    @mock_s3
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
+    def test_data_file_gets_uploaded_to_s3(self):
+        self.create_mock_s3_bucket()
+
+        pb1, _ = self.publish_barrier(user=self.publisher)
+        pb2, _ = self.publish_barrier(user=self.publisher)
+        pb3, _ = self.publish_barrier(user=self.publisher)
+
+        # Check data.json
+        data_filename = f"{versioned_folder()}/data.json"
+        obj = read_file_from_s3(data_filename)
+        public_data = json.loads(obj.get()['Body'].read().decode())
+
+        expected_ids = [pb1.id, pb2.id, pb3.id]
+        assert "barriers" in public_data.keys()
+        assert sorted(expected_ids) == sorted([b["id"] for b in public_data["barriers"]])
+
+    @mock_s3
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
+    def test_metadata_file_upload_to_s3(self):
+        self.create_mock_s3_bucket()
+
+        pb, _ = self.publish_barrier(user=self.publisher)
+
+        # Check metadata.json
+        metadata_filename = f"{versioned_folder()}/metadata.json"
+        obj = read_file_from_s3(metadata_filename)
+        metadata = json.loads(obj.get()['Body'].read().decode())
+
+        assert "release_date" in metadata.keys()
+        today = datetime.today().strftime('%Y-%m-%d')
+        assert today == metadata["release_date"]
+
+    def test_data_json_file_content_task(self):
+        pb1, _ = self.publish_barrier(user=self.publisher)
+        pb2, _ = self.publish_barrier(user=self.publisher)
+
+        data = public_barrier_data_json_file_content()
+
+        assert "barriers" in data.keys()
+        assert 2 == len(data["barriers"])
+
+    def test_public_serializer(self):
+        pb1, _ = self.publish_barrier(user=self.publisher)
+
+        public_barriers_to_json()
+        barrier = public_barriers_to_json()[0]
+
+        assert pb1.id == barrier["id"]
+        assert pb1.title == barrier["title"]
+        assert pb1.summary == barrier["summary"]
+        assert {"name": BarrierStatus.name(pb1.status)} == barrier["status"]
+
+    @patch("api.barriers.views.public_release_to_s3")
+    def test_publish_calls_public_release(self, mock_release):
+        pb, _ = self.publish_barrier(user=self.publisher)
+        assert mock_release.called is True
+
+    @patch("api.barriers.views.public_release_to_s3")
+    def test_unpublish_calls_public_release(self, mock_release):
+        pb, _ = self.publish_barrier(user=self.publisher)
+        url = reverse("public-barriers-unpublish", kwargs={"pk": pb.barrier.id})
+
+        client = self.create_api_client(user=self.publisher)
+        response = client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert mock_release.called is True
+
+    @patch("api.barriers.views.public_release_to_s3")
+    def test_ready_does_not_call_public_release(self, mock_release):
+        _pb = self.get_public_barrier(self.barrier)
+        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
+
+        client = self.create_api_client(user=self.publisher)
+        response = client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert mock_release.called is False
+
+    @patch("api.barriers.views.public_release_to_s3")
+    def test_unprepared_does_not_call_public_release(self, mock_release):
+        _pb = self.get_public_barrier(self.barrier)
+        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
+
+        client = self.create_api_client(user=self.publisher)
+        response = client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert mock_release.called is False
+
+    @patch("api.barriers.views.public_release_to_s3")
+    def test_ignore_all_changes_does_not_call_public_release(self, mock_release):
+        _pb = self.get_public_barrier(self.barrier)
+        url = reverse("public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id})
+
+        client = self.create_api_client(user=self.publisher)
+        response = client.post(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert mock_release.called is False
+
+    @patch("api.barriers.views.public_release_to_s3")
+    def test_get_details_does_not_call_public_release(self, mock_release):
+        _pb = self.get_public_barrier(self.barrier)
+        url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
+        client = self.create_api_client(user=self.publisher)
+        response = client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert mock_release.called is False
