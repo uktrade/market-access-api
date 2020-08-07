@@ -1,6 +1,7 @@
 import csv
 from collections import defaultdict
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
 from django.http import StreamingHttpResponse
@@ -41,6 +42,7 @@ from api.user.permissions import IsPublisher, IsEditor, AllRetrieveAndEditorUpda
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
 from .filters import BarrierFilterSet
+from .tasks import public_release_to_s3
 
 
 class Echo:
@@ -697,10 +699,17 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
         if published:
             self.update_contributors(public_barrier.barrier)
             serializer = PublicBarrierSerializer(public_barrier)
+            # TODO: remove this before go live
+            if settings.DJANGO_ENV in ("local", "dev", "uat"):
+                public_release_to_s3()
             return Response(status=status.HTTP_200_OK, data=serializer.data)
         else:
             raise PublicBarrierPublishException()
 
     @action(methods=["post"], detail=True, permission_classes=(IsPublisher,))
     def unpublish(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.UNPUBLISHED)
+        r = self.update_status_action(PublicBarrierStatus.UNPUBLISHED)
+        # TODO: remove this before go live
+        if settings.DJANGO_ENV in ("local", "dev", "uat"):
+            public_release_to_s3()
+        return r

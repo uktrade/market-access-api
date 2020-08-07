@@ -5,9 +5,9 @@ services:
   db:
     image: postgres
     volumes:
-      - ./db:/var/lib/postgresql/data
-      - ./db_dumps:/var/lib/postgresql/dumps
-      - ./docker/local/postgres:/docker-entrypoint-initdb.d
+      - ./db:/var/lib/postgresql/data:delegated
+      - ./db_dumps:/var/lib/postgresql/dumps:delegated
+      - ./docker/local/postgres:/docker-entrypoint-initdb.d:delegated
     ports:
       - "8881:5432"
     env_file: docker-compose.env
@@ -20,7 +20,7 @@ services:
       dockerfile: docker/local/Dockerfile
     entrypoint: dockerize -wait tcp://db:5432 -timeout 60s docker/local/entrypoint.sh
     volumes:
-      - .:/usr/src/app
+      - .:/usr/src/app:delegated
     env_file: docker-compose.env
     ports:
       - "8880:8000"

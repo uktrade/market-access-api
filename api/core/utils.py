@@ -1,3 +1,11 @@
+import boto3
+import operator
+from botocore.exceptions import NoCredentialsError
+from django.conf import settings
+
+from api.core.exceptions import S3UploadException
+
+
 def is_not_blank(s):
     return bool(s and s.strip())
 
@@ -37,6 +45,10 @@ def nested_sort(obj):
         return obj
 
 
+def sort_list_of_dicts(obj, by_key, reverse=False):
+    return sorted(obj, key=operator.itemgetter(by_key), reverse=reverse)
+
+
 class EchoUTF8:
     """
     Writer that echoes written data and encodes to utf-8 if necessary.
@@ -49,3 +61,34 @@ class EchoUTF8:
         if isinstance(value, str):
             return value.encode('utf-8')
         return value
+
+
+def s3_client():
+    return boto3.client(
+        's3',
+        aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
+    )
+
+
+def upload_to_s3(local_file, bucket, s3_file=None):
+    s3 = s3_client()
+    s3_file = s3_file or local_file
+    try:
+        s3.upload_file(local_file, bucket, s3_file)
+    except (FileNotFoundError, NoCredentialsError) as e:
+        raise S3UploadException(e)
+
+
+def read_file_from_s3(filename):
+    s3 = s3_resource()
+    return s3.Object(settings.PUBLIC_DATA_BUCKET, filename)
+
+
+def s3_resource():
+    return boto3.resource(
+        's3',
+        region_name=settings.PUBLIC_DATA_BUCKET_REGION,
+        aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
+    )

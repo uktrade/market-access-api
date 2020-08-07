@@ -92,8 +92,8 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["new_value"] == "New summary"
 
     def test_location_history(self):
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
+        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
 
         self.barrier.save()
 
@@ -102,12 +102,8 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "location"
-        assert data["old_value"]["country"]["id"] == "82756b9a-5d95-e211-a939-e4115bead28a"
-        assert data["old_value"]["admin_areas"] == []
-
-        assert data["new_value"]["country"]["id"] == "81756b9a-5d95-e211-a939-e4115bead28a"
-        assert len(data["new_value"]["admin_areas"]) == 1
-        assert data["new_value"]["admin_areas"][0]["id"] == "a88512e0-62d4-4808-95dc-d3beab05d0e9"
+        assert data["old_value"] == "France"
+        assert data["new_value"] == "California (United States)"
 
     def test_priority_history(self):
         self.barrier.priority_id = 2
@@ -253,8 +249,8 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "location"
-        assert data["old_value"]["country"]["id"] == "82756b9a-5d95-e211-a939-e4115bead28a"
-        assert data["new_value"]["country"]["id"] == "e0f682ac-5d95-e211-a939-e4115bead28a"
+        assert data["old_value"] == "France"
+        assert data["new_value"] == "Georgia"
 
     def test_status_history(self):
         self.public_barrier.status = 5
@@ -592,8 +588,8 @@ class TestHistoryView(APITestMixin, TestCase):
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
+        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
@@ -665,17 +661,8 @@ class TestHistoryView(APITestMixin, TestCase):
 
         location_history = self.get_history_by_field(history, "location")
         assert len(location_history) == 1
-        assert location_history[0]["old_value"]["country"]["id"] == (
-            "82756b9a-5d95-e211-a939-e4115bead28a"
-        )
-        assert location_history[0]["old_value"]["admin_areas"] == []
-        assert location_history[0]["new_value"]["country"]["id"] == (
-            "81756b9a-5d95-e211-a939-e4115bead28a"
-        )
-        assert len(location_history[0]["new_value"]["admin_areas"]) == 1
-        assert location_history[0]["new_value"]["admin_areas"][0]["id"] == (
-            "a88512e0-62d4-4808-95dc-d3beab05d0e9"
-        )
+        assert location_history[0]["old_value"] == "France"
+        assert location_history[0]["new_value"] == "California (United States)"
 
         assert {
             "date": "2020-04-01T00:00:00Z",
@@ -897,8 +884,8 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
+        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5

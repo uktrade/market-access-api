@@ -4,7 +4,7 @@ from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import BarrierCommodity
 from api.commodities.serializers import BarrierCommoditySerializer
 from api.commodities.models import Commodity
-from api.core.utils import cleansed_username
+from api.core.utils import cleansed_username, sort_list_of_dicts
 from api.interactions.models import Document
 from api.metadata.constants import (
     BARRIER_ARCHIVED_REASON,
@@ -255,64 +255,109 @@ class NoneToBlankCharField(serializers.CharField):
             return ""
 
 
-class ReadOnlyStatusField(serializers.Field):
+class FilterableReadOnlyField(serializers.Field):
+
+    def __init__(self, to_repr_keys=(), **kwargs):
+        """
+        Allows to use the same format with the ability to only include the keys needed for the given serializer.
+        :param to_repr_keys: list of STR - used to filter in value to only include the keys listed
+        """
+        self.to_repr_keys = to_repr_keys
+        super().__init__(**kwargs)
+
+    def get_data(self, value):
+        """ To be implemented """
+        return {}
+
+    def filter_dict(self, data):
+        """
+        Returns only the selected keys in to_repr_keys if data is a dict.
+        """
+        new_data = {}
+        try:
+            for k in data.keys():
+                if k in self.to_repr_keys:
+                    new_data.setdefault(k, data[k])
+            return new_data
+        except AttributeError:
+            return data
+
+    def filter_list_of_dicts(self, data):
+        """
+        Allows to filter keys of a list of dicts, similarly how filter_dict works.
+        """
+        new_data = []
+        for d in data:
+            new_data.append(self.filter_dict(d))
+        return new_data
+
+    def to_representation(self, value):
+        data = self.get_data(value)
+        if self.to_repr_keys:
+            if isinstance(data, list):
+                return self.filter_list_of_dicts(data)
+            if isinstance(data, dict):
+                return self.filter_dict(data)
+        else:
+            return data
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyStatusField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only status fields.
     """
-
-    def to_representation(self, value):
+    def get_data(self, value):
         return {
             "id": value,
             "name": BarrierStatus.name(value)
         }
 
-    def to_internal_value(self, data):
-        self.fail("read_only")
 
-
-class ReadOnlyCountryField(serializers.Field):
+class ReadOnlyCountryField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only country / export_country fields.
     """
-
-    def to_representation(self, value):
+    def get_data(self, value):
         if value:
             value = str(value)
             country = get_country(value) or {}
             return {
                 "id": value,
-                "name": country.get("name")
+                "name": country.get("name"),
+                "trading_bloc": country.get("trading_bloc")
             }
 
-    def to_internal_value(self, data):
-        self.fail("read_only")
+
+class ReadOnlyTradingBlocField(FilterableReadOnlyField):
+    def get_data(self, value):
+        if value:
+            return get_trading_bloc(value)
 
 
-class ReadOnlySectorsField(serializers.Field):
+class ReadOnlySectorsField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only sectors fields.
     """
-
-    def to_representation(self, value):
+    def get_data(self, value):
         def sector_name(sid):
             sector = get_sector(str(sid)) or {}
             return sector.get("name")
 
-        return [
+        sectors = [
             {"id": str(sector_id), "name": sector_name(str(sector_id))}
             for sector_id in value
             if sector_name(str(sector_id))
         ]
-
-    def to_internal_value(self, data):
-        self.fail("read_only")
+        return sort_list_of_dicts(sectors, "name")
 
 
 class ReadOnlyAllSectorsField(serializers.Field):
     """
     Field serializer to be used with read only all_sectors fields.
     """
-
     def to_representation(self, value):
         return value or False
 
@@ -320,19 +365,15 @@ class ReadOnlyAllSectorsField(serializers.Field):
         self.fail("read_only")
 
 
-class ReadOnlyCategoriesField(serializers.Field):
+class ReadOnlyCategoriesField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only categories fields.
     """
-
-    def to_representation(self, value):
+    def get_data(self, value):
         return [
             {"id": category.id, "title": category.title}
             for category in value.all()
         ]
-
-    def to_internal_value(self, data):
-        self.fail("read_only")
 
 
 class BarrierReportStageListingField(serializers.RelatedField):

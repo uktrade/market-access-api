@@ -1,7 +1,6 @@
 from api.metadata.utils import (
-    get_admin_area,
     get_country,
-    get_trading_bloc,
+    get_location_text,
     get_trading_bloc_by_country_id,
 )
 from .base import BaseHistoryItem
@@ -79,21 +78,12 @@ class LocationHistoryItem(BaseBarrierHistoryItem):
     field = "location"
 
     def get_value(self, record):
-        value = {
-            "country": None,
-            "admin_areas": [
-                get_admin_area(str(admin_area))
-                for admin_area in record.country_admin_areas or []
-                if get_admin_area(str(admin_area)) is not None
-            ],
-            "trading_bloc": None,
-            "caused_by_trading_bloc": record.caused_by_trading_bloc,
-        }
-        if record.trading_bloc:
-            value["trading_bloc"] = get_trading_bloc(record.trading_bloc)
-        if record.export_country:
-            value["country"] = get_country(str(record.export_country))
-        return value
+        return get_location_text(
+            country_id=record.export_country,
+            trading_bloc=record.trading_bloc,
+            caused_by_trading_bloc=record.caused_by_trading_bloc,
+            admin_area_ids=record.country_admin_areas,
+        )
 
 
 class PriorityHistoryItem(BaseBarrierHistoryItem):

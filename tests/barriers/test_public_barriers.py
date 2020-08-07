@@ -1,3 +1,4 @@
+import pytest
 from django.test import TestCase
 from django.urls import reverse
 from freezegun import freeze_time
@@ -6,6 +7,11 @@ from rest_framework import status
 from api.barriers.helpers import get_team_member_user_ids
 from api.barriers.models import PublicBarrier, BarrierInstance
 from api.barriers.serializers import PublicBarrierSerializer
+from api.barriers.serializers.public_barriers import public_barriers_to_json
+from api.barriers.tasks import (
+    public_release_to_s3,
+    public_barrier_data_json_file_content
+)
 from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import PublicBarrierStatus, BarrierStatus
@@ -758,7 +764,8 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
     def test_country_is_serialized_consistently(self):
         expected_country = {
             "id": "1f0be5c4-5d95-e211-a939-e4115bead28a",
-            "name": "Singapore"
+            "name": "Singapore",
+            "trading_bloc": None
         }
 
         user = self.create_publisher()
@@ -1062,3 +1069,58 @@ class TestArchivingBarriers(PublicBarrierBaseTestCase):
 
         assert self.barrier.archived
         assert self.barrier.archived_on
+
+
+class TestPublicBarriersToFlatJSON(PublicBarrierBaseTestCase):
+
+    def setUp(self):
+        self.publisher = self.create_publisher()
+        self.client = self.create_api_client(user=self.publisher)
+        self.barrier = BarrierFactory()
+        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
+    # @pytest.mark.skip(reason="Need to mock s3 for this case.")
+    def test_upload_to_s3(self):
+        # Check out https://github.com/spulec/moto
+        # conn = boto3.resource
+
+        b1 = BarrierFactory(
+            export_country="a05f66a0-5d95-e211-a939-e4115bead28a",
+            caused_by_trading_bloc=True,
+            all_sectors=True,
+            sectors=[]
+        )
+        pb1 = self.get_public_barrier(b1)
+        self.publish_barrier(user=self.publisher, pb=pb1)
+
+        b2 = BarrierFactory(export_country="a25f66a0-5d95-e211-a939-e4115bead28a")
+        pb2 = self.get_public_barrier(b2)
+        self.publish_barrier(user=self.publisher, pb=pb2)
+
+        pb3, _ = self.publish_barrier(user=self.publisher)
+
+        b4 = BarrierFactory(trading_bloc="TB00016", export_country=None)
+        pb4 = self.get_public_barrier(b4)
+        self.publish_barrier(user=self.publisher, pb=pb4)
+
+        public_release_to_s3()
+
+    def test_data_json_file_content_task(self):
+        pb1, _ = self.publish_barrier(user=self.publisher)
+        pb2, _ = self.publish_barrier(user=self.publisher)
+
+        data = public_barrier_data_json_file_content()
+
+        assert "barriers" in data.keys()
+        assert 2 == len(data["barriers"])
+
+    def test_public_serializer(self):
+        pb1, _ = self.publish_barrier(user=self.publisher)
+
+        public_barriers_to_json()
+        barrier = public_barriers_to_json()[0]
+
+        assert pb1.id == barrier["id"]
+        assert pb1.title == barrier["title"]
+        assert pb1.summary == barrier["summary"]
+        assert {"name": BarrierStatus.name(pb1.status)} == barrier["status"]
