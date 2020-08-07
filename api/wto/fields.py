@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import WTOCommittee
 
 
-class WTOCommitteeField(serializers.Field):
+class WTOCommitteeField(serializers.UUIDField):
     def to_representation(self, value):
         return {
             "id": value.id,
@@ -11,7 +11,11 @@ class WTOCommitteeField(serializers.Field):
         }
 
     def to_internal_value(self, data):
+        if not data:
+            return
+
+        value = super().to_internal_value(data)
         try:
-            return WTOCommittee.objects.get(pk=data)
+            return WTOCommittee.objects.get(pk=value)
         except WTOCommittee.DoesNotExist:
-            raise serializers.ValidationError("Priority not found")
+            raise serializers.ValidationError("WTO committee not found")
