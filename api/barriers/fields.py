@@ -242,6 +242,9 @@ class WTOProfileField(serializers.Field):
 
 
 class NoneToBlankCharField(serializers.CharField):
+    """
+    This field requires AllowNoneAtToRepresentationMixin to be used by the serializer
+    """
 
     def to_representation(self, value):
         if value is not None:
