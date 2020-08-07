@@ -25,3 +25,8 @@ class CategoryGroupField(serializers.ChoiceField):
 class CountryField(serializers.UUIDField):
     def to_representation(self, value):
         return get_country(str(value))
+
+
+class CountryListField(serializers.ListField):
+    def to_representation(self, value):
+        return [get_country(str(country_id)) for country_id in value]
