@@ -136,6 +136,6 @@ BARRIER_ARCHIVED_REASON = Choices(
 )
 
 TRADE_DIRECTION_CHOICES = Choices(
-    (1, "Exporting from the UK"),
-    (2, "Importing into the UK")
+    (1, "Exporting from the UK or investing overseas"),
+    (2, "Importing or investing into the UK")
 )
