@@ -16,8 +16,8 @@ class TestCategories(APITestMixin):
 
     def test_status_types(self):
         expected = {
-            "1": "A problem that is blocking a specific export or investment",
-            "2": "A strategic barrier likely to affect multiple exports or sectors",
+            "1": "A procedural, short-term barrier",
+            "2": "A long-term strategic barrier",
         }
         url = reverse("metadata")
         response = self.api_client.get(url)

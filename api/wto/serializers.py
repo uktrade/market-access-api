@@ -1,11 +1,16 @@
-from .models import WTOProfile
-
 from rest_framework import serializers
+
+from api.metadata.fields import CountryListField
+from .fields import WTOCommitteeField
+from .models import WTOProfile
 
 
 class WTOProfileSerializer(serializers.ModelSerializer):
     committee_notification_document = serializers.SerializerMethodField()
     meeting_minutes = serializers.SerializerMethodField()
+    member_states = CountryListField(required=False)
+    committee_notified = WTOCommitteeField(required=False)
+    committee_raised_in = WTOCommitteeField(required=False)
 
     class Meta:
         model = WTOProfile

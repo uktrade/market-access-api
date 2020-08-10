@@ -85,7 +85,6 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     barrier_title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
-    priority = None
     wto_profile = factory.SubFactory(WTOProfileFactory)
 
     @factory.post_generation

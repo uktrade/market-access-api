@@ -54,7 +54,7 @@ class TestAssessment(APITestMixin):
         assert add_response.status_code == status.HTTP_201_CREATED
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] == []
         assert int_response.data["value_to_economy"] is None
@@ -97,7 +97,7 @@ class TestAssessment(APITestMixin):
         assert add_response.status_code == status.HTTP_201_CREATED
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 1
@@ -140,7 +140,7 @@ class TestAssessment(APITestMixin):
 
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 2
@@ -300,7 +300,7 @@ class TestAssessment(APITestMixin):
 
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 1
@@ -319,7 +319,7 @@ class TestAssessment(APITestMixin):
             }
         )
         assert edit_response.status_code == status.HTTP_200_OK
-        assert edit_response.data["impact"] == "MEDIUMHIGH"
+        assert edit_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert edit_response.data["explanation"] == "sample assessment notes"
         assert edit_response.data["documents"] is not None
         assert len(edit_response.data["documents"]) == 1
@@ -355,7 +355,7 @@ class TestAssessment(APITestMixin):
 
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 1
@@ -374,7 +374,7 @@ class TestAssessment(APITestMixin):
             }
         )
         assert edit_response.status_code == status.HTTP_200_OK
-        assert edit_response.data["impact"] == "MEDIUMHIGH"
+        assert edit_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert edit_response.data["explanation"] == "sample assessment notes"
         assert edit_response.data["documents"] is not None
         assert len(edit_response.data["documents"]) == 1
@@ -388,7 +388,7 @@ class TestAssessment(APITestMixin):
             assessment_url, format="json", data={"documents": []}
         )
         assert edit_doc_response.status_code == status.HTTP_200_OK
-        assert edit_doc_response.data["impact"] == "MEDIUMHIGH"
+        assert edit_doc_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert edit_doc_response.data["explanation"] == "sample assessment notes"
         assert edit_doc_response.data["documents"] == []
         assert edit_doc_response.data["value_to_economy"] == 1500000
@@ -429,7 +429,7 @@ class TestAssessment(APITestMixin):
 
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 2
@@ -444,7 +444,7 @@ class TestAssessment(APITestMixin):
             assessment_url, format="json", data={"documents": [otherfile_id]}
         )
         assert edit_doc_response.status_code == status.HTTP_200_OK
-        assert edit_doc_response.data["impact"] == "MEDIUMHIGH"
+        assert edit_doc_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert edit_doc_response.data["explanation"] == "sample assessment notes"
         assert edit_doc_response.data["documents"] is not None
         assert len(edit_doc_response.data["documents"]) == 1
@@ -483,7 +483,7 @@ class TestAssessment(APITestMixin):
 
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 1
@@ -497,7 +497,7 @@ class TestAssessment(APITestMixin):
             assessment_url, format="json", data={"documents": [otherfile_id]}
         )
         assert edit_doc_response.status_code == status.HTTP_200_OK
-        assert edit_doc_response.data["impact"] == "MEDIUMHIGH"
+        assert edit_doc_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert edit_doc_response.data["explanation"] == "sample assessment notes"
         assert edit_doc_response.data["documents"] is not None
         assert len(edit_doc_response.data["documents"]) == 1
@@ -538,7 +538,7 @@ class TestAssessment(APITestMixin):
 
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 1
@@ -560,7 +560,7 @@ class TestAssessment(APITestMixin):
 
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
-        assert int_response.data["impact"] == "MEDIUMHIGH"
+        assert int_response.data["impact"]["code"] == "MEDIUMHIGH"
         assert int_response.data["explanation"] == "sample assessment notes"
         assert int_response.data["documents"] is not None
         assert len(int_response.data["documents"]) == 1

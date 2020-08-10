@@ -2,12 +2,15 @@ from rest_framework import serializers
 
 from api.assessment.models import Assessment
 
+from .fields import ImpactField
+
 
 class AssessmentSerializer(serializers.ModelSerializer):
     """ Serialzer for Barrier Assessment """
 
     created_by = serializers.SerializerMethodField()
     documents = serializers.SerializerMethodField()
+    impact = ImpactField(required=False)
 
     class Meta:
         model = Assessment

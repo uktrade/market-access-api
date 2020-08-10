@@ -9,6 +9,7 @@ from api.assessment.urls import urlpatterns as assessment_urls
 from api.barriers.urls import urlpatterns as barrier_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.commodities.urls import urlpatterns as commodities_urls
+from api.dataset.urls import urlpatterns as dataset_urls
 from api.interactions.urls import urlpatterns as interaction_urls
 from api.user.urls import urlpatterns as user_urls
 
@@ -28,4 +29,4 @@ urlpatterns += [
     path("users/<int:pk>", UserDetail.as_view(), name="get-user"),
     path("users/<uuid:sso_user_id>", UserDetail.as_view(), name="get-user"),
     path("metadata", MetadataView.as_view(), name="metadata")
-] + barrier_urls + commodities_urls + interaction_urls + team_urls + assessment_urls + user_urls
+] + barrier_urls + commodities_urls + dataset_urls + interaction_urls + team_urls + assessment_urls + user_urls

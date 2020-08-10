@@ -34,3 +34,15 @@ class AllowNoneAtToRepresentationMixin:
                 ret[field.field_name] = field.to_representation(attribute)
 
         return ret
+
+
+class CustomUpdateMixin:
+    """
+    Allows a serializer's fields to have custom_update functions
+    """
+    def update(self, instance, validated_data):
+        for field in self._writable_fields:
+            if hasattr(field, "custom_update") and field.source in validated_data:
+                field.custom_update(validated_data)
+
+        return super().update(instance, validated_data)
