@@ -12,6 +12,7 @@ from simple_history.models import HistoricalRecords
 from api.core.exceptions import ArchivingException
 from api.metadata.constants import (
     BarrierStatus,
+    BARRIER_ARCHIVED_REASON,
     BARRIER_SOURCE,
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
@@ -25,7 +26,6 @@ from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
-from api.metadata.constants import BARRIER_ARCHIVED_REASON
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -155,8 +155,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     country_admin_areas = ArrayField(
         models.UUIDField(),
         blank=True,
-        null=True,
-        default=None,
+        default=list,
         help_text="list of states, provinces, regions etc within a country",
     )
     trade_direction = models.SmallIntegerField(
@@ -235,10 +234,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     # Barrier priority
     priority = models.ForeignKey(
         BarrierPriority,
-        null=True,
-        default=None,
-        related_name="barrier_priority",
-        on_delete=models.SET_NULL,
+        default=1,
+        related_name="barrier",
+        on_delete=models.PROTECT,
     )
     priority_summary = models.TextField(
         null=True, default=None, help_text="priority summary if provided by user"

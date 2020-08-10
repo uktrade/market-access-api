@@ -100,7 +100,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["model"] == "barrier"
         assert data["field"] == "location"
         assert data["old_value"] == {
-            "country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
             "admin_areas": [],
         }
         assert data["new_value"] == {
@@ -118,7 +118,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["model"] == "barrier"
         assert data["field"] == "priority"
         assert data["old_value"] == {
-            "priority": None,
+            "priority": "UNKNOWN",
             "priority_summary": None,
         }
         assert data["new_value"] == {
@@ -252,7 +252,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "country"
-        assert str(data["old_value"]) == "66b795e0-ad71-4a65-9fa6-9f1e97e86d67"
+        assert str(data["old_value"]) == "82756b9a-5d95-e211-a939-e4115bead28a"
         assert str(data["new_value"]) == "570507cc-1592-4a99-afca-915d13a437d0"
 
     def test_status_history(self):
@@ -664,7 +664,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "model": "barrier",
             "field": "location",
             "old_value": {
-                "country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "admin_areas": []
             },
             "new_value": {
@@ -718,7 +718,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "model": "barrier",
             "field": "priority",
             "old_value": {
-                "priority": None,
+                "priority": "UNKNOWN",
                 "priority_summary": None,
             },
             "new_value": {

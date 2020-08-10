@@ -18,8 +18,8 @@ from api.barriers.views import (
     BarrierReportSubmit,
     PublicBarrierActivity,
     PublicBarrierViewSet,
-    barrier_count)
-from api.dataset.views import BarrierListDataWorkspaceView
+    barrier_count,
+)
 
 app_name = "barriers"
 
@@ -29,7 +29,6 @@ router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barri
 
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
-    path("barriers/dataset", BarrierListDataWorkspaceView.as_view(), name="dataset-barriers"),
     path("barriers/export", BarriertListExportView.as_view(), name="barriers-export"),
     re_path("barriers/(?P<code>[A-Z]-[0-9]{2}-[A-Z0-9]{3})", BarrierDetail.as_view(), name="barrier_detail_code"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),

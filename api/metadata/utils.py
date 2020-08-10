@@ -14,7 +14,6 @@ from api.wto.models import WTOCommitteeGroup
 
 from .constants import BARRIER_TYPE_CATEGORIES
 from .models import Category, BarrierPriority, BarrierTag
-from .serializers import BarrierTagSerializer
 
 
 def import_api_results(endpoint):
@@ -125,15 +124,9 @@ def get_categories():
 
 
 def get_barrier_tags():
-    tags = BarrierTag.objects.all()
-    serializer = BarrierTagSerializer(tags, many=True)
-    return serializer.data
-
-
-def adjust_barrier_tags(barrier, tag_ids):
-    if type(tag_ids) is list:
-        tags = BarrierTag.objects.filter(id__in=tag_ids)
-        barrier.tags.set(tags)
+    return list(BarrierTag.objects.values(
+        "id", "title", "description", "show_at_reporting", "order"
+    ))
 
 
 def get_barrier_priorities():
