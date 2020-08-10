@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from api.barriers.models import BarrierCommodity
-from api.barriers.fields import CountryField
+from api.metadata.fields import CountryField
 from .models import Commodity
 
 

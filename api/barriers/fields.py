@@ -1,31 +1,343 @@
 from rest_framework import serializers
 
 from api.barriers.helpers import get_or_create_public_barrier
-from api.metadata.constants import PublicBarrierStatus
-from api.metadata.utils import get_country
+from api.barriers.models import BarrierCommodity
+from api.commodities.serializers import BarrierCommoditySerializer
+from api.commodities.models import Commodity
+from api.core.utils import cleansed_username
+from api.interactions.models import Document
+from api.metadata.constants import (
+    BARRIER_ARCHIVED_REASON,
+    BARRIER_PENDING,
+    BARRIER_SOURCE,
+    BarrierStatus,
+    PublicBarrierStatus,
+    STAGE_STATUS,
+    PROBLEM_STATUS_TYPES,
+    TRADE_DIRECTION_CHOICES,
+)
+from api.metadata.models import BarrierPriority, BarrierTag, Category
+from api.metadata.serializers import BarrierPrioritySerializer, BarrierTagSerializer, CategorySerializer
+from api.metadata.utils import get_country, get_sector
+from api.wto.models import WTOProfile
+from api.wto.serializers import WTOProfileSerializer
 
 
-class CountryField(serializers.Field):
+class ArchivedField(serializers.BooleanField):
+    def custom_update(self, validated_data):
+        instance = self.parent.instance
+        user = self.parent.context["request"].user
+        archived = validated_data.pop("archived")
+
+        if instance.archived is False and archived is True:
+            instance.archive(
+                user=user,
+                reason=validated_data.pop("archived_reason"),
+                explanation=validated_data.pop("archived_explanation"),
+            )
+        elif instance.archived is True and archived is False:
+            instance.unarchive(
+                user=user,
+                reason=validated_data.pop("unarchived_reason"),
+            )
+
+
+class ArchivedReasonField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=BARRIER_ARCHIVED_REASON, **kwargs)
+
     def to_representation(self, value):
-        return get_country(str(value))
+        reason_lookup = dict(BARRIER_ARCHIVED_REASON)
+        return {
+            "code": value,
+            "name": reason_lookup.get(value),
+        }
+
+
+class BarrierPriorityField(serializers.Field):
+    def to_representation(self, value):
+        serializer = BarrierPrioritySerializer(value)
+        return serializer.data
 
     def to_internal_value(self, data):
-        return data
+        try:
+            return BarrierPriority.objects.get(code=data)
+        except BarrierPriority.DoesNotExist:
+            raise serializers.ValidationError("Priority not found")
+
+
+class CategoriesField(serializers.ListField):
+    def to_representation(self, value):
+        serializer = CategorySerializer(value.all(), many=True)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        return Category.objects.filter(id__in=data)
+
+
+class CommoditiesField(serializers.ListField):
+    def to_representation(self, value):
+        serializer = BarrierCommoditySerializer(value.all(), many=True)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        serializer = BarrierCommoditySerializer(partial=self.parent.partial, many=True)
+        return serializer.to_internal_value(data)
+
+    def custom_update(self, validated_data):
+        commodities_data = validated_data.pop("barrier_commodities")
+
+        added_commodities = []
+
+        for commodity_data in commodities_data:
+            code = commodity_data.get("code").ljust(10, "0")
+            country = commodity_data.get("country")
+            hs6_code = code[:6].ljust(10, "0")
+            commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest("version")
+            barrier_commodity, created = BarrierCommodity.objects.get_or_create(
+                barrier=self.parent.instance,
+                commodity=commodity,
+                code=code,
+                country=country,
+            )
+            added_commodities.append(barrier_commodity.id)
+
+        BarrierCommodity.objects.filter(
+            barrier=self.parent.instance
+        ).exclude(id__in=added_commodities).delete()
 
 
 class PublicEligibilityField(serializers.BooleanField):
-    def to_internal_value(self, data):
-        value = super().to_internal_value(data)
+    def custom_update(self, validated_data):
+        public_eligibility = validated_data.get("public_eligibility")
         public_barrier, created = get_or_create_public_barrier(self.parent.instance)
 
-        if value is True and public_barrier._public_view_status in (
+        if public_eligibility is True and public_barrier._public_view_status in (
             PublicBarrierStatus.INELIGIBLE,
             PublicBarrierStatus.UNKNOWN,
         ):
             public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
             public_barrier.save()
-        elif value is False:
+        elif public_eligibility is False:
             public_barrier.public_view_status = PublicBarrierStatus.INELIGIBLE
             public_barrier.save()
 
-        return value
+        if "public_eligibility_summary" not in validated_data:
+            validated_data["public_eligibility_summary"] = ""
+
+
+class SectorsField(serializers.ListField):
+    def to_representation(self, value):
+        return [get_sector(str(sector_id)) for sector_id in value]
+
+
+class SourceField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=BARRIER_SOURCE, **kwargs)
+
+    def to_representation(self, value):
+        source_lookup = dict(BARRIER_SOURCE)
+        return {
+            "code": value,
+            "name": source_lookup.get(value, "Unknown"),
+        }
+
+
+class StatusField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=BarrierStatus.choices, **kwargs)
+
+    def to_representation(self, value):
+        status_lookup = dict(BarrierStatus.choices)
+        return {
+            "id": value,
+            "name": status_lookup.get(value, "Unknown"),
+        }
+
+
+class SubStatusField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=BARRIER_PENDING, **kwargs)
+
+    def to_representation(self, value):
+        sub_status_lookup = dict(BARRIER_PENDING)
+        return {
+            "code": value,
+            "name": sub_status_lookup.get(value),
+        }
+
+
+class TagsField(serializers.ListField):
+    def to_representation(self, value):
+        serializer = BarrierTagSerializer(value.all(), many=True)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        try:
+            return BarrierTag.objects.filter(id__in=data)
+        except (ValueError, TypeError):
+            raise serializers.ValidationError("Invalid tag ids")
+
+
+class TermField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=PROBLEM_STATUS_TYPES, **kwargs)
+
+    def to_representation(self, value):
+        term_lookup = dict(PROBLEM_STATUS_TYPES)
+        return {
+            "id": value,
+            "name": term_lookup.get(value, "Unknown"),
+        }
+
+
+class TradeDirectionField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=TRADE_DIRECTION_CHOICES, **kwargs)
+
+    def to_representation(self, value):
+        trade_direction_lookup = dict(TRADE_DIRECTION_CHOICES)
+        return {
+            "id": value,
+            "name": trade_direction_lookup.get(value),
+        }
+
+
+class UserField(serializers.Field):
+    def to_representation(self, value):
+        return {
+            "id": value.id,
+            "name": cleansed_username(value),
+        }
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class WTOProfileField(serializers.Field):
+    def to_representation(self, value):
+        serializer = WTOProfileSerializer(value)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        serializer = WTOProfileSerializer(partial=self.parent.partial)
+        return serializer.to_internal_value(data)
+
+    def custom_update(self, validated_data):
+        wto_profile = validated_data.pop('wto_profile')
+
+        if wto_profile:
+            document_fields = ("committee_notification_document", "meeting_minutes")
+            for field_name in document_fields:
+                if field_name in self.parent.initial_data["wto_profile"]:
+                    document_id = self.parent.initial_data["wto_profile"].get(field_name)
+                    if document_id:
+                        try:
+                            Document.objects.get(pk=document_id)
+                        except Document.DoesNotExist:
+                            continue
+                    wto_profile[f"{field_name}_id"] = document_id
+
+            WTOProfile.objects.update_or_create(barrier=self.parent.instance, defaults=wto_profile)
+
+
+class NoneToBlankCharField(serializers.CharField):
+    """
+    This field requires AllowNoneAtToRepresentationMixin to be used by the serializer
+    """
+
+    def to_representation(self, value):
+        if value is not None:
+            return str(value)
+        else:
+            return ""
+
+
+class ReadOnlyStatusField(serializers.Field):
+    """
+    Field serializer to be used with read only status fields.
+    """
+
+    def to_representation(self, value):
+        return {
+            "id": value,
+            "name": BarrierStatus.name(value)
+        }
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyCountryField(serializers.Field):
+    """
+    Field serializer to be used with read only country / export_country fields.
+    """
+
+    def to_representation(self, value):
+        value = str(value)
+        country = get_country(value) or {}
+        return {
+            "id": value,
+            "name": country.get("name")
+        }
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlySectorsField(serializers.Field):
+    """
+    Field serializer to be used with read only sectors fields.
+    """
+
+    def to_representation(self, value):
+        def sector_name(sid):
+            sector = get_sector(str(sid)) or {}
+            return sector.get("name")
+
+        return [
+            {"id": str(sector_id), "name": sector_name(str(sector_id))}
+            for sector_id in value
+            if sector_name(str(sector_id))
+        ]
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyAllSectorsField(serializers.Field):
+    """
+    Field serializer to be used with read only all_sectors fields.
+    """
+
+    def to_representation(self, value):
+        return value or False
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class ReadOnlyCategoriesField(serializers.Field):
+    """
+    Field serializer to be used with read only categories fields.
+    """
+
+    def to_representation(self, value):
+        return [
+            {"id": category.id, "title": category.title}
+            for category in value.all()
+        ]
+
+    def to_internal_value(self, data):
+        self.fail("read_only")
+
+
+class BarrierReportStageListingField(serializers.RelatedField):
+    def to_representation(self, value):
+        stage_status_dict = dict(STAGE_STATUS)
+        return {
+            "stage_code": value.stage.code,
+            "stage_desc": value.stage.description,
+            "status_id": value.status,
+            "status_desc": stage_status_dict[value.status],
+        }

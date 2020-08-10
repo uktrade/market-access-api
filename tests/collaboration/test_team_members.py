@@ -51,7 +51,7 @@ class TestListTeamMembers(APITestMixin):
                 "problem_status": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -137,7 +137,7 @@ class TestListTeamMembers(APITestMixin):
                 "problem_status": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -222,7 +222,7 @@ class TestListTeamMembers(APITestMixin):
                 "problem_status": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -306,7 +306,7 @@ class TestListTeamMembers(APITestMixin):
                 "problem_status": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "66b795e0-ad71-4a65-9fa6-9f1e97e86d67",
+                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
