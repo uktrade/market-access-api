@@ -78,6 +78,7 @@ LOCAL_APPS = [
     "authbroker_client",
     "api.user_event_log",
     "api.dataset",
+    "api.history",
     "api.wto",
 ]
 

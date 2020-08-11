@@ -1,5 +1,5 @@
 from api.barriers.models import PublicBarrier
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import BaseHistoryItem, HistoryItemFactoryBase
 
 
 class BasePublicBarrierHistoryItem(BaseHistoryItem):
@@ -50,7 +50,7 @@ class TitleHistoryItem(BasePublicBarrierHistoryItem):
     field = "title"
 
 
-class PublicBarrierHistoryFactory(HistoryItemFactory):
+class PublicBarrierHistoryFactory(HistoryItemFactoryBase):
     class_lookup = {}
     history_item_classes = (
         CategoriesHistoryItem,

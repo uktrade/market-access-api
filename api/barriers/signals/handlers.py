@@ -1,4 +1,10 @@
+from django.dispatch import receiver
+
 from api.barriers.models import HistoricalBarrierInstance, HistoricalPublicBarrier
+from api.barriers.history.all import HistoryItemFactory
+from api.history.models import CachedHistoryItem
+
+from simple_history.signals import post_create_historical_record
 
 
 def barrier_categories_changed(sender, instance, action, **kwargs):
@@ -60,3 +66,14 @@ def public_barrier_categories_changed(sender, instance, action, **kwargs):
         else:
             instance.categories_history_saved = True
             instance.save()
+
+
+@receiver(post_create_historical_record)
+def post_create_historical_record(sender, history_instance, **kwargs):
+    items = HistoryItemFactory.create_history_items(
+        new_record=history_instance,
+        old_record=history_instance.prev_record,
+    )
+
+    for item in items:
+        CachedHistoryItem.create_from_history_item(item)

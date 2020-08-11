@@ -1,10 +1,13 @@
 from api.barriers.models import BarrierInstance
 from api.metadata.utils import get_country
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import BaseHistoryItem, HistoryItemFactoryBase
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
     model = "barrier"
+
+    def get_barrier_id(self):
+        return self.new_record.instance.id
 
 
 class ArchivedHistoryItem(BaseBarrierHistoryItem):
@@ -149,7 +152,7 @@ class TradeDirectionHistoryItem(BaseBarrierHistoryItem):
     field = "trade_direction"
 
 
-class BarrierHistoryFactory(HistoryItemFactory):
+class BarrierHistoryFactory(HistoryItemFactoryBase):
     """
     Polymorphic wrapper for barrier HistoryItem classes
     """

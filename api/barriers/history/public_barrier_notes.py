@@ -1,9 +1,12 @@
 from api.interactions.models import PublicBarrierNote
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import BaseHistoryItem, HistoryItemFactoryBase
 
 
 class BaseNoteHistoryItem(BaseHistoryItem):
     model = "public_barrier_note"
+
+    def get_barrier_id(self):
+        return self.new_record.instance.barrier.id
 
 
 class ArchivedHistoryItem(BaseNoteHistoryItem):
@@ -23,7 +26,7 @@ class TextHistoryItem(BaseNoteHistoryItem):
         return record.text
 
 
-class PublicBarrierNoteHistoryFactory(HistoryItemFactory):
+class PublicBarrierNoteHistoryFactory(HistoryItemFactoryBase):
     class_lookup = {}
     history_item_classes = (
         ArchivedHistoryItem,

@@ -8,7 +8,6 @@ from django.db.models import Q, CASCADE
 from django.utils import timezone
 
 from simple_history.models import HistoricalRecords
-
 from api.core.exceptions import ArchivingException
 from api.metadata.constants import (
     BarrierStatus,

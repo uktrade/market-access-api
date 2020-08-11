@@ -1,5 +1,5 @@
 from api.assessment.models import Assessment
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import BaseHistoryItem, HistoryItemFactoryBase
 
 
 class BaseAssessmentHistoryItem(BaseHistoryItem):
@@ -41,7 +41,7 @@ class ValueToEconomyHistoryItem(BaseAssessmentHistoryItem):
     field = "value_to_economy"
 
 
-class AssessmentHistoryFactory(HistoryItemFactory):
+class AssessmentHistoryFactory(HistoryItemFactoryBase):
     class_lookup = {}
     history_item_classes = (
         CommercialValueHistoryItem,

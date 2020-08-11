@@ -1,6 +1,10 @@
 from rest_framework.exceptions import APIException
 
 
+class HistoryFactoryNotFound(Exception):
+    pass
+
+
 class HistoryItemNotFound(Exception):
     pass
 

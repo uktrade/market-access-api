@@ -1,5 +1,5 @@
 from api.interactions.models import Interaction
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import BaseHistoryItem, HistoryItemFactoryBase
 
 
 class BaseNoteHistoryItem(BaseHistoryItem):
@@ -24,7 +24,7 @@ class DocumentsHistoryItem(BaseNoteHistoryItem):
         return record.documents_cache or []
 
 
-class NoteHistoryFactory(HistoryItemFactory):
+class NoteHistoryFactory(HistoryItemFactoryBase):
     class_lookup = {}
     history_item_classes = (
         DocumentsHistoryItem,

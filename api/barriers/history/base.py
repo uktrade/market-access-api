@@ -10,6 +10,9 @@ class BaseHistoryItem:
         self.new_record = new_record
         self.old_record = old_record
 
+    def get_barrier_id(self):
+        return self.new_record.instance.barrier_id
+
     @property
     def data(self):
         if self._data is None:
@@ -47,7 +50,7 @@ class BaseHistoryItem:
         return None
 
 
-class HistoryItemFactory:
+class HistoryItemFactoryBase:
     """
     Base class for generating history items for a barrier
     """
@@ -131,3 +134,8 @@ class HistoryItemFactory:
         """
         for history_item_class in cls.history_item_classes:
             cls.class_lookup[history_item_class.field] = history_item_class
+
+    @classmethod
+    def get_model(cls):
+        for factory_class in cls.history_item_classes:
+            return factory_class.model
