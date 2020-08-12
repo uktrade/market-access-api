@@ -3,7 +3,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from api.barriers.history.all import HistoryItemFactory
+from .factories import HistoryItemFactory
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

@@ -1,7 +1,7 @@
 from django.dispatch import receiver
 
 from api.barriers.models import HistoricalBarrierInstance, HistoricalPublicBarrier
-from api.barriers.history.all import HistoryItemFactory
+from api.history.factories import HistoryItemFactory
 from api.history.models import CachedHistoryItem
 
 from simple_history.signals import post_create_historical_record

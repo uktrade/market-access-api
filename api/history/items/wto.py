@@ -1,5 +1,6 @@
 from api.wto.models import WTOProfile
-from .base import BaseHistoryItem, HistoryItemFactoryBase
+from .base import BaseHistoryItem
+from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseWTOHistoryItem(BaseHistoryItem):
@@ -74,27 +75,3 @@ class WTONotifiedStatusHistoryItem(BaseWTOHistoryItem):
             "wto_has_been_notified": record.wto_has_been_notified,
             "wto_should_be_notified": record.wto_should_be_notified,
         }
-
-
-class WTOHistoryFactory(HistoryItemFactoryBase):
-    """
-    Polymorphic wrapper for wto HistoryItem classes
-    """
-
-    class_lookup = {}
-    history_item_classes = (
-        CaseNumberHistoryItem,
-        CommitteeNotificationDocumentHistoryItem,
-        CommitteeNotificationLinkHistoryItem,
-        CommitteeNotifiedHistoryItem,
-        CommitteeRaisedInHistoryItem,
-        MeetingMinutesHistoryItem,
-        MemberStatesHistoryItem,
-        RaisedDateHistoryItem,
-        WTONotifiedStatusHistoryItem,
-    )
-    history_types = ("~", "+")
-
-    @classmethod
-    def get_history(cls, barrier_id):
-        return WTOProfile.history.filter(barrier_id=barrier_id).order_by("history_date")

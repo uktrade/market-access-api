@@ -1,5 +1,6 @@
 from api.barriers.models import PublicBarrier
-from .base import BaseHistoryItem, HistoryItemFactoryBase
+from .base import BaseHistoryItem
+from ..factories.base import HistoryItemFactoryBase
 
 
 class BasePublicBarrierHistoryItem(BaseHistoryItem):
@@ -49,21 +50,3 @@ class SummaryHistoryItem(BasePublicBarrierHistoryItem):
 
 class TitleHistoryItem(BasePublicBarrierHistoryItem):
     field = "title"
-
-
-class PublicBarrierHistoryFactory(HistoryItemFactoryBase):
-    class_lookup = {}
-    history_item_classes = (
-        CategoriesHistoryItem,
-        CountryHistoryItem,
-        PublicViewStatusHistoryItem,
-        SectorsHistoryItem,
-        StatusHistoryItem,
-        SummaryHistoryItem,
-        TitleHistoryItem,
-    )
-    history_types = ("~", "+")
-
-    @classmethod
-    def get_history(cls, barrier_id):
-        return PublicBarrier.history.filter(barrier_id=barrier_id).order_by("history_date")

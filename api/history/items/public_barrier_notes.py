@@ -1,5 +1,6 @@
 from api.interactions.models import PublicBarrierNote
-from .base import BaseHistoryItem, HistoryItemFactoryBase
+from .base import BaseHistoryItem
+from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseNoteHistoryItem(BaseHistoryItem):
@@ -24,18 +25,3 @@ class TextHistoryItem(BaseNoteHistoryItem):
 
     def get_value(self, record):
         return record.text
-
-
-class PublicBarrierNoteHistoryFactory(HistoryItemFactoryBase):
-    class_lookup = {}
-    history_item_classes = (
-        ArchivedHistoryItem,
-        TextHistoryItem,
-    )
-    history_types = ("+", "~")
-
-    @classmethod
-    def get_history(cls, barrier_id):
-        return PublicBarrierNote.history.filter(
-            public_barrier__barrier_id=barrier_id
-        ).order_by("id", "history_date")

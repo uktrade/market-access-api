@@ -1,13 +1,13 @@
-from api.barriers.exceptions import HistoryFactoryNotFound
-
 from .assessments import AssessmentHistoryFactory
 from .barriers import BarrierHistoryFactory
 from .notes import NoteHistoryFactory
 from .public_barrier_notes import PublicBarrierNoteHistoryFactory
 from .public_barriers import PublicBarrierHistoryFactory
 from .team_members import TeamMemberHistoryFactory
-from .utils import get_model_name
 from .wto import WTOHistoryFactory
+
+from ..exceptions import HistoryFactoryNotFound
+from ..utils import get_model_name
 
 
 class HistoryItemFactory:

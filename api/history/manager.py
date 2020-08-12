@@ -2,13 +2,15 @@ import datetime
 
 from api.history.models import CachedHistoryItem
 
-from .assessments import AssessmentHistoryFactory
-from .barriers import BarrierHistoryFactory
-from .notes import NoteHistoryFactory
-from .public_barrier_notes import PublicBarrierNoteHistoryFactory
-from .public_barriers import PublicBarrierHistoryFactory
-from .team_members import TeamMemberHistoryFactory
-from .wto import WTOHistoryFactory
+from .factories import (
+    AssessmentHistoryFactory,
+    BarrierHistoryFactory,
+    NoteHistoryFactory,
+    PublicBarrierNoteHistoryFactory,
+    PublicBarrierHistoryFactory,
+    TeamMemberHistoryFactory,
+    WTOHistoryFactory,
+)
 
 
 class HistoryManager:

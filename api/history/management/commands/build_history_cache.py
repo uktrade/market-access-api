@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 
-from api.barriers.history.manager import HistoryManager
 from api.barriers.models import BarrierInstance
+from api.history.manager import HistoryManager
 from api.history.models import CachedHistoryItem
 
 

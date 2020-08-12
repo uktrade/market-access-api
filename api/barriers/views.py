@@ -22,7 +22,6 @@ from simple_history.utils import bulk_create_with_history
 from api.barriers.csv import create_csv_response
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.history.manager import HistoryManager
 from api.barriers.models import BarrierInstance, BarrierReportStage, PublicBarrier
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
@@ -33,6 +32,7 @@ from api.barriers.serializers import (
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
+from api.history.manager import HistoryManager
 from api.interactions.models import Interaction
 from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
 from api.user.helpers import has_profile, update_user_profile

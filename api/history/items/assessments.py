@@ -1,5 +1,6 @@
 from api.assessment.models import Assessment
-from .base import BaseHistoryItem, HistoryItemFactoryBase
+from .base import BaseHistoryItem
+from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseAssessmentHistoryItem(BaseHistoryItem):
@@ -39,21 +40,3 @@ class ImportMarketSizeHistoryItem(BaseAssessmentHistoryItem):
 
 class ValueToEconomyHistoryItem(BaseAssessmentHistoryItem):
     field = "value_to_economy"
-
-
-class AssessmentHistoryFactory(HistoryItemFactoryBase):
-    class_lookup = {}
-    history_item_classes = (
-        CommercialValueHistoryItem,
-        CommercialValueExplanationHistoryItem,
-        DocumentsHistoryItem,
-        ExplanationHistoryItem,
-        ExportValueHistoryItem,
-        ImpactHistoryItem,
-        ImportMarketSizeHistoryItem,
-        ValueToEconomyHistoryItem,
-    )
-
-    @classmethod
-    def get_history(cls, barrier_id):
-        return Assessment.history.filter(barrier_id=barrier_id).order_by("history_date")

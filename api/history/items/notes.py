@@ -1,5 +1,6 @@
 from api.interactions.models import Interaction
-from .base import BaseHistoryItem, HistoryItemFactoryBase
+from .base import BaseHistoryItem
+from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseNoteHistoryItem(BaseHistoryItem):
@@ -22,18 +23,3 @@ class DocumentsHistoryItem(BaseNoteHistoryItem):
         if record.archived:
             return []
         return record.documents_cache or []
-
-
-class NoteHistoryFactory(HistoryItemFactoryBase):
-    class_lookup = {}
-    history_item_classes = (
-        DocumentsHistoryItem,
-        NoteTextHistoryItem,
-    )
-    history_types = ("+", "~")
-
-    @classmethod
-    def get_history(cls, barrier_id):
-        return Interaction.history.filter(
-            barrier_id=barrier_id
-        ).order_by("id", "history_date")
