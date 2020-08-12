@@ -35,11 +35,16 @@ class HistoryManager:
     @classmethod
     def get_full_history(cls, barrier, use_cache=False):
         if use_cache:
-            history_items = CachedHistoryItem.objects.filter(
+            cached_history_items = CachedHistoryItem.objects.filter(
                 barrier_id=barrier.pk,
-                date__gt=barrier.reported_on + datetime.timedelta(seconds=1)
+                date__gt=barrier.reported_on + datetime.timedelta(seconds=1),
             )
-            return [item.as_history_item() for item in history_items]
+            history_items = []
+            for item in cached_history_items:
+                history_item = item.as_history_item()
+                if history_item.is_valid():
+                    history_items.append(item.as_history_item())
+            return history_items
 
         barrier_history = cls.get_barrier_history(barrier.pk, start_date=barrier.reported_on)
         notes_history = cls.get_notes_history(barrier.pk, start_date=barrier.reported_on)
@@ -61,6 +66,7 @@ class HistoryManager:
                 start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
             )
             history_items += cls.get_public_barrier_notes_history(barrier.pk)
+
         return history_items
 
     @classmethod

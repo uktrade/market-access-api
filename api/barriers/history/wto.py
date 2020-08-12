@@ -1,13 +1,9 @@
 from api.wto.models import WTOProfile
-from api.barriers.models import BarrierInstance
 from .base import BaseHistoryItem, HistoryItemFactoryBase
 
 
 class BaseWTOHistoryItem(BaseHistoryItem):
     model = "wto_profile"
-
-    def get_barrier_id(self):
-        return self.new_record.instance.barrier.id
 
 
 class CaseNumberHistoryItem(BaseWTOHistoryItem):

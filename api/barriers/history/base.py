@@ -35,13 +35,18 @@ class BaseHistoryItem:
         return data
 
     def get_new_value(self):
-        return self.get_value(self.new_record)
+        if self.new_record:
+            return self.get_value(self.new_record)
 
     def get_old_value(self):
-        return self.get_value(self.old_record)
+        if self.old_record:
+            return self.get_value(self.old_record)
 
     def get_value(self, record):
         return getattr(record, self.field)
+
+    def is_valid(self):
+        return True
 
     def _format_user(self, user):
         if user is not None:
