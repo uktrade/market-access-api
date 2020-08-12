@@ -70,6 +70,7 @@ def public_barrier_categories_changed(sender, instance, action, **kwargs):
 
 @receiver(post_create_historical_record)
 def post_create_historical_record(sender, history_instance, **kwargs):
+    history_instance.refresh_from_db()
     items = HistoryItemFactory.create_history_items(
         new_record=history_instance,
         old_record=history_instance.prev_record,

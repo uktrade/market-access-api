@@ -230,7 +230,7 @@ class WTOProfileField(serializers.Field):
             document_fields = ("committee_notification_document", "meeting_minutes")
             for field_name in document_fields:
                 if field_name in self.parent.initial_data["wto_profile"]:
-                    document_id = self.parent.initial_data["wto_profile"].get(field_name)
+                    document_id = self.parent.initial_data["wto_profile"].get(field_name) or None
                     if document_id:
                         try:
                             Document.objects.get(pk=document_id)

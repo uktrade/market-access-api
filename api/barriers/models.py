@@ -62,7 +62,7 @@ class BarrierHistoricalModel(models.Model):
     Abstract model for history models tracking category changes.
     """
     categories_cache = ArrayField(
-        models.CharField(max_length=20),
+        models.PositiveIntegerField(),
         blank=True,
         null=True,
         default=list,
