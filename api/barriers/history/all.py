@@ -43,7 +43,10 @@ class HistoryItemFactory:
 
     @classmethod
     def create_history_items(cls, new_record, old_record, fields=()):
-        factory_class = cls.get_factory_class(new_record)
+        try:
+            factory_class = cls.get_factory_class(new_record)
+        except HistoryFactoryNotFound:
+            return []
         return factory_class.create_history_items(new_record, old_record, fields)
 
     @classmethod

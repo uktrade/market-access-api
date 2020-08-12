@@ -107,7 +107,7 @@ class HistoryItemFactoryBase:
             if not fields or changed_field in fields:
                 try:
                     history_item = cls.create(changed_field, new_record, old_record)
-                    if history_item.data is not None:
+                    if history_item.is_valid():
                         yield history_item
                 except HistoryItemNotFound:
                     pass

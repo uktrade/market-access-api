@@ -24,9 +24,10 @@ class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
 class SectorsHistoryItem(BasePublicBarrierHistoryItem):
     field = "sectors"
 
-    def get_data(self):
+    def is_valid(self):
         if self.old_record or self.new_record:
-            return super().get_data()
+            return True
+        return False
 
     def get_value(self, record):
         return {

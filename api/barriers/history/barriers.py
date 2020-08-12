@@ -95,9 +95,10 @@ class ScopeHistoryItem(BaseBarrierHistoryItem):
 class SectorsHistoryItem(BaseBarrierHistoryItem):
     field = "sectors"
 
-    def get_data(self):
+    def is_valid(self):
         if self.old_record or self.new_record:
-            return super().get_data()
+            return True
+        return False
 
     def get_value(self, record):
         return {
@@ -119,9 +120,10 @@ class SourceHistoryItem(BaseBarrierHistoryItem):
 class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
 
-    def get_data(self):
-        if not (self.old_record.status == 0 and self.new_record.status == 7):
-            return super().get_data()
+    def is_valid(self):
+        if self.old_record.status == 0 and self.new_record.status == 7:
+            return False
+        return True
 
     def get_value(self, record):
         return {
