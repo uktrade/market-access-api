@@ -101,9 +101,4 @@ class WTOHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        barrier = BarrierInstance.objects.get(pk=barrier_id)
-        if barrier.wto_profile:
-            return WTOProfile.history.filter(
-                id=barrier.wto_profile.id
-            ).order_by("history_date")
-        return []
+        return WTOProfile.history.filter(barrier_id=barrier_id).order_by("history_date")

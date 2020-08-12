@@ -235,21 +235,21 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return None
 
     def get_wto_has_been_notified(self, obj):
-        if obj.wto_profile:
+        if obj.has_wto_profile:
             if obj.wto_profile.wto_has_been_notified is True:
                 return "Yes"
             elif obj.wto_profile.wto_has_been_notified is False:
                 return "No"
 
     def get_wto_should_be_notified(self, obj):
-        if obj.wto_profile:
+        if obj.has_wto_profile:
             if obj.wto_profile.wto_should_be_notified is True:
                 return "Yes"
             elif obj.wto_profile.wto_should_be_notified is False:
                 return "No"
 
     def get_wto_member_states(self, obj):
-        if obj.wto_profile:
+        if obj.has_wto_profile:
             return [
                 get_country(str(country_id)).get("name")
                 for country_id in obj.wto_profile.member_states
