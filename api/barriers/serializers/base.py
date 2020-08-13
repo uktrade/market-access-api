@@ -48,6 +48,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     tags = TagsField(required=False)
     title = serializers.CharField(source="barrier_title", required=False)
     trade_direction = TradeDirectionField(required=False)
+    unarchived_by = UserField(required=False)
     wto_profile = WTOProfileField(required=False)
 
     class Meta:
