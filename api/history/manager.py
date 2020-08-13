@@ -41,6 +41,20 @@ class HistoryManager:
         return barrier_history + assessment_history
 
     @classmethod
+    def get_public_activity(cls, public_barrier, use_cache=False):
+        history_items = HistoryManager.get_public_barrier_history(
+            barrier_id=public_barrier.barrier_id,
+            start_date=public_barrier.created_on + datetime.timedelta(seconds=1),
+            use_cache=use_cache,
+        )
+        history_items += HistoryManager.get_barrier_history(
+            barrier_id=public_barrier.barrier_id,
+            fields=["public_eligibility_summary"],
+            use_cache=use_cache,
+        )
+        return history_items
+
+    @classmethod
     def get_full_history(cls, barrier, use_cache=False):
         if use_cache:
             cached_history_items = CachedHistoryItem.objects.filter(

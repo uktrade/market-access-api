@@ -1,5 +1,4 @@
 import csv
-import datetime
 from collections import defaultdict
 
 from django.db import transaction
@@ -462,16 +461,7 @@ class PublicBarrierActivity(generics.GenericAPIView):
 
     def get(self, request, pk):
         public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))
-        history_items = HistoryManager.get_public_barrier_history(
-            barrier_id=self.kwargs.get("pk"),
-            start_date=public_barrier.created_on + datetime.timedelta(seconds=1),
-            use_cache=True,
-        )
-        history_items += HistoryManager.get_barrier_history(
-            barrier_id=self.kwargs.get("pk"),
-            fields=["public_eligibility_summary"],
-            use_cache=True,
-        )
+        history_items = HistoryManager.get_public_activity(public_barrier=public_barrier, use_cache=False)
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
