@@ -1,7 +1,5 @@
-from api.barriers.models import BarrierInstance
 from api.metadata.utils import get_country
 from .base import BaseHistoryItem
-from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):

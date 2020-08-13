@@ -1,6 +1,4 @@
-from api.interactions.models import Interaction
 from .base import BaseHistoryItem
-from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseNoteHistoryItem(BaseHistoryItem):

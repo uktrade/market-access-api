@@ -1,6 +1,4 @@
 from api.core.utils import cleansed_username
-from api.history.exceptions import HistoryItemNotFound
-from api.history.utils import get_changed_fields
 
 
 class BaseHistoryItem:

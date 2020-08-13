@@ -1,4 +1,3 @@
-from api.core.utils import cleansed_username
 from ..exceptions import HistoryItemNotFound
 from ..utils import get_changed_fields
 

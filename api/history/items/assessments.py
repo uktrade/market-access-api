@@ -1,6 +1,4 @@
-from api.assessment.models import Assessment
 from .base import BaseHistoryItem
-from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseAssessmentHistoryItem(BaseHistoryItem):

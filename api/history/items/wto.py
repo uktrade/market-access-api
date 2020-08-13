@@ -1,6 +1,4 @@
-from api.wto.models import WTOProfile
 from .base import BaseHistoryItem
-from ..factories.base import HistoryItemFactoryBase
 
 
 class BaseWTOHistoryItem(BaseHistoryItem):
