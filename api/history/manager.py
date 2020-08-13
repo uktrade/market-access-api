@@ -14,6 +14,12 @@ from .factories import (
 
 
 class HistoryManager:
+    """
+    Used for querying history items.
+
+    Can either query the cache or generate history items from scratch.
+    """
+
     @classmethod
     def get_activity(cls, barrier, use_cache=False):
         barrier_history = cls.get_barrier_history(

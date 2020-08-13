@@ -7,7 +7,10 @@ from rest_framework.reverse import reverse
 
 from api.assessment.models import Assessment
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.history import (
+from api.barriers.models import BarrierInstance
+from api.collaboration.models import TeamMember
+from api.core.test_utils import APITestMixin
+from api.history.factories import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
     NoteHistoryFactory,
@@ -15,9 +18,6 @@ from api.barriers.history import (
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
-from api.barriers.models import BarrierInstance
-from api.collaboration.models import TeamMember
-from api.core.test_utils import APITestMixin
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
 
@@ -62,7 +62,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["model"] == "barrier"
         assert data["field"] == "categories"
         assert data["old_value"] == []
-        assert set(data["new_value"]) == {"109", "115"}
+        assert set(data["new_value"]) == {109, 115}
 
     def test_companies_history(self):
         self.barrier.companies = ["1", "2", "3"]
@@ -655,7 +655,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "model": "barrier",
             "field": "categories",
             "old_value": [],
-            "new_value": ["109", "115"],
+            "new_value": [109, 115],
             "user": None,
         } in history
 
