@@ -1,6 +1,7 @@
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import CharField, F, Q, Value as V
+from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 
 import django_filters
@@ -153,6 +154,29 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset
 
     def public_view_filter(self, queryset, name, value):
+        public_queryset = queryset.none()
+
+        if "changed" in value:
+            value.remove("changed")
+            changed_ids = queryset.annotate(
+                change=Concat(
+                    "cached_history_items__model", V("."), "cached_history_items__field",
+                    output_field=CharField(),
+                )
+            ).filter(
+                public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
+                cached_history_items__date__gt=F("public_barrier__last_published_on"),
+                change__in=(
+                    "barrier.categories",
+                    "barrier.location",
+                    "barrier.sectors",
+                    "barrier.status",
+                    "barrier.title",
+                    "barrier.summary",
+                ),
+            ).values_list("id", flat=True)
+            public_queryset = queryset.filter(id__in=changed_ids)
+
         status_lookup = {
             "unknown": PublicBarrierStatus.UNKNOWN,
             "ineligible": PublicBarrierStatus.INELIGIBLE,
@@ -161,8 +185,9 @@ class BarrierFilterSet(django_filters.FilterSet):
             "published": PublicBarrierStatus.PUBLISHED,
             "unpublished": PublicBarrierStatus.UNPUBLISHED,
         }
-        statuses = [status_lookup.get(status) for status in value]
-        return queryset.filter(public_barrier___public_view_status__in=statuses)
+        statuses = [status_lookup.get(status) for status in value if status in status_lookup.keys()]
+        public_queryset = public_queryset | queryset.filter(public_barrier___public_view_status__in=statuses)
+        return queryset & public_queryset
 
     def tags_filter(self, queryset, name, value):
         return queryset.filter(tags__in=value).distinct()
