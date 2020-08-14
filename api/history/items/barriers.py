@@ -1,10 +1,12 @@
-from api.barriers.models import BarrierInstance
 from api.metadata.utils import get_country
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import BaseHistoryItem
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
     model = "barrier"
+
+    def get_barrier_id(self):
+        return self.new_record.instance.id
 
 
 class ArchivedHistoryItem(BaseBarrierHistoryItem):
@@ -92,9 +94,10 @@ class ScopeHistoryItem(BaseBarrierHistoryItem):
 class SectorsHistoryItem(BaseBarrierHistoryItem):
     field = "sectors"
 
-    def get_data(self):
+    def is_valid(self):
         if self.old_record or self.new_record:
-            return super().get_data()
+            return True
+        return False
 
     def get_value(self, record):
         return {
@@ -116,9 +119,10 @@ class SourceHistoryItem(BaseBarrierHistoryItem):
 class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
 
-    def get_data(self):
-        if not (self.old_record.status == 0 and self.new_record.status == 7):
-            return super().get_data()
+    def is_valid(self):
+        if self.old_record.status == 0 and self.new_record.status == 7:
+            return False
+        return True
 
     def get_value(self, record):
         return {
@@ -147,36 +151,3 @@ class TitleHistoryItem(BaseBarrierHistoryItem):
 
 class TradeDirectionHistoryItem(BaseBarrierHistoryItem):
     field = "trade_direction"
-
-
-class BarrierHistoryFactory(HistoryItemFactory):
-    """
-    Polymorphic wrapper for barrier HistoryItem classes
-    """
-
-    class_lookup = {}
-    history_item_classes = (
-        ArchivedHistoryItem,
-        CategoriesHistoryItem,
-        CommoditiesHistoryItem,
-        CompaniesHistoryItem,
-        EndDateHistoryItem,
-        IsSummarySensitiveHistoryItem,
-        LocationHistoryItem,
-        PriorityHistoryItem,
-        ProductHistoryItem,
-        PublicEligibilitySummaryHistoryItem,
-        ScopeHistoryItem,
-        SectorsHistoryItem,
-        SourceHistoryItem,
-        StatusHistoryItem,
-        SummaryHistoryItem,
-        TagsHistoryItem,
-        TitleHistoryItem,
-        TradeDirectionHistoryItem,
-    )
-    history_types = ("~", "+")
-
-    @classmethod
-    def get_history(cls, barrier_id):
-        return BarrierInstance.history.filter(id=barrier_id).order_by("history_date")

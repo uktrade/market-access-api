@@ -1,53 +1,8 @@
-from api.barriers.exceptions import HistoryItemNotFound
-from api.core.utils import cleansed_username
-from .utils import get_changed_fields
+from ..exceptions import HistoryItemNotFound
+from ..utils import get_changed_fields
 
 
-class BaseHistoryItem:
-    _data = None
-
-    def __init__(self, new_record, old_record):
-        self.new_record = new_record
-        self.old_record = old_record
-
-    @property
-    def data(self):
-        if self._data is None:
-            self._data = self.get_data()
-        return self._data
-
-    def get_data(self):
-        data = {
-            "date": self.new_record.history_date,
-            "model": self.model,
-            "field": self.field,
-            "old_value": self.get_old_value(),
-            "new_value": self.get_new_value(),
-            "user": self._format_user(
-                self.new_record.history_user
-            ),
-        }
-        if hasattr(self, "get_field_info"):
-            data['field_info'] = self.get_field_info()
-        return data
-
-    def get_new_value(self):
-        return self.get_value(self.new_record)
-
-    def get_old_value(self):
-        return self.get_value(self.old_record)
-
-    def get_value(self, record):
-        return getattr(record, self.field)
-
-    def _format_user(self, user):
-        if user is not None:
-            return {"id": user.id, "name": cleansed_username(user)}
-
-        return None
-
-
-class HistoryItemFactory:
+class HistoryItemFactoryBase:
     """
     Base class for generating history items for a barrier
     """
@@ -104,7 +59,7 @@ class HistoryItemFactory:
             if not fields or changed_field in fields:
                 try:
                     history_item = cls.create(changed_field, new_record, old_record)
-                    if history_item.data is not None:
+                    if history_item.is_valid():
                         yield history_item
                 except HistoryItemNotFound:
                     pass
@@ -131,3 +86,8 @@ class HistoryItemFactory:
         """
         for history_item_class in cls.history_item_classes:
             cls.class_lookup[history_item_class.field] = history_item_class
+
+    @classmethod
+    def get_model(cls):
+        for factory_class in cls.history_item_classes:
+            return factory_class.model

@@ -8,7 +8,6 @@ from django.db.models import Q, CASCADE
 from django.utils import timezone
 
 from simple_history.models import HistoricalRecords
-
 from api.core.exceptions import ArchivingException
 from api.metadata.constants import (
     BarrierStatus,
@@ -63,7 +62,7 @@ class BarrierHistoricalModel(models.Model):
     Abstract model for history models tracking category changes.
     """
     categories_cache = ArrayField(
-        models.CharField(max_length=20),
+        models.PositiveIntegerField(),
         blank=True,
         null=True,
         default=list,
@@ -254,12 +253,6 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
     )
     archived_explanation = models.TextField(blank=True, null=True)
-    wto_profile = models.OneToOneField(
-        "wto.WTOProfile",
-        null=True,
-        related_name="barrier",
-        on_delete=models.SET_NULL,
-    )
     commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
     draft = models.BooleanField(default=True)
 
@@ -326,6 +319,10 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     @property
     def has_assessment(self):
         return hasattr(self, 'assessment')
+
+    @property
+    def has_wto_profile(self):
+        return hasattr(self, 'wto_profile')
 
     def last_seen_by(self, user_id):
         try:

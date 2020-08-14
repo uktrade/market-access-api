@@ -1,5 +1,4 @@
-from api.barriers.models import PublicBarrier
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import BaseHistoryItem
 
 
 class BasePublicBarrierHistoryItem(BaseHistoryItem):
@@ -24,9 +23,10 @@ class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
 class SectorsHistoryItem(BasePublicBarrierHistoryItem):
     field = "sectors"
 
-    def get_data(self):
+    def is_valid(self):
         if self.old_record or self.new_record:
-            return super().get_data()
+            return True
+        return False
 
     def get_value(self, record):
         return {
@@ -48,21 +48,3 @@ class SummaryHistoryItem(BasePublicBarrierHistoryItem):
 
 class TitleHistoryItem(BasePublicBarrierHistoryItem):
     field = "title"
-
-
-class PublicBarrierHistoryFactory(HistoryItemFactory):
-    class_lookup = {}
-    history_item_classes = (
-        CategoriesHistoryItem,
-        CountryHistoryItem,
-        PublicViewStatusHistoryItem,
-        SectorsHistoryItem,
-        StatusHistoryItem,
-        SummaryHistoryItem,
-        TitleHistoryItem,
-    )
-    history_types = ("~", "+")
-
-    @classmethod
-    def get_history(cls, barrier_id):
-        return PublicBarrier.history.filter(barrier_id=barrier_id).order_by("history_date")

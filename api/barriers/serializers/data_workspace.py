@@ -1,10 +1,13 @@
 from rest_framework import serializers
 
 from api.collaboration.models import TeamMember
+from api.history.models import CachedHistoryItem
+from api.metadata.constants import BarrierStatus
 from .base import BarrierSerializerBase
 
 
 class DataWorkspaceSerializer(BarrierSerializerBase):
+    status_history = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
@@ -42,6 +45,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "source",
             "status",
             "status_date",
+            "status_history",
             "status_summary",
             "sub_status",
             "sub_status_other",
@@ -56,6 +60,23 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "unarchived_reason",
             "wto_profile",
         )
+
+    def get_status_history(self, obj):
+        history_items = CachedHistoryItem.objects.filter(
+            barrier=obj,
+            model="barrier",
+            field="status",
+        )
+        status_lookup = dict(BarrierStatus.choices)
+        return [
+            {
+                "date": item.date.isoformat(),
+                "status": {
+                    "id": item.new_record.status,
+                    "name": status_lookup.get(item.new_record.status, "Unknown"),
+                }
+            } for item in history_items
+        ]
 
     def get_team_count(self, obj):
         return TeamMember.objects.filter(barrier=obj).count()

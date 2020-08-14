@@ -1,20 +1,10 @@
 from api.collaboration.models import TeamMember
-from .base import BaseHistoryItem, HistoryItemFactory
+from .base import HistoryItemFactoryBase
+from ..items.team_members import TeamMemberHistoryItem
 
 
-class TeamMemberHistoryItem(BaseHistoryItem):
-    model = "team_member"
-    field = "user"
-
-    def get_value(self, record):
-        if record and not record.archived:
-            return {
-                "user": self._format_user(record.user),
-                "role": record.role,
-            }
-
-
-class TeamMemberHistoryFactory(HistoryItemFactory):
+class TeamMemberHistoryFactory(HistoryItemFactoryBase):
+    history_item_classes = (TeamMemberHistoryItem, )
 
     @classmethod
     def create_history_items(cls, new_record, old_record, fields=()):

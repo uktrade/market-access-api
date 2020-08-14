@@ -7,7 +7,10 @@ from rest_framework.reverse import reverse
 
 from api.assessment.models import Assessment
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.history import (
+from api.barriers.models import BarrierInstance
+from api.collaboration.models import TeamMember
+from api.core.test_utils import APITestMixin
+from api.history.factories import (
     AssessmentHistoryFactory,
     BarrierHistoryFactory,
     NoteHistoryFactory,
@@ -15,11 +18,11 @@ from api.barriers.history import (
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
-from api.barriers.models import BarrierInstance
-from api.collaboration.models import TeamMember
-from api.core.test_utils import APITestMixin
+from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
+from tests.assessment.factories import AssessmentFactory
+from tests.interactions.factories import InteractionFactory
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
@@ -62,7 +65,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["model"] == "barrier"
         assert data["field"] == "categories"
         assert data["old_value"] == []
-        assert set(data["new_value"]) == {"109", "115"}
+        assert set(data["new_value"]) == {109, 115}
 
     def test_companies_history(self):
         self.barrier.companies = ["1", "2", "3"]
@@ -655,7 +658,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "model": "barrier",
             "field": "categories",
             "old_value": [],
-            "new_value": ["109", "115"],
+            "new_value": [109, 115],
             "user": None,
         } in history
 
@@ -871,3 +874,111 @@ class TestHistoryView(APITestMixin, TestCase):
             },
             "user": None
         } in history
+
+
+class TestCachedHistoryItems(APITestMixin, TestCase):
+    fixtures = ["categories", "documents", "users", "barriers"]
+
+    @freeze_time("2020-03-02")
+    def setUp(self):
+        self.barrier = BarrierInstance.objects.get(
+            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
+        )
+        self.barrier.save()
+        self.assessment = AssessmentFactory(barrier=self.barrier, impact="LOW")
+        self.note = InteractionFactory(barrier=self.barrier, text="Original note")
+        self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
+
+    @freeze_time("2020-04-01")
+    def test_cached_history_items(self):
+        CachedHistoryItem.objects.all().delete()
+
+        # Barrier changes
+        self.barrier.categories.add("109", "115")
+        self.barrier.companies = ["1", "2", "3"]
+        self.barrier.summary = "New summary"
+        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
+        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
+        self.barrier.priority_id = 2
+        self.barrier.product = "New product"
+        self.barrier.status = 5
+        self.barrier.status_summary = "Summary"
+        self.barrier.sub_status = "UK_GOVT"
+        self.barrier.problem_status = 1
+        self.barrier.public_eligibility_summary = "New summary"
+        self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        self.barrier.source = "COMPANY"
+        self.barrier.barrier_title = "New title"
+        self.barrier.save()
+
+        self.barrier.archive(
+            user=self.user,
+            reason="DUPLICATE",
+            explanation="It was a duplicate"
+        )
+
+        # Note changes
+        self.note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
+        self.note.text = "Edited note"
+        self.note.save()
+
+        # Team Member changes
+        TeamMember.objects.create(
+            barrier=self.barrier,
+            user=self.user,
+            role="Contributor"
+        )
+
+        # Assessment changes
+        self.assessment.explanation = "New explanation"
+        self.assessment.impact = "HIGH"
+        self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
+        self.assessment.commercial_value = 1111
+        self.assessment.export_value = 2222
+        self.assessment.import_market_size = 3333
+        self.assessment.value_to_economy = 4444
+        self.assessment.save()
+
+        # Public barrier changes
+        self.public_barrier.categories.add("109", "115")
+        self.public_barrier.country = "570507cc-1592-4a99-afca-915d13a437d0"
+        self.public_barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        self.public_barrier.status = 5
+        self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
+        self.public_barrier.summary = "New summary"
+        self.public_barrier.title = "New title"
+        self.public_barrier.save()
+
+        items = CachedHistoryItem.objects.filter(barrier=self.barrier).values("model", "field")
+        cached_changes = [(item["model"], item["field"]) for item in items]
+
+        assert ("barrier", "archived") in cached_changes
+        assert ("barrier", "categories") in cached_changes
+        assert ("barrier", "companies") in cached_changes
+        assert ("barrier", "location") in cached_changes
+        assert ("barrier", "priority") in cached_changes
+        assert ("barrier", "product") in cached_changes
+        assert ("barrier", "problem_status") in cached_changes
+        assert ("barrier", "public_eligibility_summary") in cached_changes
+        assert ("barrier", "sectors") in cached_changes
+        assert ("barrier", "source") in cached_changes
+        assert ("barrier", "status") in cached_changes
+        assert ("barrier", "summary") in cached_changes
+        assert ("barrier", "barrier_title") in cached_changes
+        assert ("assessment", "explanation") in cached_changes
+        assert ("assessment", "impact") in cached_changes
+        assert ("assessment", "documents") in cached_changes
+        assert ("assessment", "commercial_value") in cached_changes
+        assert ("assessment", "export_value") in cached_changes
+        assert ("assessment", "import_market_size") in cached_changes
+        assert ("assessment", "value_to_economy") in cached_changes
+        assert ("note", "documents") in cached_changes
+        assert ("note", "text") in cached_changes
+        assert ("team_member", "user") in cached_changes
+        assert ("public_barrier", "categories") in cached_changes
+        assert ("public_barrier", "country") in cached_changes
+        assert ("public_barrier", "public_view_status") in cached_changes
+        assert ("public_barrier", "sectors") in cached_changes
+        assert ("public_barrier", "status") in cached_changes
+        assert ("public_barrier", "summary") in cached_changes
+        assert ("public_barrier", "title") in cached_changes

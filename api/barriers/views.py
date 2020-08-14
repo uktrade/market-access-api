@@ -1,5 +1,4 @@
 import csv
-import datetime
 from collections import defaultdict
 
 from django.db import transaction
@@ -22,15 +21,6 @@ from simple_history.utils import bulk_create_with_history
 from api.barriers.csv import create_csv_response
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.history import (
-    AssessmentHistoryFactory,
-    BarrierHistoryFactory,
-    NoteHistoryFactory,
-    PublicBarrierHistoryFactory,
-    PublicBarrierNoteHistoryFactory,
-    TeamMemberHistoryFactory,
-    WTOHistoryFactory,
-)
 from api.barriers.models import BarrierInstance, BarrierReportStage, PublicBarrier
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
@@ -41,6 +31,7 @@ from api.barriers.serializers import (
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
+from api.history.manager import HistoryManager
 from api.interactions.models import Interaction
 from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
 from api.user.helpers import has_profile, update_user_profile
@@ -433,87 +424,14 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
         serializer.save(modified_by=self.request.user)
 
 
-class HistoryMixin:
-    """
-    Mixin for getting barrier history items
-    """
-
-    def get_assessment_history(self, fields=(), start_date=None):
-        return AssessmentHistoryFactory.get_history_items(
-            barrier_id=self.kwargs.get("pk"),
-            fields=fields,
-            start_date=start_date,
-        )
-
-    def get_barrier_history(self, fields=(), start_date=None):
-        return BarrierHistoryFactory.get_history_items(
-            barrier_id=self.kwargs.get("pk"),
-            fields=fields,
-            start_date=start_date,
-        )
-
-    def get_notes_history(self, fields=(), start_date=None):
-        return NoteHistoryFactory.get_history_items(
-            barrier_id=self.kwargs.get("pk"),
-            fields=fields,
-            start_date=start_date,
-        )
-
-    def get_public_barrier_history(self, fields=(), start_date=None):
-        return PublicBarrierHistoryFactory.get_history_items(
-            barrier_id=self.kwargs.get("pk"),
-            fields=fields,
-            start_date=start_date,
-        )
-
-    def get_public_barrier_notes_history(self, fields=(), start_date=None):
-        return PublicBarrierNoteHistoryFactory.get_history_items(
-            barrier_id=self.kwargs.get("pk"),
-            fields=fields,
-            start_date=start_date,
-        )
-
-    def get_team_history(self, fields=(), start_date=None):
-        return TeamMemberHistoryFactory.get_history_items(
-            barrier_id=self.kwargs.get("pk"),
-            fields=fields,
-            start_date=start_date,
-        )
-
-    def get_wto_history(self, fields=(), start_date=None):
-        return WTOHistoryFactory.get_history_items(
-            barrier_id=self.kwargs.get("pk"),
-            fields=fields,
-            start_date=start_date,
-        )
-
-
-class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
+class BarrierFullHistory(generics.GenericAPIView):
     """
     Full audit history of changes made to a barrier and related models
     """
 
     def get(self, request, pk):
         barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
-        barrier_history = self.get_barrier_history(start_date=barrier.reported_on)
-        notes_history = self.get_notes_history(start_date=barrier.reported_on)
-        assessment_history = self.get_assessment_history(start_date=barrier.reported_on)
-        team_history = self.get_team_history(
-            start_date=barrier.reported_on + datetime.timedelta(seconds=1)
-        )
-        wto_history = self.get_wto_history(start_date=barrier.reported_on)
-
-        history_items = (
-            barrier_history + notes_history + assessment_history + team_history
-            + wto_history
-        )
-
-        if hasattr(barrier, "public_barrier"):
-            history_items += self.get_public_barrier_history(
-                start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
-            )
-            history_items += self.get_public_barrier_notes_history()
-
+        history_items = HistoryManager.get_full_history(barrier=barrier, use_cache=True)
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
@@ -521,27 +439,14 @@ class BarrierFullHistory(HistoryMixin, generics.GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class BarrierActivity(HistoryMixin, generics.GenericAPIView):
+class BarrierActivity(generics.GenericAPIView):
     """
     Returns history items used on the barrier activity stream
     """
 
     def get(self, request, pk):
-        barrier_history = self.get_barrier_history(
-            fields=["archived", "priority", "status"],
-        )
-        assessment_history = self.get_assessment_history(
-            fields=[
-                "commercial_value",
-                "export_value",
-                "impact",
-                "import_market_size",
-                "value_to_economy",
-            ]
-        )
-
-        history_items = barrier_history + assessment_history
-
+        barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
+        history_items = HistoryManager.get_activity(barrier=barrier, use_cache=True)
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
@@ -549,19 +454,14 @@ class BarrierActivity(HistoryMixin, generics.GenericAPIView):
         return Response(response, status=status.HTTP_200_OK)
 
 
-class PublicBarrierActivity(HistoryMixin, generics.GenericAPIView):
+class PublicBarrierActivity(generics.GenericAPIView):
     """
     Returns history items used on the public barrier activity stream
     """
 
     def get(self, request, pk):
         public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))
-        history_items = self.get_public_barrier_history(
-            start_date=public_barrier.created_on + datetime.timedelta(seconds=1)
-        )
-        history_items += self.get_barrier_history(
-            fields=["public_eligibility_summary"],
-        )
+        history_items = HistoryManager.get_public_activity(public_barrier=public_barrier, use_cache=False)
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],

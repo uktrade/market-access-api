@@ -7,12 +7,14 @@ from api.assessment.models import Assessment
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
+from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction
 
 
 class TestActivityView(APITestMixin, TestCase):
     fixtures = ["categories", "documents", "users", "barriers"]
 
+    @freeze_time("2020-03-01")
     def setUp(self):
         self.barrier = BarrierInstance.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
@@ -37,6 +39,8 @@ class TestActivityView(APITestMixin, TestCase):
 
     @freeze_time("2020-04-01")
     def test_activity_endpoint(self):
+        CachedHistoryItem.objects.all().delete()
+
         url = reverse("activity", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK

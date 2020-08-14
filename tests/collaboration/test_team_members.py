@@ -6,10 +6,10 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barriers.history.team_members import TeamMemberHistoryFactory
-from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
+from api.core.test_utils import APITestMixin, create_test_user
+from api.history.factories import TeamMemberHistoryFactory
 from tests.barriers.factories import BarrierFactory
 from tests.collaboration.factories import TeamMemberFactory
 
