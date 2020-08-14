@@ -21,6 +21,8 @@ from api.history.factories import (
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
+from tests.assessment.factories import AssessmentFactory
+from tests.interactions.factories import InteractionFactory
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
@@ -883,20 +885,8 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
-        self.assessment = Assessment.objects.create(
-            barrier=self.barrier,
-            impact="LOW",
-            explanation="Some explanation",
-            value_to_economy=10000,
-            import_market_size=20000,
-            commercial_value=30000,
-            export_value=40000,
-        )
-        self.note = Interaction.objects.create(
-            barrier=self.barrier,
-            kind="COMMENT",
-            text="Original note",
-        )
+        self.assessment = AssessmentFactory(barrier=self.barrier, impact="LOW")
+        self.note = InteractionFactory(barrier=self.barrier, text="Original note")
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
     @freeze_time("2020-04-01")
