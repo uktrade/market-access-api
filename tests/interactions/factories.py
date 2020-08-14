@@ -7,4 +7,4 @@ class InteractionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Interaction
 
-    kind ="COMMENT"
+    kind = "COMMENT"
