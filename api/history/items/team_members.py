@@ -5,6 +5,9 @@ class TeamMemberHistoryItem(BaseHistoryItem):
     model = "team_member"
     field = "user"
 
+    def get_empty_value(self):
+        return None
+
     def get_value(self, record):
         if record and not record.archived:
             return {

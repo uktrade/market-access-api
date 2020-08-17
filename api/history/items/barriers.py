@@ -120,7 +120,7 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
 
     def is_valid(self):
-        if self.old_record.status == 0 and self.new_record.status == 7:
+        if self.old_record and self.old_record.status == 0 and self.new_record.status == 7:
             return False
         return True
 
@@ -130,7 +130,7 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
             "status_date": record.status_date,
             "status_summary": record.status_summary,
             "sub_status": record.sub_status,
-            "sub_status_other":record.sub_status_other,
+            "sub_status_other": record.sub_status_other,
         }
 
 

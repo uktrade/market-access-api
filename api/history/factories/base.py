@@ -50,9 +50,6 @@ class HistoryItemFactoryBase:
         if not cls.is_valid_change(new_record, old_record):
             return
 
-        if new_record.history_type == "+":
-            old_record = new_record.__class__()
-
         changed_fields = get_changed_fields(new_record, old_record)
 
         for changed_field in changed_fields:
