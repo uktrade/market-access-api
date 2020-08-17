@@ -4,7 +4,7 @@ import string
 import factory
 from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyInteger, FuzzyText
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import BarrierInstance, PublicBarrier
 from api.commodities.models import Commodity
 from api.metadata.models import BarrierPriority
 from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
@@ -48,6 +48,15 @@ class CommodityFactory(factory.django.DjangoModelFactory):
     sid = FuzzyInteger(1000)
     version = "2020-01-01"
     is_leaf = True
+
+
+class PublicBarrierFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PublicBarrier
+
+    country = fuzzy_country()
+    summary = "Some summary"
+    title = "Some title"
 
 
 class WTOCommitteeGroupFactory(factory.django.DjangoModelFactory):
@@ -120,6 +129,11 @@ class BarrierFactory(factory.django.DjangoModelFactory):
                 priority_code = extracted
             self.priority = BarrierPriority.objects.get(code=priority_code)
             self.save()
+
+    @factory.post_generation
+    def public_barrier(self, create, extracted, **kwargs):
+        if kwargs:
+            PublicBarrierFactory(barrier=self, **kwargs)
 
     @factory.post_generation
     def wto_profile(self, create, extracted, **kwargs):
