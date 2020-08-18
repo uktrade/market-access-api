@@ -32,13 +32,17 @@ class BaseHistoryItem:
             data['field_info'] = self.get_field_info()
         return data
 
+    def get_empty_value(self):
+        return self.get_value(self.new_record.__class__())
+
     def get_new_value(self):
         if self.new_record:
             return self.get_value(self.new_record)
 
     def get_old_value(self):
-        if self.old_record:
-            return self.get_value(self.old_record)
+        if self.old_record is None:
+            return self.get_empty_value()
+        return self.get_value(self.old_record)
 
     def get_value(self, record):
         return getattr(record, self.field)
