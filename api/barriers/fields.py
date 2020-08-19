@@ -18,7 +18,7 @@ from api.metadata.constants import (
 )
 from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.metadata.serializers import BarrierPrioritySerializer, BarrierTagSerializer, CategorySerializer
-from api.metadata.utils import get_country, get_sector
+from api.metadata.utils import get_country, get_sector, get_trading_bloc
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
 
@@ -201,6 +201,12 @@ class TradeDirectionField(serializers.ChoiceField):
             "id": value,
             "name": trade_direction_lookup.get(value),
         }
+
+
+class TradingBlocField(serializers.CharField):
+    def to_representation(self, value):
+        if value:
+            return get_trading_bloc(value)
 
 
 class UserField(serializers.Field):

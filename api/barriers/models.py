@@ -157,6 +157,8 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=list,
         help_text="list of states, provinces, regions etc within a country",
     )
+    trading_bloc = models.CharField(max_length=7, blank=True)
+    caused_by_trading_bloc = models.NullBooleanField()
     trade_direction = models.SmallIntegerField(
         choices=TRADE_DIRECTION_CHOICES,
         blank=False,
