@@ -12,7 +12,7 @@ from mohawk import Sender
 from api.barriers.models import Stage
 from api.wto.models import WTOCommitteeGroup
 
-from .constants import BARRIER_TYPE_CATEGORIES
+from .constants import BARRIER_TYPE_CATEGORIES, TRADING_BLOCS
 from .models import Category, BarrierPriority, BarrierTag
 
 
@@ -67,7 +67,10 @@ def get_country(country_id):
     if not country_lookup:
         country_lookup = {country["id"]: country for country in get_countries()}
         cache.set("dh_country_lookup", country_lookup, 7200)
-    return country_lookup.get(country_id)
+    country = country_lookup.get(country_id)
+    if country:
+        country["trading_bloc"] = get_trading_bloc_by_country_id(country["id"])
+    return country
 
 
 def get_countries():
@@ -144,6 +147,29 @@ def get_barrier_type_categories():
 
 def get_reporting_stages():
     return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))
+
+
+def get_trading_bloc(code):
+    trading_bloc = TRADING_BLOCS.get(code)
+    if trading_bloc:
+        return {
+            "code": trading_bloc["code"],
+            "name": trading_bloc["name"],
+        }
+
+
+def get_trading_bloc_by_country_id(country_id):
+    for trading_bloc in TRADING_BLOCS.values():
+        if country_id in trading_bloc["country_ids"]:
+            return {
+                "code": trading_bloc["code"],
+                "name": trading_bloc["name"],
+                "short_name": trading_bloc["short_name"],
+            }
+
+
+def get_trading_bloc_country_ids(trading_bloc_code):
+    return TRADING_BLOCS.get(trading_bloc_code, {}).get("country_ids", [])
 
 
 def get_wto_committee_groups():

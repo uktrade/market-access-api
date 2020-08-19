@@ -139,3 +139,40 @@ TRADE_DIRECTION_CHOICES = Choices(
     (1, "Exporting from the UK or investing overseas"),
     (2, "Importing or investing into the UK")
 )
+
+TRADING_BLOCS = {
+    "TB00016": {
+        "code": "TB00016",
+        "name": "European Union",
+        "short_name": "the EU",
+        "country_ids": [
+            "a75f66a0-5d95-e211-a939-e4115bead28a",  # Belgium
+            "57af72a6-5d95-e211-a939-e4115bead28a",  # Bulgaria
+            "6caf72a6-5d95-e211-a939-e4115bead28a",  # Croatia
+            "6eaf72a6-5d95-e211-a939-e4115bead28a",  # Cyprus
+            "6faf72a6-5d95-e211-a939-e4115bead28a",  # Czechia
+            "70af72a6-5d95-e211-a939-e4115bead28a",  # Denmark
+            "d5f682ac-5d95-e211-a939-e4115bead28a",  # Estonia
+            "daf682ac-5d95-e211-a939-e4115bead28a",  # Finland
+            "82756b9a-5d95-e211-a939-e4115bead28a",  # France
+            "83756b9a-5d95-e211-a939-e4115bead28a",  # Germany
+            "e3f682ac-5d95-e211-a939-e4115bead28a",  # Greece
+            "6d6a9ab2-5d95-e211-a939-e4115bead28a",  # Hungary
+            "736a9ab2-5d95-e211-a939-e4115bead28a",  # Ireland
+            "84756b9a-5d95-e211-a939-e4115bead28a",  # Italy
+            "806a9ab2-5d95-e211-a939-e4115bead28a",  # Latvia
+            "866a9ab2-5d95-e211-a939-e4115bead28a",  # Lithuania
+            "876a9ab2-5d95-e211-a939-e4115bead28a",  # Luxembourg
+            "0850bdb8-5d95-e211-a939-e4115bead28a",  # Malta
+            "1950bdb8-5d95-e211-a939-e4115bead28a",  # Netherlands
+            "5361b8be-5d95-e211-a939-e4115bead28a",  # Poland
+            "5461b8be-5d95-e211-a939-e4115bead28a",  # Portugal
+            "5861b8be-5d95-e211-a939-e4115bead28a",  # Romania
+            "200be5c4-5d95-e211-a939-e4115bead28a",  # Slovakia
+            "210be5c4-5d95-e211-a939-e4115bead28a",  # Slovenia
+            "86756b9a-5d95-e211-a939-e4115bead28a",  # Spain
+            "300be5c4-5d95-e211-a939-e4115bead28a",  # Sweden
+            "80756b9a-5d95-e211-a939-e4115bead28a",  # United Kingdom
+        ]
+    },
+}
