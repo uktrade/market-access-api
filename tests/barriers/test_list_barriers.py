@@ -642,3 +642,50 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
+
+    def test_location_filter(self):
+        base_url = reverse("list-barriers")
+
+        # European Union
+        barrier1 = BarrierFactory(trading_bloc="TB00016")
+        # France
+        barrier2 = BarrierFactory(
+            export_country="82756b9a-5d95-e211-a939-e4115bead28a",
+            caused_by_trading_bloc=True,
+        )
+        # France
+        barrier3 = BarrierFactory(
+            export_country="82756b9a-5d95-e211-a939-e4115bead28a",
+            caused_by_trading_bloc=False,
+        )
+        # Brazil
+        barrier4 = BarrierFactory(
+            export_country="b05f66a0-5d95-e211-a939-e4115bead28a",
+        )
+
+        # Search by trading bloc
+        response = self.api_client.get(f"{base_url}?location=TB00016")
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        barrier_ids = set([result["id"] for result in response.data["results"]])
+        assert set([str(barrier1.id)]) == barrier_ids
+
+        # Search by trading_bloc or country
+        response = self.api_client.get(
+            f"{base_url}?location=82756b9a-5d95-e211-a939-e4115bead28a,TB00016"
+        )
+        assert status.HTTP_200_OK == response.status_code
+        assert 3 == response.data["count"]
+        barrier_ids = set([result["id"] for result in response.data["results"]])
+        assert set([str(barrier1.id), str(barrier2.id), str(barrier3.id)]) == barrier_ids
+
+        # Search by trading_bloc, including country specific barriers
+        response = self.api_client.get(
+            f"{base_url}?location=TB00016&country_trading_bloc=TB00016"
+        )
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+        barrier_ids = set([result["id"] for result in response.data["results"]])
+        assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
+
+
