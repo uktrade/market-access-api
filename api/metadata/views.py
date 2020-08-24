@@ -20,7 +20,8 @@ from .constants import (
     REPORT_STATUS,
     STAGE_STATUS,
     SUPPORT_TYPE,
-    TRADE_DIRECTION_CHOICES
+    TRADE_DIRECTION_CHOICES,
+    TRADING_BLOCS,
 )
 from .utils import (
     get_admin_areas,
@@ -95,6 +96,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_priorities": barrier_priorities,
             "assessment_impact": assessment_impact,
             "trade_direction": trade_direction,
+            "trading_blocs": TRADING_BLOCS.values(),
             "wto_committee_groups": wto_committee_groups,
         }
 
