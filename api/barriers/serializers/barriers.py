@@ -62,6 +62,7 @@ class BarrierListSerializer(BarrierSerializerBase):
             "all_sectors",
             "archived",
             "archived_on",
+            "caused_by_trading_bloc",
             "code",
             "country",
             "created_on",
@@ -77,4 +78,5 @@ class BarrierListSerializer(BarrierSerializerBase):
             "tags",
             "title",
             "trade_direction",
+            "trading_bloc",
         )
