@@ -17,6 +17,7 @@ from api.metadata.constants import (
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
     TRADE_DIRECTION_CHOICES,
+    TRADING_BLOC_CHOICES,
     PublicBarrierStatus,
 )
 from api.commodities.models import Commodity
@@ -157,7 +158,11 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=list,
         help_text="list of states, provinces, regions etc within a country",
     )
-    trading_bloc = models.CharField(max_length=7, blank=True)
+    trading_bloc = models.CharField(
+        choices=TRADING_BLOC_CHOICES,
+        max_length=7,
+        blank=True,
+    )
     caused_by_trading_bloc = models.NullBooleanField()
     trade_direction = models.SmallIntegerField(
         choices=TRADE_DIRECTION_CHOICES,
