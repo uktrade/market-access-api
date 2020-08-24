@@ -107,7 +107,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         custom filter for retreiving barriers of all countries of an overseas region
         """
-        trading_blocs = []
+        trading_bloc_values = []
         for location in value:
             if location in TRADING_BLOCS:
                 trading_blocs.append(location)
@@ -120,8 +120,10 @@ class BarrierFilterSet(django_filters.FilterSet):
             if item["overseas_region"] and item["overseas_region"]["id"] in value
         ]
 
-        if trading_blocs:
-            tb_queryset = queryset.filter(trading_bloc__in=trading_blocs)
+        tb_queryset = queryset.none()
+
+        if trading_bloc_values:
+            tb_queryset = queryset.filter(trading_bloc__in=trading_bloc_values)
 
             if "country_trading_bloc" in self.data:
                 trading_bloc_countries = []
