@@ -155,6 +155,7 @@ def get_trading_bloc(code):
         return {
             "code": trading_bloc["code"],
             "name": trading_bloc["name"],
+            "short_name": trading_bloc["short_name"],
         }
 
 

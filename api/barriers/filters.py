@@ -107,17 +107,19 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         custom filter for retreiving barriers of all countries of an overseas region
         """
+        country_values = []
         trading_bloc_values = []
         for location in value:
             if location in TRADING_BLOCS:
                 trading_blocs.append(location)
-                value.remove(location)
+            else:
+                country_values.append(location)
 
         countries = cache.get_or_set("dh_countries", get_countries, 72000)
         countries_for_region = [
             item["id"]
             for item in countries
-            if item["overseas_region"] and item["overseas_region"]["id"] in value
+            if item["overseas_region"] and item["overseas_region"]["id"] in country_values
         ]
 
         tb_queryset = queryset.none()
@@ -136,7 +138,7 @@ class BarrierFilterSet(django_filters.FilterSet):
                 )
 
         return tb_queryset | queryset.filter(
-            Q(export_country__in=value) |
+            Q(export_country__in=country_values) |
             Q(export_country__in=countries_for_region) |
             Q(country_admin_areas__overlap=value)
         )
