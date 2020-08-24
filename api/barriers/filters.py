@@ -111,7 +111,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         trading_bloc_values = []
         for location in value:
             if location in TRADING_BLOCS:
-                trading_blocs.append(location)
+                trading_bloc_values.append(location)
             else:
                 country_values.append(location)
 
@@ -140,7 +140,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         return tb_queryset | queryset.filter(
             Q(export_country__in=country_values) |
             Q(export_country__in=countries_for_region) |
-            Q(country_admin_areas__overlap=value)
+            Q(country_admin_areas__overlap=country_values)
         )
 
     def text_search(self, queryset, name, value):

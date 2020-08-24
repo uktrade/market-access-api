@@ -687,5 +687,3 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
-
-
