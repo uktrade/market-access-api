@@ -372,6 +372,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         if self.source != BARRIER_SOURCE.OTHER:
             self.other_source = None
 
+        if self.caused_by_trading_bloc is not None and not self.country_trading_bloc:
+            self.caused_by_trading_bloc = None
+
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )
