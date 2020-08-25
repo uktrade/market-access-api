@@ -3,6 +3,7 @@ from .base import HistoryItemFactoryBase
 from ..items.barriers import (
     ArchivedHistoryItem,
     CategoriesHistoryItem,
+    CausedByTradingBlocHistoryItem,
     CommoditiesHistoryItem,
     CompaniesHistoryItem,
     EndDateHistoryItem,
@@ -31,6 +32,7 @@ class BarrierHistoryFactory(HistoryItemFactoryBase):
     history_item_classes = (
         ArchivedHistoryItem,
         CategoriesHistoryItem,
+        CausedByTradingBlocHistoryItem,
         CommoditiesHistoryItem,
         CompaniesHistoryItem,
         EndDateHistoryItem,

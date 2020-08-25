@@ -23,6 +23,7 @@ from api.metadata.constants import (
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category
+from api.metadata.utils import get_trading_bloc_by_country_id
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -92,6 +93,13 @@ class BarrierHistoricalModel(models.Model):
         if changed_fields.intersection(("export_country", "country_admin_areas")):
             changed_fields.discard("export_country")
             changed_fields.discard("country_admin_areas")
+            changed_fields.add("location")
+
+        if "caused_by_trading_bloc" in changed_fields:
+            changed_fields.add("location")
+
+        if "trading_bloc" in changed_fields:
+            changed_fields.discard("trading_bloc")
             changed_fields.add("location")
 
         if "all_sectors" in changed_fields:
@@ -281,6 +289,11 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         permissions = [
             ('change_barrier_public_eligibility', 'Can change barrier public eligibility'),
         ]
+
+    @property
+    def country_trading_bloc(self):
+        if self.export_country:
+            return get_trading_bloc_by_country_id(str(self.export_country))
 
     def current_progress(self):
         """ checks current dataset to see how far reporting workflow is done """
