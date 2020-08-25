@@ -9,7 +9,6 @@ from django.core.cache import cache
 
 from mohawk import Sender
 
-from api.barriers.models import Stage
 from api.wto.models import WTOCommitteeGroup
 
 from .constants import BARRIER_TYPE_CATEGORIES, TRADING_BLOCS
@@ -146,6 +145,7 @@ def get_barrier_type_categories():
 
 
 def get_reporting_stages():
+    from api.barriers.models import Stage
     return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))
 
 

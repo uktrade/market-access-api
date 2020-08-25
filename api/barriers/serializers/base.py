@@ -49,7 +49,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     tags = TagsField(required=False)
     title = serializers.CharField(source="barrier_title", required=False)
     trade_direction = TradeDirectionField(required=False)
-    trading_bloc = TradingBlocField(required=False, allow_blank=True)
+    trading_bloc = TradingBlocField(required=False, allow_null=True)
     unarchived_by = UserField(required=False)
     wto_profile = WTOProfileField(required=False)
 

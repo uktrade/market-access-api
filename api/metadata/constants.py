@@ -177,6 +177,7 @@ TRADING_BLOCS = {
     },
 }
 
-TRADING_BLOC_CHOICES = (
+
+TRADING_BLOC_CHOICES = Choices(
     (trading_bloc["code"], trading_bloc["name"]) for trading_bloc in TRADING_BLOCS.values()
 )
