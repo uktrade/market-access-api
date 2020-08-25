@@ -161,7 +161,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     trading_bloc = models.CharField(
         choices=TRADING_BLOC_CHOICES,
         max_length=7,
-        blank=True,
+        null=True,
     )
     caused_by_trading_bloc = models.NullBooleanField()
     trade_direction = models.SmallIntegerField(
