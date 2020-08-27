@@ -35,8 +35,16 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.2",
         "order": 2,
-        "required": ("export_country", "trade_direction",),
-        "conditional": []
+        "required": ("trade_direction",),
+        "conditional": [
+            {
+                "condition_field": "export_country",
+                "operator": operator.eq,
+                "value": None,
+                "non_null_field": "trading_bloc",
+                "error_message": "barrier must have a export_country or trading_bloc",
+            }
+        ],
     },
     {
         "stage": "1.3",
