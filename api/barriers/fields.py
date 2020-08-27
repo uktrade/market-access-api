@@ -280,12 +280,13 @@ class ReadOnlyCountryField(serializers.Field):
     """
 
     def to_representation(self, value):
-        value = str(value)
-        country = get_country(value) or {}
-        return {
-            "id": value,
-            "name": country.get("name")
-        }
+        if value:
+            value = str(value)
+            country = get_country(value) or {}
+            return {
+                "id": value,
+                "name": country.get("name")
+            }
 
     def to_internal_value(self, data):
         self.fail("read_only")

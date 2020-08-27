@@ -480,7 +480,12 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
-    country = models.UUIDField()
+    country = models.UUIDField(null=True)
+    trading_bloc = models.CharField(
+        choices=TRADING_BLOC_CHOICES,
+        max_length=7,
+        null=True,
+    )
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     all_sectors = models.NullBooleanField()
     categories = models.ManyToManyField(Category, related_name="public_barriers")
@@ -539,6 +544,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def update_non_editable_fields(self):
         self.status = self.internal_status
         self.country = self.internal_country
+        self.trading_bloc = self.internal_trading_bloc
         self.sectors = self.internal_sectors
         self.all_sectors = self.internal_all_sectors
         self.categories.set(self.internal_categories.all())
@@ -672,6 +678,14 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return self.barrier.export_country != self.country
 
     @property
+    def internal_trading_bloc(self):
+        return self.barrier.trading_bloc
+
+    @property
+    def internal_trading_bloc_changed(self):
+        return self.barrier.trading_bloc != self.trading_bloc
+
+    @property
     def internal_sectors(self):
         return self.barrier.sectors
 
@@ -715,6 +729,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             or self.summary_changed
             or self.internal_status_changed
             or self.internal_country_changed
+            or self.internal_trading_bloc_changed
             or self.internal_sectors_changed
             or self.internal_all_sectors_changed
             or self.internal_sectors_changed
