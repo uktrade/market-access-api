@@ -421,6 +421,14 @@ class PublicBarrierHistoricalModel(models.Model):
             changed_fields.discard("all_sectors")
             changed_fields.add("sectors")
 
+        if "country" in changed_fields:
+            changed_fields.discard("country")
+            changed_fields.add("location")
+
+        if "trading_bloc" in changed_fields:
+            changed_fields.discard("trading_bloc")
+            changed_fields.add("location")
+
         if "_title" in changed_fields:
             changed_fields.discard("_title")
             changed_fields.add("title")
@@ -432,6 +440,8 @@ class PublicBarrierHistoricalModel(models.Model):
         if "_public_view_status" in changed_fields:
             changed_fields.discard("_public_view_status")
             changed_fields.add("public_view_status")
+
+
 
         return list(changed_fields)
 

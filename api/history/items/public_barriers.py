@@ -1,3 +1,7 @@
+from api.metadata.utils import (
+    get_country,
+    get_trading_bloc,
+)
 from .base import BaseHistoryItem
 
 
@@ -12,8 +16,19 @@ class CategoriesHistoryItem(BasePublicBarrierHistoryItem):
         return record.categories_cache or []
 
 
-class CountryHistoryItem(BasePublicBarrierHistoryItem):
-    field = "country"
+class LocationHistoryItem(BasePublicBarrierHistoryItem):
+    field = "location"
+
+    def get_value(self, record):
+        value = {
+            "country": None,
+            "trading_bloc": None,
+        }
+        if record.trading_bloc:
+            value["trading_bloc"] = get_trading_bloc(record.trading_bloc)
+        if record.country:
+            value["country"] = get_country(str(record.country))
+        return value
 
 
 class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
