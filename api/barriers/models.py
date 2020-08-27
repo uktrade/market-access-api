@@ -345,6 +345,12 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     def has_wto_profile(self):
         return hasattr(self, 'wto_profile')
 
+    @property
+    def location(self):
+        if self.export_country:
+            return self.export_country
+        return self.trading_bloc
+
     def last_seen_by(self, user_id):
         try:
             hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
