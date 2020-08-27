@@ -96,7 +96,8 @@ class BarrierHistoricalModel(models.Model):
             changed_fields.add("location")
 
         if "caused_by_trading_bloc" in changed_fields:
-            changed_fields.add("location")
+            if self.caused_by_trading_bloc or old_history.caused_by_trading_bloc:
+                changed_fields.add("location")
 
         if "trading_bloc" in changed_fields:
             changed_fields.discard("trading_bloc")
