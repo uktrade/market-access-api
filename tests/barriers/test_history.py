@@ -244,17 +244,17 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["old_value"] == []
         assert set(data["new_value"]) == {"109", "115"}
 
-    def test_country_history(self):
-        self.public_barrier.country = "570507cc-1592-4a99-afca-915d13a437d0"
+    def test_location_history(self):
+        self.public_barrier.country = "e0f682ac-5d95-e211-a939-e4115bead28a"
         self.public_barrier.save()
 
         items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
-        assert data["field"] == "country"
-        assert str(data["old_value"]) == "82756b9a-5d95-e211-a939-e4115bead28a"
-        assert str(data["new_value"]) == "570507cc-1592-4a99-afca-915d13a437d0"
+        assert data["field"] == "location"
+        assert data["old_value"]["country"]["id"] == "82756b9a-5d95-e211-a939-e4115bead28a"
+        assert data["new_value"]["country"]["id"] == "e0f682ac-5d95-e211-a939-e4115bead28a"
 
     def test_status_history(self):
         self.public_barrier.status = 5
@@ -976,7 +976,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         assert ("note", "text") in cached_changes
         assert ("team_member", "user") in cached_changes
         assert ("public_barrier", "categories") in cached_changes
-        assert ("public_barrier", "country") in cached_changes
+        assert ("public_barrier", "location") in cached_changes
         assert ("public_barrier", "public_view_status") in cached_changes
         assert ("public_barrier", "sectors") in cached_changes
         assert ("public_barrier", "status") in cached_changes

@@ -441,8 +441,6 @@ class PublicBarrierHistoricalModel(models.Model):
             changed_fields.discard("_public_view_status")
             changed_fields.add("public_view_status")
 
-
-
         return list(changed_fields)
 
     def update_categories(self):
