@@ -1,6 +1,9 @@
 from functools import lru_cache
 from typing import Sequence
 
+from django.core.exceptions import FieldDoesNotExist
+from django.db import models
+
 from rest_framework.utils import model_meta
 
 
@@ -54,6 +57,17 @@ class DataCombiner:
         return value
 
     def get_value(self, field_name):
+        try:
+            field = self.instance._meta.get_field(field_name)
+        except FieldDoesNotExist:
+            return getattr(self.instance, field_name)
+
+        if isinstance(field, models.ManyToManyField):
+            return self.get_field_value_to_many(field_name)
+        else:
+            return self.get_field_value(field_name)
+
+    def get_field_value(self, field_name):
         """Returns the value of a standard field."""
         if field_name in self.data:
             return self.data[field_name]
@@ -61,7 +75,7 @@ class DataCombiner:
             return getattr(self.instance, field_name)
         return None
 
-    def get_value_to_many(self, field_name):
+    def get_field_value_to_many(self, field_name):
         """Returns an object representing to-many field values."""
         if field_name in self.data:
             return self.data[field_name]

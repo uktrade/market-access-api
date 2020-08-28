@@ -96,6 +96,33 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert str(self.barrier.id) == response.data["id"]
         assert title == response.data["title"]
 
+    def test_patch_barrier_country(self):
+        payload = {"country": "82756b9a-5d95-e211-a939-e4115bead28a"}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert str(self.barrier.id) == response.data["id"]
+        assert "82756b9a-5d95-e211-a939-e4115bead28a" == response.data["country"]["id"]
+
+    def test_patch_barrier_trading_bloc(self):
+        payload = {"trading_bloc": "TB00016"}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert str(self.barrier.id) == response.data["id"]
+        assert "TB00016" == response.data["trading_bloc"]["code"]
+
+    def test_patch_barrier_caused_by_trading_bloc(self):
+        payload = {
+            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
+            "caused_by_trading_bloc": True,
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert str(self.barrier.id) == response.data["id"]
+        assert response.data["caused_by_trading_bloc"] is True
+
     def test_patch_barrier_problem_status(self):
         assert 1 == self.barrier.problem_status
 

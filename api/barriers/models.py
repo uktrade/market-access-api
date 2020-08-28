@@ -17,11 +17,13 @@ from api.metadata.constants import (
     PROBLEM_STATUS_TYPES,
     STAGE_STATUS,
     TRADE_DIRECTION_CHOICES,
+    TRADING_BLOC_CHOICES,
     PublicBarrierStatus,
 )
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category
+from api.metadata.utils import get_trading_bloc_by_country_id
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -93,6 +95,14 @@ class BarrierHistoricalModel(models.Model):
             changed_fields.discard("country_admin_areas")
             changed_fields.add("location")
 
+        if "caused_by_trading_bloc" in changed_fields:
+            if self.caused_by_trading_bloc or old_history.caused_by_trading_bloc:
+                changed_fields.add("location")
+
+        if "trading_bloc" in changed_fields:
+            changed_fields.discard("trading_bloc")
+            changed_fields.add("location")
+
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
             changed_fields.add("sectors")
@@ -157,6 +167,12 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=list,
         help_text="list of states, provinces, regions etc within a country",
     )
+    trading_bloc = models.CharField(
+        choices=TRADING_BLOC_CHOICES,
+        max_length=7,
+        null=True,
+    )
+    caused_by_trading_bloc = models.NullBooleanField()
     trade_direction = models.SmallIntegerField(
         choices=TRADE_DIRECTION_CHOICES,
         blank=False,
@@ -275,6 +291,11 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
             ('change_barrier_public_eligibility', 'Can change barrier public eligibility'),
         ]
 
+    @property
+    def country_trading_bloc(self):
+        if self.export_country:
+            return get_trading_bloc_by_country_id(str(self.export_country))
+
     def current_progress(self):
         """ checks current dataset to see how far reporting workflow is done """
         progress_list = []
@@ -324,6 +345,12 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     def has_wto_profile(self):
         return hasattr(self, 'wto_profile')
 
+    @property
+    def location(self):
+        if self.export_country:
+            return self.export_country
+        return self.trading_bloc
+
     def last_seen_by(self, user_id):
         try:
             hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
@@ -365,6 +392,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         if self.source != BARRIER_SOURCE.OTHER:
             self.other_source = None
 
+        if self.caused_by_trading_bloc is not None and not self.country_trading_bloc:
+            self.caused_by_trading_bloc = None
+
         super(BarrierInstance, self).save(
             force_insert, force_update, using, update_fields
         )
@@ -390,6 +420,14 @@ class PublicBarrierHistoricalModel(models.Model):
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
             changed_fields.add("sectors")
+
+        if "country" in changed_fields:
+            changed_fields.discard("country")
+            changed_fields.add("location")
+
+        if "trading_bloc" in changed_fields:
+            changed_fields.discard("trading_bloc")
+            changed_fields.add("location")
 
         if "_title" in changed_fields:
             changed_fields.discard("_title")
@@ -450,7 +488,12 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
-    country = models.UUIDField()
+    country = models.UUIDField(null=True)
+    trading_bloc = models.CharField(
+        choices=TRADING_BLOC_CHOICES,
+        max_length=7,
+        null=True,
+    )
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     all_sectors = models.NullBooleanField()
     categories = models.ManyToManyField(Category, related_name="public_barriers")
@@ -509,6 +552,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def update_non_editable_fields(self):
         self.status = self.internal_status
         self.country = self.internal_country
+        self.trading_bloc = self.internal_trading_bloc
         self.sectors = self.internal_sectors
         self.all_sectors = self.internal_all_sectors
         self.categories.set(self.internal_categories.all())
@@ -642,6 +686,14 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return self.barrier.export_country != self.country
 
     @property
+    def internal_trading_bloc(self):
+        return self.barrier.trading_bloc
+
+    @property
+    def internal_trading_bloc_changed(self):
+        return self.barrier.trading_bloc != self.trading_bloc
+
+    @property
     def internal_sectors(self):
         return self.barrier.sectors
 
@@ -685,6 +737,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             or self.summary_changed
             or self.internal_status_changed
             or self.internal_country_changed
+            or self.internal_trading_bloc_changed
             or self.internal_sectors_changed
             or self.internal_all_sectors_changed
             or self.internal_sectors_changed

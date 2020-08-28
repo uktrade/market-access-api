@@ -18,6 +18,7 @@ from api.metadata.utils import (
     get_admin_area,
     get_country,
     get_sector,
+    get_trading_bloc,
 )
 
 
@@ -33,7 +34,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     barrier_title = serializers.CharField()
     sectors = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
-    country = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     product = serializers.CharField()
@@ -175,10 +176,15 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         else:
             return "N/A"
 
-    def get_country(self, obj):
-        country = get_country(str(obj.export_country))
-        if country:
-            return country.get("name")
+    def get_location(self, obj):
+        if obj.export_country:
+            country = get_country(str(obj.export_country))
+            if country:
+                return country.get("name")
+        elif obj.trading_bloc:
+            trading_bloc = get_trading_bloc(obj.trading_bloc)
+            if trading_bloc:
+                return trading_bloc.get("name")
 
     def get_overseas_region(self, obj):
         country = get_country(str(obj.export_country))
