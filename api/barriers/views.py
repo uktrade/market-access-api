@@ -431,7 +431,11 @@ class BarrierFullHistory(generics.GenericAPIView):
 
     def get(self, request, pk):
         barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
-        history_items = HistoryManager.get_full_history(barrier=barrier, use_cache=True)
+        history_items = HistoryManager.get_full_history(
+            barrier=barrier,
+            ignore_creation_items=True,
+            use_cache=True,
+        )
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
