@@ -15,6 +15,7 @@ from api.barriers.fields import (
     TagsField,
     TermField,
     TradeDirectionField,
+    TradingBlocField,
     UserField,
     WTOProfileField,
 )
@@ -32,7 +33,7 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     assessment = AssessmentSerializer(required=False)
     categories = CategoriesField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
-    country = CountryField(source="export_country", required=False)
+    country = CountryField(source="export_country", required=False, allow_null=True)
     created_by = UserField(required=False)
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
@@ -41,13 +42,14 @@ class BarrierSerializerBase(CustomUpdateMixin, serializers.ModelSerializer):
     sectors = SectorsField(required=False)
     source = SourceField(required=False)
     status = StatusField(required=False)
-    sub_status = SubStatusField(required=False)
+    sub_status = SubStatusField(required=False, allow_null=True)
     public_barrier = NestedPublicBarrierSerializer(required=False)
     public_eligibility = PublicEligibilityField(required=False)
     term = TermField(source="problem_status", required=False, allow_null=True)
     tags = TagsField(required=False)
     title = serializers.CharField(source="barrier_title", required=False)
     trade_direction = TradeDirectionField(required=False)
+    trading_bloc = TradingBlocField(required=False, allow_null=True)
     unarchived_by = UserField(required=False)
     wto_profile = WTOProfileField(required=False)
 

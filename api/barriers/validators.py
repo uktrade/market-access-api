@@ -1,6 +1,5 @@
 from collections import defaultdict
 
-from django.db import models
 from rest_framework.exceptions import ValidationError
 
 from api.core.validate_utils import DataCombiner
@@ -25,18 +24,12 @@ class ReportReadyForSubmitValidator:
         """Validate that all the fields required are set."""
         data_combiner = DataCombiner(self.instance, data)
 
-        meta = self.instance._meta
         errors = defaultdict(list)
 
         for stage in REPORT_CONDITIONS:
             # direct required fields
             for field_name in stage["required"]:
-                field = meta.get_field(field_name)
-
-                if isinstance(field, models.ManyToManyField):
-                    value = data_combiner.get_value_to_many(field_name)
-                else:
-                    value = data_combiner.get_value(field_name)
+                value = data_combiner.get_value(field_name)
 
                 if value is None:
                     errors[field_name] = [self.message]

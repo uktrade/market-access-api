@@ -9,9 +9,9 @@ from django_filters.widgets import BooleanWidget
 
 from api.barriers.models import BarrierInstance
 from api.collaboration.models import TeamMember
-from api.metadata.constants import PublicBarrierStatus
+from api.metadata.constants import PublicBarrierStatus, TRADING_BLOCS
 from api.metadata.models import BarrierPriority
-from api.metadata.utils import get_countries
+from api.metadata.utils import get_countries, get_trading_bloc_country_ids
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -107,16 +107,40 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         custom filter for retreiving barriers of all countries of an overseas region
         """
+        country_values = []
+        trading_bloc_values = []
+        for location in value:
+            if location in TRADING_BLOCS:
+                trading_bloc_values.append(location)
+            else:
+                country_values.append(location)
+
         countries = cache.get_or_set("dh_countries", get_countries, 72000)
         countries_for_region = [
             item["id"]
             for item in countries
-            if item["overseas_region"] and item["overseas_region"]["id"] in value
+            if item["overseas_region"] and item["overseas_region"]["id"] in country_values
         ]
-        return queryset.filter(
-            Q(export_country__in=value) |
+
+        tb_queryset = queryset.none()
+
+        if trading_bloc_values:
+            tb_queryset = queryset.filter(trading_bloc__in=trading_bloc_values)
+
+            if "country_trading_bloc" in self.data:
+                trading_bloc_countries = []
+                for trading_bloc in self.data["country_trading_bloc"].split(","):
+                    trading_bloc_countries += get_trading_bloc_country_ids(trading_bloc)
+
+                tb_queryset = tb_queryset | queryset.filter(
+                    export_country__in=trading_bloc_countries,
+                    caused_by_trading_bloc=True,
+                )
+
+        return tb_queryset | queryset.filter(
+            Q(export_country__in=country_values) |
             Q(export_country__in=countries_for_region) |
-            Q(country_admin_areas__overlap=value)
+            Q(country_admin_areas__overlap=country_values)
         )
 
     def text_search(self, queryset, name, value):

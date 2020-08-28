@@ -9,6 +9,7 @@ class BarrierReportSerializer(BarrierSerializerBase):
         fields = (
             "admin_areas",
             "all_sectors",
+            "caused_by_trading_bloc",
             "code",
             "country",
             "created_by",
@@ -34,4 +35,5 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "term",
             "title",
             "trade_direction",
+            "trading_bloc",
         )

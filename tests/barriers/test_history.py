@@ -102,14 +102,12 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "location"
-        assert data["old_value"] == {
-            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
-            "admin_areas": [],
-        }
-        assert data["new_value"] == {
-            "country": "81756b9a-5d95-e211-a939-e4115bead28a",
-            "admin_areas": ["a88512e0-62d4-4808-95dc-d3beab05d0e9"],
-        }
+        assert data["old_value"]["country"]["id"] == "82756b9a-5d95-e211-a939-e4115bead28a"
+        assert data["old_value"]["admin_areas"] == []
+
+        assert data["new_value"]["country"]["id"] == "81756b9a-5d95-e211-a939-e4115bead28a"
+        assert len(data["new_value"]["admin_areas"]) == 1
+        assert data["new_value"]["admin_areas"][0]["id"] == "a88512e0-62d4-4808-95dc-d3beab05d0e9"
 
     def test_priority_history(self):
         self.barrier.priority_id = 2
@@ -246,17 +244,17 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["old_value"] == []
         assert set(data["new_value"]) == {"109", "115"}
 
-    def test_country_history(self):
-        self.public_barrier.country = "570507cc-1592-4a99-afca-915d13a437d0"
+    def test_location_history(self):
+        self.public_barrier.country = "e0f682ac-5d95-e211-a939-e4115bead28a"
         self.public_barrier.save()
 
         items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
-        assert data["field"] == "country"
-        assert str(data["old_value"]) == "82756b9a-5d95-e211-a939-e4115bead28a"
-        assert str(data["new_value"]) == "570507cc-1592-4a99-afca-915d13a437d0"
+        assert data["field"] == "location"
+        assert data["old_value"]["country"]["id"] == "82756b9a-5d95-e211-a939-e4115bead28a"
+        assert data["new_value"]["country"]["id"] == "e0f682ac-5d95-e211-a939-e4115bead28a"
 
     def test_status_history(self):
         self.public_barrier.status = 5
@@ -581,6 +579,9 @@ class TestHistoryView(APITestMixin, TestCase):
             text="Original note",
         )
 
+    def get_history_by_field(self, history, field):
+        return [item for item in history if item["field"] == field]
+
     @freeze_time("2020-04-01")
     def test_history_endpoint(self):
         url = reverse("history", kwargs={"pk": self.barrier.pk})
@@ -662,20 +663,19 @@ class TestHistoryView(APITestMixin, TestCase):
             "user": None,
         } in history
 
-        assert {
-            "date": "2020-04-01T00:00:00Z",
-            "model": "barrier",
-            "field": "location",
-            "old_value": {
-                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
-                "admin_areas": []
-            },
-            "new_value": {
-                "country": "81756b9a-5d95-e211-a939-e4115bead28a",
-                "admin_areas": ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
-            },
-            "user": None
-        } in history
+        location_history = self.get_history_by_field(history, "location")
+        assert len(location_history) == 1
+        assert location_history[0]["old_value"]["country"]["id"] == (
+            "82756b9a-5d95-e211-a939-e4115bead28a"
+        )
+        assert location_history[0]["old_value"]["admin_areas"] == []
+        assert location_history[0]["new_value"]["country"]["id"] == (
+            "81756b9a-5d95-e211-a939-e4115bead28a"
+        )
+        assert len(location_history[0]["new_value"]["admin_areas"]) == 1
+        assert location_history[0]["new_value"]["admin_areas"][0]["id"] == (
+            "a88512e0-62d4-4808-95dc-d3beab05d0e9"
+        )
 
         assert {
             "date": "2020-04-01T00:00:00Z",
@@ -976,7 +976,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         assert ("note", "text") in cached_changes
         assert ("team_member", "user") in cached_changes
         assert ("public_barrier", "categories") in cached_changes
-        assert ("public_barrier", "country") in cached_changes
+        assert ("public_barrier", "location") in cached_changes
         assert ("public_barrier", "public_view_status") in cached_changes
         assert ("public_barrier", "sectors") in cached_changes
         assert ("public_barrier", "status") in cached_changes

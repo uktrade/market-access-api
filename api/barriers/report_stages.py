@@ -1,8 +1,7 @@
 import operator
 
-from django.db import models
-
 from api.core.validate_utils import DataCombiner
+
 
 REPORT_CONDITIONS = [
     {
@@ -35,8 +34,8 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.2",
         "order": 2,
-        "required": ("export_country", "trade_direction",),
-        "conditional": []
+        "required": ["location", "trade_direction"],
+        "conditional": [],
     },
     {
         "stage": "1.3",
@@ -69,13 +68,7 @@ REPORT_CONDITIONS = [
 
 def required_field_value(instance, field_name):
     data_combiner = DataCombiner(instance, None)
-    meta = instance._meta
-    field = meta.get_field(field_name)
-
-    if isinstance(field, models.ManyToManyField):
-        value = data_combiner.get_value_to_many(field_name)
-    else:
-        value = data_combiner.get_value(field_name)
+    value = data_combiner.get_value(field_name)
 
     if value is None:
         return False

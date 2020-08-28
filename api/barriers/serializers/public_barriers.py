@@ -7,6 +7,7 @@ from api.barriers.fields import (
     ReadOnlySectorsField,
     ReadOnlyAllSectorsField,
     ReadOnlyCategoriesField,
+    TradingBlocField,
 )
 from api.barriers.models import PublicBarrier
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
@@ -36,6 +37,8 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
     internal_status = ReadOnlyStatusField()
     country = ReadOnlyCountryField()
     internal_country = ReadOnlyCountryField()
+    trading_bloc = TradingBlocField()
+    internal_trading_bloc = TradingBlocField()
     sectors = ReadOnlySectorsField()
     internal_sectors = ReadOnlySectorsField()
     all_sectors = ReadOnlyAllSectorsField()
@@ -64,6 +67,9 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "country",
             "internal_country",
             "internal_country_changed",
+            "trading_bloc",
+            "internal_trading_bloc",
+            "internal_trading_bloc_changed",
             "sectors",
             "internal_sectors",
             "internal_sectors_changed",
@@ -95,6 +101,9 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "country",
             "internal_country",
             "internal_country_changed",
+            "trading_bloc",
+            "internal_trading_bloc",
+            "internal_trading_bloc_changed",
             "sectors",
             "internal_sectors",
             "internal_sectors_changed",

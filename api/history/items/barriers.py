@@ -1,4 +1,9 @@
-from api.metadata.utils import get_country
+from api.metadata.utils import (
+    get_admin_area,
+    get_country,
+    get_trading_bloc,
+    get_trading_bloc_by_country_id,
+)
 from .base import BaseHistoryItem
 
 
@@ -33,6 +38,19 @@ class CategoriesHistoryItem(BaseBarrierHistoryItem):
         return record.categories_cache or []
 
 
+class CausedByTradingBlocHistoryItem(BaseBarrierHistoryItem):
+    field = "caused_by_trading_bloc"
+
+    def get_value(self, record):
+        country_trading_bloc = None
+        if record.export_country:
+            country_trading_bloc = get_trading_bloc_by_country_id(str(record.export_country))
+        return {
+            "caused_by_trading_bloc": record.caused_by_trading_bloc,
+            "country_trading_bloc": country_trading_bloc,
+        }
+
+
 class CommoditiesHistoryItem(BaseBarrierHistoryItem):
     field = "commodities"
 
@@ -58,12 +76,21 @@ class LocationHistoryItem(BaseBarrierHistoryItem):
     field = "location"
 
     def get_value(self, record):
-        return {
-            "country": str(record.export_country),
+        value = {
+            "country": None,
             "admin_areas": [
-                str(admin_area) for admin_area in record.country_admin_areas or []
+                get_admin_area(str(admin_area))
+                for admin_area in record.country_admin_areas or []
+                if get_admin_area(str(admin_area)) is not None
             ],
+            "trading_bloc": None,
+            "caused_by_trading_bloc": record.caused_by_trading_bloc,
         }
+        if record.trading_bloc:
+            value["trading_bloc"] = get_trading_bloc(record.trading_bloc)
+        if record.export_country:
+            value["country"] = get_country(str(record.export_country))
+        return value
 
 
 class PriorityHistoryItem(BaseBarrierHistoryItem):

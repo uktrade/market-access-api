@@ -199,3 +199,53 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert "UNKNOWN" == response.data["priority"]["code"]
         assert 0 == len(response.data["categories"])
         assert response.data["created_on"]
+
+    @freeze_time("2020-02-02")
+    def test_report_submit_for_eu_barrier(self):
+        report = MinReportFactory(**{
+            "problem_status": 2,
+            "status": 2,
+            "export_country": None,
+            "trading_bloc": "TB00016",
+            "trade_direction": 1,
+            "sectors_affected": False,
+            "product": "Some product",
+            "source": "GOVT",
+            "barrier_title": "Some title",
+            "summary": "Some summary",
+        })
+        report.submit_report()
+
+        url = reverse("get-barrier", kwargs={"pk": report.id})
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"]
+        assert "TB00016" == response.data["trading_bloc"]["code"]
+        assert response.data["country"] is None
+
+    @freeze_time("2020-02-02")
+    def test_report_submit_for_country_within_eu_barrier(self):
+        report = MinReportFactory(**{
+            "problem_status": 2,
+            "status": 2,
+            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+            "trading_bloc": None,
+            "caused_by_trading_bloc": True,
+            "trade_direction": 1,
+            "sectors_affected": False,
+            "product": "Some product",
+            "source": "GOVT",
+            "barrier_title": "Some title",
+            "summary": "Some summary",
+        })
+        report.submit_report()
+
+        url = reverse("get-barrier", kwargs={"pk": report.id})
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["id"]
+        assert response.data["trading_bloc"] is None
+        assert response.data["country"]["id"] == "82756b9a-5d95-e211-a939-e4115bead28a"
+        assert response.data["caused_by_trading_bloc"] is True

@@ -327,7 +327,7 @@ class BarriertListExportView(generics.ListAPIView):
         "status": "Status",
         "priority": "Priority",
         "overseas_region": "Overseas Region",
-        "country": "Country",
+        "location": "Location",
         "admin_areas": "Admin areas",
         "sectors": "Sectors",
         "product": "Product",
