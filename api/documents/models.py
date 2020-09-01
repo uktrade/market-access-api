@@ -36,7 +36,7 @@ class Document(ArchivableMixin, BaseModel):
     scan_initiated_on = models.DateTimeField(null=True, blank=True)
     scanned_on = models.DateTimeField(null=True, blank=True)
 
-    av_clean = models.NullBooleanField(db_index=True)
+    av_clean = models.BooleanField(null=True, db_index=True)
     av_reason = models.TextField(blank=True)
 
     status = models.CharField(

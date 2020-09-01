@@ -172,7 +172,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         max_length=7,
         null=True,
     )
-    caused_by_trading_bloc = models.NullBooleanField()
+    caused_by_trading_bloc = models.BooleanField(null=True)
     trade_direction = models.SmallIntegerField(
         choices=TRADE_DIRECTION_CHOICES,
         blank=False,
@@ -180,11 +180,13 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=None
     )
 
-    sectors_affected = models.NullBooleanField(
-        help_text="boolean to signify one or more sectors are affected by this barrier"
+    sectors_affected = models.BooleanField(
+        help_text="boolean to signify one or more sectors are affected by this barrier",
+        null=True,
     )
-    all_sectors = models.NullBooleanField(
-        help_text="boolean to signify that all sectors are affected by this barrier"
+    all_sectors = models.BooleanField(
+        help_text="boolean to signify that all sectors are affected by this barrier",
+        null=True,
     )
     sectors = ArrayField(
         models.UUIDField(),
@@ -204,8 +206,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
     barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
     summary = models.TextField(null=True)
-    is_summary_sensitive = models.NullBooleanField(
-        help_text="Does the summary contain sensitive information"
+    is_summary_sensitive = models.BooleanField(
+        help_text="Does the summary contain sensitive information",
+        null=True,
     )
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
@@ -499,7 +502,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         null=True,
     )
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
-    all_sectors = models.NullBooleanField()
+    all_sectors = models.BooleanField(null=True)
     categories = models.ManyToManyField(Category, related_name="public_barriers")
 
     published_versions = models.JSONField(default=dict)
