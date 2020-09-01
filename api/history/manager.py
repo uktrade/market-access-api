@@ -55,40 +55,62 @@ class HistoryManager:
         return history_items
 
     @classmethod
-    def get_full_history(cls, barrier, use_cache=False):
+    def get_full_history(cls, barrier, ignore_creation_items=False, use_cache=False):
         if use_cache:
-            cached_history_items = CachedHistoryItem.objects.filter(
-                barrier_id=barrier.pk,
-                date__gt=barrier.reported_on + datetime.timedelta(seconds=1),
-            )
-            history_items = []
-            for item in cached_history_items:
-                history_item = item.as_history_item()
-                if history_item.is_valid():
-                    history_items.append(item.as_history_item())
-            return history_items
+            return cls.get_full_history_cached(barrier, ignore_creation_items)
 
-        barrier_history = cls.get_barrier_history(barrier.pk, start_date=barrier.reported_on)
-        notes_history = cls.get_notes_history(barrier.pk, start_date=barrier.reported_on)
-        assessment_history = cls.get_assessment_history(barrier.pk, start_date=barrier.reported_on)
-        team_history = cls.get_team_history(
-            barrier.pk,
-            start_date=barrier.reported_on + datetime.timedelta(seconds=1)
-        )
-        wto_history = cls.get_wto_history(barrier.pk, start_date=barrier.reported_on)
+        if ignore_creation_items:
+            start_date = barrier.reported_on
+        else:
+            start_date = None
+
+        barrier_history = cls.get_barrier_history(barrier.pk, start_date=start_date)
+        notes_history = cls.get_notes_history(barrier.pk, start_date=start_date)
+        assessment_history = cls.get_assessment_history(barrier.pk, start_date=start_date)
+        if start_date:
+            team_history = cls.get_team_history(
+                barrier.pk,
+                start_date=start_date + datetime.timedelta(seconds=1),
+            )
+        else:
+            team_history = cls.get_team_history(barrier.pk)
+        wto_history = cls.get_wto_history(barrier.pk, start_date=start_date)
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history
             + wto_history
         )
 
-        if hasattr(barrier, "public_barrier"):
-            history_items += cls.get_public_barrier_history(
-                barrier.pk,
-                start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
-            )
+        if barrier.has_public_barrier:
+            if ignore_creation_items:
+                history_items += cls.get_public_barrier_history(
+                    barrier.pk,
+                    start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
+                )
+            else:
+                history_items += cls.get_public_barrier_history(barrier.pk)
             history_items += cls.get_public_barrier_notes_history(barrier.pk)
 
+        return history_items
+
+    @classmethod
+    def get_full_history_cached(cls, barrier, ignore_creation_items=False):
+        cached_history_items = CachedHistoryItem.objects.filter(barrier_id=barrier.pk)
+        if ignore_creation_items:
+            cached_history_items = cached_history_items.filter(
+                date__gt=barrier.reported_on + datetime.timedelta(seconds=1),
+            )
+            if barrier.has_public_barrier:
+                cached_history_items = cached_history_items.exclude(
+                    model="public_barrier",
+                    date__lt=barrier.public_barrier.created_on + datetime.timedelta(seconds=1),
+                )
+
+        history_items = []
+        for item in cached_history_items:
+            history_item = item.as_history_item()
+            if history_item.is_valid():
+                history_items.append(item.as_history_item())
         return history_items
 
     @classmethod

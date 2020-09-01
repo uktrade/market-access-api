@@ -342,6 +342,10 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         return hasattr(self, 'assessment')
 
     @property
+    def has_public_barrier(self):
+        return hasattr(self, 'public_barrier')
+
+    @property
     def has_wto_profile(self):
         return hasattr(self, 'wto_profile')
 
