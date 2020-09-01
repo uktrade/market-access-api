@@ -146,11 +146,6 @@ class SourceHistoryItem(BaseBarrierHistoryItem):
 class StatusHistoryItem(BaseBarrierHistoryItem):
     field = "status"
 
-    def is_valid(self):
-        if self.old_record and self.old_record.status == 0 and self.new_record.status == 7:
-            return False
-        return True
-
     def get_value(self, record):
         return {
             "status": str(record.status),
