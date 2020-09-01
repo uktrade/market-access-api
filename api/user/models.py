@@ -6,7 +6,7 @@ from django_filters import BaseInFilter
 
 from django.db import models
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -26,7 +26,7 @@ class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     location = models.UUIDField(null=True, blank=True)
     internal = models.BooleanField(default=False)
-    user_profile = JSONField(
+    user_profile = models.JSONField(
         null=True, help_text="temporary field to hold sso profile json object"
     )
     sso_user_id = models.UUIDField(
@@ -209,7 +209,7 @@ class SavedSearch(BaseSavedSearch):
         related_name="saved_searches",
         on_delete=models.CASCADE,
     )
-    filters = JSONField()
+    filters = models.JSONField()
 
     class Meta:
         ordering = ("name", )

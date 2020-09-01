@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 
@@ -25,7 +25,7 @@ class AssessmentHistoricalModel(models.Model):
     Abstract model for history models tracking document changes.
     """
     documents_cache = ArrayField(
-        JSONField(),
+        models.JSONField(),
         blank=True,
         null=True,
         default=list,

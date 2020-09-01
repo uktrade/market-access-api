@@ -2,7 +2,7 @@ import datetime
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, CASCADE
 from django.utils import timezone
@@ -69,7 +69,7 @@ class BarrierHistoricalModel(models.Model):
         null=True,
         default=list,
     )
-    commodities_cache = ArrayField(JSONField(), default=list)
+    commodities_cache = ArrayField(models.JSONField(), default=list)
     tags_cache = ArrayField(
         models.IntegerField(),
         null=True,
@@ -193,7 +193,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=list,
         help_text="list of sectors that are affected",
     )
-    companies = JSONField(
+    companies = models.JSONField(
         null=True, default=None, help_text="list of companies that are affected"
     )
 
@@ -502,7 +502,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     all_sectors = models.NullBooleanField()
     categories = models.ManyToManyField(Category, related_name="public_barriers")
 
-    published_versions = JSONField(default=dict)
+    published_versions = models.JSONField(default=dict)
 
     # === Status and timestamps ====
     _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
