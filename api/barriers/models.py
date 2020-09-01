@@ -584,7 +584,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def title(self, value):
         self._title = value
         self.internal_title_at_update = self.barrier.barrier_title
-        self.title_updated_on = datetime.datetime.now()
+        self.title_updated_on = timezone.now()
 
     @property
     def title_changed(self):
@@ -604,7 +604,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def summary(self, value):
         self._summary = value
         self.internal_summary_at_update = self.barrier.summary
-        self.summary_updated_on = datetime.datetime.now()
+        self.summary_updated_on = timezone.now()
 
     @property
     def summary_changed(self):
@@ -655,7 +655,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         status = int(value)
         self._public_view_status = status
         # auto update date fields based on the new status
-        now = datetime.datetime.now()
+        now = timezone.now()
         if status == PublicBarrierStatus.PUBLISHED:
             self.first_published_on = self.first_published_on or now
             self.last_published_on = now
