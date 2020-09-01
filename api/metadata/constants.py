@@ -146,6 +146,7 @@ TRADING_BLOCS = {
         "name": "European Union",
         "short_name": "the EU",
         "country_ids": [
+            "a05f66a0-5d95-e211-a939-e4115bead28a",  # Austria
             "a75f66a0-5d95-e211-a939-e4115bead28a",  # Belgium
             "57af72a6-5d95-e211-a939-e4115bead28a",  # Bulgaria
             "6caf72a6-5d95-e211-a939-e4115bead28a",  # Croatia
