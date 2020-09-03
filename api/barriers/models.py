@@ -2,7 +2,7 @@ import datetime
 from uuid import uuid4
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, CASCADE
 from django.utils import timezone
@@ -69,7 +69,7 @@ class BarrierHistoricalModel(models.Model):
         null=True,
         default=list,
     )
-    commodities_cache = ArrayField(JSONField(), default=list)
+    commodities_cache = ArrayField(models.JSONField(), default=list)
     tags_cache = ArrayField(
         models.IntegerField(),
         null=True,
@@ -172,7 +172,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         max_length=7,
         null=True,
     )
-    caused_by_trading_bloc = models.NullBooleanField()
+    caused_by_trading_bloc = models.BooleanField(null=True)
     trade_direction = models.SmallIntegerField(
         choices=TRADE_DIRECTION_CHOICES,
         blank=False,
@@ -180,11 +180,13 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=None
     )
 
-    sectors_affected = models.NullBooleanField(
-        help_text="boolean to signify one or more sectors are affected by this barrier"
+    sectors_affected = models.BooleanField(
+        help_text="boolean to signify one or more sectors are affected by this barrier",
+        null=True,
     )
-    all_sectors = models.NullBooleanField(
-        help_text="boolean to signify that all sectors are affected by this barrier"
+    all_sectors = models.BooleanField(
+        help_text="boolean to signify that all sectors are affected by this barrier",
+        null=True,
     )
     sectors = ArrayField(
         models.UUIDField(),
@@ -193,7 +195,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         default=list,
         help_text="list of sectors that are affected",
     )
-    companies = JSONField(
+    companies = models.JSONField(
         null=True, default=None, help_text="list of companies that are affected"
     )
 
@@ -204,8 +206,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
     barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
     summary = models.TextField(null=True)
-    is_summary_sensitive = models.NullBooleanField(
-        help_text="Does the summary contain sensitive information"
+    is_summary_sensitive = models.BooleanField(
+        help_text="Does the summary contain sensitive information",
+        null=True,
     )
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
@@ -499,10 +502,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         null=True,
     )
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
-    all_sectors = models.NullBooleanField()
+    all_sectors = models.BooleanField(null=True)
     categories = models.ManyToManyField(Category, related_name="public_barriers")
 
-    published_versions = JSONField(default=dict)
+    published_versions = models.JSONField(default=dict)
 
     # === Status and timestamps ====
     _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
@@ -581,7 +584,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def title(self, value):
         self._title = value
         self.internal_title_at_update = self.barrier.barrier_title
-        self.title_updated_on = datetime.datetime.now()
+        self.title_updated_on = timezone.now()
 
     @property
     def title_changed(self):
@@ -601,7 +604,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def summary(self, value):
         self._summary = value
         self.internal_summary_at_update = self.barrier.summary
-        self.summary_updated_on = datetime.datetime.now()
+        self.summary_updated_on = timezone.now()
 
     @property
     def summary_changed(self):
@@ -652,7 +655,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         status = int(value)
         self._public_view_status = status
         # auto update date fields based on the new status
-        now = datetime.datetime.now()
+        now = timezone.now()
         if status == PublicBarrierStatus.PUBLISHED:
             self.first_published_on = self.first_published_on or now
             self.last_published_on = now

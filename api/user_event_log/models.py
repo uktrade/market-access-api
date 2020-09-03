@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.postgres.fields import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 
@@ -28,7 +27,7 @@ class UserEvent(models.Model):
     )
     type = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH, choices=USER_EVENT_TYPES)
     api_url_path = models.CharField(verbose_name='API URL path', max_length=5000, db_index=True)
-    data = JSONField(null=True, encoder=DjangoJSONEncoder)
+    data = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         """Human-friendly string representation."""

@@ -56,7 +56,7 @@ class WTOProfile(models.Model):
         related_name="wto_profile",
     )
     wto_has_been_notified = models.BooleanField()
-    wto_should_be_notified = models.NullBooleanField()
+    wto_should_be_notified = models.BooleanField(null=True)
     committee_notified = models.ForeignKey(
         "WTOCommittee",
         related_name="committee_notified_wto_profiles",
