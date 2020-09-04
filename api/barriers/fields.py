@@ -92,6 +92,7 @@ class CommoditiesField(serializers.ListField):
         for commodity_data in commodities_data:
             code = commodity_data.get("code").ljust(10, "0")
             country = commodity_data.get("country")
+            trading_bloc = commodity_data.get("trading_bloc")
             hs6_code = code[:6].ljust(10, "0")
             commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest("version")
             barrier_commodity, created = BarrierCommodity.objects.get_or_create(
@@ -99,6 +100,7 @@ class CommoditiesField(serializers.ListField):
                 commodity=commodity,
                 code=code,
                 country=country,
+                trading_bloc=trading_bloc,
             )
             added_commodities.append(barrier_commodity.id)
 
@@ -201,12 +203,6 @@ class TradeDirectionField(serializers.ChoiceField):
             "id": value,
             "name": trade_direction_lookup.get(value),
         }
-
-
-class TradingBlocField(serializers.CharField):
-    def to_representation(self, value):
-        if value:
-            return get_trading_bloc(value)
 
 
 class UserField(serializers.Field):

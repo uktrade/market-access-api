@@ -783,5 +783,6 @@ class BarrierCommodity(models.Model):
     barrier = models.ForeignKey(BarrierInstance, related_name="barrier_commodities", on_delete=models.CASCADE)
     commodity = models.ForeignKey(Commodity, related_name="barrier_commodities", on_delete=models.CASCADE)
     code = models.CharField(max_length=10)
-    country = models.UUIDField()
+    country = models.UUIDField(null=True)
+    trading_bloc = models.CharField(choices=TRADING_BLOC_CHOICES, max_length=7, null=True)
     created_on = models.DateTimeField(auto_now_add=True)

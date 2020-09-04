@@ -15,13 +15,12 @@ from api.barriers.fields import (
     TagsField,
     TermField,
     TradeDirectionField,
-    TradingBlocField,
     UserField,
     WTOProfileField,
 )
 from api.barriers.models import BarrierInstance, BarrierUserHit
 from api.core.serializers.mixins import CustomUpdateMixin
-from api.metadata.fields import AdminAreasField, CountryField
+from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 from .public_barriers import NestedPublicBarrierSerializer
 
 

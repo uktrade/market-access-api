@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from api.barriers.models import BarrierCommodity
-from api.metadata.fields import CountryField
+from api.metadata.fields import CountryField, TradingBlocField
 from .models import Commodity
 
 
@@ -20,7 +20,8 @@ class CommoditySerializer(serializers.ModelSerializer):
 
 
 class BarrierCommoditySerializer(serializers.ModelSerializer):
-    country = CountryField()
+    country = CountryField(allow_null=True)
+    trading_bloc = TradingBlocField(allow_null=True)
     commodity = CommoditySerializer()
 
     class Meta:
@@ -29,4 +30,5 @@ class BarrierCommoditySerializer(serializers.ModelSerializer):
             "commodity",
             "code",
             "country",
+            "trading_bloc",
         )
