@@ -18,7 +18,7 @@ from api.metadata.constants import (
 )
 from api.metadata.models import BarrierPriority, BarrierTag, Category
 from api.metadata.serializers import BarrierPrioritySerializer, BarrierTagSerializer, CategorySerializer
-from api.metadata.utils import get_country, get_sector, get_trading_bloc
+from api.metadata.utils import get_country, get_sector
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
 
