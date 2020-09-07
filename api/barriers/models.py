@@ -115,10 +115,12 @@ class BarrierHistoricalModel(models.Model):
         )
 
     def update_commodities(self):
-        self.commodities_cache = [
-            {
+        self.commodities_cache = []
+        for barrier_commodity in self.instance.barrier_commodities.all():
+            item = {
                 "code": barrier_commodity.code,
-                "country": {"id": str(barrier_commodity.country)},
+                "country": None,
+                "trading_bloc": None,
                 "commodity": {
                     "code": barrier_commodity.commodity.code,
                     "description": barrier_commodity.commodity.description,
@@ -126,8 +128,11 @@ class BarrierHistoricalModel(models.Model):
                     "version": barrier_commodity.commodity.version,
                 }
             }
-            for barrier_commodity in self.instance.barrier_commodities.all()
-        ]
+            if barrier_commodity.country:
+                item["country"] = {"id": str(barrier_commodity.country)}
+            elif barrier_commodity.trading_bloc:
+                item["trading_bloc"] = {"code": barrier_commodity.trading_bloc}
+            self.commodities_cache.append(item)
 
     def update_tags(self):
         self.tags_cache = list(self.instance.tags.values_list("id", flat=True))

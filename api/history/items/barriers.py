@@ -56,7 +56,10 @@ class CommoditiesHistoryItem(BaseBarrierHistoryItem):
 
     def get_value(self, record):
         for commodity in record.commodities_cache or []:
-            commodity["country"] = get_country(commodity["country"].get("id"))
+            if commodity.get("country"):
+                commodity["country"] = get_country(commodity["country"].get("id"))
+            elif commodity.get("trading_bloc"):
+                commodity["trading_bloc"] = get_trading_bloc(commodity["trading_bloc"].get("code"))
         return record.commodities_cache
 
 
