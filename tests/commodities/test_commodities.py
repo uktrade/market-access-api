@@ -8,10 +8,12 @@ from tests.barriers.factories import BarrierFactory, CommodityFactory
 
 class CommoditiesTest(APITestMixin, TestCase):
     country_id = "80756b9a-5d95-e211-a939-e4115bead28a"
+    trading_bloc_id = "TB00016"
 
     def setUp(self):
         CommodityFactory(code="2105000000", description="Ice cream")
         CommodityFactory(code="1704903000", description="White chocolate")
+        CommodityFactory(code="0810200000", description="Other fruit")
         CommodityFactory(code="0810201000", description="Raspberries")
 
     def test_commodity_list(self):
@@ -36,14 +38,28 @@ class CommoditiesTest(APITestMixin, TestCase):
         response = self.api_client.patch(
             url,
             format="json",
-            data={"commodities": [{"code": "2105000099", "country": self.country_id}]}
+            data={
+                "commodities": [
+                    {"code": "2105000099", "country": self.country_id},
+                    {"code": "0810201000", "trading_bloc": self.trading_bloc_id},
+                ],
+            },
         )
 
         assert status.HTTP_200_OK == response.status_code
 
-        assert len(response.data["commodities"]) == 1
+        assert len(response.data["commodities"]) == 2
+
         commodity_data = response.data["commodities"][0]
         assert commodity_data["code"] == "2105000099"
         assert commodity_data["country"]["id"] == self.country_id
+        assert commodity_data["trading_bloc"] is None
         assert commodity_data["commodity"]["code"] == "2105000000"
         assert commodity_data["commodity"]["description"] == "Ice cream"
+
+        commodity_data = response.data["commodities"][1]
+        assert commodity_data["code"] == "0810201000"
+        assert commodity_data["country"] is None
+        assert commodity_data["trading_bloc"]["code"] == self.trading_bloc_id
+        assert commodity_data["commodity"]["code"] == "0810200000"
+        assert commodity_data["commodity"]["description"] == "Other fruit"
