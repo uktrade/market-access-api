@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .constants import BARRIER_TYPE_CATEGORIES
-from .utils import get_admin_area, get_country
+from .utils import get_admin_area, get_country, get_trading_bloc
 
 
 class AdminAreasField(serializers.ListField):
@@ -30,3 +30,9 @@ class CountryField(serializers.UUIDField):
 class CountryListField(serializers.ListField):
     def to_representation(self, value):
         return [get_country(str(country_id)) for country_id in value]
+
+
+class TradingBlocField(serializers.CharField):
+    def to_representation(self, value):
+        if value:
+            return get_trading_bloc(value)

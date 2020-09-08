@@ -7,10 +7,10 @@ from api.barriers.fields import (
     ReadOnlySectorsField,
     ReadOnlyAllSectorsField,
     ReadOnlyCategoriesField,
-    TradingBlocField,
 )
 from api.barriers.models import PublicBarrier
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
+from api.metadata.fields import TradingBlocField
 
 
 class NestedPublicBarrierSerializer(serializers.ModelSerializer):
