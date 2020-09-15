@@ -202,6 +202,10 @@ class BarrierFilterSet(django_filters.FilterSet):
             ).values_list("id", flat=True)
             public_queryset = queryset.filter(id__in=changed_ids)
 
+        if "not_yet_sifted" in value:
+            value.remove("not_yet_sifted")
+            public_queryset = queryset.filter(public_eligibility=None)
+
         status_lookup = {
             "unknown": PublicBarrierStatus.UNKNOWN,
             "ineligible": PublicBarrierStatus.INELIGIBLE,
