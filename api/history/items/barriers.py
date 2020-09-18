@@ -1,7 +1,7 @@
 from api.metadata.utils import (
     get_country,
     get_location_text,
-    get_trading_bloc_by_country_id,
+    get_trading_bloc_by_country_id, get_trading_bloc,
 )
 from .base import BaseHistoryItem
 
