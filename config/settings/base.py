@@ -314,10 +314,6 @@ if not DEBUG:
         'task': 'api.user.tasks.send_notification_emails',
         'schedule': crontab(minute=0, hour=6),
     }
-    # CELERY_BEAT_SCHEDULE['public_release_to_s3'] = {
-    #     'task': 'api.barriers.tasks.public_release_to_s3',
-    #     'schedule': crontab(minute=0, hour=6, day_of_week=),
-    # }
 
 
 # Public Data for Barriers
