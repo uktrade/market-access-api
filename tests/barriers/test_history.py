@@ -296,8 +296,8 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "public_view_status"
-        assert data["old_value"] == PublicBarrierStatus.UNKNOWN
-        assert data["new_value"] == PublicBarrierStatus.ELIGIBLE
+        assert data["old_value"]["public_view_status"]["id"] == PublicBarrierStatus.UNKNOWN
+        assert data["new_value"]["public_view_status"]["id"] == PublicBarrierStatus.ELIGIBLE
 
     def test_summary_history(self):
         self.public_barrier.summary = "New summary"
@@ -959,7 +959,6 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         assert ("barrier", "priority") in cached_changes
         assert ("barrier", "product") in cached_changes
         assert ("barrier", "problem_status") in cached_changes
-        assert ("barrier", "public_eligibility_summary") in cached_changes
         assert ("barrier", "sectors") in cached_changes
         assert ("barrier", "source") in cached_changes
         assert ("barrier", "status") in cached_changes
