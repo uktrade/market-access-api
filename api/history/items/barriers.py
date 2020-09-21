@@ -113,10 +113,6 @@ class ProductHistoryItem(BaseBarrierHistoryItem):
     field = "product"
 
 
-class PublicEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
-    field = "public_eligibility_summary"
-
-
 class ScopeHistoryItem(BaseBarrierHistoryItem):
     field = "problem_status"
 
