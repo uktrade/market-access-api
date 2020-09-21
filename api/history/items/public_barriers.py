@@ -1,3 +1,6 @@
+import datetime
+
+from api.metadata.constants import PublicBarrierStatus
 from api.metadata.utils import (
     get_country,
     get_trading_bloc,
@@ -33,6 +36,20 @@ class LocationHistoryItem(BasePublicBarrierHistoryItem):
 
 class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
     field = "public_view_status"
+
+    def get_value(self, record):
+        barrier_record = record.barrier.history.as_of(
+            record.history_date + datetime.timedelta(seconds=1)
+        )
+
+        return {
+            "public_view_status": {
+                "id": record.public_view_status,
+                "name": PublicBarrierStatus.choices[record.public_view_status],
+            },
+            "public_eligibility": barrier_record.public_eligibility,
+            "public_eligibility_summary": barrier_record.public_eligibility_summary,
+        }
 
 
 class SectorsHistoryItem(BasePublicBarrierHistoryItem):
