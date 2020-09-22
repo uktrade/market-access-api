@@ -762,11 +762,15 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_location(self):
-        return self.barrier.location
+        return get_location_text(
+            country_id=self.barrier.export_country,
+            trading_bloc=self.barrier.trading_bloc,
+            caused_by_trading_bloc=self.barrier.caused_by_trading_bloc,
+        )
 
     @property
     def internal_location_changed(self):
-        return self.barrier.location != self.location
+        return self.internal_location != self.location
 
     @property
     def internal_sectors(self):
