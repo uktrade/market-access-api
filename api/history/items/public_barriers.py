@@ -1,3 +1,4 @@
+from api.metadata.constants import BarrierStatus
 from api.metadata.utils import get_location_text
 from .base import BaseHistoryItem
 
@@ -46,8 +47,18 @@ class SectorsHistoryItem(BasePublicBarrierHistoryItem):
 class StatusHistoryItem(BasePublicBarrierHistoryItem):
     field = "status"
 
+    def is_valid(self):
+        return self.is_resolved(self.old_record) != self.is_resolved(self.new_record)
+
     def get_value(self, record):
-        return {"status": str(record.status)}
+        return {
+            "status": str(record.status),
+            "status_date": record.status_date,
+            "is_resolved": self.is_resolved(record),
+        }
+
+    def is_resolved(self, record):
+        return record.status == BarrierStatus.RESOLVED_IN_FULL
 
 
 class SummaryHistoryItem(BasePublicBarrierHistoryItem):
