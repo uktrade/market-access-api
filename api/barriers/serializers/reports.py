@@ -16,6 +16,7 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "created_on",
             "id",
             "is_summary_sensitive",
+            "location",
             "modified_by",
             "modified_on",
             "next_steps_summary",

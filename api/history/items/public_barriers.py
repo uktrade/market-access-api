@@ -1,10 +1,7 @@
 import datetime
 
 from api.metadata.constants import PublicBarrierStatus
-from api.metadata.utils import (
-    get_country,
-    get_trading_bloc,
-)
+from api.metadata.utils import get_location_text
 from .base import BaseHistoryItem
 
 
@@ -23,15 +20,11 @@ class LocationHistoryItem(BasePublicBarrierHistoryItem):
     field = "location"
 
     def get_value(self, record):
-        value = {
-            "country": None,
-            "trading_bloc": None,
-        }
-        if record.trading_bloc:
-            value["trading_bloc"] = get_trading_bloc(record.trading_bloc)
-        if record.country:
-            value["country"] = get_country(str(record.country))
-        return value
+        return get_location_text(
+            country_id=record.country,
+            trading_bloc=record.trading_bloc,
+            caused_by_trading_bloc=record.caused_by_trading_bloc,
+        )
 
 
 class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):

@@ -2,16 +2,18 @@ import environ
 import os
 import ssl
 
-from celery.schedules import crontab
 import dj_database_url
-
 import sentry_sdk
+
+from celery.schedules import crontab
+from pathlib import Path
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = Path(__file__).parents[2]
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -312,3 +314,15 @@ if not DEBUG:
         'task': 'api.user.tasks.send_notification_emails',
         'schedule': crontab(minute=0, hour=6),
     }
+
+
+# Public Data for Barriers
+# ============================================
+# Option flag to turn off publication within the app
+PUBLIC_DATA_TO_S3_ENABLED = env("PUBLIC_DATA_TO_S3_ENABLED", default=True)
+# AWS S3 Bucket info
+PUBLIC_DATA_AWS_ACCESS_KEY_ID = env("PUBLIC_DATA_AWS_ACCESS_KEY_ID")
+PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = env("PUBLIC_DATA_AWS_SECRET_ACCESS_KEY")
+PUBLIC_DATA_BUCKET = env("PUBLIC_DATA_BUCKET")
+PUBLIC_DATA_BUCKET_REGION = env("PUBLIC_DATA_BUCKET_REGION")
+PUBLIC_DATA_KEY_PREFIX = env("PUBLIC_DATA_KEY_PREFIX")

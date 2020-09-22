@@ -49,8 +49,8 @@ class TestActivityView(APITestMixin, TestCase):
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]
+        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5

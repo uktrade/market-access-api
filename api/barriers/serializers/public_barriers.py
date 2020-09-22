@@ -7,8 +7,11 @@ from api.barriers.fields import (
     ReadOnlySectorsField,
     ReadOnlyAllSectorsField,
     ReadOnlyCategoriesField,
+    ReadOnlyTradingBlocField,
 )
+from api.barriers.helpers import get_published_public_barriers
 from api.barriers.models import PublicBarrier
+from api.barriers.serializers.mixins import LocationFieldMixin
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.metadata.fields import TradingBlocField
 
@@ -70,6 +73,9 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "trading_bloc",
             "internal_trading_bloc",
             "internal_trading_bloc_changed",
+            "location",
+            "internal_location",
+            "internal_location_changed",
             "sectors",
             "internal_sectors",
             "internal_sectors_changed",
@@ -104,6 +110,9 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "trading_bloc",
             "internal_trading_bloc",
             "internal_trading_bloc_changed",
+            "location",
+            "internal_location",
+            "internal_location_changed",
             "sectors",
             "internal_sectors",
             "internal_sectors_changed",
@@ -138,8 +147,12 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
         return obj.ready_to_be_published
 
 
-class PublishedVersionSerializer(AllowNoneAtToRepresentationMixin,
+class PublishedVersionSerializer(LocationFieldMixin,
+                                 AllowNoneAtToRepresentationMixin,
                                  serializers.ModelSerializer):
+    """
+    Serializer to be used with DMAS FE app
+    """
     title = serializers.CharField()
     summary = serializers.CharField()
     status = ReadOnlyStatusField()
@@ -156,30 +169,77 @@ class PublishedVersionSerializer(AllowNoneAtToRepresentationMixin,
             "summary",
             "status",
             "country",
+            "location",
             "sectors",
             "all_sectors",
             "categories",
         )
 
 
-# TODO: write a serializer that can be used to output the JSON blob onto S3
-# As per contract (from slack chat with Michal)
-# Public Barriers in the flat file should look as follows
-# {
-#     "barriers": [
-#         {
-#             "id": "1",
-#             "title": "Belgian chocolate...",
-#             "summary": "Lorem ipsum",
-#             "status": "Open: in progress,
-#             "country": "Belgium",
-#             "sectors: [
-#                 {"name": "Automotive"}
-#             ],
-#             "all_sectors": False,
-#             "categories": [
-#                 {"name": "Goods and Services"}
-#             ]
-#         }
-#     ]
-# }
+class PublicPublishedVersionSerializer(LocationFieldMixin,
+                                       AllowNoneAtToRepresentationMixin,
+                                       serializers.ModelSerializer):
+    """
+    Serializer to be used with gov.uk
+    """
+    title = serializers.CharField()
+    summary = serializers.CharField()
+    status = ReadOnlyStatusField(to_repr_keys=("name",))
+    country = ReadOnlyCountryField(to_repr_keys=("name", "trading_bloc"))
+    trading_bloc = ReadOnlyTradingBlocField()
+    sectors = serializers.SerializerMethodField()
+    categories = ReadOnlyCategoriesField(to_repr_keys=("name",))
+
+    class Meta:
+        model = PublicBarrier
+        fields = (
+            "id",
+            "title",
+            "summary",
+            "status",
+            "country",
+            # "caused_by_country_trading_bloc",
+            "caused_by_trading_bloc",
+            "trading_bloc",
+            "location",
+            "sectors",
+            "categories",
+        )
+
+    def get_sectors(self, obj):
+        if obj.all_sectors:
+            return [{"name": "All sectors"}]
+        else:
+            return ReadOnlySectorsField(to_repr_keys=("name",)).to_representation(obj.sectors)
+
+
+def public_barriers_to_json():
+    """
+    Helper to serialize latest published version of published barriers.
+    Public Barriers in the flat file should look similar.
+    {
+        "barriers": [
+            {
+                "id": "1",
+                "title": "Belgian chocolate...",
+                "summary": "Lorem ipsum",
+                "status": {"name": "Open: in progress",}
+                "country": {"name": "Belgium",}
+                "caused_by_trading_bloc": false,
+                "trading_bloc": null,
+                "location": "Belgium"
+                "sectors: [
+                    {"name": "Automotive"}
+                ],
+                "categories": [
+                    {"name": "Goods and Services"}
+                ]
+            }
+        ]
+    }
+    If all sectors is true, use the sectors key to represent that as follows:
+        "sectors: [{"name": "All sectors"}],
+    """
+    public_barriers = (pb.latest_published_version for pb in get_published_public_barriers())
+    serializer = PublicPublishedVersionSerializer(public_barriers, many=True)
+    return serializer.data
