@@ -728,7 +728,7 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
         self.barrier = BarrierFactory(
             export_country="1f0be5c4-5d95-e211-a939-e4115bead28a",  # Singapore
             sectors=['9b38cecc-5f95-e211-a939-e4115bead28a'],  # Chemicals
-            status=BarrierStatus.OPEN_PENDING
+            status=BarrierStatus.OPEN_PENDING,
         )
         self.category = CategoryFactory()
         self.barrier.categories.add(self.category)
@@ -757,19 +757,14 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
         assert "" == data["summary"]
 
     def test_status_is_serialized_consistently(self):
-        expected_status = {
-            "id": BarrierStatus.OPEN_PENDING,
-            "name": BarrierStatus.name(BarrierStatus.OPEN_PENDING)
-        }
-
         user = self.create_publisher()
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_200_OK == response.status_code
 
         data = PublicBarrierSerializer(pb).data
-        assert expected_status == data["status"]
-        assert expected_status == data["internal_status"]
-        assert expected_status == data["latest_published_version"]["status"]
+        assert data["is_resolved"] is False
+        assert data["internal_is_resolved"] is False
+        assert data["latest_published_version"]["is_resolved"] is False
 
     def test_country_is_serialized_consistently(self):
         expected_country = {

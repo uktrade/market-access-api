@@ -196,7 +196,6 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
     """
     title = serializers.CharField()
     summary = serializers.CharField()
-    status = ReadOnlyStatusField(to_repr_keys=("name",))
     country = ReadOnlyCountryField(to_repr_keys=("name", "trading_bloc"))
     trading_bloc = ReadOnlyTradingBlocField()
     sectors = serializers.SerializerMethodField()
@@ -208,7 +207,8 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
             "id",
             "title",
             "summary",
-            "status",
+            "is_resolved",
+            "status_date",
             "country",
             # "caused_by_country_trading_bloc",
             "caused_by_trading_bloc",

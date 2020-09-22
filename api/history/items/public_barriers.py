@@ -74,7 +74,8 @@ class StatusHistoryItem(BasePublicBarrierHistoryItem):
         }
 
     def is_resolved(self, record):
-        return record.status == BarrierStatus.RESOLVED_IN_FULL
+        if record:
+            return record.status == BarrierStatus.RESOLVED_IN_FULL
 
 
 class SummaryHistoryItem(BasePublicBarrierHistoryItem):
