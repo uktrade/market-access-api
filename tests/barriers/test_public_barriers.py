@@ -1143,7 +1143,8 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         assert pb1.id == barrier["id"]
         assert pb1.title == barrier["title"]
         assert pb1.summary == barrier["summary"]
-        assert {"name": BarrierStatus.name(pb1.status)} == barrier["status"]
+        assert pb1.is_resolved == barrier["is_resolved"]
+        assert pb1.status_date.isoformat() == barrier["status_date"]
 
     @patch("api.barriers.views.public_release_to_s3")
     def test_publish_calls_public_release(self, mock_release):
