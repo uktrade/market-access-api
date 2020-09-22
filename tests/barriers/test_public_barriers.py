@@ -1,8 +1,10 @@
+from datetime import datetime
+
 import boto3
 import json
 
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from freezegun import freeze_time
 from mock import patch
@@ -1095,6 +1097,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         conn.create_bucket(Bucket=settings.PUBLIC_DATA_BUCKET)
 
     @mock_s3
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
     def test_data_file_gets_uploaded_to_s3(self):
         self.create_mock_s3_bucket()
 
@@ -1112,9 +1115,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         assert sorted(expected_ids) == sorted([b["id"] for b in public_data["barriers"]])
 
     @mock_s3
-    # TODO: doesn't work when freeze time is applied
-    # however freeze time works with the test case above ?! go figure...
-    # @freeze_time("2121-12-21")
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
     def test_metadata_file_upload_to_s3(self):
         self.create_mock_s3_bucket()
 
@@ -1126,8 +1127,8 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         metadata = json.loads(obj.get()['Body'].read().decode())
 
         assert "release_date" in metadata.keys()
-        # TODO: this requires freeze time
-        # assert "2121-12-21" == metadata["release_date"]
+        today = datetime.today().strftime('%Y-%m-%d')
+        assert today == metadata["release_date"]
 
     def test_data_json_file_content_task(self):
         pb1, _ = self.publish_barrier(user=self.publisher)

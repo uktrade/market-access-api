@@ -318,6 +318,9 @@ if not DEBUG:
 
 # Public Data for Barriers
 # ============================================
+# Option flag to turn off publication within the app
+PUBLIC_DATA_TO_S3_ENABLED = env("PUBLIC_DATA_TO_S3_ENABLED", default=True)
+# AWS S3 Bucket info
 PUBLIC_DATA_AWS_ACCESS_KEY_ID = env("PUBLIC_DATA_AWS_ACCESS_KEY_ID")
 PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = env("PUBLIC_DATA_AWS_SECRET_ACCESS_KEY")
 PUBLIC_DATA_BUCKET = env("PUBLIC_DATA_BUCKET")

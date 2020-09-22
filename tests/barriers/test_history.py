@@ -222,6 +222,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
 class TestPublicBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
 
+    @freeze_time("2020-03-02")
     def setUp(self):
         self.barrier = BarrierInstance.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
@@ -284,6 +285,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
 
     def test_public_view_status_history(self):
+        self.barrier.public_eligibility = True
+        self.barrier.public_eligibility_summary = "Allowed summary"
+        self.barrier.save()
         self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
         self.public_barrier.save()
 
@@ -292,8 +296,22 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "public_view_status"
-        assert data["old_value"] == PublicBarrierStatus.UNKNOWN
-        assert data["new_value"] == PublicBarrierStatus.ELIGIBLE
+        assert data["old_value"] == {
+            "public_view_status": {
+                "id": PublicBarrierStatus.UNKNOWN,
+                "name": PublicBarrierStatus.choices[PublicBarrierStatus.UNKNOWN],
+            },
+            "public_eligibility": None,
+            "public_eligibility_summary": "",
+        }
+        assert data["new_value"] == {
+            "public_view_status": {
+                "id": PublicBarrierStatus.ELIGIBLE,
+                "name": PublicBarrierStatus.choices[PublicBarrierStatus.ELIGIBLE],
+            },
+            "public_eligibility": True,
+            "public_eligibility_summary": "Allowed summary",
+        }
 
     def test_summary_history(self):
         self.public_barrier.summary = "New summary"
@@ -946,7 +964,6 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         assert ("barrier", "priority") in cached_changes
         assert ("barrier", "product") in cached_changes
         assert ("barrier", "problem_status") in cached_changes
-        assert ("barrier", "public_eligibility_summary") in cached_changes
         assert ("barrier", "sectors") in cached_changes
         assert ("barrier", "source") in cached_changes
         assert ("barrier", "status") in cached_changes

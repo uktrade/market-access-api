@@ -27,3 +27,8 @@ WHITENOISE_USE_FINDERS = True
 CELERY_TASK_ALWAYS_EAGER = True
 
 DMAS_BASE_URL = "https://dummy.market-access.net"
+
+
+# Public data
+# ---------------------------------------------------------------------------
+PUBLIC_DATA_TO_S3_ENABLED = False

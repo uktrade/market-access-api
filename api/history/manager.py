@@ -47,11 +47,6 @@ class HistoryManager:
             start_date=public_barrier.created_on + datetime.timedelta(seconds=1),
             use_cache=use_cache,
         )
-        history_items += HistoryManager.get_barrier_history(
-            barrier_id=public_barrier.barrier_id,
-            fields=["public_eligibility_summary"],
-            use_cache=use_cache,
-        )
         return history_items
 
     @classmethod

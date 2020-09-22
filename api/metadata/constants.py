@@ -81,7 +81,7 @@ class PublicBarrierStatus(StatusNameMixin):
 
     choices = Choices(
         (UNKNOWN, "To be decided"),
-        (INELIGIBLE, "Not for public view"),
+        (INELIGIBLE, "Not allowed"),
         (ELIGIBLE, "Allowed"),
         (READY, "Ready"),
         (PUBLISHED, "Published"),
