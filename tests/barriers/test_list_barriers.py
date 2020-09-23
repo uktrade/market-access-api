@@ -413,6 +413,23 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier2.id), str(barrier3.id)} == set(barrier_ids)
 
+    def test_list_barriers_text_filter_based_on_public_id(self):
+        barrier1 = BarrierFactory(public_barrier__title="Public Title")
+        barrier2 = BarrierFactory(public_barrier__title="Public Title")
+        barrier3 = BarrierFactory()
+
+        public_id = f"PID-{barrier2.public_barrier.id}"
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?text={public_id}'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        barrier_ids = [b["id"] for b in response.data["results"]]
+        assert {str(barrier2.id)} == set(barrier_ids)
+
     def test_filter_barriers_my_barriers(self):
         BarrierFactory()
         _user1 = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
