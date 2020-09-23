@@ -254,7 +254,8 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["new_value"] == "Georgia"
 
     def test_status_history(self):
-        self.public_barrier.status = 5
+        self.public_barrier.status = 4
+        self.public_barrier.status_date = datetime.date(2020, 5, 1)
         self.public_barrier.save()
 
         items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
@@ -264,9 +265,13 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "status"
         assert data["old_value"] == {
             "status": "1",
+            "status_date": None,
+            "is_resolved": False,
         }
         assert data["new_value"] == {
-            "status": "5",
+            "status": "4",
+            "status_date": datetime.date(2020, 5, 1),
+            "is_resolved": True,
         }
 
     def test_sectors_history(self):
@@ -948,7 +953,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         self.public_barrier.categories.add("109", "115")
         self.public_barrier.country = "570507cc-1592-4a99-afca-915d13a437d0"
         self.public_barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
-        self.public_barrier.status = 5
+        self.public_barrier.status = 4
         self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
         self.public_barrier.summary = "New summary"
         self.public_barrier.title = "New title"

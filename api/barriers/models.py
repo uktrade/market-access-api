@@ -367,6 +367,10 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     def has_wto_profile(self):
         return hasattr(self, 'wto_profile')
 
+    @property
+    def is_resolved(self):
+        return self.status == BarrierStatus.RESOLVED_IN_FULL
+
     def last_seen_by(self, user_id):
         try:
             hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
@@ -508,6 +512,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
+    status_date = models.DateField(null=True)
     country = models.UUIDField(null=True)
     # caused_by_country_trading_bloc = models.BooleanField(null=True)
     caused_by_trading_bloc = models.BooleanField(null=True)
@@ -573,6 +578,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     def update_non_editable_fields(self):
         self.status = self.internal_status
+        self.status_date = self.internal_status_date
         self.country = self.internal_country
         # self.caused_by_country_trading_bloc = self.internal_caused_by_trading_bloc
         self.caused_by_trading_bloc = self.internal_caused_by_trading_bloc
@@ -710,6 +716,26 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return self.barrier.status != self.status
 
     @property
+    def internal_status_date(self):
+        return self.barrier.status_date
+
+    @property
+    def internal_status_date_changed(self):
+        return self.barrier.status_date != self.status_date
+
+    @property
+    def is_resolved(self):
+        return self.status == BarrierStatus.RESOLVED_IN_FULL
+
+    @property
+    def internal_is_resolved(self):
+        return self.barrier.is_resolved
+
+    @property
+    def internal_is_resolved_changed(self):
+        return self.barrier.is_resolved != self.is_resolved
+
+    @property
     def internal_country(self):
         return self.barrier.export_country
 
@@ -736,11 +762,15 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_location(self):
-        return self.barrier.location
+        return get_location_text(
+            country_id=self.barrier.export_country,
+            trading_bloc=self.barrier.trading_bloc,
+            caused_by_trading_bloc=self.barrier.caused_by_trading_bloc,
+        )
 
     @property
     def internal_location_changed(self):
-        return self.barrier.location != self.location
+        return self.internal_location != self.location
 
     @property
     def internal_sectors(self):
@@ -784,7 +814,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return (
             self.title_changed
             or self.summary_changed
-            or self.internal_status_changed
+            or self.internal_is_resolved_changed
+            or self.internal_status_date_changed
             or self.internal_location_changed
             or self.internal_sectors_changed
             or self.internal_all_sectors_changed
