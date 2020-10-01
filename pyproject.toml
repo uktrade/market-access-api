@@ -52,5 +52,5 @@ pytest-xdist = "~=2.1.0"
 requests-mock = "~=1.8.0"
 
 [build-system]
-requires = ["poetry>=1.0.5"]
+requires = ["poetry>=1.0.10"]
 build-backend = "poetry.masonry.api"
