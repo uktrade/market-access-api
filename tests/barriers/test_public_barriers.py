@@ -734,6 +734,21 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
         self.barrier.categories.add(self.category)
         self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
 
+    def test_latest_published_version_fields(self):
+        response = self.api_client.get(self.url)
+        pb = PublicBarrier.objects.get(pk=response.data["id"])
+        pb.publish()
+        pb.refresh_from_db()
+
+        data = PublicBarrierSerializer(pb).data
+        published_version_fields = data["latest_published_version"].keys()
+        assert "id" in published_version_fields
+        assert "title" in published_version_fields
+        assert "summary" in published_version_fields
+        assert "status_date" in published_version_fields
+        assert "is_resolved" in published_version_fields
+        assert "location" in published_version_fields
+
     def test_empty_title_field_gets_serialized_to_empty_string(self):
         response = self.api_client.get(self.url)
         pb = PublicBarrier.objects.get(pk=response.data["id"])
