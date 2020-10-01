@@ -165,9 +165,12 @@ class PublishedVersionSerializer(LocationFieldMixin,
     """
     Serializer to be used with DMAS FE app
     """
+    id = serializers.CharField()
     title = serializers.CharField()
     summary = serializers.CharField()
+    is_resolved = serializers.BooleanField()
     country = ReadOnlyCountryField()
+    location = serializers.CharField()
     sectors = ReadOnlySectorsField()
     all_sectors = ReadOnlyAllSectorsField()
     categories = ReadOnlyCategoriesField()
