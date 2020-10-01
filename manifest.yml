@@ -1,4 +1,4 @@
 ---
 applications:
 - buildpacks:
-  - https://github.com/cloudfoundry/python-buildpack.git#v1.7.13
+  - https://github.com/cloudfoundry/python-buildpack.git#v1.7.22

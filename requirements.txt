@@ -1,6 +1,6 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2020-09-18_18-40
+# Generated: 2020-10-01_20-53
 # ======
 amqp==2.6.1
 asgiref==3.2.10
@@ -12,32 +12,32 @@ certifi==2020.6.20
 cffi==1.14.3
 chardet==3.0.4
 dj-database-url==0.5.0
-django==3.1.1
+django==3.1.2
 django-celery-beat==2.0.0
 django-environ==0.4.5
-django-extensions==2.2.9
-django-filter==2.3.0
+django-extensions==3.0.9
+django-filter==2.4.0
 django-ipware==3.0.1
-django-log-formatter-ecs==0.0.2
-django-model-utils==3.1.2
+django-log-formatter-ecs==0.0.5
+django-model-utils==4.0.0
 django-oauth-toolkit==1.3.2
 django-ordered-model==3.4.1
 django-pglocks==1.0.4
 django-redis==4.12.1
-django-simple-history==2.10.0
+django-simple-history==2.11.0
 django-staff-sso-client==3.0.0
 django-timezone-field==4.0
-djangorestframework==3.11.1
+djangorestframework==3.12.1
 docopt==0.6.2
 docutils==0.15.2
-elastic-apm==5.6.0
+elastic-apm==5.9.0
 future==0.18.2
-gevent==20.5.1
-greenlet==0.4.16; platform_python_implementation == "CPython"
+gevent==20.9.0
+greenlet==0.4.17; platform_python_implementation == "CPython"
 gunicorn==20.0.4
 hawkrest==1.0.1
 idna==2.8
-importlib-metadata==1.7.0
+importlib-metadata==2.0.0
 jmespath==0.10.0
 kombu==4.6.11
 kubi-ecs-logger==0.1.0
@@ -51,21 +51,21 @@ pycparser==2.20; platform_python_implementation == "CPython" and sys_platform ==
 pyjwt==1.7.1
 python-crontab==2.5.1
 python-dateutil==2.8.1
-python-json-logger==0.1.10
+python-json-logger==2.0.0
 pytz==2020.1
 raven==6.9.0
 redis==3.5.3
 requests==2.24.0
 requests-oauthlib==1.3.0
-requests-toolbelt==0.8.0
+requests-toolbelt==0.9.1
 s3transfer==0.3.3
-sentry-sdk==0.14.4
+sentry-sdk==0.18.0
 six==1.15.0
 sqlparse==0.3.1
 urllib3==1.25.10
 urlobject==2.4.3
 vine==1.3.0
-whitenoise==5.1.0
-zipp==3.1.0; python_version < "3.8"
+whitenoise==5.2.0
+zipp==3.2.0; python_version < "3.8"
 zope.event==4.5.0
-zope.interface==5.1.0
+zope.interface==5.1.2
