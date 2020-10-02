@@ -95,7 +95,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     public_summary = serializers.CharField(source="public_barrier.summary")
     latest_publish_note = serializers.SerializerMethodField()
 
-
     class Meta:
         model = BarrierInstance
         fields = (
