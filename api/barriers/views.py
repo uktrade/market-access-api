@@ -310,14 +310,20 @@ class BarriertListExportView(generics.ListAPIView):
     """
 
     queryset = BarrierInstance.barriers.annotate(
-        team_count=Count('barrier_team')
-    ).all().select_related("assessment").select_related(
-        "wto_profile__committee_notified"
-    ).select_related(
-        "wto_profile__committee_raised_in"
-    ).select_related(
-        "priority"
-    ).prefetch_related("tags").prefetch_related("categories")
+        team_count=Count('barrier_team'),
+    ).all().select_related(
+        "assessment",
+        "wto_profile__committee_notified",
+        "wto_profile__committee_raised_in",
+        "priority",
+        "public_barrier",
+    ).prefetch_related(
+        "tags",
+        "categories",
+        "barrier_commodities",
+        "public_barrier__notes",
+        "cached_history_items",
+    )
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend, OrderingFilter)
@@ -358,6 +364,15 @@ class BarriertListExportView(generics.ListAPIView):
         "wto_committee_raised_in": "WTO Raised Committee",
         "wto_raised_date": "WTO Raised Date",
         "wto_case_number": "WTO Case Number",
+        "commodity_codes": "HS codes",
+        "first_published_on": "First published date",
+        "last_published_on": "Last published date",
+        "public_view_status": "Public view status",
+        "changed_since_published": "Changed since published",
+        "public_id": "Public ID",
+        "public_title": "Public title",
+        "public_summary": "Public summary",
+        "latest_publish_note": "Latest publish note",
     }
 
     def _get_rows(self, queryset):

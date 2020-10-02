@@ -11,6 +11,7 @@ from api.metadata.constants import (
     BarrierStatus,
     BARRIER_PENDING,
     PROBLEM_STATUS_TYPES,
+    PublicBarrierStatus,
     TRADE_DIRECTION_CHOICES,
 )
 
@@ -78,6 +79,22 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         source="wto_profile.case_number",
         default="",
     )
+    first_published_on = serializers.DateTimeField(
+        source="public_barrier.first_published_on",
+        format="%Y-%m-%d"
+    )
+    last_published_on = serializers.DateTimeField(
+        source="public_barrier.last_published_on",
+        format="%Y-%m-%d"
+    )
+    public_view_status = serializers.SerializerMethodField()
+    changed_since_published = serializers.SerializerMethodField()
+    commodity_codes = serializers.SerializerMethodField()
+    public_id = serializers.SerializerMethodField()
+    public_title = serializers.CharField(source="public_barrier.title")
+    public_summary = serializers.CharField(source="public_barrier.summary")
+    latest_publish_note = serializers.SerializerMethodField()
+
 
     class Meta:
         model = BarrierInstance
@@ -260,3 +277,39 @@ class BarrierCsvExportSerializer(serializers.Serializer):
                 get_country(str(country_id)).get("name")
                 for country_id in obj.wto_profile.member_states
             ]
+
+    def get_commodity_codes(self, obj):
+        return [
+            barrier_commodity.simple_formatted_code
+            for barrier_commodity in obj.barrier_commodities.all()
+        ]
+
+    def get_public_id(self, obj):
+        if obj.has_public_barrier and obj.public_barrier.first_published_on:
+            return f"PID-{obj.public_barrier.pk}"
+
+    def get_public_view_status(self, obj):
+        if obj.has_public_barrier:
+            return obj.public_barrier.get__public_view_status_display()
+        return PublicBarrierStatus.choices[PublicBarrierStatus.UNKNOWN]
+
+    def get_changed_since_published(self, obj):
+        if obj.has_public_barrier and obj.public_barrier.public_view_status == PublicBarrierStatus.PUBLISHED:
+            relevant_changes = (
+                "barrier.categories",
+                "barrier.location",
+                "barrier.sectors",
+                "barrier.status",
+                "barrier.summary",
+                "barrier.title",
+            )
+            for history_item in obj.cached_history_items.all():
+                if history_item.date > obj.public_barrier.last_published_on:
+                    change = f"{history_item.model}.{history_item.field}"
+                    if change in relevant_changes:
+                        return "Yes"
+            return "No"
+
+    def get_latest_publish_note(self, obj):
+        if obj.has_public_barrier and obj.public_barrier.notes.exists():
+            return obj.public_barrier.notes.latest("created_on").text
