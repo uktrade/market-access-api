@@ -174,6 +174,9 @@ TRADING_BLOCS = {
             "86756b9a-5d95-e211-a939-e4115bead28a",  # Spain
             "300be5c4-5d95-e211-a939-e4115bead28a",  # Sweden
             "80756b9a-5d95-e211-a939-e4115bead28a",  # United Kingdom
+        ],
+        "overseas_regions": [
+            "3e6809d6-89f6-4590-8458-1d0dab73ad1a",  # Europe
         ]
     },
 }

@@ -383,6 +383,26 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(bhutan_barrier.id), str(spain_barrier.id)} == set(barrier_ids)
 
+    def test_list_barriers_overseas_region_trading_blocs(self):
+        germany = "83756b9a-5d95-e211-a939-e4115bead28a"
+        bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
+        europe = "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+
+        eu_barrier = BarrierFactory(trading_bloc="TB00016")
+        germany_barrier = BarrierFactory(export_country=germany)
+        bahamas_barrier = BarrierFactory(export_country=bahamas)
+
+        assert 3 == BarrierInstance.objects.count()
+
+        url = f'{reverse("list-barriers")}?location={europe}'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        assert 2 == response.data["count"]
+        barrier_ids = [b["id"] for b in response.data["results"]]
+        assert {str(eu_barrier.id), str(germany_barrier.id)} == set(barrier_ids)
+
     def test_list_barriers_text_filter_based_on_title(self):
         barrier1 = BarrierFactory(barrier_title="Wibble blockade")
         _barrier2 = BarrierFactory(barrier_title="Wobble blockade")

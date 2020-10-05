@@ -103,29 +103,50 @@ class BarrierFilterSet(django_filters.FilterSet):
         else:
             return queryset.filter(priority__in=priorities)
 
-    def location_filter(self, queryset, name, value):
-        """
-        custom filter for retreiving barriers of all countries of an overseas region
-        """
-        country_values = []
+    def clean_location_value(self, value):
+        location_values = []
+        overseas_region_values = []
         trading_bloc_values = []
+        overseas_region_countries = []
+
         for location in value:
             if location in TRADING_BLOCS:
                 trading_bloc_values.append(location)
             else:
-                country_values.append(location)
+                location_values.append(location)
 
-        countries = cache.get_or_set("dh_countries", get_countries, 72000)
-        countries_for_region = [
-            item["id"]
-            for item in countries
-            if item["overseas_region"] and item["overseas_region"]["id"] in country_values
-        ]
+        # Add all countries within the overseas regions
+        for country in cache.get_or_set("dh_countries", get_countries, 72000):
+            if country["overseas_region"] and country["overseas_region"]["id"] in location_values:
+                overseas_region_countries.append(country["id"])
+                if country["overseas_region"]["id"] not in overseas_region_values:
+                    overseas_region_values.append(country["overseas_region"]["id"])
+
+        # Add all trading blocs associated with the overseas regions
+        for overseas_region in overseas_region_values:
+            for trading_bloc in TRADING_BLOCS.values():
+                if overseas_region in trading_bloc["overseas_regions"]:
+                    trading_bloc_values.append(trading_bloc["code"])
+
+        return {
+            "countries": [
+                location for location in location_values if location not in overseas_region_values
+            ],
+            "overseas_regions": overseas_region_values,
+            "overseas_region_countries": overseas_region_countries,
+            "trading_blocs": trading_bloc_values,
+        }
+
+    def location_filter(self, queryset, name, value):
+        """
+        custom filter for retreiving barriers of all countries of an overseas region
+        """
+        location = self.clean_location_value(value)
 
         tb_queryset = queryset.none()
 
-        if trading_bloc_values:
-            tb_queryset = queryset.filter(trading_bloc__in=trading_bloc_values)
+        if location["trading_blocs"]:
+            tb_queryset = queryset.filter(trading_bloc__in=location["trading_blocs"])
 
             if "country_trading_bloc" in self.data:
                 trading_bloc_countries = []
@@ -138,9 +159,9 @@ class BarrierFilterSet(django_filters.FilterSet):
                 )
 
         return tb_queryset | queryset.filter(
-            Q(export_country__in=country_values) |
-            Q(export_country__in=countries_for_region) |
-            Q(country_admin_areas__overlap=country_values)
+            Q(export_country__in=location["countries"]) |
+            Q(export_country__in=location["overseas_region_countries"]) |
+            Q(country_admin_areas__overlap=location["countries"])
         )
 
     def text_search(self, queryset, name, value):
