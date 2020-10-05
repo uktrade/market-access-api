@@ -80,7 +80,7 @@ class PublicBarrierStatus(StatusNameMixin):
     UNPUBLISHED = 50
 
     choices = Choices(
-        (UNKNOWN, "To be decided"),
+        (UNKNOWN, "Not yet sifted"),
         (INELIGIBLE, "Not allowed"),
         (ELIGIBLE, "Allowed"),
         (READY, "Ready"),

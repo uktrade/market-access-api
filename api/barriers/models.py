@@ -28,6 +28,7 @@ from api.metadata.utils import get_trading_bloc_by_country_id, get_location_text
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
+from api.commodities.utils import format_commodity_code
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -858,3 +859,11 @@ class BarrierCommodity(models.Model):
     country = models.UUIDField(null=True)
     trading_bloc = models.CharField(choices=TRADING_BLOC_CHOICES, max_length=7, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def formatted_code(self):
+        return format_commodity_code(self.code)
+
+    @property
+    def simple_formatted_code(self):
+        return format_commodity_code(self.code, separator="")
