@@ -104,6 +104,9 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.filter(priority__in=priorities)
 
     def clean_location_value(self, value):
+        """
+        Splits a list of locations into countries, regions and trading blocs
+        """
         location_values = []
         overseas_region_values = []
         trading_bloc_values = []
