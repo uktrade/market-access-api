@@ -695,6 +695,13 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             self.unpublished_on = now
 
     @property
+    def is_currently_published(self):
+        """
+        Is this barrier currently visible on the public frontend?
+        """
+        return self.first_published_on and not self.unpublished_on
+
+    @property
     def internal_title_changed(self):
         if self.internal_title_at_update:
             return self.barrier.barrier_title != self.internal_title_at_update

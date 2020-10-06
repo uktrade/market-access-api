@@ -93,6 +93,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     public_id = serializers.SerializerMethodField()
     public_title = serializers.CharField(source="public_barrier.title")
     public_summary = serializers.CharField(source="public_barrier.summary")
+    public_is_resolved = serializers.SerializerMethodField()
     latest_publish_note = serializers.SerializerMethodField()
 
     class Meta:
@@ -284,7 +285,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         ]
 
     def get_public_id(self, obj):
-        if obj.has_public_barrier and obj.public_barrier.first_published_on:
+        if obj.has_public_barrier and obj.public_barrier.is_currently_published:
             return f"PID-{obj.public_barrier.pk}"
 
     def get_public_view_status(self, obj):
@@ -293,7 +294,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         return PublicBarrierStatus.choices[PublicBarrierStatus.UNKNOWN]
 
     def get_changed_since_published(self, obj):
-        if obj.has_public_barrier and obj.public_barrier.public_view_status == PublicBarrierStatus.PUBLISHED:
+        if obj.has_public_barrier and obj.public_barrier.is_currently_published:
             relevant_changes = (
                 "barrier.categories",
                 "barrier.location",
@@ -307,6 +308,12 @@ class BarrierCsvExportSerializer(serializers.Serializer):
                     change = f"{history_item.model}.{history_item.field}"
                     if change in relevant_changes:
                         return "Yes"
+            return "No"
+
+    def get_public_is_resolved(self, obj):
+        if obj.has_public_barrier and obj.public_barrier.is_currently_published:
+            if obj.public_barrier.is_resolved:
+                return "Yes"
             return "No"
 
     def get_latest_publish_note(self, obj):
