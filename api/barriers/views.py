@@ -372,6 +372,7 @@ class BarriertListExportView(generics.ListAPIView):
         "public_id": "Public ID",
         "public_title": "Public title",
         "public_summary": "Public summary",
+        "public_is_resolved": "Published as resolved",
         "latest_publish_note": "Latest publish note",
     }
 
