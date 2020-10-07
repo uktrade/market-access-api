@@ -37,13 +37,7 @@ ADJECTIVES = (
     "grotesque", "grubby", "grumpy", "handsome", "happy", "harebrained", "healthy", "helpful",
     "helpless", "high", "hollow", "homely", "horrific", "huge", "hungry", "hurt", "icy", "ideal",
     "immense", "impressionable", "intrigued", "irate", "irritable", "itchy", "jealous",
-    "jittery", "jolly", "joyous", "filthy", "flat", "floppy", "fluttering", "foolish", "frantic",
-    "fresh", "friendly", "frightened", "frothy", "frustrating", "funny", "fuzzy", "gaudy",
-    "gentle", "ghastly", "giddy", "gigantic", "glamorous", "gleaming", "glorious", "gorgeous",
-    "graceful", "greasy", "grieving", "gritty", "grotesque", "grubby", "grumpy", "handsome",
-    "happy", "harebrained", "healthy", "helpful", "helpless", "high", "hollow", "homely",
-    "horrific", "huge", "hungry", "hurt", "icy", "ideal", "immense", "impressionable",
-    "intrigued", "irate", "irritable", "itchy", "jealous", "jittery", "jolly", "joyous", "juicy",
+    "jittery", "jolly", "joyous", "juicy",
     "jumpy", "kind", "lackadaisical", "large", "lazy", "lethal", "little", "lively", "livid",
     "lonely", "loose", "lovely", "lucky", "ludicrous", "macho", "magnificent", "mammoth",
     "maniacal", "massive", "melancholy", "melted", "miniature", "minute", "mistaken", "misty",
@@ -104,56 +98,70 @@ NOUNS = [
 ]
 
 
-def fuzzy_title():
-    return f"{random.choice(ADJECTIVES)} {random.choice(NOUNS)}".title()
+class Randomiser:
+    _sectors = None
+    _countries = None
 
+    @property
+    def countries(self):
+        if self._countries is None:
+            self._countries = [
+                country["id"]
+                for country in get_countries()
+                if country["disabled_on"] is None
+                and country.get("id")
+            ]
+        return self._countries
 
-def fuzzy_sectors():
-    quantity = random.choices(
-        population=[0, 1, 2, 3],
-        weights=[0.1, 0.6, 0.2, 0.1],
-    )[0]
-    sectors = [
-        sector["id"] for sector in get_sectors()
-        if sector["level"] == 0
-        and sector["disabled_on"] is None
-    ]
-    return random.choices(sectors, k=quantity)
+    @property
+    def sectors(self):
+        if self._sectors is None:
+            self._sectors = [
+                sector["id"] for sector in get_sectors()
+                if sector["level"] == 0
+                and sector["disabled_on"] is None
+                and sector.get("id")
+            ]
+        return self._sectors
 
+    def get_title(self):
+        return f"{random.choice(ADJECTIVES)} {random.choice(NOUNS)}".title()
 
-def fuzzy_country():
-    countries = [
-        country["id"]
-        for country in get_countries()
-        if country["disabled_on"] is None
-    ]
-    return random.choice(countries)
+    def get_sectors(self):
+        quantity = random.choices(
+            population=[0, 1, 2, 3],
+            weights=[0.1, 0.6, 0.2, 0.1],
+        )[0]
+        return random.choices(self.sectors, k=quantity)
 
+    def get_country(self):
+        return random.choice(self.countries)
 
-def fuzzy_status():
-    statuses = (
-        BarrierStatus.OPEN_PENDING,
-        BarrierStatus.OPEN_IN_PROGRESS,
-        BarrierStatus.RESOLVED_IN_PART,
-        BarrierStatus.RESOLVED_IN_FULL,
-    )
-    return random.choice(statuses)
+    def get_status(self):
+        statuses = (
+            BarrierStatus.OPEN_PENDING,
+            BarrierStatus.OPEN_IN_PROGRESS,
+            BarrierStatus.RESOLVED_IN_PART,
+            BarrierStatus.RESOLVED_IN_FULL,
+        )
+        return random.choice(statuses)
 
 
 def create_fake_public_barriers(quantity):
     earliest_publish_date = datetime.datetime(2020, 8, 1, tzinfo=timezone.utc)
     id_generator = itertools.count(1).__next__
+    randomiser = Randomiser()
 
     for i in range(quantity):
         if random.random() > ALL_SECTORS_PROPORTION:
-            sectors = fuzzy_sectors()
+            sectors = randomiser.get_sectors()
             all_sectors = False
         else:
             sectors = []
             all_sectors = True
 
         if random.random() > EU_PROPORTION:
-            country = fuzzy_country()
+            country = randomiser.get_country()
             trading_bloc = None
             caused_by_trading_bloc = False
             country_trading_bloc = get_trading_bloc_by_country_id(country)
@@ -164,7 +172,7 @@ def create_fake_public_barriers(quantity):
             trading_bloc = "TB00016"
             caused_by_trading_bloc = False
 
-        status = fuzzy_status()
+        status = randomiser.get_status()
 
         if status in (BarrierStatus.RESOLVED_IN_FULL, BarrierStatus.RESOLVED_IN_PART):
             status_date = datetime.date(
@@ -179,7 +187,7 @@ def create_fake_public_barriers(quantity):
 
         yield PublicBarrier(
             id=id_generator(),
-            _title=fuzzy_title(),
+            _title=randomiser.get_title(),
             _summary="Lorem ipsum dolor",
             status=status,
             status_date=status_date,
