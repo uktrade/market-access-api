@@ -91,6 +91,20 @@ def get_admin_areas():
     return import_api_results("administrative-area")
 
 
+def get_overseas_region(overseas_region_id):
+    overseas_region_lookup = cache.get("dh_overseas_region_lookup")
+    if not overseas_region_lookup:
+        dh_countries = import_api_results("country")
+        overseas_region_lookup = {}
+        for country in dh_countries:
+            if country.get("overseas_region"):
+                overseas_region = country["overseas_region"]
+                overseas_region_lookup[overseas_region["id"]] = overseas_region
+
+        cache.set("dh_overseas_region_lookup", overseas_region_lookup, 7200)
+    return overseas_region_lookup.get(str(overseas_region_id))
+
+
 def get_sector(sector_id):
     sector_lookup = cache.get("dh_sector_lookup")
     if not sector_lookup:
@@ -156,6 +170,7 @@ def get_trading_bloc(code):
             "code": trading_bloc["code"],
             "name": trading_bloc["name"],
             "short_name": trading_bloc["short_name"],
+            "overseas_regions": get_trading_bloc_overseas_regions(trading_bloc["code"]),
         }
 
 
@@ -166,11 +181,21 @@ def get_trading_bloc_by_country_id(country_id):
                 "code": trading_bloc["code"],
                 "name": trading_bloc["name"],
                 "short_name": trading_bloc["short_name"],
+                "overseas_regions": get_trading_bloc_overseas_regions(trading_bloc["code"]),
             }
 
 
 def get_trading_bloc_country_ids(trading_bloc_code):
     return TRADING_BLOCS.get(trading_bloc_code, {}).get("country_ids", [])
+
+
+def get_trading_bloc_overseas_region_ids(trading_bloc_code):
+    return TRADING_BLOCS.get(trading_bloc_code, {}).get("overseas_regions", [])
+
+
+def get_trading_bloc_overseas_regions(trading_bloc_code):
+    overseas_region_ids = get_trading_bloc_overseas_region_ids(trading_bloc_code)
+    return [get_overseas_region(region_id) for region_id in overseas_region_ids]
 
 
 def get_wto_committee_groups():
