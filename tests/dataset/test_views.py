@@ -72,3 +72,18 @@ class TestBarriersDataset(APITestMixin):
                 "status": {"id": 2, "name": "Open: In progress"},
             }
         ]
+
+    def test_eu_barrier_overseas_region(self):
+        barrier = BarrierFactory(trading_bloc="TB00016", export_country=None)
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 1
+
+        barrier_data = response.data["results"][0]
+        assert barrier_data["id"] == str(barrier.id)
+
+        overseas_regions = barrier_data["trading_bloc"]["overseas_regions"]
+        assert len(overseas_regions) == 1
+        assert overseas_regions[0]["name"] == "Europe"

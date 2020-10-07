@@ -20,6 +20,7 @@ from api.metadata.utils import (
     get_country,
     get_sector,
     get_trading_bloc,
+    get_trading_bloc_overseas_regions,
 )
 
 
@@ -204,11 +205,15 @@ class BarrierCsvExportSerializer(serializers.Serializer):
                 return trading_bloc.get("name")
 
     def get_overseas_region(self, obj):
-        country = get_country(str(obj.export_country))
-        if country:
-            overseas_region = country.get("overseas_region")
-            if overseas_region:
-                return overseas_region.get("name")
+        if obj.export_country:
+            country = get_country(str(obj.export_country))
+            if country:
+                overseas_region = country.get("overseas_region")
+                if overseas_region:
+                    return overseas_region.get("name")
+        elif obj.trading_bloc:
+            overseas_regions = get_trading_bloc_overseas_regions(obj.trading_bloc)
+            return [region["name"] for region in overseas_regions]
 
     def get_admin_areas(self, obj):
         admin_area_names = []

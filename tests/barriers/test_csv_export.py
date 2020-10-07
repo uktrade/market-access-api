@@ -57,3 +57,8 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert expected_status_date == serializer.data["status_date"]
+
+    def test_eu_overseas_region(self):
+        barrier = BarrierFactory(trading_bloc="TB00016", export_country=None)
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert ["Europe"] == serializer.data["overseas_region"]
