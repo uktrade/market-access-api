@@ -21,8 +21,8 @@ def versioned_folder(version=latest_version()):
     return f"{settings.PUBLIC_DATA_KEY_PREFIX}{version}"
 
 
-def public_barrier_data_json_file_content():
-    data = {"barriers": public_barriers_to_json()}
+def public_barrier_data_json_file_content(public_barriers=None):
+    data = {"barriers": public_barriers_to_json(public_barriers)}
     return data
 
 
@@ -31,7 +31,7 @@ def metadata_json_file_content():
     return data
 
 
-def public_release_to_s3():
+def public_release_to_s3(public_barriers=None):
     """
     Generate a new JSON file and upload it to S3 along with metadata info.
     This file is designed to work with CITB public service,
@@ -45,7 +45,7 @@ def public_release_to_s3():
         return
 
     with NamedTemporaryFile(mode='w+t') as tf:
-        json.dump(public_barrier_data_json_file_content(), tf, indent=4)
+        json.dump(public_barrier_data_json_file_content(public_barriers), tf, indent=4)
         tf.flush()
         s3_filename = f"{versioned_folder()}/data.json"
         upload_to_s3(tf.name, settings.PUBLIC_DATA_BUCKET, s3_filename)
