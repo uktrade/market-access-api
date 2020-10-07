@@ -122,7 +122,11 @@ def fuzzy_sectors():
 
 
 def fuzzy_country():
-    countries = [country["id"] for country in get_countries()]
+    countries = [
+        country["id"]
+        for country in get_countries()
+        if country["disabled_on"] is None
+    ]
     return random.choice(countries)
 
 
