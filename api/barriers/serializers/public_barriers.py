@@ -228,7 +228,7 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
             return ReadOnlySectorsField(to_repr_keys=("name",)).to_representation(obj.sectors)
 
 
-def public_barriers_to_json():
+def public_barriers_to_json(public_barriers=None):
     """
     Helper to serialize latest published version of published barriers.
     Public Barriers in the flat file should look similar.
@@ -255,6 +255,7 @@ def public_barriers_to_json():
     If all sectors is true, use the sectors key to represent that as follows:
         "sectors: [{"name": "All sectors"}],
     """
-    public_barriers = (pb.latest_published_version for pb in get_published_public_barriers())
+    if public_barriers is None:
+        public_barriers = (pb.latest_published_version for pb in get_published_public_barriers())
     serializer = PublicPublishedVersionSerializer(public_barriers, many=True)
     return serializer.data
