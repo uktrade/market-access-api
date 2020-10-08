@@ -214,3 +214,5 @@ class Command(BaseCommand):
             self.stdout.write(f"Publishing {quantity} fake barriers...")
             public_barriers = create_fake_public_barriers(quantity)
             public_release_to_s3(public_barriers)
+        else:
+            self.stdout.write(f"Publishing fake barriers is disabled on {settings.DJANGO_ENV}")
