@@ -265,7 +265,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "status"
         assert data["old_value"] == {
             "status": "1",
-            "status_date": None,
+            "status_date": self.barrier.status_date,
             "is_resolved": False,
         }
         assert data["new_value"] == {
