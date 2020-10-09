@@ -219,6 +219,7 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
             "location",
             "sectors",
             "categories",
+            "last_published_on",
         )
 
     def get_sectors(self, obj):

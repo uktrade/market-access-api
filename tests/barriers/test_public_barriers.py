@@ -6,6 +6,7 @@ import json
 from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
+import dateutil.parser
 from freezegun import freeze_time
 from mock import patch
 from rest_framework import status
@@ -1149,6 +1150,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         assert "barriers" in data.keys()
         assert 2 == len(data["barriers"])
 
+    @freeze_time("2020-05-20")
     def test_public_serializer(self):
         pb1, _ = self.publish_barrier(user=self.publisher)
 
@@ -1160,6 +1162,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         assert pb1.summary == barrier["summary"]
         assert pb1.is_resolved == barrier["is_resolved"]
         assert pb1.status_date.isoformat() == barrier["status_date"]
+        assert pb1.last_published_on == dateutil.parser.parse(barrier["last_published_on"])
 
     @patch("api.barriers.views.public_release_to_s3")
     def test_publish_calls_public_release(self, mock_release):
