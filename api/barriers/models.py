@@ -729,7 +729,11 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_status_date_changed(self):
-        return self.barrier.status_date != self.status_date
+        # Change in status date is only relevant if the barrier is resolved
+        return (
+            (self.internal_is_resolved or self.is_resolved)
+            and (self.internal_status_date != self.status_date)
+        )
 
     @property
     def is_resolved(self):

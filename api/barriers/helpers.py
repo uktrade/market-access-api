@@ -20,7 +20,10 @@ def get_or_create_public_barrier(barrier):
         barrier=barrier,
         defaults={
             "status": barrier.status,
+            "status_date": barrier.status_date,
             "country": barrier.export_country,
+            "trading_bloc": barrier.trading_bloc,
+            "caused_by_trading_bloc": barrier.caused_by_trading_bloc,
             "sectors": barrier.sectors,
             "all_sectors": barrier.all_sectors,
         }
