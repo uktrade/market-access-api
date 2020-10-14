@@ -432,8 +432,9 @@ class BarrierListS3Download(BarriertListExportView):
             )
 
             writer.writerow(self.field_titles)
-            for row in serializer.data:
-                writer.writerow(_transform_csv_row(row))
+            for i in range(10):
+                for row in serializer.data:
+                    writer.writerow(_transform_csv_row(row))
             tf.flush()
 
             s3_filename = f"csv/{self.request.user.id}/{base_filename}.csv"
