@@ -28,7 +28,7 @@ class Document(ArchivableMixin, BaseModel):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     bucket_id = models.CharField(
-        max_length=settings.CHAR_FIELD_MAX_LENGTH, default="default"
+        max_length=settings.CHAR_FIELD_MAX_LENGTH, default="documents"
     )
     path = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH)
 

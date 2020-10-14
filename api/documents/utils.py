@@ -30,10 +30,10 @@ def get_document_by_pk(document_pk):
 
 def get_bucket_credentials(bucket_id):
     """Get S3 credentials for bucket id."""
-    if bucket_id not in settings.DOCUMENT_BUCKETS:
+    if bucket_id not in settings.S3_BUCKETS:
         raise MarketAccessException(f'Bucket "{bucket_id}" not configured.')
 
-    return settings.DOCUMENT_BUCKETS[bucket_id]
+    return settings.S3_BUCKETS[bucket_id]
 
 
 def get_bucket_name(bucket_id):
