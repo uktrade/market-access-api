@@ -191,7 +191,7 @@ if "aws-s3-bucket" in VCAP_SERVICES:
     DEFAULT_BUCKET = VCAP_SERVICES['aws-s3-bucket'][0]['credentials']
 else:
     DEFAULT_BUCKET = {
-        "bucket": env("DEFAULT_BUCKET", default=""),
+        "bucket_name": env("DEFAULT_BUCKET", default=""),
         "aws_access_key_id": env("AWS_ACCESS_KEY_ID", default=""),
         "aws_secret_access_key": env("AWS_SECRET_ACCESS_KEY", default=""),
         "aws_region": env("AWS_DEFAULT_REGION", default=""),
@@ -200,7 +200,7 @@ else:
 S3_BUCKETS = {
     "default": DEFAULT_BUCKET,
     "documents": {
-        "bucket": env("DOCUMENT_BUCKET", default=""),
+        "bucket_name": env("DOCUMENT_BUCKET", default=""),
         "aws_access_key_id": env("AWS_ACCESS_KEY_ID", default=""),
         "aws_secret_access_key": env("AWS_SECRET_ACCESS_KEY", default=""),
         "aws_region": env("AWS_DEFAULT_REGION", default=""),

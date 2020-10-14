@@ -38,7 +38,7 @@ def get_bucket_credentials(bucket_id):
 
 def get_bucket_name(bucket_id):
     """Get bucket name for given bucket id."""
-    return get_bucket_credentials(bucket_id)["bucket"]
+    return get_bucket_credentials(bucket_id)["bucket_name"]
 
 
 @lru_cache()
