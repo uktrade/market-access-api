@@ -320,6 +320,12 @@ if not DEBUG:
 # ============================================
 # Option flag to turn off publication within the app
 PUBLIC_DATA_TO_S3_ENABLED = env("PUBLIC_DATA_TO_S3_ENABLED", default=True)
+# Data files are versioned in the following format
+# v[MAJOR].[MINOR].[REVISION] - i.e.: v1.0.56
+# Should you need to change the structure of the data published
+# please adjust the version accordingly
+PUBLIC_DATA_MAJOR = 1
+PUBLIC_DATA_MINOR = 0
 # AWS S3 Bucket info
 PUBLIC_DATA_AWS_ACCESS_KEY_ID = env("PUBLIC_DATA_AWS_ACCESS_KEY_ID")
 PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = env("PUBLIC_DATA_AWS_SECRET_ACCESS_KEY")

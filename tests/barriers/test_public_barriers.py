@@ -17,11 +17,11 @@ from api.barriers.serializers import PublicBarrierSerializer
 from api.barriers.serializers.public_barriers import public_barriers_to_json
 from api.barriers.public_data import (
     public_barrier_data_json_file_content,
-    versioned_folder,
+    versioned_folder, VersionedFile, latest_file,
 )
 from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
-from api.core.utils import read_file_from_s3
+from api.core.utils import read_file_from_s3, list_s3_public_data_files
 from api.metadata.constants import PublicBarrierStatus, BarrierStatus
 
 from moto import mock_s3
@@ -1223,3 +1223,71 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert mock_release.called is False
+
+    @mock_s3
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
+    def test_versions_when_uploading_to_s3(self):
+        self.create_mock_s3_bucket()
+
+        pb, _ = self.publish_barrier(user=self.publisher)
+        file = latest_file()
+        assert 'v1.0.1' == file.version_label
+
+        pb, _ = self.publish_barrier(user=self.publisher)
+        file = latest_file()
+        assert 'v1.0.2' == file.version_label
+
+    def test_versioned_file_version_as_float(self):
+        file = VersionedFile("market-access/v1.5.101/data.json")
+        assert 15.101 == file.version_as_float
+
+    def test_versioned_file_next_version(self):
+        file = VersionedFile("market-access/v1.0.1/data.json")
+        assert "v1.0.2" == file.next_version
+
+    def test_versioned_file_next_version_when_no_version_is_in_path(self):
+        file = VersionedFile("data.json")
+        assert "v1.0.1" == file.next_version
+
+    @mock_s3
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
+    def test_major_bump(self):
+        self.create_mock_s3_bucket()
+
+        pb, _ = self.publish_barrier(user=self.publisher)
+        file = latest_file()
+        assert 'v1.0.1' == file.version_label
+        assert 'v1.0.2' == file.next_version
+
+        with override_settings(PUBLIC_DATA_MAJOR=2):
+            pb, _ = self.publish_barrier(user=self.publisher)
+            file = latest_file()
+            assert 'v2.0.1' == file.version_label
+            assert 'v2.0.2' == file.next_version
+
+    @mock_s3
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
+    def test_minor_bump(self):
+        self.create_mock_s3_bucket()
+
+        pb, _ = self.publish_barrier(user=self.publisher)
+        file = latest_file()
+        assert 'v1.0.1' == file.version_label
+        assert 'v1.0.2' == file.next_version
+
+        with override_settings(PUBLIC_DATA_MINOR=5):
+            pb, _ = self.publish_barrier(user=self.publisher)
+            file = latest_file()
+            assert 'v1.5.1' == file.version_label
+            assert 'v1.5.2' == file.next_version
+
+    @mock_s3
+    @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
+    def test_data_and_metadata_gets_the_same_version_on_publish(self):
+        self.create_mock_s3_bucket()
+
+        pb, _ = self.publish_barrier(user=self.publisher)
+
+        (data_file, metadata_file) = [VersionedFile(f) for f in list_s3_public_data_files()]
+        assert "v1.0.1" == data_file.version_label
+        assert "v1.0.1" == metadata_file.version_label
