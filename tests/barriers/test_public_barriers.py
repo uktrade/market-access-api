@@ -4,6 +4,7 @@ import boto3
 import json
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
 from django.urls import reverse
 import dateutil.parser
@@ -1280,6 +1281,13 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
             file = latest_file()
             assert 'v1.5.1' == file.version_label
             assert 'v1.5.2' == file.next_version
+
+    @override_settings(PUBLIC_DATA_MINOR=10)
+    def test_minor_throws_error(self):
+        self.assertRaisesMessage(
+            ImproperlyConfigured,
+            "PUBLIC_DATA_MINOR should not be greater than 9"
+        )
 
     @mock_s3
     @override_settings(PUBLIC_DATA_TO_S3_ENABLED=True)
