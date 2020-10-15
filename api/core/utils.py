@@ -92,3 +92,18 @@ def s3_resource():
         aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
     )
+
+
+def list_s3_public_data_files(client=None):
+    if not client:
+        client = s3_client()
+    """
+    list files in specific S3 URL
+    :returns: generator
+    """
+    response = client.list_objects(
+        Bucket=settings.PUBLIC_DATA_BUCKET,
+        Prefix=settings.PUBLIC_DATA_KEY_PREFIX
+    )
+    for content in response.get('Contents', []):
+        yield content.get('Key')

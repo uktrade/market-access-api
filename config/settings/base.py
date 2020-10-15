@@ -7,6 +7,8 @@ import sentry_sdk
 
 from celery.schedules import crontab
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -327,6 +329,16 @@ if not DEBUG:
 # ============================================
 # Option flag to turn off publication within the app
 PUBLIC_DATA_TO_S3_ENABLED = env("PUBLIC_DATA_TO_S3_ENABLED", default=True)
+# Data files are versioned in the following format
+# v[MAJOR].[MINOR].[REVISION] - i.e.: v1.0.56
+# Should you need to change the structure of the data published
+# please adjust the version accordingly
+# Note: when you reach 9 with MINOR please bump MAJOR
+PUBLIC_DATA_MAJOR = 1
+PUBLIC_DATA_MINOR = 0
+# Version validation
+if PUBLIC_DATA_MINOR > 9:
+    raise ImproperlyConfigured("PUBLIC_DATA_MINOR should not be greater than 9")
 # AWS S3 Bucket info
 PUBLIC_DATA_AWS_ACCESS_KEY_ID = env("PUBLIC_DATA_AWS_ACCESS_KEY_ID")
 PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = env("PUBLIC_DATA_AWS_SECRET_ACCESS_KEY")

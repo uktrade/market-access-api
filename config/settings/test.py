@@ -32,3 +32,5 @@ DMAS_BASE_URL = "https://dummy.market-access.net"
 # Public data
 # ---------------------------------------------------------------------------
 PUBLIC_DATA_TO_S3_ENABLED = False
+PUBLIC_DATA_AWS_ACCESS_KEY_ID = "dummy"
+PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = "dummy"
