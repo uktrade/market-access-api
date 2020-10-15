@@ -306,8 +306,12 @@ class BarrierList(generics.ListAPIView):
         return response
 
 
-class BarriertListExportView(generics.ListAPIView):
+class BarrierListExportView(generics.ListAPIView):
     """
+    Superseded by BarrierListS3Download which inherits from this view.
+
+    We now use S3 for csv downloads as it's a lot faster than streaming the file.
+
     Return a streaming http response of all the BarrierInstances
     with optional filtering and ordering defined
     """
@@ -412,7 +416,7 @@ class BarriertListExportView(generics.ListAPIView):
         return create_csv_response(serializer.data, self.field_titles, base_filename)
 
 
-class BarrierListS3Download(BarriertListExportView):
+class BarrierListS3Download(BarrierListExportView):
     """
     Generate the csv file and upload it to s3.
 
