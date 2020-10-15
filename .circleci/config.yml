@@ -61,7 +61,7 @@ jobs:
       PUBLIC_DATA_AWS_SECRET_ACCESS_KEY: 'dummy'
       PUBLIC_DATA_BUCKET: 'dummy'
       PUBLIC_DATA_BUCKET_REGION: 'us-east-1'
-      PUBLIC_DATA_KEY_PREFIX: 'dummy'
+      PUBLIC_DATA_KEY_PREFIX: 'dummy/'
       PIP_USE_FEATURE: 2020-resolver
 
     working_directory: ~/market-access-api
