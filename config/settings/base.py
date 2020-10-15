@@ -187,24 +187,19 @@ if REDIS_BASE_URL:
 
 AV_V2_SERVICE_URL = env("AV_V2_SERVICE_URL", default="http://av-service/")
 
-if "aws-s3-bucket" in VCAP_SERVICES:
-    DEFAULT_BUCKET = VCAP_SERVICES['aws-s3-bucket'][0]['credentials']
-else:
-    DEFAULT_BUCKET = {
+S3_BUCKETS = {
+    "default": {
         "bucket_name": env("DEFAULT_BUCKET", default=""),
         "aws_access_key_id": env("AWS_ACCESS_KEY_ID", default=""),
         "aws_secret_access_key": env("AWS_SECRET_ACCESS_KEY", default=""),
         "aws_region": env("AWS_DEFAULT_REGION", default=""),
-    }
-
-S3_BUCKETS = {
-    "default": DEFAULT_BUCKET,
+    },
     "documents": {
-        "bucket_name": env("DOCUMENT_BUCKET", default=""),
-        "aws_access_key_id": env("AWS_ACCESS_KEY_ID", default=""),
-        "aws_secret_access_key": env("AWS_SECRET_ACCESS_KEY", default=""),
-        "aws_region": env("AWS_DEFAULT_REGION", default=""),
-    }
+        "bucket_name": env("DOCUMENTS_BUCKET", default=""),
+        "aws_access_key_id": env("DOCUMENTS_AWS_ACCESS_KEY_ID", default=""),
+        "aws_secret_access_key": env("DOCUMENTS_AWS_SECRET_ACCESS_KEY", default=""),
+        "aws_region": env("DOCUMENTS_AWS_DEFAULT_REGION", default=""),
+    },
 }
 
 # ServerSideEncryption
