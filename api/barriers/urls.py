@@ -7,7 +7,8 @@ from api.barriers.views import (
     BarrierHibernate,
     BarrierFullHistory,
     BarrierList,
-    BarriertListExportView,
+    BarrierListExportView,
+    BarrierListS3Download,
     BarrierResolveInFull,
     BarrierResolveInPart,
     BarrierOpenInProgress,
@@ -29,7 +30,8 @@ router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barri
 
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
-    path("barriers/export", BarriertListExportView.as_view(), name="barriers-export"),
+    path("barriers/export", BarrierListExportView.as_view(), name="barriers-export"),
+    path("barriers/s3-download", BarrierListS3Download.as_view(), name="barriers-s3-download"),
     re_path("barriers/(?P<code>[A-Z]-[0-9]{2}-[A-Z0-9]{3})", BarrierDetail.as_view(), name="barrier_detail_code"),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
     path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),

@@ -1,9 +1,11 @@
 import csv
+from csv import DictWriter
 from collections import defaultdict
 
+from django.core.files.temp import NamedTemporaryFile
 from django.db import transaction
 from django.db.models import Count
-from django.http import StreamingHttpResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import now
@@ -18,7 +20,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from simple_history.utils import bulk_create_with_history
 
-from api.barriers.csv import create_csv_response
+from api.barriers.csv import create_csv_response, _transform_csv_row
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import BarrierInstance, BarrierReportStage, PublicBarrier
@@ -31,6 +33,7 @@ from api.barriers.serializers import (
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
+from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.history.manager import HistoryManager
 from api.interactions.models import Interaction
 from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
@@ -303,8 +306,12 @@ class BarrierList(generics.ListAPIView):
         return response
 
 
-class BarriertListExportView(generics.ListAPIView):
+class BarrierListExportView(generics.ListAPIView):
     """
+    Superseded by BarrierListS3Download which inherits from this view.
+
+    We now use S3 for csv downloads as it's a lot faster than streaming the file.
+
     Return a streaming http response of all the BarrierInstances
     with optional filtering and ordering defined
     """
@@ -407,6 +414,46 @@ class BarriertListExportView(generics.ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         base_filename = self._get_base_filename()
         return create_csv_response(serializer.data, self.field_titles, base_filename)
+
+
+class BarrierListS3Download(BarrierListExportView):
+    """
+    Generate the csv file and upload it to s3.
+
+    Returns a presigned download url which is valid for an hour.
+    """
+    def get(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        base_filename = self._get_base_filename()
+
+        with NamedTemporaryFile(mode='w+t') as tf:
+            writer = DictWriter(
+                tf,
+                extrasaction="ignore",
+                fieldnames=self.field_titles.keys(),
+                quoting=csv.QUOTE_MINIMAL,
+            )
+
+            writer.writerow(self.field_titles)
+            for row in serializer.data:
+                writer.writerow(_transform_csv_row(row))
+            tf.flush()
+
+            s3_filename = f"csv/{self.request.user.id}/{base_filename}.csv"
+            presigned_url = self.upload_to_s3(tf.name, s3_filename)
+
+        return JsonResponse({"url": presigned_url})
+
+    def upload_to_s3(self, filename, key):
+        bucket_id = "default"
+        bucket_name = get_bucket_name(bucket_id)
+        s3_client = get_s3_client_for_bucket(bucket_id)
+        s3_client.upload_file(filename, bucket_name, key)
+        return s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": key},
+        )
 
 
 class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
