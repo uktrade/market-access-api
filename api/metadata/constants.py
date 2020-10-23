@@ -129,6 +129,22 @@ ASSESMENT_IMPACT = Choices(
     ("LOW", "Low"),
 )
 
+ASSESMENT_TIME_TO_RESOLVE = Choices(
+    (0, "0: not resolvable"),
+    (1, "1: longer than 5 years"),
+    (2, "2: 3 to 5 years"),
+    (3, "3: 1 to 3 years"),
+    (4, "4: within a year"),
+)
+
+ASSESMENT_EFFORT_TO_RESOLVE = Choices(
+    (0, "0: Not resolvable"),
+    (1, "1: Highly resource intensive (significant resources needed)"),
+    (2, "2: substantial resources required (extras or significant reprioritisation of exsiting resources needed)"),
+    (3, "3: moderate resources required (low or moderate prioritisation or resources needed"),
+    (4, "4: low resource requirement (can be delivered within existing resources"),
+)
+
 BARRIER_ARCHIVED_REASON = Choices(
     ("DUPLICATE", "Duplicate"),
     ("NOT_A_BARRIER", "Not a barrier"),

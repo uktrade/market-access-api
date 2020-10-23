@@ -8,7 +8,11 @@ from simple_history.models import HistoricalRecords
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
 from api.interactions.models import Document
-from api.metadata.constants import ASSESMENT_IMPACT
+from api.metadata.constants import (
+    ASSESMENT_EFFORT_TO_RESOLVE,
+    ASSESMENT_IMPACT,
+    ASSESMENT_TIME_TO_RESOLVE,
+)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -89,3 +93,12 @@ class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+
+class ResolvabilityAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    barrier = models.ForeignKey("barriers.BarrierInstance", on_delete=models.CASCADE)
+    time_to_resolve = models.PositiveIntegerField(choices=ASSESMENT_TIME_TO_RESOLVE, null=True)
+    effort_to_resolve = models.PositiveIntegerField(choices=ASSESMENT_EFFORT_TO_RESOLVE, null=True)
+    explanation = models.TextField(blank=True)
+
+    history = HistoricalRecords()
