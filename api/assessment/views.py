@@ -3,8 +3,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers, status
 from rest_framework.response import Response
 
-from api.assessment.models import Assessment
-from api.assessment.serializers import AssessmentSerializer
+from api.assessment.models import Assessment, ResolvabilityAssessment
+from api.assessment.serializers import AssessmentSerializer, ResolvabilityAssessmentSerializer
 
 from api.barriers.models import BarrierInstance
 from api.core.utils import cleansed_username
@@ -157,3 +157,8 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
             old_record = new_record
         response = {"barrier_id": str(pk), "history": results}
         return Response(response, status=status.HTTP_200_OK)
+
+
+class ResolvabilityAssessmentList(generics.CreateAPIView):
+    queryset = ResolvabilityAssessment.objects.all()
+    serializer_class = ResolvabilityAssessmentSerializer

@@ -8,6 +8,8 @@ from rest_framework.response import Response
 
 from .constants import (
     ASSESMENT_IMPACT,
+    ASSESMENT_EFFORT_TO_RESOLVE,
+    ASSESMENT_TIME_TO_RESOLVE,
     BARRIER_PENDING,
     BARRIER_SOURCE,
     BarrierStatus,
@@ -58,6 +60,8 @@ class MetadataView(generics.GenericAPIView):
         barrier_inter_type = dict(BARRIER_INTERACTION_TYPE)
         barrier_source = dict(BARRIER_SOURCE)
         assessment_impact = dict(ASSESMENT_IMPACT)
+        assessment_effort_to_resolve = dict(ASSESMENT_EFFORT_TO_RESOLVE)
+        assessment_time_to_resolve = dict(ASSESMENT_TIME_TO_RESOLVE)
 
         dh_os_regions, dh_countries = get_os_regions_and_countries()
         dh_admin_areas = get_admin_areas()
@@ -95,6 +99,8 @@ class MetadataView(generics.GenericAPIView):
             "barrier_source": barrier_source,
             "barrier_priorities": barrier_priorities,
             "assessment_impact": assessment_impact,
+            "assessment_effort_to_resolve": assessment_effort_to_resolve,
+            "assessment_time_to_resolve": assessment_time_to_resolve,
             "trade_direction": trade_direction,
             "trading_blocs": TRADING_BLOCS.values(),
             "wto_committee_groups": wto_committee_groups,

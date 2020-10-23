@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api.assessment.models import Assessment
+from api.assessment.models import Assessment, ResolvabilityAssessment
 
 from .fields import ImpactField
 
@@ -52,3 +52,22 @@ class AssessmentSerializer(serializers.ModelSerializer):
     def get_status(self, instance):
         """Get document status."""
         return instance.document.status
+
+
+class ResolvabilityAssessmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResolvabilityAssessment
+        fields = (
+            "id",
+            "effort_to_resolve",
+            "time_to_resolve",
+            "explanation",
+            "created_on",
+            "created_by",
+        )
+        read_only_fields = ("id", "created_on", "created_by")
+
+
+    def create(self, validated_data):
+        validated_data["barrier_id"] = self.initial_data["barrier_id"]
+        return super().create(validated_data)
