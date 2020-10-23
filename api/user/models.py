@@ -93,8 +93,10 @@ class BaseSavedSearch(models.Model):
     def get_api_parameters(self):
         params = copy.deepcopy(self.filters)
 
-        if "country" in params or "region" in params:
-            params["location"] = params.pop("country", []) + params.pop("region", [])
+        if "country" in params or "region" in params or "extra_location" in params:
+            params["location"] = (
+                params.pop("country", []) + params.pop("region", []) + params.pop("extra_location", [])
+            )
 
         params["archived"] = params.pop("only_archived", "0") or "0"
         return params
