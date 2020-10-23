@@ -1,5 +1,8 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import generics
@@ -26,7 +29,11 @@ UserModel = get_user_model()
 @permission_classes([])
 def who_am_i(request):
     """Return the current user. This view is behind a login."""
-    token = request.auth.token
+    try:
+        token = request.auth.token
+    except AttributeError:
+        return HttpResponse("Unauthorized", status=HTTPStatus.UNAUTHORIZED)
+
     context = {"token": token}
     serializer = WhoAmISerializer(request.user, context=context)
 
