@@ -104,3 +104,12 @@ class FullyArchivableMixin(ArchivableMixin):
         self.unarchived_reason = reason
         self.unarchived_on = timezone.now()
         super().unarchive()
+
+
+class ApprovalMixin(models.Model):
+    approved = models.BooleanField(default=False)
+    reviewed_on = models.DateTimeField(null=True)
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        abstract = True

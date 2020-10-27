@@ -145,6 +145,14 @@ ASSESMENT_EFFORT_TO_RESOLVE = Choices(
     (4, "4: low resource requirement (can be delivered within existing resources"),
 )
 
+STRATEGIC_ASSESSMENT_SCALE = Choices(
+    (1, "1: 3 or more government wide objectives, or poses medium/high risk to delivery of one of government wide objectives and/or potential for significant PR issues."),
+    (2, "2: 1 or 2 government wide objectives but does not pose much risk for PR or objective delivery"),
+    (3, "3: neutral to government wide objectives"),
+    (4, "4: supports 1 or 2  government wide objectives"),
+    (5, "5: substantial contribution to 1 strategic objective or supporting 3 or more strategic objectives"),
+)
+
 BARRIER_ARCHIVED_REASON = Choices(
     ("DUPLICATE", "Duplicate"),
     ("NOT_A_BARRIER", "Not a barrier"),
