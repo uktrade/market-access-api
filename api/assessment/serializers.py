@@ -1,8 +1,14 @@
 from rest_framework import serializers
 
-from api.assessment.models import Assessment, ResolvabilityAssessment
+from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment
+from api.barriers.fields import UserField
 
-from .fields import ImpactField
+from .fields import (
+    EffortToResolveField,
+    ImpactField,
+    StrategicAssessmentScaleField,
+    TimeToResolveField,
+)
 
 
 class AssessmentSerializer(serializers.ModelSerializer):
@@ -55,10 +61,16 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
 
 class ResolvabilityAssessmentSerializer(serializers.ModelSerializer):
+    effort_to_resolve = EffortToResolveField()
+    time_to_resolve = TimeToResolveField()
+    created_by = UserField(required=False)
+
     class Meta:
         model = ResolvabilityAssessment
         fields = (
             "id",
+            "archived",
+            "archived_reason",
             "effort_to_resolve",
             "time_to_resolve",
             "explanation",
@@ -67,7 +79,40 @@ class ResolvabilityAssessmentSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "created_on", "created_by")
 
+    def create(self, validated_data):
+        validated_data["barrier_id"] = self.initial_data["barrier_id"]
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["created_by"] = request.user
+        return super().create(validated_data)
+
+
+class StrategicAssessmentSerializer(serializers.ModelSerializer):
+    scale = StrategicAssessmentScaleField()
+    created_by = UserField(required=False)
+
+    class Meta:
+        model = StrategicAssessment
+        fields = (
+            "id",
+            "archived",
+            "archived_reason",
+            "hmg_strategy",
+            "government_policy",
+            "trading_relations",
+            "uk_interest_and_security",
+            "uk_grants",
+            "competition",
+            "additional_information",
+            "scale",
+            "created_on",
+            "created_by",
+        )
+        read_only_fields = ("id", "created_on", "created_by")
 
     def create(self, validated_data):
         validated_data["barrier_id"] = self.initial_data["barrier_id"]
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["created_by"] = request.user
         return super().create(validated_data)

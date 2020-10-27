@@ -21,6 +21,7 @@ from .constants import (
     PUBLISH_RESPONSE,
     REPORT_STATUS,
     STAGE_STATUS,
+    STRATEGIC_ASSESSMENT_SCALE,
     SUPPORT_TYPE,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOCS,
@@ -62,6 +63,7 @@ class MetadataView(generics.GenericAPIView):
         assessment_impact = dict(ASSESMENT_IMPACT)
         assessment_effort_to_resolve = dict(ASSESMENT_EFFORT_TO_RESOLVE)
         assessment_time_to_resolve = dict(ASSESMENT_TIME_TO_RESOLVE)
+        strategic_assessment_scale = dict(STRATEGIC_ASSESSMENT_SCALE)
 
         dh_os_regions, dh_countries = get_os_regions_and_countries()
         dh_admin_areas = get_admin_areas()
@@ -101,6 +103,7 @@ class MetadataView(generics.GenericAPIView):
             "assessment_impact": assessment_impact,
             "assessment_effort_to_resolve": assessment_effort_to_resolve,
             "assessment_time_to_resolve": assessment_time_to_resolve,
+            "strategic_assessment_scale": strategic_assessment_scale,
             "trade_direction": trade_direction,
             "trading_blocs": TRADING_BLOCS.values(),
             "wto_committee_groups": wto_committee_groups,
