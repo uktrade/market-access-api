@@ -46,3 +46,14 @@ class CustomUpdateMixin:
                 field.custom_update(validated_data)
 
         return super().update(instance, validated_data)
+
+
+class ApprovalSerializerMixin:
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        approved = validated_data.pop("approved", None)
+        if approved is True:
+            instance.approve(user=request.user, commit=False)
+        elif approved is False:
+            instance.reject(user=request.user, archive=True, commit=False)
+        return super().update(instance, validated_data)

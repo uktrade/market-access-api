@@ -1,7 +1,10 @@
+from django.utils import timezone
+
 from rest_framework import serializers
 
 from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment
 from api.barriers.fields import UserField
+from api.core.serializers.mixins import ApprovalSerializerMixin
 
 from .fields import (
     EffortToResolveField,
@@ -60,24 +63,28 @@ class AssessmentSerializer(serializers.ModelSerializer):
         return instance.document.status
 
 
-class ResolvabilityAssessmentSerializer(serializers.ModelSerializer):
+class ResolvabilityAssessmentSerializer(ApprovalSerializerMixin, serializers.ModelSerializer):
     effort_to_resolve = EffortToResolveField()
     time_to_resolve = TimeToResolveField()
     created_by = UserField(required=False)
+    reviewed_by = UserField(required=False)
 
     class Meta:
         model = ResolvabilityAssessment
         fields = (
             "id",
+            "approved",
             "archived",
             "archived_reason",
-            "effort_to_resolve",
-            "time_to_resolve",
-            "explanation",
-            "created_on",
             "created_by",
+            "created_on",
+            "effort_to_resolve",
+            "explanation",
+            "reviewed_by",
+            "reviewed_on",
+            "time_to_resolve",
         )
-        read_only_fields = ("id", "created_on", "created_by")
+        read_only_fields = ("id", "created_on", "created_by", "reviewed_by", "reviewed_on")
 
     def create(self, validated_data):
         validated_data["barrier_id"] = self.initial_data["barrier_id"]
@@ -87,14 +94,16 @@ class ResolvabilityAssessmentSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class StrategicAssessmentSerializer(serializers.ModelSerializer):
+class StrategicAssessmentSerializer(ApprovalSerializerMixin, serializers.ModelSerializer):
     scale = StrategicAssessmentScaleField()
     created_by = UserField(required=False)
+    reviewed_by = UserField(required=False)
 
     class Meta:
         model = StrategicAssessment
         fields = (
             "id",
+            "approved",
             "archived",
             "archived_reason",
             "hmg_strategy",
@@ -104,11 +113,13 @@ class StrategicAssessmentSerializer(serializers.ModelSerializer):
             "uk_grants",
             "competition",
             "additional_information",
+            "reviewed_by",
+            "reviewed_on",
             "scale",
             "created_on",
             "created_by",
         )
-        read_only_fields = ("id", "created_on", "created_by")
+        read_only_fields = ("id", "created_on", "created_by", "reviewed_by", "reviewed_on")
 
     def create(self, validated_data):
         validated_data["barrier_id"] = self.initial_data["barrier_id"]

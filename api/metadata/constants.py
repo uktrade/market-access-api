@@ -141,8 +141,8 @@ RESOLVABILITY_ASSESSMENT_EFFORT = Choices(
     (0, "0: Not resolvable"),
     (1, "1: Highly resource intensive (significant resources needed)"),
     (2, "2: substantial resources required (extras or significant reprioritisation of exsiting resources needed)"),
-    (3, "3: moderate resources required (low or moderate prioritisation or resources needed"),
-    (4, "4: low resource requirement (can be delivered within existing resources"),
+    (3, "3: moderate resources required (low or moderate prioritisation or resources needed)"),
+    (4, "4: low resource requirement (can be delivered within existing resources)"),
 )
 
 STRATEGIC_ASSESSMENT_SCALE = Choices(
