@@ -66,13 +66,14 @@ class ArchivableMixin(models.Model):
     class Meta:
         abstract = True
 
-    def archive(self, user, reason=None):
+    def archive(self, user, reason=None, commit=True):
         """Archive the model instance."""
         self.archived = True
         self.archived_by = user
         self.archived_reason = reason
         self.archived_on = timezone.now()
-        self.save()
+        if commit:
+            self.save()
 
     def unarchive(self):
         """Unarchive the model instance."""
@@ -107,9 +108,25 @@ class FullyArchivableMixin(ArchivableMixin):
 
 
 class ApprovalMixin(models.Model):
-    approved = models.BooleanField(default=False)
+    approved = models.BooleanField(null=True)
     reviewed_on = models.DateTimeField(null=True)
     reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         abstract = True
+
+    def approve(self, user, commit=True):
+        self.approved = True
+        self.reviewed_by = user
+        self.reviewed_on = timezone.now()
+        if commit:
+            self.save()
+
+    def reject(self, user, archive=False, commit=True):
+        self.approved = False
+        self.reviewed_by = user
+        self.reviewed_on = timezone.now()
+        if archive:
+            self.archive(user=user, commit=commit)
+        if commit:
+            self.save()
