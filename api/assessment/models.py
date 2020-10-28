@@ -11,9 +11,9 @@ from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ApprovalMixin, ArchivableMixin, BaseModel
 from api.interactions.models import Document
 from api.metadata.constants import (
-    ASSESMENT_EFFORT_TO_RESOLVE,
     ASSESMENT_IMPACT,
-    ASSESMENT_TIME_TO_RESOLVE,
+    RESOLVABILITY_ASSESSMENT_EFFORT,
+    RESOLVABILITY_ASSESSMENT_TIME,
     STRATEGIC_ASSESSMENT_SCALE,
 )
 
@@ -100,9 +100,13 @@ class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
 class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
-    barrier = models.ForeignKey("barriers.BarrierInstance", related_name="resolvability_assessments", on_delete=models.CASCADE)
-    time_to_resolve = models.PositiveIntegerField(choices=ASSESMENT_TIME_TO_RESOLVE, null=True)
-    effort_to_resolve = models.PositiveIntegerField(choices=ASSESMENT_EFFORT_TO_RESOLVE, null=True)
+    barrier = models.ForeignKey(
+        "barriers.BarrierInstance",
+        related_name="resolvability_assessments",
+        on_delete=models.CASCADE,
+    )
+    time_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_TIME, null=True)
+    effort_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_EFFORT, null=True)
     explanation = models.TextField(blank=True)
 
     history = HistoricalRecords()
@@ -117,8 +121,11 @@ class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixi
 
 class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
-    barrier = models.ForeignKey("barriers.BarrierInstance", related_name="strategic_assessments", on_delete=models.CASCADE)
-
+    barrier = models.ForeignKey(
+        "barriers.BarrierInstance",
+        related_name="strategic_assessments",
+        on_delete=models.CASCADE,
+    )
     hmg_strategy = models.TextField()
     government_policy = models.TextField()
     trading_relations = models.TextField()

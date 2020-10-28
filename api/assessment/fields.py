@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
 from api.metadata.constants import (
-    ASSESMENT_EFFORT_TO_RESOLVE,
     ASSESMENT_IMPACT,
-    ASSESMENT_TIME_TO_RESOLVE,
+    RESOLVABILITY_ASSESSMENT_EFFORT,
+    RESOLVABILITY_ASSESSMENT_TIME,
     STRATEGIC_ASSESSMENT_SCALE,
 )
 
@@ -22,10 +22,10 @@ class ImpactField(serializers.ChoiceField):
 
 class EffortToResolveField(serializers.ChoiceField):
     def __init__(self, **kwargs):
-        return super().__init__(choices=ASSESMENT_EFFORT_TO_RESOLVE, **kwargs)
+        return super().__init__(choices=RESOLVABILITY_ASSESSMENT_EFFORT, **kwargs)
 
     def to_representation(self, value):
-        lookup = dict(ASSESMENT_EFFORT_TO_RESOLVE)
+        lookup = dict(RESOLVABILITY_ASSESSMENT_EFFORT)
         return {
             "id": value,
             "name": lookup.get(value),
@@ -34,10 +34,10 @@ class EffortToResolveField(serializers.ChoiceField):
 
 class TimeToResolveField(serializers.ChoiceField):
     def __init__(self, **kwargs):
-        return super().__init__(choices=ASSESMENT_TIME_TO_RESOLVE, **kwargs)
+        return super().__init__(choices=RESOLVABILITY_ASSESSMENT_TIME, **kwargs)
 
     def to_representation(self, value):
-        lookup = dict(ASSESMENT_TIME_TO_RESOLVE)
+        lookup = dict(RESOLVABILITY_ASSESSMENT_TIME)
         return {
             "id": value,
             "name": lookup.get(value),

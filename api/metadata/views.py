@@ -8,8 +8,6 @@ from rest_framework.response import Response
 
 from .constants import (
     ASSESMENT_IMPACT,
-    ASSESMENT_EFFORT_TO_RESOLVE,
-    ASSESMENT_TIME_TO_RESOLVE,
     BARRIER_PENDING,
     BARRIER_SOURCE,
     BarrierStatus,
@@ -20,6 +18,8 @@ from .constants import (
     PROBLEM_STATUS_TYPES,
     PUBLISH_RESPONSE,
     REPORT_STATUS,
+    RESOLVABILITY_ASSESSMENT_EFFORT,
+    RESOLVABILITY_ASSESSMENT_TIME,
     STAGE_STATUS,
     STRATEGIC_ASSESSMENT_SCALE,
     SUPPORT_TYPE,
@@ -61,8 +61,8 @@ class MetadataView(generics.GenericAPIView):
         barrier_inter_type = dict(BARRIER_INTERACTION_TYPE)
         barrier_source = dict(BARRIER_SOURCE)
         assessment_impact = dict(ASSESMENT_IMPACT)
-        assessment_effort_to_resolve = dict(ASSESMENT_EFFORT_TO_RESOLVE)
-        assessment_time_to_resolve = dict(ASSESMENT_TIME_TO_RESOLVE)
+        assessment_effort_to_resolve = dict(RESOLVABILITY_ASSESSMENT_EFFORT)
+        assessment_time_to_resolve = dict(RESOLVABILITY_ASSESSMENT_TIME)
         strategic_assessment_scale = dict(STRATEGIC_ASSESSMENT_SCALE)
 
         dh_os_regions, dh_countries = get_os_regions_and_countries()

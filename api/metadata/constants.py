@@ -129,7 +129,7 @@ ASSESMENT_IMPACT = Choices(
     ("LOW", "Low"),
 )
 
-ASSESMENT_TIME_TO_RESOLVE = Choices(
+RESOLVABILITY_ASSESSMENT_TIME = Choices(
     (0, "0: not resolvable"),
     (1, "1: longer than 5 years"),
     (2, "2: 3 to 5 years"),
@@ -137,7 +137,7 @@ ASSESMENT_TIME_TO_RESOLVE = Choices(
     (4, "4: within a year"),
 )
 
-ASSESMENT_EFFORT_TO_RESOLVE = Choices(
+RESOLVABILITY_ASSESSMENT_EFFORT = Choices(
     (0, "0: Not resolvable"),
     (1, "1: Highly resource intensive (significant resources needed)"),
     (2, "2: substantial resources required (extras or significant reprioritisation of exsiting resources needed)"),
@@ -146,7 +146,8 @@ ASSESMENT_EFFORT_TO_RESOLVE = Choices(
 )
 
 STRATEGIC_ASSESSMENT_SCALE = Choices(
-    (1, "1: 3 or more government wide objectives, or poses medium/high risk to delivery of one of government wide objectives and/or potential for significant PR issues."),
+    (1, "1: 3 or more government wide objectives, or poses medium/high risk to delivery "
+        "of one of government wide objectives and/or potential for significant PR issues."),
     (2, "2: 1 or 2 government wide objectives but does not pose much risk for PR or objective delivery"),
     (3, "3: neutral to government wide objectives"),
     (4, "4: supports 1 or 2  government wide objectives"),
