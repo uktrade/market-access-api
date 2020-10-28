@@ -118,6 +118,12 @@ class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixi
             ("approve_resolvabilityassessment", "Can approve resolvability assessment"),
         )
 
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            for assessment in self.barrier.resolvability_assessments.filter(archived=False):
+                assessment.archive(user=self.created_by)
+        super().save(*args, **kwargs)
+
 
 class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -143,3 +149,9 @@ class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, B
             ("archive_strategicassessment", "Can archive strategic assessment"),
             ("approve_strategicassessment", "Can approve strategic assessment"),
         )
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            for assessment in self.barrier.strategic_assessments.filter(archived=False):
+                assessment.archive(user=self.created_by)
+        super().save(*args, **kwargs)
