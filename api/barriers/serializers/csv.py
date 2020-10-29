@@ -96,6 +96,9 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     public_summary = serializers.CharField(source="public_barrier.summary")
     public_is_resolved = serializers.SerializerMethodField()
     latest_publish_note = serializers.SerializerMethodField()
+    resolvability_assessment_time = serializers.SerializerMethodField()
+    resolvability_assessment_effort = serializers.SerializerMethodField()
+    strategic_assessment_scale = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierInstance
@@ -324,3 +327,15 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_latest_publish_note(self, obj):
         if obj.has_public_barrier and obj.public_barrier.notes.exists():
             return obj.public_barrier.notes.latest("created_on").text
+
+    def get_resolvability_assessment_time(self, obj):
+        if obj.current_resolvability_assessment:
+            return obj.current_resolvability_assessment.time_to_resolve
+
+    def get_resolvability_assessment_effort(self, obj):
+        if obj.current_resolvability_assessment:
+            return obj.current_resolvability_assessment.effort_to_resolve
+
+    def get_strategic_assessment_scale(self, obj):
+        if obj.current_strategic_assessment:
+            return obj.current_strategic_assessment.scale

@@ -324,6 +324,28 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
 
         return progress_list
 
+    @property
+    def current_resolvability_assessment(self):
+        """
+        Get the current resolvability assessment
+
+        Filter in python to avoid another db call if prefetch_related has been used.
+        """
+        for assessment in self.resolvability_assessments.all():
+            if assessment.approved and not assessment.archived:
+                return assessment
+
+    @property
+    def current_strategic_assessment(self):
+        """
+        Get the current strategic assessment
+
+        Filter in python to avoid another db call if prefetch_related has been used.
+        """
+        for assessment in self.strategic_assessments.all():
+            if assessment.approved and not assessment.archived:
+                return assessment
+
     def submit_report(self, submitted_by=None):
         """ submit a report, convert it into a barrier """
         for validator in [validators.ReportReadyForSubmitValidator()]:
