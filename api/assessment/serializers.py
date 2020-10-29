@@ -1,5 +1,3 @@
-from django.utils import timezone
-
 from rest_framework import serializers
 
 from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment

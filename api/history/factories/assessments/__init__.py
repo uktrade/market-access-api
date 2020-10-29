@@ -1,6 +1,6 @@
 from api.assessment.models import Assessment
-from .base import HistoryItemFactoryBase
-from ..items.assessments import (
+from ..base import HistoryItemFactoryBase
+from ...items.assessments import (
     CommercialValueHistoryItem,
     CommercialValueExplanationHistoryItem,
     DocumentsHistoryItem,

@@ -14,6 +14,8 @@ def get_model_name(history_instance):
         "Interaction": "note",
         "PublicBarrier": "public_barrier",
         "PublicBarrierNote": "public_barrier_note",
+        "ResolvabilityAssessment": "resolvability_assessment",
+        "StrategicAssessment": "strategic_assessment",
         "TeamMember": "team_member",
         "WTOProfile": "wto_profile",
     }.get(object_name)

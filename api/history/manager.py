@@ -8,6 +8,8 @@ from .factories import (
     NoteHistoryFactory,
     PublicBarrierNoteHistoryFactory,
     PublicBarrierHistoryFactory,
+    ResolvabilityAssessmentHistoryFactory,
+    StrategicAssessmentHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
@@ -62,6 +64,9 @@ class HistoryManager:
         barrier_history = cls.get_barrier_history(barrier.pk, start_date=start_date)
         notes_history = cls.get_notes_history(barrier.pk, start_date=start_date)
         assessment_history = cls.get_assessment_history(barrier.pk, start_date=start_date)
+        resolvability_assessment_history = cls.get_resolvability_assessment_history(barrier.pk, start_date=start_date)
+        strategic_assessment_history = cls.get_strategic_assessment_history(barrier.pk, start_date=start_date)
+
         if start_date:
             team_history = cls.get_team_history(
                 barrier.pk,
@@ -73,7 +78,7 @@ class HistoryManager:
 
         history_items = (
             barrier_history + notes_history + assessment_history + team_history
-            + wto_history
+            + wto_history + resolvability_assessment_history + strategic_assessment_history
         )
 
         if barrier.has_public_barrier:
@@ -195,6 +200,38 @@ class HistoryManager:
             )
 
         return PublicBarrierNoteHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
+
+    @classmethod
+    def get_resolvability_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
+        if use_cache:
+            return cls.get_cached_history_items(
+                barrier_id,
+                model="resolvability_assessment",
+                fields=fields,
+                start_date=start_date,
+            )
+
+        return ResolvabilityAssessmentHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
+
+    @classmethod
+    def get_strategic_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
+        if use_cache:
+            return cls.get_cached_history_items(
+                barrier_id,
+                model="strategic_assessment",
+                fields=fields,
+                start_date=start_date,
+            )
+
+        return StrategicAssessmentHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,
