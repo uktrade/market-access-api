@@ -1,8 +1,10 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment
 from api.barriers.fields import UserField
-from api.core.serializers.mixins import ApprovalSerializerMixin
+from api.core.serializers.fields import ApprovedField, ArchivedField
+from api.core.serializers.mixins import CustomUpdateMixin
 
 from .fields import (
     EffortToResolveField,
@@ -61,9 +63,13 @@ class AssessmentSerializer(serializers.ModelSerializer):
         return instance.document.status
 
 
-class ResolvabilityAssessmentSerializer(ApprovalSerializerMixin, serializers.ModelSerializer):
+class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+    approved = ApprovedField(required=False)
+    archived = ArchivedField(required=False)
+    barrier_id = serializers.UUIDField()
     effort_to_resolve = EffortToResolveField()
     time_to_resolve = TimeToResolveField()
+    archived_by = UserField(required=False)
     created_by = UserField(required=False)
     reviewed_by = UserField(required=False)
 
@@ -73,7 +79,9 @@ class ResolvabilityAssessmentSerializer(ApprovalSerializerMixin, serializers.Mod
             "id",
             "approved",
             "archived",
-            "archived_reason",
+            "archived_by",
+            "archived_on",
+            "barrier_id",
             "created_by",
             "created_on",
             "effort_to_resolve",
@@ -82,18 +90,29 @@ class ResolvabilityAssessmentSerializer(ApprovalSerializerMixin, serializers.Mod
             "reviewed_on",
             "time_to_resolve",
         )
-        read_only_fields = ("id", "created_on", "created_by", "reviewed_by", "reviewed_on")
+        read_only_fields = (
+            "id",
+            "archived_by",
+            "archived_on",
+            "created_on",
+            "created_by",
+            "reviewed_by",
+            "reviewed_on",
+        )
 
     def create(self, validated_data):
-        validated_data["barrier_id"] = self.initial_data["barrier_id"]
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             validated_data["created_by"] = request.user
         return super().create(validated_data)
 
 
-class StrategicAssessmentSerializer(ApprovalSerializerMixin, serializers.ModelSerializer):
+class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+    approved = ApprovedField(required=False)
+    archived = ArchivedField(required=False)
+    barrier_id = serializers.UUIDField()
     scale = StrategicAssessmentScaleField()
+    archived_by = UserField(required=False)
     created_by = UserField(required=False)
     reviewed_by = UserField(required=False)
 
@@ -103,7 +122,9 @@ class StrategicAssessmentSerializer(ApprovalSerializerMixin, serializers.ModelSe
             "id",
             "approved",
             "archived",
-            "archived_reason",
+            "archived_by",
+            "archived_on",
+            "barrier_id",
             "hmg_strategy",
             "government_policy",
             "trading_relations",
@@ -120,7 +141,6 @@ class StrategicAssessmentSerializer(ApprovalSerializerMixin, serializers.ModelSe
         read_only_fields = ("id", "created_on", "created_by", "reviewed_by", "reviewed_on")
 
     def create(self, validated_data):
-        validated_data["barrier_id"] = self.initial_data["barrier_id"]
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             validated_data["created_by"] = request.user
