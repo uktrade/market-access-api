@@ -1,4 +1,4 @@
-from .base import BaseHistoryItem
+from ..base import BaseHistoryItem
 
 
 class BaseAssessmentHistoryItem(BaseHistoryItem):

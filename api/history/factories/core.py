@@ -1,4 +1,6 @@
 from .assessments import AssessmentHistoryFactory
+from .assessments.resolvability import ResolvabilityAssessmentHistoryFactory
+from .assessments.strategic import StrategicAssessmentHistoryFactory
 from .barriers import BarrierHistoryFactory
 from .notes import NoteHistoryFactory
 from .public_barrier_notes import PublicBarrierNoteHistoryFactory
@@ -21,6 +23,8 @@ class HistoryItemFactory:
         NoteHistoryFactory,
         PublicBarrierHistoryFactory,
         PublicBarrierNoteHistoryFactory,
+        ResolvabilityAssessmentHistoryFactory,
+        StrategicAssessmentHistoryFactory,
         TeamMemberHistoryFactory,
         WTOHistoryFactory,
     )

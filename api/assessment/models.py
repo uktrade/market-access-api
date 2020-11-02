@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -6,9 +8,14 @@ from django.db.models import Q
 from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
-from api.core.models import ArchivableMixin, BaseModel
+from api.core.models import ApprovalMixin, ArchivableMixin, BaseModel
 from api.interactions.models import Document
-from api.metadata.constants import ASSESMENT_IMPACT
+from api.metadata.constants import (
+    ASSESMENT_IMPACT,
+    RESOLVABILITY_ASSESSMENT_EFFORT,
+    RESOLVABILITY_ASSESSMENT_TIME,
+    STRATEGIC_ASSESSMENT_SCALE,
+)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -89,3 +96,62 @@ class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+
+class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    barrier = models.ForeignKey(
+        "barriers.BarrierInstance",
+        related_name="resolvability_assessments",
+        on_delete=models.CASCADE,
+    )
+    time_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_TIME)
+    effort_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_EFFORT)
+    explanation = models.TextField(blank=True)
+
+    history = HistoricalRecords()
+
+    class Meta:
+        ordering = ("-created_on", )
+        permissions = (
+            ("archive_resolvabilityassessment", "Can archive resolvability assessment"),
+            ("approve_resolvabilityassessment", "Can approve resolvability assessment"),
+        )
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            for assessment in self.barrier.resolvability_assessments.filter(archived=False):
+                assessment.archive(user=self.created_by)
+        super().save(*args, **kwargs)
+
+
+class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    barrier = models.ForeignKey(
+        "barriers.BarrierInstance",
+        related_name="strategic_assessments",
+        on_delete=models.CASCADE,
+    )
+    hmg_strategy = models.TextField()
+    government_policy = models.TextField()
+    trading_relations = models.TextField()
+    uk_interest_and_security = models.TextField()
+    uk_grants = models.TextField()
+    competition = models.TextField()
+    additional_information = models.TextField(blank=True)
+    scale = models.PositiveIntegerField(choices=STRATEGIC_ASSESSMENT_SCALE)
+
+    history = HistoricalRecords()
+
+    class Meta:
+        ordering = ("-created_on", )
+        permissions = (
+            ("archive_strategicassessment", "Can archive strategic assessment"),
+            ("approve_strategicassessment", "Can approve strategic assessment"),
+        )
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            for assessment in self.barrier.strategic_assessments.filter(archived=False):
+                assessment.archive(user=self.created_by)
+        super().save(*args, **kwargs)

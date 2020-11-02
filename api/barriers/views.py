@@ -325,6 +325,8 @@ class BarrierListExportView(generics.ListAPIView):
         "priority",
         "public_barrier",
     ).prefetch_related(
+        "resolvability_assessments",
+        "strategic_assessments",
         "tags",
         "categories",
         "barrier_commodities",
@@ -381,6 +383,9 @@ class BarrierListExportView(generics.ListAPIView):
         "public_summary": "Public summary",
         "public_is_resolved": "Published as resolved",
         "latest_publish_note": "Latest publish note",
+        "resolvability_assessment_time": "Resolvability assessment time",
+        "resolvability_assessment_effort": "Resolvability assessment effort",
+        "strategic_assessment_scale": "Strategic assessment scale",
     }
 
     def _get_rows(self, queryset):
