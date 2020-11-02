@@ -105,8 +105,8 @@ class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixi
         related_name="resolvability_assessments",
         on_delete=models.CASCADE,
     )
-    time_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_TIME, null=True)
-    effort_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_EFFORT, null=True)
+    time_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_TIME)
+    effort_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_EFFORT)
     explanation = models.TextField(blank=True)
 
     history = HistoricalRecords()
@@ -139,7 +139,7 @@ class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, B
     uk_grants = models.TextField()
     competition = models.TextField()
     additional_information = models.TextField(blank=True)
-    scale = models.PositiveIntegerField(choices=STRATEGIC_ASSESSMENT_SCALE, null=True)
+    scale = models.PositiveIntegerField(choices=STRATEGIC_ASSESSMENT_SCALE)
 
     history = HistoricalRecords()
 
