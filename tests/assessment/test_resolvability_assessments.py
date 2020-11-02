@@ -1,5 +1,4 @@
 from http import HTTPStatus
-import uuid
 
 import pytest
 from rest_framework.reverse import reverse

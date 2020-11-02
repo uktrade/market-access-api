@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment
 from api.barriers.fields import UserField
@@ -138,7 +137,15 @@ class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializ
             "created_on",
             "created_by",
         )
-        read_only_fields = ("id", "created_on", "created_by", "reviewed_by", "reviewed_on")
+        read_only_fields = (
+            "id",
+            "archived_by",
+            "archived_on",
+            "created_on",
+            "created_by",
+            "reviewed_by",
+            "reviewed_on",
+        )
 
     def create(self, validated_data):
         request = self.context.get("request")
