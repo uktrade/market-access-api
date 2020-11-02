@@ -15,7 +15,7 @@ from api.metadata.constants import (
     BARRIER_ARCHIVED_REASON,
     BARRIER_SOURCE,
     BARRIER_PENDING,
-    PROBLEM_STATUS_TYPES,
+    BARRIER_TERMS,
     PublicBarrierStatus,
     STAGE_STATUS,
     TRADE_DIRECTION_CHOICES,
@@ -92,9 +92,9 @@ class BarrierHistoricalModel(models.Model):
         if set(self.tags_cache or []) != set(old_history.tags_cache or []):
             changed_fields.add("tags")
 
-        if changed_fields.intersection(("export_country", "country_admin_areas")):
-            changed_fields.discard("export_country")
-            changed_fields.discard("country_admin_areas")
+        if changed_fields.intersection(("country", "admin_areas")):
+            changed_fields.discard("country")
+            changed_fields.discard("admin_areas")
             changed_fields.add("location")
 
         if "caused_by_trading_bloc" in changed_fields:
@@ -149,7 +149,7 @@ class BarrierHistoricalModel(models.Model):
         abstract = True
 
 
-class BarrierInstance(FullyArchivableMixin, BaseModel):
+class Barrier(FullyArchivableMixin, BaseModel):
     """ Barrier Instance, converted from a completed and accepted Report """
 
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -160,15 +160,15 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         help_text="readable reference code",
         db_index=True,
     )
-    problem_status = models.PositiveIntegerField(
-        choices=PROBLEM_STATUS_TYPES,
+    term = models.PositiveIntegerField(
+        choices=BARRIER_TERMS,
         null=True,
-        help_text="type of problem, long term or short term",
+        help_text="long term or short term",
     )
     end_date = models.DateField(null=True, help_text="Date the barrier ends")
 
-    export_country = models.UUIDField(null=True)
-    country_admin_areas = ArrayField(
+    country = models.UUIDField(null=True)
+    admin_areas = ArrayField(
         models.UUIDField(),
         blank=True,
         default=list,
@@ -211,7 +211,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         choices=BARRIER_SOURCE, max_length=25, null=True, help_text="chance of success"
     )
     other_source = models.CharField(max_length=MAX_LENGTH, null=True)
-    barrier_title = models.CharField(max_length=MAX_LENGTH, null=True)
+    title = models.CharField(max_length=MAX_LENGTH, null=True)
     summary = models.TextField(null=True)
     is_summary_sensitive = models.BooleanField(
         help_text="Does the summary contain sensitive information",
@@ -287,9 +287,9 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
     tags = models.ManyToManyField(BarrierTag)
 
     def __str__(self):
-        if self.barrier_title is None:
+        if self.title is None:
             return self.code
-        return self.barrier_title
+        return self.title
 
     objects = models.Manager()
     reports = ReportManager()
@@ -303,16 +303,16 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
 
     @property
     def country_trading_bloc(self):
-        if self.export_country:
-            return get_trading_bloc_by_country_id(str(self.export_country))
+        if self.country:
+            return get_trading_bloc_by_country_id(str(self.country))
 
     @property
     def location(self):
         return get_location_text(
-            country_id=self.export_country,
+            country_id=self.country,
             trading_bloc=self.trading_bloc,
             caused_by_trading_bloc=self.caused_by_trading_bloc,
-            admin_area_ids=self.country_admin_areas,
+            admin_area_ids=self.admin_areas,
         )
 
     def current_progress(self):
@@ -425,7 +425,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
             while not unique:
                 if loop_num < settings.REF_CODE_MAX_TRIES:
                     new_code = random_barrier_reference()
-                    if not BarrierInstance.objects.filter(code=new_code):
+                    if not Barrier.objects.filter(code=new_code):
                         self.code = new_code
                         unique = True
                     loop_num += 1
@@ -438,9 +438,7 @@ class BarrierInstance(FullyArchivableMixin, BaseModel):
         if self.caused_by_trading_bloc is not None and not self.country_trading_bloc:
             self.caused_by_trading_bloc = None
 
-        super(BarrierInstance, self).save(
-            force_insert, force_update, using, update_fields
-        )
+        super().save(force_insert, force_update, using, update_fields)
 
 
 class PublicBarrierHistoricalModel(models.Model):
@@ -521,7 +519,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     This table should not be exposed to the public however only to the DMAS frontend which requires login.
     Transfer the data to a flat file or another service which can safely expose the data.
     """
-    barrier = models.OneToOneField(BarrierInstance, on_delete=CASCADE, related_name="public_barrier")
+    barrier = models.OneToOneField(Barrier, on_delete=CASCADE, related_name="public_barrier")
 
     # === Title related fields =====
     _title = models.CharField(null=True, max_length=MAX_LENGTH)
@@ -629,7 +627,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     @title.setter
     def title(self, value):
         self._title = value
-        self.internal_title_at_update = self.barrier.barrier_title
+        self.internal_title_at_update = self.barrier.title
         self.title_updated_on = timezone.now()
 
     @property
@@ -726,7 +724,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     @property
     def internal_title_changed(self):
         if self.internal_title_at_update:
-            return self.barrier.barrier_title != self.internal_title_at_update
+            return self.barrier.title != self.internal_title_at_update
         else:
             return False
 
@@ -771,11 +769,11 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_country(self):
-        return self.barrier.export_country
+        return self.barrier.country
 
     @property
     def internal_country_changed(self):
-        return self.barrier.export_country != self.country
+        return self.barrier.country != self.country
 
     @property
     def internal_caused_by_trading_bloc(self):
@@ -797,7 +795,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     @property
     def internal_location(self):
         return get_location_text(
-            country_id=self.barrier.export_country,
+            country_id=self.barrier.country,
             trading_bloc=self.barrier.trading_bloc,
             caused_by_trading_bloc=self.barrier.caused_by_trading_bloc,
         )
@@ -863,7 +861,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 class BarrierUserHit(models.Model):
     """Record when a user has most recently seen a barrier."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    barrier = models.ForeignKey(BarrierInstance, on_delete=models.CASCADE)
+    barrier = models.ForeignKey(Barrier, on_delete=models.CASCADE)
     last_seen = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -874,7 +872,7 @@ class BarrierReportStage(BaseModel):
     """ Many to Many between report and workflow stage """
 
     barrier = models.ForeignKey(
-        BarrierInstance, related_name="progress", on_delete=models.CASCADE
+        Barrier, related_name="progress", on_delete=models.CASCADE
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
     status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
@@ -886,7 +884,7 @@ class BarrierReportStage(BaseModel):
 
 
 class BarrierCommodity(models.Model):
-    barrier = models.ForeignKey(BarrierInstance, related_name="barrier_commodities", on_delete=models.CASCADE)
+    barrier = models.ForeignKey(Barrier, related_name="barrier_commodities", on_delete=models.CASCADE)
     commodity = models.ForeignKey(Commodity, related_name="barrier_commodities", on_delete=models.CASCADE)
     code = models.CharField(max_length=10)
     country = models.UUIDField(null=True)

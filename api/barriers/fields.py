@@ -10,10 +10,10 @@ from api.metadata.constants import (
     BARRIER_ARCHIVED_REASON,
     BARRIER_PENDING,
     BARRIER_SOURCE,
+    BARRIER_TERMS,
     BarrierStatus,
     PublicBarrierStatus,
     STAGE_STATUS,
-    PROBLEM_STATUS_TYPES,
     TRADE_DIRECTION_CHOICES,
 )
 from api.metadata.models import BarrierPriority, BarrierTag, Category
@@ -183,10 +183,10 @@ class TagsField(serializers.ListField):
 
 class TermField(serializers.ChoiceField):
     def __init__(self, **kwargs):
-        return super().__init__(choices=PROBLEM_STATUS_TYPES, **kwargs)
+        return super().__init__(choices=BARRIER_TERMS, **kwargs)
 
     def to_representation(self, value):
-        term_lookup = dict(PROBLEM_STATUS_TYPES)
+        term_lookup = dict(BARRIER_TERMS)
         return {
             "id": value,
             "name": term_lookup.get(value, "Unknown"),
@@ -318,7 +318,7 @@ class ReadOnlyStatusField(FilterableReadOnlyField):
 
 class ReadOnlyCountryField(FilterableReadOnlyField):
     """
-    Field serializer to be used with read only country / export_country fields.
+    Field serializer to be used with read only country fields.
     """
     def get_data(self, value):
         if value:

@@ -87,7 +87,7 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """ Interaction records for each Barrier """
 
     barrier = models.ForeignKey(
-        "barriers.BarrierInstance",
+        "barriers.Barrier",
         related_name="interactions_documents",
         on_delete=models.CASCADE,
     )

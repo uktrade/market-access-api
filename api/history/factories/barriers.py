@@ -1,4 +1,4 @@
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from .base import HistoryItemFactoryBase
 from ..items.barriers import (
     ArchivedHistoryItem,
@@ -12,12 +12,12 @@ from ..items.barriers import (
     PriorityHistoryItem,
     ProductHistoryItem,
     PublicEligibilitySummaryHistoryItem,
-    ScopeHistoryItem,
     SectorsHistoryItem,
     SourceHistoryItem,
     StatusHistoryItem,
     SummaryHistoryItem,
     TagsHistoryItem,
+    TermHistoryItem,
     TitleHistoryItem,
     TradeDirectionHistoryItem,
 )
@@ -41,12 +41,12 @@ class BarrierHistoryFactory(HistoryItemFactoryBase):
         PriorityHistoryItem,
         ProductHistoryItem,
         PublicEligibilitySummaryHistoryItem,
-        ScopeHistoryItem,
         SectorsHistoryItem,
         SourceHistoryItem,
         StatusHistoryItem,
         SummaryHistoryItem,
         TagsHistoryItem,
+        TermHistoryItem,
         TitleHistoryItem,
         TradeDirectionHistoryItem,
     )
@@ -54,4 +54,4 @@ class BarrierHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        return BarrierInstance.history.filter(id=barrier_id).order_by("history_date")
+        return Barrier.history.filter(id=barrier_id).order_by("history_date")

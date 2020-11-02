@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 import django_filters
 from django_filters.widgets import BooleanWidget
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.metadata.constants import PublicBarrierStatus, TRADING_BLOCS
 from api.metadata.models import BarrierPriority
@@ -56,9 +56,9 @@ class BarrierFilterSet(django_filters.FilterSet):
     wto = django_filters.BaseInFilter(method="wto_filter")
 
     class Meta:
-        model = BarrierInstance
+        model = Barrier
         fields = [
-            "export_country",
+            "country",
             "category",
             "sector",
             "reported_on",
@@ -157,14 +157,14 @@ class BarrierFilterSet(django_filters.FilterSet):
                     trading_bloc_countries += get_trading_bloc_country_ids(trading_bloc)
 
                 tb_queryset = tb_queryset | queryset.filter(
-                    export_country__in=trading_bloc_countries,
+                    country__in=trading_bloc_countries,
                     caused_by_trading_bloc=True,
                 )
 
         return tb_queryset | queryset.filter(
-            Q(export_country__in=location["countries"]) |
-            Q(export_country__in=location["overseas_region_countries"]) |
-            Q(country_admin_areas__overlap=location["countries"])
+            Q(country__in=location["countries"]) |
+            Q(country__in=location["overseas_region_countries"]) |
+            Q(admin_areas__overlap=location["countries"])
         )
 
     def text_search(self, queryset, name, value):
@@ -172,13 +172,13 @@ class BarrierFilterSet(django_filters.FilterSet):
         custom text search against multiple fields
             full value of code
             full text search on summary
-            partial search on barrier_title
+            partial search on title
         """
         return queryset.annotate(
             search=SearchVector('summary'),
             public_id=Concat(V("PID-"), "public_barrier__id", output_field=CharField()),
         ).filter(
-            Q(code=value) | Q(search=value) | Q(barrier_title__icontains=value)
+            Q(code=value) | Q(search=value) | Q(title__icontains=value)
             | Q(public_id=value.upper())
         )
 

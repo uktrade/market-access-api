@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.history.manager import HistoryManager
 from api.history.models import CachedHistoryItem
 
@@ -13,12 +13,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options.get("barrier"):
-            barrier = BarrierInstance.objects.get(pk=options["barrier"])
+            barrier = Barrier.objects.get(pk=options["barrier"])
             self.generate_history_for_barrier(barrier)
 
         else:
             barrier_count = 0
-            for barrier in BarrierInstance.objects.all():
+            for barrier in Barrier.objects.all():
                 self.generate_history_for_barrier(barrier)
                 self.stdout.flush()
                 self.stdout.write(f"{barrier_count} barriers cached", ending="\r")

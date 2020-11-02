@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from .models import BarrierInstance
+from .models import Barrier
 
 
-class BarrierInstanceAdmin(admin.ModelAdmin):
+class BarrierAdmin(admin.ModelAdmin):
     """
     ModelAdmin class for customised behaviour for
-    allowing BarrierInstance archivable.
+    allowing Barrier archivable.
     Admin shouldn't be able to add or delete objects
     """
 
@@ -26,4 +26,4 @@ class BarrierInstanceAdmin(admin.ModelAdmin):
     fields = ("archived", "archived_on", "archived_reason", "archived_by")
 
 
-admin.site.register(BarrierInstance, BarrierInstanceAdmin)
+admin.site.register(Barrier, BarrierAdmin)

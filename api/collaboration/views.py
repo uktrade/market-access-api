@@ -4,7 +4,7 @@ from rest_framework import generics, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.collaboration.serializers import BarrierTeamSerializer
 from api.user.helpers import get_django_user_by_sso_user_id
@@ -23,7 +23,7 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk")).order_by("-role", "created_on")
 
     def perform_create(self, serializer):
-        barrier = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier = get_object_or_404(Barrier, pk=self.kwargs.get("pk"))
         user = self.request.data.get("user")
         sso_user_id = user["profile"]["sso_user_id"]
         django_user = get_django_user_by_sso_user_id(sso_user_id)

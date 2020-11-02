@@ -26,7 +26,7 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     CONTRIBUTOR = "Contributor"
 
     barrier = models.ForeignKey(
-        "barriers.BarrierInstance", related_name="barrier_team", on_delete=models.CASCADE
+        "barriers.Barrier", related_name="barrier_team", on_delete=models.CASCADE
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

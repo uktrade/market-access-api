@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin, create_test_user
 from api.history.factories import TeamMemberHistoryFactory
@@ -48,10 +48,10 @@ class TestListTeamMembers(APITestMixin):
             list_report_url,
             format="json",
             data={
-                "problem_status": 2,
+                "term": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -60,14 +60,14 @@ class TestListTeamMembers(APITestMixin):
                 "product": "Some product",
                 "source": "OTHER",
                 "other_source": "Other source",
-                "barrier_title": "Some title",
+                "title": "Some title",
                 "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
 
         assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
+        instance = Barrier.objects.first()
         assert list_report_response.data["id"] == str(instance.id)
 
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})
@@ -134,10 +134,10 @@ class TestListTeamMembers(APITestMixin):
             list_report_url,
             format="json",
             data={
-                "problem_status": 2,
+                "term": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -146,14 +146,14 @@ class TestListTeamMembers(APITestMixin):
                 "product": "Some product",
                 "source": "OTHER",
                 "other_source": "Other source",
-                "barrier_title": "Some title",
+                "title": "Some title",
                 "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
 
         assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
+        instance = Barrier.objects.first()
         assert list_report_response.data["id"] == str(instance.id)
 
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})
@@ -219,10 +219,10 @@ class TestListTeamMembers(APITestMixin):
             list_report_url,
             format="json",
             data={
-                "problem_status": 2,
+                "term": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -231,14 +231,14 @@ class TestListTeamMembers(APITestMixin):
                 "product": "Some product",
                 "source": "OTHER",
                 "other_source": "Other source",
-                "barrier_title": "Some title",
+                "title": "Some title",
                 "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
 
         assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
+        instance = Barrier.objects.first()
         assert list_report_response.data["id"] == str(instance.id)
 
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})
@@ -303,10 +303,10 @@ class TestListTeamMembers(APITestMixin):
             list_report_url,
             format="json",
             data={
-                "problem_status": 2,
+                "term": 2,
                 "status_date": "2018-09-10",
                 "status": 4,
-                "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 "sectors_affected": True,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
@@ -315,14 +315,14 @@ class TestListTeamMembers(APITestMixin):
                 "product": "Some product",
                 "source": "OTHER",
                 "other_source": "Other source",
-                "barrier_title": "Some title",
+                "title": "Some title",
                 "summary": "Some summary",
                 "status_summary": "some status summary",
             },
         )
 
         assert list_report_response.status_code == status.HTTP_201_CREATED
-        instance = BarrierInstance.objects.first()
+        instance = Barrier.objects.first()
         assert list_report_response.data["id"] == str(instance.id)
 
         submit_url = reverse("submit-report", kwargs={"pk": instance.id})

@@ -10,7 +10,7 @@ MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 class CachedHistoryItem(models.Model):
     barrier = models.ForeignKey(
-        "barriers.BarrierInstance",
+        "barriers.Barrier",
         related_name="cached_history_items",
         on_delete=models.CASCADE,
     )

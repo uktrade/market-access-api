@@ -1,6 +1,6 @@
 from django.dispatch import receiver
 
-from api.barriers.models import HistoricalBarrierInstance, HistoricalPublicBarrier
+from api.barriers.models import HistoricalBarrier, HistoricalPublicBarrier
 from api.history.factories import HistoryItemFactory
 from api.history.models import CachedHistoryItem
 
@@ -19,7 +19,7 @@ def barrier_categories_changed(sender, instance, action, **kwargs):
 
     if action in ("post_add", "post_remove"):
         if hasattr(instance, "categories_history_saved"):
-            historical_instance = HistoricalBarrierInstance.objects.filter(
+            historical_instance = HistoricalBarrier.objects.filter(
                 id=instance.pk
             ).latest()
             historical_instance.update_categories()
@@ -36,7 +36,7 @@ def barrier_tags_changed(sender, instance, action, **kwargs):
 
     if action in ("post_add", "post_remove"):
         if hasattr(instance, "tags_history_saved"):
-            historical_instance = HistoricalBarrierInstance.objects.filter(
+            historical_instance = HistoricalBarrier.objects.filter(
                 id=instance.pk
             ).latest()
             historical_instance.update_tags()

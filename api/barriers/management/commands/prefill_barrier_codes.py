@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 from django.conf import settings
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.barriers.utils import random_barrier_reference
 
 
@@ -22,7 +22,7 @@ class Command(BaseCommand):
         while not unique:
             if loop_num < settings.REF_CODE_MAX_TRIES:
                 new_code = random_barrier_reference()
-                if not BarrierInstance.objects.filter(code=new_code):
+                if not Barrier.objects.filter(code=new_code):
                     return new_code
                     unique = True
                 loop_num += 1
@@ -30,7 +30,7 @@ class Command(BaseCommand):
                 raise ValueError("Error generating a unique reference code.")
 
     def handle(self, *args, **options):
-        empty_instances = BarrierInstance.objects.filter(code__isnull=True)
+        empty_instances = Barrier.objects.filter(code__isnull=True)
         for instance in empty_instances:
             new_code = self._unique_barrier_reference()
             instance.code = new_code

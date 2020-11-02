@@ -4,7 +4,7 @@ import string
 import factory
 from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyInteger, FuzzyText
 
-from api.barriers.models import BarrierInstance, PublicBarrier
+from api.barriers.models import Barrier, PublicBarrier
 from api.commodities.models import Commodity
 from api.metadata.models import BarrierPriority
 from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
@@ -81,17 +81,17 @@ class WTOProfileFactory(factory.django.DjangoModelFactory):
 
 class BarrierFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = BarrierInstance
+        model = Barrier
 
-    problem_status = 1
+    term = 1
     status = 1
-    export_country = fuzzy_country()
+    country = fuzzy_country()
     trade_direction = 1
     sectors_affected = True
     sectors = [fuzzy_sector()]
     product = factory.Sequence(lambda n: "Product {}".format(n + 1))
     source = "COMPANY"
-    barrier_title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
+    title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
 
@@ -143,22 +143,22 @@ class BarrierFactory(factory.django.DjangoModelFactory):
 
 class ReportFactory(factory.django.DjangoModelFactory):
     """
-    BarrierInstances are called Reports until they're submitted via self.submit_report()
+    Barriers are called Reports until they're submitted via self.submit_report()
     """
     class Meta:
-        model = BarrierInstance
+        model = Barrier
 
     draft = True
     archived = False
-    problem_status = 1
+    term = 1
     status = 1
-    export_country = fuzzy_country()
+    country = fuzzy_country()
     trade_direction = 1
     sectors_affected = True
     sectors = [fuzzy_sector()]
     product = factory.Sequence(lambda n: "Product {}".format(n + 1))
     source = "COMPANY"
-    barrier_title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
+    title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
 
@@ -181,6 +181,6 @@ class ReportFactory(factory.django.DjangoModelFactory):
 
 class MinReportFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = BarrierInstance
+        model = Barrier
 
-    problem_status = None
+    term = None

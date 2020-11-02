@@ -10,7 +10,7 @@ from api.assessment.serializers import (
     StrategicAssessmentSerializer,
 )
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.core.utils import cleansed_username
 from api.interactions.models import Document
 
@@ -28,11 +28,11 @@ class BarrierAssessmentDetail(
     serializer_class = AssessmentSerializer
 
     def get_queryset(self):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier_obj = get_object_or_404(Barrier, pk=self.kwargs.get("pk"))
         return self.queryset.filter(barrier=barrier_obj)
 
     def get_object(self):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier_obj = get_object_or_404(Barrier, pk=self.kwargs.get("pk"))
         # May raise a permission denied
         self.check_object_permissions(self.request, barrier_obj)
 
@@ -42,7 +42,7 @@ class BarrierAssessmentDetail(
         raise Http404('No %s matches the given query.' % self.queryset.model._meta.object_name)
 
     def perform_create(self, serializer):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier_obj = get_object_or_404(Barrier, pk=self.kwargs.get("pk"))
 
         if hasattr(barrier_obj, 'assessment'):
             raise serializers.ValidationError("Assessment already exists")
@@ -118,7 +118,7 @@ class BarrierAssessmentHistory(generics.GenericAPIView):
                 return field
 
     def get(self, request, pk):
-        barrier = BarrierInstance.barriers.get(id=pk)
+        barrier = Barrier.barriers.get(id=pk)
         barrier_history = barrier.history.all().order_by("history_date")
         assessment = get_object_or_404(Assessment, barrier=barrier)
         assess_history = assessment.history.all().order_by("history_date")

@@ -14,7 +14,7 @@ class TestCategories(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert bool(response.json()) is True
 
-    def test_status_types(self):
+    def test_barrier_terms(self):
         expected = {
             "1": "A procedural, short-term barrier",
             "2": "A long-term strategic barrier",
@@ -22,8 +22,8 @@ class TestCategories(APITestMixin):
         url = reverse("metadata")
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["status_types"] is not None
-        assert json.dumps(response.data["status_types"]) == json.dumps(expected)
+        assert response.data["barrier_terms"] is not None
+        assert json.dumps(response.data["barrier_terms"]) == json.dumps(expected)
 
     def test_loss_range(self):
         expected = {

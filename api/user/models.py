@@ -12,7 +12,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from api.barriers.filters import BarrierFilterSet
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.core.utils import nested_sort
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -105,7 +105,7 @@ class BaseSavedSearch(models.Model):
     def barriers(self):
         if self._barriers is None:
             filterset = BarrierFilterSet(user=self.user)
-            barriers = BarrierInstance.barriers.all()
+            barriers = Barrier.barriers.all()
 
             for name, value in self.get_api_parameters().items():
                 barriers = filterset.filters[name].filter(barriers, value)

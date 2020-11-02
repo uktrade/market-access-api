@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.assessment.models import Assessment
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.history.models import CachedHistoryItem
@@ -16,7 +16,7 @@ class TestActivityView(APITestMixin, TestCase):
 
     @freeze_time("2020-03-01")
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
@@ -49,15 +49,15 @@ class TestActivityView(APITestMixin, TestCase):
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
-        self.barrier.problem_status = 1
+        self.barrier.term = 1
         self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.source = "COMPANY"
-        self.barrier.barrier_title = "New title"
+        self.barrier.title = "New title"
         self.barrier.save()
 
         with freeze_time("2020-04-02"):
@@ -109,10 +109,10 @@ class TestActivityView(APITestMixin, TestCase):
         assert ("barrier", "summary") not in fields
         assert ("barrier", "location") not in fields
         assert ("barrier", "product") not in fields
-        assert ("barrier", "problem_status") not in fields
+        assert ("barrier", "term") not in fields
         assert ("barrier", "sectors") not in fields
         assert ("barrier", "source") not in fields
-        assert ("barrier", "barrier_title") not in fields
+        assert ("barrier", "title") not in fields
         assert ("assessment", "documents") not in fields
         assert ("assessment", "explanation") not in fields
         assert ("team_member", "user") not in fields

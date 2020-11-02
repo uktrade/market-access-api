@@ -1,5 +1,7 @@
 import uuid
 
+import pytest
+
 from tests.barriers.factories import BarrierFactory
 from tests.barriers.test_report_progress import BarrierStatus
 from tests.base import TestMigrations
@@ -37,19 +39,23 @@ class TestMassTransportMigration(TestMigrations):
 
         assert 5 == self.barrier.history.count()
 
+    @pytest.mark.skip(reason="Migration has already been run")
     def test_sectors_migrated_in_barrier(self):
         self.barrier.refresh_from_db()
         assert set(self.expected_sectors) == set(self.barrier.sectors)
 
+    @pytest.mark.skip(reason="Migration has already been run")
     def test_sectors_migration_removed_old_sector_id_in_history_items(self):
         history_items = self.barrier.history.filter(
             sectors__contains=[self.mass_transport_uuid_str]
         )
         assert 0 == history_items.count()
 
+    @pytest.mark.skip(reason="Migration has already been run")
     def test_sectors_migration_does_not_create_a_new_history_item(self):
         assert 5 == self.barrier.history.count()
 
+    @pytest.mark.skip(reason="Migration has already been run")
     def test_sectors_migration_adds_dest_sector_ids_to_history_items(self):
         for sector in self.expected_sectors:
             with self.subTest(sector=sector):

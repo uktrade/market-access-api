@@ -13,9 +13,9 @@ from .constants import (
     BarrierStatus,
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
+    BARRIER_TERMS,
     ESTIMATED_LOSS_RANGE,
     GOVT_RESPONSE,
-    PROBLEM_STATUS_TYPES,
     PUBLISH_RESPONSE,
     REPORT_STATUS,
     RESOLVABILITY_ASSESSMENT_EFFORT,
@@ -48,7 +48,7 @@ class MetadataView(generics.GenericAPIView):
         permission_classes = ()
 
     def get(self, request):
-        status_types = dict(PROBLEM_STATUS_TYPES)
+        barrier_terms = dict(BARRIER_TERMS)
         loss_range = dict(ESTIMATED_LOSS_RANGE)
         stage_status = dict(STAGE_STATUS)
         govt_response = dict(GOVT_RESPONSE)
@@ -78,7 +78,7 @@ class MetadataView(generics.GenericAPIView):
         wto_committee_groups = get_wto_committee_groups()
 
         results = {
-            "status_types": status_types,
+            "barrier_terms": barrier_terms,
             "loss_range": loss_range,
             "stage_status": stage_status,
             "govt_response": govt_response,
@@ -90,7 +90,7 @@ class MetadataView(generics.GenericAPIView):
             "categories": categories,
             "overseas_regions": dh_os_regions,
             "countries": dh_countries,
-            "country_admin_areas": dh_admin_areas,
+            "admin_areas": dh_admin_areas,
             "sectors": dh_sectors,
             "barrier_status": barrier_status,
             "barrier_pending": barrier_pending,

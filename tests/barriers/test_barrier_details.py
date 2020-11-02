@@ -6,7 +6,7 @@ from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_team_members
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.metadata.models import Category, BarrierPriority
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
@@ -85,7 +85,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert "2020-02-22" == self.barrier.status_date.strftime('%Y-%m-%d')
         assert status_summary == self.barrier.status_summary
 
-    def test_patch_barrier_title(self):
+    def test_patch_title(self):
         title = "Just a new title"
         payload = {
             "title": title
@@ -123,8 +123,8 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert str(self.barrier.id) == response.data["id"]
         assert response.data["caused_by_trading_bloc"] is True
 
-    def test_patch_barrier_problem_status(self):
-        assert 1 == self.barrier.problem_status
+    def test_patch_barrier_term(self):
+        assert 1 == self.barrier.term
 
         test_parameters = [
             {"term": None, "status_code": status.HTTP_200_OK, "expected_term": None},
@@ -142,7 +142,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
                 self.barrier.refresh_from_db()
                 assert tp["status_code"] == response.status_code, f"Test params: {tp}"
-                assert tp["expected_term"] == self.barrier.problem_status, f"Test params: {tp}"
+                assert tp["expected_term"] == self.barrier.term, f"Test params: {tp}"
 
     def test_patch_barrier_to_affect_all_sectors(self):
         assert not self.barrier.all_sectors
@@ -234,7 +234,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         """ Users who edit a barrier should be  added as a Contributor automatically. """
         assert not get_team_members(self.barrier)
 
-        payload = {"barrier_title": "Wibble wobble"}
+        payload = {"title": "Wibble wobble"}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -293,7 +293,7 @@ class TestBarrierTradeDirection(APITestMixin, TestCase):
         self.barrier.trade_direction = None
         self.barrier.save()
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
         assert self.barrier.trade_direction is None
 
         response = self.api_client.get(self.url)
@@ -346,7 +346,7 @@ class TestBarrierPublicEligibility(APITestMixin, TestCase):
         By default all existing barriers start with public_eligibility not begin set.
         """
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
         assert self.barrier.public_eligibility is None
 
         response = self.api_client.get(self.url)

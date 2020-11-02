@@ -105,7 +105,7 @@ class TestReportProgress(BaseReportTestCase):
             },
             {
                 "case": 20,
-                "hints": "Cannot get COMPLETED without problem_status.",
+                "hints": "Cannot get COMPLETED without term.",
                 "payload": {
                     "term": None,
                     "status": BarrierStatus.OPEN_PENDING_ACTION,

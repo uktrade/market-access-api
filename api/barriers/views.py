@@ -23,7 +23,7 @@ from simple_history.utils import bulk_create_with_history
 from api.barriers.csv import create_csv_response, _transform_csv_row
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.models import BarrierInstance, BarrierReportStage, PublicBarrier
+from api.barriers.models import Barrier, BarrierReportStage, PublicBarrier
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierDetailSerializer,
@@ -63,9 +63,9 @@ def barriers_export(request):
     # Generate a sequence of rows. The range is based on the maximum number of
     # rows that can be handled by a single sheet in most spreadsheet
     # applications.
-    barriers = BarrierInstance.barriers.all()
+    barriers = Barrier.barriers.all()
 
-    rows = ([barrier.id, barrier.export_country] for barrier in barriers)
+    rows = ([barrier.id, barrier.country] for barrier in barriers)
     pseudo_buffer = Echo()
     writer = csv.writer(pseudo_buffer)
     response = StreamingHttpResponse(
@@ -100,19 +100,19 @@ def barrier_count(request):
     """
     current_user = request.user
     user_count = None
-    barriers = BarrierInstance.barriers.all()
-    reports = BarrierInstance.reports.all()
+    barriers = Barrier.barriers.all()
+    reports = Barrier.reports.all()
     if not current_user.is_anonymous:
-        user_barrier_count = BarrierInstance.barriers.filter(
+        user_barrier_count = Barrier.barriers.filter(
             created_by=current_user
         ).count()
-        user_report_count = BarrierInstance.reports.filter(
+        user_report_count = Barrier.reports.filter(
             created_by=current_user
         ).count()
         user_count = {"barriers": user_barrier_count, "reports": user_report_count}
         if has_profile(current_user) and current_user.profile.location:
             country = current_user.profile.location
-            country_barriers = barriers.filter(export_country=country)
+            country_barriers = barriers.filter(country=country)
             country_count = {
                 "barriers": {
                     "total": country_barriers.count(),
@@ -120,18 +120,18 @@ def barrier_count(request):
                     "paused": country_barriers.filter(status=5).count(),
                     "resolved": country_barriers.filter(status=4).count(),
                 },
-                "reports": reports.filter(export_country=country).count(),
+                "reports": reports.filter(country=country).count(),
             }
             user_count["country"] = country_count
 
     counts = {
         "barriers": {
-            "total": BarrierInstance.barriers.count(),
-            "open": BarrierInstance.barriers.filter(status=2).count(),
-            "paused": BarrierInstance.barriers.filter(status=5).count(),
-            "resolved": BarrierInstance.barriers.filter(status=4).count(),
+            "total": Barrier.barriers.count(),
+            "open": Barrier.barriers.filter(status=2).count(),
+            "paused": Barrier.barriers.filter(status=5).count(),
+            "resolved": Barrier.barriers.filter(status=4).count(),
         },
-        "reports": BarrierInstance.reports.count(),
+        "reports": Barrier.reports.count(),
     }
     if user_count:
         counts["user"] = user_count
@@ -141,7 +141,7 @@ def barrier_count(request):
 class BarrierReportBase(object):
     def _update_stages(self, serializer, user):
         report_id = serializer.data.get("id")
-        report = BarrierInstance.reports.get(id=report_id)
+        report = Barrier.reports.get(id=report_id)
         progress = report.current_progress()
         for new_stage, new_status in progress:
             try:
@@ -175,7 +175,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
         This view should return a list of all the reports
         for the currently authenticated user.
         """
-        queryset = BarrierInstance.reports.all()
+        queryset = Barrier.reports.all()
         user = self.request.user
         return queryset.filter(created_by=user)
 
@@ -187,7 +187,7 @@ class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
 
 class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "pk"
-    queryset = BarrierInstance.reports.all()
+    queryset = Barrier.reports.all()
     serializer_class = BarrierReportSerializer
 
     @transaction.atomic()
@@ -203,7 +203,7 @@ class BarrierReportDetail(BarrierReportBase, generics.RetrieveUpdateDestroyAPIVi
 
 
 class BarrierReportSubmit(generics.UpdateAPIView):
-    queryset = BarrierInstance.reports.all()
+    queryset = Barrier.reports.all()
     serializer_class = BarrierReportSerializer
 
     @transaction.atomic()
@@ -245,10 +245,10 @@ class BarrierReportSubmit(generics.UpdateAPIView):
 
 class BarrierList(generics.ListAPIView):
     """
-    Return a list of all the BarrierInstances
+    Return a list of all the Barriers
     with optional filtering and ordering defined
     """
-    queryset = BarrierInstance.barriers.all().select_related(
+    queryset = Barrier.barriers.all().select_related(
         "priority"
     ).prefetch_related(
         "tags"
@@ -261,7 +261,7 @@ class BarrierList(generics.ListAPIView):
         "modified_on",
         "status",
         "priority",
-        "export_country"
+        "country",
     )
     ordering = ("reported_on", "modified_on")
 
@@ -312,11 +312,11 @@ class BarrierListExportView(generics.ListAPIView):
 
     We now use S3 for csv downloads as it's a lot faster than streaming the file.
 
-    Return a streaming http response of all the BarrierInstances
+    Return a streaming http response of all the Barriers
     with optional filtering and ordering defined
     """
 
-    queryset = BarrierInstance.barriers.annotate(
+    queryset = Barrier.barriers.annotate(
         team_count=Count('barrier_team'),
     ).all().select_related(
         "assessment",
@@ -339,7 +339,7 @@ class BarrierListExportView(generics.ListAPIView):
     field_titles = {
         "id": "id",
         "code": "code",
-        "barrier_title": "Title",
+        "title": "Title",
         "status": "Status",
         "priority": "Priority",
         "overseas_region": "Overseas Region",
@@ -347,7 +347,7 @@ class BarrierListExportView(generics.ListAPIView):
         "admin_areas": "Admin areas",
         "sectors": "Sectors",
         "product": "Product",
-        "scope": "Scope",
+        "term": "Term",
         "categories": "Barrier categories",
         "source": "Source",
         "team_count": "Team count",
@@ -463,12 +463,12 @@ class BarrierListS3Download(BarrierListExportView):
 
 class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     """
-    Return details of a BarrierInstance
+    Return details of a Barrier
     Allows the barrier to be updated as well
     """
 
     lookup_field = "pk"
-    queryset = BarrierInstance.barriers.all().select_related(
+    queryset = Barrier.barriers.all().select_related(
         "assessment"
     ).select_related(
         "priority"
@@ -499,7 +499,7 @@ class BarrierFullHistory(generics.GenericAPIView):
     """
 
     def get(self, request, pk):
-        barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
+        barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_full_history(
             barrier=barrier,
             ignore_creation_items=True,
@@ -518,7 +518,7 @@ class BarrierActivity(generics.GenericAPIView):
     """
 
     def get(self, request, pk):
-        barrier = BarrierInstance.objects.get(id=self.kwargs.get("pk"))
+        barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_activity(barrier=barrier, use_cache=True)
         response = {
             "barrier_id": str(pk),
@@ -546,7 +546,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
     def _create(
         self, serializer, barrier_id, status, summary, sub_status=None, sub_other=None, status_date=None
     ):
-        barrier_obj = get_object_or_404(BarrierInstance, pk=barrier_id)
+        barrier_obj = get_object_or_404(Barrier, pk=barrier_id)
 
         if status_date is None:
             status_date = timezone.now().date()
@@ -562,7 +562,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
 
 
 class BarrierResolveInFull(BarrierStatusBase):
-    queryset = BarrierInstance.barriers.all()
+    queryset = Barrier.barriers.all()
     serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
@@ -592,7 +592,7 @@ class BarrierResolveInFull(BarrierStatusBase):
 
 
 class BarrierResolveInPart(BarrierStatusBase):
-    queryset = BarrierInstance.barriers.all()
+    queryset = Barrier.barriers.all()
     serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
@@ -622,7 +622,7 @@ class BarrierResolveInPart(BarrierStatusBase):
 
 
 class BarrierHibernate(BarrierStatusBase):
-    queryset = BarrierInstance.barriers.all()
+    queryset = Barrier.barriers.all()
     serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
@@ -638,7 +638,7 @@ class BarrierHibernate(BarrierStatusBase):
 
 
 class BarrierStatusChangeUnknown(BarrierStatusBase):
-    queryset = BarrierInstance.barriers.all()
+    queryset = Barrier.barriers.all()
     serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
@@ -654,7 +654,7 @@ class BarrierStatusChangeUnknown(BarrierStatusBase):
 
 
 class BarrierOpenInProgress(BarrierStatusBase):
-    queryset = BarrierInstance.barriers.all()
+    queryset = Barrier.barriers.all()
     serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
@@ -670,7 +670,7 @@ class BarrierOpenInProgress(BarrierStatusBase):
 
 
 class BarrierOpenActionRequired(BarrierStatusBase):
-    queryset = BarrierInstance.barriers.all()
+    queryset = Barrier.barriers.all()
     serializer_class = BarrierDetailSerializer
 
     def get_queryset(self):
@@ -708,7 +708,7 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
     """
     Manage public data for barriers.
     """
-    barriers_qs = BarrierInstance.barriers.all()
+    barriers_qs = Barrier.barriers.all()
     http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = (AllRetrieveAndEditorUpdateOnly,)
     serializer_class = PublicBarrierSerializer

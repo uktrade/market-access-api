@@ -6,7 +6,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from api.core.test_utils import APITestMixin, create_test_user
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from tests.barriers.factories import ReportFactory
 
 
@@ -16,13 +16,13 @@ class TestListReports(APITestMixin, APITestCase):
         self.url = reverse("list-reports")
 
     def test_create_report(self):
-        assert not BarrierInstance.objects.count()
-        payload = {"problem_status": 1}
+        assert not Barrier.objects.count()
+        payload = {"term": 1}
         response = self.api_client.post(self.url, format="json", data=payload)
         assert status.HTTP_201_CREATED == response.status_code
 
     def test_list_reports__no_results(self):
-        assert not BarrierInstance.objects.filter(draft=True)
+        assert not Barrier.objects.filter(draft=True)
         response = self.api_client.get(self.url)
         assert status.HTTP_200_OK == response.status_code
         assert 0 == response.data["count"]
@@ -48,7 +48,7 @@ class TestListReports(APITestMixin, APITestCase):
         response = client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
-        reports = BarrierInstance.reports.all().order_by(order_by)
+        reports = Barrier.reports.all().order_by(order_by)
         assert reports.count() == response.data["count"]
         report_ids = [b["id"] for b in response.data["results"]]
         db_report_ids = [str(b.id) for b in reports]
@@ -65,7 +65,7 @@ class TestListReports(APITestMixin, APITestCase):
         )
         user1 = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
 
         url = f'{reverse("list-reports")}'
         client = self.create_api_client(user=user1)
@@ -87,7 +87,7 @@ class TestListReports(APITestMixin, APITestCase):
         _another_user = create_test_user()
         _another_report = ReportFactory(created_by=_another_user)
 
-        assert 2 == BarrierInstance.objects.count()
+        assert 2 == Barrier.objects.count()
 
         response = client.get(self.url)
 
@@ -111,7 +111,7 @@ class TestListReports(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         assert 0 == response.data["count"]
 
-    def test_post_invalid_problem_status_gives_400(self):
+    def test_post_invalid_term_gives_400(self):
         response = self.api_client.post(
             self.url, format="json", data={"term": 3}
         )
@@ -123,7 +123,7 @@ class TestListReports(APITestMixin, APITestCase):
         )
         assert status.HTTP_400_BAD_REQUEST == response.status_code
 
-    def test_post_export_country_name_gives_400(self):
+    def test_post_country_name_gives_400(self):
         response = self.api_client.post(
             self.url, format="json", data={"country": "China"}
         )

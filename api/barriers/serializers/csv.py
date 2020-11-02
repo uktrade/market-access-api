@@ -2,7 +2,7 @@ from django.conf import settings
 
 from rest_framework import serializers
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 
 from api.metadata.constants import (
@@ -10,7 +10,7 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BarrierStatus,
     BARRIER_PENDING,
-    PROBLEM_STATUS_TYPES,
+    BARRIER_TERMS,
     PublicBarrierStatus,
     TRADE_DIRECTION_CHOICES,
 )
@@ -29,11 +29,11 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     id = serializers.UUIDField()
     code = serializers.CharField()
-    scope = serializers.SerializerMethodField()
+    term = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     status_date = serializers.SerializerMethodField()
     summary = serializers.SerializerMethodField()
-    barrier_title = serializers.CharField()
+    title = serializers.CharField()
     sectors = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
@@ -101,11 +101,11 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     strategic_assessment_scale = serializers.SerializerMethodField()
 
     class Meta:
-        model = BarrierInstance
+        model = Barrier
         fields = (
             "id",
             "code",
-            "barrier_title",
+            "title",
             "status",
             "status_date",
             "priority",
@@ -114,9 +114,9 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "admin_areas",
             "sectors",
             "product",
-            "scope",
             "source",
             "team_count",
+            "term",
             "priority",
             "team_count",
             "reported_on",
@@ -131,10 +131,9 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "economic_assessment_explanation",
         )
 
-    def get_scope(self, obj):
-        """  Custom Serializer Method Field for exposing current problem scope display value """
-        problem_status_dict = dict(PROBLEM_STATUS_TYPES)
-        return problem_status_dict.get(obj.problem_status, "Unknown")
+    def get_term(self, obj):
+        term_dict = dict(BARRIER_TERMS)
+        return term_dict.get(obj.term, "Unknown")
 
     def get_assessment_impact(self, obj):
         if hasattr(obj, "assessment"):
@@ -198,8 +197,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return "N/A"
 
     def get_location(self, obj):
-        if obj.export_country:
-            country = get_country(str(obj.export_country))
+        if obj.country:
+            country = get_country(str(obj.country))
             if country:
                 return country.get("name")
         elif obj.trading_bloc:
@@ -208,8 +207,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
                 return trading_bloc.get("name")
 
     def get_overseas_region(self, obj):
-        if obj.export_country:
-            country = get_country(str(obj.export_country))
+        if obj.country:
+            country = get_country(str(obj.country))
             if country:
                 overseas_region = country.get("overseas_region")
                 if overseas_region:
@@ -220,7 +219,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_admin_areas(self, obj):
         admin_area_names = []
-        for admin_area in obj.country_admin_areas or []:
+        for admin_area in obj.admin_areas or []:
             admin_area = get_admin_area(str(admin_area))
             if admin_area and admin_area.get("name"):
                 admin_area_names.append(admin_area.get("name"))
