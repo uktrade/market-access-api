@@ -51,7 +51,7 @@ class WTOProfileHistoricalModel(models.Model):
 class WTOProfile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
     barrier = models.OneToOneField(
-        "barriers.BarrierInstance",
+        "barriers.Barrier",
         on_delete=models.CASCADE,
         related_name="wto_profile",
     )

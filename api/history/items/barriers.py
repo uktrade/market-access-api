@@ -42,8 +42,8 @@ class CausedByTradingBlocHistoryItem(BaseBarrierHistoryItem):
 
     def get_value(self, record):
         country_trading_bloc = None
-        if record.export_country:
-            country_trading_bloc = get_trading_bloc_by_country_id(str(record.export_country))
+        if record.country:
+            country_trading_bloc = get_trading_bloc_by_country_id(str(record.country))
         return {
             "caused_by_trading_bloc": record.caused_by_trading_bloc,
             "country_trading_bloc": country_trading_bloc,
@@ -79,10 +79,10 @@ class LocationHistoryItem(BaseBarrierHistoryItem):
 
     def get_value(self, record):
         return get_location_text(
-            country_id=record.export_country,
+            country_id=record.country,
             trading_bloc=record.trading_bloc,
             caused_by_trading_bloc=record.caused_by_trading_bloc,
-            admin_area_ids=record.country_admin_areas,
+            admin_area_ids=record.admin_areas,
         )
 
 
@@ -105,10 +105,6 @@ class ProductHistoryItem(BaseBarrierHistoryItem):
 
 class PublicEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
     field = "public_eligibility_summary"
-
-
-class ScopeHistoryItem(BaseBarrierHistoryItem):
-    field = "problem_status"
 
 
 class SectorsHistoryItem(BaseBarrierHistoryItem):
@@ -160,8 +156,12 @@ class TagsHistoryItem(BaseBarrierHistoryItem):
         return record.tags_cache or []
 
 
+class TermHistoryItem(BaseBarrierHistoryItem):
+    field = "term"
+
+
 class TitleHistoryItem(BaseBarrierHistoryItem):
-    field = "barrier_title"
+    field = "title"
 
 
 class TradeDirectionHistoryItem(BaseBarrierHistoryItem):

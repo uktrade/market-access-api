@@ -11,7 +11,7 @@ from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from ...models import BarrierInstance
+from ...models import Barrier
 
 
 class Command(BaseCommand):
@@ -40,8 +40,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        barriers = BarrierInstance.barriers.all()
-        reports = BarrierInstance.reports.all()
+        barriers = Barrier.barriers.all()
+        reports = Barrier.reports.all()
         user_model = get_user_model()
         users = user_model.objects.all()
 

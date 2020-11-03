@@ -7,7 +7,7 @@ from rest_framework.reverse import reverse
 
 from api.assessment.models import Assessment
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.history.factories import (
@@ -29,7 +29,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
 
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
@@ -92,8 +92,8 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["new_value"] == "New summary"
 
     def test_location_history(self):
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
 
         self.barrier.save()
 
@@ -162,14 +162,14 @@ class TestBarrierHistory(APITestMixin, TestCase):
         }
 
     def test_scope_history(self):
-        self.barrier.problem_status = 1
+        self.barrier.term = 1
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
         assert data["model"] == "barrier"
-        assert data["field"] == "problem_status"
+        assert data["field"] == "term"
         assert data["old_value"] == 2
         assert data["new_value"] == 1
 
@@ -207,14 +207,14 @@ class TestBarrierHistory(APITestMixin, TestCase):
         }
 
     def test_title_history(self):
-        self.barrier.barrier_title = "New title"
+        self.barrier.title = "New title"
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
         assert data["model"] == "barrier"
-        assert data["field"] == "barrier_title"
+        assert data["field"] == "title"
         assert data["old_value"] == "Some title"
         assert data["new_value"] == "New title"
 
@@ -224,7 +224,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
@@ -385,7 +385,7 @@ class TestAssessmentHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "documents", "users"]
 
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.assessment = Assessment.objects.create(
@@ -505,7 +505,7 @@ class TestNoteHistory(APITestMixin, TestCase):
     fixtures = ["documents", "users", "barriers"]
 
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
@@ -548,7 +548,7 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
     fixtures = ["users", "barriers"]
 
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
@@ -577,7 +577,7 @@ class TestHistoryView(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
@@ -611,17 +611,17 @@ class TestHistoryView(APITestMixin, TestCase):
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
         self.barrier.status_summary = "Summary"
         self.barrier.sub_status = "UK_GOVT"
-        self.barrier.problem_status = 1
+        self.barrier.term = 1
         self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.source = "COMPANY"
-        self.barrier.barrier_title = "New title"
+        self.barrier.title = "New title"
         self.barrier.save()
 
         self.barrier.archive(
@@ -720,7 +720,7 @@ class TestHistoryView(APITestMixin, TestCase):
         assert {
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
-            "field": "barrier_title",
+            "field": "title",
             "old_value": "Some title",
             "new_value": "New title",
             "user": None
@@ -759,7 +759,7 @@ class TestHistoryView(APITestMixin, TestCase):
         assert {
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
-            "field": "problem_status",
+            "field": "term",
             "old_value": 2,
             "new_value": 1,
             "user": None
@@ -891,7 +891,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
-        self.barrier = BarrierInstance.objects.get(
+        self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
@@ -907,18 +907,18 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
-        self.barrier.export_country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.country_admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
+        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
         self.barrier.status_summary = "Summary"
         self.barrier.sub_status = "UK_GOVT"
-        self.barrier.problem_status = 1
+        self.barrier.term = 1
         self.barrier.public_eligibility_summary = "New summary"
         self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.source = "COMPANY"
-        self.barrier.barrier_title = "New title"
+        self.barrier.title = "New title"
         self.barrier.save()
 
         self.barrier.archive(
@@ -968,12 +968,12 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         assert ("barrier", "location") in cached_changes
         assert ("barrier", "priority") in cached_changes
         assert ("barrier", "product") in cached_changes
-        assert ("barrier", "problem_status") in cached_changes
+        assert ("barrier", "term") in cached_changes
         assert ("barrier", "sectors") in cached_changes
         assert ("barrier", "source") in cached_changes
         assert ("barrier", "status") in cached_changes
         assert ("barrier", "summary") in cached_changes
-        assert ("barrier", "barrier_title") in cached_changes
+        assert ("barrier", "title") in cached_changes
         assert ("assessment", "explanation") in cached_changes
         assert ("assessment", "impact") in cached_changes
         assert ("assessment", "documents") in cached_changes

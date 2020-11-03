@@ -3,7 +3,7 @@ from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.barriers.serializers import DataWorkspaceSerializer
 from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 
@@ -18,7 +18,7 @@ class BarrierList(generics.ListAPIView):
 
     pagination_class = MarketAccessDatasetViewCursorPagination
 
-    queryset = BarrierInstance.barriers.all().select_related(
+    queryset = Barrier.barriers.all().select_related(
         "assessment"
     ).select_related(
         "priority"

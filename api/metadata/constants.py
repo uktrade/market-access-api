@@ -1,6 +1,6 @@
 from model_utils import Choices
 
-PROBLEM_STATUS_TYPES = Choices(
+BARRIER_TERMS = Choices(
     (1, "A procedural, short-term barrier"),
     (2, "A long-term strategic barrier"),
 )

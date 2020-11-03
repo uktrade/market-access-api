@@ -13,7 +13,7 @@ from mock import patch
 from rest_framework import status
 
 from api.barriers.helpers import get_team_member_user_ids
-from api.barriers.models import PublicBarrier, BarrierInstance
+from api.barriers.models import PublicBarrier, Barrier
 from api.barriers.serializers import PublicBarrierSerializer
 from api.barriers.serializers.public_barriers import public_barriers_to_json
 from api.barriers.public_data import (
@@ -68,14 +68,14 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         If a barrier doesn't have a corresponding public barrier it gets created when
         details of that being fetched.
         """
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
         assert 0 == PublicBarrier.objects.count()
 
         response = self.api_client.get(self.url)
 
         assert status.HTTP_200_OK == response.status_code
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
         assert 1 == PublicBarrier.objects.count()
 
     def test_public_barrier_default_values_at_creation(self):
@@ -87,7 +87,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_200_OK == response.status_code
         assert not response.data["title"]
         assert not response.data["summary"]
-        assert self.barrier.export_country == response.data["country"]["id"]
+        assert self.barrier.country == response.data["country"]["id"]
         assert self.barrier.sectors == [s["id"] for s in response.data["sectors"]]
         assert not response.data["categories"]
 
@@ -426,7 +426,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert "Some title" == pb.latest_published_version.title
         assert "Some summary" == pb.latest_published_version.summary
         assert self.barrier.status == pb.latest_published_version.status
-        assert str(self.barrier.export_country) == str(pb.latest_published_version.country)
+        assert str(self.barrier.country) == str(pb.latest_published_version.country)
         assert [str(s) for s in self.barrier.sectors] == [str(s) for s in pb.latest_published_version.sectors]
         assert False is pb.latest_published_version.all_sectors
         assert list(self.barrier.categories.all()) == list(pb.latest_published_version.categories.all())
@@ -463,7 +463,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert "Some title" == pb.latest_published_version.title
         assert "Some summary" == pb.latest_published_version.summary
         assert expected_status == pb.latest_published_version.status
-        assert str(self.barrier.export_country) == str(pb.latest_published_version.country)
+        assert str(self.barrier.country) == str(pb.latest_published_version.country)
         assert [str(s) for s in expected_sectors] == [str(s) for s in pb.latest_published_version.sectors]
         assert False is pb.latest_published_version.all_sectors
         assert list(self.barrier.categories.all()) == list(pb.latest_published_version.categories.all())
@@ -491,28 +491,28 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
     def test_public_barrier_publish_updates_country(self):
         angola_uuid = "985f66a0-5d95-e211-a939-e4115bead28a"
         singapore_uuid = "1f0be5c4-5d95-e211-a939-e4115bead28a"
-        self.barrier.export_country = angola_uuid
+        self.barrier.country = angola_uuid
         self.barrier.save()
 
         response = self.api_client.get(self.url)
         pb = PublicBarrier.objects.get(pk=response.data["id"])
 
         self.barrier.refresh_from_db()
-        assert self.barrier.export_country == pb.country
+        assert self.barrier.country == pb.country
 
         # Change barrier country
-        self.barrier.export_country = singapore_uuid
+        self.barrier.country = singapore_uuid
         self.barrier.save()
         self.barrier.refresh_from_db()
 
-        assert self.barrier.export_country != pb.country
+        assert self.barrier.country != pb.country
         assert True is pb.internal_country_changed
 
         user = self.create_publisher()
         pb, response = self.publish_barrier(pb=pb, user=user)
 
         assert status.HTTP_200_OK == response.status_code
-        assert self.barrier.export_country == pb.country
+        assert self.barrier.country == pb.country
 
     def test_public_barrier_publish_updates_sectors(self):
         response = self.api_client.get(self.url)
@@ -728,7 +728,7 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
     def setUp(self):
         self.barrier = BarrierFactory(
-            export_country="1f0be5c4-5d95-e211-a939-e4115bead28a",  # Singapore
+            country="1f0be5c4-5d95-e211-a939-e4115bead28a",  # Singapore
             sectors=['9b38cecc-5f95-e211-a939-e4115bead28a'],  # Chemicals
             status=BarrierStatus.OPEN_PENDING,
         )

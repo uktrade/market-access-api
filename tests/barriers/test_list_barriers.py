@@ -6,7 +6,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from api.core.test_utils import APITestMixin, create_test_user
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import PublicBarrierStatus
 from api.metadata.models import BarrierPriority
@@ -107,7 +107,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         user = create_test_user()
         barrier = BarrierFactory()
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
 
         response = self.api_client.get(self.url)
         assert status.HTTP_200_OK == response.status_code
@@ -123,7 +123,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         user = create_test_user()
         barrier = BarrierFactory()
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
 
         response = self.api_client.get(url)
         assert status.HTTP_200_OK == response.status_code
@@ -187,26 +187,26 @@ class TestListBarriers(APITestMixin, APITestCase):
 
     def test_list_barriers_country_filter(self):
         country_id = "a05f66a0-5d95-e211-a939-e4115bead28a"
-        BarrierFactory.create_batch(2, export_country=country_id)
+        BarrierFactory.create_batch(2, country=country_id)
         BarrierFactory()
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?location={country_id}'
         response = self.api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.filter(export_country=country_id)
+        barriers = Barrier.objects.filter(country=country_id)
         assert barriers.count() == response.data["count"]
 
     def test_list_barriers_country_filter__multivalues(self):
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         germany = "83756b9a-5d95-e211-a939-e4115bead28a"
-        spain_barrier = BarrierFactory(export_country=spain)
-        germany_barrier = BarrierFactory(export_country=germany)
+        spain_barrier = BarrierFactory(country=spain)
+        germany_barrier = BarrierFactory(country=germany)
         BarrierFactory()
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?location={spain},{germany}'
         response = self.api_client.get(url)
@@ -219,11 +219,11 @@ class TestListBarriers(APITestMixin, APITestCase):
     def test_list_barriers_country_filter__no_find(self):
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         germany = "83756b9a-5d95-e211-a939-e4115bead28a"
-        BarrierFactory(export_country=spain)
+        BarrierFactory(country=spain)
         BarrierFactory()
 
-        assert 2 == BarrierInstance.objects.count()
-        assert 0 == BarrierInstance.objects.filter(export_country=germany).count()
+        assert 2 == Barrier.objects.count()
+        assert 0 == Barrier.objects.filter(country=germany).count()
 
         url = f'{reverse("list-barriers")}?location={germany}'
         response = self.api_client.get(url)
@@ -233,30 +233,30 @@ class TestListBarriers(APITestMixin, APITestCase):
 
     def test_list_barriers_status_filter(self):
         prob_status = 2
-        BarrierFactory.create_batch(2, problem_status=1)
-        BarrierFactory(problem_status=prob_status)
+        BarrierFactory.create_batch(2, term=1)
+        BarrierFactory(term=prob_status)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?status={prob_status}'
         response = self.api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.filter(status=prob_status)
+        barriers = Barrier.objects.filter(status=prob_status)
         assert response.data["count"] == barriers.count()
 
     def test_list_barriers_status_filter__multivalues(self):
-        BarrierFactory(problem_status=1)
-        BarrierFactory(problem_status=2)
-        BarrierFactory(problem_status=4)
+        BarrierFactory(term=1)
+        BarrierFactory(term=2)
+        BarrierFactory(term=4)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?status=2,4'
         response = self.api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        barriers = BarrierInstance.objects.filter(status__in=[2, 4])
+        barriers = Barrier.objects.filter(status__in=[2, 4])
         assert response.data["count"] == barriers.count()
 
     def test_list_barriers_category_filter(self):
@@ -265,7 +265,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier = BarrierFactory()
         barrier.categories.add(cat1)
 
-        assert 2 == BarrierInstance.objects.count()
+        assert 2 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?category={cat1.id}'
         response = self.api_client.get(url)
@@ -280,7 +280,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         BarrierFactory(sectors=[sector1])
         barrier = BarrierFactory(sectors=[sector2])
 
-        assert 2 == BarrierInstance.objects.count()
+        assert 2 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?sector={sector2}'
         response = self.api_client.get(url)
@@ -295,7 +295,7 @@ class TestListBarriers(APITestMixin, APITestCase):
             "modified_on", "-modified_on",
             "status", "-status",
             "priority", "-priority",
-            "export_country", "-export_country"
+            "country", "-country"
         ]
         priorities = BarrierPriorityFactory.create_batch(3)
         bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
@@ -304,7 +304,7 @@ class TestListBarriers(APITestMixin, APITestCase):
             modified_on=datetime(2020, 1, 2, tzinfo=UTC),
             status=1,
             priority=priorities[0],
-            export_country=bahamas
+            country=bahamas
         )
         bhutan = "ab5f66a0-5d95-e211-a939-e4115bead28a"
         barrier2 = BarrierFactory(
@@ -312,7 +312,7 @@ class TestListBarriers(APITestMixin, APITestCase):
             modified_on=datetime(2020, 2, 3, tzinfo=UTC),
             status=2,
             priority=priorities[1],
-            export_country=bhutan
+            country=bhutan
         )
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         barrier3 = BarrierFactory(
@@ -320,10 +320,10 @@ class TestListBarriers(APITestMixin, APITestCase):
             modified_on=datetime(2020, 3, 4, tzinfo=UTC),
             status=7,
             priority=priorities[2],
-            export_country=spain
+            country=spain
         )
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         for order_by in test_parameters:
             with self.subTest(order_by=order_by):
@@ -331,7 +331,7 @@ class TestListBarriers(APITestMixin, APITestCase):
                 response = self.api_client.get(url)
 
                 assert response.status_code == status.HTTP_200_OK
-                barriers = BarrierInstance.objects.all().order_by(order_by)
+                barriers = Barrier.objects.all().order_by(order_by)
                 assert barriers.count() == response.data["count"]
                 response_list = [b["id"] for b in response.data["results"]]
                 db_list = [str(b.id) for b in barriers]
@@ -345,13 +345,13 @@ class TestListBarriers(APITestMixin, APITestCase):
         europe = "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
 
         bhutan = "ab5f66a0-5d95-e211-a939-e4115bead28a"
-        BarrierFactory(export_country=bhutan)
+        BarrierFactory(country=bhutan)
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
-        spain_barrier = BarrierFactory(export_country=spain)
+        spain_barrier = BarrierFactory(country=spain)
         bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
-        BarrierFactory(export_country=bahamas)
+        BarrierFactory(country=bahamas)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?location={europe}'
         response = self.api_client.get(url)
@@ -368,13 +368,13 @@ class TestListBarriers(APITestMixin, APITestCase):
         south_asia = "12ed13cf-4b2c-4a46-b2f9-068e397d8c84"
 
         bhutan = "ab5f66a0-5d95-e211-a939-e4115bead28a"
-        bhutan_barrier = BarrierFactory(export_country=bhutan)
+        bhutan_barrier = BarrierFactory(country=bhutan)
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
-        spain_barrier = BarrierFactory(export_country=spain)
+        spain_barrier = BarrierFactory(country=spain)
         bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
-        BarrierFactory(export_country=bahamas)
+        BarrierFactory(country=bahamas)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?location={europe},{south_asia}'
         response = self.api_client.get(url)
@@ -389,10 +389,10 @@ class TestListBarriers(APITestMixin, APITestCase):
         europe = "3e6809d6-89f6-4590-8458-1d0dab73ad1a"
 
         eu_barrier = BarrierFactory(trading_bloc="TB00016")
-        germany_barrier = BarrierFactory(export_country=germany)
-        bahamas_barrier = BarrierFactory(export_country=bahamas)
+        germany_barrier = BarrierFactory(country=germany)
+        bahamas_barrier = BarrierFactory(country=bahamas)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?location={europe}'
         response = self.api_client.get(url)
@@ -404,11 +404,11 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert {str(eu_barrier.id), str(germany_barrier.id)} == set(barrier_ids)
 
     def test_list_barriers_text_filter_based_on_title(self):
-        barrier1 = BarrierFactory(barrier_title="Wibble blockade")
-        _barrier2 = BarrierFactory(barrier_title="Wobble blockade")
-        barrier3 = BarrierFactory(barrier_title="Look wibble in the middle")
+        barrier1 = BarrierFactory(title="Wibble blockade")
+        _barrier2 = BarrierFactory(title="Wobble blockade")
+        barrier3 = BarrierFactory(title="Look wibble in the middle")
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?text=wibble'
 
@@ -423,7 +423,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(summary="Wobble blockade")
         barrier3 = BarrierFactory(summary="Look ma, wibble-wobble in the middle.")
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?text=wobble'
         response = self.api_client.get(url)
@@ -440,7 +440,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         public_id = f"PID-{barrier2.public_barrier.id}"
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?text={public_id}'
         response = self.api_client.get(url)
@@ -457,7 +457,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         user2 = create_test_user(sso_user_id=self.sso_creator["user_id"])
         barrier2 = BarrierFactory(created_by=user2)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?user={user2.id}'
         client = self.create_api_client(user=user2)
@@ -474,7 +474,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(trade_direction=1)
         barrier3 = BarrierFactory(trade_direction=2)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?trade_direction=1,2'
 
@@ -489,7 +489,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(wto_profile__wto_has_been_notified=False)
         barrier3 = BarrierFactory(wto_profile=None)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?wto=wto_has_been_notified'
         response = self.api_client.get(url)
@@ -503,7 +503,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(wto_profile__wto_should_be_notified=False)
         barrier3 = BarrierFactory(wto_profile=None)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?wto=wto_should_be_notified'
         response = self.api_client.get(url)
@@ -517,7 +517,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(wto_profile__raised_date=None)
         barrier3 = BarrierFactory(wto_profile=None)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?wto=has_raised_date'
         response = self.api_client.get(url)
@@ -531,7 +531,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(wto_profile__committee_raised_in=None)
         barrier3 = BarrierFactory(wto_profile=None)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?wto=has_committee_raised_in'
         response = self.api_client.get(url)
@@ -545,7 +545,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(wto_profile__case_number="")
         barrier3 = BarrierFactory(wto_profile=None)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?wto=has_case_number'
         response = self.api_client.get(url)
@@ -559,7 +559,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(wto_profile__wto_should_be_notified=True)
         barrier3 = BarrierFactory(wto_profile=None)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?wto=has_no_information'
         response = self.api_client.get(url)
@@ -576,7 +576,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(wto_profile__raised_date="2020-01-31")
         barrier3 = BarrierFactory(wto_profile=None)
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?wto=has_case_number,has_raised_date'
         response = self.api_client.get(url)
@@ -596,7 +596,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory(created_by=user1)
         TeamMemberFactory(barrier=barrier2, user=user1, role="Contributor")
 
-        assert 3 == BarrierInstance.objects.count()
+        assert 3 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?member={member1.id}'
         response = self.api_client.get(url)
@@ -615,7 +615,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         member1 = TeamMemberFactory(barrier=barrier1, user=user1, role="Reporter", default=True)
         member2 = TeamMemberFactory(barrier=barrier1, user=user1, role="Owner", default=True)
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
 
         url = f'{reverse("list-barriers")}?member={member1.id}'
         response = self.api_client.get(url)
@@ -687,17 +687,17 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         barrier1 = BarrierFactory(trading_bloc="TB00016")
         # France
         barrier2 = BarrierFactory(
-            export_country="82756b9a-5d95-e211-a939-e4115bead28a",
+            country="82756b9a-5d95-e211-a939-e4115bead28a",
             caused_by_trading_bloc=True,
         )
         # France
         barrier3 = BarrierFactory(
-            export_country="82756b9a-5d95-e211-a939-e4115bead28a",
+            country="82756b9a-5d95-e211-a939-e4115bead28a",
             caused_by_trading_bloc=False,
         )
         # Brazil
         barrier4 = BarrierFactory(
-            export_country="b05f66a0-5d95-e211-a939-e4115bead28a",
+            country="b05f66a0-5d95-e211-a939-e4115bead28a",
         )
 
         # Search by trading bloc

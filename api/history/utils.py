@@ -10,7 +10,7 @@ def get_model_name(history_instance):
     object_name = history_instance.instance_type._meta.object_name
     return {
         "Assessment": "assessment",
-        "BarrierInstance": "barrier",
+        "Barrier": "barrier",
         "Interaction": "note",
         "PublicBarrier": "public_barrier",
         "PublicBarrierNote": "public_barrier_note",

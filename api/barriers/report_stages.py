@@ -7,7 +7,7 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.1",
         "order": 1,
-        "required": ["problem_status"],
+        "required": ["term"],
         "conditional": [
             {
                 "condition_field": "status",
@@ -46,7 +46,7 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.4",
         "order": 4,
-        "required": ["product", "source", "barrier_title"],
+        "required": ["product", "source", "title"],
         "conditional": [
             {
                 "condition_field": "source",

@@ -3,7 +3,7 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.interactions.models import Interaction
 from tests.barriers.factories import ReportFactory, MinReportFactory
@@ -16,7 +16,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         report = ReportFactory(status=resolved_in_full, status_date="2020-02-02", status_summary="wibble")
         report.submit_report()
 
-        barrier = BarrierInstance.objects.get(id=report.id)
+        barrier = Barrier.objects.get(id=report.id)
         assert resolved_in_full == barrier.status
 
     def test_submit_report_creates_default_members(self):
@@ -116,7 +116,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert 1 == Interaction.objects.filter(barrier=report).count()
 
     def test_no_interaction_is_created_when_submit_report_fails(self):
-        report = ReportFactory(problem_status=None)
+        report = ReportFactory(term=None)
 
         assert not Interaction.objects.filter(barrier=report)
 
@@ -129,14 +129,14 @@ class TestSubmitReport(APITestMixin, APITestCase):
     @freeze_time("2020-02-02")
     def test_check_all_fields_after_report_submit_1(self):
         report = MinReportFactory(**{
-            "problem_status": 2,
+            "term": 2,
             "status": 2,
-            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
             "trade_direction": 1,
             "sectors_affected": False,
             "product": "Some product",
             "source": "GOVT",
-            "barrier_title": "Some title",
+            "title": "Some title",
             "summary": "Some summary",
         })
         report.submit_report()
@@ -162,11 +162,11 @@ class TestSubmitReport(APITestMixin, APITestCase):
 
     def test_check_all_fields_after_report_submit_2(self):
         report = MinReportFactory(**{
-            "problem_status": 2,
+            "term": 2,
             "status_date": "2020-02-02",
             "status": 2,
             "status_summary": "some status summary",
-            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
             "trade_direction": 2,
             "sectors_affected": True,
             "sectors": [
@@ -174,7 +174,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
             ],
             "product": "Some product",
             "source": "GOVT",
-            "barrier_title": "Some title",
+            "title": "Some title",
             "summary": "Some summary",
         })
         report.submit_report()
@@ -203,15 +203,15 @@ class TestSubmitReport(APITestMixin, APITestCase):
     @freeze_time("2020-02-02")
     def test_report_submit_for_eu_barrier(self):
         report = MinReportFactory(**{
-            "problem_status": 2,
+            "term": 2,
             "status": 2,
-            "export_country": None,
+            "country": None,
             "trading_bloc": "TB00016",
             "trade_direction": 1,
             "sectors_affected": False,
             "product": "Some product",
             "source": "GOVT",
-            "barrier_title": "Some title",
+            "title": "Some title",
             "summary": "Some summary",
         })
         report.submit_report()
@@ -227,16 +227,16 @@ class TestSubmitReport(APITestMixin, APITestCase):
     @freeze_time("2020-02-02")
     def test_report_submit_for_country_within_eu_barrier(self):
         report = MinReportFactory(**{
-            "problem_status": 2,
+            "term": 2,
             "status": 2,
-            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
+            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
             "trading_bloc": None,
             "caused_by_trading_bloc": True,
             "trade_direction": 1,
             "sectors_affected": False,
             "product": "Some product",
             "source": "GOVT",
-            "barrier_title": "Some title",
+            "title": "Some title",
             "summary": "Some summary",
         })
         report.submit_report()

@@ -2,7 +2,7 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from tests.barriers.factories import ReportFactory
 
@@ -20,13 +20,13 @@ class TestReportDetail(APITestMixin):
         client = self.create_api_client(user=creator)
         url = reverse("get-report", kwargs={"pk": report.id})
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
 
         response = client.delete(url)
 
         assert status.HTTP_204_NO_CONTENT == response.status_code
         report.refresh_from_db()
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
         assert report.archive, "Expected True."
         assert creator == report.archived_by
         assert "2020-02-02" == report.archived_on.strftime('%Y-%m-%d')
@@ -40,9 +40,9 @@ class TestReportDetail(APITestMixin):
         url = reverse("get-report", kwargs={"pk": report.id})
         client = self.create_api_client(user=user1)
 
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()
 
         response = client.delete(url)
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
-        assert 1 == BarrierInstance.objects.count()
+        assert 1 == Barrier.objects.count()

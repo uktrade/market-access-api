@@ -1,6 +1,6 @@
 [
     {
-        "model": "barriers.barrierinstance",
+        "model": "barriers.barrier",
         "pk": "c33dad08-b09c-4e19-ae1a-be47796a8882",
         "fields": {
             "created_on": "2020-03-01T10:00:00.000Z",
@@ -9,9 +9,9 @@
             "modified_by": 1,
             "archived": false,
             "code": "B-19-MIB",
-            "problem_status": 2,
-            "export_country": "82756b9a-5d95-e211-a939-e4115bead28a",
-            "country_admin_areas": "[]",
+            "term": 2,
+            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
+            "admin_areas": "[]",
             "sectors_affected": true,
             "all_sectors": null,
             "sectors": "[\"af959812-6095-e211-a939-e4115bead28a\", \"9538cecc-5f95-e211-a939-e4115bead28a\"]",
@@ -19,7 +19,7 @@
             "product": "Some product",
             "source": "OTHER",
             "other_source": "Other source",
-            "barrier_title": "Some title",
+            "title": "Some title",
             "summary": "Some summary",
             "next_steps_summary": "Test",
             "reported_on": "2020-03-01T10:00:00.000Z",

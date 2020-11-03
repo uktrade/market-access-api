@@ -30,7 +30,7 @@ def get_saved_searches_markdown(saved_searches):
                 markdown += f"\n{new_count} new barrier{pluralize(new_count)}\n"
 
             for barrier in saved_search.new_barriers_since_notified:
-                markdown += f"\n* {barrier.barrier_title}\n"
+                markdown += f"\n* {barrier.title}\n"
                 markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}?en=n\n"
 
         if saved_search.notify_about_updates:
@@ -39,7 +39,7 @@ def get_saved_searches_markdown(saved_searches):
                 markdown += f"\n{updated_count} barrier{pluralize(updated_count)} updated\n"
 
             for barrier in saved_search.updated_barriers_since_notified:
-                markdown += f"\n* {barrier.barrier_title}\n"
+                markdown += f"\n* {barrier.title}\n"
                 markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}?en=u\n"
 
         markdown += "\n---\n"

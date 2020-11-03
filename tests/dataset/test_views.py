@@ -4,7 +4,7 @@ from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barriers.models import BarrierInstance
+from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.collaboration.models import TeamMember
 
@@ -24,7 +24,7 @@ class TestBarriersDataset(APITestMixin):
         count = 2
         BarrierFactory.create_batch(count)
 
-        assert count == BarrierInstance.objects.count()
+        assert count == Barrier.objects.count()
 
         dataset_url = reverse("dataset:barrier-list")
         response = self.api_client.get(dataset_url)
@@ -38,7 +38,7 @@ class TestBarriersDataset(APITestMixin):
         user = create_test_user(sso_user_id=self.sso_creator["user_id"])
         db_barrier = BarrierFactory(
             created_by=user,
-            export_country=spain,
+            country=spain,
             sectors=(adv_engineering,),
             status=2, status_date=datetime(2020, 1, 1, tzinfo=UTC),
         )
@@ -74,7 +74,7 @@ class TestBarriersDataset(APITestMixin):
         ]
 
     def test_eu_barrier_overseas_region(self):
-        barrier = BarrierFactory(trading_bloc="TB00016", export_country=None)
+        barrier = BarrierFactory(trading_bloc="TB00016", country=None)
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
 

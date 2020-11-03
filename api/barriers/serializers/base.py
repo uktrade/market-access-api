@@ -22,7 +22,7 @@ from api.barriers.fields import (
     UserField,
     WTOProfileField,
 )
-from api.barriers.models import BarrierInstance, BarrierUserHit
+from api.barriers.models import Barrier, BarrierUserHit
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 from .mixins import LocationFieldMixin
@@ -30,7 +30,7 @@ from .public_barriers import NestedPublicBarrierSerializer
 
 
 class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.ModelSerializer):
-    admin_areas = AdminAreasField(source="country_admin_areas", required=False)
+    admin_areas = AdminAreasField(required=False)
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     archived_reason = ArchivedReasonField(required=False)
@@ -39,7 +39,7 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     strategic_assessments = StrategicAssessmentSerializer(required=False, many=True)
     categories = CategoriesField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
-    country = CountryField(source="export_country", required=False, allow_null=True)
+    country = CountryField(required=False, allow_null=True)
     created_by = UserField(required=False)
     has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
@@ -51,16 +51,16 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     sub_status = SubStatusField(required=False, allow_null=True)
     public_barrier = NestedPublicBarrierSerializer(required=False)
     public_eligibility = PublicEligibilityField(required=False)
-    term = TermField(source="problem_status", required=False, allow_null=True)
+    term = TermField(required=False, allow_null=True)
     tags = TagsField(required=False)
-    title = serializers.CharField(source="barrier_title", required=False)
+    title = serializers.CharField(required=False)
     trade_direction = TradeDirectionField(required=False)
     trading_bloc = TradingBlocField(required=False, allow_null=True)
     unarchived_by = UserField(required=False)
     wto_profile = WTOProfileField(required=False)
 
     class Meta:
-        model = BarrierInstance
+        model = Barrier
         read_only_fields = (
             "archived_by",
             "archived_on",

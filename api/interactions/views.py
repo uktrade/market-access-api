@@ -11,7 +11,7 @@ from api.interactions.serializers import (
 )
 from api.documents.views import BaseEntityDocumentModelViewSet
 
-from api.barriers.models import BarrierInstance, PublicBarrier
+from api.barriers.models import Barrier, PublicBarrier
 from api.interactions.models import PublicBarrierNote
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
@@ -57,7 +57,7 @@ class BarrierInteractionList(TeamMemberModelMixin, generics.ListCreateAPIView):
         return self.queryset.filter(barrier_id=self.kwargs.get("pk"))
 
     def perform_create(self, serializer):
-        barrier = get_object_or_404(BarrierInstance, pk=self.kwargs.get("pk"))
+        barrier = get_object_or_404(Barrier, pk=self.kwargs.get("pk"))
         kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
         docs_in_req = self.request.data.get("documents", None)
         documents = []

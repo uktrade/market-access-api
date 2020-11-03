@@ -71,7 +71,7 @@ class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """ Assessment record for a Barrier """
 
     barrier = models.OneToOneField(
-        "barriers.BarrierInstance", on_delete=models.CASCADE
+        "barriers.Barrier", on_delete=models.CASCADE
     )
     impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, null=True)
     explanation = models.TextField(null=True)
@@ -101,7 +101,7 @@ class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
     barrier = models.ForeignKey(
-        "barriers.BarrierInstance",
+        "barriers.Barrier",
         related_name="resolvability_assessments",
         on_delete=models.CASCADE,
     )
@@ -128,7 +128,7 @@ class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixi
 class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
     barrier = models.ForeignKey(
-        "barriers.BarrierInstance",
+        "barriers.Barrier",
         related_name="strategic_assessments",
         on_delete=models.CASCADE,
     )
