@@ -51,11 +51,16 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
     latest_published_version = serializers.SerializerMethodField()
     unpublished_changes = serializers.SerializerMethodField()
     ready_to_be_published = serializers.SerializerMethodField()
+    internal_code = serializers.SerializerMethodField()
+    internal_id = serializers.SerializerMethodField()
+    latest_note = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrier
         fields = (
             "id",
+            "internal_code",
+            "internal_id",
             "title",
             "title_updated_on",
             "internal_title_changed",
@@ -98,9 +103,12 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "latest_published_version",
             "unpublished_changes",
             "ready_to_be_published",
+            "latest_note",
         )
         read_only_fields = (
             "id",
+            "internal_code",
+            "internal_id",
             "title_updated_on",
             "internal_title_changed",
             "internal_title_at_update",
@@ -141,6 +149,7 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "latest_published_version",
             "unpublished_changes",
             "ready_to_be_published",
+            "latest_note",
         )
 
     def get_internal_title_changed(self, obj):
@@ -157,6 +166,15 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
 
     def get_ready_to_be_published(self, obj):
         return obj.ready_to_be_published
+
+    def get_internal_code(self, obj):
+        return obj.barrier.code
+
+    def get_internal_id(self, obj):
+        return obj.barrier_id
+
+    def get_latest_note(self, obj):
+        return None
 
 
 class PublishedVersionSerializer(LocationFieldMixin,

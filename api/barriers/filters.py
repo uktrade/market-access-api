@@ -142,7 +142,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def location_filter(self, queryset, name, value):
         """
-        custom filter for retreiving barriers of all countries of an overseas region
+        custom filter for retrieving barriers of all countries of an overseas region
         """
         location = self.clean_location_value(value)
 

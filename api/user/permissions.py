@@ -37,7 +37,7 @@ class AllRetrieveAndEditorUpdateOnly(BasePermission):
     Allow GET to all authenticated users
     Allow PATCH to authenticated editors, publishers and admins
     """
-    allowed_actions = ('retrieve',)
+    allowed_actions = ('list', 'retrieve',)
     required_groups = (
         UserRoles.EDITOR,
         UserRoles.PUBLISHER,

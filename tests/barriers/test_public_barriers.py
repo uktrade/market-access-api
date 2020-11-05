@@ -63,6 +63,34 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         self.barrier = BarrierFactory()
         self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
 
+    def test_pb_list(self):
+        url = reverse("public-barriers-list")
+        pb1, _ = self.publish_barrier()
+        pb2, _ = self.publish_barrier()
+
+        r = self.api_client.get(url)
+
+        assert 200 == r.status_code
+        assert 2 == r.data["count"]
+        assert {pb1.id, pb2.id} == {i["id"] for i in r.data["results"]}
+
+    def test_pb_list_region_filter(self):
+        country_id = "955f66a0-5d95-e211-a939-e4115bead28a"  # Algeria
+        region_id = "8d4c4f31-06ce-4320-8e2f-1c13559e125f"  # Africa
+        url = f'{reverse("public-barriers-list")}?region={region_id}'
+
+        barrier1 = BarrierFactory(country=country_id)
+        pb1 = self.get_public_barrier(barrier1)
+        pb1, _ = self.publish_barrier(pb1)
+
+        pb2, _ = self.publish_barrier()
+
+        r = self.api_client.get(url)
+
+        assert 200 == r.status_code
+        assert 1 == r.data["count"]
+        assert {pb1.id} == {i["id"] for i in r.data["results"]}
+
     def test_public_barrier_gets_created_at_fetch(self):
         """
         If a barrier doesn't have a corresponding public barrier it gets created when
