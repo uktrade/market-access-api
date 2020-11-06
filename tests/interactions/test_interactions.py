@@ -19,7 +19,7 @@ class TestListInteractions(APITestMixin, APITestCase):
 
     def setUp(self):
         # NULL next_steps_summary as that creates an interaction when the report is submitted
-        self.report = ReportFactory(next_steps_summary=None)
+        self.report = ReportFactory(next_steps_summary="")
 
     def test_no_interactions(self):
         """Test there are no barrier interactions using list"""
@@ -327,7 +327,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         assert docs_list_report_response.data["original_filename"] == "somefile.pdf"
         assert docs_list_report_response.data["id"] is not None
         assert docs_list_report_response.data["size"] is None
-        assert docs_list_report_response.data["mime_type"] is None
+        assert docs_list_report_response.data["mime_type"] == ""
         assert docs_list_report_response.data["url"] is not None
         assert docs_list_report_response.data["status"] == "not_virus_scanned"
         assert docs_list_report_response.data["signed_upload_url"] is not None
@@ -345,7 +345,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         assert docs_list_report_response.data["original_filename"] == "somefile.pdf"
         assert docs_list_report_response.data["id"] is not None
         assert docs_list_report_response.data["size"] == 2
-        assert docs_list_report_response.data["mime_type"] is None
+        assert docs_list_report_response.data["mime_type"] == ""
         assert docs_list_report_response.data["url"] is not None
         assert docs_list_report_response.data["status"] == "not_virus_scanned"
         assert docs_list_report_response.data["signed_upload_url"] is not None

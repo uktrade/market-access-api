@@ -168,7 +168,7 @@ class TestAssessment(APITestMixin):
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["impact"] is None
-        assert int_response.data["explanation"] is None
+        assert int_response.data["explanation"] == ""
         assert int_response.data["documents"] == []
         assert int_response.data["value_to_economy"] == 1500000
         assert int_response.data["import_market_size"] is None
@@ -192,7 +192,7 @@ class TestAssessment(APITestMixin):
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["impact"] is None
-        assert int_response.data["explanation"] is None
+        assert int_response.data["explanation"] == ""
         assert int_response.data["documents"] == []
         assert int_response.data["value_to_economy"] is None
         assert int_response.data["import_market_size"] == 1500000
@@ -216,7 +216,7 @@ class TestAssessment(APITestMixin):
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["impact"] is None
-        assert int_response.data["explanation"] is None
+        assert int_response.data["explanation"] == ""
         assert int_response.data["documents"] == []
         assert int_response.data["value_to_economy"] is None
         assert int_response.data["import_market_size"] is None
@@ -240,7 +240,7 @@ class TestAssessment(APITestMixin):
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["impact"] is None
-        assert int_response.data["explanation"] is None
+        assert int_response.data["explanation"] == ""
         assert int_response.data["documents"] == []
         assert int_response.data["value_to_economy"] is None
         assert int_response.data["import_market_size"] is None
@@ -267,7 +267,7 @@ class TestAssessment(APITestMixin):
         int_response = self.api_client.get(assessment_url)
         assert int_response.status_code == status.HTTP_200_OK
         assert int_response.data["impact"] is None
-        assert int_response.data["explanation"] is None
+        assert int_response.data["explanation"] == ""
         assert int_response.data["documents"] == []
         assert int_response.data["value_to_economy"] is None
         assert int_response.data["import_market_size"] is None

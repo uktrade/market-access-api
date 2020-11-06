@@ -10,13 +10,13 @@ class ArchivedField(serializers.BooleanField):
         if instance.archived is False and archived is True:
             instance.archive(
                 user=user,
-                reason=validated_data.pop("archived_reason", None),
+                reason=validated_data.pop("archived_reason", ""),
                 commit=False,
             )
         elif instance.archived is True and archived is False:
             instance.unarchive(
                 user=user,
-                reason=validated_data.pop("unarchived_reason", None),
+                reason=validated_data.pop("unarchived_reason", ""),
                 commit=False,
             )
 

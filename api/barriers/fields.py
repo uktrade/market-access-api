@@ -32,13 +32,13 @@ class ArchivedField(serializers.BooleanField):
         if instance.archived is False and archived is True:
             instance.archive(
                 user=user,
-                reason=validated_data.pop("archived_reason"),
-                explanation=validated_data.pop("archived_explanation"),
+                reason=validated_data.pop("archived_reason", ""),
+                explanation=validated_data.pop("archived_explanation", ""),
             )
         elif instance.archived is True and archived is False:
             instance.unarchive(
                 user=user,
-                reason=validated_data.pop("unarchived_reason"),
+                reason=validated_data.pop("unarchived_reason", ""),
             )
 
 
@@ -92,7 +92,7 @@ class CommoditiesField(serializers.ListField):
         for commodity_data in commodities_data:
             code = commodity_data.get("code").ljust(10, "0")
             country = commodity_data.get("country")
-            trading_bloc = commodity_data.get("trading_bloc")
+            trading_bloc = commodity_data.get("trading_bloc", "")
             hs6_code = code[:6].ljust(10, "0")
             commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest("version")
             barrier_commodity, created = BarrierCommodity.objects.get_or_create(

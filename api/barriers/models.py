@@ -393,7 +393,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         except BarrierUserHit.DoesNotExist:
             return None
 
-    def archive(self, user, reason=None, explanation=None):
+    def archive(self, user, reason="", explanation=""):
         try:
             if self.public_barrier.public_view_status == PublicBarrierStatus.PUBLISHED:
                 raise ArchivingException("Public barrier should be unpublished first.")
@@ -425,7 +425,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
                     raise ValueError("Error generating a unique reference code.")
 
         if self.source != BARRIER_SOURCE.OTHER:
-            self.other_source = None
+            self.other_source = ""
 
         if self.caused_by_trading_bloc is not None and not self.country_trading_bloc:
             self.caused_by_trading_bloc = None

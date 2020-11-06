@@ -221,7 +221,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         barrier_obj = report.submit_report(user)
 
         # add next steps, if exists, as a new COMMENT note
-        if barrier_obj.next_steps_summary is not None:
+        if barrier_obj.next_steps_summary:
             kind = self.request.data.get("kind", BARRIER_INTERACTION_TYPE["COMMENT"])
             Interaction(
                 barrier=barrier_obj,
@@ -544,7 +544,7 @@ class PublicBarrierActivity(generics.GenericAPIView):
 
 class BarrierStatusBase(generics.UpdateAPIView):
     def _create(
-        self, serializer, barrier_id, status, summary, sub_status=None, sub_other=None, status_date=None
+        self, serializer, barrier_id, status, summary, sub_status="", sub_other="", status_date=None
     ):
         barrier_obj = get_object_or_404(Barrier, pk=barrier_id)
 
@@ -586,7 +586,7 @@ class BarrierResolveInFull(BarrierStatusBase):
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
             status=4,
-            summary=self.request.data.get("status_summary"),
+            summary=self.request.data.get("status_summary", ""),
             status_date=self.request.data.get("status_date")
         )
 
@@ -616,7 +616,7 @@ class BarrierResolveInPart(BarrierStatusBase):
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
             status=3,
-            summary=self.request.data.get("status_summary"),
+            summary=self.request.data.get("status_summary", ""),
             status_date=self.request.data.get("status_date")
         )
 
@@ -633,7 +633,7 @@ class BarrierHibernate(BarrierStatusBase):
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
             status=5,
-            summary=self.request.data.get("status_summary"),
+            summary=self.request.data.get("status_summary", ""),
         )
 
 
@@ -649,7 +649,7 @@ class BarrierStatusChangeUnknown(BarrierStatusBase):
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
             status=7,
-            summary=self.request.data.get("status_summary"),
+            summary=self.request.data.get("status_summary", ""),
         )
 
 
@@ -665,7 +665,7 @@ class BarrierOpenInProgress(BarrierStatusBase):
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
             status=2,
-            summary=self.request.data.get("status_summary"),
+            summary=self.request.data.get("status_summary", ""),
         )
 
 
@@ -694,9 +694,9 @@ class BarrierOpenActionRequired(BarrierStatusBase):
             serializer=serializer,
             barrier_id=self.kwargs.get("pk"),
             status=1,
-            sub_status=self.request.data.get("sub_status"),
-            sub_other=self.request.data.get("sub_status_other"),
-            summary=self.request.data.get("status_summary"),
+            sub_status=self.request.data.get("sub_status", ""),
+            sub_other=self.request.data.get("sub_status_other", ""),
+            summary=self.request.data.get("status_summary", ""),
             status_date=self.request.data.get("status_date")
         )
 

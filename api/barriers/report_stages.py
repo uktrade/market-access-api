@@ -70,7 +70,7 @@ def required_field_value(instance, field_name):
     data_combiner = DataCombiner(instance, None)
     value = data_combiner.get_value(field_name)
 
-    if value is None:
+    if value is None or value == "":
         return False
 
     return True
@@ -86,7 +86,7 @@ def conditional_field_value(instance, rule_item):
     if "non_null_field" in rule_item:
         if condition_value is not None and relate(value_to_check, condition_value):
             non_null_value = data_combiner.get_value(rule_item["non_null_field"])
-            if non_null_value is None:
+            if non_null_value is None or non_null_value == "":
                 return False
             return True
     else:

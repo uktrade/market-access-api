@@ -9,7 +9,7 @@
             "modified_by": null,
             "archived": false,
             "archived_on": null,
-            "archived_reason": null,
+            "archived_reason": "",
             "archived_by": null,
             "bucket_id": "default",
             "path": "document/2020-03-23/03bc71f8-6152-48a2-a44f-e14e33bcd576/Untitled-2.jpg",
@@ -30,7 +30,7 @@
             "modified_by": null,
             "archived": false,
             "archived_on": null,
-            "archived_reason": null,
+            "archived_reason": "",
             "archived_by": null,
             "bucket_id": "default",
             "path": "document/2020-03-20/8be7a89c-9323-42ed-866a-bdc44059ca86/Untitled-1.jpg",
@@ -52,7 +52,7 @@
             "original_filename": "cat.jpg",
             "document": "d3cbc427-9fd0-4785-86ba-e50b5b4763bf",
             "size": null,
-            "mime_type": null,
+            "mime_type": "",
             "detached": false
         }
     }, {
@@ -66,7 +66,7 @@
             "original_filename": "dog.jpg",
             "document": "f3e5ca2b-e300-4364-b61b-95a8d0594d80",
             "size": 2849757,
-            "mime_type": null,
+            "mime_type": "",
             "detached": false
         }
     }

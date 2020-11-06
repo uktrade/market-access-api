@@ -66,7 +66,7 @@ class ArchivableMixin(models.Model):
     class Meta:
         abstract = True
 
-    def archive(self, user, reason=None, commit=True):
+    def archive(self, user, reason="", commit=True):
         """Archive the model instance."""
         self.archived = True
         self.archived_by = user
@@ -100,7 +100,7 @@ class FullyArchivableMixin(ArchivableMixin):
     class Meta:
         abstract = True
 
-    def unarchive(self, user, reason=None):
+    def unarchive(self, user, reason=""):
         self.unarchived_by = user
         self.unarchived_reason = reason
         self.unarchived_on = timezone.now()

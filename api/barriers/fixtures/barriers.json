@@ -15,7 +15,7 @@
             "sectors_affected": true,
             "all_sectors": null,
             "sectors": "[\"af959812-6095-e211-a939-e4115bead28a\", \"9538cecc-5f95-e211-a939-e4115bead28a\"]",
-            "companies": null,
+            "companies": [],
             "product": "Some product",
             "source": "OTHER",
             "other_source": "Other source",
@@ -24,12 +24,12 @@
             "next_steps_summary": "Test",
             "reported_on": "2020-03-01T10:00:00.000Z",
             "status": 1,
-            "sub_status": null,
-            "sub_status_other": null,
-            "status_summary": null,
+            "sub_status": "",
+            "sub_status_other": "",
+            "status_summary": "",
             "status_date": "2019-04-09",
             "priority": 1,
-            "priority_summary": null,
+            "priority_summary": "",
             "priority_date": "2019-04-24T10:08:24.174Z"
         }
     }
