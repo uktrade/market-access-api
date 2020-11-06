@@ -77,6 +77,15 @@ def get_countries():
     return dh_countries
 
 
+def get_country_ids_by_overseas_region(region_id):
+    countries = get_countries()
+    return [
+        country["id"] for country in countries
+        if country.get("overseas_region")
+        and region_id == country.get("overseas_region").get("id")
+    ]
+
+
 def get_admin_area(admin_area_id):
     admin_area_lookup = cache.get("dh_admin_area_lookup")
     if not admin_area_lookup:

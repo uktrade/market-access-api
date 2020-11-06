@@ -45,6 +45,7 @@ from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
 from .filters import BarrierFilterSet
 from .public_data import public_release_to_s3
+from ..metadata.utils import get_country_ids_by_overseas_region
 
 
 class Echo:
@@ -702,6 +703,7 @@ class BarrierOpenActionRequired(BarrierStatusBase):
 
 
 class PublicBarrierViewSet(TeamMemberModelMixin,
+                           mixins.ListModelMixin,
                            mixins.RetrieveModelMixin,
                            mixins.UpdateModelMixin,
                            GenericViewSet):
@@ -712,6 +714,24 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
     http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = (AllRetrieveAndEditorUpdateOnly,)
     serializer_class = PublicBarrierSerializer
+
+    def get_queryset(self):
+        status_filters = (
+            PublicBarrierStatus.ELIGIBLE,
+            PublicBarrierStatus.READY,
+            PublicBarrierStatus.PUBLISHED
+        )
+        qs = PublicBarrier.objects \
+            .filter(_public_view_status__in=status_filters) \
+            .prefetch_related("notes")
+
+        # Region filter
+        region_id = self.request.query_params.get('region', None)
+        if region_id is not None:
+            countries = get_country_ids_by_overseas_region(region_id)
+            qs = qs.filter(barrier__country__in=countries)
+
+        return qs
 
     def get_object(self):
         barrier = get_object_or_404(self.barriers_qs, pk=self.kwargs.get("pk"))
