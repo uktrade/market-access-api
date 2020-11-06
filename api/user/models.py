@@ -27,10 +27,14 @@ class Profile(models.Model):
     location = models.UUIDField(null=True, blank=True)
     internal = models.BooleanField(default=False)
     user_profile = models.JSONField(
-        null=True, help_text="temporary field to hold sso profile json object"
+        blank=True,
+        null=True,
+        help_text="temporary field to hold sso profile json object",
     )
     sso_user_id = models.UUIDField(
-        null=True, help_text="Staff SSO UUID for reference"
+        blank=True,
+        null=True,
+        help_text="Staff SSO UUID for reference",
     )
 
 

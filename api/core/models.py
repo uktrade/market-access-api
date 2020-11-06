@@ -54,7 +54,7 @@ class ArchivableMixin(models.Model):
 
     archived = models.BooleanField(default=False)
     archived_on = models.DateTimeField(blank=True, null=True)
-    archived_reason = models.TextField(blank=True, null=True)
+    archived_reason = models.TextField(blank=True)
     archived_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -87,7 +87,7 @@ class ArchivableMixin(models.Model):
 class FullyArchivableMixin(ArchivableMixin):
     """ Archivable mixin with extra fields for unarchiving."""
 
-    unarchived_reason = models.TextField(blank=True, null=True)
+    unarchived_reason = models.TextField(blank=True)
     unarchived_on = models.DateTimeField(blank=True, null=True)
     unarchived_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

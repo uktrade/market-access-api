@@ -18,7 +18,7 @@ class Document(AbstractEntityDocumentModel):
     """ Document item related to interaction """
 
     size = models.IntegerField(null=True)
-    mime_type = models.CharField(max_length=MAX_LENGTH, null=True)
+    mime_type = models.CharField(max_length=MAX_LENGTH, blank=True)
     detached = models.BooleanField(default=False)
 
     history = HistoricalRecords()
@@ -45,7 +45,6 @@ class InteractionHistoricalModel(models.Model):
     documents_cache = ArrayField(
         models.JSONField(),
         blank=True,
-        null=True,
         default=list,
     )
 
@@ -92,7 +91,7 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         on_delete=models.CASCADE,
     )
     kind = models.CharField(choices=BARRIER_INTERACTION_TYPE, max_length=25)
-    text = models.TextField(null=True)
+    text = models.TextField(blank=True)
     pinned = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
