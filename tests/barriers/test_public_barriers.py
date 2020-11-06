@@ -23,6 +23,7 @@ from api.barriers.public_data import (
 from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
 from api.core.utils import read_file_from_s3, list_s3_public_data_files
+from api.interactions.models import PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus, BarrierStatus
 
 from moto import mock_s3
@@ -90,6 +91,29 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert 200 == r.status_code
         assert 1 == r.data["count"]
         assert {pb1.id} == {i["id"] for i in r.data["results"]}
+
+    def test_pb_list_returns_latest_note_for_items(self):
+        url = reverse("public-barriers-list")
+        pb1, _ = self.publish_barrier()
+
+        with freeze_time("2020-02-02"):
+            _note1 = PublicBarrierNote.objects.create(public_barrier=pb1, text="wibble")
+        with freeze_time("2020-02-03"):
+            note2 = PublicBarrierNote.objects.create(public_barrier=pb1, text="wobble")
+
+        r = self.api_client.get(url)
+
+        assert 200 == r.status_code
+        assert note2.text == r.data["results"][0]["latest_note"].get("text")
+
+    def test_pb_list_returns_none_for_latest_note(self):
+        url = reverse("public-barriers-list")
+        pb1, _ = self.publish_barrier()
+
+        r = self.api_client.get(url)
+
+        assert 200 == r.status_code
+        assert not r.data["results"][0]["latest_note"]
 
     def test_public_barrier_gets_created_at_fetch(self):
         """

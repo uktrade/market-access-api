@@ -13,6 +13,8 @@ from api.barriers.helpers import get_published_public_barriers
 from api.barriers.models import PublicBarrier
 from api.barriers.serializers.mixins import LocationFieldMixin
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
+from api.interactions.models import PublicBarrierNote
+from api.interactions.serializers import PublicBarrierNoteSerializer
 from api.metadata.fields import TradingBlocField
 
 
@@ -174,7 +176,11 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
         return obj.barrier_id
 
     def get_latest_note(self, obj):
-        return None
+        try:
+            note = obj.notes.latest("created_on")
+            return PublicBarrierNoteSerializer(note).data
+        except PublicBarrierNote.DoesNotExist:
+            return None
 
 
 class PublishedVersionSerializer(LocationFieldMixin,
