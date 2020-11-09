@@ -35,7 +35,7 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         on_delete=models.SET_NULL,
         related_name="+",
     )
-    role = models.CharField(max_length=MAX_LENGTH, null=True)
+    role = models.CharField(max_length=MAX_LENGTH, blank=True)
     default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 

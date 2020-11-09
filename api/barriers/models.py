@@ -36,7 +36,7 @@ MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 class Stage(models.Model):
     """ Reporting workflow stages  """
 
-    code = models.CharField(max_length=4, null=False)
+    code = models.CharField(max_length=4)
     description = models.CharField(max_length=MAX_LENGTH)
     parent = models.ForeignKey("self", blank=True, null=True, on_delete=models.SET_NULL)
 
@@ -68,13 +68,16 @@ class BarrierHistoricalModel(models.Model):
     categories_cache = ArrayField(
         models.PositiveIntegerField(),
         blank=True,
-        null=True,
         default=list,
     )
-    commodities_cache = ArrayField(models.JSONField(), default=list)
+    commodities_cache = ArrayField(
+        models.JSONField(),
+        blank=True,
+        default=list,
+    )
     tags_cache = ArrayField(
         models.IntegerField(),
-        null=True,
+        blank=True,
         default=list,
     )
 
@@ -155,19 +158,20 @@ class Barrier(FullyArchivableMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
     code = models.CharField(
         max_length=MAX_LENGTH,
+        blank=True,
         null=True,
         unique=True,
-        help_text="readable reference code",
+        help_text="Readable reference code e.g. B-20-NTZ",
         db_index=True,
     )
     term = models.PositiveIntegerField(
         choices=BARRIER_TERMS,
+        blank=True,
         null=True,
-        help_text="long term or short term",
+        help_text="Is this a short-term procedural or long-term strategic barrier?",
     )
-    end_date = models.DateField(null=True, help_text="Date the barrier ends")
-
-    country = models.UUIDField(null=True)
+    end_date = models.DateField(blank=True, null=True, help_text="Date the barrier ends")
+    country = models.UUIDField(blank=True, null=True)
     admin_areas = ArrayField(
         models.UUIDField(),
         blank=True,
@@ -177,83 +181,75 @@ class Barrier(FullyArchivableMixin, BaseModel):
     trading_bloc = models.CharField(
         choices=TRADING_BLOC_CHOICES,
         max_length=7,
-        null=True,
+        blank=True,
     )
     caused_by_trading_bloc = models.BooleanField(null=True)
     trade_direction = models.SmallIntegerField(
         choices=TRADE_DIRECTION_CHOICES,
-        blank=False,
+        blank=True,
         null=True,
-        default=None
     )
-
     sectors_affected = models.BooleanField(
-        help_text="boolean to signify one or more sectors are affected by this barrier",
+        help_text="Does the barrier affect any sectors?",
         null=True,
+        blank=True,
     )
     all_sectors = models.BooleanField(
-        help_text="boolean to signify that all sectors are affected by this barrier",
+        help_text="Does the barrier affect all sectors?",
         null=True,
+        blank=True,
     )
     sectors = ArrayField(
         models.UUIDField(),
         blank=True,
-        null=False,
         default=list,
-        help_text="list of sectors that are affected",
     )
-    companies = models.JSONField(
-        null=True, default=None, help_text="list of companies that are affected"
-    )
-
-    product = models.CharField(max_length=MAX_LENGTH, null=True)
-    source = models.CharField(
-        choices=BARRIER_SOURCE, max_length=25, null=True, help_text="chance of success"
-    )
-    other_source = models.CharField(max_length=MAX_LENGTH, null=True)
-    title = models.CharField(max_length=MAX_LENGTH, null=True)
-    summary = models.TextField(null=True)
+    companies = models.JSONField(blank=True, null=True)
+    product = models.CharField(max_length=MAX_LENGTH, blank=True)
+    source = models.CharField(choices=BARRIER_SOURCE, max_length=25, blank=True)
+    other_source = models.CharField(max_length=MAX_LENGTH, blank=True)
+    title = models.CharField(max_length=MAX_LENGTH, blank=True)
+    summary = models.TextField(blank=True)
     is_summary_sensitive = models.BooleanField(
-        help_text="Does the summary contain sensitive information",
+        help_text="Does the summary contain sensitive information?",
+        blank=True,
         null=True,
     )
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
-    next_steps_summary = models.TextField(null=True)
-
-    categories = models.ManyToManyField(
-        Category, related_name="barriers", help_text="Barrier categories"
-    )
-
+    next_steps_summary = models.TextField(blank=True)
+    categories = models.ManyToManyField(Category, related_name="barriers")
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     # Barrier status
-    status = models.PositiveIntegerField(
-        choices=BarrierStatus.choices, default=0, help_text="status of the barrier instance"
-    )
+    status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
     sub_status = models.CharField(
         choices=BARRIER_PENDING,
         max_length=25,
-        null=True,
-        default=None,
-        help_text="barrier sub status",
+        blank=True,
     )
     sub_status_other = models.CharField(
         max_length=MAX_LENGTH,
-        null=True,
-        help_text="barrier sub status text for other choice"
+        blank=True,
+        help_text="Text if sub status is 'OTHER'",
     )
-    status_summary = models.TextField(
-        null=True, default=None, help_text="status summary if provided by user"
-    )
+    status_summary = models.TextField(blank=True)
     status_date = models.DateField(
-        null=True, help_text="date when status action occurred"
+        blank=True,
+        null=True,
+        help_text=(
+            "If resolved or part-resolved, the month and year supplied by the user, "
+            "otherwise the current time when the status was set."
+        )
     )
     public_eligibility = models.BooleanField(
-        default=None, null=True, help_text="Mark the barrier as either publishable or unpublishable to the public."
+        blank=True,
+        null=True,
+        help_text="Mark the barrier as either publishable or unpublishable to the public.",
     )
     public_eligibility_summary = models.TextField(
-        blank=True, help_text="Public eligibility summary if provided by user."
+        blank=True,
+        help_text="Public eligibility summary if provided by user.",
     )
 
     # Barrier priority
@@ -263,12 +259,8 @@ class Barrier(FullyArchivableMixin, BaseModel):
         related_name="barrier",
         on_delete=models.PROTECT,
     )
-    priority_summary = models.TextField(
-        null=True, default=None, help_text="priority summary if provided by user"
-    )
-    priority_date = models.DateTimeField(
-        auto_now=True, null=True, help_text="date when priority was set"
-    )
+    priority_summary = models.TextField(blank=True)
+    priority_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     stages = models.ManyToManyField(
         Stage,
         related_name="report_stages",
@@ -276,9 +268,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Store reporting stages before submitting",
     )
     archived_reason = models.CharField(
-        choices=BARRIER_ARCHIVED_REASON, max_length=25, null=True
+        choices=BARRIER_ARCHIVED_REASON, max_length=25, blank=True,
     )
-    archived_explanation = models.TextField(blank=True, null=True)
+    archived_explanation = models.TextField(blank=True)
     commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
     draft = models.BooleanField(default=True)
 
@@ -401,7 +393,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         except BarrierUserHit.DoesNotExist:
             return None
 
-    def archive(self, user, reason=None, explanation=None):
+    def archive(self, user, reason="", explanation=""):
         try:
             if self.public_barrier.public_view_status == PublicBarrierStatus.PUBLISHED:
                 raise ArchivingException("Public barrier should be unpublished first.")
@@ -433,7 +425,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
                     raise ValueError("Error generating a unique reference code.")
 
         if self.source != BARRIER_SOURCE.OTHER:
-            self.other_source = None
+            self.other_source = ""
 
         if self.caused_by_trading_bloc is not None and not self.country_trading_bloc:
             self.caused_by_trading_bloc = None
@@ -448,7 +440,6 @@ class PublicBarrierHistoricalModel(models.Model):
     categories_cache = ArrayField(
         models.CharField(max_length=20),
         blank=True,
-        null=True,
         default=list,
     )
 
@@ -522,28 +513,28 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     barrier = models.OneToOneField(Barrier, on_delete=CASCADE, related_name="public_barrier")
 
     # === Title related fields =====
-    _title = models.CharField(null=True, max_length=MAX_LENGTH)
+    _title = models.CharField(blank=True, max_length=MAX_LENGTH)
     title_updated_on = models.DateTimeField(null=True, blank=True)
-    internal_title_at_update = models.CharField(null=True, max_length=MAX_LENGTH)
+    internal_title_at_update = models.CharField(blank=True, max_length=MAX_LENGTH)
 
     # === Summary related fields =====
-    _summary = models.TextField(null=True)
+    _summary = models.TextField(blank=True)
     summary_updated_on = models.DateTimeField(null=True, blank=True)
-    internal_summary_at_update = models.TextField(null=True, max_length=MAX_LENGTH)
+    internal_summary_at_update = models.TextField(blank=True, max_length=MAX_LENGTH)
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
-    status_date = models.DateField(null=True)
-    country = models.UUIDField(null=True)
+    status_date = models.DateField(blank=True, null=True)
+    country = models.UUIDField(blank=True, null=True)
     # caused_by_country_trading_bloc = models.BooleanField(null=True)
-    caused_by_trading_bloc = models.BooleanField(null=True)
+    caused_by_trading_bloc = models.BooleanField(blank=True, null=True)
     trading_bloc = models.CharField(
         choices=TRADING_BLOC_CHOICES,
         max_length=7,
-        null=True,
+        blank=True,
     )
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
-    all_sectors = models.BooleanField(null=True)
+    all_sectors = models.BooleanField(blank=True, null=True)
     categories = models.ManyToManyField(Category, related_name="public_barriers")
 
     published_versions = models.JSONField(default=dict)
@@ -875,7 +866,7 @@ class BarrierReportStage(BaseModel):
         Barrier, related_name="progress", on_delete=models.CASCADE
     )
     stage = models.ForeignKey(Stage, related_name="progress", on_delete=models.CASCADE)
-    status = models.PositiveIntegerField(choices=STAGE_STATUS, null=True)
+    status = models.PositiveIntegerField(choices=STAGE_STATUS, blank=True, null=True)
 
     history = HistoricalRecords()
 
@@ -887,8 +878,8 @@ class BarrierCommodity(models.Model):
     barrier = models.ForeignKey(Barrier, related_name="barrier_commodities", on_delete=models.CASCADE)
     commodity = models.ForeignKey(Commodity, related_name="barrier_commodities", on_delete=models.CASCADE)
     code = models.CharField(max_length=10)
-    country = models.UUIDField(null=True)
-    trading_bloc = models.CharField(choices=TRADING_BLOC_CHOICES, max_length=7, null=True)
+    country = models.UUIDField(blank=True, null=True)
+    trading_bloc = models.CharField(choices=TRADING_BLOC_CHOICES, max_length=7, blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     @property

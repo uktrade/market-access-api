@@ -34,7 +34,7 @@ class AssessmentHistoricalModel(models.Model):
     documents_cache = ArrayField(
         models.JSONField(),
         blank=True,
-        null=True,
+        null=False,
         default=list,
     )
 
@@ -73,16 +73,16 @@ class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     barrier = models.OneToOneField(
         "barriers.Barrier", on_delete=models.CASCADE
     )
-    impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, null=True)
-    explanation = models.TextField(null=True)
+    impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, blank=True)
+    explanation = models.TextField(blank=True)
     documents = models.ManyToManyField(
         Document, related_name="assessment_documents", help_text="assessment documents"
     )
-    value_to_economy = models.BigIntegerField(null=True)
-    import_market_size = models.BigIntegerField(null=True)
-    commercial_value = models.BigIntegerField(null=True)
-    commercial_value_explanation = models.TextField(blank=True, default="")
-    export_value = models.BigIntegerField(null=True)
+    value_to_economy = models.BigIntegerField(blank=True, null=True)
+    import_market_size = models.BigIntegerField(blank=True, null=True)
+    commercial_value = models.BigIntegerField(blank=True, null=True)
+    commercial_value_explanation = models.TextField(blank=True)
+    export_value = models.BigIntegerField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[AssessmentHistoricalModel])

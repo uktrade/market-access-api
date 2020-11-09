@@ -162,7 +162,7 @@ def create_fake_public_barriers(quantity):
 
         if random.random() > EU_PROPORTION:
             country = randomiser.get_country()
-            trading_bloc = None
+            trading_bloc = ""
             caused_by_trading_bloc = False
             country_trading_bloc = get_trading_bloc_by_country_id(country)
             if country_trading_bloc and random.random() > 0.8:

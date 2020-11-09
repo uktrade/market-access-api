@@ -230,7 +230,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
             "term": 2,
             "status": 2,
             "country": "82756b9a-5d95-e211-a939-e4115bead28a",
-            "trading_bloc": None,
+            "trading_bloc": "",
             "caused_by_trading_bloc": True,
             "trade_direction": 1,
             "sectors_affected": False,

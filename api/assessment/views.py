@@ -47,8 +47,8 @@ class BarrierAssessmentDetail(
         if hasattr(barrier_obj, 'assessment'):
             raise serializers.ValidationError("Assessment already exists")
 
-        impact = self.request.data.get("impact", None)
-        explanation = self.request.data.get("explanation", None)
+        impact = self.request.data.get("impact", "")
+        explanation = self.request.data.get("explanation", "")
         docs_in_req = self.request.data.get("documents", None)
         documents = []
         if docs_in_req:

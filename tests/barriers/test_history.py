@@ -48,7 +48,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "archived"
         assert data["old_value"] == {
             "archived": False,
-            "unarchived_reason": None,
+            "unarchived_reason": "",
         }
         assert data["new_value"] == {
             "archived": True,
@@ -76,7 +76,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "companies"
-        assert data["old_value"] is None
+        assert data["old_value"] == []
         assert data["new_value"] == ["1", "2", "3"]
 
     def test_description_history(self):
@@ -116,11 +116,11 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "priority"
         assert data["old_value"] == {
             "priority": "UNKNOWN",
-            "priority_summary": None,
+            "priority_summary": "",
         }
         assert data["new_value"] == {
             "priority": "HIGH",
-            "priority_summary": None,
+            "priority_summary": "",
         }
 
     def test_product_history(self):
@@ -149,16 +149,16 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["old_value"] == {
             "status": "1",
             "status_date": datetime.date(2019, 4, 9),
-            "status_summary": None,
-            "sub_status": None,
-            "sub_status_other": None,
+            "status_summary": "",
+            "sub_status": "",
+            "sub_status_other": "",
         }
         assert data["new_value"] == {
             "status": "5",
             "status_date": datetime.date(2019, 4, 9),
             "status_summary": "Summary",
             "sub_status": "UK_GOVT",
-            "sub_status_other": None,
+            "sub_status_other": "",
         }
 
     def test_scope_history(self):
@@ -203,7 +203,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
         }
         assert data["new_value"] == {
             "source": "COMPANY",
-            "other_source": None,
+            "other_source": "",
         }
 
     def test_title_history(self):
@@ -327,7 +327,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "summary"
-        assert data["old_value"] is None
+        assert data["old_value"] == ""
         assert data["new_value"] == "New summary"
 
     def test_title_history(self):
@@ -339,7 +339,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "public_barrier"
         assert data["field"] == "title"
-        assert data["old_value"] is None
+        assert data["old_value"] == ""
         assert data["new_value"] == "New title"
 
     def test_note_text_history(self):
@@ -663,7 +663,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "archived",
             "old_value": {
                 "archived": False,
-                "unarchived_reason": None
+                "unarchived_reason": ""
             },
             "new_value": {
                 "archived": True,
@@ -703,16 +703,16 @@ class TestHistoryView(APITestMixin, TestCase):
             "old_value": {
                 "status": "1",
                 "status_date": "2019-04-09",
-                "status_summary": None,
-                "sub_status": None,
-                "sub_status_other": None,
+                "status_summary": "",
+                "sub_status": "",
+                "sub_status_other": "",
             },
             "new_value": {
                 "status": "5",
                 "status_date": "2019-04-09",
                 "status_summary": "Summary",
                 "sub_status": "UK_GOVT",
-                "sub_status_other": None,
+                "sub_status_other": "",
             },
             "user": None,
         } in history
@@ -732,11 +732,11 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "priority",
             "old_value": {
                 "priority": "UNKNOWN",
-                "priority_summary": None,
+                "priority_summary": "",
             },
             "new_value": {
                 "priority": "HIGH",
-                "priority_summary": None,
+                "priority_summary": "",
             },
             "user": None,
         } in history
@@ -751,7 +751,7 @@ class TestHistoryView(APITestMixin, TestCase):
             },
             "new_value": {
                 "source": "COMPANY",
-                "other_source": None,
+                "other_source": "",
             },
             "user": None
         } in history
@@ -796,7 +796,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "companies",
-            "old_value": None,
+            "old_value": [],
             "new_value": ["1", "2", "3"],
             "user": None
         } in history

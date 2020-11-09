@@ -13,11 +13,12 @@ class ImpactField(serializers.ChoiceField):
         return super().__init__(choices=ASSESMENT_IMPACT, **kwargs)
 
     def to_representation(self, value):
-        impact_lookup = dict(ASSESMENT_IMPACT)
-        return {
-            "code": value,
-            "name": impact_lookup.get(value),
-        }
+        if value:
+            impact_lookup = dict(ASSESMENT_IMPACT)
+            return {
+                "code": value,
+                "name": impact_lookup.get(value),
+            }
 
 
 class EffortToResolveField(serializers.ChoiceField):

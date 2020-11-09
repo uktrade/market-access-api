@@ -76,7 +76,6 @@ class WTOProfile(models.Model):
     member_states = ArrayField(
         models.UUIDField(),
         blank=True,
-        null=True,
         default=list,
     )
     committee_raised_in = models.ForeignKey(
