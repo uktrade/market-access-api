@@ -320,12 +320,12 @@ class BarrierListExportView(generics.ListAPIView):
     queryset = Barrier.barriers.annotate(
         team_count=Count('barrier_team'),
     ).all().select_related(
-        "assessment",
         "wto_profile__committee_notified",
         "wto_profile__committee_raised_in",
         "priority",
         "public_barrier",
     ).prefetch_related(
+        "economic_assessments",
         "resolvability_assessments",
         "strategic_assessments",
         "tags",
@@ -352,7 +352,7 @@ class BarrierListExportView(generics.ListAPIView):
         "categories": "Barrier categories",
         "source": "Source",
         "team_count": "Team count",
-        "assessment_impact": "Assessment Impact",
+        "assessment_rating": "Assessment Rating",
         "value_to_economy": "Value to economy",
         "import_market_size": "Import market size",
         "commercial_value": "Commercial Value",
@@ -470,14 +470,13 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
 
     lookup_field = "pk"
     queryset = Barrier.barriers.all().select_related(
-        "assessment"
-    ).select_related(
         "priority"
     ).prefetch_related(
-        "tags"
-    ).prefetch_related(
-        "categories"
-    ).prefetch_related("barrier_commodities")
+        "tags",
+        "categories",
+        "barrier_commodities",
+        "economic_assessments",
+    )
 
     serializer_class = BarrierDetailSerializer
 

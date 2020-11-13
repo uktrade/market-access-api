@@ -1,8 +1,8 @@
 from django.urls import path
 
 from api.assessment.views import (
-    BarrierAssessmentDetail,
-    BarrierAssessmentHistory,
+    EconomicAssessmentDetail,
+    EconomicAssessmentList,
     ResolvabilityAssessmentDetail,
     ResolvabilityAssessmentList,
     StrategicAssessmentDetail,
@@ -11,9 +11,14 @@ from api.assessment.views import (
 
 urlpatterns = [
     path(
-        "barriers/<uuid:pk>/assessment",
-        BarrierAssessmentDetail.as_view(),
-        name="get-assessment",
+        "economic-assessments",
+        EconomicAssessmentList.as_view(),
+        name="economic-assessment-list",
+    ),
+    path(
+        "economic-assessments/<int:pk>",
+        EconomicAssessmentDetail.as_view(),
+        name="economic-assessment-detail",
     ),
     path(
         "resolvability-assessments",
@@ -34,10 +39,5 @@ urlpatterns = [
         "strategic-assessments/<uuid:pk>",
         StrategicAssessmentDetail.as_view(),
         name="strategic-assessment-detail",
-    ),
-    path(
-        "barriers/<uuid:pk>/assessment_history",
-        BarrierAssessmentHistory.as_view(),
-        name="assessment-history",
     ),
 ]

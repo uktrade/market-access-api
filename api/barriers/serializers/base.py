@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from api.assessment.serializers import (
-    AssessmentSerializer,
+    EconomicAssessmentSerializer,
     ResolvabilityAssessmentSerializer,
     StrategicAssessmentSerializer,
 )
@@ -34,7 +34,7 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     archived_reason = ArchivedReasonField(required=False)
-    assessment = AssessmentSerializer(required=False)
+    economic_assessments = EconomicAssessmentSerializer(required=False, many=True)
     resolvability_assessments = ResolvabilityAssessmentSerializer(required=False, many=True)
     strategic_assessments = StrategicAssessmentSerializer(required=False, many=True)
     categories = CategoriesField(required=False)
@@ -73,6 +73,7 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
             "modified_by",
             "modified_on",
             "priority_date",
+            "economic_assessments",
             "resolvability_assessments",
             "strategic_assessments",
             "unarchived_by",

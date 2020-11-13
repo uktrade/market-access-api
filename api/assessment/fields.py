@@ -1,23 +1,23 @@
 from rest_framework import serializers
 
 from api.metadata.constants import (
-    ASSESMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_RATING,
     RESOLVABILITY_ASSESSMENT_EFFORT,
     RESOLVABILITY_ASSESSMENT_TIME,
     STRATEGIC_ASSESSMENT_SCALE,
 )
 
 
-class ImpactField(serializers.ChoiceField):
+class RatingField(serializers.ChoiceField):
     def __init__(self, **kwargs):
-        return super().__init__(choices=ASSESMENT_IMPACT, **kwargs)
+        return super().__init__(choices=ECONOMIC_ASSESSMENT_RATING, **kwargs)
 
     def to_representation(self, value):
         if value:
-            impact_lookup = dict(ASSESMENT_IMPACT)
+            lookup = dict(ECONOMIC_ASSESSMENT_RATING)
             return {
                 "code": value,
-                "name": impact_lookup.get(value),
+                "name": lookup.get(value),
             }
 
 

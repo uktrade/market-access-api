@@ -1,4 +1,4 @@
-from .assessments import AssessmentHistoryFactory
+from .assessments import EconomicAssessmentHistoryFactory
 from .assessments.resolvability import ResolvabilityAssessmentHistoryFactory
 from .assessments.strategic import StrategicAssessmentHistoryFactory
 from .barriers import BarrierHistoryFactory
@@ -18,7 +18,7 @@ class HistoryItemFactory:
     """
     class_lookup = {}
     history_factory_classes = (
-        AssessmentHistoryFactory,
+        EconomicAssessmentHistoryFactory,
         BarrierHistoryFactory,
         NoteHistoryFactory,
         PublicBarrierHistoryFactory,

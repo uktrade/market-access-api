@@ -122,11 +122,30 @@ BARRIER_SOURCE = Choices(
     ("OTHER", "Other"),
 )
 
-ASSESMENT_IMPACT = Choices(
+TRADE_CATEGORIES = Choices(
+    ("GOODS", "Goods"),
+    ("SERVICE", "Service"),
+    ("INVESTMENT", "Investment"),
+    ("PROCUREMENT", "Procurement"),
+    ("OTHER", "Other"),
+)
+
+ECONOMIC_ASSESSMENT_RATING = Choices(
     ("HIGH", "High"),
     ("MEDIUMHIGH", "Medium High"),
     ("MEDIUMLOW", "Medium Low"),
     ("LOW", "Low"),
+)
+
+ECONOMIC_ASSESSMENT_IMPACT = Choices(
+    (1, "1: £ less than a thousand"),
+    (2, "2: £ tens of thousands"),
+    (3, "3: £ hundreds of thousands"),
+    (4, "4: £ millions"),
+    (5, "5: £ tens of millions"),
+    (6, "6: £ hundreds of millions"),
+    (7, "7: £ billions"),
+    (8, "8: £ tens of billions"),
 )
 
 RESOLVABILITY_ASSESSMENT_TIME = Choices(

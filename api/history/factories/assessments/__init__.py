@@ -1,4 +1,4 @@
-from api.assessment.models import Assessment
+from api.assessment.models import EconomicAssessment
 from ..base import HistoryItemFactoryBase
 from ...items.assessments import (
     CommercialValueHistoryItem,
@@ -12,7 +12,7 @@ from ...items.assessments import (
 )
 
 
-class AssessmentHistoryFactory(HistoryItemFactoryBase):
+class EconomicAssessmentHistoryFactory(HistoryItemFactoryBase):
     class_lookup = {}
     history_item_classes = (
         CommercialValueHistoryItem,
@@ -27,4 +27,4 @@ class AssessmentHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        return Assessment.history.filter(barrier_id=barrier_id).order_by("history_date")
+        return EconomicAssessment.history.filter(barrier_id=barrier_id).order_by("history_date")

@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 
-from api.assessment.models import Assessment
+from api.assessment.models import EconomicAssessment
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.interactions.models import Document, Interaction
 from api.interactions.serializers import (
@@ -26,7 +26,7 @@ class DocumentViewSet(BaseEntityDocumentModelViewSet):
     def _is_document_attached(document):
         if (
             Interaction.objects.filter(documents=document.id).count() > 0
-            or Assessment.objects.filter(documents=document.id).count() > 0
+            or EconomicAssessment.objects.filter(documents=document.id).count() > 0
         ):
             return True
         return False

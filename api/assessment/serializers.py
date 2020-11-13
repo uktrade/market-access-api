@@ -1,47 +1,60 @@
 from rest_framework import serializers
 
-from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment
+from api.assessment.models import EconomicAssessment, ResolvabilityAssessment, StrategicAssessment
 from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import CustomUpdateMixin
 
 from .fields import (
     EffortToResolveField,
-    ImpactField,
+    RatingField,
     StrategicAssessmentScaleField,
     TimeToResolveField,
 )
 
 
-class AssessmentSerializer(serializers.ModelSerializer):
-    """ Serialzer for Barrier Assessment """
-
-    created_by = serializers.SerializerMethodField()
+class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+    approved = ApprovedField(required=False)
+    barrier_id = serializers.UUIDField()
+    archived_by = UserField(required=False)
+    created_by = UserField(required=False)
     documents = serializers.SerializerMethodField()
-    impact = ImpactField(required=False)
+    rating = RatingField(required=False)
+    reviewed_by = UserField(required=False)
 
     class Meta:
-        model = Assessment
+        model = EconomicAssessment
         fields = (
             "id",
-            "impact",
-            "explanation",
-            "value_to_economy",
-            "import_market_size",
+            "analysis_data",
+            "approved",
+            "archived",
+            "archived_by",
+            "archived_on",
+            "barrier_id",
             "commercial_value",
             "commercial_value_explanation",
-            "export_value",
+            "created_by",
+            "created_on",
             "documents",
+            "explanation",
+            "export_value",
+            "import_market_size",
+            "rating",
+            "ready_for_approval",
+            "reviewed_by",
+            "reviewed_on",
+            "value_to_economy",
+        )
+        read_only_fields = (
+            "id",
+            "archived_by",
+            "archived_on",
             "created_on",
             "created_by",
+            "reviewed_by",
+            "reviewed_on",
         )
-        read_only_fields = ("id", "created_on", "created_by")
-
-    def get_created_by(self, obj):
-        if obj.created_by is None:
-            return None
-
-        return {"id": obj.created_by.id, "name": obj.created_user}
 
     def get_documents(self, obj):
         if obj.documents is None:

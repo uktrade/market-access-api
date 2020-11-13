@@ -3,8 +3,8 @@ import datetime
 from api.history.models import CachedHistoryItem
 
 from .factories import (
-    AssessmentHistoryFactory,
     BarrierHistoryFactory,
+    EconomicAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierNoteHistoryFactory,
     PublicBarrierHistoryFactory,
@@ -135,7 +135,7 @@ class HistoryManager:
                 start_date=start_date,
             )
 
-        return AssessmentHistoryFactory.get_history_items(
+        return EconomicAssessmentHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,

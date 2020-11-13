@@ -9,8 +9,8 @@ def get_changed_fields(new_record, old_record):
 def get_model_name(history_instance):
     object_name = history_instance.instance_type._meta.object_name
     return {
-        "Assessment": "assessment",
         "Barrier": "barrier",
+        "EconomicAssessment": "economic_assessment",
         "Interaction": "note",
         "PublicBarrier": "public_barrier",
         "PublicBarrierNote": "public_barrier_note",

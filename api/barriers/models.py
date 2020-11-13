@@ -18,6 +18,7 @@ from api.metadata.constants import (
     BARRIER_TERMS,
     PublicBarrierStatus,
     STAGE_STATUS,
+    TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
 )
@@ -242,6 +243,15 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "otherwise the current time when the status was set."
         )
     )
+    economic_assessment_eligibility = models.BooleanField(
+        blank=True,
+        null=True,
+        help_text="Is the barrier eligible for an economic assessment?",
+    )
+    economic_assessment_eligibility_summary = models.TextField(
+        blank=True,
+        help_text="Why is the barrier eligible/ineligible for an economic assessment?",
+    )
     public_eligibility = models.BooleanField(
         blank=True,
         null=True,
@@ -272,6 +282,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
     archived_explanation = models.TextField(blank=True)
     commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
+    trade_category = models.CharField(choices=TRADE_CATEGORIES, max_length=32, blank=True)
     draft = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])

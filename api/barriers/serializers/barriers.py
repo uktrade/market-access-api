@@ -5,7 +5,6 @@ class BarrierDetailSerializer(BarrierSerializerBase):
     class Meta(BarrierSerializerBase.Meta):
         fields = (
             "admin_areas",
-            "assessment",
             "all_sectors",
             "archived",
             "archived_by",
@@ -20,6 +19,9 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "country",
             "created_by",
             "created_on",
+            "economic_assessment_eligibility",
+            "economic_assessment_eligibility_summary",
+            "economic_assessments",
             "end_date",
             "has_assessment",
             "id",

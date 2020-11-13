@@ -28,6 +28,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "country",
             "created_by",
             "created_on",
+            "economic_assessment_eligibility",
+            "economic_assessment_eligibility_summary",
             "end_date",
             "has_assessment",
             "id",

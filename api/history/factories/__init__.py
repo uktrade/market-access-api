@@ -1,4 +1,4 @@
-from .assessments import AssessmentHistoryFactory  # noqa
+from .assessments import EconomicAssessmentHistoryFactory  # noqa
 from .assessments.resolvability import ResolvabilityAssessmentHistoryFactory  # noqa
 from .assessments.strategic import StrategicAssessmentHistoryFactory  # noqa
 from .barriers import BarrierHistoryFactory  # noqa

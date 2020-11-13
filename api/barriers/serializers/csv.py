@@ -6,11 +6,11 @@ from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 
 from api.metadata.constants import (
-    ASSESMENT_IMPACT,
     BARRIER_SOURCE,
     BarrierStatus,
     BARRIER_PENDING,
     BARRIER_TERMS,
+    ECONOMIC_ASSESSMENT_RATING,
     PublicBarrierStatus,
     TRADE_DIRECTION_CHOICES,
 )
@@ -45,7 +45,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     team_count = serializers.IntegerField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
-    assessment_impact = serializers.SerializerMethodField()
+    assessment_rating = serializers.SerializerMethodField()
     value_to_economy = serializers.SerializerMethodField()
     import_market_size = serializers.SerializerMethodField()
     commercial_value = serializers.SerializerMethodField()
@@ -121,7 +121,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "team_count",
             "reported_on",
             "modified_on",
-            "assessment_impact",
+            "assessment_rating",
             "value_to_economy",
             "import_market_size",
             "commercial_value",
@@ -135,10 +135,10 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         term_dict = dict(BARRIER_TERMS)
         return term_dict.get(obj.term, "Unknown")
 
-    def get_assessment_impact(self, obj):
+    def get_assessment_rating(self, obj):
         if hasattr(obj, "assessment"):
-            impact_dict = dict(ASSESMENT_IMPACT)
-            return impact_dict.get(obj.assessment.impact, None)
+            lookup = dict(ECONOMIC_ASSESSMENT_RATING)
+            return lookup.get(obj.assessment.rating, None)
         return None
 
     def get_value_to_economy(self, obj):

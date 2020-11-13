@@ -11,7 +11,8 @@ from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ApprovalMixin, ArchivableMixin, BaseModel
 from api.interactions.models import Document
 from api.metadata.constants import (
-    ASSESMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_RATING,
     RESOLVABILITY_ASSESSMENT_EFFORT,
     RESOLVABILITY_ASSESSMENT_TIME,
     STRATEGIC_ASSESSMENT_SCALE,
@@ -20,14 +21,7 @@ from api.metadata.constants import (
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
-class AssessmentManager(models.Manager):
-    """ Manage barrier assessment within the model, with archived not False """
-
-    def get_queryset(self):
-        return super(AssessmentManager, self).get_queryset().filter(Q(archived=False))
-
-
-class AssessmentHistoricalModel(models.Model):
+class EconomicAssessmentHistoricalModel(models.Model):
     """
     Abstract model for history models tracking document changes.
     """
@@ -67,35 +61,59 @@ class AssessmentHistoricalModel(models.Model):
         abstract = True
 
 
-class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
-    """ Assessment record for a Barrier """
-
-    barrier = models.OneToOneField(
-        "barriers.Barrier", on_delete=models.CASCADE
+class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    barrier = models.ForeignKey(
+        "barriers.Barrier",
+        related_name="economic_assessments",
+        on_delete=models.CASCADE,
     )
-    impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, blank=True)
+    analysis_data = models.TextField(blank=True)
+    rating = models.CharField(choices=ECONOMIC_ASSESSMENT_RATING, max_length=25, blank=True)
     explanation = models.TextField(blank=True)
+    ready_for_approval = models.BooleanField(default=False)
     documents = models.ManyToManyField(
         Document, related_name="assessment_documents", help_text="assessment documents"
     )
-    value_to_economy = models.BigIntegerField(blank=True, null=True)
     import_market_size = models.BigIntegerField(blank=True, null=True)
+    export_value = models.BigIntegerField(blank=True, null=True)
+
+    # move to barrier?
     commercial_value = models.BigIntegerField(blank=True, null=True)
     commercial_value_explanation = models.TextField(blank=True)
-    export_value = models.BigIntegerField(blank=True, null=True)
-    is_active = models.BooleanField(default=True)
+    value_to_economy = models.BigIntegerField(blank=True, null=True)
 
-    history = HistoricalRecords(bases=[AssessmentHistoricalModel])
+    history = HistoricalRecords(bases=[EconomicAssessmentHistoricalModel])
 
-    objects = AssessmentManager()
+    class Meta:
+        ordering = ("-created_on", )
+        permissions = (
+            ("archive_economicassessment", "Can archive economic assessment"),
+            ("approve_economicassessment", "Can approve economic assessment"),
+        )
 
-    @property
-    def created_user(self):
-        return self._cleansed_username(self.created_by)
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            for assessment in self.barrier.economic_assessments.filter(archived=False):
+                assessment.archive(user=self.created_by)
+        super().save(*args, **kwargs)
 
-    @property
-    def modified_user(self):
-        return self._cleansed_username(self.modified_by)
+
+class EconomicImpactAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    economic_assessment = models.ForeignKey(
+        "assessment.EconomicAssessment",
+        related_name="economic_impact_assessments",
+        on_delete=models.CASCADE,
+    )
+    impact = models.CharField(choices=ECONOMIC_ASSESSMENT_IMPACT, max_length=25, blank=True)
+    explanation = models.TextField(blank=True)
+
+    history = HistoricalRecords()
+
+    class Meta:
+        ordering = ("-created_on", )
+        permissions = (
+            ("archive_economicimpactassessment", "Can archive economic impact assessment"),
+        )
 
 
 class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
