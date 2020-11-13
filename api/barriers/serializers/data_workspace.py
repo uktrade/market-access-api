@@ -59,6 +59,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "team_count",
             "term",
             "title",
+            "trade_category",
             "trade_direction",
             "trading_bloc",
             "unarchived_by",

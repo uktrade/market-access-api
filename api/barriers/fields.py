@@ -14,6 +14,7 @@ from api.metadata.constants import (
     BarrierStatus,
     PublicBarrierStatus,
     STAGE_STATUS,
+    TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
 )
 from api.metadata.models import BarrierPriority, BarrierTag, Category
@@ -191,6 +192,19 @@ class TermField(serializers.ChoiceField):
             "id": value,
             "name": term_lookup.get(value, "Unknown"),
         }
+
+
+class TradeCategoryField(serializers.ChoiceField):
+    def __init__(self, **kwargs):
+        return super().__init__(choices=TRADE_CATEGORIES, **kwargs)
+
+    def to_representation(self, value):
+        if value:
+            lookup = dict(TRADE_CATEGORIES)
+            return {
+                "id": value,
+                "name": lookup.get(value),
+            }
 
 
 class TradeDirectionField(serializers.ChoiceField):

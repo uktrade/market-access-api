@@ -18,6 +18,7 @@ from api.barriers.fields import (
     SubStatusField,
     TagsField,
     TermField,
+    TradeCategoryField,
     TradeDirectionField,
     UserField,
     WTOProfileField,
@@ -54,6 +55,7 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     term = TermField(required=False, allow_null=True)
     tags = TagsField(required=False)
     title = serializers.CharField(required=False)
+    trade_category = TradeCategoryField(required=False)
     trade_direction = TradeDirectionField(required=False)
     trading_bloc = TradingBlocField(required=False, allow_blank=True)
     unarchived_by = UserField(required=False)
