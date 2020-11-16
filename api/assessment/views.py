@@ -3,9 +3,15 @@ from django.shortcuts import get_object_or_404
 from rest_framework import generics, serializers, status
 from rest_framework.response import Response
 
-from api.assessment.models import EconomicAssessment, ResolvabilityAssessment, StrategicAssessment
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.assessment.serializers import (
     EconomicAssessmentSerializer,
+    EconomicImpactAssessmentSerializer,
     ResolvabilityAssessmentSerializer,
     StrategicAssessmentSerializer,
 )
@@ -23,6 +29,16 @@ class EconomicAssessmentList(generics.CreateAPIView):
 class EconomicAssessmentDetail(generics.RetrieveUpdateAPIView):
     queryset = EconomicAssessment.objects.all()
     serializer_class = EconomicAssessmentSerializer
+
+
+class EconomicImpactAssessmentList(generics.CreateAPIView):
+    queryset = EconomicImpactAssessment.objects.all()
+    serializer_class = EconomicImpactAssessmentSerializer
+
+
+class EconomicImpactAssessmentDetail(generics.RetrieveUpdateAPIView):
+    queryset = EconomicImpactAssessment.objects.all()
+    serializer_class = EconomicImpactAssessmentSerializer
 
 
 class ResolvabilityAssessmentList(generics.CreateAPIView):

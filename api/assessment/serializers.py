@@ -1,16 +1,57 @@
 from rest_framework import serializers
 
-from api.assessment.models import EconomicAssessment, ResolvabilityAssessment, StrategicAssessment
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import CustomUpdateMixin
 
 from .fields import (
     EffortToResolveField,
+    ImpactField,
     RatingField,
     StrategicAssessmentScaleField,
     TimeToResolveField,
 )
+
+
+class EconomicImpactAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+    archived = ArchivedField(required=False)
+    archived_by = UserField(required=False)
+    economic_assessment_id = serializers.UUIDField()
+    impact = ImpactField()
+    created_by = UserField(required=False)
+
+    class Meta:
+        model = EconomicImpactAssessment
+        fields = (
+            "id",
+            "archived",
+            "archived_by",
+            "archived_on",
+            "created_by",
+            "created_on",
+            "economic_assessment_id",
+            "impact",
+            "explanation",
+        )
+        read_only_fields = (
+            "id",
+            "archived_by",
+            "archived_on",
+            "created_on",
+            "created_by",
+        )
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["created_by"] = request.user
+        return super().create(validated_data)
 
 
 class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
@@ -19,6 +60,7 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
     archived_by = UserField(required=False)
     created_by = UserField(required=False)
     documents = serializers.SerializerMethodField()
+    economic_impact_assessments = EconomicImpactAssessmentSerializer(required=False, many=True)
     rating = RatingField(required=False)
     reviewed_by = UserField(required=False)
 
@@ -37,6 +79,7 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
             "created_by",
             "created_on",
             "documents",
+            "economic_impact_assessments",
             "explanation",
             "export_value",
             "import_market_size",
@@ -73,6 +116,12 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
     def get_status(self, instance):
         """Get document status."""
         return instance.document.status
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            validated_data["created_by"] = request.user
+        return super().create(validated_data)
 
 
 class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):

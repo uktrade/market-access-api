@@ -3,6 +3,8 @@ from django.urls import path
 from api.assessment.views import (
     EconomicAssessmentDetail,
     EconomicAssessmentList,
+    EconomicImpactAssessmentDetail,
+    EconomicImpactAssessmentList,
     ResolvabilityAssessmentDetail,
     ResolvabilityAssessmentList,
     StrategicAssessmentDetail,
@@ -19,6 +21,16 @@ urlpatterns = [
         "economic-assessments/<int:pk>",
         EconomicAssessmentDetail.as_view(),
         name="economic-assessment-detail",
+    ),
+    path(
+        "economic-impact-assessments",
+        EconomicImpactAssessmentList.as_view(),
+        name="economic-impact-assessment-list",
+    ),
+    path(
+        "economic-impact-assessments/<uuid:pk>",
+        EconomicImpactAssessmentDetail.as_view(),
+        name="economic-impact-assessment-detail",
     ),
     path(
         "resolvability-assessments",
