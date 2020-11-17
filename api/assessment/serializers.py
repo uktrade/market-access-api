@@ -22,7 +22,7 @@ from .fields import (
 class EconomicImpactAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
-    economic_assessment_id = serializers.UUIDField()
+    economic_assessment_id = serializers.IntegerField()
     impact = ImpactField()
     created_by = UserField(required=False)
 
@@ -56,6 +56,7 @@ class EconomicImpactAssessmentSerializer(CustomUpdateMixin, serializers.ModelSer
 
 class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
     approved = ApprovedField(required=False)
+    archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()
     archived_by = UserField(required=False)
     created_by = UserField(required=False)
