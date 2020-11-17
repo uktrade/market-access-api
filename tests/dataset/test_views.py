@@ -58,7 +58,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["country"]["name"] == "Spain"
         assert barrier["country"]["overseas_region"]["name"] == "Europe"
         assert barrier["admin_areas"] == []
-        assert barrier["sectors"][0]["name"] == "Advanced Engineering"
+        assert barrier["sectors"][0]["name"] == "Advanced engineering"
         assert barrier["product"] is not None
         assert barrier["term"] is not None
         assert barrier["categories"] == []
