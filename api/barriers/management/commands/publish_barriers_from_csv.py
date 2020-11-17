@@ -27,10 +27,6 @@ class Metadata:
             trading_bloc["name"]: trading_bloc["code"]
             for trading_bloc in TRADING_BLOCS.values()
         }
-        self.trading_bloc_names = {
-            trading_bloc["name"]: trading_bloc["code"]
-            for trading_bloc in TRADING_BLOCS.values()
-        }
         self.sectors = {}
         for sector in get_sectors():
             if sector["disabled_on"] is None:
