@@ -34,8 +34,8 @@ class HistoryManager:
             fields=[
                 "commercial_value",
                 "export_value",
-                "impact",
                 "import_market_size",
+                "rating",
                 "value_to_economy",
             ],
             use_cache=use_cache,
@@ -130,7 +130,7 @@ class HistoryManager:
         if use_cache:
             return cls.get_cached_history_items(
                 barrier_id,
-                model="assessment",
+                model="economic_assessment",
                 fields=fields,
                 start_date=start_date,
             )

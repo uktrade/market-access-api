@@ -42,7 +42,6 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     commodities = CommoditiesField(source="barrier_commodities", required=False)
     country = CountryField(required=False, allow_null=True)
     created_by = UserField(required=False)
-    has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
     modified_by = UserField(required=False)
     priority = BarrierPriorityField(required=False)
@@ -81,9 +80,6 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
             "unarchived_by",
             "unarchived_on",
         )
-
-    def get_has_assessment(self, obj):
-        return hasattr(obj, 'assessment')
 
     def get_last_seen_on(self, obj):
         request = self.context.get("request")

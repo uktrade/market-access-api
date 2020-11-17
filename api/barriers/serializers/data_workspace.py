@@ -13,7 +13,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     class Meta(BarrierSerializerBase.Meta):
         fields = (
             "admin_areas",
-            "assessment",
             "all_sectors",
             "archived",
             "archived_by",
@@ -30,8 +29,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "created_on",
             "economic_assessment_eligibility",
             "economic_assessment_eligibility_summary",
+            "economic_assessments",
             "end_date",
-            "has_assessment",
             "id",
             "is_summary_sensitive",
             "modified_by",

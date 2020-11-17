@@ -3,7 +3,7 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.assessment.models import Assessment
+from api.assessment.models import EconomicAssessment
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
@@ -21,9 +21,9 @@ class TestActivityView(APITestMixin, TestCase):
         )
         self.barrier.save()
 
-        self.assessment = Assessment.objects.create(
+        self.assessment = EconomicAssessment.objects.create(
             barrier=self.barrier,
-            impact="LOW",
+            rating="LOW",
             explanation="Some explanation",
             value_to_economy=10000,
             import_market_size=20000,
@@ -81,7 +81,7 @@ class TestActivityView(APITestMixin, TestCase):
 
         # Assessment changes
         self.assessment.explanation = "New explanation"
-        self.assessment.impact = "HIGH"
+        self.assessment.rating = "HIGH"
         self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
         self.assessment.commercial_value = 1111
         self.assessment.export_value = 2222
@@ -98,11 +98,11 @@ class TestActivityView(APITestMixin, TestCase):
         assert ("barrier", "priority") in fields
         assert ("barrier", "status") in fields
         assert ("barrier", "archived") in fields
-        assert ("assessment", "impact") in fields
-        assert ("assessment", "commercial_value") in fields
-        assert ("assessment", "export_value") in fields
-        assert ("assessment", "import_market_size") in fields
-        assert ("assessment", "value_to_economy") in fields
+        assert ("economic_assessment", "rating") in fields
+        assert ("economic_assessment", "commercial_value") in fields
+        assert ("economic_assessment", "export_value") in fields
+        assert ("economic_assessment", "import_market_size") in fields
+        assert ("economic_assessment", "value_to_economy") in fields
 
         assert ("barrier", "categories") not in fields
         assert ("barrier", "companies") not in fields
@@ -113,8 +113,8 @@ class TestActivityView(APITestMixin, TestCase):
         assert ("barrier", "sectors") not in fields
         assert ("barrier", "source") not in fields
         assert ("barrier", "title") not in fields
-        assert ("assessment", "documents") not in fields
-        assert ("assessment", "explanation") not in fields
+        assert ("economic_assessment", "documents") not in fields
+        assert ("economic_assessment", "explanation") not in fields
         assert ("team_member", "user") not in fields
         assert ("note", "text") not in fields
         assert ("note", "documents") not in fields

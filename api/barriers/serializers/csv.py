@@ -136,30 +136,24 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         return term_dict.get(obj.term, "Unknown")
 
     def get_assessment_rating(self, obj):
-        if hasattr(obj, "assessment"):
-            lookup = dict(ECONOMIC_ASSESSMENT_RATING)
-            return lookup.get(obj.assessment.rating, None)
-        return None
+        if obj.economic_assessment:
+            return obj.economic_assessment.get_rating_display()
 
     def get_value_to_economy(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.value_to_economy
-        return None
+        if obj.economic_assessment:
+            return obj.economic_assessment.value_to_economy
 
     def get_import_market_size(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.import_market_size
-        return None
+        if obj.economic_assessment:
+            return obj.economic_assessment.import_market_size
 
     def get_commercial_value(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.commercial_value
-        return None
+        if obj.economic_assessment:
+            return obj.economic_assessment.commercial_value
 
     def get_export_value(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.export_value
-        return None
+        if obj.economic_assessment:
+            return obj.economic_assessment.export_value
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
@@ -259,10 +253,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
 
     def get_economic_assessment_explanation(self, obj):
-        if obj.has_assessment:
-            return obj.assessment.explanation
-        else:
-            return None
+        if obj.economic_assessment:
+            return obj.economic_assessment.explanation
 
     def get_wto_has_been_notified(self, obj):
         if obj.has_wto_profile:

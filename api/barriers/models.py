@@ -382,8 +382,8 @@ class Barrier(FullyArchivableMixin, BaseModel):
         return self._cleansed_username(self.modified_by)
 
     @property
-    def has_assessment(self):
-        return hasattr(self, 'assessment')
+    def economic_assessment(self):
+        return self.economic_assessments.filter(archived=False).first()
 
     @property
     def has_public_barrier(self):
