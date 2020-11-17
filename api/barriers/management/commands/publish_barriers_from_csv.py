@@ -115,9 +115,6 @@ class Command(BaseCommand):
             csv_file = options["file"]
             logger.info("Reading barriers from csv file...")
             public_barriers = create_public_barriers_from_csv(csv_file)
-            for public_barrier in public_barriers:
-                for sector in public_barrier.sectors:
-                    sector
             logger.info("Publishing barriers...")
             public_release_to_s3(public_barriers, force_publish=True)
         else:
