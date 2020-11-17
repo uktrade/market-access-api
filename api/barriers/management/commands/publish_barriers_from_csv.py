@@ -119,6 +119,6 @@ class Command(BaseCommand):
                 for sector in public_barrier.sectors:
                     sector
             logger.info("Publishing barriers...")
-            public_release_to_s3(public_barriers)
+            public_release_to_s3(public_barriers, force_publish=True)
         else:
             logger.info(f"Publishing from csv is disabled on {settings.DJANGO_ENV}")

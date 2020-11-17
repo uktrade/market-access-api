@@ -96,7 +96,7 @@ def metadata_json_file_content():
     return data
 
 
-def public_release_to_s3(public_barriers=None):
+def public_release_to_s3(public_barriers=None, force_publish=False):
     """
     Generate a new JSON file and upload it to S3 along with metadata info.
     This file is designed to work with CITB public service,
@@ -105,7 +105,7 @@ def public_release_to_s3(public_barriers=None):
     The S3 buckets are not exposed to the public.
     These files are actually made available to the public via DIT API Gateway.
     """
-    if not settings.PUBLIC_DATA_TO_S3_ENABLED:
+    if not settings.PUBLIC_DATA_TO_S3_ENABLED and not force_publish:
         logger.info(
             "Surfacing of public data to S3 is currently disabled. Please check app settings."
         )
