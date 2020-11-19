@@ -1,6 +1,8 @@
 from api.assessment.models import EconomicAssessment
 from ..base import HistoryItemFactoryBase
 from ...items.assessments.economic import (
+    ApprovedHistoryItem,
+    ArchivedHistoryItem,
     CommercialValueHistoryItem,
     CommercialValueExplanationHistoryItem,
     DocumentsHistoryItem,
@@ -8,6 +10,7 @@ from ...items.assessments.economic import (
     ExportValueHistoryItem,
     ImportMarketSizeHistoryItem,
     RatingHistoryItem,
+    ReadyForApprovalHistoryItem,
     ValueToEconomyHistoryItem,
 )
 
@@ -15,6 +18,8 @@ from ...items.assessments.economic import (
 class EconomicAssessmentHistoryFactory(HistoryItemFactoryBase):
     class_lookup = {}
     history_item_classes = (
+        ApprovedHistoryItem,
+        ArchivedHistoryItem,
         CommercialValueHistoryItem,
         CommercialValueExplanationHistoryItem,
         DocumentsHistoryItem,
@@ -22,9 +27,10 @@ class EconomicAssessmentHistoryFactory(HistoryItemFactoryBase):
         ExportValueHistoryItem,
         ImportMarketSizeHistoryItem,
         RatingHistoryItem,
+        ReadyForApprovalHistoryItem,
         ValueToEconomyHistoryItem,
     )
 
     @classmethod
     def get_history(cls, barrier_id):
-        return EconomicAssessment.history.filter(barrier_id=barrier_id).order_by("history_date")
+        return EconomicAssessment.history.filter(barrier_id=barrier_id).order_by("id", "history_date")

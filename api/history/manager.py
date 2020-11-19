@@ -5,6 +5,7 @@ from api.history.models import CachedHistoryItem
 from .factories import (
     BarrierHistoryFactory,
     EconomicAssessmentHistoryFactory,
+    EconomicImpactAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierNoteHistoryFactory,
     PublicBarrierHistoryFactory,
@@ -63,7 +64,8 @@ class HistoryManager:
 
         barrier_history = cls.get_barrier_history(barrier.pk, start_date=start_date)
         notes_history = cls.get_notes_history(barrier.pk, start_date=start_date)
-        assessment_history = cls.get_assessment_history(barrier.pk, start_date=start_date)
+        economic_assessment_history = cls.get_economic_assessment_history(barrier.pk, start_date=start_date)
+        economic_impact_assessment_history = cls.get_economic_impact_assessment_history(barrier.pk, start_date=start_date)
         resolvability_assessment_history = cls.get_resolvability_assessment_history(barrier.pk, start_date=start_date)
         strategic_assessment_history = cls.get_strategic_assessment_history(barrier.pk, start_date=start_date)
 
@@ -77,8 +79,8 @@ class HistoryManager:
         wto_history = cls.get_wto_history(barrier.pk, start_date=start_date)
 
         history_items = (
-            barrier_history + notes_history + assessment_history + team_history
-            + wto_history + resolvability_assessment_history + strategic_assessment_history
+            barrier_history + notes_history + economic_assessment_history + economic_impact_assessment_history
+            + team_history + wto_history + resolvability_assessment_history + strategic_assessment_history
         )
 
         if barrier.has_public_barrier:
@@ -126,7 +128,7 @@ class HistoryManager:
         return [item.as_history_item() for item in queryset]
 
     @classmethod
-    def get_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
+    def get_economic_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
         if use_cache:
             return cls.get_cached_history_items(
                 barrier_id,
@@ -136,6 +138,22 @@ class HistoryManager:
             )
 
         return EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
+
+    @classmethod
+    def get_economic_impact_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
+        if use_cache:
+            return cls.get_cached_history_items(
+                barrier_id,
+                model="economic_impact_assessment",
+                fields=fields,
+                start_date=start_date,
+            )
+
+        return EconomicImpactAssessmentHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,

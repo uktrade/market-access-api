@@ -11,6 +11,7 @@ def get_model_name(history_instance):
     return {
         "Barrier": "barrier",
         "EconomicAssessment": "economic_assessment",
+        "EconomicImpactAssessment": "economic_impact_assessment",
         "Interaction": "note",
         "PublicBarrier": "public_barrier",
         "PublicBarrierNote": "public_barrier_note",

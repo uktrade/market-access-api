@@ -105,7 +105,7 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         related_name="economic_impact_assessments",
         on_delete=models.CASCADE,
     )
-    impact = models.CharField(choices=ECONOMIC_ASSESSMENT_IMPACT, max_length=25, blank=True)
+    impact = models.PositiveIntegerField(choices=ECONOMIC_ASSESSMENT_IMPACT)
     explanation = models.TextField(blank=True)
 
     history = HistoricalRecords()

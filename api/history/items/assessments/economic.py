@@ -1,40 +1,59 @@
 from ..base import BaseHistoryItem
 
 
-class BaseAssessmentHistoryItem(BaseHistoryItem):
+class BaseEconomicAssessmentHistoryItem(BaseHistoryItem):
     model = "economic_assessment"
 
 
-class CommercialValueHistoryItem(BaseAssessmentHistoryItem):
+class ApprovedHistoryItem(BaseEconomicAssessmentHistoryItem):
+    field = "approved"
+
+
+class ArchivedHistoryItem(BaseEconomicAssessmentHistoryItem):
+    field = "archived"
+
+
+class CommercialValueHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "commercial_value"
 
 
-class CommercialValueExplanationHistoryItem(BaseAssessmentHistoryItem):
+class CommercialValueExplanationHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "commercial_value_explanation"
 
 
-class DocumentsHistoryItem(BaseAssessmentHistoryItem):
+class DocumentsHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "documents"
 
     def get_value(self, record):
         return record.documents_cache or []
 
 
-class ExplanationHistoryItem(BaseAssessmentHistoryItem):
+class ExplanationHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "explanation"
 
 
-class ExportValueHistoryItem(BaseAssessmentHistoryItem):
+class ExportValueHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "export_value"
 
 
-class ImportMarketSizeHistoryItem(BaseAssessmentHistoryItem):
+class ImportMarketSizeHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "import_market_size"
 
 
-class RatingHistoryItem(BaseAssessmentHistoryItem):
+class RatingHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "rating"
 
+    def get_value(self, record):
+        if record.rating:
+            return {
+                "id": record.rating,
+                "name": record.get_rating_display(),
+            }
 
-class ValueToEconomyHistoryItem(BaseAssessmentHistoryItem):
+
+class ReadyForApprovalHistoryItem(BaseEconomicAssessmentHistoryItem):
+    field = "ready_for_approval"
+
+
+class ValueToEconomyHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "value_to_economy"

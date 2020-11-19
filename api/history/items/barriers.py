@@ -66,6 +66,14 @@ class CompaniesHistoryItem(BaseBarrierHistoryItem):
     field = "companies"
 
 
+class EconomicAssessmentEligibilityHistoryItem(BaseBarrierHistoryItem):
+    field = "economic_assessment_eligibility"
+
+
+class EconomicAssessmentEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
+    field = "economic_assessment_eligibility_summary"
+
+
 class EndDateHistoryItem(BaseBarrierHistoryItem):
     field = "end_date"
 

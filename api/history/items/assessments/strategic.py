@@ -45,7 +45,8 @@ class ScaleHistoryItem(BaseStrategicAssessmentHistoryItem):
     field = "scale"
 
     def get_value(self, record):
-        return {
-            "id": record.scale,
-            "name": record.get_scale_display(),
-        }
+        if record.scale:
+            return {
+                "id": record.scale,
+                "name": record.get_scale_display(),
+            }
