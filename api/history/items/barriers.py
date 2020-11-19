@@ -50,6 +50,14 @@ class CausedByTradingBlocHistoryItem(BaseBarrierHistoryItem):
         }
 
 
+class CommercialValueHistoryItem(BaseBarrierHistoryItem):
+    field = "commercial_value"
+
+
+class CommercialValueExplanationHistoryItem(BaseBarrierHistoryItem):
+    field = "commercial_value_explanation"
+
+
 class CommoditiesHistoryItem(BaseBarrierHistoryItem):
     field = "commodities"
 

@@ -22,6 +22,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "categories",
             "caused_by_trading_bloc",
             "code",
+            "commercial_value",
+            "commercial_value_explanation",
             "commodities",
             "companies",
             "country",

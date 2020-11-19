@@ -75,8 +75,6 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
             "archived_by",
             "archived_on",
             "barrier_id",
-            "commercial_value",
-            "commercial_value_explanation",
             "created_by",
             "created_on",
             "documents",

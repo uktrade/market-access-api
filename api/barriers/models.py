@@ -243,6 +243,8 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "otherwise the current time when the status was set."
         )
     )
+    commercial_value = models.BigIntegerField(blank=True, null=True)
+    commercial_value_explanation = models.TextField(blank=True)
     economic_assessment_eligibility = models.BooleanField(
         blank=True,
         null=True,

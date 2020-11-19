@@ -13,14 +13,6 @@ class ArchivedHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "archived"
 
 
-class CommercialValueHistoryItem(BaseEconomicAssessmentHistoryItem):
-    field = "commercial_value"
-
-
-class CommercialValueExplanationHistoryItem(BaseEconomicAssessmentHistoryItem):
-    field = "commercial_value_explanation"
-
-
 class DocumentsHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "documents"
 

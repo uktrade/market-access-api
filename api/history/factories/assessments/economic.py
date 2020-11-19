@@ -3,8 +3,6 @@ from ..base import HistoryItemFactoryBase
 from ...items.assessments.economic import (
     ApprovedHistoryItem,
     ArchivedHistoryItem,
-    CommercialValueHistoryItem,
-    CommercialValueExplanationHistoryItem,
     DocumentsHistoryItem,
     ExplanationHistoryItem,
     ExportValueHistoryItem,
@@ -20,8 +18,6 @@ class EconomicAssessmentHistoryFactory(HistoryItemFactoryBase):
     history_item_classes = (
         ApprovedHistoryItem,
         ArchivedHistoryItem,
-        CommercialValueHistoryItem,
-        CommercialValueExplanationHistoryItem,
         DocumentsHistoryItem,
         ExplanationHistoryItem,
         ExportValueHistoryItem,
