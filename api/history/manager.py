@@ -30,7 +30,7 @@ class HistoryManager:
             fields=["archived", "priority", "status"],
             use_cache=use_cache,
         )
-        assessment_history = cls.get_assessment_history(
+        assessment_history = cls.get_economic_assessment_history(
             barrier_id=barrier.pk,
             fields=[
                 "commercial_value",
