@@ -180,5 +180,16 @@ class TitleHistoryItem(BaseBarrierHistoryItem):
     field = "title"
 
 
+class TradeCategoryHistoryItem(BaseBarrierHistoryItem):
+    field = "trade_category"
+
+    def get_value(self, record):
+        if record.trade_category:
+            return {
+                "id": record.trade_category,
+                "name": record.get_trade_category_display(),
+            }
+
+
 class TradeDirectionHistoryItem(BaseBarrierHistoryItem):
     field = "trade_direction"
