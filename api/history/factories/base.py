@@ -66,11 +66,11 @@ class HistoryItemFactoryBase:
         if new_record.history_type not in cls.history_types:
             return False
 
-        if new_record.history_type == "~":
-            if (
-                old_record is None or old_record.instance.pk != new_record.instance.pk
-            ):
-                return False
+        if old_record and old_record.instance.pk != new_record.instance.pk:
+            return False
+
+        if new_record.history_type == "~" and old_record is None:
+            return False
 
         if new_record.history_type == "-":
             return False
