@@ -25,23 +25,32 @@ class HistoryManager:
 
     @classmethod
     def get_activity(cls, barrier, use_cache=False):
-        barrier_history = cls.get_barrier_history(
+        history = cls.get_barrier_history(
             barrier_id=barrier.pk,
             fields=["archived", "priority", "status"],
             use_cache=use_cache,
         )
-        assessment_history = cls.get_economic_assessment_history(
+        history += cls.get_economic_assessment_history(
             barrier_id=barrier.pk,
-            fields=[
-                "commercial_value",
-                "export_value",
-                "import_market_size",
-                "rating",
-                "value_to_economy",
-            ],
+            fields=("rating", ),
             use_cache=use_cache,
         )
-        return barrier_history + assessment_history
+        history += cls.get_economic_impact_assessment_history(
+            barrier_id=barrier.pk,
+            fields=("impact", ),
+            use_cache=use_cache,
+        )
+        history += cls.get_resolvability_assessment_history(
+            barrier_id=barrier.pk,
+            fields=("time_to_resolve", ),
+            use_cache=use_cache,
+        )
+        history += cls.get_strategic_assessment_history(
+            barrier_id=barrier.pk,
+            fields=("scale", ),
+            use_cache=use_cache,
+        )
+        return history
 
     @classmethod
     def get_public_activity(cls, public_barrier, use_cache=False):
