@@ -23,6 +23,9 @@ class DocumentsHistoryItem(BaseEconomicAssessmentHistoryItem):
 class ExplanationHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "explanation"
 
+    def is_valid(self):
+        return self.get_old_value().strip() != self.get_new_value().strip()
+
 
 class ExportValueHistoryItem(BaseEconomicAssessmentHistoryItem):
     field = "export_value"
