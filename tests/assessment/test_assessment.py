@@ -17,17 +17,6 @@ class TestAssessment(APITestMixin):
     def barrier(self):
         return BarrierFactory()
 
-    def test_add_value_to_uk_economy(self, barrier):
-        url = reverse("get-barrier", kwargs={"pk": barrier.id})
-
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"value_to_economy": 1500000}
-        )
-        assert response.status_code == HTTPStatus.OK
-        assert response.data["value_to_economy"] == 1500000
-
     def test_add_commercial_value(self, barrier):
         url = reverse("get-barrier", kwargs={"pk": barrier.id})
 

@@ -130,5 +130,5 @@ class TestEconomicImpactAssessments(APITestMixin):
         url = reverse("economic-impact-assessment-detail", kwargs={"pk": economic_impact_assessment.id})
         response = self.api_client.get(url)
 
-        assert response.data["impact"]["id"] == "7"
+        assert response.data["impact"]["id"] == 7
         assert response.data["explanation"] == "Here's an explanation"
