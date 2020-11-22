@@ -28,12 +28,18 @@ from api.metadata.constants import PublicBarrierStatus, BarrierStatus
 
 from moto import mock_s3
 
+from api.metadata.models import Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 from tests.user.factories import UserFactoryMixin
 
 
 class PublicBarrierBaseTestCase(UserFactoryMixin, APITestMixin, TestCase):
+
+    def setUp(self):
+        self.barrier = BarrierFactory()
+        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
+
     def get_public_barrier(self, barrier=None):
         barrier = barrier or BarrierFactory()
         url = reverse("public-barriers-detail", kwargs={"pk": barrier.id})
@@ -59,15 +65,13 @@ class PublicBarrierBaseTestCase(UserFactoryMixin, APITestMixin, TestCase):
         return pb, response
 
 
-class TestPublicBarrier(PublicBarrierBaseTestCase):
-    def setUp(self):
-        self.barrier = BarrierFactory()
-        self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
-
+class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
     def test_pb_list(self):
         url = reverse("public-barriers-list")
         pb1, _ = self.publish_barrier()
         pb2, _ = self.publish_barrier()
+
+        assert 2 == PublicBarrier.objects.count()
 
         r = self.api_client.get(url)
 
@@ -76,8 +80,8 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert {pb1.id, pb2.id} == {i["id"] for i in r.data["results"]}
 
     def test_pb_list_region_filter(self):
-        country_id = "955f66a0-5d95-e211-a939-e4115bead28a"  # Algeria
-        region_id = "8d4c4f31-06ce-4320-8e2f-1c13559e125f"  # Africa
+        country_id = "9f5f66a0-5d95-e211-a939-e4115bead28a"  # Australia
+        region_id = "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"  # Asia-Pacific
         url = f'{reverse("public-barriers-list")}?region={region_id}'
 
         barrier1 = BarrierFactory(country=country_id)
@@ -91,6 +95,54 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert 200 == r.status_code
         assert 1 == r.data["count"]
         assert {pb1.id} == {i["id"] for i in r.data["results"]}
+
+    def test_pb_list_organisation_filter(self):
+        org1 = Organisation.objects.get(id=1)
+        barrier1 = BarrierFactory()
+        barrier1.organisations.add(org1)
+        org2 = Organisation.objects.get(id=2)
+        barrier2 = BarrierFactory()
+        barrier2.organisations.add(org2)
+
+        pb1 = self.get_public_barrier(barrier1)
+        pb1, _ = self.publish_barrier(pb1)
+        pb2 = self.get_public_barrier(barrier2)
+        pb2, _ = self.publish_barrier(pb2)
+        pb3 = self.get_public_barrier(self.barrier)
+        pb3, _ = self.publish_barrier(pb3)
+
+        assert 3 == PublicBarrier.objects.count()
+
+        url = f'{reverse("public-barriers-list")}?organisation={org1.id}'
+        r = self.api_client.get(url)
+
+        assert 200 == r.status_code
+        assert 1 == r.data["count"]
+        assert {pb1.id} == {i["id"] for i in r.data["results"]}
+
+    def test_pb_list_organisation_filter_with_multiple_values(self):
+        org1 = Organisation.objects.get(id=1)
+        barrier1 = BarrierFactory()
+        barrier1.organisations.add(org1)
+        org2 = Organisation.objects.get(id=2)
+        barrier2 = BarrierFactory()
+        barrier2.organisations.add(org2)
+
+        pb1 = self.get_public_barrier(barrier1)
+        pb1, _ = self.publish_barrier(pb1)
+        pb2 = self.get_public_barrier(barrier2)
+        pb2, _ = self.publish_barrier(pb2)
+        pb3 = self.get_public_barrier(self.barrier)
+        pb3, _ = self.publish_barrier(pb3)
+
+        assert 3 == PublicBarrier.objects.count()
+
+        url = f'{reverse("public-barriers-list")}?organisation={org1.id}&organisation={org2.id}'
+        r = self.api_client.get(url)
+
+        assert 200 == r.status_code
+        assert 2 == r.data["count"]
+        assert {pb1.id, pb2.id} == {i["id"] for i in r.data["results"]}
 
     def test_pb_list_returns_latest_note_for_items(self):
         url = reverse("public-barriers-list")
@@ -114,6 +166,9 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert 200 == r.status_code
         assert not r.data["results"][0]["latest_note"]
+
+
+class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     def test_public_barrier_gets_created_at_fetch(self):
         """

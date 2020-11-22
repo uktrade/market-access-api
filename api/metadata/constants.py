@@ -210,3 +210,19 @@ TRADING_BLOCS = {
 TRADING_BLOC_CHOICES = (
     (trading_bloc["code"], trading_bloc["name"]) for trading_bloc in TRADING_BLOCS.values()
 )
+
+
+class OrganisationType(StatusNameMixin):
+    MINISTERIAL_DEPARTMENTS = 1
+    DEVOLVED_ADMINISTRATIONS = 2
+
+    choices = Choices(
+        (MINISTERIAL_DEPARTMENTS, "Ministerial departments"),
+        (DEVOLVED_ADMINISTRATIONS, "Devolved administrations"),
+    )
+
+
+GOVERNMENT_ORGANISATION_TYPES = (
+    OrganisationType.MINISTERIAL_DEPARTMENTS,
+    OrganisationType.DEVOLVED_ADMINISTRATIONS,
+)

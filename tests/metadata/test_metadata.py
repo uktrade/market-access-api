@@ -130,3 +130,18 @@ class TestCategories(APITestMixin):
         assert status.HTTP_200_OK == response.status_code
         assert response.data[key] is not None
         assert expected == response.data[key]
+
+    def test_government_organisations(self):
+        key = "government_organisations"
+
+        url = reverse("metadata")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data[key] is not None
+        assert 26 == len(response.data[key])
+
+        org = response.data[key][0]
+        assert "id" in org.keys()
+        assert "name" in org.keys()
+        assert "organisation_type" in org.keys()

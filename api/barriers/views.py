@@ -333,6 +333,7 @@ class BarrierListExportView(generics.ListAPIView):
         "barrier_commodities",
         "public_barrier__notes",
         "cached_history_items",
+        "organisations",
     )
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
@@ -470,14 +471,14 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
 
     lookup_field = "pk"
     queryset = Barrier.barriers.all().select_related(
-        "assessment"
-    ).select_related(
+        "assessment",
         "priority"
     ).prefetch_related(
-        "tags"
-    ).prefetch_related(
-        "categories"
-    ).prefetch_related("barrier_commodities")
+        "barrier_commodities",
+        "categories",
+        "organisations",
+        "tags",
+    )
 
     serializer_class = BarrierDetailSerializer
 
@@ -730,6 +731,11 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
         if region_id is not None:
             countries = get_country_ids_by_overseas_region(region_id)
             qs = qs.filter(barrier__country__in=countries)
+
+        # Organisation filter
+        org_ids = self.request.query_params.getlist('organisation')
+        if org_ids:
+            qs = qs.filter(barrier__organisations__id__in=org_ids)
 
         return qs
 

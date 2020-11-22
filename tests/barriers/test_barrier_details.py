@@ -7,9 +7,10 @@ from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_team_members
 from api.barriers.models import Barrier
-from api.metadata.models import Category, BarrierPriority
+from api.metadata.models import Category, BarrierPriority, Organisation
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
+from tests.metadata.factories import OrganisationFactory
 
 
 class TestBarrierDetails(APITestMixin, APITestCase):
@@ -241,6 +242,75 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         team_members = get_team_members(self.barrier)
         assert 1 == team_members.count()
         assert "Contributor" == team_members.first().role
+
+    def test_add_barrier_government_organisations(self):
+        assert 0 == self.barrier.organisations.count()
+
+        payload = {
+            "government_organisations": ("1", "2")
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == len(response.data["government_organisations"])
+        assert {1, 2} == set([
+            org.id for org in self.barrier.government_organisations
+        ])
+
+    def test_replace_barrier_government_organisations(self):
+        org1 = Organisation.objects.get(id=1)
+        org2 = Organisation.objects.get(id=2)
+        org3 = Organisation.objects.get(id=3)
+        self.barrier.organisations.add(org1, org2)
+
+        assert 2 == self.barrier.government_organisations.count()
+
+        payload = {
+            "government_organisations": ("3",)
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == len(response.data["government_organisations"])
+        assert org3.id == response.data["government_organisations"][0]["id"]
+        assert 1 == self.barrier.government_organisations.count()
+        assert org3 == self.barrier.government_organisations.first()
+
+    def test_flush_barrier_government_organisations(self):
+        org1 = Organisation.objects.get(id=1)
+        self.barrier.organisations.add(org1)
+
+        self.barrier.refresh_from_db()
+        assert 1 == self.barrier.government_organisations.count()
+
+        payload = {
+            "government_organisations": ()
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert not response.data["government_organisations"]
+        assert 0 == self.barrier.government_organisations.count()
+
+    def test_flushing_government_organisations_leaves_other_organisations_intact(self):
+        org1 = OrganisationFactory(name="Wibble", organisation_type=0)
+        org2 = Organisation.objects.get(id=1)
+        self.barrier.organisations.add(org1, org2)
+
+        self.barrier.refresh_from_db()
+        assert 2 == self.barrier.organisations.count()
+        assert 1 == self.barrier.government_organisations.count()
+
+        payload = {
+            "government_organisations": ()
+        }
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert not response.data["government_organisations"]
+        assert 0 == self.barrier.government_organisations.count()
+        assert 1 == self.barrier.organisations.count()
+        assert org1 == self.barrier.organisations.first()
 
 
 class TestHibernateEndpoint(APITestMixin, TestCase):
