@@ -737,7 +737,7 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
         if org_ids:
             qs = qs.filter(barrier__organisations__id__in=org_ids)
 
-        return qs
+        return qs.distinct("id")
 
     def get_object(self):
         barrier = get_object_or_404(self.barriers_qs, pk=self.kwargs.get("pk"))
