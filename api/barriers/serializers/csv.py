@@ -10,7 +10,6 @@ from api.metadata.constants import (
     BarrierStatus,
     BARRIER_PENDING,
     BARRIER_TERMS,
-    ECONOMIC_ASSESSMENT_RATING,
     PublicBarrierStatus,
     TRADE_DIRECTION_CHOICES,
 )

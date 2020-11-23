@@ -3,7 +3,6 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q
 
 from simple_history.models import HistoricalRecords
 
@@ -127,7 +126,9 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     def save(self, *args, **kwargs):
         if self._state.adding:
             for economic_assessment in self.economic_assessment.barrier.economic_assessments.all():
-                for economic_impact_assessment in economic_assessment.economic_impact_assessments.filter(archived=False):
+                for economic_impact_assessment in economic_assessment.economic_impact_assessments.filter(
+                    archived=False
+                ):
                     economic_impact_assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
 

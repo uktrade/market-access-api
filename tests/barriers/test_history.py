@@ -21,7 +21,6 @@ from api.history.factories import (
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
-from tests.assessment.factories import EconomicAssessmentFactory
 from tests.interactions.factories import InteractionFactory
 from tests.assessment.factories import (
     EconomicAssessmentFactory,
@@ -233,7 +232,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "commercial_value"
-        assert data["old_value"] == None
+        assert data["old_value"] is None
         assert data["new_value"] == 1111
 
     def test_commercial_value_explanation_history(self):

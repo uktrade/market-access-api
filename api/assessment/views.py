@@ -1,7 +1,4 @@
-from django.http import Http404
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, serializers, status
-from rest_framework.response import Response
+from rest_framework import generics
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -15,10 +12,6 @@ from api.assessment.serializers import (
     ResolvabilityAssessmentSerializer,
     StrategicAssessmentSerializer,
 )
-
-from api.barriers.models import Barrier
-from api.core.utils import cleansed_username
-from api.interactions.models import Document
 
 
 class EconomicAssessmentList(generics.CreateAPIView):

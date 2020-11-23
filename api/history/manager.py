@@ -71,38 +71,33 @@ class HistoryManager:
         else:
             start_date = None
 
-        barrier_history = cls.get_barrier_history(barrier.pk, start_date=start_date)
-        notes_history = cls.get_notes_history(barrier.pk, start_date=start_date)
-        economic_assessment_history = cls.get_economic_assessment_history(barrier.pk, start_date=start_date)
-        economic_impact_assessment_history = cls.get_economic_impact_assessment_history(barrier.pk, start_date=start_date)
-        resolvability_assessment_history = cls.get_resolvability_assessment_history(barrier.pk, start_date=start_date)
-        strategic_assessment_history = cls.get_strategic_assessment_history(barrier.pk, start_date=start_date)
+        history = cls.get_barrier_history(barrier.pk, start_date=start_date)
+        history += cls.get_notes_history(barrier.pk, start_date=start_date)
+        history += cls.get_economic_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_economic_impact_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_resolvability_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_strategic_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_wto_history(barrier.pk, start_date=start_date)
 
         if start_date:
-            team_history = cls.get_team_history(
+            history += cls.get_team_history(
                 barrier.pk,
                 start_date=start_date + datetime.timedelta(seconds=1),
             )
         else:
-            team_history = cls.get_team_history(barrier.pk)
-        wto_history = cls.get_wto_history(barrier.pk, start_date=start_date)
-
-        history_items = (
-            barrier_history + notes_history + economic_assessment_history + economic_impact_assessment_history
-            + team_history + wto_history + resolvability_assessment_history + strategic_assessment_history
-        )
+            history += cls.get_team_history(barrier.pk)
 
         if barrier.has_public_barrier:
             if ignore_creation_items:
-                history_items += cls.get_public_barrier_history(
+                history += cls.get_public_barrier_history(
                     barrier.pk,
                     start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
                 )
             else:
-                history_items += cls.get_public_barrier_history(barrier.pk)
-            history_items += cls.get_public_barrier_notes_history(barrier.pk)
+                history += cls.get_public_barrier_history(barrier.pk)
+            history += cls.get_public_barrier_notes_history(barrier.pk)
 
-        return history_items
+        return history
 
     @classmethod
     def get_full_history_cached(cls, barrier, ignore_creation_items=False):
