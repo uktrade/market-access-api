@@ -36,6 +36,7 @@ class TestEconomicAssessments(APITestMixin):
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.HIGH
         assert response.data["explanation"] == "Explanation!!!"
         assert response.data["created_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_create_economic_assessment_with_empty_data(self, barrier):
         url = reverse("economic-assessment-list")
@@ -70,6 +71,7 @@ class TestEconomicAssessments(APITestMixin):
         assert response.data["analysis_data"] == "New analysis data"
         assert response.data["explanation"] == "New explanation!!!"
         assert response.data["ready_for_approval"] is False
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_mark_economic_assessment_as_ready(self, barrier):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
@@ -83,6 +85,7 @@ class TestEconomicAssessments(APITestMixin):
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["ready_for_approval"] is True
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_approve_economic_assessment(self, barrier):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
@@ -97,6 +100,7 @@ class TestEconomicAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is True
         assert response.data["reviewed_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_reject_economic_assessment(self, barrier):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
@@ -111,6 +115,7 @@ class TestEconomicAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is False
         assert response.data["reviewed_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_archive_economic_assessment(self, barrier):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
@@ -125,6 +130,7 @@ class TestEconomicAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_auto_archive_economic_assessment(self, barrier):
         economic_assessment = EconomicAssessmentFactory(

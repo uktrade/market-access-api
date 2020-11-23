@@ -46,6 +46,7 @@ class TestStrategicAssessments(APITestMixin):
         assert response.data["additional_information"] == "additional_information test"
         assert response.data["scale"]["id"] == 4
         assert response.data["created_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_create_strategic_assessment_with_empty_data(self, barrier):
         url = reverse("strategic-assessment-list")
@@ -85,6 +86,7 @@ class TestStrategicAssessments(APITestMixin):
         assert response.data["hmg_strategy"] == "New HMG strategy"
         assert response.data["additional_information"] == "New info"
         assert response.data["approved"] is None
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_approve_strategic_assessment(self, barrier):
         strategic_assessment = StrategicAssessmentFactory(barrier=barrier)
@@ -97,6 +99,7 @@ class TestStrategicAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is True
         assert response.data["reviewed_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_reject_strategic_assessment(self, barrier):
         strategic_assessment = StrategicAssessmentFactory(barrier=barrier)
@@ -109,6 +112,7 @@ class TestStrategicAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is False
         assert response.data["reviewed_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_archive_strategic_assessment(self, barrier):
         strategic_assessment = StrategicAssessmentFactory(barrier=barrier)
@@ -121,6 +125,7 @@ class TestStrategicAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_auto_archive_strategic_assessment(self, barrier):
         strategic_assessment = StrategicAssessmentFactory(barrier=barrier,)

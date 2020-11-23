@@ -38,6 +38,7 @@ class TestEconomicImpactAssessments(APITestMixin):
         assert response.data["impact"]["id"] == 1
         assert response.data["explanation"] == "Explanation!!!"
         assert response.data["created_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_create_economic_impact_assessment_with_empty_data(self):
         url = reverse("economic-impact-assessment-list")
@@ -68,6 +69,7 @@ class TestEconomicImpactAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["impact"]["id"] == 7
         assert response.data["explanation"] == "New explanation!!!"
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_archive_economic_impact_assessment(self, economic_assessment):
         economic_impact_assessment = EconomicImpactAssessmentFactory(
@@ -83,6 +85,7 @@ class TestEconomicImpactAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_auto_archive_economic_impact_assessment(self, economic_assessment):
         """
