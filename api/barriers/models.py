@@ -330,6 +330,17 @@ class Barrier(FullyArchivableMixin, BaseModel):
         return progress_list
 
     @property
+    def current_economic_assessment(self):
+        """
+        Get the current economic assessment
+
+        Filter in python to avoid another db call if prefetch_related has been used.
+        """
+        for assessment in self.economic_assessments.all():
+            if assessment.approved and not assessment.archived:
+                return assessment
+
+    @property
     def current_resolvability_assessment(self):
         """
         Get the current resolvability assessment
@@ -382,10 +393,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
-
-    @property
-    def economic_assessment(self):
-        return self.economic_assessments.filter(archived=False).first()
 
     @property
     def has_public_barrier(self):

@@ -47,7 +47,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     assessment_rating = serializers.SerializerMethodField()
     value_to_economy = serializers.SerializerMethodField()
     import_market_size = serializers.SerializerMethodField()
-    commercial_value = serializers.SerializerMethodField()
+    commercial_value = serializers.IntegerField()
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
@@ -135,24 +135,20 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         return term_dict.get(obj.term, "Unknown")
 
     def get_assessment_rating(self, obj):
-        if obj.economic_assessment:
-            return obj.economic_assessment.get_rating_display()
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.get_rating_display()
 
     def get_value_to_economy(self, obj):
-        if obj.economic_assessment:
-            return obj.economic_assessment.value_to_economy
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.value_to_economy
 
     def get_import_market_size(self, obj):
-        if obj.economic_assessment:
-            return obj.economic_assessment.import_market_size
-
-    def get_commercial_value(self, obj):
-        if obj.economic_assessment:
-            return obj.economic_assessment.commercial_value
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.import_market_size
 
     def get_export_value(self, obj):
-        if obj.economic_assessment:
-            return obj.economic_assessment.export_value
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.export_value
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
@@ -252,8 +248,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
 
     def get_economic_assessment_explanation(self, obj):
-        if obj.economic_assessment:
-            return obj.economic_assessment.explanation
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.explanation
 
     def get_wto_has_been_notified(self, obj):
         if obj.has_wto_profile:
@@ -315,8 +311,11 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return "No"
 
     def get_latest_publish_note(self, obj):
-        if obj.has_public_barrier and obj.public_barrier.notes.exists():
-            return obj.public_barrier.notes.latest("created_on").text
+        if obj.has_public_barrier:
+            notes = [note for note in obj.public_barrier.notes.all()]
+            if notes:
+                notes.sort(key=lambda note: note.created_on, reverse=True)
+                return notes[0].text
 
     def get_resolvability_assessment_time(self, obj):
         if obj.current_resolvability_assessment:
