@@ -8,7 +8,7 @@ from api.assessment.models import (
 )
 from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
-from api.core.serializers.mixins import CustomUpdateMixin
+from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 
 from .fields import (
     EffortToResolveField,
@@ -19,12 +19,13 @@ from .fields import (
 )
 
 
-class EconomicImpactAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+class EconomicImpactAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     economic_assessment_id = serializers.IntegerField()
     impact = ImpactField()
     created_by = UserField(required=False)
+    modified_by = UserField(required=False)
 
     class Meta:
         model = EconomicImpactAssessment
@@ -35,6 +36,8 @@ class EconomicImpactAssessmentSerializer(CustomUpdateMixin, serializers.ModelSer
             "archived_on",
             "created_by",
             "created_on",
+            "modified_on",
+            "modified_by",
             "economic_assessment_id",
             "impact",
             "explanation",
@@ -45,6 +48,8 @@ class EconomicImpactAssessmentSerializer(CustomUpdateMixin, serializers.ModelSer
             "archived_on",
             "created_on",
             "created_by",
+            "modified_on",
+            "modified_by",
         )
 
     def create(self, validated_data):
@@ -54,7 +59,7 @@ class EconomicImpactAssessmentSerializer(CustomUpdateMixin, serializers.ModelSer
         return super().create(validated_data)
 
 
-class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()
@@ -62,6 +67,7 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
     created_by = UserField(required=False)
     documents = serializers.SerializerMethodField()
     economic_impact_assessments = EconomicImpactAssessmentSerializer(required=False, many=True)
+    modified_by = UserField(required=False)
     rating = RatingField(required=False)
     reviewed_by = UserField(required=False)
 
@@ -82,6 +88,8 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
             "explanation",
             "export_value",
             "import_market_size",
+            "modified_on",
+            "modified_by",
             "rating",
             "ready_for_approval",
             "reviewed_by",
@@ -94,6 +102,8 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
             "archived_on",
             "created_on",
             "created_by",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
         )
@@ -116,14 +126,8 @@ class EconomicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerialize
         """Get document status."""
         return instance.document.status
 
-    def create(self, validated_data):
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            validated_data["created_by"] = request.user
-        return super().create(validated_data)
 
-
-class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+class ResolvabilityAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()
@@ -131,6 +135,7 @@ class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSeri
     time_to_resolve = TimeToResolveField()
     archived_by = UserField(required=False)
     created_by = UserField(required=False)
+    modified_by = UserField(required=False)
     reviewed_by = UserField(required=False)
 
     class Meta:
@@ -146,6 +151,8 @@ class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSeri
             "created_on",
             "effort_to_resolve",
             "explanation",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
             "time_to_resolve",
@@ -156,24 +163,21 @@ class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSeri
             "archived_on",
             "created_on",
             "created_by",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
         )
 
-    def create(self, validated_data):
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            validated_data["created_by"] = request.user
-        return super().create(validated_data)
 
-
-class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+class StrategicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()
     scale = StrategicAssessmentScaleField()
     archived_by = UserField(required=False)
     created_by = UserField(required=False)
+    modified_by = UserField(required=False)
     reviewed_by = UserField(required=False)
 
     class Meta:
@@ -192,6 +196,8 @@ class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializ
             "uk_grants",
             "competition",
             "additional_information",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
             "scale",
@@ -204,12 +210,8 @@ class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializ
             "archived_on",
             "created_on",
             "created_by",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
         )
-
-    def create(self, validated_data):
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            validated_data["created_by"] = request.user
-        return super().create(validated_data)

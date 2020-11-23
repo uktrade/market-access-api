@@ -46,3 +46,25 @@ class CustomUpdateMixin:
                 field.custom_update(validated_data)
 
         return super().update(instance, validated_data)
+
+
+class AuditMixin:
+    """
+    Automatically update created_by and modified_by fields
+    """
+    def get_user(self):
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            return request.user
+
+    def create(self, validated_data):
+        user = self.get_user()
+        if user:
+            validated_data["created_by"] = user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        user = self.get_user()
+        if user:
+            validated_data["modified_by"] = user
+        return super().update(instance, validated_data)
