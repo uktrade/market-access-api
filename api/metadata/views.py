@@ -35,7 +35,7 @@ from .utils import (
     get_os_regions_and_countries,
     get_reporting_stages,
     get_sectors,
-    get_wto_committee_groups,
+    get_wto_committee_groups, get_government_organisations,
 )
 
 
@@ -77,6 +77,8 @@ class MetadataView(generics.GenericAPIView):
         trade_direction = dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES)
         wto_committee_groups = get_wto_committee_groups()
 
+        government_organisations = get_government_organisations()
+
         results = {
             "barrier_terms": barrier_terms,
             "loss_range": loss_range,
@@ -107,6 +109,7 @@ class MetadataView(generics.GenericAPIView):
             "trade_direction": trade_direction,
             "trading_blocs": TRADING_BLOCS.values(),
             "wto_committee_groups": wto_committee_groups,
+            "government_organisations": government_organisations,
         }
 
         return Response(results, status=status.HTTP_200_OK)

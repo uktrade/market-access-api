@@ -20,6 +20,7 @@ from ..items.barriers import (
     TermHistoryItem,
     TitleHistoryItem,
     TradeDirectionHistoryItem,
+    OrganisationsHistoryItem,
 )
 
 
@@ -49,6 +50,7 @@ class BarrierHistoryFactory(HistoryItemFactoryBase):
         TermHistoryItem,
         TitleHistoryItem,
         TradeDirectionHistoryItem,
+        OrganisationsHistoryItem,
     )
     history_types = ("~", "+")
 

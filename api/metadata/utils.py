@@ -11,8 +11,8 @@ from mohawk import Sender
 
 from api.wto.models import WTOCommitteeGroup
 
-from .constants import BARRIER_TYPE_CATEGORIES, TRADING_BLOCS
-from .models import Category, BarrierPriority, BarrierTag
+from .constants import BARRIER_TYPE_CATEGORIES, TRADING_BLOCS, GOVERNMENT_ORGANISATION_TYPES
+from .models import Category, BarrierPriority, BarrierTag, Organisation
 
 
 def import_api_results(endpoint):
@@ -247,3 +247,11 @@ def get_location_text(country_id, trading_bloc=None, caused_by_trading_bloc=None
         return f"{admin_areas_string} ({country_name})"
 
     return country_name
+
+
+def get_government_organisations():
+    return list(
+        Organisation.objects.filter(
+            organisation_type__in=GOVERNMENT_ORGANISATION_TYPES
+        ).values("id", "name", "organisation_type")
+    )

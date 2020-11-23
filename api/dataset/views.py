@@ -19,13 +19,13 @@ class BarrierList(generics.ListAPIView):
     pagination_class = MarketAccessDatasetViewCursorPagination
 
     queryset = Barrier.barriers.all().select_related(
-        "assessment"
-    ).select_related(
+        "assessment",
         "priority"
     ).prefetch_related(
-        "tags"
-    ).prefetch_related(
-        "categories"
-    ).prefetch_related("barrier_commodities").order_by('reported_on')
+        "barrier_commodities",
+        "categories",
+        "organisations",
+        "tags",
+    ).order_by('reported_on')
 
     serializer_class = DataWorkspaceSerializer

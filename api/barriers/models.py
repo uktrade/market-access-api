@@ -20,10 +20,11 @@ from api.metadata.constants import (
     STAGE_STATUS,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
+    GOVERNMENT_ORGANISATION_TYPES,
 )
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata.models import BarrierPriority, BarrierTag, Category
+from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
 from api.metadata.utils import get_trading_bloc_by_country_id, get_location_text
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
@@ -80,6 +81,11 @@ class BarrierHistoricalModel(models.Model):
         blank=True,
         default=list,
     )
+    organisations_cache = ArrayField(
+        models.IntegerField(),
+        blank=True,
+        default=list,
+    )
 
     def get_changed_fields(self, old_history):
         changed_fields = set(self.diff_against(old_history).changed_fields)
@@ -94,6 +100,9 @@ class BarrierHistoricalModel(models.Model):
 
         if set(self.tags_cache or []) != set(old_history.tags_cache or []):
             changed_fields.add("tags")
+
+        if set(self.organisations_cache or []) != set(old_history.organisations_cache or []):
+            changed_fields.add("organisations")
 
         if changed_fields.intersection(("country", "admin_areas")):
             changed_fields.discard("country")
@@ -142,10 +151,16 @@ class BarrierHistoricalModel(models.Model):
     def update_tags(self):
         self.tags_cache = list(self.instance.tags.values_list("id", flat=True))
 
+    def update_organisations(self):
+        self.organisations_cache = list(
+            self.instance.organisations.values_list("id", flat=True)
+        )
+
     def save(self, *args, **kwargs):
         self.update_categories()
         self.update_commodities()
         self.update_tags()
+        self.update_organisations()
         super().save(*args, **kwargs)
 
     class Meta:
@@ -273,6 +288,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
     archived_explanation = models.TextField(blank=True)
     commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
     draft = models.BooleanField(default=True)
+    organisations = models.ManyToManyField(
+        Organisation, help_text="Organisations that are related to the barrier"
+    )
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
@@ -337,6 +355,24 @@ class Barrier(FullyArchivableMixin, BaseModel):
         for assessment in self.strategic_assessments.all():
             if assessment.approved and not assessment.archived:
                 return assessment
+
+    @property
+    def government_organisations(self):
+        """ Only returns government organisations """
+        return self.organisations.filter(
+            organisation_type__in=GOVERNMENT_ORGANISATION_TYPES
+        )
+
+    @government_organisations.setter
+    def government_organisations(self, queryset):
+        """
+        Replaces existing government organisations with the items in queryset,
+        leaves non government organisations intact.
+        """
+        non_gov_orgs_qs = self.organisations.exclude(
+            organisation_type__in=GOVERNMENT_ORGANISATION_TYPES
+        )
+        self.organisations.set(non_gov_orgs_qs | queryset)
 
     def submit_report(self, submitted_by=None):
         """ submit a report, convert it into a barrier """
