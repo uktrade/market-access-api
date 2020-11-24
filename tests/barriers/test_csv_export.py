@@ -36,7 +36,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         """ Include Assessment Explanation in the CSV """
         expected_explanation = "Wibble wobble!"
         barrier = BarrierFactory()
-        EconomicAssessmentFactory(barrier=barrier, explanation=expected_explanation)
+        EconomicAssessmentFactory(barrier=barrier, approved=True, explanation=expected_explanation)
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert expected_explanation == serializer.data["economic_assessment_explanation"]

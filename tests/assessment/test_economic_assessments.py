@@ -47,7 +47,7 @@ class TestEconomicAssessments(APITestMixin):
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.data["barrier_id"] == ['This field is required.']
-        assert "analysis_data" not in response.data
+        assert "user_analysis_data" not in response.data
         assert "rating" not in response.data
         assert "explanation" not in response.data
 
@@ -62,13 +62,13 @@ class TestEconomicAssessments(APITestMixin):
             format="json",
             data={
                 "rating": ECONOMIC_ASSESSMENT_RATING.LOW,
-                "analysis_data": "New analysis data",
+                "user_analysis_data": "New analysis data",
                 "explanation": "New explanation!!!",
             }
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.LOW
-        assert response.data["analysis_data"] == "New analysis data"
+        assert response.data["user_analysis_data"] == "New analysis data"
         assert response.data["explanation"] == "New explanation!!!"
         assert response.data["ready_for_approval"] is False
         assert response.data["modified_by"]["id"] == self.user.id
@@ -156,7 +156,7 @@ class TestEconomicAssessments(APITestMixin):
     def test_economic_assessment_detail(self, barrier):
         economic_assessment = EconomicAssessmentFactory(
             barrier=barrier,
-            analysis_data="Analysis data",
+            user_analysis_data="Analysis data",
             rating=ECONOMIC_ASSESSMENT_RATING.HIGH,
             explanation="Here's an explanation"
         )
@@ -164,6 +164,6 @@ class TestEconomicAssessments(APITestMixin):
         url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
         response = self.api_client.get(url)
 
-        assert response.data["analysis_data"] == "Analysis data"
+        assert response.data["user_analysis_data"] == "Analysis data"
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.HIGH
         assert response.data["explanation"] == "Here's an explanation"
