@@ -1,6 +1,7 @@
 import factory
 
-from api.metadata.models import BarrierPriority, BarrierTag, Category
+from api.metadata.constants import OrganisationType
+from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):
@@ -28,3 +29,11 @@ class BarrierPriorityFactory(factory.django.DjangoModelFactory):
     code = factory.Sequence(lambda n: "PRIO{}".format(n + 1))
     name = factory.Sequence(lambda n: "Priority {}".format(n + 1))
     order = factory.Sequence(lambda n: n + 1)
+
+
+class OrganisationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Organisation
+
+    name = factory.Sequence(lambda n: "Organisation {}".format(n + 1))
+    organisation_type = OrganisationType.MINISTERIAL_DEPARTMENTS

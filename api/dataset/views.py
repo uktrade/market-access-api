@@ -21,10 +21,11 @@ class BarrierList(generics.ListAPIView):
     queryset = Barrier.barriers.all().select_related(
         "priority",
     ).prefetch_related(
-        "tags",
-        "categories",
         "barrier_commodities",
+        "categories",
         "economic_assessments",
+        "organisations",
+        "tags",
     ).order_by('reported_on')
 
     serializer_class = DataWorkspaceSerializer

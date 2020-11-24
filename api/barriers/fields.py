@@ -17,8 +17,13 @@ from api.metadata.constants import (
     TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
 )
-from api.metadata.models import BarrierPriority, BarrierTag, Category
-from api.metadata.serializers import BarrierPrioritySerializer, BarrierTagSerializer, CategorySerializer
+from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
+from api.metadata.serializers import (
+    BarrierPrioritySerializer,
+    BarrierTagSerializer,
+    CategorySerializer,
+    OrganisationSerializer,
+)
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
@@ -74,6 +79,15 @@ class CategoriesField(serializers.ListField):
 
     def to_internal_value(self, data):
         return Category.objects.filter(id__in=data)
+
+
+class OrganisationsField(serializers.ListField):
+    def to_representation(self, value):
+        serializer = OrganisationSerializer(value.all(), many=True)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        return Organisation.objects.filter(id__in=data)
 
 
 class CommoditiesField(serializers.ListField):

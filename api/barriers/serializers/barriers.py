@@ -59,6 +59,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "unarchived_on",
             "unarchived_reason",
             "wto_profile",
+            "government_organisations",
         )
 
 

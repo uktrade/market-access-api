@@ -4,7 +4,7 @@ from django.db import models
 from django.db.models import Q
 from ordered_model.models import OrderedModel
 
-from api.metadata.constants import BARRIER_TYPE_CATEGORIES
+from api.metadata.constants import BARRIER_TYPE_CATEGORIES, OrganisationType
 from api.core.models import BaseModel
 
 
@@ -87,3 +87,12 @@ class BarrierPriority(models.Model):
     # TODO: remove - looks like this is not being used
     def toJSON(self):
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+
+
+class Organisation(models.Model):
+    name = models.CharField(max_length=300)
+    organisation_type = models.IntegerField(choices=OrganisationType.choices)
+
+    class Meta:
+        unique_together = ("name", "organisation_type")
+        ordering = ("name",)

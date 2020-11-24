@@ -193,3 +193,10 @@ class TradeCategoryHistoryItem(BaseBarrierHistoryItem):
 
 class TradeDirectionHistoryItem(BaseBarrierHistoryItem):
     field = "trade_direction"
+
+
+class OrganisationsHistoryItem(BaseBarrierHistoryItem):
+    field = "organisations"
+
+    def get_value(self, record):
+        return record.organisations_cache or []

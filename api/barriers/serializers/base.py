@@ -22,6 +22,7 @@ from api.barriers.fields import (
     TradeDirectionField,
     UserField,
     WTOProfileField,
+    OrganisationsField,
 )
 from api.barriers.models import Barrier, BarrierUserHit
 from api.core.serializers.mixins import CustomUpdateMixin
@@ -59,6 +60,7 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     trading_bloc = TradingBlocField(required=False, allow_blank=True)
     unarchived_by = UserField(required=False)
     wto_profile = WTOProfileField(required=False)
+    government_organisations = OrganisationsField(required=False)
 
     class Meta:
         model = Barrier

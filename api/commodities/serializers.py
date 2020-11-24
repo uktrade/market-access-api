@@ -21,7 +21,7 @@ class CommoditySerializer(serializers.ModelSerializer):
 
 class BarrierCommoditySerializer(serializers.ModelSerializer):
     country = CountryField(allow_null=True)
-    trading_bloc = TradingBlocField(allow_null=True)
+    trading_bloc = TradingBlocField(allow_blank=True)
     commodity = CommoditySerializer()
 
     class Meta:

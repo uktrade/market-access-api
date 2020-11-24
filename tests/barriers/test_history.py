@@ -28,6 +28,7 @@ from tests.assessment.factories import (
     ResolvabilityAssessmentFactory,
     StrategicAssessmentFactory,
 )
+from tests.metadata.factories import OrganisationFactory
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
@@ -71,6 +72,19 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "categories"
         assert data["old_value"] == []
         assert set(data["new_value"]) == {109, 115}
+
+    def test_organisations_history(self):
+        org1 = OrganisationFactory()
+        self.barrier.organisations.add(org1)
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "organisations"
+        assert data["old_value"] == []
+        assert set(data["new_value"]) == {org1.id}
 
     def test_companies_history(self):
         self.barrier.companies = ["1", "2", "3"]
