@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from rest_framework import serializers
 
 from api.assessment.models import (
@@ -7,9 +8,11 @@ from api.assessment.models import (
     StrategicAssessment,
 )
 from api.barriers.fields import UserField
+from api.barriers.models import Barrier
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 
+from .automate.calculator import AssessmentCalculator
 from .fields import (
     EffortToResolveField,
     ImpactField,
@@ -52,18 +55,12 @@ class EconomicImpactAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializ
             "modified_by",
         )
 
-    def create(self, validated_data):
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            validated_data["created_by"] = request.user
-        return super().create(validated_data)
-
 
 class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
-    barrier_id = serializers.UUIDField()
     archived_by = UserField(required=False)
+    barrier_id = serializers.UUIDField()
     created_by = UserField(required=False)
     documents = serializers.SerializerMethodField()
     economic_impact_assessments = EconomicImpactAssessmentSerializer(required=False, many=True)
@@ -75,11 +72,12 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
         model = EconomicAssessment
         fields = (
             "id",
-            "analysis_data",
             "approved",
             "archived",
             "archived_by",
             "archived_on",
+            "archived_reason",
+            "automated_analysis_data",
             "barrier_id",
             "created_by",
             "created_on",
@@ -94,6 +92,7 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
             "ready_for_approval",
             "reviewed_by",
             "reviewed_on",
+            "user_analysis_data",
             "value_to_economy",
         )
         read_only_fields = (
@@ -107,6 +106,19 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
             "reviewed_by",
             "reviewed_on",
         )
+
+    def create(self, validated_data):
+        if self.initial_data.get("automate") is True:
+            barrier = Barrier.objects.get(pk=validated_data["barrier_id"])
+            assessment_calculator = AssessmentCalculator(cache=cache)
+            commodity_codes = [c.trimmed_code for c in barrier.commodities.all()]
+            validated_data["automated_analysis_data"] = assessment_calculator.calculate(
+                commodity_codes=commodity_codes,
+                product=barrier.product,
+                country1=barrier.country_name,
+            )
+
+        return super().create(validated_data)
 
     def get_documents(self, obj):
         if obj.documents is None:
@@ -146,6 +158,7 @@ class ResolvabilityAssessmentSerializer(AuditMixin, CustomUpdateMixin, serialize
             "archived",
             "archived_by",
             "archived_on",
+            "archived_reason",
             "barrier_id",
             "created_by",
             "created_on",
@@ -188,6 +201,7 @@ class StrategicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.M
             "archived",
             "archived_by",
             "archived_on",
+            "archived_reason",
             "barrier_id",
             "hmg_strategy",
             "government_policy",

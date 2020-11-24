@@ -25,7 +25,7 @@ from api.metadata.constants import (
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category
-from api.metadata.utils import get_trading_bloc_by_country_id, get_location_text
+from api.metadata.utils import get_country, get_trading_bloc_by_country_id, get_location_text
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -305,6 +305,12 @@ class Barrier(FullyArchivableMixin, BaseModel):
         permissions = [
             ('change_barrier_public_eligibility', 'Can change barrier public eligibility'),
         ]
+
+    @property
+    def country_name(self):
+        if self.country:
+            country = get_country(str(self.country))
+            return country.get("name")
 
     @property
     def country_trading_bloc(self):

@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 
 from simple_history.models import HistoricalRecords
@@ -66,7 +67,8 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
         related_name="economic_assessments",
         on_delete=models.CASCADE,
     )
-    analysis_data = models.TextField(blank=True)
+    automated_analysis_data = models.JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
+    user_analysis_data = models.TextField(blank=True)
     rating = models.CharField(choices=ECONOMIC_ASSESSMENT_RATING, max_length=25, blank=True)
     explanation = models.TextField(blank=True)
     ready_for_approval = models.BooleanField(default=False)
