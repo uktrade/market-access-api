@@ -19,17 +19,6 @@ def fuzzy_sector():
     return FuzzyChoice(sectors).fuzz()
 
 
-def fuzzy_country():
-    countries = (
-        "a25f66a0-5d95-e211-a939-e4115bead28a",     # The Bahamas
-        "985f66a0-5d95-e211-a939-e4115bead28a",     # Angola
-        "1f0be5c4-5d95-e211-a939-e4115bead28a",     # Singapore
-        "a05f66a0-5d95-e211-a939-e4115bead28a",     # Austria
-        "ad5f66a0-5d95-e211-a939-e4115bead28a",     # Bosnia and Herzegovina
-    )
-    return FuzzyChoice(countries).fuzz()
-
-
 def fuzzy_date():
     return FuzzyDate(
         start_date=datetime.date.today() - datetime.timedelta(days=45),
@@ -54,7 +43,7 @@ class PublicBarrierFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PublicBarrier
 
-    country = fuzzy_country()
+    country = "985f66a0-5d95-e211-a939-e4115bead28a"  # Angola
     summary = "Some summary"
     title = "Some title"
 
@@ -85,7 +74,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
 
     term = 1
     status = 1
-    country = fuzzy_country()
+    country = "985f66a0-5d95-e211-a939-e4115bead28a"  # Angola
     trade_direction = 1
     sectors_affected = True
     sectors = [fuzzy_sector()]
@@ -152,7 +141,7 @@ class ReportFactory(factory.django.DjangoModelFactory):
     archived = False
     term = 1
     status = 1
-    country = fuzzy_country()
+    country = "985f66a0-5d95-e211-a939-e4115bead28a"  # Angola
     trade_direction = 1
     sectors_affected = True
     sectors = [fuzzy_sector()]
