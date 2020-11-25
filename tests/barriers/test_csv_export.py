@@ -4,8 +4,10 @@ from rest_framework.test import APITestCase
 
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.core.test_utils import APITestMixin
+from api.metadata.models import Organisation
 from tests.assessment.factories import AssessmentFactory
 from tests.barriers.factories import BarrierFactory
+from tests.metadata.factories import OrganisationFactory
 
 
 class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
@@ -62,3 +64,16 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         barrier = BarrierFactory(trading_bloc="TB00016", country=None)
         serializer = BarrierCsvExportSerializer(barrier)
         assert ["Europe"] == serializer.data["overseas_region"]
+
+    def test_government_organisations(self):
+        org1 = Organisation.objects.get(id=1)
+        org2 = OrganisationFactory(organisation_type=0)
+        barrier = BarrierFactory()
+        barrier.organisations.add(org1, org2)
+
+        assert 2 == barrier.organisations.count()
+        assert 1 == barrier.government_organisations.count()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert 1 == len(serializer.data["government_organisations"])
+        assert [org1.name] == serializer.data["government_organisations"]

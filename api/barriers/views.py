@@ -252,7 +252,8 @@ class BarrierList(generics.ListAPIView):
     queryset = Barrier.barriers.all().select_related(
         "priority"
     ).prefetch_related(
-        "tags"
+        "tags",
+        "organisations",
     )
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet

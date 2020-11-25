@@ -9,7 +9,7 @@ from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import Barrier
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import PublicBarrierStatus
-from api.metadata.models import BarrierPriority
+from api.metadata.models import BarrierPriority, Organisation
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory, BarrierPriorityFactory
@@ -622,6 +622,39 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert 1 == response.data["count"]
+
+    def test_organisation_filter(self):
+        org1 = Organisation.objects.get(id=1)
+        barrier1 = BarrierFactory()
+        barrier1.organisations.add(org1)
+        barrier2 = BarrierFactory()
+
+        assert 2 == Barrier.objects.count()
+        assert 1 == Barrier.objects.filter(organisations__in=[org1]).count()
+
+        url = f'{reverse("list-barriers")}?organisation={org1.id}'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        assert str(barrier1.id) == response.data["results"][0]["id"]
+
+    def test_organisation_filter__distinct_records(self):
+        org1 = Organisation.objects.get(id=1)
+        org2 = Organisation.objects.get(id=2)
+        barrier1 = BarrierFactory()
+        barrier1.organisations.add(org1, org2)
+        barrier2 = BarrierFactory()
+
+        assert 2 == Barrier.objects.count()
+        assert 1 == Barrier.objects.filter(organisations__in=[org1]).count()
+
+        url = f'{reverse("list-barriers")}?organisation={org1.id}&?organisation={org2.id}'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        assert str(barrier1.id) == response.data["results"][0]["id"]
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
