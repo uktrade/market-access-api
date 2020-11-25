@@ -7,6 +7,7 @@ from rest_framework.reverse import reverse
 from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.collaboration.models import TeamMember
+from api.metadata.models import Organisation
 
 from tests.barriers.factories import BarrierFactory
 
@@ -87,3 +88,16 @@ class TestBarriersDataset(APITestMixin):
         overseas_regions = barrier_data["trading_bloc"]["overseas_regions"]
         assert len(overseas_regions) == 1
         assert overseas_regions[0]["name"] == "Europe"
+
+    def test_government_organisations(self):
+        org1 = Organisation.objects.get(id=1)
+        barrier = BarrierFactory()
+        barrier.organisations.add(org1)
+
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+        assert "government_organisations" in data_item.keys()
+        assert org1.id == data_item["government_organisations"][0]["id"]

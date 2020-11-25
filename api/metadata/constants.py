@@ -215,6 +215,7 @@ TRADING_BLOC_CHOICES = (
 class OrganisationType(StatusNameMixin):
     MINISTERIAL_DEPARTMENTS = 1
     DEVOLVED_ADMINISTRATIONS = 2
+    NON_MINISTERIAL_DEPARTMENTS = 3
 
     choices = Choices(
         (MINISTERIAL_DEPARTMENTS, "Ministerial departments"),
@@ -225,4 +226,5 @@ class OrganisationType(StatusNameMixin):
 GOVERNMENT_ORGANISATION_TYPES = (
     OrganisationType.MINISTERIAL_DEPARTMENTS,
     OrganisationType.DEVOLVED_ADMINISTRATIONS,
+    OrganisationType.NON_MINISTERIAL_DEPARTMENTS,
 )
