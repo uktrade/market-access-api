@@ -54,6 +54,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     tags = django_filters.BaseInFilter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
     wto = django_filters.BaseInFilter(method="wto_filter")
+    organisation = django_filters.BaseInFilter("organisations", distinct=True)
 
     class Meta:
         model = Barrier

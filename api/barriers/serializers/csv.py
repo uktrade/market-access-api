@@ -98,6 +98,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     resolvability_assessment_time = serializers.SerializerMethodField()
     resolvability_assessment_effort = serializers.SerializerMethodField()
     strategic_assessment_scale = serializers.SerializerMethodField()
+    government_organisations = serializers.SerializerMethodField()
 
     class Meta:
         model = Barrier
@@ -328,3 +329,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_strategic_assessment_scale(self, obj):
         if obj.current_strategic_assessment:
             return obj.current_strategic_assessment.scale
+
+    def get_government_organisations(self, obj):
+        return [org.name for org in obj.government_organisations.all()]

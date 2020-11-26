@@ -67,6 +67,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "unarchived_on",
             "unarchived_reason",
             "wto_profile",
+            "government_organisations",
         )
 
     def get_status_history(self, obj):
