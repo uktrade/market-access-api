@@ -73,7 +73,7 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
     explanation = models.TextField(blank=True)
     ready_for_approval = models.BooleanField(default=False)
 
-    # import_market_size, export_value, value_to_economy and documents are no longer in use,
+    # import_market_size, export_value, value_to_economy and documents are now deprecated,
     # - leaving the fields here to preserve the data and history
     import_market_size = models.BigIntegerField(blank=True, null=True)
     export_value = models.BigIntegerField(blank=True, null=True)
@@ -83,7 +83,7 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
     )
 
     # commercial_value and commercial_value_explanation have moved to the barrier model
-    # - temporarily keep these fields here until we are happy values and history have copied across ok
+    # - temporarily keep these fields here until we are happy the values and history have copied across ok
     commercial_value = models.BigIntegerField(blank=True, null=True)
     commercial_value_explanation = models.TextField(blank=True)
 
