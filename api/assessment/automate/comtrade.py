@@ -2,7 +2,7 @@ import requests
 
 from decimal import Decimal
 
-from .exceptions import ExchangeRateNotFound
+from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates
 
 
@@ -145,19 +145,29 @@ class ComtradeClient:
     def get_partners_params(self, partners):
         if isinstance(partners, str):
             partners = [partners]
-        partner_ids = [
-            self.partner_areas.get(partner)
-            for partner in partners
-        ]
+
+        try:
+            partner_ids = [
+                self.partner_areas[partner]
+                for partner in partners
+            ]
+        except KeyError as e:
+            raise CountryNotFound(f"Country not found in Comtrade API: {e}")
+
         return {"p": ",".join(partner_ids)}
 
     def get_reporters_params(self, reporters):
         if isinstance(reporters, str):
             reporters = [reporters]
-        reporter_ids = [
-            self.reporter_areas.get(reporter)
-            for reporter in reporters
-        ]
+
+        try:
+            reporter_ids = [
+                self.reporter_areas[reporter]
+                for reporter in reporters
+            ]
+        except KeyError as e:
+            raise CountryNotFound(f"Country not found in Comtrade API: {e}")
+
         return {"r": ",".join(reporter_ids)}
 
     @property

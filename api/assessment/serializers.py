@@ -1,5 +1,6 @@
 from django.core.cache import cache
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -13,6 +14,7 @@ from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 
 from .automate.calculator import AssessmentCalculator
+from .automate.exceptions import ComtradeError
 from .fields import (
     EffortToResolveField,
     ImpactField,
@@ -112,11 +114,15 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
             barrier = Barrier.objects.get(pk=validated_data["barrier_id"])
             assessment_calculator = AssessmentCalculator(cache=cache)
             commodity_codes = [c.trimmed_code for c in barrier.commodities.all()]
-            validated_data["automated_analysis_data"] = assessment_calculator.calculate(
-                commodity_codes=commodity_codes,
-                product=barrier.product,
-                country1=barrier.country_name,
-            )
+            try:
+                data = assessment_calculator.calculate(
+                    commodity_codes=commodity_codes,
+                    product=barrier.product,
+                    country1=barrier.country_name,
+                )
+            except ComtradeError as e:
+                raise ValidationError(e)
+            validated_data["automated_analysis_data"] = data
 
         return super().create(validated_data)
 

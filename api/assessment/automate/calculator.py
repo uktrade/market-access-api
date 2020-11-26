@@ -2,6 +2,7 @@ import datetime
 import logging
 
 from .comtrade import ComtradeClient
+from .countries import get_comtrade_country_name
 from .formatters import rca, rca_diff, rca_diff_glob, value_range, percent_range
 from .utils import trade_df, trade_df_ind, avgtrade, group_and_average
 from .valid_codes import valid_codes
@@ -29,7 +30,11 @@ class AssessmentCalculator:
             # The most recent year for which annual data may be available on Comtrade
             year = datetime.datetime.now().year - 1
 
-        end_year = self.client.get_valid_year(year, country1, country2)
+        end_year = self.client.get_valid_year(
+            year,
+            get_comtrade_country_name(country1),
+            get_comtrade_country_name(country2),
+        )
         start_year = end_year - 2
 
         if not use_most_recent and end_year != year:
@@ -64,7 +69,11 @@ class AssessmentCalculator:
             trade_direction=("imports", "exports"),
             commodity_codes=commodity_codes,
             reporters="All",
-            partners=(country1, country2, "World"),
+            partners=(
+                get_comtrade_country_name(country1),
+                get_comtrade_country_name(country2),
+                "World",
+            ),
             tidy=True,
         )
 
@@ -75,7 +84,11 @@ class AssessmentCalculator:
             trade_direction=("imports", "exports"),
             commodity_codes="TOTAL",
             reporters="All",
-            partners=(country1, country2, "World"),
+            partners=(
+                get_comtrade_country_name(country1),
+                get_comtrade_country_name(country2),
+                "World",
+            ),
             tidy=True,
         )
 
@@ -224,21 +237,37 @@ class AssessmentCalculator:
         # CALCULATING THE METRIC OUTPUTS USED IN THE MAB ASSESSMENT
 
         # 1. Bilateral RCA (Bilateral position)
-        bilateral_rca_imp = (partner_from_uk / partner_from_world_total) - (
-            (partner_from_world * partner_from_uk_total) / (partner_from_world_total ** 2)
-        )
-        bilateral_rca_exp = (uk_to_partner / world_to_partner_total) - (
-            (world_to_partner * uk_to_partner_total) / (world_to_partner_total ** 2)
-        )
-        bilateral_rca = rca(bilateral_rca_imp,bilateral_rca_exp)
+        if partner_from_world_total == 0:
+            bilateral_rca_imp = 0
+        else:
+            bilateral_rca_imp = (partner_from_uk / partner_from_world_total) - (
+                (partner_from_world * partner_from_uk_total) / (partner_from_world_total ** 2)
+            )
+
+        if world_to_partner_total == 0:
+            bilateral_rca_exp = 0
+        else:
+            bilateral_rca_exp = (uk_to_partner / world_to_partner_total) - (
+                (world_to_partner * uk_to_partner_total) / (world_to_partner_total ** 2)
+            )
+
+        bilateral_rca = rca(bilateral_rca_imp, bilateral_rca_exp)
 
         # 2. UK-Global RCA (Potential position - global baseline)
-        uk_global_rca_imp = (world_from_uk / world_from_world_total) - (
-            (world_from_uk_total * world_from_world) / (world_from_world_total ** 2)
-        )
-        uk_global_rca_exp = (uk_to_world / world_to_world_total) - (
-            (uk_to_world_total * world_to_world) / (world_to_world_total ** 2)
-        )
+        if world_from_world_total == 0:
+            uk_global_rca_imp = 0
+        else:
+            uk_global_rca_imp = (world_from_uk / world_from_world_total) - (
+                (world_from_uk_total * world_from_world) / (world_from_world_total ** 2)
+            )
+
+        if world_to_world_total == 0:
+            uk_global_rca_exp = 0
+        else:
+            uk_global_rca_exp = (uk_to_world / world_to_world_total) - (
+                (uk_to_world_total * world_to_world) / (world_to_world_total ** 2)
+            )
+
         uk_global_rca = rca(uk_global_rca_imp,uk_global_rca_exp)
 
         # RCA Difference (UK Global minus Bilateral)
@@ -252,13 +281,21 @@ class AssessmentCalculator:
         )
 
         # Trading partner-Global RCA
-        partner_global_rca_imp = (world_from_partner / world_from_world_total) - (
-            (world_from_partner_total * world_from_world) / (world_from_world_total ** 2)
-        )
-        partner_global_rca_exp = (partner_to_world / world_to_world_total) - (
-            (partner_to_world_total * world_to_world) / (world_to_world_total ** 2)
-        )
-        partner_global_rca = rca(partner_global_rca_imp,partner_global_rca_exp)
+        if world_from_world_total == 0:
+            partner_global_rca_imp = 0
+        else:
+            partner_global_rca_imp = (world_from_partner / world_from_world_total) - (
+                (world_from_partner_total * world_from_world) / (world_from_world_total ** 2)
+            )
+
+        if world_to_world_total == 0:
+            partner_global_rca_exp = 0
+        else:
+            partner_global_rca_exp = (partner_to_world / world_to_world_total) - (
+                (partner_to_world_total * world_to_world) / (world_to_world_total ** 2)
+            )
+
+        partner_global_rca = rca(partner_global_rca_imp, partner_global_rca_exp)
 
         # Global RCA difference (UK minus partner country)
         global_rca_diff_imp = uk_global_rca_imp - partner_global_rca_imp
@@ -289,29 +326,29 @@ class AssessmentCalculator:
 
         # UK share of import market
         uk_market_share = percent_range(
-            partner_from_uk / partner_from_world,
-            uk_to_partner / world_to_partner,
+            partner_from_uk / partner_from_world if partner_from_world else 0,
+            uk_to_partner / world_to_partner if world_to_partner else 0,
             decimal_places=1,
         )
 
         # Imports of affected products as share of total partner country imports
         product_share_partner_imp = percent_range(
-            partner_from_world / partner_from_world_total,
-            world_to_partner / world_to_partner_total,
+            partner_from_world / partner_from_world_total if partner_from_world_total else 0,
+            world_to_partner / world_to_partner_total if world_to_partner_total else 0,
             decimal_places=2,
         )
 
         # Value of UK exports of affected goods as share of total UK exports to World
         product_share_uk_exp_w = percent_range(
-            world_from_uk / world_from_uk_total,
-            uk_to_world / uk_to_world_total,
+            world_from_uk / world_from_uk_total if world_from_uk_total else 0,
+            uk_to_world / uk_to_world_total if uk_to_world_total else 0,
             decimal_places=2,
         )
 
         # Value of UK exports of affected goods as share of total UK exports to partner country
         product_share_uk_exp_p = percent_range(
-            partner_from_uk / partner_from_uk_total,
-            uk_to_partner / uk_to_partner_total,
+            partner_from_uk / partner_from_uk_total if partner_from_uk_total else 0,
+            uk_to_partner / uk_to_partner_total if uk_to_partner_total else 0,
             decimal_places=2,
         )
 
@@ -345,11 +382,26 @@ class AssessmentCalculator:
                     "partner_from_world": partner_from_world,
                     "world_from_uk": world_from_uk,
                     "partner_from_uk": partner_from_uk,
-                    "market_share": partner_from_uk / world_from_uk,
-                    "uk_share_of_import_market": partner_from_uk / partner_from_world,
-                    "product_share_partner_import": partner_from_world / partner_from_world_total,
-                    "product_share_uk_export_world": world_from_uk / world_from_uk_total,
-                    "product_share_uk_export_partner": partner_from_uk / partner_from_uk_total,
+                    "market_share": (
+                        partner_from_uk / world_from_uk
+                        if world_from_uk else 0
+                    ),
+                    "uk_share_of_import_market": (
+                        partner_from_uk / partner_from_world
+                        if partner_from_world else 0
+                    ),
+                    "product_share_partner_import": (
+                        partner_from_world / partner_from_world_total
+                        if partner_from_world_total else 0
+                    ),
+                    "product_share_uk_export_world": (
+                        world_from_uk / world_from_uk_total
+                        if world_from_uk_total else 0
+                    ),
+                    "product_share_uk_export_partner": (
+                        partner_from_uk / partner_from_uk_total
+                        if partner_from_uk_total else 0
+                    ),
                 },
                 "export": {
                     "bilateral_rca": bilateral_rca_exp,
@@ -360,11 +412,26 @@ class AssessmentCalculator:
                     "partner_from_world": world_to_partner,
                     "world_from_uk": uk_to_world,
                     "partner_from_uk": uk_to_partner,
-                    "market_share": uk_to_partner / uk_to_world,
-                    "uk_share_of_import_market": uk_to_partner / world_to_partner,
-                    "product_share_partner_import": world_to_partner / world_to_partner_total,
-                    "product_share_uk_export_world": uk_to_world / uk_to_world_total,
-                    "product_share_uk_export_partner": uk_to_partner / uk_to_partner_total,
+                    "market_share": (
+                        uk_to_partner / uk_to_world
+                        if uk_to_world else 0
+                    ),
+                    "uk_share_of_import_market": (
+                        uk_to_partner / world_to_partner
+                        if world_to_partner else 0
+                    ),
+                    "product_share_partner_import": (
+                        world_to_partner / world_to_partner_total
+                        if world_to_partner_total else 0
+                    ),
+                    "product_share_uk_export_world": (
+                        uk_to_world / uk_to_world_total
+                        if uk_to_world_total else 0
+                    ),
+                    "product_share_uk_export_partner": (
+                        uk_to_partner / uk_to_partner_total
+                        if uk_to_partner_total else 0
+                    ),
                 },
             },
             "aggregate_data": df_avgs,
