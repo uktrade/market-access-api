@@ -2,10 +2,10 @@ def rca(import_value, export_value):
     if import_value is None or export_value is None:
         return "NA"
     elif import_value > 0 and export_value > 0:
-        return "specialised"
+        return "Specialised"
     elif import_value < 0 and export_value < 0:
-        return "unspecialised"
-    return "inconclusive"
+        return "Unspecialised"
+    return "Inconclusive"
 
 
 def rca_diff(import_value, export_value, country1, country2):
