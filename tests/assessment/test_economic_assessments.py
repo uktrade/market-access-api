@@ -8,6 +8,7 @@ from .factories import EconomicAssessmentFactory
 from api.assessment.automate.calculator import AssessmentCalculator
 from api.assessment.automate.exceptions import CountryNotFound
 from api.core.test_utils import APITestMixin
+from api.interactions.models import Document
 from api.metadata.constants import ECONOMIC_ASSESSMENT_RATING
 from tests.barriers.factories import BarrierFactory
 
@@ -50,7 +51,6 @@ class TestEconomicAssessments(APITestMixin):
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.data["barrier_id"] == ['This field is required.']
-        assert "user_analysis_data" not in response.data
         assert "rating" not in response.data
         assert "explanation" not in response.data
 
@@ -59,19 +59,22 @@ class TestEconomicAssessments(APITestMixin):
             barrier=barrier,
             rating=ECONOMIC_ASSESSMENT_RATING.HIGH,
         )
+        document = Document.objects.create(original_filename="test.jpg")
+
         url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
         response = self.api_client.patch(
             url,
             format="json",
             data={
                 "rating": ECONOMIC_ASSESSMENT_RATING.LOW,
-                "user_analysis_data": "New analysis data",
                 "explanation": "New explanation!!!",
+                "documents": [str(document.id)],
             }
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.LOW
-        assert response.data["user_analysis_data"] == "New analysis data"
+        assert len(response.data["documents"]) == 1
+        assert response.data["documents"][0]["id"] == document.id
         assert response.data["explanation"] == "New explanation!!!"
         assert response.data["ready_for_approval"] is False
         assert response.data["modified_by"]["id"] == self.user.id
@@ -159,7 +162,6 @@ class TestEconomicAssessments(APITestMixin):
     def test_economic_assessment_detail(self, barrier):
         economic_assessment = EconomicAssessmentFactory(
             barrier=barrier,
-            user_analysis_data="Analysis data",
             rating=ECONOMIC_ASSESSMENT_RATING.HIGH,
             explanation="Here's an explanation"
         )
@@ -167,7 +169,6 @@ class TestEconomicAssessments(APITestMixin):
         url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
         response = self.api_client.get(url)
 
-        assert response.data["user_analysis_data"] == "Analysis data"
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.HIGH
         assert response.data["explanation"] == "Here's an explanation"
 

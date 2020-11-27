@@ -68,7 +68,6 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
         on_delete=models.CASCADE,
     )
     automated_analysis_data = models.JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
-    user_analysis_data = models.TextField(blank=True)
     rating = models.CharField(choices=ECONOMIC_ASSESSMENT_RATING, max_length=25, blank=True)
     explanation = models.TextField(blank=True)
     ready_for_approval = models.BooleanField(default=False)
@@ -78,9 +77,7 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
     import_market_size = models.BigIntegerField(blank=True, null=True)
     export_value = models.BigIntegerField(blank=True, null=True)
     value_to_economy = models.BigIntegerField(blank=True, null=True)
-    documents = models.ManyToManyField(
-        Document, related_name="assessment_documents", help_text="assessment documents"
-    )
+    documents = models.ManyToManyField(Document, related_name="economic_assessments")
 
     # commercial_value and commercial_value_explanation have moved to the barrier model
     # - temporarily keep these fields here until we are happy the values and history have copied across ok

@@ -95,7 +95,6 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
             "ready_for_approval",
             "reviewed_by",
             "reviewed_on",
-            "user_analysis_data",
             "value_to_economy",
         )
         read_only_fields = (
