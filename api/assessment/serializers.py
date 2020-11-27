@@ -12,6 +12,7 @@ from api.barriers.fields import UserField
 from api.barriers.models import Barrier
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
+from api.documents.fields import DocumentsField
 
 from .automate.calculator import AssessmentCalculator
 from .automate.exceptions import ComtradeError
@@ -64,7 +65,7 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
     archived_by = UserField(required=False)
     barrier_id = serializers.UUIDField()
     created_by = UserField(required=False)
-    documents = serializers.SerializerMethodField()
+    documents = DocumentsField(required=False)
     economic_impact_assessments = EconomicImpactAssessmentSerializer(required=False, many=True)
     modified_by = UserField(required=False)
     rating = RatingField(required=False)
@@ -125,24 +126,6 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
             validated_data["automated_analysis_data"] = data
 
         return super().create(validated_data)
-
-    def get_documents(self, obj):
-        if obj.documents is None:
-            return None
-
-        return [
-            {
-                "id": document.id,
-                "name": document.original_filename,
-                "size": document.size,
-                "status": document.document.status,
-            }
-            for document in obj.documents.all()
-        ]
-
-    def get_status(self, instance):
-        """Get document status."""
-        return instance.document.status
 
 
 class ResolvabilityAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
