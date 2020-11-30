@@ -10,6 +10,7 @@ from api.metadata.constants import (
     BarrierStatus,
     BARRIER_PENDING,
     BARRIER_TERMS,
+    GOVERNMENT_ORGANISATION_TYPES,
     PublicBarrierStatus,
     TRADE_DIRECTION_CHOICES,
 )
@@ -331,4 +332,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return obj.current_strategic_assessment.scale
 
     def get_government_organisations(self, obj):
-        return [org.name for org in obj.government_organisations.all()]
+        return [
+            org.name
+            for org in obj.organisations.all()
+            if org.organisation_type in GOVERNMENT_ORGANISATION_TYPES
+        ]
