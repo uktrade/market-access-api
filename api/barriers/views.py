@@ -444,7 +444,7 @@ class BarrierListS3Download(BarrierListExportView):
             )
 
             writer.writerow(self.field_titles)
-            for row in serializer.data * 15:
+            for row in serializer.data:
                 writer.writerow(_transform_csv_row(row))
             tf.flush()
 
