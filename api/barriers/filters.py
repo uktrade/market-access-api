@@ -50,6 +50,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     team = django_filters.Filter(method="team_barriers")
     member = django_filters.Filter(method="member_filter")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
+    economic_assessment = django_filters.BaseInFilter(method="economic_assessment_filter")
+    economic_impact_assessment = django_filters.BaseInFilter(method="economic_impact_assessment_filter")
     public_view = django_filters.BaseInFilter(method="public_view_filter")
     tags = django_filters.BaseInFilter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
@@ -275,3 +277,37 @@ class BarrierFilterSet(django_filters.FilterSet):
             wto_queryset = wto_queryset | queryset.filter(wto_profile__isnull=True)
 
         return queryset & wto_queryset
+
+    def economic_assessment_filter(self, queryset, name, value):
+        assessment_queryset = queryset.none()
+
+        if "with" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__archived=False,
+            ).distinct()
+        if "without" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__isnull=True,
+            ).distinct()
+        if "ready_for_approval" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__archived=False,
+                economic_assessments__ready_for_approval=True,
+                economic_assessments__approved__isnull=True,
+            ).distinct()
+
+        return queryset.distinct() & assessment_queryset
+
+    def economic_impact_assessment_filter(self, queryset, name, value):
+        assessment_queryset = queryset.none()
+
+        if "with" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__economic_impact_assessments__archived=False,
+            ).distinct()
+        if "without" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__economic_impact_assessments__isnull=True,
+            ).distinct()
+
+        return queryset.distinct() & assessment_queryset
