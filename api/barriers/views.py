@@ -451,7 +451,7 @@ class BarrierListS3Download(BarrierListExportView):
             s3_filename = f"csv/{self.request.user.id}/{base_filename}.csv"
             presigned_url = self.upload_to_s3(tf.name, s3_filename)
 
-        return JsonResponse({"url": presigned_url})
+            return JsonResponse({"url": presigned_url})
 
     def upload_to_s3(self, filename, key):
         bucket_id = "default"
