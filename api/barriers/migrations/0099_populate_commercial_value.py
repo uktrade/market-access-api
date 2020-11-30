@@ -68,6 +68,7 @@ def populate_commercial_value_explanation(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('assessment', '0017_remove_user_analysis_data'),
         ('barriers', '0098_auto_20201119_1144'),
     ]
 

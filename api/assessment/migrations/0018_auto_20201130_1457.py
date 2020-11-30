@@ -7,6 +7,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('assessment', '0017_remove_user_analysis_data'),
+        ('barriers', '0100_merge_20201124_1636'),
+        ('history', '0003_rename_assessment'),
     ]
 
     operations = [
