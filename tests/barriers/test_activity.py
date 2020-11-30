@@ -3,12 +3,17 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.assessment.models import Assessment
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction
+from ..assessment.factories import (
+    EconomicAssessmentFactory,
+    EconomicImpactAssessmentFactory,
+    ResolvabilityAssessmentFactory,
+    StrategicAssessmentFactory,
+)
 
 
 class TestActivityView(APITestMixin, TestCase):
@@ -20,16 +25,6 @@ class TestActivityView(APITestMixin, TestCase):
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
-
-        self.assessment = Assessment.objects.create(
-            barrier=self.barrier,
-            impact="LOW",
-            explanation="Some explanation",
-            value_to_economy=10000,
-            import_market_size=20000,
-            commercial_value=30000,
-            export_value=40000,
-        )
 
         self.note = Interaction.objects.create(
             barrier=self.barrier,
@@ -80,14 +75,23 @@ class TestActivityView(APITestMixin, TestCase):
         )
 
         # Assessment changes
-        self.assessment.explanation = "New explanation"
-        self.assessment.impact = "HIGH"
-        self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
-        self.assessment.commercial_value = 1111
-        self.assessment.export_value = 2222
-        self.assessment.import_market_size = 3333
-        self.assessment.value_to_economy = 4444
-        self.assessment.save()
+        economic_assessment = EconomicAssessmentFactory(
+            barrier=self.barrier,
+            rating="LOW",
+        )
+        EconomicImpactAssessmentFactory(
+            economic_assessment=economic_assessment,
+            impact=4,
+        )
+        ResolvabilityAssessmentFactory(
+            barrier=self.barrier,
+            time_to_resolve=4,
+            effort_to_resolve=1,
+        )
+        StrategicAssessmentFactory(
+            barrier=self.barrier,
+            scale=5,
+        )
 
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
@@ -98,11 +102,10 @@ class TestActivityView(APITestMixin, TestCase):
         assert ("barrier", "priority") in fields
         assert ("barrier", "status") in fields
         assert ("barrier", "archived") in fields
-        assert ("assessment", "impact") in fields
-        assert ("assessment", "commercial_value") in fields
-        assert ("assessment", "export_value") in fields
-        assert ("assessment", "import_market_size") in fields
-        assert ("assessment", "value_to_economy") in fields
+        assert ("economic_assessment", "rating") in fields
+        assert ("economic_impact_assessment", "impact") in fields
+        assert ("resolvability_assessment", "time_to_resolve") in fields
+        assert ("strategic_assessment", "scale") in fields
 
         assert ("barrier", "categories") not in fields
         assert ("barrier", "companies") not in fields
@@ -113,8 +116,10 @@ class TestActivityView(APITestMixin, TestCase):
         assert ("barrier", "sectors") not in fields
         assert ("barrier", "source") not in fields
         assert ("barrier", "title") not in fields
-        assert ("assessment", "documents") not in fields
-        assert ("assessment", "explanation") not in fields
+        assert ("economic_assessment", "explanation") not in fields
+        assert ("economic_impact_assessment", "explanation") not in fields
+        assert ("resolvability_assessment", "explanation") not in fields
+        assert ("strategic_assessment", "hmg_strategy") not in fields
         assert ("team_member", "user") not in fields
         assert ("note", "text") not in fields
         assert ("note", "documents") not in fields

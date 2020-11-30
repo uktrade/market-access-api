@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from api.assessment.serializers import (
-    AssessmentSerializer,
+    EconomicAssessmentSerializer,
     ResolvabilityAssessmentSerializer,
     StrategicAssessmentSerializer,
 )
@@ -18,6 +18,7 @@ from api.barriers.fields import (
     SubStatusField,
     TagsField,
     TermField,
+    TradeCategoryField,
     TradeDirectionField,
     UserField,
     WTOProfileField,
@@ -35,14 +36,13 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     archived_reason = ArchivedReasonField(required=False)
-    assessment = AssessmentSerializer(required=False)
+    economic_assessments = EconomicAssessmentSerializer(required=False, many=True)
     resolvability_assessments = ResolvabilityAssessmentSerializer(required=False, many=True)
     strategic_assessments = StrategicAssessmentSerializer(required=False, many=True)
     categories = CategoriesField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
     country = CountryField(required=False, allow_null=True)
     created_by = UserField(required=False)
-    has_assessment = serializers.SerializerMethodField()
     last_seen_on = serializers.SerializerMethodField()
     modified_by = UserField(required=False)
     priority = BarrierPriorityField(required=False)
@@ -55,6 +55,7 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     term = TermField(required=False, allow_null=True)
     tags = TagsField(required=False)
     title = serializers.CharField(required=False)
+    trade_category = TradeCategoryField(required=False)
     trade_direction = TradeDirectionField(required=False)
     trading_bloc = TradingBlocField(required=False, allow_blank=True)
     unarchived_by = UserField(required=False)
@@ -75,14 +76,12 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
             "modified_by",
             "modified_on",
             "priority_date",
+            "economic_assessments",
             "resolvability_assessments",
             "strategic_assessments",
             "unarchived_by",
             "unarchived_on",
         )
-
-    def get_has_assessment(self, obj):
-        return hasattr(obj, 'assessment')
 
     def get_last_seen_on(self, obj):
         request = self.context.get("request")

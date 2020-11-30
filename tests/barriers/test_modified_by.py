@@ -42,8 +42,9 @@ class BarrierModifiedByTestCase(APITestMixin, APITestCase):
         assert self.barrier.modified_by != self.user1
 
         # Create an assessment
-        url = reverse("get-assessment", kwargs={"pk": self.barrier.id})
-        response = self.api_client1.post(url, json={"impact": "HIGH"})
+        url = reverse("economic-assessment-list")
+        response = self.api_client1.post(url, data={"barrier_id": self.barrier.id, "rating": "HIGH"})
+
         assert response.status_code == status.HTTP_201_CREATED
         assessment_id = response.data.get("id")
 
@@ -51,7 +52,9 @@ class BarrierModifiedByTestCase(APITestMixin, APITestCase):
         assert self.barrier.modified_by == self.user1
 
         # Update the assessment
-        response = self.api_client2.patch(url, json={"impact": "MEDIUM"})
+        url = reverse("economic-assessment-detail", kwargs={"pk": assessment_id})
+        response = self.api_client2.patch(url, data={"rating": "MEDIUMLOW"})
+
         assert response.status_code == status.HTTP_200_OK
 
         self.barrier.refresh_from_db()

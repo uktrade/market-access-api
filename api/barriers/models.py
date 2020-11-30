@@ -18,6 +18,7 @@ from api.metadata.constants import (
     BARRIER_TERMS,
     PublicBarrierStatus,
     STAGE_STATUS,
+    TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
     GOVERNMENT_ORGANISATION_TYPES,
@@ -25,7 +26,7 @@ from api.metadata.constants import (
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
-from api.metadata.utils import get_trading_bloc_by_country_id, get_location_text
+from api.metadata.utils import get_country, get_trading_bloc_by_country_id, get_location_text
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -257,6 +258,17 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "otherwise the current time when the status was set."
         )
     )
+    commercial_value = models.BigIntegerField(blank=True, null=True)
+    commercial_value_explanation = models.TextField(blank=True)
+    economic_assessment_eligibility = models.BooleanField(
+        blank=True,
+        null=True,
+        help_text="Is the barrier eligible for an economic assessment?",
+    )
+    economic_assessment_eligibility_summary = models.TextField(
+        blank=True,
+        help_text="Why is the barrier eligible/ineligible for an economic assessment?",
+    )
     public_eligibility = models.BooleanField(
         blank=True,
         null=True,
@@ -287,6 +299,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
     archived_explanation = models.TextField(blank=True)
     commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
+    trade_category = models.CharField(choices=TRADE_CATEGORIES, max_length=32, blank=True)
     draft = models.BooleanField(default=True)
     organisations = models.ManyToManyField(
         Organisation, help_text="Organisations that are related to the barrier"
@@ -312,6 +325,12 @@ class Barrier(FullyArchivableMixin, BaseModel):
         ]
 
     @property
+    def country_name(self):
+        if self.country:
+            country = get_country(str(self.country))
+            return country.get("name")
+
+    @property
     def country_trading_bloc(self):
         if self.country:
             return get_trading_bloc_by_country_id(str(self.country))
@@ -333,6 +352,17 @@ class Barrier(FullyArchivableMixin, BaseModel):
             progress_list.append((Stage.objects.get(code=stage_code), status))
 
         return progress_list
+
+    @property
+    def current_economic_assessment(self):
+        """
+        Get the current economic assessment
+
+        Filter in python to avoid another db call if prefetch_related has been used.
+        """
+        for assessment in self.economic_assessments.all():
+            if assessment.approved and not assessment.archived:
+                return assessment
 
     @property
     def current_resolvability_assessment(self):
@@ -405,10 +435,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
-
-    @property
-    def has_assessment(self):
-        return hasattr(self, 'assessment')
 
     @property
     def has_public_barrier(self):

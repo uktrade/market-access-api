@@ -3,20 +3,19 @@ import random
 import factory
 from factory.fuzzy import FuzzyText
 
-from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.metadata.constants import (
+    ECONOMIC_ASSESSMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_RATING,
     RESOLVABILITY_ASSESSMENT_EFFORT,
     RESOLVABILITY_ASSESSMENT_TIME,
     STRATEGIC_ASSESSMENT_SCALE,
 )
-
-
-class AssessmentFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Assessment
-
-    impact = "MEDIUMLOW"
-    explanation = "Some explanation."
 
 
 def get_time_to_resolve():
@@ -29,9 +28,35 @@ def get_effort_to_resolve():
     return random.choice(choices)
 
 
+def get_impact():
+    choices = [choice[0] for choice in ECONOMIC_ASSESSMENT_IMPACT]
+    return random.choice(choices)
+
+
+def get_rating():
+    choices = [choice[0] for choice in ECONOMIC_ASSESSMENT_RATING]
+    return random.choice(choices)
+
+
 def get_scale():
     choices = [choice[0] for choice in STRATEGIC_ASSESSMENT_SCALE]
     return random.choice(choices)
+
+
+class EconomicAssessmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = EconomicAssessment
+
+    rating = get_rating()
+    explanation = "Some explanation."
+
+
+class EconomicImpactAssessmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = EconomicImpactAssessment
+
+    impact = get_impact()
+    explanation = "Some explanation."
 
 
 class ResolvabilityAssessmentFactory(factory.django.DjangoModelFactory):

@@ -7,13 +7,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .constants import (
-    ASSESMENT_IMPACT,
     BARRIER_PENDING,
     BARRIER_SOURCE,
     BarrierStatus,
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
     BARRIER_TERMS,
+    ECONOMIC_ASSESSMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_RATING,
     ESTIMATED_LOSS_RANGE,
     GOVT_RESPONSE,
     PUBLISH_RESPONSE,
@@ -23,6 +24,7 @@ from .constants import (
     STAGE_STATUS,
     STRATEGIC_ASSESSMENT_SCALE,
     SUPPORT_TYPE,
+    TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOCS,
 )
@@ -60,7 +62,9 @@ class MetadataView(generics.GenericAPIView):
         barrier_chance = dict(BARRIER_CHANCE_OF_SUCCESS)
         barrier_inter_type = dict(BARRIER_INTERACTION_TYPE)
         barrier_source = dict(BARRIER_SOURCE)
-        assessment_impact = dict(ASSESMENT_IMPACT)
+        trade_categories = dict(TRADE_CATEGORIES)
+        economic_assessment_impact = dict(ECONOMIC_ASSESSMENT_IMPACT)
+        economic_assessment_rating = dict(ECONOMIC_ASSESSMENT_RATING)
         assessment_effort_to_resolve = dict(RESOLVABILITY_ASSESSMENT_EFFORT)
         assessment_time_to_resolve = dict(RESOLVABILITY_ASSESSMENT_TIME)
         strategic_assessment_scale = dict(STRATEGIC_ASSESSMENT_SCALE)
@@ -102,10 +106,12 @@ class MetadataView(generics.GenericAPIView):
             "barrier_interaction_types": barrier_inter_type,
             "barrier_source": barrier_source,
             "barrier_priorities": barrier_priorities,
-            "assessment_impact": assessment_impact,
+            "economic_assessment_impact": economic_assessment_impact,
+            "economic_assessment_rating": economic_assessment_rating,
             "resolvability_assessment_effort": assessment_effort_to_resolve,
             "resolvability_assessment_time": assessment_time_to_resolve,
             "strategic_assessment_scale": strategic_assessment_scale,
+            "trade_categories": trade_categories,
             "trade_direction": trade_direction,
             "trading_blocs": TRADING_BLOCS.values(),
             "wto_committee_groups": wto_committee_groups,

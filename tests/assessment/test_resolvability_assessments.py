@@ -36,6 +36,7 @@ class TestResolvabilityAssessments(APITestMixin):
         assert response.data["time_to_resolve"]["id"] == 2
         assert response.data["explanation"] == "Explanation!!!"
         assert response.data["created_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_create_resolvability_assessment_with_empty_data(self, barrier):
         url = reverse("resolvability-assessment-list")
@@ -71,6 +72,7 @@ class TestResolvabilityAssessments(APITestMixin):
         assert response.data["time_to_resolve"]["id"] == 3
         assert response.data["explanation"] == "New explanation!!!"
         assert response.data["approved"] is None
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_approve_resolvability_assessment(self, barrier):
         resolvability_assessment = ResolvabilityAssessmentFactory(barrier=barrier)
@@ -83,6 +85,7 @@ class TestResolvabilityAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is True
         assert response.data["reviewed_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_reject_resolvability_assessment(self, barrier):
         resolvability_assessment = ResolvabilityAssessmentFactory(barrier=barrier)
@@ -95,6 +98,7 @@ class TestResolvabilityAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is False
         assert response.data["reviewed_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_archive_resolvability_assessment(self, barrier):
         resolvability_assessment = ResolvabilityAssessmentFactory(barrier=barrier)
@@ -107,6 +111,7 @@ class TestResolvabilityAssessments(APITestMixin):
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
+        assert response.data["modified_by"]["id"] == self.user.id
 
     def test_auto_archive_resolvability_assessment(self, barrier):
         resolvability_assessment = ResolvabilityAssessmentFactory(

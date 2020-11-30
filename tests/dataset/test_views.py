@@ -66,7 +66,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["source"]["name"] == "Company"
         assert barrier["team_count"] == 1
         assert barrier["status_date"] == "2020-01-01"
-        assert barrier["assessment"] is None
+        assert barrier["economic_assessments"] == []
         assert barrier["status_history"] == [
             {
                 "date": "2020-01-25T00:00:00+00:00",

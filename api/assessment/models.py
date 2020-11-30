@@ -2,8 +2,8 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Q
 
 from simple_history.models import HistoricalRecords
 
@@ -11,7 +11,8 @@ from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ApprovalMixin, ArchivableMixin, BaseModel
 from api.interactions.models import Document
 from api.metadata.constants import (
-    ASSESMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_RATING,
     RESOLVABILITY_ASSESSMENT_EFFORT,
     RESOLVABILITY_ASSESSMENT_TIME,
     STRATEGIC_ASSESSMENT_SCALE,
@@ -20,14 +21,7 @@ from api.metadata.constants import (
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
-class AssessmentManager(models.Manager):
-    """ Manage barrier assessment within the model, with archived not False """
-
-    def get_queryset(self):
-        return super(AssessmentManager, self).get_queryset().filter(Q(archived=False))
-
-
-class AssessmentHistoricalModel(models.Model):
+class EconomicAssessmentHistoricalModel(models.Model):
     """
     Abstract model for history models tracking document changes.
     """
@@ -67,35 +61,75 @@ class AssessmentHistoricalModel(models.Model):
         abstract = True
 
 
-class Assessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
-    """ Assessment record for a Barrier """
-
-    barrier = models.OneToOneField(
-        "barriers.Barrier", on_delete=models.CASCADE
+class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    barrier = models.ForeignKey(
+        "barriers.Barrier",
+        related_name="economic_assessments",
+        on_delete=models.CASCADE,
     )
-    impact = models.CharField(choices=ASSESMENT_IMPACT, max_length=25, blank=True)
+    automated_analysis_data = models.JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
+    rating = models.CharField(choices=ECONOMIC_ASSESSMENT_RATING, max_length=25, blank=True)
     explanation = models.TextField(blank=True)
-    documents = models.ManyToManyField(
-        Document, related_name="assessment_documents", help_text="assessment documents"
-    )
-    value_to_economy = models.BigIntegerField(blank=True, null=True)
+    ready_for_approval = models.BooleanField(default=False)
+
+    # import_market_size, export_value, value_to_economy and documents are now deprecated,
+    # - leaving the fields here to preserve the data and history
     import_market_size = models.BigIntegerField(blank=True, null=True)
+    export_value = models.BigIntegerField(blank=True, null=True)
+    value_to_economy = models.BigIntegerField(blank=True, null=True)
+    documents = models.ManyToManyField(Document, related_name="economic_assessments")
+
+    # commercial_value and commercial_value_explanation have moved to the barrier model
+    # - temporarily keep these fields here until we are happy the values and history have copied across ok
     commercial_value = models.BigIntegerField(blank=True, null=True)
     commercial_value_explanation = models.TextField(blank=True)
-    export_value = models.BigIntegerField(blank=True, null=True)
-    is_active = models.BooleanField(default=True)
 
-    history = HistoricalRecords(bases=[AssessmentHistoricalModel])
+    history = HistoricalRecords(bases=[EconomicAssessmentHistoricalModel])
 
-    objects = AssessmentManager()
+    class Meta:
+        ordering = ("-created_on", )
+        permissions = (
+            ("archive_economicassessment", "Can archive economic assessment"),
+            ("approve_economicassessment", "Can approve economic assessment"),
+        )
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            for assessment in self.barrier.economic_assessments.filter(archived=False):
+                assessment.archive(user=self.created_by)
+        super().save(*args, **kwargs)
+
+
+class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    economic_assessment = models.ForeignKey(
+        "assessment.EconomicAssessment",
+        related_name="economic_impact_assessments",
+        on_delete=models.CASCADE,
+    )
+    impact = models.PositiveIntegerField(choices=ECONOMIC_ASSESSMENT_IMPACT)
+    explanation = models.TextField(blank=True)
+
+    history = HistoricalRecords()
 
     @property
-    def created_user(self):
-        return self._cleansed_username(self.created_by)
+    def barrier(self):
+        return self.economic_assessment.barrier
 
-    @property
-    def modified_user(self):
-        return self._cleansed_username(self.modified_by)
+    class Meta:
+        ordering = ("-created_on", )
+        permissions = (
+            ("archive_economicimpactassessment", "Can archive economic impact assessment"),
+        )
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            for economic_assessment in self.economic_assessment.barrier.economic_assessments.all():
+                for economic_impact_assessment in economic_assessment.economic_impact_assessments.filter(
+                    archived=False
+                ):
+                    economic_impact_assessment.archive(user=self.created_by)
+        super().save(*args, **kwargs)
 
 
 class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):

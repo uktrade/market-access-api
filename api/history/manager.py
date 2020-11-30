@@ -3,8 +3,9 @@ import datetime
 from api.history.models import CachedHistoryItem
 
 from .factories import (
-    AssessmentHistoryFactory,
     BarrierHistoryFactory,
+    EconomicAssessmentHistoryFactory,
+    EconomicImpactAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierNoteHistoryFactory,
     PublicBarrierHistoryFactory,
@@ -24,23 +25,32 @@ class HistoryManager:
 
     @classmethod
     def get_activity(cls, barrier, use_cache=False):
-        barrier_history = cls.get_barrier_history(
+        history = cls.get_barrier_history(
             barrier_id=barrier.pk,
             fields=["archived", "priority", "status"],
             use_cache=use_cache,
         )
-        assessment_history = cls.get_assessment_history(
+        history += cls.get_economic_assessment_history(
             barrier_id=barrier.pk,
-            fields=[
-                "commercial_value",
-                "export_value",
-                "impact",
-                "import_market_size",
-                "value_to_economy",
-            ],
+            fields=("rating", ),
             use_cache=use_cache,
         )
-        return barrier_history + assessment_history
+        history += cls.get_economic_impact_assessment_history(
+            barrier_id=barrier.pk,
+            fields=("impact", ),
+            use_cache=use_cache,
+        )
+        history += cls.get_resolvability_assessment_history(
+            barrier_id=barrier.pk,
+            fields=("time_to_resolve", ),
+            use_cache=use_cache,
+        )
+        history += cls.get_strategic_assessment_history(
+            barrier_id=barrier.pk,
+            fields=("scale", ),
+            use_cache=use_cache,
+        )
+        return history
 
     @classmethod
     def get_public_activity(cls, public_barrier, use_cache=False):
@@ -61,37 +71,33 @@ class HistoryManager:
         else:
             start_date = None
 
-        barrier_history = cls.get_barrier_history(barrier.pk, start_date=start_date)
-        notes_history = cls.get_notes_history(barrier.pk, start_date=start_date)
-        assessment_history = cls.get_assessment_history(barrier.pk, start_date=start_date)
-        resolvability_assessment_history = cls.get_resolvability_assessment_history(barrier.pk, start_date=start_date)
-        strategic_assessment_history = cls.get_strategic_assessment_history(barrier.pk, start_date=start_date)
+        history = cls.get_barrier_history(barrier.pk, start_date=start_date)
+        history += cls.get_notes_history(barrier.pk, start_date=start_date)
+        history += cls.get_economic_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_economic_impact_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_resolvability_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_strategic_assessment_history(barrier.pk, start_date=start_date)
+        history += cls.get_wto_history(barrier.pk, start_date=start_date)
 
         if start_date:
-            team_history = cls.get_team_history(
+            history += cls.get_team_history(
                 barrier.pk,
                 start_date=start_date + datetime.timedelta(seconds=1),
             )
         else:
-            team_history = cls.get_team_history(barrier.pk)
-        wto_history = cls.get_wto_history(barrier.pk, start_date=start_date)
-
-        history_items = (
-            barrier_history + notes_history + assessment_history + team_history
-            + wto_history + resolvability_assessment_history + strategic_assessment_history
-        )
+            history += cls.get_team_history(barrier.pk)
 
         if barrier.has_public_barrier:
             if ignore_creation_items:
-                history_items += cls.get_public_barrier_history(
+                history += cls.get_public_barrier_history(
                     barrier.pk,
                     start_date=barrier.public_barrier.created_on + datetime.timedelta(seconds=1)
                 )
             else:
-                history_items += cls.get_public_barrier_history(barrier.pk)
-            history_items += cls.get_public_barrier_notes_history(barrier.pk)
+                history += cls.get_public_barrier_history(barrier.pk)
+            history += cls.get_public_barrier_notes_history(barrier.pk)
 
-        return history_items
+        return history
 
     @classmethod
     def get_full_history_cached(cls, barrier, ignore_creation_items=False):
@@ -126,16 +132,32 @@ class HistoryManager:
         return [item.as_history_item() for item in queryset]
 
     @classmethod
-    def get_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
+    def get_economic_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
         if use_cache:
             return cls.get_cached_history_items(
                 barrier_id,
-                model="assessment",
+                model="economic_assessment",
                 fields=fields,
                 start_date=start_date,
             )
 
-        return AssessmentHistoryFactory.get_history_items(
+        return EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
+
+    @classmethod
+    def get_economic_impact_assessment_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
+        if use_cache:
+            return cls.get_cached_history_items(
+                barrier_id,
+                model="economic_impact_assessment",
+                fields=fields,
+                start_date=start_date,
+            )
+
+        return EconomicImpactAssessmentHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,

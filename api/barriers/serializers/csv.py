@@ -6,7 +6,6 @@ from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 
 from api.metadata.constants import (
-    ASSESMENT_IMPACT,
     BARRIER_SOURCE,
     BarrierStatus,
     BARRIER_PENDING,
@@ -45,10 +44,10 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     team_count = serializers.IntegerField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
-    assessment_impact = serializers.SerializerMethodField()
+    assessment_rating = serializers.SerializerMethodField()
     value_to_economy = serializers.SerializerMethodField()
     import_market_size = serializers.SerializerMethodField()
-    commercial_value = serializers.SerializerMethodField()
+    commercial_value = serializers.IntegerField()
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
@@ -122,7 +121,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "team_count",
             "reported_on",
             "modified_on",
-            "assessment_impact",
+            "assessment_rating",
             "value_to_economy",
             "import_market_size",
             "commercial_value",
@@ -136,31 +135,21 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         term_dict = dict(BARRIER_TERMS)
         return term_dict.get(obj.term, "Unknown")
 
-    def get_assessment_impact(self, obj):
-        if hasattr(obj, "assessment"):
-            impact_dict = dict(ASSESMENT_IMPACT)
-            return impact_dict.get(obj.assessment.impact, None)
-        return None
+    def get_assessment_rating(self, obj):
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.get_rating_display()
 
     def get_value_to_economy(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.value_to_economy
-        return None
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.value_to_economy
 
     def get_import_market_size(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.import_market_size
-        return None
-
-    def get_commercial_value(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.commercial_value
-        return None
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.import_market_size
 
     def get_export_value(self, obj):
-        if hasattr(obj, "assessment"):
-            return obj.assessment.export_value
-        return None
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.export_value
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
@@ -260,10 +249,8 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
 
     def get_economic_assessment_explanation(self, obj):
-        if obj.has_assessment:
-            return obj.assessment.explanation
-        else:
-            return None
+        if obj.current_economic_assessment:
+            return obj.current_economic_assessment.explanation
 
     def get_wto_has_been_notified(self, obj):
         if obj.has_wto_profile:
@@ -325,8 +312,11 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             return "No"
 
     def get_latest_publish_note(self, obj):
-        if obj.has_public_barrier and obj.public_barrier.notes.exists():
-            return obj.public_barrier.notes.latest("created_on").text
+        if obj.has_public_barrier:
+            notes = [note for note in obj.public_barrier.notes.all()]
+            if notes:
+                notes.sort(key=lambda note: note.created_on, reverse=True)
+                return notes[0].text
 
     def get_resolvability_assessment_time(self, obj):
         if obj.current_resolvability_assessment:

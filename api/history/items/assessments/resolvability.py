@@ -17,10 +17,11 @@ class EffortToResolveHistoryItem(BaseResolvabilityAssessmentHistoryItem):
     field = "effort_to_resolve"
 
     def get_value(self, record):
-        return {
-            "id": record.effort_to_resolve,
-            "name": record.get_effort_to_resolve_display(),
-        }
+        if record.effort_to_resolve:
+            return {
+                "id": record.effort_to_resolve,
+                "name": record.get_effort_to_resolve_display(),
+            }
 
 
 class ExplanationHistoryItem(BaseResolvabilityAssessmentHistoryItem):
@@ -31,7 +32,8 @@ class TimeToResolveHistoryItem(BaseResolvabilityAssessmentHistoryItem):
     field = "time_to_resolve"
 
     def get_value(self, record):
-        return {
-            "id": record.time_to_resolve,
-            "name": record.get_time_to_resolve_display(),
-        }
+        if record.time_to_resolve:
+            return {
+                "id": record.time_to_resolve,
+                "name": record.get_time_to_resolve_display(),
+            }

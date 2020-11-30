@@ -50,6 +50,14 @@ class CausedByTradingBlocHistoryItem(BaseBarrierHistoryItem):
         }
 
 
+class CommercialValueHistoryItem(BaseBarrierHistoryItem):
+    field = "commercial_value"
+
+
+class CommercialValueExplanationHistoryItem(BaseBarrierHistoryItem):
+    field = "commercial_value_explanation"
+
+
 class CommoditiesHistoryItem(BaseBarrierHistoryItem):
     field = "commodities"
 
@@ -64,6 +72,14 @@ class CommoditiesHistoryItem(BaseBarrierHistoryItem):
 
 class CompaniesHistoryItem(BaseBarrierHistoryItem):
     field = "companies"
+
+
+class EconomicAssessmentEligibilityHistoryItem(BaseBarrierHistoryItem):
+    field = "economic_assessment_eligibility"
+
+
+class EconomicAssessmentEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
+    field = "economic_assessment_eligibility_summary"
 
 
 class EndDateHistoryItem(BaseBarrierHistoryItem):
@@ -162,6 +178,17 @@ class TermHistoryItem(BaseBarrierHistoryItem):
 
 class TitleHistoryItem(BaseBarrierHistoryItem):
     field = "title"
+
+
+class TradeCategoryHistoryItem(BaseBarrierHistoryItem):
+    field = "trade_category"
+
+    def get_value(self, record):
+        if record.trade_category:
+            return {
+                "id": record.trade_category,
+                "name": record.get_trade_category_display(),
+            }
 
 
 class TradeDirectionHistoryItem(BaseBarrierHistoryItem):

@@ -1,4 +1,4 @@
-from api.assessment.models import HistoricalAssessment
+from api.assessment.models import HistoricalEconomicAssessment
 
 
 def assessment_documents_changed(sender, instance, action, **kwargs):
@@ -10,7 +10,7 @@ def assessment_documents_changed(sender, instance, action, **kwargs):
 
     if action in ("post_add", "post_remove"):
         if hasattr(instance, "documents_history_saved"):
-            historical_instance = HistoricalAssessment.objects.filter(
+            historical_instance = HistoricalEconomicAssessment.objects.filter(
                 id=instance.pk
             ).latest()
             historical_instance.update_documents()

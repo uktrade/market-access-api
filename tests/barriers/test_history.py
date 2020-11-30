@@ -5,13 +5,13 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.assessment.models import Assessment
+from api.assessment.models import EconomicAssessment
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.history.factories import (
-    AssessmentHistoryFactory,
+    EconomicAssessmentHistoryFactory,
     BarrierHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
@@ -21,8 +21,13 @@ from api.history.factories import (
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
-from tests.assessment.factories import AssessmentFactory
 from tests.interactions.factories import InteractionFactory
+from tests.assessment.factories import (
+    EconomicAssessmentFactory,
+    EconomicImpactAssessmentFactory,
+    ResolvabilityAssessmentFactory,
+    StrategicAssessmentFactory,
+)
 from tests.metadata.factories import OrganisationFactory
 
 
@@ -232,6 +237,30 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["old_value"] == "Some title"
         assert data["new_value"] == "New title"
 
+    def test_commercial_value_history(self):
+        self.barrier.commercial_value = 1111
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "commercial_value"
+        assert data["old_value"] is None
+        assert data["new_value"] == 1111
+
+    def test_commercial_value_explanation_history(self):
+        self.barrier.commercial_value_explanation = "wobble"
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "commercial_value_explanation"
+        assert data["old_value"] == ""
+        assert data["new_value"] == "wobble"
+
 
 class TestPublicBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
@@ -395,16 +424,16 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         }
 
 
-class TestAssessmentHistory(APITestMixin, TestCase):
+class TestEconomicAssessmentHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "documents", "users"]
 
     def setUp(self):
         self.barrier = Barrier.objects.get(
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
-        self.assessment = Assessment.objects.create(
+        self.assessment = EconomicAssessment.objects.create(
             barrier=self.barrier,
-            impact="LOW",
+            rating="LOW",
             explanation="Some explanation",
             value_to_economy=10000,
             import_market_size=20000,
@@ -417,34 +446,34 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.explanation = "New explanation"
         self.assessment.save()
 
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
-        assert data["model"] == "assessment"
+        assert data["model"] == "economic_assessment"
         assert data["field"] == "explanation"
         assert data["old_value"] == "Some explanation"
         assert data["new_value"] == "New explanation"
 
-    def test_impact_history(self):
-        self.assessment.impact = "HIGH"
+    def test_rating_history(self):
+        self.assessment.rating = "HIGH"
         self.assessment.save()
 
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
-        assert data["model"] == "assessment"
-        assert data["field"] == "impact"
-        assert data["old_value"] == "LOW"
-        assert data["new_value"] == "HIGH"
+        assert data["model"] == "economic_assessment"
+        assert data["field"] == "rating"
+        assert data["old_value"]["name"] == "Low"
+        assert data["new_value"]["name"] == "High"
 
     def test_documents_history(self):
         self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
 
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
 
         data = items[-1].data
 
-        assert data["model"] == "assessment"
+        assert data["model"] == "economic_assessment"
         assert data["field"] == "documents"
         assert data["old_value"] == []
         assert data["new_value"] == [
@@ -454,38 +483,14 @@ class TestAssessmentHistory(APITestMixin, TestCase):
             }
         ]
 
-    def test_commercial_value_history(self):
-        self.assessment.commercial_value = 1111
-        self.assessment.save()
-
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[-1].data
-
-        assert data["model"] == "assessment"
-        assert data["field"] == "commercial_value"
-        assert data["old_value"] == 30000
-        assert data["new_value"] == 1111
-
-    def test_commercial_value_explanation_history(self):
-        self.assessment.commercial_value_explanation = "wobble"
-        self.assessment.save()
-
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[-1].data
-
-        assert data["model"] == "assessment"
-        assert data["field"] == "commercial_value_explanation"
-        assert data["old_value"] == "wibble"
-        assert data["new_value"] == "wobble"
-
     def test_export_value_history(self):
         self.assessment.export_value = 2222
         self.assessment.save()
 
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
-        assert data["model"] == "assessment"
+        assert data["model"] == "economic_assessment"
         assert data["field"] == "export_value"
         assert data["old_value"] == 40000
         assert data["new_value"] == 2222
@@ -494,10 +499,10 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.import_market_size = 3333
         self.assessment.save()
 
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
-        assert data["model"] == "assessment"
+        assert data["model"] == "economic_assessment"
         assert data["field"] == "import_market_size"
         assert data["old_value"] == 20000
         assert data["new_value"] == 3333
@@ -506,10 +511,10 @@ class TestAssessmentHistory(APITestMixin, TestCase):
         self.assessment.value_to_economy = 4444
         self.assessment.save()
 
-        items = AssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
 
-        assert data["model"] == "assessment"
+        assert data["model"] == "economic_assessment"
         assert data["field"] == "value_to_economy"
         assert data["old_value"] == 10000
         assert data["new_value"] == 4444
@@ -596,16 +601,6 @@ class TestHistoryView(APITestMixin, TestCase):
         )
         self.barrier.save()
 
-        self.assessment = Assessment.objects.create(
-            barrier=self.barrier,
-            impact="LOW",
-            explanation="Some explanation",
-            value_to_economy=10000,
-            import_market_size=20000,
-            commercial_value=30000,
-            export_value=40000,
-        )
-
         self.note = Interaction.objects.create(
             barrier=self.barrier,
             kind="COMMENT",
@@ -623,6 +618,7 @@ class TestHistoryView(APITestMixin, TestCase):
 
         # Barrier changes
         self.barrier.categories.add("109", "115")
+        self.barrier.commercial_value = 1111
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
@@ -636,6 +632,7 @@ class TestHistoryView(APITestMixin, TestCase):
         self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.source = "COMPANY"
         self.barrier.title = "New title"
+        self.barrier.trade_category = "GOODS"
         self.barrier.save()
 
         self.barrier.archive(
@@ -657,14 +654,23 @@ class TestHistoryView(APITestMixin, TestCase):
         )
 
         # Assessment changes
-        self.assessment.explanation = "New explanation"
-        self.assessment.impact = "HIGH"
-        self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
-        self.assessment.commercial_value = 1111
-        self.assessment.export_value = 2222
-        self.assessment.import_market_size = 3333
-        self.assessment.value_to_economy = 4444
-        self.assessment.save()
+        economic_assessment = EconomicAssessmentFactory(
+            barrier=self.barrier,
+            rating="LOW",
+        )
+        EconomicImpactAssessmentFactory(
+            economic_assessment=economic_assessment,
+            impact=4,
+        )
+        ResolvabilityAssessmentFactory(
+            barrier=self.barrier,
+            time_to_resolve=4,
+            effort_to_resolve=1,
+        )
+        StrategicAssessmentFactory(
+            barrier=self.barrier,
+            scale=3,
+        )
 
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
@@ -685,6 +691,15 @@ class TestHistoryView(APITestMixin, TestCase):
                 "archived_explanation": "It was a duplicate"
             },
             "user": None
+        } in history
+
+        assert {
+            "date": "2020-04-01T00:00:00Z",
+            "model": "barrier",
+            "field": "commercial_value",
+            "old_value": None,
+            "new_value": 1111,
+            "user": None,
         } in history
 
         assert {
@@ -817,6 +832,18 @@ class TestHistoryView(APITestMixin, TestCase):
 
         assert {
             "date": "2020-04-01T00:00:00Z",
+            "model": "barrier",
+            "field": "trade_category",
+            "old_value": None,
+            "new_value": {
+                "id": "GOODS",
+                "name": "Goods",
+            },
+            "user": None,
+        } in history
+
+        assert {
+            "date": "2020-04-01T00:00:00Z",
             "model": "note",
             "field": "text",
             "old_value": "Original note",
@@ -838,49 +865,61 @@ class TestHistoryView(APITestMixin, TestCase):
 
         assert {
             "date": "2020-04-01T00:00:00Z",
-            "model": "assessment",
-            "field": "value_to_economy",
-            "old_value": 10000,
-            "new_value": 4444,
+            "model": "economic_assessment",
+            "field": "rating",
+            "old_value": None,
+            "new_value": {
+                "id": "LOW",
+                "name": "Low",
+            },
             "user": None
         } in history
 
         assert {
             "date": "2020-04-01T00:00:00Z",
-            "model": "assessment",
-            "field": "import_market_size",
-            "old_value": 20000,
-            "new_value": 3333,
+            "model": "economic_impact_assessment",
+            "field": "impact",
+            "old_value": None,
+            "new_value": {
+                "code": 4,
+                "name": "4: £ millions",
+            },
             "user": None
         } in history
 
         assert {
             "date": "2020-04-01T00:00:00Z",
-            "model": "assessment",
-            "field": "commercial_value",
-            "old_value": 30000,
-            "new_value": 1111,
+            "model": "resolvability_assessment",
+            "field": "time_to_resolve",
+            "old_value": None,
+            "new_value": {
+                "id": 4,
+                "name": "4: within a year",
+            },
             "user": None
         } in history
 
         assert {
             "date": "2020-04-01T00:00:00Z",
-            "model": "assessment",
-            "field": "export_value",
-            "old_value": 40000,
-            "new_value": 2222,
+            "model": "resolvability_assessment",
+            "field": "effort_to_resolve",
+            "old_value": None,
+            "new_value": {
+                "id": 1,
+                "name": "1: Highly resource intensive (significant resources needed)",
+            },
             "user": None
         } in history
 
         assert {
             "date": "2020-04-01T00:00:00Z",
-            "model": "assessment",
-            "field": "documents",
-            "old_value": [],
-            "new_value": [{
-                "id": "fdb0624e-a549-4f70-b9a2-68896e4d1141",
-                "name": "dog.jpg"
-            }],
+            "model": "strategic_assessment",
+            "field": "scale",
+            "old_value": None,
+            "new_value": {
+                "id": 3,
+                "name": "3: neutral to government wide objectives",
+            },
             "user": None
         } in history
 
@@ -909,7 +948,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
             pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
         )
         self.barrier.save()
-        self.assessment = AssessmentFactory(barrier=self.barrier, impact="LOW")
+        self.assessment = EconomicAssessmentFactory(barrier=self.barrier, rating="LOW")
         self.note = InteractionFactory(barrier=self.barrier, text="Original note")
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
@@ -919,6 +958,8 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
 
         # Barrier changes
         self.barrier.categories.add("109", "115")
+        self.barrier.commercial_value = 55555
+        self.barrier.commercial_value_explanation = "Explanation"
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
@@ -954,14 +995,24 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         )
 
         # Assessment changes
-        self.assessment.explanation = "New explanation"
-        self.assessment.impact = "HIGH"
-        self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
-        self.assessment.commercial_value = 1111
-        self.assessment.export_value = 2222
-        self.assessment.import_market_size = 3333
-        self.assessment.value_to_economy = 4444
-        self.assessment.save()
+        economic_assessment = EconomicAssessmentFactory(
+            barrier=self.barrier,
+            rating="LOW",
+        )
+        EconomicImpactAssessmentFactory(
+            economic_assessment=economic_assessment,
+            impact=4,
+        )
+        ResolvabilityAssessmentFactory(
+            barrier=self.barrier,
+            time_to_resolve=4,
+            effort_to_resolve=1,
+        )
+        StrategicAssessmentFactory(
+            barrier=self.barrier,
+            scale=3,
+            uk_grants="Testing",
+        )
 
         # Public barrier changes
         self.public_barrier.categories.add("109", "115")
@@ -988,13 +1039,14 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         assert ("barrier", "status") in cached_changes
         assert ("barrier", "summary") in cached_changes
         assert ("barrier", "title") in cached_changes
-        assert ("assessment", "explanation") in cached_changes
-        assert ("assessment", "impact") in cached_changes
-        assert ("assessment", "documents") in cached_changes
-        assert ("assessment", "commercial_value") in cached_changes
-        assert ("assessment", "export_value") in cached_changes
-        assert ("assessment", "import_market_size") in cached_changes
-        assert ("assessment", "value_to_economy") in cached_changes
+        assert ("economic_assessment", "rating") in cached_changes
+        assert ("economic_assessment", "explanation") in cached_changes
+        assert ("economic_impact_assessment", "impact") in cached_changes
+        assert ("economic_impact_assessment", "explanation") in cached_changes
+        assert ("resolvability_assessment", "time_to_resolve") in cached_changes
+        assert ("resolvability_assessment", "effort_to_resolve") in cached_changes
+        assert ("strategic_assessment", "scale") in cached_changes
+        assert ("strategic_assessment", "uk_grants") in cached_changes
         assert ("note", "documents") in cached_changes
         assert ("note", "text") in cached_changes
         assert ("team_member", "user") in cached_changes

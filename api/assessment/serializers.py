@@ -1,68 +1,133 @@
+from django.core.cache import cache
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from api.assessment.models import Assessment, ResolvabilityAssessment, StrategicAssessment
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.barriers.fields import UserField
+from api.barriers.models import Barrier
 from api.core.serializers.fields import ApprovedField, ArchivedField
-from api.core.serializers.mixins import CustomUpdateMixin
+from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
+from api.documents.fields import DocumentsField
 
+from .automate.calculator import AssessmentCalculator
+from .automate.exceptions import ComtradeError
 from .fields import (
     EffortToResolveField,
     ImpactField,
+    RatingField,
     StrategicAssessmentScaleField,
     TimeToResolveField,
 )
 
 
-class AssessmentSerializer(serializers.ModelSerializer):
-    """ Serialzer for Barrier Assessment """
-
-    created_by = serializers.SerializerMethodField()
-    documents = serializers.SerializerMethodField()
-    impact = ImpactField(required=False)
+class EconomicImpactAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
+    archived = ArchivedField(required=False)
+    archived_by = UserField(required=False)
+    economic_assessment_id = serializers.IntegerField()
+    impact = ImpactField()
+    created_by = UserField(required=False)
+    modified_by = UserField(required=False)
 
     class Meta:
-        model = Assessment
+        model = EconomicImpactAssessment
         fields = (
             "id",
+            "archived",
+            "archived_by",
+            "archived_on",
+            "created_by",
+            "created_on",
+            "modified_on",
+            "modified_by",
+            "economic_assessment_id",
             "impact",
             "explanation",
-            "value_to_economy",
-            "import_market_size",
-            "commercial_value",
-            "commercial_value_explanation",
-            "export_value",
-            "documents",
+        )
+        read_only_fields = (
+            "id",
+            "archived_by",
+            "archived_on",
             "created_on",
             "created_by",
+            "modified_on",
+            "modified_by",
         )
-        read_only_fields = ("id", "created_on", "created_by")
-
-    def get_created_by(self, obj):
-        if obj.created_by is None:
-            return None
-
-        return {"id": obj.created_by.id, "name": obj.created_user}
-
-    def get_documents(self, obj):
-        if obj.documents is None:
-            return None
-
-        return [
-            {
-                "id": document.id,
-                "name": document.original_filename,
-                "size": document.size,
-                "status": document.document.status,
-            }
-            for document in obj.documents.all()
-        ]
-
-    def get_status(self, instance):
-        """Get document status."""
-        return instance.document.status
 
 
-class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
+    approved = ApprovedField(required=False)
+    archived = ArchivedField(required=False)
+    archived_by = UserField(required=False)
+    barrier_id = serializers.UUIDField()
+    created_by = UserField(required=False)
+    documents = DocumentsField(required=False)
+    economic_impact_assessments = EconomicImpactAssessmentSerializer(required=False, many=True)
+    modified_by = UserField(required=False)
+    rating = RatingField(required=False)
+    reviewed_by = UserField(required=False)
+
+    class Meta:
+        model = EconomicAssessment
+        fields = (
+            "id",
+            "approved",
+            "archived",
+            "archived_by",
+            "archived_on",
+            "archived_reason",
+            "automated_analysis_data",
+            "barrier_id",
+            "created_by",
+            "created_on",
+            "documents",
+            "economic_impact_assessments",
+            "explanation",
+            "export_value",
+            "import_market_size",
+            "modified_on",
+            "modified_by",
+            "rating",
+            "ready_for_approval",
+            "reviewed_by",
+            "reviewed_on",
+            "value_to_economy",
+        )
+        read_only_fields = (
+            "id",
+            "archived_by",
+            "archived_on",
+            "created_on",
+            "created_by",
+            "modified_on",
+            "modified_by",
+            "reviewed_by",
+            "reviewed_on",
+        )
+
+    def create(self, validated_data):
+        if self.initial_data.get("automate") is True:
+            barrier = Barrier.objects.get(pk=validated_data["barrier_id"])
+            assessment_calculator = AssessmentCalculator(cache=cache)
+            commodity_codes = [c.trimmed_code for c in barrier.commodities.all()]
+            try:
+                data = assessment_calculator.calculate(
+                    commodity_codes=commodity_codes,
+                    product=barrier.product,
+                    country1=barrier.country_name,
+                )
+            except ComtradeError as e:
+                raise ValidationError(e)
+            validated_data["automated_analysis_data"] = data
+
+        return super().create(validated_data)
+
+
+class ResolvabilityAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()
@@ -70,6 +135,7 @@ class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSeri
     time_to_resolve = TimeToResolveField()
     archived_by = UserField(required=False)
     created_by = UserField(required=False)
+    modified_by = UserField(required=False)
     reviewed_by = UserField(required=False)
 
     class Meta:
@@ -80,11 +146,14 @@ class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSeri
             "archived",
             "archived_by",
             "archived_on",
+            "archived_reason",
             "barrier_id",
             "created_by",
             "created_on",
             "effort_to_resolve",
             "explanation",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
             "time_to_resolve",
@@ -95,24 +164,21 @@ class ResolvabilityAssessmentSerializer(CustomUpdateMixin, serializers.ModelSeri
             "archived_on",
             "created_on",
             "created_by",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
         )
 
-    def create(self, validated_data):
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            validated_data["created_by"] = request.user
-        return super().create(validated_data)
 
-
-class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializer):
+class StrategicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()
     scale = StrategicAssessmentScaleField()
     archived_by = UserField(required=False)
     created_by = UserField(required=False)
+    modified_by = UserField(required=False)
     reviewed_by = UserField(required=False)
 
     class Meta:
@@ -123,6 +189,7 @@ class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializ
             "archived",
             "archived_by",
             "archived_on",
+            "archived_reason",
             "barrier_id",
             "hmg_strategy",
             "government_policy",
@@ -131,6 +198,8 @@ class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializ
             "uk_grants",
             "competition",
             "additional_information",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
             "scale",
@@ -143,12 +212,8 @@ class StrategicAssessmentSerializer(CustomUpdateMixin, serializers.ModelSerializ
             "archived_on",
             "created_on",
             "created_by",
+            "modified_on",
+            "modified_by",
             "reviewed_by",
             "reviewed_on",
         )
-
-    def create(self, validated_data):
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            validated_data["created_by"] = request.user
-        return super().create(validated_data)

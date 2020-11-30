@@ -5,7 +5,8 @@ from rest_framework.test import APITestCase
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.core.test_utils import APITestMixin
 from api.metadata.models import Organisation
-from tests.assessment.factories import AssessmentFactory
+
+from tests.assessment.factories import EconomicAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
 
@@ -38,7 +39,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         """ Include Assessment Explanation in the CSV """
         expected_explanation = "Wibble wobble!"
         barrier = BarrierFactory()
-        AssessmentFactory(barrier=barrier, explanation=expected_explanation)
+        EconomicAssessmentFactory(barrier=barrier, approved=True, explanation=expected_explanation)
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert expected_explanation == serializer.data["economic_assessment_explanation"]
