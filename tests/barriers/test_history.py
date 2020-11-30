@@ -437,8 +437,6 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
             explanation="Some explanation",
             value_to_economy=10000,
             import_market_size=20000,
-            commercial_value=30000,
-            commercial_value_explanation="wibble",
             export_value=40000,
         )
 

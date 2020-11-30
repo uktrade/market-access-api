@@ -14,6 +14,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('history', '0002_rename_public_barrier_country_to_location'),
+        ('assessment', '0017_remove_user_analysis_data'),
+        ('barriers', '0100_merge_20201124_1636'),
     ]
 
     operations = [

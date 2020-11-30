@@ -79,11 +79,6 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
     value_to_economy = models.BigIntegerField(blank=True, null=True)
     documents = models.ManyToManyField(Document, related_name="economic_assessments")
 
-    # commercial_value and commercial_value_explanation have moved to the barrier model
-    # - temporarily keep these fields here until we are happy the values and history have copied across ok
-    commercial_value = models.BigIntegerField(blank=True, null=True)
-    commercial_value_explanation = models.TextField(blank=True)
-
     history = HistoricalRecords(bases=[EconomicAssessmentHistoricalModel])
 
     class Meta:
