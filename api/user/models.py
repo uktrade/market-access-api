@@ -95,7 +95,13 @@ class BaseSavedSearch(models.Model):
         self.save()
 
     def get_api_parameters(self):
-        params = copy.deepcopy(self.filters)
+        params = {}
+
+        for k, v in self.filters.items():
+            if v == [""]:
+                continue
+            else:
+                params[k] = v
 
         if "country" in params or "region" in params or "extra_location" in params:
             params["location"] = (
