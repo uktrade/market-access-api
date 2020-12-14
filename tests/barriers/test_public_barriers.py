@@ -197,6 +197,12 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert self.barrier.country == response.data["country"]["id"]
         assert self.barrier.sectors == [s["id"] for s in response.data["sectors"]]
         assert not response.data["categories"]
+        assert not response.data["last_published_on"]
+        assert not response.data["first_published_on"]
+        assert not response.data["unpublished_on"]
+        assert not response.data["unpublished_changes"]
+        assert not response.data["ready_to_be_published"]
+        assert self.barrier.created_on == dateutil.parser.parse(response.data["reported_on"])
 
     def test_public_barrier_default_categories_at_creation(self):
         """
@@ -1261,8 +1267,6 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
     @freeze_time("2020-05-20")
     def test_public_serializer(self):
         pb1, _ = self.publish_barrier(user=self.publisher)
-
-        public_barriers_to_json()
         barrier = public_barriers_to_json()[0]
 
         assert pb1.id == barrier["id"]
@@ -1271,6 +1275,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         assert pb1.is_resolved == barrier["is_resolved"]
         assert pb1.status_date.isoformat() == barrier["status_date"]
         assert pb1.last_published_on == dateutil.parser.parse(barrier["last_published_on"])
+        assert pb1.internal_created_on == dateutil.parser.parse(barrier["reported_on"])
 
     @patch("api.barriers.views.public_release_to_s3")
     def test_publish_calls_public_release(self, mock_release):

@@ -883,6 +883,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return set(self.barrier.categories.all()) != set(self.categories.all())
 
     @property
+    def internal_created_on(self):
+        return self.barrier.created_on
+
+    @property
     def ready_to_be_published(self):
         is_ready = self.public_view_status == PublicBarrierStatus.READY
         is_republish = self.unpublished_on is not None
