@@ -56,6 +56,7 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
     internal_code = serializers.SerializerMethodField()
     internal_id = serializers.SerializerMethodField()
     latest_note = serializers.SerializerMethodField()
+    reported_on = serializers.DateTimeField(source="internal_created_on")
 
     class Meta:
         model = PublicBarrier
@@ -106,6 +107,7 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "unpublished_changes",
             "ready_to_be_published",
             "latest_note",
+            "reported_on",
         )
         read_only_fields = (
             "id",
@@ -152,6 +154,7 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "unpublished_changes",
             "ready_to_be_published",
             "latest_note",
+            "reported_on",
         )
 
     def get_internal_title_changed(self, obj):
@@ -227,6 +230,7 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
     trading_bloc = ReadOnlyTradingBlocField()
     sectors = serializers.SerializerMethodField()
     categories = ReadOnlyCategoriesField(to_repr_keys=("name",))
+    reported_on = serializers.DateTimeField(source="internal_created_on")
 
     class Meta:
         model = PublicBarrier
@@ -244,6 +248,7 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
             "sectors",
             "categories",
             "last_published_on",
+            "reported_on",
         )
 
     def get_sectors(self, obj):
@@ -273,7 +278,9 @@ def public_barriers_to_json(public_barriers=None):
                 ],
                 "categories": [
                     {"name": "Goods and Services"}
-                ]
+                ],
+                "last_published_on: "date",
+                "reported_on": "date"
             }
         ]
     }
