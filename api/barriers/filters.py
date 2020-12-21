@@ -177,10 +177,9 @@ class BarrierFilterSet(django_filters.FilterSet):
             full text search on summary
             partial search on title
         """
-        qs = queryset.annotate(
+        return queryset.annotate(
             search=SearchVector('summary'),
-        )
-        return qs.filter(
+        ).filter(
             Q(code=value) | Q(search=value) | Q(title__icontains=value)
             | Q(public_barrier__id=value.lstrip("PID-").upper())
         )
