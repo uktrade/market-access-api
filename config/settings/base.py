@@ -139,6 +139,9 @@ DATABASES = {
     "default": dj_database_url.config(env="DATABASE_URL", default="")
 }
 
+HASHID_FIELD_SALT = env("DJANGO_HASHID_FIELD_SALT")
+HASHID_FIELD_ALLOW_INT_LOOKUP = False
+
 AUTH_USER_MODEL = "auth.User"
 
 # django-oauth-toolkit settings

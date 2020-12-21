@@ -1,3 +1,4 @@
+from hashid_field.rest import HashidSerializerCharField
 from rest_framework import serializers
 
 from api.barriers.fields import (
@@ -18,6 +19,9 @@ from api.interactions.serializers import PublicBarrierNoteSerializer
 from api.metadata.fields import TradingBlocField
 
 
+PUBLIC_ID = "barriers.PublicBarrier.id"
+
+
 class NestedPublicBarrierSerializer(serializers.ModelSerializer):
     """
     Simple serializer for use within BarrierDetailSerializer.
@@ -34,6 +38,7 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
     """
     Generic serializer for barrier public data.
     """
+    id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
     title = NoneToBlankCharField()
     summary = NoneToBlankCharField()
     internal_title_changed = serializers.SerializerMethodField()
@@ -224,6 +229,7 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
     """
     Serializer to be used with gov.uk
     """
+    id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
     title = serializers.CharField()
     summary = serializers.CharField()
     country = ReadOnlyCountryField(to_repr_keys=("name", "trading_bloc"))
@@ -265,7 +271,7 @@ def public_barriers_to_json(public_barriers=None):
     {
         "barriers": [
             {
-                "id": "1",
+                "id": "kjdfhkzx",
                 "title": "Belgian chocolate...",
                 "summary": "Lorem ipsum",
                 "status": {"name": "Open: in progress",}

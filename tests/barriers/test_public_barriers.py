@@ -1235,7 +1235,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         obj = read_file_from_s3(data_filename)
         public_data = json.loads(obj.get()['Body'].read().decode())
 
-        expected_ids = [pb1.id, pb2.id, pb3.id]
+        expected_ids = [pb1.id.hashid, pb2.id.hashid, pb3.id.hashid]
         assert "barriers" in public_data.keys()
         assert sorted(expected_ids) == sorted([b["id"] for b in public_data["barriers"]])
 
