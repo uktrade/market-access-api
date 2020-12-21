@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, CASCADE
 from django.utils import timezone
+from hashid_field import HashidAutoField
 
 from simple_history.models import HistoricalRecords
 
@@ -572,6 +573,11 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     This table should not be exposed to the public however only to the DMAS frontend which requires login.
     Transfer the data to a flat file or another service which can safely expose the data.
     """
+    id = HashidAutoField(
+        primary_key=True,
+        min_length=6,
+        alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    )
     barrier = models.OneToOneField(Barrier, on_delete=CASCADE, related_name="public_barrier")
 
     # === Title related fields =====

@@ -282,7 +282,7 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_public_id(self, obj):
         if obj.has_public_barrier and obj.public_barrier.is_currently_published:
-            return f"PID-{obj.public_barrier.pk}"
+            return f"PID-{obj.public_barrier.id.hashid}"
 
     def get_public_view_status(self, obj):
         if obj.has_public_barrier:

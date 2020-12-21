@@ -27,6 +27,7 @@ jobs:
       DATAHUB_SECRET: 'secret'
       DH_HAWK_ID: 'dh_hawk_id'
       DH_HAWK_KEY: 'dh_hawk_key'
+      DJANGO_HASHID_FIELD_SALT: 'dash-of-salt'
       DJANGO_SETTINGS_MODULE: 'config.settings.test'
       DEBUG: 'False'
       ELASTIC_APM_ENABLED: 'False'
