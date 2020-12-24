@@ -57,6 +57,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     trade_direction = django_filters.BaseInFilter("trade_direction")
     wto = django_filters.BaseInFilter(method="wto_filter")
     organisation = django_filters.BaseInFilter("organisations", distinct=True)
+    commodity_code = django_filters.BaseInFilter(method="commodity_code_filter")
+    commercial_value_estimate = django_filters.BaseInFilter(method="commercial_value_estimate_filter")
 
     class Meta:
         model = Barrier
@@ -310,3 +312,20 @@ class BarrierFilterSet(django_filters.FilterSet):
             ).distinct()
 
         return queryset.distinct() & assessment_queryset
+
+    def commodity_code_filter(self, queryset, name, value):
+        filters = Q()
+        if "with" in value:
+            filters &= ~Q(commodities=None)
+        if "without" in value:
+            filters &= Q(commodities=None)
+        return queryset.filter(filters).distinct()
+
+
+    def commercial_value_estimate_filter(self, queryset, name, value):
+        filters = Q()
+        if "with" in value:
+            filters &= ~Q(commercial_value=None)
+        if "without" in value:
+            filters &= Q(commercial_value=None)
+        return queryset.filter(filters).distinct()
