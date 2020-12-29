@@ -321,7 +321,6 @@ class BarrierFilterSet(django_filters.FilterSet):
             filters &= Q(commodities=None)
         return queryset.filter(filters).distinct()
 
-
     def commercial_value_estimate_filter(self, queryset, name, value):
         filters = Q()
         if "with" in value:
