@@ -376,7 +376,7 @@ class BarrierListExportView(generics.ListAPIView):
         "wto_committee_raised_in": "WTO Raised Committee",
         "wto_raised_date": "WTO Raised Date",
         "wto_case_number": "WTO Case Number",
-        "commodity_codes": "HS codes",
+        "commodity_codes": "HS commodity codes",
         "first_published_on": "First published date",
         "last_published_on": "Last published date",
         "public_view_status": "Public view status",

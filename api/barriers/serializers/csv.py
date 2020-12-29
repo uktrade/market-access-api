@@ -275,10 +275,10 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             ]
 
     def get_commodity_codes(self, obj):
-        return [
-            barrier_commodity.simple_formatted_code
+        return "; ".join([
+            str(barrier_commodity.simple_formatted_code)
             for barrier_commodity in obj.barrier_commodities.all()
-        ]
+        ]) + ";"
 
     def get_public_id(self, obj):
         if obj.has_public_barrier and obj.public_barrier.is_currently_published:
