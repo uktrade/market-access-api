@@ -1,3 +1,4 @@
+import json
 import requests
 
 from decimal import Decimal
@@ -84,7 +85,12 @@ class ComtradeClient:
                 return data
 
         response = requests.get(url)
-        data = response.json()
+        try:
+            data = response.json()
+        except json.decoder.JSONDecodeError:
+            # try to handle - Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
+            data = json.loads(response.content.decode('utf-8-sig'))
+
         if self.cache:
             self.cache.set(cache_key, data, 7200)
         return data
