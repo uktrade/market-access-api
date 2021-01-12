@@ -72,6 +72,17 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
     explanation = models.TextField(blank=True)
     ready_for_approval = models.BooleanField(default=False)
 
+    @property
+    def export_potential(self):
+        if self.automated_analysis_data:
+            return self.automated_analysis_data.get("export_potential", {})
+        else:
+            return {}
+
+    @property
+    def latest_valuation_assessment(self):
+        return self.economic_impact_assessments.all().order_by("created_on").first()
+
     # import_market_size, export_value, value_to_economy and documents are now deprecated,
     # - leaving the fields here to preserve the data and history
     import_market_size = models.BigIntegerField(blank=True, null=True)
@@ -96,6 +107,10 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
 
 
 class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    """
+    Analysts requested the name to be changed to Valuation Assessment
+     - it reflects more what the numbers mean
+    """
     id = models.UUIDField(primary_key=True, default=uuid4)
     economic_assessment = models.ForeignKey(
         "assessment.EconomicAssessment",
@@ -110,6 +125,10 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     @property
     def barrier(self):
         return self.economic_assessment.barrier
+
+    @property
+    def rating(self):
+        return ECONOMIC_ASSESSMENT_IMPACT.get(self.impact)
 
     class Meta:
         ordering = ("-created_on", )
