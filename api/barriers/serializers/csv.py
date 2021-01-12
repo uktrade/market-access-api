@@ -46,8 +46,11 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     assessment_rating = serializers.SerializerMethodField()
+    assessment_explanation = serializers.SerializerMethodField()
     value_to_economy = serializers.SerializerMethodField()
     import_market_size = serializers.SerializerMethodField()
+    valuation_assessment_rating = serializers.SerializerMethodField()
+    valuation_assessment_explanation = serializers.SerializerMethodField()
     commercial_value = serializers.IntegerField()
     export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
@@ -123,13 +126,15 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "reported_on",
             "modified_on",
             "assessment_rating",
+            "economic_assessment_explanation",
             "value_to_economy",
             "import_market_size",
+            "valuation_assessment_rating",
+            "valuation_assessment_explanation",
             "commercial_value",
             "export_value",
             "end_date",
             "link",
-            "economic_assessment_explanation",
         )
 
     def get_term(self, obj):
@@ -140,13 +145,31 @@ class BarrierCsvExportSerializer(serializers.Serializer):
         if obj.current_economic_assessment:
             return obj.current_economic_assessment.get_rating_display()
 
-    def get_value_to_economy(self, obj):
+    def get_assessment_explanation(self, obj):
         if obj.current_economic_assessment:
-            return obj.current_economic_assessment.value_to_economy
+            return obj.current_economic_assessment.explanation
+
+    def get_value_to_economy(self, obj):
+        """ Value of UK exports of affected goods to partner country """
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.export_potential.get("uk_exports_affected")
 
     def get_import_market_size(self, obj):
-        if obj.current_economic_assessment:
-            return obj.current_economic_assessment.import_market_size
+        """ Size of import market for affected product(s) """
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.export_potential.get("import_market_size")
+
+    def get_valuation_assessment_rating(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment and assessment.latest_valuation_assessment:
+            return assessment.latest_valuation_assessment.rating
+
+    def get_valuation_assessment_explanation(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment and assessment.latest_valuation_assessment:
+            return assessment.latest_valuation_assessment.explanation
 
     def get_export_value(self, obj):
         if obj.current_economic_assessment:
