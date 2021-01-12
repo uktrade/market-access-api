@@ -128,7 +128,10 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     @property
     def rating(self):
-        return ECONOMIC_ASSESSMENT_IMPACT.get(self.impact)
+        rating = ""
+        if self.impact:
+            rating = ECONOMIC_ASSESSMENT_IMPACT[self.impact]
+        return rating
 
     class Meta:
         ordering = ("-created_on", )
