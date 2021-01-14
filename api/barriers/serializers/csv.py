@@ -3,6 +3,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from api.barriers.models import Barrier
+from api.barriers.serializers.mixins import AssessmentFieldsMixin
 from api.collaboration.models import TeamMember
 
 from api.metadata.constants import (
@@ -24,7 +25,7 @@ from api.metadata.utils import (
 )
 
 
-class BarrierCsvExportSerializer(serializers.Serializer):
+class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     """ Serializer for CSV export """
 
     id = serializers.UUIDField()
@@ -42,23 +43,14 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
-    team_count = serializers.IntegerField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
-    assessment_rating = serializers.SerializerMethodField()
-    assessment_explanation = serializers.SerializerMethodField()
-    value_to_economy = serializers.SerializerMethodField()
-    import_market_size = serializers.SerializerMethodField()
-    valuation_assessment_rating = serializers.SerializerMethodField()
-    valuation_assessment_explanation = serializers.SerializerMethodField()
     commercial_value = serializers.IntegerField()
-    export_value = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
     end_date = serializers.DateField(format="%Y-%m-%d")
     link = serializers.SerializerMethodField()
-    economic_assessment_explanation = serializers.SerializerMethodField()
     wto_has_been_notified = serializers.SerializerMethodField()
     wto_should_be_notified = serializers.SerializerMethodField()
     wto_committee_notified = serializers.CharField(
@@ -119,20 +111,18 @@ class BarrierCsvExportSerializer(serializers.Serializer):
             "sectors",
             "product",
             "source",
-            "team_count",
-            "term",
             "priority",
             "team_count",
+            "term",
             "reported_on",
             "modified_on",
-            "assessment_rating",
+            "economic_assessment_rating",
             "economic_assessment_explanation",
             "value_to_economy",
             "import_market_size",
             "valuation_assessment_rating",
             "valuation_assessment_explanation",
             "commercial_value",
-            "export_value",
             "end_date",
             "link",
         )
@@ -140,40 +130,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
     def get_term(self, obj):
         term_dict = dict(BARRIER_TERMS)
         return term_dict.get(obj.term, "Unknown")
-
-    def get_assessment_rating(self, obj):
-        if obj.current_economic_assessment:
-            return obj.current_economic_assessment.get_rating_display()
-
-    def get_assessment_explanation(self, obj):
-        if obj.current_economic_assessment:
-            return obj.current_economic_assessment.explanation
-
-    def get_value_to_economy(self, obj):
-        """ Value of UK exports of affected goods to partner country """
-        assessment = obj.current_economic_assessment
-        if assessment:
-            return assessment.export_potential.get("uk_exports_affected")
-
-    def get_import_market_size(self, obj):
-        """ Size of import market for affected product(s) """
-        assessment = obj.current_economic_assessment
-        if assessment:
-            return assessment.export_potential.get("import_market_size")
-
-    def get_valuation_assessment_rating(self, obj):
-        assessment = obj.current_economic_assessment
-        if assessment and assessment.latest_valuation_assessment:
-            return assessment.latest_valuation_assessment.rating
-
-    def get_valuation_assessment_explanation(self, obj):
-        assessment = obj.current_economic_assessment
-        if assessment and assessment.latest_valuation_assessment:
-            return assessment.latest_valuation_assessment.explanation
-
-    def get_export_value(self, obj):
-        if obj.current_economic_assessment:
-            return obj.current_economic_assessment.export_value
 
     def get_status(self, obj):
         """  Custom Serializer Method Field for exposing current status display value """
@@ -271,10 +227,6 @@ class BarrierCsvExportSerializer(serializers.Serializer):
 
     def get_link(self, obj):
         return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
-
-    def get_economic_assessment_explanation(self, obj):
-        if obj.current_economic_assessment:
-            return obj.current_economic_assessment.explanation
 
     def get_wto_has_been_notified(self, obj):
         if obj.has_wto_profile:

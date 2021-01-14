@@ -4,9 +4,10 @@ from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import BarrierStatus
 from .base import BarrierSerializerBase
+from .mixins import AssessmentFieldsMixin
 
 
-class DataWorkspaceSerializer(BarrierSerializerBase):
+class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     status_history = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
 
@@ -31,9 +32,13 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "created_on",
             "economic_assessment_eligibility",
             "economic_assessment_eligibility_summary",
+            "economic_assessment_explanation",
+            "economic_assessment_rating",
             "economic_assessments",
             "end_date",
+            "government_organisations",
             "id",
+            "import_market_size",
             "is_summary_sensitive",
             "modified_by",
             "modified_on",
@@ -66,8 +71,10 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "unarchived_by",
             "unarchived_on",
             "unarchived_reason",
+            "valuation_assessment_explanation",
+            "valuation_assessment_rating",
+            "value_to_economy",
             "wto_profile",
-            "government_organisations",
         )
 
     def get_status_history(self, obj):
