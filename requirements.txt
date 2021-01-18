@@ -1,9 +1,9 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2020-12-21_17-56
+# Generated: 2021-01-18_12-17
 # ======
 amqp==2.6.1
-asgiref==3.2.10
+asgiref==3.3.1
 billiard==3.6.3.0
 boto3==1.14.54
 botocore==1.17.63
@@ -12,7 +12,7 @@ certifi==2020.12.5
 cffi==1.14.4
 chardet==4.0.0
 dj-database-url==0.5.0
-django==3.1.2
+django==3.1.5
 django-celery-beat==2.0.0
 django-environ==0.4.5
 django-extensions==3.0.9
@@ -34,12 +34,12 @@ docutils==0.15.2
 elastic-apm==5.9.0
 future==0.18.2
 gevent==20.9.0
-greenlet==0.4.17; platform_python_implementation == "CPython"
+greenlet==1.0.0; platform_python_implementation == "CPython"
 gunicorn==20.0.4
 hashids==1.3.1
 hawkrest==1.0.1
 idna==2.8
-importlib-metadata==3.3.0; python_version < "3.8"
+importlib-metadata==3.4.0; python_version < "3.8"
 jmespath==0.10.0
 kombu==4.6.11
 kubi-ecs-logger==0.1.0
@@ -50,17 +50,17 @@ notifications-python-client==5.5.1
 oauthlib==3.1.0
 psycopg2-binary==2.7.5
 pycparser==2.20; platform_python_implementation == "CPython" and sys_platform == "win32"
-pyjwt==1.7.1
+pyjwt==2.0.1
 python-crontab==2.5.1
 python-dateutil==2.8.1
 python-json-logger==2.0.0
-pytz==2020.4
+pytz==2020.5
 raven==6.9.0
 redis==3.5.3
 requests==2.25.1
 requests-oauthlib==1.3.0
 requests-toolbelt==0.9.1
-s3transfer==0.3.3
+s3transfer==0.3.4
 sentry-sdk==0.18.0
 six==1.15.0
 sqlparse==0.4.1
