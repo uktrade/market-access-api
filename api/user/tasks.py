@@ -108,8 +108,11 @@ def send_notification_emails():
         saved_searches = get_saved_searches_for_notification(user)
         if saved_searches:
             logger.info(f"Sending saved search notification email to {user.email}")
-            send_email(user, saved_searches)
-            count += 1
-        mark_user_saved_searches_as_notified(user)
+            try:
+                send_email(user, saved_searches)
+                count += 1
+            except Exception:
+                logger.exception(f"Failed to send email to {user.email}")
+            mark_user_saved_searches_as_notified(user)
 
     logger.info(f"{count} saved search notification emails sent")

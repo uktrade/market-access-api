@@ -1,6 +1,6 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2021-01-18_12-17
+# Generated: 2021-01-28_11-26
 # ======
 amqp==2.6.1
 asgiref==3.3.1
@@ -45,8 +45,7 @@ kombu==4.6.11
 kubi-ecs-logger==0.1.0
 marshmallow==3.6.1
 mohawk==1.1.0
-monotonic==1.5
-notifications-python-client==5.5.1
+notifications-python-client==6.0.2
 oauthlib==3.1.0
 psycopg2-binary==2.7.5
 pycparser==2.20; platform_python_implementation == "CPython" and sys_platform == "win32"
