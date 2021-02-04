@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Django Migrations
-python3.7 manage.py makemigrations
-python3.7 manage.py migrate
+python manage.py makemigrations
+python manage.py migrate
 
 echo -e "╔══════════════════════════════════════════════════════╗"
 echo -e "                👏  Ready to roll!  👏                 "
