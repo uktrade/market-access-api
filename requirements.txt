@@ -1,6 +1,6 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2021-01-28_11-26
+# Generated: 2021-02-04_13-40
 # ======
 amqp==2.6.1
 asgiref==3.3.1
@@ -53,7 +53,7 @@ pyjwt==2.0.1
 python-crontab==2.5.1
 python-dateutil==2.8.1
 python-json-logger==2.0.0
-pytz==2020.5
+pytz==2021.1
 raven==6.9.0
 redis==3.5.3
 requests==2.25.1
