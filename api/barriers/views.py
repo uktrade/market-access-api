@@ -43,7 +43,7 @@ from api.user.models import Profile, SavedSearch
 from api.user.permissions import IsPublisher, IsEditor, AllRetrieveAndEditorUpdateOnly
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
-from .filters import BarrierFilterSet
+from .filters import BarrierFilterSet, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from ..metadata.utils import get_country_ids_by_overseas_region
 
@@ -717,6 +717,8 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
     http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = (AllRetrieveAndEditorUpdateOnly,)
     serializer_class = PublicBarrierSerializer
+    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    filterset_class = PublicBarrierFilterSet
 
     def get_queryset(self):
         status_filters = (

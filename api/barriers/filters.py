@@ -328,3 +328,22 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "without" in value:
             filters &= Q(commercial_value=None)
         return queryset.filter(filters).distinct()
+
+class PublicBarrierFilterSet(django_filters.FilterSet):
+    """
+    Custom FilterSet to handle filters on PublicBarriers
+    """
+
+    
+    status = django_filters.BaseInFilter("_public_view_status")
+    country = django_filters.BaseInFilter("country")
+    sector = django_filters.BaseInFilter(method="sector_filter")
+
+    def sector_filter(self, queryset, name, value):
+        """
+        custom filter for multi-select filtering of Sectors field,
+        which is ArrayField
+        """
+        return queryset.filter(
+            Q(all_sectors=True) | Q(sectors__overlap=value)
+        )
