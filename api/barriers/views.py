@@ -721,15 +721,8 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
     filterset_class = PublicBarrierFilterSet
 
     def get_queryset(self):
-        status_filters = (
-            PublicBarrierStatus.ELIGIBLE,
-            PublicBarrierStatus.READY,
-            PublicBarrierStatus.PUBLISHED
-        )
-        qs = PublicBarrier.objects \
-            .filter(_public_view_status__in=status_filters) \
-            .prefetch_related("notes")
-
+        qs = PublicBarrier.objects.prefetch_related("notes")
+        
         # Organisation filter
         org_ids = self.request.query_params.getlist('organisation')
         if org_ids:
