@@ -337,7 +337,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     status = django_filters.BaseInFilter("_public_view_status")
     country = django_filters.BaseInFilter("country")
     region = django_filters.BaseInFilter(method="region_filter")
-    sector = django_filters.BaseInFilter(method="sector_filter", field_name="overseas_region")
+    sector = django_filters.BaseInFilter(method="sector_filter")
 
     def sector_filter(self, queryset, name, value):
         """
@@ -345,7 +345,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         which is ArrayField
         """
         return queryset.filter(
-            Q(all_sectors=True) | Q(sectors__overlap=value)
+            Q(barrier__all_sectors=True) | Q(barrier__sectors__overlap=value)
         )
 
     def region_filter(self, queryset, name, value):
