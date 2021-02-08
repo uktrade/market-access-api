@@ -1,16 +1,16 @@
 from django.conf import settings
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
-from api.metadata.views import MetadataView
-from api.user.views import who_am_i, UserDetail
-from api.core.views import admin_override
 from api.assessment.urls import urlpatterns as assessment_urls
 from api.barriers.urls import urlpatterns as barrier_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.commodities.urls import urlpatterns as commodities_urls
+from api.core.views import admin_override
 from api.interactions.urls import urlpatterns as interaction_urls
+from api.metadata.views import MetadataView
 from api.user.urls import urlpatterns as user_urls
+from api.user.views import UserDetail, who_am_i
 
 urlpatterns = []
 

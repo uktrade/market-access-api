@@ -1,8 +1,6 @@
-from .base import *
-
 from django.utils.log import DEFAULT_LOGGING
 
-DJANGO_ENV = 'local'
+from . import base
 
 LOGGING = {
     'version': 1,
@@ -30,6 +28,7 @@ LOGGING = {
         'market-access-python-frontend': {
             'level': DJANGO_LOG_LEVEL,  # noqa
             'handlers': ['console'],
+            "level": base.DJANGO_LOG_LEVEL,
             # required to avoid double logging with root logger
             'propagate': False,
         },
