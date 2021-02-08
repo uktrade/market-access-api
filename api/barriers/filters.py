@@ -11,7 +11,7 @@ from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.metadata.constants import PublicBarrierStatus, TRADING_BLOCS
 from api.metadata.models import BarrierPriority
-from api.metadata.utils import get_countries, get_trading_bloc_country_ids
+from api.metadata.utils import get_countries, get_country_ids_by_overseas_region, get_trading_bloc_country_ids
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -334,10 +334,10 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle filters on PublicBarriers
     """
 
-    
     status = django_filters.BaseInFilter("_public_view_status")
     country = django_filters.BaseInFilter("country")
-    sector = django_filters.BaseInFilter(method="sector_filter")
+    region = django_filters.BaseInFilter(method="region_filter")
+    sector = django_filters.BaseInFilter(method="sector_filter", field_name="overseas_region")
 
     def sector_filter(self, queryset, name, value):
         """
@@ -347,3 +347,9 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         return queryset.filter(
             Q(all_sectors=True) | Q(sectors__overlap=value)
         )
+
+    def region_filter(self, queryset, name, value):
+        countries = set()
+        for region_id in value:
+            countries.update(get_country_ids_by_overseas_region(region_id))
+        return queryset.filter(barrier__country__in=countries)

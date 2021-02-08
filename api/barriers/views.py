@@ -730,12 +730,6 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
             .filter(_public_view_status__in=status_filters) \
             .prefetch_related("notes")
 
-        # Region filter
-        region_id = self.request.query_params.get('region', None)
-        if region_id is not None:
-            countries = get_country_ids_by_overseas_region(region_id)
-            qs = qs.filter(barrier__country__in=countries)
-
         # Organisation filter
         org_ids = self.request.query_params.getlist('organisation')
         if org_ids:
