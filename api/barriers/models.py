@@ -1,4 +1,3 @@
-from api.barriers.helpers import get_or_create_public_barrier
 import datetime
 from uuid import uuid4
 
@@ -64,6 +63,29 @@ class BarrierManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(draft=False)
 
+class PublicBarrierManager(models.Manager):
+
+    def get_queryset(self):
+        return super().get_queryset().filter(barrier__draft=False)
+
+    @staticmethod
+    def get_or_create_for_barrier(barrier):
+        public_barrier, created = PublicBarrier.objects.get_or_create(
+            barrier=barrier,
+            defaults={
+                "status": barrier.status,
+                "status_date": barrier.status_date,
+                "country": barrier.country,
+                "trading_bloc": barrier.trading_bloc,
+                "caused_by_trading_bloc": barrier.caused_by_trading_bloc,
+                "sectors": barrier.sectors,
+                "all_sectors": barrier.all_sectors,
+            }
+        )
+        if created:
+            public_barrier.categories.set(barrier.categories.all())
+
+        return public_barrier, created
 
 class BarrierHistoricalModel(models.Model):
     """
@@ -497,7 +519,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         super().save(force_insert, force_update, using, update_fields)
 
         # Ensure that a PublicBarrier for this Barrier exists
-        get_or_create_public_barrier(self)
+        PublicBarrier.public_barriers.get_or_create_for_barrier(barrier=self)
 
 
 class PublicBarrierHistoricalModel(models.Model):
@@ -616,6 +638,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
+
+    public_barriers = PublicBarrierManager
     
     class Meta:
         permissions = [
