@@ -185,8 +185,12 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
 
     def get_latest_note(self, obj):
         try:
-            note = obj.notes.latest("created_on")
+            # We need to perform Python sorting instead of SQL
+            # as otherwise the prefetch would not get used
+            note = sorted(list(obj.notes.all()), key=lambda note: note.created_on, reverse=True)[0]
             return PublicBarrierNoteSerializer(note).data
+        except IndexError:
+            return None
         except PublicBarrierNote.DoesNotExist:
             return None
 

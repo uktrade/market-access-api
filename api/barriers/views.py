@@ -713,7 +713,12 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
     """
     Manage public data for barriers.
     """
-    barriers_qs = Barrier.barriers.all()
+    barriers_qs = Barrier.barriers.all().select_related(
+        "priority"
+    ).prefetch_related(
+        "tags",
+        "organisations",
+    )
     http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = (AllRetrieveAndEditorUpdateOnly,)
     serializer_class = PublicBarrierSerializer
@@ -724,7 +729,15 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
         qs = PublicBarrier.objects.filter(
             barrier__archived=False, 
             barrier__draft=False
-            ).prefetch_related("barrier").prefetch_related("notes")
+        ).prefetch_related(
+            "notes",
+            "categories",
+            "barrier",
+            "barrier__tags",
+            "barrier__organisations",
+            "barrier__categories",
+            "barrier__priority",
+        )
 
         # Organisation filter
         org_ids = self.request.query_params.getlist('organisation')

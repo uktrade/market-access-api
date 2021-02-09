@@ -1,3 +1,4 @@
+from api.barriers.helpers import get_or_create_public_barrier
 import datetime
 from uuid import uuid4
 
@@ -495,6 +496,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
         super().save(force_insert, force_update, using, update_fields)
 
+        # Ensure that a PublicBarrier for this Barrier exists
+        get_or_create_public_barrier(self)
+
 
 class PublicBarrierHistoricalModel(models.Model):
     """
@@ -612,7 +616,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
-
+    
     class Meta:
         permissions = [
             ('publish_barrier', 'Can publish barrier'),
