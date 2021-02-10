@@ -28,7 +28,9 @@ class BarrierAdmin(admin.ModelAdmin):
 
 admin.site.register(Barrier, BarrierAdmin)
 
+
 class PublicBarrierAdmin(admin.ModelAdmin):
     list_display = ("id", "barrier", "country", "status")
+
 
 admin.site.register(PublicBarrier, PublicBarrierAdmin)

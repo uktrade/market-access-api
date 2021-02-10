@@ -27,7 +27,11 @@ from api.metadata.constants import (
 from api.commodities.models import Commodity
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
-from api.metadata.utils import get_country, get_trading_bloc_by_country_id, get_location_text
+from api.metadata.utils import (
+    get_country,
+    get_trading_bloc_by_country_id,
+    get_location_text,
+)
 from api.barriers import validators
 from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
 from api.barriers.utils import random_barrier_reference
@@ -63,8 +67,8 @@ class BarrierManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(draft=False)
 
-class PublicBarrierManager(models.Manager):
 
+class PublicBarrierManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(barrier__draft=False)
 
@@ -80,17 +84,19 @@ class PublicBarrierManager(models.Manager):
                 "caused_by_trading_bloc": barrier.caused_by_trading_bloc,
                 "sectors": barrier.sectors,
                 "all_sectors": barrier.all_sectors,
-            }
+            },
         )
         if created:
             public_barrier.categories.set(barrier.categories.all())
 
         return public_barrier, created
 
+
 class BarrierHistoricalModel(models.Model):
     """
     Abstract model for history models tracking category changes.
     """
+
     categories_cache = ArrayField(
         models.PositiveIntegerField(),
         blank=True,
@@ -126,7 +132,9 @@ class BarrierHistoricalModel(models.Model):
         if set(self.tags_cache or []) != set(old_history.tags_cache or []):
             changed_fields.add("tags")
 
-        if set(self.organisations_cache or []) != set(old_history.organisations_cache or []):
+        if set(self.organisations_cache or []) != set(
+            old_history.organisations_cache or []
+        ):
             changed_fields.add("organisations")
 
         if changed_fields.intersection(("country", "admin_areas")):
@@ -165,7 +173,7 @@ class BarrierHistoricalModel(models.Model):
                     "description": barrier_commodity.commodity.description,
                     "full_description": barrier_commodity.commodity.full_description,
                     "version": barrier_commodity.commodity.version,
-                }
+                },
             }
             if barrier_commodity.country:
                 item["country"] = {"id": str(barrier_commodity.country)}
@@ -210,7 +218,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         null=True,
         help_text="Is this a short-term procedural or long-term strategic barrier?",
     )
-    end_date = models.DateField(blank=True, null=True, help_text="Date the barrier ends")
+    end_date = models.DateField(
+        blank=True, null=True, help_text="Date the barrier ends"
+    )
     country = models.UUIDField(blank=True, null=True)
     admin_areas = ArrayField(
         models.UUIDField(),
@@ -280,7 +290,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text=(
             "If resolved or part-resolved, the month and year supplied by the user, "
             "otherwise the current time when the status was set."
-        )
+        ),
     )
     commercial_value = models.BigIntegerField(blank=True, null=True)
     commercial_value_explanation = models.TextField(blank=True)
@@ -319,11 +329,15 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Store reporting stages before submitting",
     )
     archived_reason = models.CharField(
-        choices=BARRIER_ARCHIVED_REASON, max_length=25, blank=True,
+        choices=BARRIER_ARCHIVED_REASON,
+        max_length=25,
+        blank=True,
     )
     archived_explanation = models.TextField(blank=True)
     commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
-    trade_category = models.CharField(choices=TRADE_CATEGORIES, max_length=32, blank=True)
+    trade_category = models.CharField(
+        choices=TRADE_CATEGORIES, max_length=32, blank=True
+    )
     draft = models.BooleanField(default=True)
     organisations = models.ManyToManyField(
         Organisation, help_text="Organisations that are related to the barrier"
@@ -345,7 +359,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
     class Meta:
         ordering = ["-reported_on"]
         permissions = [
-            ('change_barrier_public_eligibility', 'Can change barrier public eligibility'),
+            (
+                "change_barrier_public_eligibility",
+                "Can change barrier public eligibility",
+            ),
         ]
 
     @property
@@ -462,11 +479,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def has_public_barrier(self):
-        return hasattr(self, 'public_barrier')
+        return hasattr(self, "public_barrier")
 
     @property
     def has_wto_profile(self):
-        return hasattr(self, 'wto_profile')
+        return hasattr(self, "wto_profile")
 
     @property
     def is_resolved(self):
@@ -526,6 +543,7 @@ class PublicBarrierHistoricalModel(models.Model):
     """
     Abstract model for tracking m2m changes for PublicBarrier.
     """
+
     categories_cache = ArrayField(
         models.CharField(max_length=20),
         blank=True,
@@ -599,12 +617,13 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     This table should not be exposed to the public however only to the DMAS frontend which requires login.
     Transfer the data to a flat file or another service which can safely expose the data.
     """
+
     id = HashidAutoField(
-        primary_key=True,
-        min_length=6,
-        alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        primary_key=True, min_length=6, alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     )
-    barrier = models.OneToOneField(Barrier, on_delete=CASCADE, related_name="public_barrier")
+    barrier = models.OneToOneField(
+        Barrier, on_delete=CASCADE, related_name="public_barrier"
+    )
 
     # === Title related fields =====
     _title = models.CharField(blank=True, max_length=MAX_LENGTH)
@@ -634,17 +653,22 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     published_versions = models.JSONField(default=dict)
 
     # === Status and timestamps ====
-    _public_view_status = models.PositiveIntegerField(choices=PublicBarrierStatus.choices, default=0)
+    _public_view_status = models.PositiveIntegerField(
+        choices=PublicBarrierStatus.choices, default=0
+    )
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
 
     public_barriers = PublicBarrierManager
-    
+
     class Meta:
         permissions = [
-            ('publish_barrier', 'Can publish barrier'),
-            ('mark_barrier_as_ready_for_publishing', 'Can mark barrier as ready for publishing'),
+            ("publish_barrier", "Can publish barrier"),
+            (
+                "mark_barrier_as_ready_for_publishing",
+                "Can mark barrier as ready for publishing",
+            ),
         ]
 
     def add_new_version(self):
@@ -664,7 +688,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         new_version = str(int(latest_version) + 1)
         entry = {
             "version": new_version,
-            "published_on": self.last_published_on.isoformat()
+            "published_on": self.last_published_on.isoformat(),
         }
         if not self.published_versions:
             self.published_versions = {"latest_version": "0", "versions": {}}
@@ -675,14 +699,18 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         version = str(version)
         if self.published_versions:
             timestamp = self.published_versions["versions"][version]["published_on"]
-            historic_public_barrier = self.history.as_of(datetime.datetime.fromisoformat(timestamp))
+            historic_public_barrier = self.history.as_of(
+                datetime.datetime.fromisoformat(timestamp)
+            )
             return historic_public_barrier
         else:
             return None
 
     @property
     def latest_published_version(self):
-        return self.get_published_version(self.published_versions.get("latest_version", 0))
+        return self.get_published_version(
+            self.published_versions.get("latest_version", 0)
+        )
 
     def update_non_editable_fields(self):
         self.status = self.internal_status
@@ -758,7 +786,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     @property
     def public_view_status(self):
         # set default if eligibility is avail on the internal barrier
-        if (self._public_view_status == PublicBarrierStatus.UNKNOWN):
+        if self._public_view_status == PublicBarrierStatus.UNKNOWN:
             if self.barrier.public_eligibility is True:
                 self._public_view_status = PublicBarrierStatus.ELIGIBLE
             if self.barrier.public_eligibility is False:
@@ -837,9 +865,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     @property
     def internal_status_date_changed(self):
         # Change in status date is only relevant if the barrier is resolved
-        return (
-            (self.internal_is_resolved or self.is_resolved)
-            and (self.internal_status_date != self.status_date)
+        return (self.internal_is_resolved or self.is_resolved) and (
+            self.internal_status_date != self.status_date
         )
 
     @property
@@ -926,11 +953,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         is_republish = self.unpublished_on is not None
         has_changes = self.unpublished_changes
         has_title_and_summary = bool(self.title and self.summary)
-        return (
-            is_ready
-            and has_title_and_summary
-            and (is_republish or has_changes)
-        )
+        return is_ready and has_title_and_summary and (is_republish or has_changes)
 
     @property
     def unpublished_changes(self):
@@ -951,12 +974,13 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
 class BarrierUserHit(models.Model):
     """Record when a user has most recently seen a barrier."""
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     barrier = models.ForeignKey(Barrier, on_delete=models.CASCADE)
     last_seen = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ['user', 'barrier']
+        unique_together = ["user", "barrier"]
 
 
 class BarrierReportStage(BaseModel):
@@ -975,11 +999,17 @@ class BarrierReportStage(BaseModel):
 
 
 class BarrierCommodity(models.Model):
-    barrier = models.ForeignKey(Barrier, related_name="barrier_commodities", on_delete=models.CASCADE)
-    commodity = models.ForeignKey(Commodity, related_name="barrier_commodities", on_delete=models.CASCADE)
+    barrier = models.ForeignKey(
+        Barrier, related_name="barrier_commodities", on_delete=models.CASCADE
+    )
+    commodity = models.ForeignKey(
+        Commodity, related_name="barrier_commodities", on_delete=models.CASCADE
+    )
     code = models.CharField(max_length=10)
     country = models.UUIDField(blank=True, null=True)
-    trading_bloc = models.CharField(choices=TRADING_BLOC_CHOICES, max_length=7, blank=True)
+    trading_bloc = models.CharField(
+        choices=TRADING_BLOC_CHOICES, max_length=7, blank=True
+    )
     created_on = models.DateTimeField(auto_now_add=True)
 
     @property
