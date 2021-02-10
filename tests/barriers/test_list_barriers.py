@@ -43,7 +43,6 @@ class TestListBarriersBlankSystem(APITestMixin, APITestCase):
 
 
 class TestListBarriers(APITestMixin, APITestCase):
-
     def setUp(self):
         self.url = reverse("list-barriers")
 
@@ -291,11 +290,16 @@ class TestListBarriers(APITestMixin, APITestCase):
 
     def test_list_barriers_order_by(self):
         test_parameters = [
-            "reported_on", "-reported_on",
-            "modified_on", "-modified_on",
-            "status", "-status",
-            "priority", "-priority",
-            "country", "-country"
+            "reported_on",
+            "-reported_on",
+            "modified_on",
+            "-modified_on",
+            "status",
+            "-status",
+            "priority",
+            "-priority",
+            "country",
+            "-country",
         ]
         priorities = BarrierPriorityFactory.create_batch(3)
         bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
@@ -304,7 +308,7 @@ class TestListBarriers(APITestMixin, APITestCase):
             modified_on=datetime(2020, 1, 2, tzinfo=UTC),
             status=1,
             priority=priorities[0],
-            country=bahamas
+            country=bahamas,
         )
         bhutan = "ab5f66a0-5d95-e211-a939-e4115bead28a"
         barrier2 = BarrierFactory(
@@ -312,7 +316,7 @@ class TestListBarriers(APITestMixin, APITestCase):
             modified_on=datetime(2020, 2, 3, tzinfo=UTC),
             status=2,
             priority=priorities[1],
-            country=bhutan
+            country=bhutan,
         )
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         barrier3 = BarrierFactory(
@@ -320,7 +324,7 @@ class TestListBarriers(APITestMixin, APITestCase):
             modified_on=datetime(2020, 3, 4, tzinfo=UTC),
             status=7,
             priority=priorities[2],
-            country=spain
+            country=spain,
         )
 
         assert 3 == Barrier.objects.count()
@@ -434,8 +438,8 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert {str(barrier2.id), str(barrier3.id)} == set(barrier_ids)
 
     def test_list_barriers_text_filter_based_on_public_id(self):
-        barrier1 = BarrierFactory(public_barrier__title="Public Title")
-        barrier2 = BarrierFactory(public_barrier__title="Public Title")
+        barrier1 = BarrierFactory(public_barrier___title="Public Title")
+        barrier2 = BarrierFactory(public_barrier___title="Public Title")
         barrier3 = BarrierFactory()
 
         public_id = f"PID-{barrier2.public_barrier.id}"
@@ -592,7 +596,9 @@ class TestListBarriers(APITestMixin, APITestCase):
         user1 = create_test_user()
         _barrier0 = BarrierFactory()
         barrier1 = BarrierFactory(created_by=user1)
-        member1 = TeamMemberFactory(barrier=barrier1, user=user1, role="Reporter", default=True)
+        member1 = TeamMemberFactory(
+            barrier=barrier1, user=user1, role="Reporter", default=True
+        )
         barrier2 = BarrierFactory(created_by=user1)
         TeamMemberFactory(barrier=barrier2, user=user1, role="Contributor")
 
@@ -612,8 +618,12 @@ class TestListBarriers(APITestMixin, APITestCase):
         """
         user1 = create_test_user()
         barrier1 = BarrierFactory(created_by=user1)
-        member1 = TeamMemberFactory(barrier=barrier1, user=user1, role="Reporter", default=True)
-        member2 = TeamMemberFactory(barrier=barrier1, user=user1, role="Owner", default=True)
+        member1 = TeamMemberFactory(
+            barrier=barrier1, user=user1, role="Reporter", default=True
+        )
+        member2 = TeamMemberFactory(
+            barrier=barrier1, user=user1, role="Owner", default=True
+        )
 
         assert 1 == Barrier.objects.count()
 
@@ -649,7 +659,9 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert 2 == Barrier.objects.count()
         assert 1 == Barrier.objects.filter(organisations__in=[org1]).count()
 
-        url = f'{reverse("list-barriers")}?organisation={org1.id}&?organisation={org2.id}'
+        url = (
+            f'{reverse("list-barriers")}?organisation={org1.id}&?organisation={org2.id}'
+        )
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
@@ -747,7 +759,9 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         assert 3 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
-        assert set([str(barrier1.id), str(barrier2.id), str(barrier3.id)]) == barrier_ids
+        assert (
+            set([str(barrier1.id), str(barrier2.id), str(barrier3.id)]) == barrier_ids
+        )
 
         # Search by trading_bloc, including country specific barriers
         response = self.api_client.get(

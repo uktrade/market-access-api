@@ -70,10 +70,9 @@ def barriers_export(request):
     pseudo_buffer = Echo()
     writer = csv.writer(pseudo_buffer)
     response = StreamingHttpResponse(
-        (writer.writerow(row) for row in rows),
-        content_type="text/csv"
+        (writer.writerow(row) for row in rows), content_type="text/csv"
     )
-    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+    response["Content-Disposition"] = 'attachment; filename="somefilename.csv"'
     return response
 
 
@@ -104,12 +103,8 @@ def barrier_count(request):
     barriers = Barrier.barriers.all()
     reports = Barrier.reports.all()
     if not current_user.is_anonymous:
-        user_barrier_count = Barrier.barriers.filter(
-            created_by=current_user
-        ).count()
-        user_report_count = Barrier.reports.filter(
-            created_by=current_user
-        ).count()
+        user_barrier_count = Barrier.barriers.filter(created_by=current_user).count()
+        user_report_count = Barrier.reports.filter(created_by=current_user).count()
         user_count = {"barriers": user_barrier_count, "reports": user_report_count}
         if has_profile(current_user) and current_user.profile.location:
             country = current_user.profile.location
@@ -237,8 +232,12 @@ class BarrierReportSubmit(generics.UpdateAPIView):
 
         # Create default team members
         new_members = (
-            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.REPORTER, default=True),
-            TeamMember(barrier=barrier_obj, user=user, role=TeamMember.OWNER, default=True),
+            TeamMember(
+                barrier=barrier_obj, user=user, role=TeamMember.REPORTER, default=True
+            ),
+            TeamMember(
+                barrier=barrier_obj, user=user, role=TeamMember.OWNER, default=True
+            ),
         )
         # using a helper here due to - https://django-simple-history.readthedocs.io/en/2.8.0/common_issues.html
         bulk_create_with_history(new_members, TeamMember)
@@ -249,11 +248,14 @@ class BarrierList(generics.ListAPIView):
     Return a list of all the Barriers
     with optional filtering and ordering defined
     """
-    queryset = Barrier.barriers.all().select_related(
-        "priority"
-    ).prefetch_related(
-        "tags",
-        "organisations",
+
+    queryset = (
+        Barrier.barriers.all()
+        .select_related("priority")
+        .prefetch_related(
+            "tags",
+            "organisations",
+        )
     )
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
@@ -318,23 +320,28 @@ class BarrierListExportView(generics.ListAPIView):
     with optional filtering and ordering defined
     """
 
-    queryset = Barrier.barriers.annotate(
-        team_count=Count('barrier_team'),
-    ).all().select_related(
-        "wto_profile__committee_notified",
-        "wto_profile__committee_raised_in",
-        "priority",
-        "public_barrier",
-    ).prefetch_related(
-        "economic_assessments",
-        "resolvability_assessments",
-        "strategic_assessments",
-        "tags",
-        "categories",
-        "barrier_commodities",
-        "public_barrier__notes",
-        "cached_history_items",
-        "organisations",
+    queryset = (
+        Barrier.barriers.annotate(
+            team_count=Count("barrier_team"),
+        )
+        .all()
+        .select_related(
+            "wto_profile__committee_notified",
+            "wto_profile__committee_raised_in",
+            "priority",
+            "public_barrier",
+        )
+        .prefetch_related(
+            "economic_assessments",
+            "resolvability_assessments",
+            "strategic_assessments",
+            "tags",
+            "categories",
+            "barrier_commodities",
+            "public_barrier__notes",
+            "cached_history_items",
+            "organisations",
+        )
     )
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
@@ -406,10 +413,10 @@ class BarrierListExportView(generics.ListAPIView):
         Gets the filename (without the .csv suffix) for the CSV file download.
         """
         filename_parts = [
-            'Data Hub Market Access Barriers',
-            now().strftime('%Y-%m-%d-%H-%M-%S'),
+            "Data Hub Market Access Barriers",
+            now().strftime("%Y-%m-%d-%H-%M-%S"),
         ]
-        return ' - '.join(filename_parts)
+        return " - ".join(filename_parts)
 
     def get(self, request, *args, **kwargs):
         """
@@ -431,12 +438,13 @@ class BarrierListS3Download(BarrierListExportView):
 
     Returns a presigned download url which is valid for an hour.
     """
+
     def get(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         base_filename = self._get_base_filename()
 
-        with NamedTemporaryFile(mode='w+t') as tf:
+        with NamedTemporaryFile(mode="w+t") as tf:
             writer = DictWriter(
                 tf,
                 extrasaction="ignore",
@@ -472,14 +480,16 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     """
 
     lookup_field = "pk"
-    queryset = Barrier.barriers.all().select_related(
-        "priority"
-    ).prefetch_related(
-        "barrier_commodities",
-        "categories",
-        "economic_assessments",
-        "organisations",
-        "tags",
+    queryset = (
+        Barrier.barriers.all()
+        .select_related("priority")
+        .prefetch_related(
+            "barrier_commodities",
+            "categories",
+            "economic_assessments",
+            "organisations",
+            "tags",
+        )
     )
 
     serializer_class = BarrierDetailSerializer
@@ -538,7 +548,9 @@ class PublicBarrierActivity(generics.GenericAPIView):
 
     def get(self, request, pk):
         public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))
-        history_items = HistoryManager.get_public_activity(public_barrier=public_barrier, use_cache=False)
+        history_items = HistoryManager.get_public_activity(
+            public_barrier=public_barrier, use_cache=False
+        )
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
@@ -548,7 +560,14 @@ class PublicBarrierActivity(generics.GenericAPIView):
 
 class BarrierStatusBase(generics.UpdateAPIView):
     def _create(
-        self, serializer, barrier_id, status, summary, sub_status="", sub_other="", status_date=None
+        self,
+        serializer,
+        barrier_id,
+        status,
+        summary,
+        sub_status="",
+        sub_other="",
+        status_date=None,
     ):
         barrier_obj = get_object_or_404(Barrier, pk=barrier_id)
 
@@ -591,7 +610,7 @@ class BarrierResolveInFull(BarrierStatusBase):
             barrier_id=self.kwargs.get("pk"),
             status=4,
             summary=self.request.data.get("status_summary", ""),
-            status_date=self.request.data.get("status_date")
+            status_date=self.request.data.get("status_date"),
         )
 
 
@@ -621,7 +640,7 @@ class BarrierResolveInPart(BarrierStatusBase):
             barrier_id=self.kwargs.get("pk"),
             status=3,
             summary=self.request.data.get("status_summary", ""),
-            status_date=self.request.data.get("status_date")
+            status_date=self.request.data.get("status_date"),
         )
 
 
@@ -701,23 +720,28 @@ class BarrierOpenActionRequired(BarrierStatusBase):
             sub_status=self.request.data.get("sub_status", ""),
             sub_other=self.request.data.get("sub_status_other", ""),
             summary=self.request.data.get("status_summary", ""),
-            status_date=self.request.data.get("status_date")
+            status_date=self.request.data.get("status_date"),
         )
 
 
-class PublicBarrierViewSet(TeamMemberModelMixin,
-                           mixins.ListModelMixin,
-                           mixins.RetrieveModelMixin,
-                           mixins.UpdateModelMixin,
-                           GenericViewSet):
+class PublicBarrierViewSet(
+    TeamMemberModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    GenericViewSet,
+):
     """
     Manage public data for barriers.
     """
-    barriers_qs = Barrier.barriers.all().select_related(
-        "priority"
-    ).prefetch_related(
-        "tags",
-        "organisations",
+
+    barriers_qs = (
+        Barrier.barriers.all()
+        .select_related("priority")
+        .prefetch_related(
+            "tags",
+            "organisations",
+        )
     )
     http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = (AllRetrieveAndEditorUpdateOnly,)
@@ -727,8 +751,7 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
 
     def get_queryset(self):
         qs = PublicBarrier.objects.filter(
-            barrier__archived=False, 
-            barrier__draft=False
+            barrier__archived=False, barrier__draft=False
         ).prefetch_related(
             "notes",
             "categories",
@@ -738,11 +761,6 @@ class PublicBarrierViewSet(TeamMemberModelMixin,
             "barrier__categories",
             "barrier__priority",
         )
-
-        # Organisation filter
-        org_ids = self.request.query_params.getlist('organisation')
-        if org_ids:
-            qs = qs.filter(barrier__organisations__id__in=org_ids)
 
         return qs.distinct("id")
 

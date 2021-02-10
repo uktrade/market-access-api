@@ -12,9 +12,9 @@ from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
 
 def fuzzy_sector():
     sectors = (
-        "af959812-6095-e211-a939-e4115bead28a",     # Advanced Engineering
-        "9538cecc-5f95-e211-a939-e4115bead28a",     # Aerospace
-        "9b38cecc-5f95-e211-a939-e4115bead28a",     # Chemicals
+        "af959812-6095-e211-a939-e4115bead28a",  # Advanced Engineering
+        "9538cecc-5f95-e211-a939-e4115bead28a",  # Aerospace
+        "9b38cecc-5f95-e211-a939-e4115bead28a",  # Chemicals
     )
     return FuzzyChoice(sectors).fuzz()
 
@@ -122,7 +122,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def public_barrier(self, create, extracted, **kwargs):
         if kwargs:
-            PublicBarrierFactory(barrier=self, **kwargs)
+            PublicBarrier.objects.filter(barrier=self).update(**kwargs)
 
     @factory.post_generation
     def wto_profile(self, create, extracted, **kwargs):
@@ -134,6 +134,7 @@ class ReportFactory(factory.django.DjangoModelFactory):
     """
     Barriers are called Reports until they're submitted via self.submit_report()
     """
+
     class Meta:
         model = Barrier
 
