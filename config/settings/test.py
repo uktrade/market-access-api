@@ -1,7 +1,8 @@
 from .base import *
 
+
 DEBUG = False
-DJANGO_ENV = 'test'
+DJANGO_ENV = "test"
 
 SSO_ENABLED = True
 HAWK_ENABLED = False

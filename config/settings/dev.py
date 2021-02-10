@@ -4,7 +4,7 @@ from .base import *
 from django_log_formatter_ecs import ECSFormatter
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DJANGO_ENV = 'dev'
+DJANGO_ENV = "dev"
 SSO_ENABLED = True
 
 LOGGING = {
@@ -22,10 +22,5 @@ LOGGING = {
             "stream": sys.stdout,
         },
     },
-    "loggers": {
-        "": {
-            "handlers": ["ecs"],
-            "level": DJANGO_LOG_LEVEL
-        }
-    },
+    "loggers": {"": {"handlers": ["ecs"], "level": DJANGO_LOG_LEVEL}},
 }

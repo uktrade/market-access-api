@@ -89,11 +89,11 @@ LOCAL_APPS = [
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 if ELASTIC_APM_ENABLED:
-    INSTALLED_APPS.append('elasticapm.contrib.django')
+    INSTALLED_APPS.append("elasticapm.contrib.django")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -135,9 +135,7 @@ if SENTRY_DSN:
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-DATABASES = {
-    "default": dj_database_url.config(env="DATABASE_URL", default="")
-}
+DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
 
 HASHID_FIELD_SALT = env("DJANGO_HASHID_FIELD_SALT")
 HASHID_FIELD_ALLOW_INT_LOOKUP = False
@@ -230,8 +228,12 @@ if SSO_ENABLED:
         "RESOURCE_SERVER_INTROSPECTION_URL"
     )
     OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"] = env("RESOURCE_SERVER_AUTH_TOKEN")
-    OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"] = env("RESOURCE_SERVER_USER_INFO_URL")
-    OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"] = env("RESOURCE_SERVER_USER_INTROSPECT_URL")
+    OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INFO_URL"] = env(
+        "RESOURCE_SERVER_USER_INFO_URL"
+    )
+    OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"] = env(
+        "RESOURCE_SERVER_USER_INTROSPECT_URL"
+    )
 
 # DRF
 REST_FRAMEWORK = {
@@ -261,17 +263,19 @@ HAWK_CREDENTIALS = {}
 HAWK_ENABLED = env.bool("HAWK_ENABLED", True)
 
 if HAWK_ENABLED:
-    HAWK_ID = os.environ.get('HAWK_ID')
-    HAWK_KEY = os.environ.get('HAWK_KEY')
-    HAWK_ALGORITHM = os.environ.get('HAWK_ALGORITHM', 'sha256')
+    HAWK_ID = os.environ.get("HAWK_ID")
+    HAWK_KEY = os.environ.get("HAWK_KEY")
+    HAWK_ALGORITHM = os.environ.get("HAWK_ALGORITHM", "sha256")
 
     DATAHUB_HAWK_ID = os.environ.get("DH_HAWK_ID")
-    DATAHUB_HAWK_KEY = os.environ.get('DH_HAWK_KEY')
-    DATAHUB_HAWK_ALGORITHM = os.environ.get('DH_HAWK_ALGORITHM', 'sha256')
+    DATAHUB_HAWK_KEY = os.environ.get("DH_HAWK_KEY")
+    DATAHUB_HAWK_ALGORITHM = os.environ.get("DH_HAWK_ALGORITHM", "sha256")
 
     DATA_WORKSPACE_HAWK_ID = os.environ.get("DATA_WORKSPACE_HAWK_ID")
     DATA_WORKSPACE_HAWK_KEY = os.environ.get("DATA_WORKSPACE_HAWK_KEY")
-    DATA_WORKSPACE_HAWK_ALGORITHM = os.environ.get("DATA_WORKSPACE_HAWK_ALGORITHM", "sha256")
+    DATA_WORKSPACE_HAWK_ALGORITHM = os.environ.get(
+        "DATA_WORKSPACE_HAWK_ALGORITHM", "sha256"
+    )
 
     HAWK_CREDENTIALS = {
         HAWK_ID: {
@@ -322,9 +326,9 @@ DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="info").upper()
 CELERY_BEAT_SCHEDULE = {}
 
 if not DEBUG:
-    CELERY_BEAT_SCHEDULE['send_notification_emails'] = {
-        'task': 'api.user.tasks.send_notification_emails',
-        'schedule': crontab(minute=0, hour=6),
+    CELERY_BEAT_SCHEDULE["send_notification_emails"] = {
+        "task": "api.user.tasks.send_notification_emails",
+        "schedule": crontab(minute=0, hour=6),
     }
 
 
