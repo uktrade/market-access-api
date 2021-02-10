@@ -11,7 +11,11 @@ from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.metadata.constants import PublicBarrierStatus, TRADING_BLOCS
 from api.metadata.models import BarrierPriority
-from api.metadata.utils import get_countries, get_trading_bloc_country_ids
+from api.metadata.utils import (
+    get_countries,
+    get_country_ids_by_overseas_region,
+    get_trading_bloc_country_ids,
+)
 
 
 class BarrierFilterSet(django_filters.FilterSet):
@@ -50,15 +54,21 @@ class BarrierFilterSet(django_filters.FilterSet):
     team = django_filters.Filter(method="team_barriers")
     member = django_filters.Filter(method="member_filter")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
-    economic_assessment = django_filters.BaseInFilter(method="economic_assessment_filter")
-    economic_impact_assessment = django_filters.BaseInFilter(method="economic_impact_assessment_filter")
+    economic_assessment = django_filters.BaseInFilter(
+        method="economic_assessment_filter"
+    )
+    economic_impact_assessment = django_filters.BaseInFilter(
+        method="economic_impact_assessment_filter"
+    )
     public_view = django_filters.BaseInFilter(method="public_view_filter")
     tags = django_filters.BaseInFilter(method="tags_filter")
     trade_direction = django_filters.BaseInFilter("trade_direction")
     wto = django_filters.BaseInFilter(method="wto_filter")
     organisation = django_filters.BaseInFilter("organisations", distinct=True)
     commodity_code = django_filters.BaseInFilter(method="commodity_code_filter")
-    commercial_value_estimate = django_filters.BaseInFilter(method="commercial_value_estimate_filter")
+    commercial_value_estimate = django_filters.BaseInFilter(
+        method="commercial_value_estimate_filter"
+    )
 
     class Meta:
         model = Barrier
@@ -88,9 +98,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
         """
-        return queryset.filter(
-            Q(all_sectors=True) | Q(sectors__overlap=value)
-        )
+        return queryset.filter(Q(all_sectors=True) | Q(sectors__overlap=value))
 
     def priority_filter(self, queryset, name, value):
         """
@@ -125,7 +133,10 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         # Add all countries within the overseas regions
         for country in cache.get_or_set("dh_countries", get_countries, 72000):
-            if country["overseas_region"] and country["overseas_region"]["id"] in location_values:
+            if (
+                country["overseas_region"]
+                and country["overseas_region"]["id"] in location_values
+            ):
                 overseas_region_countries.append(country["id"])
                 if country["overseas_region"]["id"] not in overseas_region_values:
                     overseas_region_values.append(country["overseas_region"]["id"])
@@ -138,7 +149,9 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         return {
             "countries": [
-                location for location in location_values if location not in overseas_region_values
+                location
+                for location in location_values
+                if location not in overseas_region_values
             ],
             "overseas_regions": overseas_region_values,
             "overseas_region_countries": overseas_region_countries,
@@ -167,9 +180,9 @@ class BarrierFilterSet(django_filters.FilterSet):
                 )
 
         return tb_queryset | queryset.filter(
-            Q(country__in=location["countries"]) |
-            Q(country__in=location["overseas_region_countries"]) |
-            Q(admin_areas__overlap=location["countries"])
+            Q(country__in=location["countries"])
+            | Q(country__in=location["overseas_region_countries"])
+            | Q(admin_areas__overlap=location["countries"])
         )
 
     def text_search(self, queryset, name, value):
@@ -179,10 +192,10 @@ class BarrierFilterSet(django_filters.FilterSet):
             full text search on summary
             partial search on title
         """
-        return queryset.annotate(
-            search=SearchVector('summary'),
-        ).filter(
-            Q(code=value) | Q(search=value) | Q(title__icontains=value)
+        return queryset.annotate(search=SearchVector("summary"),).filter(
+            Q(code=value)
+            | Q(search=value)
+            | Q(title__icontains=value)
             | Q(public_barrier__id=value.lstrip("PID-").upper())
         )
 
@@ -212,24 +225,30 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            changed_ids = queryset.annotate(
-                change=Concat(
-                    "cached_history_items__model", V("."), "cached_history_items__field",
-                    output_field=CharField(),
-                ),
-                change_date=F("cached_history_items__date"),
-            ).filter(
-                public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
-                change_date__gt=F("public_barrier__last_published_on"),
-                change__in=(
-                    "barrier.categories",
-                    "barrier.location",
-                    "barrier.sectors",
-                    "barrier.status",
-                    "barrier.summary",
-                    "barrier.title",
-                ),
-            ).values_list("id", flat=True)
+            changed_ids = (
+                queryset.annotate(
+                    change=Concat(
+                        "cached_history_items__model",
+                        V("."),
+                        "cached_history_items__field",
+                        output_field=CharField(),
+                    ),
+                    change_date=F("cached_history_items__date"),
+                )
+                .filter(
+                    public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
+                    change_date__gt=F("public_barrier__last_published_on"),
+                    change__in=(
+                        "barrier.categories",
+                        "barrier.location",
+                        "barrier.sectors",
+                        "barrier.status",
+                        "barrier.summary",
+                        "barrier.title",
+                    ),
+                )
+                .values_list("id", flat=True)
+            )
             public_queryset = queryset.filter(id__in=changed_ids)
 
         if "not_yet_sifted" in value:
@@ -244,8 +263,14 @@ class BarrierFilterSet(django_filters.FilterSet):
             "published": PublicBarrierStatus.PUBLISHED,
             "unpublished": PublicBarrierStatus.UNPUBLISHED,
         }
-        statuses = [status_lookup.get(status) for status in value if status in status_lookup.keys()]
-        public_queryset = public_queryset | queryset.filter(public_barrier___public_view_status__in=statuses)
+        statuses = [
+            status_lookup.get(status)
+            for status in value
+            if status in status_lookup.keys()
+        ]
+        public_queryset = public_queryset | queryset.filter(
+            public_barrier___public_view_status__in=statuses
+        )
         return queryset & public_queryset
 
     def tags_filter(self, queryset, name, value):
@@ -283,19 +308,28 @@ class BarrierFilterSet(django_filters.FilterSet):
         assessment_queryset = queryset.none()
 
         if "with" in value:
-            assessment_queryset = assessment_queryset | queryset.filter(
-                economic_assessments__archived=False,
-            ).distinct()
+            assessment_queryset = (
+                assessment_queryset
+                | queryset.filter(
+                    economic_assessments__archived=False,
+                ).distinct()
+            )
         if "without" in value:
-            assessment_queryset = assessment_queryset | queryset.filter(
-                economic_assessments__isnull=True,
-            ).distinct()
+            assessment_queryset = (
+                assessment_queryset
+                | queryset.filter(
+                    economic_assessments__isnull=True,
+                ).distinct()
+            )
         if "ready_for_approval" in value:
-            assessment_queryset = assessment_queryset | queryset.filter(
-                economic_assessments__archived=False,
-                economic_assessments__ready_for_approval=True,
-                economic_assessments__approved__isnull=True,
-            ).distinct()
+            assessment_queryset = (
+                assessment_queryset
+                | queryset.filter(
+                    economic_assessments__archived=False,
+                    economic_assessments__ready_for_approval=True,
+                    economic_assessments__approved__isnull=True,
+                ).distinct()
+            )
 
         return queryset.distinct() & assessment_queryset
 
@@ -303,13 +337,19 @@ class BarrierFilterSet(django_filters.FilterSet):
         assessment_queryset = queryset.none()
 
         if "with" in value:
-            assessment_queryset = assessment_queryset | queryset.filter(
-                economic_assessments__economic_impact_assessments__archived=False,
-            ).distinct()
+            assessment_queryset = (
+                assessment_queryset
+                | queryset.filter(
+                    economic_assessments__economic_impact_assessments__archived=False,
+                ).distinct()
+            )
         if "without" in value:
-            assessment_queryset = assessment_queryset | queryset.filter(
-                economic_assessments__economic_impact_assessments__isnull=True,
-            ).distinct()
+            assessment_queryset = (
+                assessment_queryset
+                | queryset.filter(
+                    economic_assessments__economic_impact_assessments__isnull=True,
+                ).distinct()
+            )
 
         return queryset.distinct() & assessment_queryset
 
@@ -328,3 +368,37 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "without" in value:
             filters &= Q(commercial_value=None)
         return queryset.filter(filters).distinct()
+
+
+class PublicBarrierFilterSet(django_filters.FilterSet):
+    """
+    Custom FilterSet to handle filters on PublicBarriers
+    """
+
+    status = django_filters.BaseInFilter("_public_view_status")
+    country = django_filters.BaseInFilter("country")
+    region = django_filters.BaseInFilter(method="region_filter")
+    sector = django_filters.BaseInFilter(method="sector_filter")
+    organisation = django_filters.BaseInFilter(method="organisation_filter")
+
+    def sector_filter(self, queryset, name, value):
+        """
+        custom filter for multi-select filtering of Sectors field,
+        which is ArrayField
+        """
+        return queryset.filter(
+            Q(barrier__all_sectors=True) | Q(barrier__sectors__overlap=value)
+        )
+
+    def organisation_filter(self, queryset, name, value):
+        """
+        custom filter for multi-select filtering of Government Organisations field,
+        which is a ManyToMany on the Barrier model
+        """
+        return queryset.filter(barrier__organisations__id__in=value)
+
+    def region_filter(self, queryset, name, value):
+        countries = set()
+        for region_id in value:
+            countries.update(get_country_ids_by_overseas_region(region_id))
+        return queryset.filter(barrier__country__in=countries)

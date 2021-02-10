@@ -1,3 +1,4 @@
+from api.metadata.serializers import OrganisationSerializer
 from hashid_field.rest import HashidSerializerCharField
 from rest_framework import serializers
 
@@ -26,23 +27,25 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
     """
     Simple serializer for use within BarrierDetailSerializer.
     """
+
     class Meta:
         model = PublicBarrier
-        fields = (
-            "public_view_status",
-        )
+        fields = ("public_view_status",)
 
 
-class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
-                              serializers.ModelSerializer):
+class PublicBarrierSerializer(
+    AllowNoneAtToRepresentationMixin, serializers.ModelSerializer
+):
     """
     Generic serializer for barrier public data.
     """
+
     id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
     title = NoneToBlankCharField()
     summary = NoneToBlankCharField()
     internal_title_changed = serializers.SerializerMethodField()
     internal_summary_changed = serializers.SerializerMethodField()
+    internal_government_organisations = serializers.SerializerMethodField()
     status = ReadOnlyStatusField()
     internal_status = ReadOnlyStatusField()
     country = ReadOnlyCountryField()
@@ -111,6 +114,7 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "latest_published_version",
             "unpublished_changes",
             "ready_to_be_published",
+            "internal_government_organisations",
             "latest_note",
             "reported_on",
         )
@@ -158,6 +162,7 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
             "latest_published_version",
             "unpublished_changes",
             "ready_to_be_published",
+            "internal_government_organisations",
             "latest_note",
             "reported_on",
         )
@@ -183,20 +188,30 @@ class PublicBarrierSerializer(AllowNoneAtToRepresentationMixin,
     def get_internal_id(self, obj):
         return obj.barrier_id
 
+    def get_internal_government_organisations(self, obj):
+        return OrganisationSerializer(obj.barrier.organisations, many=True).data
+
     def get_latest_note(self, obj):
         try:
-            note = obj.notes.latest("created_on")
+            # We need to perform Python sorting instead of SQL
+            # as otherwise the prefetch would not get used
+            note = sorted(
+                list(obj.notes.all()), key=lambda note: note.created_on, reverse=True
+            )[0]
             return PublicBarrierNoteSerializer(note).data
+        except IndexError:
+            return None
         except PublicBarrierNote.DoesNotExist:
             return None
 
 
-class PublishedVersionSerializer(LocationFieldMixin,
-                                 AllowNoneAtToRepresentationMixin,
-                                 serializers.ModelSerializer):
+class PublishedVersionSerializer(
+    LocationFieldMixin, AllowNoneAtToRepresentationMixin, serializers.ModelSerializer
+):
     """
     Serializer to be used with DMAS FE app
     """
+
     id = serializers.CharField()
     title = serializers.CharField()
     summary = serializers.CharField()
@@ -223,12 +238,13 @@ class PublishedVersionSerializer(LocationFieldMixin,
         )
 
 
-class PublicPublishedVersionSerializer(LocationFieldMixin,
-                                       AllowNoneAtToRepresentationMixin,
-                                       serializers.ModelSerializer):
+class PublicPublishedVersionSerializer(
+    LocationFieldMixin, AllowNoneAtToRepresentationMixin, serializers.ModelSerializer
+):
     """
     Serializer to be used with gov.uk
     """
+
     id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
     title = serializers.CharField()
     summary = serializers.CharField()
@@ -261,7 +277,9 @@ class PublicPublishedVersionSerializer(LocationFieldMixin,
         if obj.all_sectors:
             return [{"name": "All sectors"}]
         else:
-            return ReadOnlySectorsField(to_repr_keys=("name",)).to_representation(obj.sectors)
+            return ReadOnlySectorsField(to_repr_keys=("name",)).to_representation(
+                obj.sectors
+            )
 
 
 def public_barriers_to_json(public_barriers=None):
@@ -294,6 +312,8 @@ def public_barriers_to_json(public_barriers=None):
         "sectors: [{"name": "All sectors"}],
     """
     if public_barriers is None:
-        public_barriers = (pb.latest_published_version for pb in get_published_public_barriers())
+        public_barriers = (
+            pb.latest_published_version for pb in get_published_public_barriers()
+        )
     serializer = PublicPublishedVersionSerializer(public_barriers, many=True)
     return serializer.data

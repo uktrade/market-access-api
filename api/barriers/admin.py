@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Barrier
+from .models import Barrier, PublicBarrier
 
 
 class BarrierAdmin(admin.ModelAdmin):
@@ -27,3 +27,10 @@ class BarrierAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Barrier, BarrierAdmin)
+
+
+class PublicBarrierAdmin(admin.ModelAdmin):
+    list_display = ("id", "barrier", "country", "status")
+
+
+admin.site.register(PublicBarrier, PublicBarrierAdmin)
