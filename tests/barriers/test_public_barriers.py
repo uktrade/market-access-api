@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Dict
 
 from django.db.models.fields import BooleanField
-from django.db.models import CharField, F, Q, Value, Case, When, Count
+from django.db.models import CharField, F, Value, Case, When
 from django.db.models.functions import Concat
 
 import boto3
@@ -257,7 +257,7 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
             for query_change in pb_query
             if query_change.change == "barrier.summary"
         ][0]
-        assert summary_change.has_changed == True
+        assert summary_change.has_changed is True
 
     def test_pb_list_country_filter(self):
         country_id = "9f5f66a0-5d95-e211-a939-e4115bead28a"
