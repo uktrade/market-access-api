@@ -52,8 +52,8 @@ class BaseSavedSearch(models.Model):
         default=list,
     )
     last_notified_on = models.DateTimeField(auto_now_add=True)
-    notify_about_additions = models.BooleanField(default=False)
-    notify_about_updates = models.BooleanField(default=False)
+    notify_about_additions = models.BooleanField(default=True)
+    notify_about_updates = models.BooleanField(default=True)
     created_on = models.DateTimeField(auto_now_add=True)
 
     _barriers = None

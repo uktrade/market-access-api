@@ -10,6 +10,15 @@ from tests.barriers.factories import BarrierFactory, ReportFactory
 
 
 class SavedSearchModelTestCase(APITestMixin, APITestCase):
+    def test_initial_notify_state(self):
+        user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
+
+        saved_search = SavedSearch.objects.create(
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
+        )
+
+        assert saved_search.notify_about_additions is True
+        assert saved_search.notify_about_updates is True
 
     def test_barriers(self):
         barrier1 = BarrierFactory(priority="LOW")
