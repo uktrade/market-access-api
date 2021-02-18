@@ -960,6 +960,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return (
             self.title_changed
             or self.summary_changed
+            or self.internal_title_changed
+            or self.internal_summary_changed
             or self.internal_is_resolved_changed
             or self.internal_status_date_changed
             or self.internal_location_changed
