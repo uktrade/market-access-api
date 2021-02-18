@@ -1,7 +1,9 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict
 
 from django.db.models.fields import BooleanField
+from django.db.models import CharField, F, Q, Value, Case, When, Count
+from django.db.models.functions import Concat
 
 import boto3
 import json
@@ -213,10 +215,11 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
 
         history_count = published_barrier.cached_history_items.count()
         published_barrier.public_barrier.publish()
-        published_barrier.public_barrier.last_published_on = datetime.now() - timedl
+        published_barrier.public_barrier.last_published_on = datetime.now() - timedelta(
+            days=30
+        )
         published_barrier.public_barrier.save()
         published_barrier.refresh_from_db()
-        # published_barrier.title = "New title!"
         published_barrier.summary = "New summary!"
         published_barrier.save()
         published_barrier.refresh_from_db()
@@ -226,46 +229,35 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
 
         history_items = published_barrier.cached_history_items.all()
 
-        from django.db.models import CharField, F, Q, Value, Case, When, Count
-        from django.db.models.functions import Concat
-
-        pb_query = (
-            PublicBarrier.objects.filter(
-                id=published_barrier.public_barrier.id
-            ).annotate(
-                change=Concat(
-                    "barrier__cached_history_items__model",
-                    Value("."),
-                    "barrier__cached_history_items__field",
-                    output_field=CharField(),
-                ),
-                history_date=F("barrier__cached_history_items__date"),
-                current_date=F("last_published_on"),
-                has_changed=Case(
-                    When(
-                        last_published_on__date__lt=F(
-                            "barrier__cached_history_items__date"
-                        ),
-                        then=Value(True),
+        pb_query = PublicBarrier.objects.filter(
+            id=published_barrier.public_barrier.id
+        ).annotate(
+            change=Concat(
+                "barrier__cached_history_items__model",
+                Value("."),
+                "barrier__cached_history_items__field",
+                output_field=CharField(),
+            ),
+            history_date=F("barrier__cached_history_items__date"),
+            current_date=F("last_published_on"),
+            has_changed=Case(
+                When(
+                    last_published_on__date__lt=F(
+                        "barrier__cached_history_items__date"
                     ),
-                    default=Value(False),
-                    output_field=BooleanField(),
+                    then=Value(True),
                 ),
- 
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
         )
-        print([(i.history_date, i.current_date, i.last_published_on) for i in pb_query])
-        print([i.has_changed for i in pb_query])
-        assert [i.has_changed for i in pb_query] == 1
-        pb = pb_query[0]
-        assert pb.has_changed == published_barrier.public_barrier.last_published_on
-        assert pb.change == "barrier.summary"
 
-        r = get_list_for_status("changed")
-        assert 200 == r.status_code
-        assert 1 == r.data["count"]
-        assert {published_barrier.public_barrier.id} == {
-            i["id"] for i in r.data["results"]
-        }
+        summary_change = [
+            query_change
+            for query_change in pb_query
+            if query_change.change == "barrier.summary"
+        ][0]
+        assert summary_change.has_changed == True
 
     def test_pb_list_country_filter(self):
         country_id = "9f5f66a0-5d95-e211-a939-e4115bead28a"
