@@ -3,7 +3,6 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
-
 from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin

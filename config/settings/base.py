@@ -1,18 +1,15 @@
-import environ
 import os
 import ssl
-
-import dj_database_url
-import sentry_sdk
-
-from celery.schedules import crontab
 from pathlib import Path
 
+import dj_database_url
+import environ
+import sentry_sdk
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
-
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = Path(__file__).parents[2]

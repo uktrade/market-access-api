@@ -3,10 +3,9 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 from api.interactions.models import Document
-
-from simple_history.models import HistoricalRecords
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

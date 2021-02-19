@@ -3,6 +3,7 @@ from rest_framework import serializers
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import BarrierStatus
+
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
 

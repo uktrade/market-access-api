@@ -2,28 +2,20 @@ from rest_framework import serializers
 
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import BarrierCommodity
-from api.commodities.serializers import BarrierCommoditySerializer
 from api.commodities.models import Commodity
+from api.commodities.serializers import BarrierCommoditySerializer
 from api.core.utils import cleansed_username, sort_list_of_dicts
 from api.interactions.models import Document
-from api.metadata.constants import (
-    BARRIER_ARCHIVED_REASON,
-    BARRIER_PENDING,
-    BARRIER_SOURCE,
-    BARRIER_TERMS,
-    BarrierStatus,
-    PublicBarrierStatus,
-    STAGE_STATUS,
-    TRADE_CATEGORIES,
-    TRADE_DIRECTION_CHOICES,
-)
-from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
-from api.metadata.serializers import (
-    BarrierPrioritySerializer,
-    BarrierTagSerializer,
-    CategorySerializer,
-    OrganisationSerializer,
-)
+from api.metadata.constants import (BARRIER_ARCHIVED_REASON, BARRIER_PENDING,
+                                    BARRIER_SOURCE, BARRIER_TERMS,
+                                    STAGE_STATUS, TRADE_CATEGORIES,
+                                    TRADE_DIRECTION_CHOICES, BarrierStatus,
+                                    PublicBarrierStatus)
+from api.metadata.models import (BarrierPriority, BarrierTag, Category,
+                                 Organisation)
+from api.metadata.serializers import (BarrierPrioritySerializer,
+                                      BarrierTagSerializer, CategorySerializer,
+                                      OrganisationSerializer)
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer

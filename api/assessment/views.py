@@ -1,17 +1,13 @@
 from rest_framework import generics
 
-from api.assessment.models import (
-    EconomicAssessment,
-    EconomicImpactAssessment,
-    ResolvabilityAssessment,
-    StrategicAssessment,
-)
-from api.assessment.serializers import (
-    EconomicAssessmentSerializer,
-    EconomicImpactAssessmentSerializer,
-    ResolvabilityAssessmentSerializer,
-    StrategicAssessmentSerializer,
-)
+from api.assessment.models import (EconomicAssessment,
+                                   EconomicImpactAssessment,
+                                   ResolvabilityAssessment,
+                                   StrategicAssessment)
+from api.assessment.serializers import (EconomicAssessmentSerializer,
+                                        EconomicImpactAssessmentSerializer,
+                                        ResolvabilityAssessmentSerializer,
+                                        StrategicAssessmentSerializer)
 
 
 class EconomicAssessmentList(generics.CreateAPIView):

@@ -3,8 +3,9 @@ import logging
 
 from .comtrade import ComtradeClient
 from .countries import get_comtrade_country_name
-from .formatters import rca, rca_diff, rca_diff_glob, value_range, percent_range
-from .utils import trade_df, trade_df_ind, avgtrade, group_and_average
+from .formatters import (percent_range, rca, rca_diff, rca_diff_glob,
+                         value_range)
+from .utils import avgtrade, group_and_average, trade_df, trade_df_ind
 from .valid_codes import valid_codes
 
 logger = logging.getLogger(__name__)

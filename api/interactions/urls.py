@@ -1,13 +1,9 @@
 from django.urls import path
 
-from api.interactions.views import (
-    DocumentViewSet,
-    BarrierInteractionList,
-    BarrierInteractionDetail,
-    PublicBarrierNoteDetail,
-    PublicBarrierNoteList,
-)
-
+from api.interactions.views import (BarrierInteractionDetail,
+                                    BarrierInteractionList, DocumentViewSet,
+                                    PublicBarrierNoteDetail,
+                                    PublicBarrierNoteList)
 
 document_collection = DocumentViewSet.as_view({"get": "list", "post": "create"})
 

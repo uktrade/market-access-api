@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime, timedelta
 from secrets import token_hex
-import factory
 
+import factory
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission

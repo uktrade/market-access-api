@@ -10,24 +10,20 @@ from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.history.factories import (
-    EconomicAssessmentHistoryFactory,
-    BarrierHistoryFactory,
-    NoteHistoryFactory,
-    PublicBarrierHistoryFactory,
-    PublicBarrierNoteHistoryFactory,
-    TeamMemberHistoryFactory,
-)
+from api.history.factories import (BarrierHistoryFactory,
+                                   EconomicAssessmentHistoryFactory,
+                                   NoteHistoryFactory,
+                                   PublicBarrierHistoryFactory,
+                                   PublicBarrierNoteHistoryFactory,
+                                   TeamMemberHistoryFactory)
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
+from tests.assessment.factories import (EconomicAssessmentFactory,
+                                        EconomicImpactAssessmentFactory,
+                                        ResolvabilityAssessmentFactory,
+                                        StrategicAssessmentFactory)
 from tests.interactions.factories import InteractionFactory
-from tests.assessment.factories import (
-    EconomicAssessmentFactory,
-    EconomicImpactAssessmentFactory,
-    ResolvabilityAssessmentFactory,
-    StrategicAssessmentFactory,
-)
 from tests.metadata.factories import OrganisationFactory
 
 

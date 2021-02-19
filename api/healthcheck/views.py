@@ -6,6 +6,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.core.permissions import IsAuthenticated
+
 from .checks import db_check
 
 

@@ -8,12 +8,11 @@ from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction
-from ..assessment.factories import (
-    EconomicAssessmentFactory,
-    EconomicImpactAssessmentFactory,
-    ResolvabilityAssessmentFactory,
-    StrategicAssessmentFactory,
-)
+
+from ..assessment.factories import (EconomicAssessmentFactory,
+                                    EconomicImpactAssessmentFactory,
+                                    ResolvabilityAssessmentFactory,
+                                    StrategicAssessmentFactory)
 
 
 class TestActivityView(APITestMixin, TestCase):

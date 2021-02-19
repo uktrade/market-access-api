@@ -1,32 +1,20 @@
 from rest_framework import serializers
 
-from api.assessment.serializers import (
-    EconomicAssessmentSerializer,
-    ResolvabilityAssessmentSerializer,
-    StrategicAssessmentSerializer,
-)
-from api.barriers.fields import (
-    ArchivedField,
-    ArchivedReasonField,
-    BarrierPriorityField,
-    CategoriesField,
-    CommoditiesField,
-    PublicEligibilityField,
-    SectorsField,
-    SourceField,
-    StatusField,
-    SubStatusField,
-    TagsField,
-    TermField,
-    TradeCategoryField,
-    TradeDirectionField,
-    UserField,
-    WTOProfileField,
-    OrganisationsField,
-)
+from api.assessment.serializers import (EconomicAssessmentSerializer,
+                                        ResolvabilityAssessmentSerializer,
+                                        StrategicAssessmentSerializer)
+from api.barriers.fields import (ArchivedField, ArchivedReasonField,
+                                 BarrierPriorityField, CategoriesField,
+                                 CommoditiesField, OrganisationsField,
+                                 PublicEligibilityField, SectorsField,
+                                 SourceField, StatusField, SubStatusField,
+                                 TagsField, TermField, TradeCategoryField,
+                                 TradeDirectionField, UserField,
+                                 WTOProfileField)
 from api.barriers.models import Barrier, BarrierUserHit
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
+
 from .mixins import LocationFieldMixin
 from .public_barriers import NestedPublicBarrierSerializer
 

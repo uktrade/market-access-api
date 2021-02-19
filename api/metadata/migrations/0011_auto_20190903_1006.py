@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 types_to_edit = [
     {
         "old_title": "Intellectual property rights and regulations",

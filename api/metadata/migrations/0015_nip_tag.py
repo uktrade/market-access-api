@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 TAGS = {
     "COVID-19": {
         "description": "Barrier imposed because of the COVID-19 (coronavirus) pandemic.",

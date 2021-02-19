@@ -6,7 +6,7 @@ from django.core.files.temp import NamedTemporaryFile
 from django.utils import timezone
 
 from api.barriers.serializers.public_barriers import public_barriers_to_json
-from api.core.utils import upload_to_s3, list_s3_public_data_files
+from api.core.utils import list_s3_public_data_files, upload_to_s3
 
 logger = logging.getLogger(__name__)
 

@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import Barrier
+from api.core.test_utils import APITestMixin, create_test_user
 from tests.barriers.factories import ReportFactory
 
 

@@ -2,9 +2,9 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
+from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.metadata.factories import BarrierTagFactory
-from api.core.test_utils import APITestMixin
 
 
 class TestBarrierTags(APITestMixin, TestCase):

@@ -1,7 +1,7 @@
 import csv
-from datetime import date
 import itertools
 import logging
+from datetime import date
 
 from django.conf import settings
 from django.core.management import BaseCommand
@@ -9,7 +9,8 @@ from django.utils import timezone
 
 from api.barriers.models import PublicBarrier
 from api.barriers.public_data import public_release_to_s3
-from api.metadata.constants import BarrierStatus, PublicBarrierStatus, TRADING_BLOCS
+from api.metadata.constants import (TRADING_BLOCS, BarrierStatus,
+                                    PublicBarrierStatus)
 from api.metadata.utils import get_countries, get_sectors
 
 logger = logging.getLogger(__name__)

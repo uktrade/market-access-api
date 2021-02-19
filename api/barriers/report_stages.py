@@ -2,7 +2,6 @@ import operator
 
 from api.core.validate_utils import DataCombiner
 
-
 REPORT_CONDITIONS = [
     {
         "stage": "1.1",

@@ -4,15 +4,13 @@ from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 
 from api.assessment.models import EconomicAssessment
-from api.collaboration.mixins import TeamMemberModelMixin
-from api.interactions.models import Document, Interaction
-from api.interactions.serializers import (
-    DocumentSerializer, InteractionSerializer, PublicBarrierNoteSerializer
-)
-from api.documents.views import BaseEntityDocumentModelViewSet
-
 from api.barriers.models import Barrier, PublicBarrier
-from api.interactions.models import PublicBarrierNote
+from api.collaboration.mixins import TeamMemberModelMixin
+from api.documents.views import BaseEntityDocumentModelViewSet
+from api.interactions.models import Document, Interaction, PublicBarrierNote
+from api.interactions.serializers import (DocumentSerializer,
+                                          InteractionSerializer,
+                                          PublicBarrierNoteSerializer)
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
 

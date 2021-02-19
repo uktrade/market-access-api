@@ -5,6 +5,7 @@ from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
+
 from .factories import ResolvabilityAssessmentFactory
 
 pytestmark = [pytest.mark.django_db]

@@ -1,17 +1,16 @@
 from api.assessment.models import StrategicAssessment
+
+from ...items.assessments.strategic import (AdditionalInformationHistoryItem,
+                                            ApprovedHistoryItem,
+                                            ArchivedHistoryItem,
+                                            CompetitionHistoryItem,
+                                            GovernmentPolicyHistoryItem,
+                                            HMGStrategyHistoryItem,
+                                            ScaleHistoryItem,
+                                            TradingRelationsHistoryItem,
+                                            UKGrantsHistoryItem,
+                                            UKInterestAndSecurityHistoryItem)
 from ..base import HistoryItemFactoryBase
-from ...items.assessments.strategic import (
-    ApprovedHistoryItem,
-    ArchivedHistoryItem,
-    HMGStrategyHistoryItem,
-    GovernmentPolicyHistoryItem,
-    TradingRelationsHistoryItem,
-    UKInterestAndSecurityHistoryItem,
-    UKGrantsHistoryItem,
-    CompetitionHistoryItem,
-    AdditionalInformationHistoryItem,
-    ScaleHistoryItem,
-)
 
 
 class StrategicAssessmentHistoryFactory(HistoryItemFactoryBase):

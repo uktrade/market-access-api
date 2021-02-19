@@ -1,14 +1,13 @@
 import logging
 
+from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.template.defaultfilters import pluralize
-
-from celery import shared_task
 from notifications_python_client.notifications import NotificationsAPIClient
 
-from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
-
+from api.user.models import (get_my_barriers_saved_search,
+                             get_team_barriers_saved_search)
 
 logger = logging.getLogger(__name__)
 

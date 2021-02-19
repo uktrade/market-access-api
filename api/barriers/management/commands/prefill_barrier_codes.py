@@ -1,5 +1,5 @@
-from django.core.management import BaseCommand
 from django.conf import settings
+from django.core.management import BaseCommand
 
 from api.barriers.models import Barrier
 from api.barriers.utils import random_barrier_reference

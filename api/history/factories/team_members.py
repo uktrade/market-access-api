@@ -1,6 +1,7 @@
 from api.collaboration.models import TeamMember
-from .base import HistoryItemFactoryBase
+
 from ..items.team_members import TeamMemberHistoryItem
+from .base import HistoryItemFactoryBase
 
 
 class TeamMemberHistoryFactory(HistoryItemFactoryBase):

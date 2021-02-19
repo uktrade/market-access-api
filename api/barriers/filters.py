@@ -1,21 +1,19 @@
+import django_filters
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
-from django.db.models import CharField, F, Q, Value as V
+from django.db.models import CharField, F, Q
+from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
-
-import django_filters
 from django_filters.widgets import BooleanWidget
 
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
-from api.metadata.constants import PublicBarrierStatus, TRADING_BLOCS
+from api.metadata.constants import TRADING_BLOCS, PublicBarrierStatus
 from api.metadata.models import BarrierPriority
-from api.metadata.utils import (
-    get_countries,
-    get_country_ids_by_overseas_region,
-    get_trading_bloc_country_ids,
-)
+from api.metadata.utils import (get_countries,
+                                get_country_ids_by_overseas_region,
+                                get_trading_bloc_country_ids)
 
 
 class BarrierFilterSet(django_filters.FilterSet):

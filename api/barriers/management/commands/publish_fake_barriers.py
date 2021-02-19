@@ -1,7 +1,7 @@
 import datetime
-from datetime import timezone
 import itertools
 import random
+from datetime import timezone
 
 from django.conf import settings
 from django.core.management import BaseCommand
@@ -9,8 +9,8 @@ from django.core.management import BaseCommand
 from api.barriers.models import PublicBarrier
 from api.barriers.public_data import public_release_to_s3
 from api.metadata.constants import BarrierStatus, PublicBarrierStatus
-from api.metadata.utils import get_countries, get_sectors, get_trading_bloc_by_country_id
-
+from api.metadata.utils import (get_countries, get_sectors,
+                                get_trading_bloc_by_country_id)
 
 ALL_SECTORS_PROPORTION = 0.2
 

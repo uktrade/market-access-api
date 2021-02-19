@@ -3,19 +3,15 @@ import random
 import factory
 from factory.fuzzy import FuzzyText
 
-from api.assessment.models import (
-    EconomicAssessment,
-    EconomicImpactAssessment,
-    ResolvabilityAssessment,
-    StrategicAssessment,
-)
-from api.metadata.constants import (
-    ECONOMIC_ASSESSMENT_IMPACT,
-    ECONOMIC_ASSESSMENT_RATING,
-    RESOLVABILITY_ASSESSMENT_EFFORT,
-    RESOLVABILITY_ASSESSMENT_TIME,
-    STRATEGIC_ASSESSMENT_SCALE,
-)
+from api.assessment.models import (EconomicAssessment,
+                                   EconomicImpactAssessment,
+                                   ResolvabilityAssessment,
+                                   StrategicAssessment)
+from api.metadata.constants import (ECONOMIC_ASSESSMENT_IMPACT,
+                                    ECONOMIC_ASSESSMENT_RATING,
+                                    RESOLVABILITY_ASSESSMENT_EFFORT,
+                                    RESOLVABILITY_ASSESSMENT_TIME,
+                                    STRATEGIC_ASSESSMENT_SCALE)
 
 
 def get_time_to_resolve():

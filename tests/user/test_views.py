@@ -1,7 +1,6 @@
-import pytest
-
 from unittest.mock import patch
 
+import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 

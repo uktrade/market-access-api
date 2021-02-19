@@ -1,6 +1,5 @@
 from decimal import Decimal
 
-
 exchange_rates = {
     "2000": Decimal("1.5151"),
     "2001": Decimal("1.44"),

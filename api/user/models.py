@@ -1,13 +1,12 @@
 from uuid import uuid4
 
-from django_filters import BaseInFilter
-
-from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django_filters import BaseInFilter
 
 from api.barriers.filters import BarrierFilterSet
 from api.barriers.models import Barrier

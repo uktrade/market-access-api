@@ -1,9 +1,7 @@
 from api.interactions.models import Interaction
+
+from ..items.notes import DocumentsHistoryItem, NoteTextHistoryItem
 from .base import HistoryItemFactoryBase
-from ..items.notes import (
-    DocumentsHistoryItem,
-    NoteTextHistoryItem,
-)
 
 
 class NoteHistoryFactory(HistoryItemFactoryBase):

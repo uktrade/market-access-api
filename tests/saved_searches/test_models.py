@@ -5,7 +5,6 @@ from rest_framework.test import APITestCase
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.models import BarrierPriority
 from api.user.models import SavedSearch
-
 from tests.barriers.factories import BarrierFactory, ReportFactory
 
 

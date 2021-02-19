@@ -1,41 +1,34 @@
+import json
 from datetime import datetime, timedelta
 from typing import Dict
-
-from django.db.models.fields import BooleanField
-from django.db.models import CharField, F, Value, Case, When
-from django.db.models.functions import Concat
-
-import boto3
-import json
 from uuid import uuid4
 
+import boto3
+import dateutil.parser
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.db.models import Case, CharField, F, Value, When
+from django.db.models.fields import BooleanField
+from django.db.models.functions import Concat
 from django.test import TestCase, override_settings
 from django.urls import reverse
-import dateutil.parser
 from freezegun import freeze_time
 from mock import patch
+from moto import mock_s3
 from rest_framework import status
 
 from api.barriers.helpers import get_team_member_user_ids
-from api.barriers.models import PublicBarrier, Barrier
+from api.barriers.models import Barrier, PublicBarrier
+from api.barriers.public_data import (VersionedFile, latest_file,
+                                      public_barrier_data_json_file_content,
+                                      versioned_folder)
 from api.barriers.serializers import PublicBarrierSerializer
 from api.barriers.serializers.public_barriers import public_barriers_to_json
-from api.barriers.public_data import (
-    public_barrier_data_json_file_content,
-    versioned_folder,
-    VersionedFile,
-    latest_file,
-)
 from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
-from api.core.utils import read_file_from_s3, list_s3_public_data_files
+from api.core.utils import list_s3_public_data_files, read_file_from_s3
 from api.interactions.models import PublicBarrierNote
-from api.metadata.constants import PublicBarrierStatus, BarrierStatus
-
-from moto import mock_s3
-
+from api.metadata.constants import BarrierStatus, PublicBarrierStatus
 from api.metadata.models import Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory

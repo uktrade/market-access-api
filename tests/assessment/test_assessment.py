@@ -1,6 +1,6 @@
 from http import HTTPStatus
-import pytest
 
+import pytest
 from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin

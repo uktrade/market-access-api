@@ -2,7 +2,6 @@ from django.db import migrations
 
 from api.metadata.constants import OrganisationType
 
-
 ORGANISATIONS = [
     {
         "name": "The Charity Commission",

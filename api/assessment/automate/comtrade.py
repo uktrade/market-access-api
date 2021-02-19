@@ -1,7 +1,7 @@
 import json
-import requests
-
 from decimal import Decimal
+
+import requests
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates

@@ -1,18 +1,17 @@
 import json
 import os
+
 import requests
-
-from urlobject import URLObject
-
 from django.conf import settings
 from django.core.cache import cache
-
 from mohawk import Sender
+from urlobject import URLObject
 
 from api.wto.models import WTOCommitteeGroup
 
-from .constants import BARRIER_TYPE_CATEGORIES, TRADING_BLOCS, GOVERNMENT_ORGANISATION_TYPES
-from .models import Category, BarrierPriority, BarrierTag, Organisation
+from .constants import (BARRIER_TYPE_CATEGORIES, GOVERNMENT_ORGANISATION_TYPES,
+                        TRADING_BLOCS)
+from .models import BarrierPriority, BarrierTag, Category, Organisation
 
 
 def import_api_results(endpoint):

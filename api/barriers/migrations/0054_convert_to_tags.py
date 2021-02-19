@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 COVID_TAG_TITLE = "COVID-19"
 BREXIT_TAG_TITLE = "Brexit"
 

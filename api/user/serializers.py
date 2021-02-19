@@ -1,10 +1,9 @@
 from logging import getLogger
 
-from rest_framework import serializers
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
+from rest_framework import serializers
 
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username

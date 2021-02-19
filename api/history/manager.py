@@ -2,18 +2,14 @@ import datetime
 
 from api.history.models import CachedHistoryItem
 
-from .factories import (
-    BarrierHistoryFactory,
-    EconomicAssessmentHistoryFactory,
-    EconomicImpactAssessmentHistoryFactory,
-    NoteHistoryFactory,
-    PublicBarrierNoteHistoryFactory,
-    PublicBarrierHistoryFactory,
-    ResolvabilityAssessmentHistoryFactory,
-    StrategicAssessmentHistoryFactory,
-    TeamMemberHistoryFactory,
-    WTOHistoryFactory,
-)
+from .factories import (BarrierHistoryFactory,
+                        EconomicAssessmentHistoryFactory,
+                        EconomicImpactAssessmentHistoryFactory,
+                        NoteHistoryFactory, PublicBarrierHistoryFactory,
+                        PublicBarrierNoteHistoryFactory,
+                        ResolvabilityAssessmentHistoryFactory,
+                        StrategicAssessmentHistoryFactory,
+                        TeamMemberHistoryFactory, WTOHistoryFactory)
 
 
 class HistoryManager:

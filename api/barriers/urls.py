@@ -1,26 +1,17 @@
 from django.urls import path, re_path
 from rest_framework.routers import DefaultRouter
 
-from api.barriers.views import (
-    BarrierActivity,
-    BarrierDetail,
-    BarrierHibernate,
-    BarrierFullHistory,
-    BarrierList,
-    BarrierListExportView,
-    BarrierListS3Download,
-    BarrierResolveInFull,
-    BarrierResolveInPart,
-    BarrierOpenInProgress,
-    BarrierOpenActionRequired,
-    BarrierStatusChangeUnknown,
-    BarrierReportList,
-    BarrierReportDetail,
-    BarrierReportSubmit,
-    PublicBarrierActivity,
-    PublicBarrierViewSet,
-    barrier_count,
-)
+from api.barriers.views import (BarrierActivity, BarrierDetail,
+                                BarrierFullHistory, BarrierHibernate,
+                                BarrierList, BarrierListExportView,
+                                BarrierListS3Download,
+                                BarrierOpenActionRequired,
+                                BarrierOpenInProgress, BarrierReportDetail,
+                                BarrierReportList, BarrierReportSubmit,
+                                BarrierResolveInFull, BarrierResolveInPart,
+                                BarrierStatusChangeUnknown,
+                                PublicBarrierActivity, PublicBarrierViewSet,
+                                barrier_count)
 
 app_name = "barriers"
 

@@ -6,6 +6,7 @@ class InteractionsConfig(AppConfig):
 
     def ready(self):
         from django.db.models.signals import m2m_changed
+
         from .models import Interaction
         from .signals.handlers import interaction_documents_changed
 

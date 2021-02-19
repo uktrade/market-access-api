@@ -1,32 +1,23 @@
 from api.barriers.models import Barrier
+
+from ..items.barriers import (ArchivedHistoryItem, CategoriesHistoryItem,
+                              CausedByTradingBlocHistoryItem,
+                              CommercialValueExplanationHistoryItem,
+                              CommercialValueHistoryItem,
+                              CommoditiesHistoryItem, CompaniesHistoryItem,
+                              EconomicAssessmentEligibilityHistoryItem,
+                              EconomicAssessmentEligibilitySummaryHistoryItem,
+                              EndDateHistoryItem,
+                              IsSummarySensitiveHistoryItem,
+                              LocationHistoryItem, OrganisationsHistoryItem,
+                              PriorityHistoryItem, ProductHistoryItem,
+                              PublicEligibilitySummaryHistoryItem,
+                              SectorsHistoryItem, SourceHistoryItem,
+                              StatusHistoryItem, SummaryHistoryItem,
+                              TagsHistoryItem, TermHistoryItem,
+                              TitleHistoryItem, TradeCategoryHistoryItem,
+                              TradeDirectionHistoryItem)
 from .base import HistoryItemFactoryBase
-from ..items.barriers import (
-    ArchivedHistoryItem,
-    CategoriesHistoryItem,
-    CausedByTradingBlocHistoryItem,
-    CommercialValueHistoryItem,
-    CommercialValueExplanationHistoryItem,
-    CommoditiesHistoryItem,
-    CompaniesHistoryItem,
-    EconomicAssessmentEligibilityHistoryItem,
-    EconomicAssessmentEligibilitySummaryHistoryItem,
-    EndDateHistoryItem,
-    IsSummarySensitiveHistoryItem,
-    LocationHistoryItem,
-    PriorityHistoryItem,
-    ProductHistoryItem,
-    PublicEligibilitySummaryHistoryItem,
-    SectorsHistoryItem,
-    SourceHistoryItem,
-    StatusHistoryItem,
-    SummaryHistoryItem,
-    TagsHistoryItem,
-    TermHistoryItem,
-    TitleHistoryItem,
-    TradeCategoryHistoryItem,
-    TradeDirectionHistoryItem,
-    OrganisationsHistoryItem,
-)
 
 
 class BarrierHistoryFactory(HistoryItemFactoryBase):

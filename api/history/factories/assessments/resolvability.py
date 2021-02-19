@@ -1,12 +1,11 @@
 from api.assessment.models import ResolvabilityAssessment
+
+from ...items.assessments.resolvability import (ApprovedHistoryItem,
+                                                ArchivedHistoryItem,
+                                                EffortToResolveHistoryItem,
+                                                ExplanationHistoryItem,
+                                                TimeToResolveHistoryItem)
 from ..base import HistoryItemFactoryBase
-from ...items.assessments.resolvability import (
-    ApprovedHistoryItem,
-    ArchivedHistoryItem,
-    EffortToResolveHistoryItem,
-    ExplanationHistoryItem,
-    TimeToResolveHistoryItem,
-)
 
 
 class ResolvabilityAssessmentHistoryFactory(HistoryItemFactoryBase):

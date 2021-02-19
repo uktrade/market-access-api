@@ -1,14 +1,14 @@
 from datetime import datetime
+
 from freezegun import freeze_time
 from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.barriers.models import Barrier
-from api.core.test_utils import APITestMixin, create_test_user
 from api.collaboration.models import TeamMember
+from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.models import Organisation
-
 from tests.barriers.factories import BarrierFactory
 
 

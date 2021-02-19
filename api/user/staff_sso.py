@@ -1,6 +1,6 @@
 from logging import getLogger
-import requests
 
+import requests
 from django.conf import settings
 
 logger = getLogger(__name__)

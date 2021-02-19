@@ -3,11 +3,8 @@ from decimal import Decimal
 
 import pytest
 
-from api.barriers.csv import (
-    _transform_csv_value,
-    csv_iterator,
-    INCOMPLETE_CSV_MESSAGE,
-)
+from api.barriers.csv import (INCOMPLETE_CSV_MESSAGE, _transform_csv_value,
+                              csv_iterator)
 
 
 def _rows():

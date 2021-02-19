@@ -2,8 +2,8 @@ from collections import defaultdict
 
 from rest_framework.exceptions import ValidationError
 
-from api.core.validate_utils import DataCombiner
 from api.barriers.report_stages import REPORT_CONDITIONS
+from api.core.validate_utils import DataCombiner
 
 
 class ReportReadyForSubmitValidator:

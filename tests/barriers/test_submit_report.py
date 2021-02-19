@@ -6,7 +6,7 @@ from rest_framework.test import APITestCase
 from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.interactions.models import Interaction
-from tests.barriers.factories import ReportFactory, MinReportFactory
+from tests.barriers.factories import MinReportFactory, ReportFactory
 
 
 class TestSubmitReport(APITestMixin, APITestCase):

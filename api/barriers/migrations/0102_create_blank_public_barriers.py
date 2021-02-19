@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def create_blank_public_barriers(apps, schema_editor):
     Barrier = apps.get_model("barriers", "Barrier")
     PublicBarrier = apps.get_model("barriers", "PublicBarrier")

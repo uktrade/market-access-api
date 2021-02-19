@@ -1,11 +1,9 @@
 from django.conf import settings
-
 from rest_framework.test import APITestCase
 
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.core.test_utils import APITestMixin
 from api.metadata.models import Organisation
-
 from tests.assessment.factories import EconomicAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory

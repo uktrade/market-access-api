@@ -4,19 +4,16 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-
 from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ApprovalMixin, ArchivableMixin, BaseModel
 from api.interactions.models import Document
-from api.metadata.constants import (
-    ECONOMIC_ASSESSMENT_IMPACT,
-    ECONOMIC_ASSESSMENT_RATING,
-    RESOLVABILITY_ASSESSMENT_EFFORT,
-    RESOLVABILITY_ASSESSMENT_TIME,
-    STRATEGIC_ASSESSMENT_SCALE,
-)
+from api.metadata.constants import (ECONOMIC_ASSESSMENT_IMPACT,
+                                    ECONOMIC_ASSESSMENT_RATING,
+                                    RESOLVABILITY_ASSESSMENT_EFFORT,
+                                    RESOLVABILITY_ASSESSMENT_TIME,
+                                    STRATEGIC_ASSESSMENT_SCALE)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

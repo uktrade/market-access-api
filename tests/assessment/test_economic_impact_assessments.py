@@ -3,10 +3,12 @@ from http import HTTPStatus
 import pytest
 from rest_framework.reverse import reverse
 
-from .factories import EconomicAssessmentFactory, EconomicImpactAssessmentFactory
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import ECONOMIC_ASSESSMENT_RATING
 from tests.barriers.factories import BarrierFactory
+
+from .factories import (EconomicAssessmentFactory,
+                        EconomicImpactAssessmentFactory)
 
 pytestmark = [pytest.mark.django_db]
 

@@ -1,5 +1,6 @@
-import boto3
 import operator
+
+import boto3
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
 

@@ -1,8 +1,9 @@
 """Document test views."""
 
+from api.documents.views import BaseEntityDocumentModelViewSet
+
 from .models import MyEntityDocument
 from .serializers import MyEntityDocumentSerializer
-from api.documents.views import BaseEntityDocumentModelViewSet
 
 
 class MyEntityDocumentViewSet(BaseEntityDocumentModelViewSet):

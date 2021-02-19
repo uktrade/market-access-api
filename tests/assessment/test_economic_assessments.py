@@ -1,16 +1,17 @@
 from http import HTTPStatus
 
-from mock import patch
 import pytest
+from mock import patch
 from rest_framework.reverse import reverse
 
-from .factories import EconomicAssessmentFactory
 from api.assessment.automate.calculator import AssessmentCalculator
 from api.assessment.automate.exceptions import CountryNotFound
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Document
 from api.metadata.constants import ECONOMIC_ASSESSMENT_RATING
 from tests.barriers.factories import BarrierFactory
+
+from .factories import EconomicAssessmentFactory
 
 pytestmark = [pytest.mark.django_db]
 

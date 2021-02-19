@@ -1,14 +1,13 @@
 from django.test import TestCase
+from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
-
-from freezegun import freeze_time
 from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_team_members
 from api.barriers.models import Barrier
-from api.metadata.models import Category, BarrierPriority, Organisation
 from api.core.test_utils import APITestMixin
+from api.metadata.models import BarrierPriority, Category, Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
 

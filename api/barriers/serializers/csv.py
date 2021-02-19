@@ -1,28 +1,17 @@
 from django.conf import settings
-
 from rest_framework import serializers
 
 from api.barriers.models import Barrier
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
 from api.collaboration.models import TeamMember
-
-from api.metadata.constants import (
-    BARRIER_SOURCE,
-    BarrierStatus,
-    BARRIER_PENDING,
-    BARRIER_TERMS,
-    GOVERNMENT_ORGANISATION_TYPES,
-    PublicBarrierStatus,
-    TRADE_DIRECTION_CHOICES,
-)
-
-from api.metadata.utils import (
-    get_admin_area,
-    get_country,
-    get_sector,
-    get_trading_bloc,
-    get_trading_bloc_overseas_regions,
-)
+from api.metadata.constants import (BARRIER_PENDING, BARRIER_SOURCE,
+                                    BARRIER_TERMS,
+                                    GOVERNMENT_ORGANISATION_TYPES,
+                                    TRADE_DIRECTION_CHOICES, BarrierStatus,
+                                    PublicBarrierStatus)
+from api.metadata.utils import (get_admin_area, get_country, get_sector,
+                                get_trading_bloc,
+                                get_trading_bloc_overseas_regions)
 
 
 class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):

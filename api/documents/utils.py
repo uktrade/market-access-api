@@ -2,7 +2,6 @@ from functools import lru_cache
 from logging import getLogger
 
 import boto3
-
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist

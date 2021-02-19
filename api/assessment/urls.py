@@ -1,15 +1,13 @@
 from django.urls import path
 
-from api.assessment.views import (
-    EconomicAssessmentDetail,
-    EconomicAssessmentList,
-    EconomicImpactAssessmentDetail,
-    EconomicImpactAssessmentList,
-    ResolvabilityAssessmentDetail,
-    ResolvabilityAssessmentList,
-    StrategicAssessmentDetail,
-    StrategicAssessmentList,
-)
+from api.assessment.views import (EconomicAssessmentDetail,
+                                  EconomicAssessmentList,
+                                  EconomicImpactAssessmentDetail,
+                                  EconomicImpactAssessmentList,
+                                  ResolvabilityAssessmentDetail,
+                                  ResolvabilityAssessmentList,
+                                  StrategicAssessmentDetail,
+                                  StrategicAssessmentList)
 
 urlpatterns = [
     path(

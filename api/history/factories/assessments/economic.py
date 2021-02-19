@@ -1,16 +1,15 @@
 from api.assessment.models import EconomicAssessment
+
+from ...items.assessments.economic import (ApprovedHistoryItem,
+                                           ArchivedHistoryItem,
+                                           DocumentsHistoryItem,
+                                           ExplanationHistoryItem,
+                                           ExportValueHistoryItem,
+                                           ImportMarketSizeHistoryItem,
+                                           RatingHistoryItem,
+                                           ReadyForApprovalHistoryItem,
+                                           ValueToEconomyHistoryItem)
 from ..base import HistoryItemFactoryBase
-from ...items.assessments.economic import (
-    ApprovedHistoryItem,
-    ArchivedHistoryItem,
-    DocumentsHistoryItem,
-    ExplanationHistoryItem,
-    ExportValueHistoryItem,
-    ImportMarketSizeHistoryItem,
-    RatingHistoryItem,
-    ReadyForApprovalHistoryItem,
-    ValueToEconomyHistoryItem,
-)
 
 
 class EconomicAssessmentHistoryFactory(HistoryItemFactoryBase):

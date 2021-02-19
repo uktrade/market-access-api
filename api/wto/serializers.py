@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from api.metadata.fields import CountryListField
+
 from .fields import WTOCommitteeField
 from .models import WTOProfile
 

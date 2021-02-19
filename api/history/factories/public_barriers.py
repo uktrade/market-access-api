@@ -1,14 +1,11 @@
 from api.barriers.models import PublicBarrier
+
+from ..items.public_barriers import (CategoriesHistoryItem,
+                                     LocationHistoryItem,
+                                     PublicViewStatusHistoryItem,
+                                     SectorsHistoryItem, StatusHistoryItem,
+                                     SummaryHistoryItem, TitleHistoryItem)
 from .base import HistoryItemFactoryBase
-from ..items.public_barriers import (
-    CategoriesHistoryItem,
-    LocationHistoryItem,
-    PublicViewStatusHistoryItem,
-    SectorsHistoryItem,
-    StatusHistoryItem,
-    SummaryHistoryItem,
-    TitleHistoryItem,
-)
 
 
 class PublicBarrierHistoryFactory(HistoryItemFactoryBase):

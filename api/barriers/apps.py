@@ -6,12 +6,11 @@ class BarriersConfig(AppConfig):
 
     def ready(self):
         from django.db.models.signals import m2m_changed
+
         from .models import Barrier, PublicBarrier
-        from .signals.handlers import (
-            barrier_categories_changed,
-            barrier_tags_changed,
-            public_barrier_categories_changed,
-        )
+        from .signals.handlers import (barrier_categories_changed,
+                                       barrier_tags_changed,
+                                       public_barrier_categories_changed)
 
         m2m_changed.connect(
             barrier_categories_changed,

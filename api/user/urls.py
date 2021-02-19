@@ -1,7 +1,7 @@
 from django.urls import path, re_path
 
-from .views import GroupDetail, GroupList, SavedSearchDetail, SavedSearchList, UserList
-
+from .views import (GroupDetail, GroupList, SavedSearchDetail, SavedSearchList,
+                    UserList)
 
 urlpatterns = [
     path("saved-searches", SavedSearchList.as_view(), name="saved-search-list"),

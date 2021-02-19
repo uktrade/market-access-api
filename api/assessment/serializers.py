@@ -2,12 +2,10 @@ from django.core.cache import cache
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from api.assessment.models import (
-    EconomicAssessment,
-    EconomicImpactAssessment,
-    ResolvabilityAssessment,
-    StrategicAssessment,
-)
+from api.assessment.models import (EconomicAssessment,
+                                   EconomicImpactAssessment,
+                                   ResolvabilityAssessment,
+                                   StrategicAssessment)
 from api.barriers.fields import UserField
 from api.barriers.models import Barrier
 from api.core.serializers.fields import ApprovedField, ArchivedField
@@ -16,13 +14,8 @@ from api.documents.fields import DocumentsField
 
 from .automate.calculator import AssessmentCalculator
 from .automate.exceptions import ComtradeError
-from .fields import (
-    EffortToResolveField,
-    ImpactField,
-    RatingField,
-    StrategicAssessmentScaleField,
-    TimeToResolveField,
-)
+from .fields import (EffortToResolveField, ImpactField, RatingField,
+                     StrategicAssessmentScaleField, TimeToResolveField)
 
 
 class EconomicImpactAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
