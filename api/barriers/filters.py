@@ -375,7 +375,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle filters on PublicBarriers
     """
 
-    status = django_filters.BaseInFilter("_public_view_status")
+    status = django_filters.BaseInFilter("_public_view_status", method="status_filter")
     country = django_filters.BaseInFilter("country")
     region = django_filters.BaseInFilter(method="region_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
@@ -402,3 +402,49 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         for region_id in value:
             countries.update(get_country_ids_by_overseas_region(region_id))
         return queryset.filter(barrier__country__in=countries)
+
+    def status_filter(self, queryset, name, value):
+        """
+        Filters on _public_view_status and if value is 'change'
+        only select public barriers where the parent barrier had some
+        changes
+        """
+        public_queryset = queryset.none()
+
+        if "changed" in value:
+            value.remove("changed")
+            changed_ids = (
+                queryset.annotate(
+                    change=Concat(
+                        "barrier__cached_history_items__model",
+                        V("."),
+                        "barrier__cached_history_items__field",
+                        output_field=CharField(),
+                    ),
+                    change_date=F("barrier__cached_history_items__date"),
+                )
+                .filter(
+                    _public_view_status=PublicBarrierStatus.PUBLISHED,
+                    change_date__gt=F("last_published_on"),
+                    change__in=(
+                        "barrier.categories",
+                        "barrier.location",
+                        "barrier.sectors",
+                        "barrier.status",
+                        "barrier.summary",
+                        "barrier.title",
+                    ),
+                )
+                .values_list("id", flat=True)
+            )
+            public_queryset = queryset.filter(id__in=changed_ids)
+
+        if "not_yet_sifted" in value:
+            value.remove("not_yet_sifted")
+            public_queryset = queryset.filter(public_eligibility=None)
+
+        statuses = [int(status) for status in value]
+        public_queryset = public_queryset | queryset.filter(
+            _public_view_status__in=statuses
+        )
+        return queryset & public_queryset
