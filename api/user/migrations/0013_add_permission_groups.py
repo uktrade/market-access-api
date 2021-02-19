@@ -19,9 +19,11 @@ def delete_permission_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0012_last_notified_fields'),
+        ("user", "0012_last_notified_fields"),
     ]
 
     operations = [
-        migrations.RunPython(add_permission_groups, reverse_code=delete_permission_groups),
+        migrations.RunPython(
+            add_permission_groups, reverse_code=delete_permission_groups
+        ),
     ]

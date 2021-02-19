@@ -8,11 +8,15 @@ def migrate_old_assessments(apps, schema_editor):
     EconomicAssessment = apps.get_model("assessment", "EconomicAssessment")
 
     # Loop through and call .save() to ensure history gets triggered
-    for barrier in Barrier.objects.filter(economic_assessments__isnull=False).distinct():
+    for barrier in Barrier.objects.filter(
+        economic_assessments__isnull=False
+    ).distinct():
         barrier.economic_assessment_eligibility = True
         barrier.save()
 
-    for economic_assessment in EconomicAssessment.objects.filter(ready_for_approval=False):
+    for economic_assessment in EconomicAssessment.objects.filter(
+        ready_for_approval=False
+    ):
         economic_assessment.approved = True
         economic_assessment.ready_for_approval = True
         economic_assessment.reviewed_by = economic_assessment.created_by
@@ -23,12 +27,11 @@ def migrate_old_assessments(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0014_auto_20201119_1134'),
+        ("assessment", "0014_auto_20201119_1134"),
     ]
 
     operations = [
         migrations.RunPython(
-            migrate_old_assessments,
-            reverse_code=migrations.RunPython.noop
+            migrate_old_assessments, reverse_code=migrations.RunPython.noop
         ),
     ]

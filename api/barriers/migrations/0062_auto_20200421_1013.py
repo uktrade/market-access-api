@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0061_auto_20200417_0940'),
+        ("barriers", "0061_auto_20200417_0940"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='trade_direction',
-            field=models.SmallIntegerField(choices=[(1, 'Exporting from the UK'), (2, 'Importing into the UK')], default=None, null=True),
+            model_name="barrierinstance",
+            name="trade_direction",
+            field=models.SmallIntegerField(
+                choices=[(1, "Exporting from the UK"), (2, "Importing into the UK")],
+                default=None,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='trade_direction',
-            field=models.SmallIntegerField(choices=[(1, 'Exporting from the UK'), (2, 'Importing into the UK')], default=None, null=True),
+            model_name="historicalbarrierinstance",
+            name="trade_direction",
+            field=models.SmallIntegerField(
+                choices=[(1, "Exporting from the UK"), (2, "Importing into the UK")],
+                default=None,
+                null=True,
+            ),
         ),
     ]

@@ -7,11 +7,15 @@ def convert_null_to_empty(apps, schema_editor):
     Assessment = apps.get_model("assessment", "Assessment")
     HistoricalAssessment = apps.get_model("assessment", "HistoricalAssessment")
     ResolvabilityAssessment = apps.get_model("assessment", "ResolvabilityAssessment")
-    HistoricalResolvabilityAssessment = apps.get_model("assessment", "HistoricalResolvabilityAssessment")
+    HistoricalResolvabilityAssessment = apps.get_model(
+        "assessment", "HistoricalResolvabilityAssessment"
+    )
     StrategicAssessment = apps.get_model("assessment", "StrategicAssessment")
-    HistoricalStrategicAssessment = apps.get_model("assessment", "HistoricalStrategicAssessment")
+    HistoricalStrategicAssessment = apps.get_model(
+        "assessment", "HistoricalStrategicAssessment"
+    )
 
-    assesment_fields =(
+    assesment_fields = (
         "archived_reason",
         "commercial_value_explanation",
         "explanation",
@@ -20,23 +24,32 @@ def convert_null_to_empty(apps, schema_editor):
 
     for field in assesment_fields:
         Assessment.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
-        HistoricalAssessment.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
+        HistoricalAssessment.objects.filter(**{f"{field}__isnull": True}).update(
+            **{field: ""}
+        )
 
-    ResolvabilityAssessment.objects.filter(archived_reason__isnull=True).update(archived_reason="")
-    HistoricalResolvabilityAssessment.objects.filter(archived_reason__isnull=True).update(archived_reason="")
-    StrategicAssessment.objects.filter(archived_reason__isnull=True).update(archived_reason="")
-    HistoricalStrategicAssessment.objects.filter(archived_reason__isnull=True).update(archived_reason="")
+    ResolvabilityAssessment.objects.filter(archived_reason__isnull=True).update(
+        archived_reason=""
+    )
+    HistoricalResolvabilityAssessment.objects.filter(
+        archived_reason__isnull=True
+    ).update(archived_reason="")
+    StrategicAssessment.objects.filter(archived_reason__isnull=True).update(
+        archived_reason=""
+    )
+    HistoricalStrategicAssessment.objects.filter(archived_reason__isnull=True).update(
+        archived_reason=""
+    )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0010_auto_20201102_0943'),
+        ("assessment", "0010_auto_20201102_0943"),
     ]
 
     operations = [
         migrations.RunPython(
-            convert_null_to_empty,
-            reverse_code=migrations.RunPython.noop
+            convert_null_to_empty, reverse_code=migrations.RunPython.noop
         ),
     ]

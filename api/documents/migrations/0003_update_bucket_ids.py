@@ -16,9 +16,11 @@ def update_documents_to_default(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('documents', '0002_auto_20200901_1511'),
+        ("documents", "0002_auto_20200901_1511"),
     ]
 
     operations = [
-        migrations.RunPython(update_default_to_documents, reverse_code=update_documents_to_default),
+        migrations.RunPython(
+            update_default_to_documents, reverse_code=update_documents_to_default
+        ),
     ]

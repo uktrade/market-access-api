@@ -1,8 +1,10 @@
 from api.assessment.models import EconomicImpactAssessment
 
-from ...items.assessments.economic_impact import (ArchivedHistoryItem,
-                                                  ExplanationHistoryItem,
-                                                  ImpactHistoryItem)
+from ...items.assessments.economic_impact import (
+    ArchivedHistoryItem,
+    ExplanationHistoryItem,
+    ImpactHistoryItem,
+)
 from ..base import HistoryItemFactoryBase
 
 

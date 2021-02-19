@@ -15,7 +15,7 @@ class WTOCommitteeGroup(models.Model):
     name = models.CharField(max_length=MAX_LENGTH)
 
     class Meta:
-        ordering = ("name", )
+        ordering = ("name",)
 
 
 class WTOCommittee(models.Model):
@@ -28,15 +28,16 @@ class WTOCommittee(models.Model):
     name = models.CharField(max_length=MAX_LENGTH)
 
     class Meta:
-        ordering = ("name", )
+        ordering = ("name",)
 
 
 class WTOProfileHistoricalModel(models.Model):
-
     def get_changed_fields(self, old_history):
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
-        if changed_fields.intersection(("wto_has_been_notified", "wto_should_be_notified")):
+        if changed_fields.intersection(
+            ("wto_has_been_notified", "wto_should_be_notified")
+        ):
             changed_fields.discard("wto_has_been_notified")
             changed_fields.discard("wto_should_be_notified")
             changed_fields.add("wto_notified_status")

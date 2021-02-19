@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0060_auto_20200416_1452'),
+        ("barriers", "0060_auto_20200416_1452"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='end_date',
-            field=models.DateField(help_text='Date the barrier ends', null=True),
+            model_name="barrierinstance",
+            name="end_date",
+            field=models.DateField(help_text="Date the barrier ends", null=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='end_date',
-            field=models.DateField(help_text='Date the barrier ends', null=True),
+            model_name="historicalbarrierinstance",
+            name="end_date",
+            field=models.DateField(help_text="Date the barrier ends", null=True),
         ),
     ]

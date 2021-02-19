@@ -62,7 +62,9 @@ class Command(BaseCommand):
             "reports": {"total_count": reports.count()},
             "users": {
                 "total_count": users.distinct().count(),
-                "active_count": users.filter(last_login__gt=days_ago).distinct().count(),
+                "active_count": users.filter(last_login__gt=days_ago)
+                .distinct()
+                .count(),
             },
         }
 

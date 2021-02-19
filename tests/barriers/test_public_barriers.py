@@ -19,9 +19,12 @@ from rest_framework import status
 
 from api.barriers.helpers import get_team_member_user_ids
 from api.barriers.models import Barrier, PublicBarrier
-from api.barriers.public_data import (VersionedFile, latest_file,
-                                      public_barrier_data_json_file_content,
-                                      versioned_folder)
+from api.barriers.public_data import (
+    VersionedFile,
+    latest_file,
+    public_barrier_data_json_file_content,
+    versioned_folder,
+)
 from api.barriers.serializers import PublicBarrierSerializer
 from api.barriers.serializers.public_barriers import public_barriers_to_json
 from api.core.exceptions import ArchivingException

@@ -15,11 +15,14 @@ class BarrierTeamMembersView(generics.ListCreateAPIView):
     Returns the team members for a barrier.
     Read only endpoint, Contributors are added automatically.
     """
+
     queryset = TeamMember.objects.all()
     serializer_class = BarrierTeamSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(barrier_id=self.kwargs.get("pk")).order_by("-role", "created_on")
+        return self.queryset.filter(barrier_id=self.kwargs.get("pk")).order_by(
+            "-role", "created_on"
+        )
 
     def perform_create(self, serializer):
         barrier = get_object_or_404(Barrier, pk=self.kwargs.get("pk"))

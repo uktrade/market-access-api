@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0006_auto_20190805_1720'),
+        ("user", "0006_auto_20190805_1720"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='profile',
-            name='sso_user_id',
-            field=models.UUIDField(help_text='Staff SSO UUID for reference', null=True),
+            model_name="profile",
+            name="sso_user_id",
+            field=models.UUIDField(help_text="Staff SSO UUID for reference", null=True),
         ),
     ]

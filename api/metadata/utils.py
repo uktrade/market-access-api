@@ -9,8 +9,11 @@ from urlobject import URLObject
 
 from api.wto.models import WTOCommitteeGroup
 
-from .constants import (BARRIER_TYPE_CATEGORIES, GOVERNMENT_ORGANISATION_TYPES,
-                        TRADING_BLOCS)
+from .constants import (
+    BARRIER_TYPE_CATEGORIES,
+    GOVERNMENT_ORGANISATION_TYPES,
+    TRADING_BLOCS,
+)
 from .models import BarrierPriority, BarrierTag, Category, Organisation
 
 
@@ -30,18 +33,20 @@ def import_api_results(endpoint):
 
     credentials = settings.HAWK_CREDENTIALS[settings.DATAHUB_HAWK_ID]
 
-    sender = Sender(credentials,
-                    meta_url,
-                    'GET',
-                    content=None,
-                    content_type=None,
-                    always_hash_content=False,
-                    )
+    sender = Sender(
+        credentials,
+        meta_url,
+        "GET",
+        content=None,
+        content_type=None,
+        always_hash_content=False,
+    )
 
-    response = requests.get(meta_url, verify=not settings.DEBUG,
-                            headers={
-                                'Authorization': sender.request_header
-                            })
+    response = requests.get(
+        meta_url,
+        verify=not settings.DEBUG,
+        headers={"Authorization": sender.request_header},
+    )
 
     if response.ok:
         return response.json()
@@ -79,7 +84,8 @@ def get_countries():
 def get_country_ids_by_overseas_region(region_id):
     countries = get_countries()
     return [
-        country["id"] for country in countries
+        country["id"]
+        for country in countries
         if country.get("overseas_region")
         and region_id == country.get("overseas_region").get("id")
     ]
@@ -148,9 +154,11 @@ def get_categories():
 
 
 def get_barrier_tags():
-    return list(BarrierTag.objects.values(
-        "id", "title", "description", "show_at_reporting", "order"
-    ))
+    return list(
+        BarrierTag.objects.values(
+            "id", "title", "description", "show_at_reporting", "order"
+        )
+    )
 
 
 def get_barrier_priorities():
@@ -161,14 +169,15 @@ def get_barrier_priorities():
 
 
 def get_barrier_type_categories():
-    return dict(
-        (x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES"
-    )
+    return dict((x, y) for x, y in BARRIER_TYPE_CATEGORIES if x != "GOODSANDSERVICES")
 
 
 def get_reporting_stages():
     from api.barriers.models import Stage
-    return dict((stage.code, stage.description) for stage in Stage.objects.order_by('id'))
+
+    return dict(
+        (stage.code, stage.description) for stage in Stage.objects.order_by("id")
+    )
 
 
 def get_trading_bloc(code):
@@ -189,7 +198,9 @@ def get_trading_bloc_by_country_id(country_id):
                 "code": trading_bloc["code"],
                 "name": trading_bloc["name"],
                 "short_name": trading_bloc["short_name"],
-                "overseas_regions": get_trading_bloc_overseas_regions(trading_bloc["code"]),
+                "overseas_regions": get_trading_bloc_overseas_regions(
+                    trading_bloc["code"]
+                ),
             }
 
 
@@ -209,20 +220,25 @@ def get_trading_bloc_overseas_regions(trading_bloc_code):
 def get_wto_committee_groups():
     committee_groups = []
     for group in WTOCommitteeGroup.objects.all():
-        committee_groups.append({
-            "id": str(group.id),
-            "name": group.name,
-            "wto_committees": [
-                {
-                    "id": str(committee.id),
-                    "name": committee.name,
-                } for committee in group.committees.all()
-            ],
-        })
+        committee_groups.append(
+            {
+                "id": str(group.id),
+                "name": group.name,
+                "wto_committees": [
+                    {
+                        "id": str(committee.id),
+                        "name": committee.name,
+                    }
+                    for committee in group.committees.all()
+                ],
+            }
+        )
     return committee_groups
 
 
-def get_location_text(country_id, trading_bloc=None, caused_by_trading_bloc=None, admin_area_ids=()):
+def get_location_text(
+    country_id, trading_bloc=None, caused_by_trading_bloc=None, admin_area_ids=()
+):
     if not country_id:
         if trading_bloc:
             return TRADING_BLOCS.get(trading_bloc, {}).get("name")
@@ -238,6 +254,7 @@ def get_location_text(country_id, trading_bloc=None, caused_by_trading_bloc=None
         return f"{country_name} ({trading_bloc})"
 
     if admin_area_ids:
+
         def admin_area_name(admin_area_id):
             admin_area = get_admin_area(admin_area_id) or {}
             return admin_area.get("name", "")

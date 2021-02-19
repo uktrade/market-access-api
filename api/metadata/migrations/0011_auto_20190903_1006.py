@@ -9,6 +9,7 @@ types_to_edit = [
     },
 ]
 
+
 def edit_barrier_types(apps, schema_editor):
     """
     This change is part of content changes requested by the team
@@ -28,7 +29,7 @@ def edit_barrier_types(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0010_auto_20190410_0854'),
+        ("metadata", "0010_auto_20190410_0854"),
     ]
 
     operations = [

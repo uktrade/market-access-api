@@ -11,6 +11,6 @@ urlpatterns = [
     path(
         "check/",
         decorator_from_middleware(StatsMiddleware)(HealthCheckView.as_view()),
-        name="check"
+        name="check",
     ),
 ]

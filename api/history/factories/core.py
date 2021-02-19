@@ -16,6 +16,7 @@ class HistoryItemFactory:
     """
     Proxy class for specific factory classes
     """
+
     class_lookup = {}
     history_factory_classes = (
         EconomicAssessmentHistoryFactory,

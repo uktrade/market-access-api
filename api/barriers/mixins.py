@@ -4,6 +4,7 @@ class BarrierRelatedMixin:
 
     Updates the related barrier's modified_on and modified_by on save.
     """
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.barrier.skip_history_when_saving = True

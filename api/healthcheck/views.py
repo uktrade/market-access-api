@@ -19,9 +19,6 @@ class HealthCheckView(GenericAPIView):
         permission_classes = ()
 
     def get(self, request):
-        data = {
-            "duration": time.time() - request.start_time,
-            "status": db_check()
-        }
+        data = {"duration": time.time() - request.start_time, "status": db_check()}
 
         return Response(data=data)

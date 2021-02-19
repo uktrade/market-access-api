@@ -12,20 +12,19 @@ def populate_covid_tags(apps, schema_editor):
     for barrier in BarrierInstance.objects.filter(barrier_title__icontains="COVID"):
         barrier.tags.add(covid_tag)
 
-    HistoricalBarrierInstance.objects.filter(
-        barrier_title__icontains="COVID"
-    ).update(tags_cache=[covid_tag.id])
+    HistoricalBarrierInstance.objects.filter(barrier_title__icontains="COVID").update(
+        tags_cache=[covid_tag.id]
+    )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0055_auto_20200403_2257'),
+        ("barriers", "0055_auto_20200403_2257"),
     ]
 
     operations = [
         migrations.RunPython(
-            populate_covid_tags,
-            reverse_code=migrations.RunPython.noop
+            populate_covid_tags, reverse_code=migrations.RunPython.noop
         ),
     ]

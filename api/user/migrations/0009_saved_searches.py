@@ -13,55 +13,115 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('user', '0008_populate_user_emails'),
+        ("user", "0008_populate_user_emails"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TeamBarriersSavedSearch',
+            name="TeamBarriersSavedSearch",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('last_viewed_barrier_ids', django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None)),
-                ('last_viewed_on', models.DateTimeField(auto_now_add=True)),
-                ('notify_about_additions', models.BooleanField(default=False)),
-                ('notify_about_updates', models.BooleanField(default=False)),
-                ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='team_barriers_saved_search', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "last_viewed_barrier_ids",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.UUIDField(),
+                        blank=True,
+                        default=list,
+                        size=None,
+                    ),
+                ),
+                ("last_viewed_on", models.DateTimeField(auto_now_add=True)),
+                ("notify_about_additions", models.BooleanField(default=False)),
+                ("notify_about_updates", models.BooleanField(default=False)),
+                ("created_on", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="team_barriers_saved_search",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='SavedSearch',
+            name="SavedSearch",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('last_viewed_barrier_ids', django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None)),
-                ('last_viewed_on', models.DateTimeField(auto_now_add=True)),
-                ('notify_about_additions', models.BooleanField(default=False)),
-                ('notify_about_updates', models.BooleanField(default=False)),
-                ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('name', models.CharField(max_length=255)),
-                ('filters', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='saved_searches', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "last_viewed_barrier_ids",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.UUIDField(),
+                        blank=True,
+                        default=list,
+                        size=None,
+                    ),
+                ),
+                ("last_viewed_on", models.DateTimeField(auto_now_add=True)),
+                ("notify_about_additions", models.BooleanField(default=False)),
+                ("notify_about_updates", models.BooleanField(default=False)),
+                ("created_on", models.DateTimeField(auto_now_add=True)),
+                ("name", models.CharField(max_length=255)),
+                ("filters", django.contrib.postgres.fields.jsonb.JSONField()),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="saved_searches",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='MyBarriersSavedSearch',
+            name="MyBarriersSavedSearch",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
-                ('last_viewed_barrier_ids', django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None)),
-                ('last_viewed_on', models.DateTimeField(auto_now_add=True)),
-                ('notify_about_additions', models.BooleanField(default=False)),
-                ('notify_about_updates', models.BooleanField(default=False)),
-                ('created_on', models.DateTimeField(auto_now_add=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='my_barriers_saved_search', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4, primary_key=True, serialize=False
+                    ),
+                ),
+                (
+                    "last_viewed_barrier_ids",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.UUIDField(),
+                        blank=True,
+                        default=list,
+                        size=None,
+                    ),
+                ),
+                ("last_viewed_on", models.DateTimeField(auto_now_add=True)),
+                ("notify_about_additions", models.BooleanField(default=False)),
+                ("notify_about_updates", models.BooleanField(default=False)),
+                ("created_on", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="my_barriers_saved_search",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

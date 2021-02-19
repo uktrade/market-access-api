@@ -6,18 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0015_assign_publish_permissions'),
+        ("user", "0015_assign_publish_permissions"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='profile',
-            name='user_profile',
-            field=models.JSONField(help_text='temporary field to hold sso profile json object', null=True),
+            model_name="profile",
+            name="user_profile",
+            field=models.JSONField(
+                help_text="temporary field to hold sso profile json object", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='savedsearch',
-            name='filters',
+            model_name="savedsearch",
+            name="filters",
             field=models.JSONField(),
         ),
     ]

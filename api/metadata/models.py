@@ -56,15 +56,16 @@ class BarrierTag(OrderedModel, BaseModel):
     """
     Model representing tags that can be applied to barriers.
     """
+
     title = models.CharField(max_length=25, unique=True)
     description = models.CharField(
         blank=True,
         max_length=250,
-        help_text="Additional information about the tag to be shown to the end users. (optional)"
+        help_text="Additional information about the tag to be shown to the end users. (optional)",
     )
     show_at_reporting = models.BooleanField(
         default=False,
-        help_text="When set to True the tag is shown as an option during barrier reporting flow."
+        help_text="When set to True the tag is shown as an option during barrier reporting flow.",
     )
 
     def __str__(self):

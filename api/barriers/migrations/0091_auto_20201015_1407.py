@@ -6,18 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0090_auto_20200921_1443'),
+        ("barriers", "0090_auto_20200921_1443"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalpublicbarrier',
-            name='_public_view_status',
-            field=models.PositiveIntegerField(choices=[(0, 'Not yet sifted'), (10, 'Not allowed'), (20, 'Allowed'), (30, 'Ready'), (40, 'Published'), (50, 'Unpublished')], default=0),
+            model_name="historicalpublicbarrier",
+            name="_public_view_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Not yet sifted"),
+                    (10, "Not allowed"),
+                    (20, "Allowed"),
+                    (30, "Ready"),
+                    (40, "Published"),
+                    (50, "Unpublished"),
+                ],
+                default=0,
+            ),
         ),
         migrations.AlterField(
-            model_name='publicbarrier',
-            name='_public_view_status',
-            field=models.PositiveIntegerField(choices=[(0, 'Not yet sifted'), (10, 'Not allowed'), (20, 'Allowed'), (30, 'Ready'), (40, 'Published'), (50, 'Unpublished')], default=0),
+            model_name="publicbarrier",
+            name="_public_view_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Not yet sifted"),
+                    (10, "Not allowed"),
+                    (20, "Allowed"),
+                    (30, "Ready"),
+                    (40, "Published"),
+                    (50, "Unpublished"),
+                ],
+                default=0,
+            ),
         ),
     ]

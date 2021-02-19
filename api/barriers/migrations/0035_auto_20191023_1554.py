@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0034_auto_20191017_1434'),
+        ("barriers", "0034_auto_20191017_1434"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='barrier_type_category',
+            model_name="barrierinstance",
+            name="barrier_type_category",
         ),
         migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='barrier_type_category',
+            model_name="historicalbarrierinstance",
+            name="barrier_type_category",
         ),
     ]

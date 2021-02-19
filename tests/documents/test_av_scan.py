@@ -6,8 +6,7 @@ from requests.exceptions import HTTPError
 from requests_toolbelt.multipart.decoder import MultipartDecoder
 from rest_framework import status
 
-from api.documents.av_scan import (StreamWrapper, VirusScanException,
-                                   _multipart_encoder)
+from api.documents.av_scan import StreamWrapper, VirusScanException, _multipart_encoder
 from api.documents.models import UPLOAD_STATUSES, Document
 from api.documents.tasks import virus_scan_document
 from tests.documents.factories import DocumentFactory

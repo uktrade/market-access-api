@@ -8,45 +8,57 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0011_clean_filters'),
+        ("user", "0011_clean_filters"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='savedsearch',
-            options={'ordering': ('name',)},
+            name="savedsearch",
+            options={"ordering": ("name",)},
         ),
         migrations.AddField(
-            model_name='mybarrierssavedsearch',
-            name='last_notified_barrier_ids',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None),
+            model_name="mybarrierssavedsearch",
+            name="last_notified_barrier_ids",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.UUIDField(), blank=True, default=list, size=None
+            ),
         ),
         migrations.AddField(
-            model_name='mybarrierssavedsearch',
-            name='last_notified_on',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="mybarrierssavedsearch",
+            name="last_notified_on",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='savedsearch',
-            name='last_notified_barrier_ids',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None),
+            model_name="savedsearch",
+            name="last_notified_barrier_ids",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.UUIDField(), blank=True, default=list, size=None
+            ),
         ),
         migrations.AddField(
-            model_name='savedsearch',
-            name='last_notified_on',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="savedsearch",
+            name="last_notified_on",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='teambarrierssavedsearch',
-            name='last_notified_barrier_ids',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None),
+            model_name="teambarrierssavedsearch",
+            name="last_notified_barrier_ids",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.UUIDField(), blank=True, default=list, size=None
+            ),
         ),
         migrations.AddField(
-            model_name='teambarrierssavedsearch',
-            name='last_notified_on',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="teambarrierssavedsearch",
+            name="last_notified_on",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
     ]

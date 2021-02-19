@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0041_barrieruserhit'),
+        ("barriers", "0041_barrieruserhit"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='barrier_types',
-            field=models.ManyToManyField(help_text='Barrier categories', related_name='barriers', to='metadata.BarrierType'),
+            model_name="barrierinstance",
+            name="barrier_types",
+            field=models.ManyToManyField(
+                help_text="Barrier categories",
+                related_name="barriers",
+                to="metadata.BarrierType",
+            ),
         ),
     ]

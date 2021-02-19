@@ -1,10 +1,15 @@
 from hashid_field.rest import HashidSerializerCharField
 from rest_framework import serializers
 
-from api.barriers.fields import (NoneToBlankCharField, ReadOnlyAllSectorsField,
-                                 ReadOnlyCategoriesField, ReadOnlyCountryField,
-                                 ReadOnlySectorsField, ReadOnlyStatusField,
-                                 ReadOnlyTradingBlocField)
+from api.barriers.fields import (
+    NoneToBlankCharField,
+    ReadOnlyAllSectorsField,
+    ReadOnlyCategoriesField,
+    ReadOnlyCountryField,
+    ReadOnlySectorsField,
+    ReadOnlyStatusField,
+    ReadOnlyTradingBlocField,
+)
 from api.barriers.helpers import get_published_public_barriers
 from api.barriers.models import PublicBarrier
 from api.barriers.serializers.mixins import LocationFieldMixin

@@ -20,6 +20,7 @@ class Profile(models.Model):
     Profile object to hold user profile elements (temporary)
     This will be replaced by external SSO profile
     """
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     location = models.UUIDField(null=True, blank=True)
     internal = models.BooleanField(default=False)
@@ -69,7 +70,7 @@ class BaseSavedSearch(models.Model):
         self._original_filters = self.filters
 
     def are_api_parameters_equal(self, query_dict):
-        ignore_keys = ('ordering', 'limit', 'offset', 'search_id')
+        ignore_keys = ("ordering", "limit", "offset", "search_id")
         query_dict = {k: v for k, v in query_dict.items() if k not in ignore_keys}
         filterset = BarrierFilterSet()
 
@@ -102,7 +103,9 @@ class BaseSavedSearch(models.Model):
 
         if "country" in params or "region" in params or "extra_location" in params:
             params["location"] = (
-                params.pop("country", []) + params.pop("region", []) + params.pop("extra_location", [])
+                params.pop("country", [])
+                + params.pop("region", [])
+                + params.pop("extra_location", [])
             )
 
         params["archived"] = params.pop("only_archived", "0") or "0"
@@ -131,11 +134,14 @@ class BaseSavedSearch(models.Model):
             self._new_barrier_ids = list(
                 self.barriers.filter(
                     modified_on__gt=self.last_viewed_on,
-                ).exclude(
+                )
+                .exclude(
                     pk__in=self.last_viewed_barrier_ids,
-                ).exclude(
+                )
+                .exclude(
                     modified_by=self.user,
-                ).values_list("id", flat=True)
+                )
+                .values_list("id", flat=True)
             )
         return self._new_barrier_ids
 
@@ -146,12 +152,16 @@ class BaseSavedSearch(models.Model):
     @property
     def new_barriers_since_notified(self):
         if self._new_barriers_since_notified is None:
-            self._new_barriers_since_notified = self.barriers.filter(
-                modified_on__gt=self.last_notified_on,
-            ).exclude(
-                pk__in=self.last_notified_barrier_ids,
-            ).exclude(
-                modified_by=self.user,
+            self._new_barriers_since_notified = (
+                self.barriers.filter(
+                    modified_on__gt=self.last_notified_on,
+                )
+                .exclude(
+                    pk__in=self.last_notified_barrier_ids,
+                )
+                .exclude(
+                    modified_by=self.user,
+                )
             )
         return self._new_barriers_since_notified
 
@@ -169,23 +179,30 @@ class BaseSavedSearch(models.Model):
             self._updated_barrier_ids = list(
                 self.barriers.filter(
                     modified_on__gt=self.last_viewed_on,
-                ).exclude(
+                )
+                .exclude(
                     pk__in=self.new_barrier_ids,
-                ).exclude(
+                )
+                .exclude(
                     modified_by=self.user,
-                ).values_list("id", flat=True)
+                )
+                .values_list("id", flat=True)
             )
         return self._updated_barrier_ids
 
     @property
     def updated_barriers_since_notified(self):
         if self._updated_barriers_since_notified is None:
-            self._updated_barriers_since_notified = self.barriers.filter(
-                modified_on__gt=self.last_notified_on,
-            ).exclude(
-                pk__in=self.new_barrier_ids_since_notified,
-            ).exclude(
-                modified_by=self.user,
+            self._updated_barriers_since_notified = (
+                self.barriers.filter(
+                    modified_on__gt=self.last_notified_on,
+                )
+                .exclude(
+                    pk__in=self.new_barrier_ids_since_notified,
+                )
+                .exclude(
+                    modified_by=self.user,
+                )
             )
         return self._updated_barriers_since_notified
 
@@ -221,7 +238,7 @@ class SavedSearch(BaseSavedSearch):
     filters = models.JSONField()
 
     class Meta:
-        ordering = ("name", )
+        ordering = ("name",)
 
 
 class MyBarriersSavedSearch(BaseSavedSearch):

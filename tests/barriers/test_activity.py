@@ -9,10 +9,12 @@ from api.core.test_utils import APITestMixin
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction
 
-from ..assessment.factories import (EconomicAssessmentFactory,
-                                    EconomicImpactAssessmentFactory,
-                                    ResolvabilityAssessmentFactory,
-                                    StrategicAssessmentFactory)
+from ..assessment.factories import (
+    EconomicAssessmentFactory,
+    EconomicImpactAssessmentFactory,
+    ResolvabilityAssessmentFactory,
+    StrategicAssessmentFactory,
+)
 
 
 class TestActivityView(APITestMixin, TestCase):
@@ -20,9 +22,7 @@ class TestActivityView(APITestMixin, TestCase):
 
     @freeze_time("2020-03-01")
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
         self.note = Interaction.objects.create(
@@ -44,7 +44,9 @@ class TestActivityView(APITestMixin, TestCase):
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.admin_areas = [
+            "a88512e0-62d4-4808-95dc-d3beab05d0e9"
+        ]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
@@ -56,9 +58,7 @@ class TestActivityView(APITestMixin, TestCase):
 
         with freeze_time("2020-04-02"):
             self.barrier.archive(
-                user=self.user,
-                reason="DUPLICATE",
-                explanation="It was a duplicate"
+                user=self.user, reason="DUPLICATE", explanation="It was a duplicate"
             )
 
         # Note changes
@@ -68,9 +68,7 @@ class TestActivityView(APITestMixin, TestCase):
 
         # Team Member changes
         TeamMember.objects.create(
-            barrier=self.barrier,
-            user=self.user,
-            role="Contributor"
+            barrier=self.barrier, user=self.user, role="Contributor"
         )
 
         # Assessment changes

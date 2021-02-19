@@ -7,18 +7,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0100_merge_20201124_1636'),
+        ("barriers", "0100_merge_20201124_1636"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalpublicbarrier',
-            name='id',
+            model_name="historicalpublicbarrier",
+            name="id",
             field=models.IntegerField(blank=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='publicbarrier',
-            name='id',
-            field=hashid_field.field.HashidAutoField(alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', min_length=6, primary_key=True, serialize=False),
+            model_name="publicbarrier",
+            name="id",
+            field=hashid_field.field.HashidAutoField(
+                alphabet="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+                min_length=6,
+                primary_key=True,
+                serialize=False,
+            ),
         ),
     ]

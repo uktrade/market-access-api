@@ -48,19 +48,19 @@ class WhoAmISerializer(serializers.ModelSerializer):
     def get_email(self, obj):
         sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
-            return sso_me.get('email', None)
+            return sso_me.get("email", None)
         return obj.email
 
     def get_first_name(self, obj):
         sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
-            return sso_me.get('first_name', None)
+            return sso_me.get("first_name", None)
         return obj.first_name
 
     def get_last_name(self, obj):
         sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
-            return sso_me.get('last_name', None)
+            return sso_me.get("last_name", None)
         return obj.last_name
 
     def get_username(self, obj):
@@ -102,17 +102,18 @@ class WhoAmISerializer(serializers.ModelSerializer):
     def get_permitted_applications(self, obj):
         sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
-            return sso_me.get('permitted_applications', None)
+            return sso_me.get("permitted_applications", None)
         return None
 
     def get_permissions(self, obj):
-        return Permission.objects.filter(
-            Q(user=obj) | Q(group__user=obj)
-        ).distinct().values_list('codename', flat=True)
+        return (
+            Permission.objects.filter(Q(user=obj) | Q(group__user=obj))
+            .distinct()
+            .values_list("codename", flat=True)
+        )
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Profile
         fields = ["sso_user_id"]
@@ -152,9 +153,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
         return cleansed_username(obj)
 
     def get_permissions(self, obj):
-        return Permission.objects.filter(
-            Q(user=obj) | Q(group__user=obj)
-        ).distinct().values_list('codename', flat=True)
+        return (
+            Permission.objects.filter(Q(user=obj) | Q(group__user=obj))
+            .distinct()
+            .values_list("codename", flat=True)
+        )
 
     def get_validated_group_ids(self):
         group_ids = []
@@ -180,13 +183,13 @@ class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
         fields = [
-            'id',
-            'profile',
-            'email',
-            'first_name',
-            'last_name',
-            'full_name',
-            'groups',
+            "id",
+            "profile",
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "groups",
         ]
 
     def get_full_name(self, obj):
@@ -197,20 +200,20 @@ class SavedSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = SavedSearch
         fields = [
-            'id',
-            'name',
-            'filters',
-            'barrier_count',
-            'new_barrier_ids',
-            'new_count',
-            'updated_barrier_ids',
-            'updated_count',
-            'notify_about_additions',
-            'notify_about_updates',
+            "id",
+            "name",
+            "filters",
+            "barrier_count",
+            "new_barrier_ids",
+            "new_count",
+            "updated_barrier_ids",
+            "updated_count",
+            "notify_about_additions",
+            "notify_about_updates",
         ]
 
     def create(self, validated_data):
-        validated_data["user"] = self.context['request'].user
+        validated_data["user"] = self.context["request"].user
         return super().create(validated_data)
 
 

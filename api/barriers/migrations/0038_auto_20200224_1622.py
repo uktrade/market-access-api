@@ -4,18 +4,15 @@ from django.db import migrations
 
 
 def populate_archived_reason(apps, schema_editor):
-    BarrierInstance = apps.get_model('barriers', 'BarrierInstance')
+    BarrierInstance = apps.get_model("barriers", "BarrierInstance")
     BarrierInstance.objects.filter(
         archived=True,
         archived_reason__isnull=True,
-    ).update(
-        archived_reason="OTHER",
-        archived_explanation="Archive reason unknown"
-    )
+    ).update(archived_reason="OTHER", archived_explanation="Archive reason unknown")
 
 
 def unpopulate_archived_reason(apps, schema_editor):
-    BarrierInstance = apps.get_model('barriers', 'BarrierInstance')
+    BarrierInstance = apps.get_model("barriers", "BarrierInstance")
     BarrierInstance.objects.filter(
         archived=True,
         archived_reason="OTHER",
@@ -29,7 +26,7 @@ def unpopulate_archived_reason(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0037_auto_20200224_1552'),
+        ("barriers", "0037_auto_20200224_1552"),
     ]
 
     operations = [

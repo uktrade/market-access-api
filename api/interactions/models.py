@@ -41,6 +41,7 @@ class InteractionHistoricalModel(models.Model):
     """
     Abstract model for history models tracking document changes.
     """
+
     documents_cache = ArrayField(
         models.JSONField(),
         blank=True,
@@ -70,7 +71,8 @@ class InteractionHistoricalModel(models.Model):
             {
                 "id": str(document["id"]),
                 "name": document["original_filename"],
-            } for document in self.instance.documents.values("id", "original_filename")
+            }
+            for document in self.instance.documents.values("id", "original_filename")
         ]
 
     def save(self, *args, **kwargs):

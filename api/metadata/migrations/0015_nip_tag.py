@@ -34,7 +34,7 @@ def delete_nip_tag(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0014_sectors'),
+        ("metadata", "0014_sectors"),
     ]
 
     operations = [

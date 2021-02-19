@@ -111,7 +111,9 @@ class FullyArchivableMixin(ArchivableMixin):
 class ApprovalMixin(models.Model):
     approved = models.BooleanField(null=True, blank=True)
     reviewed_on = models.DateTimeField(null=True, blank=True)
-    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     class Meta:
         abstract = True

@@ -6,9 +6,7 @@ from rest_framework.reverse import reverse
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
 
-pytestmark = [
-    pytest.mark.django_db
-]
+pytestmark = [pytest.mark.django_db]
 
 
 class TestAssessment(APITestMixin):
@@ -20,9 +18,7 @@ class TestAssessment(APITestMixin):
         url = reverse("get-barrier", kwargs={"pk": barrier.id})
 
         response = self.api_client.patch(
-            url,
-            format="json",
-            data={"commercial_value": 1500000}
+            url, format="json", data={"commercial_value": 1500000}
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["commercial_value"] == 1500000
@@ -34,7 +30,7 @@ class TestAssessment(APITestMixin):
         response = self.api_client.patch(
             url,
             format="json",
-            data={"commercial_value_explanation": expected_explanation}
+            data={"commercial_value_explanation": expected_explanation},
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["commercial_value_explanation"] == expected_explanation

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0046_auto_20200327_1600'),
+        ("barriers", "0046_auto_20200327_1600"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='draft',
+            model_name="barrierinstance",
+            name="draft",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='draft',
+            model_name="historicalbarrierinstance",
+            name="draft",
             field=models.BooleanField(default=True),
         ),
     ]

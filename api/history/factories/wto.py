@@ -1,12 +1,16 @@
 from api.wto.models import WTOProfile
 
-from ..items.wto import (CaseNumberHistoryItem,
-                         CommitteeNotificationDocumentHistoryItem,
-                         CommitteeNotificationLinkHistoryItem,
-                         CommitteeNotifiedHistoryItem,
-                         CommitteeRaisedInHistoryItem,
-                         MeetingMinutesHistoryItem, MemberStatesHistoryItem,
-                         RaisedDateHistoryItem, WTONotifiedStatusHistoryItem)
+from ..items.wto import (
+    CaseNumberHistoryItem,
+    CommitteeNotificationDocumentHistoryItem,
+    CommitteeNotificationLinkHistoryItem,
+    CommitteeNotifiedHistoryItem,
+    CommitteeRaisedInHistoryItem,
+    MeetingMinutesHistoryItem,
+    MemberStatesHistoryItem,
+    RaisedDateHistoryItem,
+    WTONotifiedStatusHistoryItem,
+)
 from .base import HistoryItemFactoryBase
 
 

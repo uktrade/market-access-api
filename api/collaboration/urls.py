@@ -1,7 +1,6 @@
 from django.urls import path
 
-from api.collaboration.views import (BarrierTeamMemberDetail,
-                                     BarrierTeamMembersView)
+from api.collaboration.views import BarrierTeamMemberDetail, BarrierTeamMembersView
 
 urlpatterns = [
     path(

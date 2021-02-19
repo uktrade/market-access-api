@@ -35,7 +35,9 @@ class HistoryItemFactoryBase:
 
         for new_record in history:
             if start_date is None or new_record.history_date > start_date:
-                history_items += cls.create_history_items(new_record, old_record, fields)
+                history_items += cls.create_history_items(
+                    new_record, old_record, fields
+                )
             old_record = new_record
 
         return history_items

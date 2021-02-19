@@ -9,6 +9,7 @@ class Command(BaseCommand):
 
     To be removed after deploy of saved search notifications.
     """
+
     help = "Marks all saved searches as notified"
 
     def handle(self, *args, **options):

@@ -18,7 +18,9 @@ def trade_df(x, df_input, products):
         and (reporter_input is None or item["reporter"] == reporter_input)
     ]
 
-    df_filt = group_and_sum(data=df_filt, sum_field="trade_value_gbp", group_by=("trade_flow", "year"))
+    df_filt = group_and_sum(
+        data=df_filt, sum_field="trade_value_gbp", group_by=("trade_flow", "year")
+    )
 
     for item in df_filt:
         item["reporter"] = reporter_input or "World"
@@ -72,11 +74,12 @@ def avgtrade(df, partner_input, direction, reporter_input=None):
         df_filt = [
             item
             for item in df
-            if item["partner"] == partner_input
-            and item["trade_flow"] == direction
+            if item["partner"] == partner_input and item["trade_flow"] == direction
         ]
 
-    df_filt = group_and_sum(data=df_filt, sum_field="trade_value_gbp", group_by=("year", ))
+    df_filt = group_and_sum(
+        data=df_filt, sum_field="trade_value_gbp", group_by=("year",)
+    )
 
     count = 0
     total = 0
@@ -96,7 +99,7 @@ def group_and_sum(data, sum_field, group_by):
     output = []
     for key, grp in groupby(sorted(data, key=grouper), grouper):
         if isinstance(key, str) or isinstance(key, int):
-            key = (key, )
+            key = (key,)
         item = dict(zip(group_by, key))
         item["total"] = sum(x[sum_field] for x in grp)
         output.append(item)

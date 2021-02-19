@@ -16,17 +16,25 @@ from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata.constants import (BARRIER_ARCHIVED_REASON, BARRIER_PENDING,
-                                    BARRIER_SOURCE, BARRIER_TERMS,
-                                    GOVERNMENT_ORGANISATION_TYPES,
-                                    STAGE_STATUS, TRADE_CATEGORIES,
-                                    TRADE_DIRECTION_CHOICES,
-                                    TRADING_BLOC_CHOICES, BarrierStatus,
-                                    PublicBarrierStatus)
-from api.metadata.models import (BarrierPriority, BarrierTag, Category,
-                                 Organisation)
-from api.metadata.utils import (get_country, get_location_text,
-                                get_trading_bloc_by_country_id)
+from api.metadata.constants import (
+    BARRIER_ARCHIVED_REASON,
+    BARRIER_PENDING,
+    BARRIER_SOURCE,
+    BARRIER_TERMS,
+    GOVERNMENT_ORGANISATION_TYPES,
+    STAGE_STATUS,
+    TRADE_CATEGORIES,
+    TRADE_DIRECTION_CHOICES,
+    TRADING_BLOC_CHOICES,
+    BarrierStatus,
+    PublicBarrierStatus,
+)
+from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
+from api.metadata.utils import (
+    get_country,
+    get_location_text,
+    get_trading_bloc_by_country_id,
+)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

@@ -25,16 +25,20 @@ class UserEvent(models.Model):
         on_delete=models.SET_NULL,
         related_name="+",
     )
-    type = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH, choices=USER_EVENT_TYPES)
-    api_url_path = models.CharField(verbose_name='API URL path', max_length=5000, db_index=True)
+    type = models.CharField(
+        max_length=settings.CHAR_FIELD_MAX_LENGTH, choices=USER_EVENT_TYPES
+    )
+    api_url_path = models.CharField(
+        verbose_name="API URL path", max_length=5000, db_index=True
+    )
     data = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     def __str__(self):
         """Human-friendly string representation."""
-        return f'{self.timestamp} – {self.adviser} – {self.get_type_display()}'
+        return f"{self.timestamp} – {self.adviser} – {self.get_type_display()}"
 
     class Meta:
         indexes = [
-            models.Index(fields=['api_url_path', 'timestamp']),
+            models.Index(fields=["api_url_path", "timestamp"]),
         ]
-        ordering = ('-timestamp', '-pk')
+        ordering = ("-timestamp", "-pk")

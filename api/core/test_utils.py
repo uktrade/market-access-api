@@ -28,9 +28,7 @@ def get_default_test_user():
     return test_user
 
 
-def create_simple_user(
-        **user_attrs
-):
+def create_simple_user(**user_attrs):
     user_defaults = {
         "first_name": factory.Faker("first_name").generate({}),
         "last_name": factory.Faker("last_name").generate({}),
@@ -46,12 +44,12 @@ def create_simple_user(
 
 
 def create_test_user(
-        permission_codenames=(),
-        location=None,
-        internal=False,
-        user_profile=None,
-        sso_user_id=None,
-        **user_attrs
+    permission_codenames=(),
+    location=None,
+    internal=False,
+    user_profile=None,
+    sso_user_id=None,
+    **user_attrs,
 ):
     """
     :returns: user
@@ -148,60 +146,28 @@ class APITestMixin:
         "user_id": "87419484-c6c1-4ab7-b124-a7c0376622c7",
         "first_name": "Barrier",
         "last_name": "Creator",
-        "related_emails": [
-            "barrier.creator@mocktest.uk"
-        ],
+        "related_emails": ["barrier.creator@mocktest.uk"],
         "groups": [],
         "permitted_applications": [
-            {
-                "key": "app-one",
-                "url": "http://undefined",
-                "name": "App One"
-            },
-            {
-                "key": "app-two",
-                "url": "http://undefined",
-                "name": "App Two"
-            },
-            {
-                "key": "app-three",
-                "url": "http://undefined",
-                "name": "App Three"
-            },
+            {"key": "app-one", "url": "http://undefined", "name": "App One"},
+            {"key": "app-two", "url": "http://undefined", "name": "App Two"},
+            {"key": "app-three", "url": "http://undefined", "name": "App Three"},
         ],
-        "access_profiles": [
-            "full-access"
-        ]
+        "access_profiles": ["full-access"],
     }
     sso_user_data_1 = {
         "email": "unit1.test1@unittest.uk",
         "user_id": "907a7a2c-b6cd-454f-3764-a4388ec2a42b",
         "first_name": "Unit1",
         "last_name": "Test1",
-        "related_emails": [
-            "unit1.test1@mocktest.uk"
-        ],
+        "related_emails": ["unit1.test1@mocktest.uk"],
         "groups": [],
         "permitted_applications": [
-            {
-                "key": "app-one",
-                "url": "http://undefined",
-                "name": "App One"
-            },
-            {
-                "key": "app-two",
-                "url": "http://undefined",
-                "name": "App Two"
-            },
-            {
-                "key": "app-three",
-                "url": "http://undefined",
-                "name": "App Three"
-            },
+            {"key": "app-one", "url": "http://undefined", "name": "App One"},
+            {"key": "app-two", "url": "http://undefined", "name": "App Two"},
+            {"key": "app-three", "url": "http://undefined", "name": "App Three"},
         ],
-        "access_profiles": [
-            "full-access"
-        ]
+        "access_profiles": ["full-access"],
     }
 
     sso_user_data_2 = {
@@ -209,30 +175,14 @@ class APITestMixin:
         "user_id": "e5e9394c-daed-498e-b9f3-69228b44fbfa",
         "first_name": "Unit2",
         "last_name": "Test2",
-        "related_emails": [
-            "unit2.test2@mocktest.uk"
-        ],
+        "related_emails": ["unit2.test2@mocktest.uk"],
         "groups": [],
         "permitted_applications": [
-            {
-                "key": "app-one",
-                "url": "http://undefined",
-                "name": "App One"
-            },
-            {
-                "key": "app-two",
-                "url": "http://undefined",
-                "name": "App Two"
-            },
-            {
-                "key": "app-three",
-                "url": "http://undefined",
-                "name": "App Three"
-            },
+            {"key": "app-one", "url": "http://undefined", "name": "App One"},
+            {"key": "app-two", "url": "http://undefined", "name": "App Two"},
+            {"key": "app-three", "url": "http://undefined", "name": "App Three"},
         ],
-        "access_profiles": [
-            "full-access"
-        ]
+        "access_profiles": ["full-access"],
     }
 
     @property

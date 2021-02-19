@@ -14,6 +14,6 @@ class NoteHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        return Interaction.history.filter(
-            barrier_id=barrier_id
-        ).order_by("id", "history_date")
+        return Interaction.history.filter(barrier_id=barrier_id).order_by(
+            "id", "history_date"
+        )

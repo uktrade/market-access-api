@@ -7,7 +7,9 @@ def populate_commercial_value(apps, schema_editor):
     Barrier = apps.get_model("barriers", "Barrier")
     HistoricalBarrier = apps.get_model("barriers", "HistoricalBarrier")
     EconomicAssessment = apps.get_model("assessment", "EconomicAssessment")
-    HistoricalEconomicAssessment = apps.get_model("assessment", "HistoricalEconomicAssessment")
+    HistoricalEconomicAssessment = apps.get_model(
+        "assessment", "HistoricalEconomicAssessment"
+    )
 
     # Reconstruct commercial value history on Barrier model
     for assessment in EconomicAssessment.objects.filter(commercial_value__isnull=False):
@@ -15,9 +17,15 @@ def populate_commercial_value(apps, schema_editor):
         barrier.commercial_value = assessment.commercial_value
         barrier.save()
 
-        for history_item in barrier.cached_history_items.filter(field="commercial_value").order_by("date"):
-            barrier_record = HistoricalBarrier.objects.filter(id=barrier.id, history_date__lte=history_item.date).latest()
-            assessment_record = HistoricalEconomicAssessment.objects.get(pk=history_item.new_record_id)
+        for history_item in barrier.cached_history_items.filter(
+            field="commercial_value"
+        ).order_by("date"):
+            barrier_record = HistoricalBarrier.objects.filter(
+                id=barrier.id, history_date__lte=history_item.date
+            ).latest()
+            assessment_record = HistoricalEconomicAssessment.objects.get(
+                pk=history_item.new_record_id
+            )
 
             # Insert a new history record for when the commercial value was changed
             if barrier_record.history_date != assessment_record.history_date:
@@ -38,47 +46,60 @@ def populate_commercial_value_explanation(apps, schema_editor):
     Barrier = apps.get_model("barriers", "Barrier")
     HistoricalBarrier = apps.get_model("barriers", "HistoricalBarrier")
     EconomicAssessment = apps.get_model("assessment", "EconomicAssessment")
-    HistoricalEconomicAssessment = apps.get_model("assessment", "HistoricalEconomicAssessment")
+    HistoricalEconomicAssessment = apps.get_model(
+        "assessment", "HistoricalEconomicAssessment"
+    )
 
     # Reconstruct commercial value explanation history on Barrier model
-    for assessment in EconomicAssessment.objects.exclude(commercial_value_explanation=""):
+    for assessment in EconomicAssessment.objects.exclude(
+        commercial_value_explanation=""
+    ):
         barrier = assessment.barrier
         barrier.commercial_value_explanation = assessment.commercial_value_explanation
         barrier.save()
 
-        for history_item in barrier.cached_history_items.filter(field="commercial_value_explanation").order_by("date"):
-            barrier_record = HistoricalBarrier.objects.filter(id=barrier.id, history_date__lte=history_item.date).latest()
-            assessment_record = HistoricalEconomicAssessment.objects.get(pk=history_item.new_record_id)
+        for history_item in barrier.cached_history_items.filter(
+            field="commercial_value_explanation"
+        ).order_by("date"):
+            barrier_record = HistoricalBarrier.objects.filter(
+                id=barrier.id, history_date__lte=history_item.date
+            ).latest()
+            assessment_record = HistoricalEconomicAssessment.objects.get(
+                pk=history_item.new_record_id
+            )
 
             # Insert a new history record for when the commercial value explanation was changed
             if barrier_record.history_date != assessment_record.history_date:
                 barrier_record.pk = None
                 barrier_record.history_date = assessment_record.history_date
                 barrier_record.history_user = assessment_record.history_user
-            barrier_record.commercial_value_explanation = assessment_record.commercial_value_explanation
+            barrier_record.commercial_value_explanation = (
+                assessment_record.commercial_value_explanation
+            )
             barrier_record.save()
 
             # Update all subsequent records to include the commercial value explanation
             HistoricalBarrier.objects.filter(
                 id=barrier.id,
                 history_date__gt=history_item.date,
-            ).update(commercial_value_explanation=assessment_record.commercial_value_explanation)
+            ).update(
+                commercial_value_explanation=assessment_record.commercial_value_explanation
+            )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0017_remove_user_analysis_data'),
-        ('barriers', '0098_auto_20201119_1144'),
+        ("assessment", "0017_remove_user_analysis_data"),
+        ("barriers", "0098_auto_20201119_1144"),
     ]
 
     operations = [
         migrations.RunPython(
-            populate_commercial_value,
-            reverse_code=migrations.RunPython.noop
+            populate_commercial_value, reverse_code=migrations.RunPython.noop
         ),
         migrations.RunPython(
             populate_commercial_value_explanation,
-            reverse_code=migrations.RunPython.noop
+            reverse_code=migrations.RunPython.noop,
         ),
     ]

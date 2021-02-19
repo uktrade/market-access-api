@@ -6,28 +6,62 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0031_auto_20190712_0954'),
+        ("barriers", "0031_auto_20190712_0954"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='resolved_status',
-            field=models.CharField(choices=[(3, 'Resolved: In part'), (4, 'Resolved: In full')], max_length=25, null=True),
+            model_name="barrierinstance",
+            name="resolved_status",
+            field=models.CharField(
+                choices=[(3, "Resolved: In part"), (4, "Resolved: In full")],
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='resolved_status',
-            field=models.CharField(choices=[(3, 'Resolved: In part'), (4, 'Resolved: In full')], max_length=25, null=True),
+            model_name="historicalbarrierinstance",
+            name="resolved_status",
+            field=models.CharField(
+                choices=[(3, "Resolved: In part"), (4, "Resolved: In full")],
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (5, 'Dormant'), (6, 'Archived'), (7, 'Unknown'), (3, 'Resolved: In part'), (4, 'Resolved: In full')], default=0, help_text='status of the barrier instance'),
+            model_name="barrierinstance",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unfinished"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                    (7, "Unknown"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                ],
+                default=0,
+                help_text="status of the barrier instance",
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (5, 'Dormant'), (6, 'Archived'), (7, 'Unknown'), (3, 'Resolved: In part'), (4, 'Resolved: In full')], default=0, help_text='status of the barrier instance'),
+            model_name="historicalbarrierinstance",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unfinished"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                    (7, "Unknown"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                ],
+                default=0,
+                help_text="status of the barrier instance",
+            ),
         ),
     ]

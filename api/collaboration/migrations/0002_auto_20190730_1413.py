@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('collaboration', '0001_initial'),
+        ("collaboration", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalteammember',
-            name='default',
+            model_name="historicalteammember",
+            name="default",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='teammember',
-            name='default',
+            model_name="teammember",
+            name="default",
             field=models.BooleanField(default=False),
         ),
     ]

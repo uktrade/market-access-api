@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0058_auto_20200414_1041'),
+        ("barriers", "0058_auto_20200414_1041"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='is_summary_sensitive',
-            field=models.NullBooleanField(help_text='Does the summary contain sensitive information'),
+            model_name="barrierinstance",
+            name="is_summary_sensitive",
+            field=models.NullBooleanField(
+                help_text="Does the summary contain sensitive information"
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='is_summary_sensitive',
-            field=models.NullBooleanField(help_text='Does the summary contain sensitive information'),
+            model_name="historicalbarrierinstance",
+            name="is_summary_sensitive",
+            field=models.NullBooleanField(
+                help_text="Does the summary contain sensitive information"
+            ),
         ),
     ]

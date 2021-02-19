@@ -15,31 +15,31 @@ def assign_permissions(apps, schema_editor):
 
     change_barrier_public_eligibility, created = Permission.objects.get_or_create(
         codename="change_barrier_public_eligibility",
-            defaults={
+        defaults={
             "name": "Can change barrier public eligibility",
-            "content_type": barrier_content_type
-        }
+            "content_type": barrier_content_type,
+        },
     )
     change_publicbarrier, created = Permission.objects.get_or_create(
         codename="change_publicbarrier",
-            defaults={
+        defaults={
             "name": "Can change public barrier",
-            "content_type": public_barrier_content_type
-        }
+            "content_type": public_barrier_content_type,
+        },
     )
     mark_barrier_as_ready_for_publishing, created = Permission.objects.get_or_create(
         codename="mark_barrier_as_ready_for_publishing",
-            defaults={
+        defaults={
             "name": "Can mark barrier as ready for publishing",
-            "content_type": public_barrier_content_type
-        }
+            "content_type": public_barrier_content_type,
+        },
     )
     publish_barrier, created = Permission.objects.get_or_create(
         codename="publish_barrier",
-            defaults={
+        defaults={
             "name": "Can publish barrier",
-            "content_type": public_barrier_content_type
-        }
+            "content_type": public_barrier_content_type,
+        },
     )
 
     administrator_group = Group.objects.get(name="Administrator")
@@ -72,11 +72,13 @@ def assign_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contenttypes', '0001_initial'),
-        ('barriers', '0068_public_barrier_permissions'),
-        ('user', '0014_assign_permissions'),
+        ("contenttypes", "0001_initial"),
+        ("barriers", "0068_public_barrier_permissions"),
+        ("user", "0014_assign_permissions"),
     ]
 
     operations = [
-        migrations.RunPython(assign_permissions, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            assign_permissions, reverse_code=migrations.RunPython.noop
+        ),
     ]

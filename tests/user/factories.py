@@ -9,6 +9,7 @@ class UserFactoryMixin:
     Used to provide helper functions in test cases
     where various users with different permissions are needed to be created.
     """
+
     def __create_user(
         self,
         role=None,

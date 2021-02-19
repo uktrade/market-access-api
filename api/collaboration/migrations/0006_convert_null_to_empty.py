@@ -7,25 +7,26 @@ def convert_null_to_empty(apps, schema_editor):
     TeamMember = apps.get_model("collaboration", "TeamMember")
     HistoricalTeamMember = apps.get_model("collaboration", "HistoricalTeamMember")
 
-    fields =(
+    fields = (
         "archived_reason",
         "role",
     )
 
     for field in fields:
         TeamMember.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
-        HistoricalTeamMember.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
+        HistoricalTeamMember.objects.filter(**{f"{field}__isnull": True}).update(
+            **{field: ""}
+        )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('collaboration', '0005_team_members_overhaul'),
+        ("collaboration", "0005_team_members_overhaul"),
     ]
 
     operations = [
         migrations.RunPython(
-            convert_null_to_empty,
-            reverse_code=migrations.RunPython.noop
+            convert_null_to_empty, reverse_code=migrations.RunPython.noop
         ),
     ]

@@ -11,56 +11,168 @@ import api.barriers.mixins
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0070_auto_20200706_1456'),
+        ("barriers", "0070_auto_20200706_1456"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('interactions', '0007_merge_20200326_1110'),
+        ("interactions", "0007_merge_20200326_1110"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PublicBarrierNote',
+            name="PublicBarrierNote",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_on', models.DateTimeField(auto_now_add=True, db_index=True, null=True)),
-                ('modified_on', models.DateTimeField(auto_now=True, null=True)),
-                ('archived', models.BooleanField(default=False)),
-                ('archived_on', models.DateTimeField(blank=True, null=True)),
-                ('archived_reason', models.TextField(blank=True, null=True)),
-                ('text', models.TextField()),
-                ('archived_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('modified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('public_barrier', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notes', to='barriers.PublicBarrier')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_on",
+                    models.DateTimeField(auto_now_add=True, db_index=True, null=True),
+                ),
+                ("modified_on", models.DateTimeField(auto_now=True, null=True)),
+                ("archived", models.BooleanField(default=False)),
+                ("archived_on", models.DateTimeField(blank=True, null=True)),
+                ("archived_reason", models.TextField(blank=True, null=True)),
+                ("text", models.TextField()),
+                (
+                    "archived_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "modified_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "public_barrier",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notes",
+                        to="barriers.PublicBarrier",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
             bases=(api.barriers.mixins.BarrierRelatedMixin, models.Model),
         ),
         migrations.CreateModel(
-            name='HistoricalPublicBarrierNote',
+            name="HistoricalPublicBarrierNote",
             fields=[
-                ('id', models.IntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
-                ('created_on', models.DateTimeField(blank=True, db_index=True, editable=False, null=True)),
-                ('modified_on', models.DateTimeField(blank=True, editable=False, null=True)),
-                ('archived', models.BooleanField(default=False)),
-                ('archived_on', models.DateTimeField(blank=True, null=True)),
-                ('archived_reason', models.TextField(blank=True, null=True)),
-                ('text', models.TextField()),
-                ('history_id', models.AutoField(primary_key=True, serialize=False)),
-                ('history_date', models.DateTimeField()),
-                ('history_change_reason', models.CharField(max_length=100, null=True)),
-                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('archived_by', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('created_by', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('modified_by', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('public_barrier', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='barriers.PublicBarrier')),
+                (
+                    "id",
+                    models.IntegerField(
+                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "created_on",
+                    models.DateTimeField(
+                        blank=True, db_index=True, editable=False, null=True
+                    ),
+                ),
+                (
+                    "modified_on",
+                    models.DateTimeField(blank=True, editable=False, null=True),
+                ),
+                ("archived", models.BooleanField(default=False)),
+                ("archived_on", models.DateTimeField(blank=True, null=True)),
+                ("archived_reason", models.TextField(blank=True, null=True)),
+                ("text", models.TextField()),
+                ("history_id", models.AutoField(primary_key=True, serialize=False)),
+                ("history_date", models.DateTimeField()),
+                ("history_change_reason", models.CharField(max_length=100, null=True)),
+                (
+                    "history_type",
+                    models.CharField(
+                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "archived_by",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "history_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "modified_by",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "public_barrier",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="barriers.PublicBarrier",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'historical public barrier note',
-                'ordering': ('-history_date', '-history_id'),
-                'get_latest_by': 'history_date',
+                "verbose_name": "historical public barrier note",
+                "ordering": ("-history_date", "-history_id"),
+                "get_latest_by": "history_date",
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),

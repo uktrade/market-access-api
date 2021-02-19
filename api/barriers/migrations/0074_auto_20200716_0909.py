@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0073_auto_20200713_1645'),
+        ("barriers", "0073_auto_20200713_1645"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='publicbarrier',
-            name='barrier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='public_barriers', to='barriers.BarrierInstance'),
+            model_name="publicbarrier",
+            name="barrier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="public_barriers",
+                to="barriers.BarrierInstance",
+            ),
         ),
     ]

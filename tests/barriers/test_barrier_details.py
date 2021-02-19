@@ -13,7 +13,6 @@ from tests.metadata.factories import OrganisationFactory
 
 
 class TestBarrierDetails(APITestMixin, APITestCase):
-
     def setUp(self):
         self.barrier = BarrierFactory()
         self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
@@ -46,7 +45,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         self.barrier.refresh_from_db()
         assert resolved_in_full == self.barrier.status
-        assert status_date == self.barrier.status_date.strftime('%Y-%m-%d')
+        assert status_date == self.barrier.status_date.strftime("%Y-%m-%d")
         assert status_summary == self.barrier.status_summary
 
     @freeze_time("2020-02-22")
@@ -64,7 +63,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         self.barrier.refresh_from_db()
         assert unknown == self.barrier.status
-        assert "2020-02-22" == self.barrier.status_date.strftime('%Y-%m-%d')
+        assert "2020-02-22" == self.barrier.status_date.strftime("%Y-%m-%d")
         assert status_summary == self.barrier.status_summary
 
     @freeze_time("2020-02-22")
@@ -82,14 +81,12 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         self.barrier.refresh_from_db()
         assert open_in_progress == self.barrier.status
-        assert "2020-02-22" == self.barrier.status_date.strftime('%Y-%m-%d')
+        assert "2020-02-22" == self.barrier.status_date.strftime("%Y-%m-%d")
         assert status_summary == self.barrier.status_summary
 
     def test_patch_title(self):
         title = "Just a new title"
-        payload = {
-            "title": title
-        }
+        payload = {"title": title}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -131,13 +128,23 @@ class TestBarrierDetails(APITestMixin, APITestCase):
             {"term": 2, "status_code": status.HTTP_200_OK, "expected_term": 2},
             {"term": 1, "status_code": status.HTTP_200_OK, "expected_term": 1},
             {"term": 0, "status_code": status.HTTP_400_BAD_REQUEST, "expected_term": 1},
-            {"term": "ahoy!", "status_code": status.HTTP_400_BAD_REQUEST, "expected_term": 1},
-            {"term": "987", "status_code": status.HTTP_400_BAD_REQUEST, "expected_term": 1},
+            {
+                "term": "ahoy!",
+                "status_code": status.HTTP_400_BAD_REQUEST,
+                "expected_term": 1,
+            },
+            {
+                "term": "987",
+                "status_code": status.HTTP_400_BAD_REQUEST,
+                "expected_term": 1,
+            },
         ]
 
         for tp in test_parameters:
             with self.subTest(tp=tp):
-                payload = {"term": tp["term"],}
+                payload = {
+                    "term": tp["term"],
+                }
                 response = self.api_client.patch(self.url, format="json", data=payload)
 
                 self.barrier.refresh_from_db()
@@ -154,7 +161,9 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         assert str(self.barrier.id) == response.data["id"]
         assert response.data["all_sectors"] is True
-        assert self.barrier.sectors == [sector["id"] for sector in response.data["sectors"]]
+        assert self.barrier.sectors == [
+            sector["id"] for sector in response.data["sectors"]
+        ]
 
     def test_patch_barrier_priority(self):
         unknown_priority = BarrierPriority.objects.get(code="UNKNOWN")
@@ -164,10 +173,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
         for priority in priorities:
             with self.subTest(priority=priority):
-                payload = {
-                    "priority": priority,
-                    "priority_summary": "wibble wobble"
-                }
+                payload = {"priority": priority, "priority_summary": "wibble wobble"}
 
                 response = self.api_client.patch(self.url, format="json", data=payload)
 
@@ -184,15 +190,13 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         self.barrier.refresh_from_db()
         assert 1 == self.barrier.categories.count()
 
-        payload = {
-            "categories": (category1.id, category2.id)
-        }
+        payload = {"categories": (category1.id, category2.id)}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert {category1.id, category2.id} == set([
-            category["id"] for category in response.data["categories"]
-        ])
+        assert {category1.id, category2.id} == set(
+            [category["id"] for category in response.data["categories"]]
+        )
 
     def test_replace_barrier_categories(self):
         categories = Category.objects.all()
@@ -204,15 +208,13 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         self.barrier.refresh_from_db()
         assert 1 == self.barrier.categories.count()
 
-        payload = {
-            "categories": (category2.id, category3.id)
-        }
+        payload = {"categories": (category2.id, category3.id)}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert {category2.id, category3.id} == set([
-            category["id"] for category in response.data["categories"]
-        ])
+        assert {category2.id, category3.id} == set(
+            [category["id"] for category in response.data["categories"]]
+        )
 
     def test_flush_barrier_categories(self):
         categories = Category.objects.all()
@@ -222,9 +224,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         self.barrier.refresh_from_db()
         assert 1 == self.barrier.categories.count()
 
-        payload = {
-            "categories": ()
-        }
+        payload = {"categories": ()}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -245,16 +245,12 @@ class TestBarrierDetails(APITestMixin, APITestCase):
     def test_add_barrier_government_organisations(self):
         assert 0 == self.barrier.organisations.count()
 
-        payload = {
-            "government_organisations": ("1", "2")
-        }
+        payload = {"government_organisations": ("1", "2")}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
         assert 2 == len(response.data["government_organisations"])
-        assert {1, 2} == set([
-            org.id for org in self.barrier.government_organisations
-        ])
+        assert {1, 2} == set([org.id for org in self.barrier.government_organisations])
 
     def test_replace_barrier_government_organisations(self):
         org1 = Organisation.objects.get(id=1)
@@ -264,9 +260,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
         assert 2 == self.barrier.government_organisations.count()
 
-        payload = {
-            "government_organisations": ("3",)
-        }
+        payload = {"government_organisations": ("3",)}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -282,9 +276,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         self.barrier.refresh_from_db()
         assert 1 == self.barrier.government_organisations.count()
 
-        payload = {
-            "government_organisations": ()
-        }
+        payload = {"government_organisations": ()}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -300,9 +292,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert 2 == self.barrier.organisations.count()
         assert 1 == self.barrier.government_organisations.count()
 
-        payload = {
-            "government_organisations": ()
-        }
+        payload = {"government_organisations": ()}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -313,7 +303,6 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
 
 class TestHibernateEndpoint(APITestMixin, TestCase):
-
     def setUp(self):
         self.barrier = BarrierFactory()
         self.url = reverse("hibernate-barrier", kwargs={"pk": self.barrier.id})
@@ -333,7 +322,7 @@ class TestHibernateEndpoint(APITestMixin, TestCase):
         assert status.HTTP_200_OK == response.status_code
         self.barrier.refresh_from_db()
         assert dormant == self.barrier.status
-        assert expected_status_date == self.barrier.status_date.strftime('%Y-%m-%d')
+        assert expected_status_date == self.barrier.status_date.strftime("%Y-%m-%d")
 
     def test_update_barrier_through_hibernate_barrier_endpoint(self):
         """
@@ -350,7 +339,6 @@ class TestHibernateEndpoint(APITestMixin, TestCase):
 
 
 class TestBarrierTradeDirection(APITestMixin, TestCase):
-
     def setUp(self):
         self.barrier = BarrierFactory()
         self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
@@ -401,8 +389,9 @@ class TestBarrierTradeDirection(APITestMixin, TestCase):
                 payload = {"trade_direction": value}
                 response = self.api_client.patch(self.url, format="json", data=payload)
 
-                assert status.HTTP_400_BAD_REQUEST == response.status_code, \
-                    f"Expected 400 when value is {value}"
+                assert (
+                    status.HTTP_400_BAD_REQUEST == response.status_code
+                ), f"Expected 400 when value is {value}"
 
 
 class TestBarrierPublicEligibility(APITestMixin, TestCase):
@@ -431,10 +420,12 @@ class TestBarrierPublicEligibility(APITestMixin, TestCase):
                 payload = {"public_eligibility": value}
                 response = self.api_client.patch(self.url, format="json", data=payload)
 
-                assert status.HTTP_200_OK == response.status_code, \
-                    f"Expected 200 when value is {value}"
-                assert value == response.data["public_eligibility"], \
-                    f'Expected {value} in "public_eligibility" field.'
+                assert (
+                    status.HTTP_200_OK == response.status_code
+                ), f"Expected 200 when value is {value}"
+                assert (
+                    value == response.data["public_eligibility"]
+                ), f'Expected {value} in "public_eligibility" field.'
 
     def test_patch_public_eligibility_with_invalid_values(self):
         invalid_values = [None, "", 123, {"1": "test"}, [1, 2, 3]]
@@ -444,16 +435,18 @@ class TestBarrierPublicEligibility(APITestMixin, TestCase):
                 payload = {"public_eligibility": value}
                 response = self.api_client.patch(self.url, format="json", data=payload)
 
-                assert status.HTTP_400_BAD_REQUEST == response.status_code, \
-                    f"Expected 400 when value is {value}"
+                assert (
+                    status.HTTP_400_BAD_REQUEST == response.status_code
+                ), f"Expected 400 when value is {value}"
 
     def test_patch_public_eligibility_summary(self):
         summary = "Wibble wobble"
         payload = {"public_eligibility_summary": summary}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
-        assert status.HTTP_200_OK == response.status_code, \
-            f"Expected 200 when public_eligibility_summary is {summary}"
+        assert (
+            status.HTTP_200_OK == response.status_code
+        ), f"Expected 200 when public_eligibility_summary is {summary}"
         assert summary == response.data["public_eligibility_summary"]
 
     def test_patch_public_eligibility_resets_public_eligibility_summary(self):

@@ -25,8 +25,8 @@ class CachedHistoryItem(models.Model):
     )
     new_record_id = models.PositiveIntegerField(null=True)
     new_record = GenericForeignKey(
-        'new_record_content_type',
-        'new_record_id',
+        "new_record_content_type",
+        "new_record_id",
     )
     old_record_content_type = models.ForeignKey(
         ContentType,
@@ -36,12 +36,12 @@ class CachedHistoryItem(models.Model):
     )
     old_record_id = models.PositiveIntegerField(null=True)
     old_record = GenericForeignKey(
-        'old_record_content_type',
-        'old_record_id',
+        "old_record_content_type",
+        "old_record_id",
     )
 
     class Meta:
-        ordering = ("date", )
+        ordering = ("date",)
 
     @classmethod
     def create_from_history_item(cls, history_item):
@@ -53,7 +53,7 @@ class CachedHistoryItem(models.Model):
             defaults={
                 "old_record": history_item.old_record,
                 "new_record": history_item.new_record,
-            }
+            },
         )
 
     def as_history_item(self):

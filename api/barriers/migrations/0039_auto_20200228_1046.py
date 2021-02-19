@@ -9,38 +9,51 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('barriers', '0038_auto_20200224_1622'),
+        ("barriers", "0038_auto_20200224_1622"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='unarchived_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL),
+            model_name="barrierinstance",
+            name="unarchived_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='unarchived_on',
+            model_name="barrierinstance",
+            name="unarchived_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='unarchived_reason',
+            model_name="barrierinstance",
+            name="unarchived_reason",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='unarchived_by',
-            field=models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL),
+            model_name="historicalbarrierinstance",
+            name="unarchived_by",
+            field=models.ForeignKey(
+                blank=True,
+                db_constraint=False,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="+",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='unarchived_on',
+            model_name="historicalbarrierinstance",
+            name="unarchived_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='unarchived_reason',
+            model_name="historicalbarrierinstance",
+            name="unarchived_reason",
             field=models.TextField(blank=True, null=True),
         ),
     ]

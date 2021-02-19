@@ -42,8 +42,4 @@ class BarrierTagSerializer(serializers.ModelSerializer):
 class OrganisationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organisation
-        fields = (
-            "id",
-            "name",
-            "organisation_type"
-        )
+        fields = ("id", "name", "organisation_type")

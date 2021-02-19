@@ -13,7 +13,7 @@ def is_not_blank(s):
 
 def pretty_name(name):
     if is_not_blank(name):
-        return ' '.join(map(str, [x.capitalize() for x in name.split(".")]))
+        return " ".join(map(str, [x.capitalize() for x in name.split(".")]))
     return name
 
 
@@ -60,13 +60,13 @@ class EchoUTF8:
     def write(self, value):
         """Returns value that is being "written"."""
         if isinstance(value, str):
-            return value.encode('utf-8')
+            return value.encode("utf-8")
         return value
 
 
 def s3_client():
     return boto3.client(
-        's3',
+        "s3",
         aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
     )
@@ -88,7 +88,7 @@ def read_file_from_s3(filename):
 
 def s3_resource():
     return boto3.resource(
-        's3',
+        "s3",
         region_name=settings.PUBLIC_DATA_BUCKET_REGION,
         aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
@@ -103,8 +103,7 @@ def list_s3_public_data_files(client=None):
     :returns: generator
     """
     response = client.list_objects(
-        Bucket=settings.PUBLIC_DATA_BUCKET,
-        Prefix=settings.PUBLIC_DATA_KEY_PREFIX
+        Bucket=settings.PUBLIC_DATA_BUCKET, Prefix=settings.PUBLIC_DATA_KEY_PREFIX
     )
-    for content in response.get('Contents', []):
-        yield content.get('Key')
+    for content in response.get("Contents", []):
+        yield content.get("Key")

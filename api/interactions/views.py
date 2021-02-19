@@ -8,9 +8,11 @@ from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.documents.views import BaseEntityDocumentModelViewSet
 from api.interactions.models import Document, Interaction, PublicBarrierNote
-from api.interactions.serializers import (DocumentSerializer,
-                                          InteractionSerializer,
-                                          PublicBarrierNoteSerializer)
+from api.interactions.serializers import (
+    DocumentSerializer,
+    InteractionSerializer,
+    PublicBarrierNoteSerializer,
+)
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
 
@@ -71,8 +73,9 @@ class BarrierInteractionList(TeamMemberModelMixin, generics.ListCreateAPIView):
         self.update_contributors(barrier)
 
 
-class BarrierInteractionDetail(TeamMemberModelMixin,
-                               generics.RetrieveUpdateDestroyAPIView):
+class BarrierInteractionDetail(
+    TeamMemberModelMixin, generics.RetrieveUpdateDestroyAPIView
+):
     """
     Return details of a Barrier Interaction
     Allows the barrier interaction to be updated

@@ -6,48 +6,68 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0065_historicalpublicbarrier_publicbarrier'),
+        ("barriers", "0065_historicalpublicbarrier_publicbarrier"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='_public_view_status',
-            field=models.PositiveIntegerField(choices=[(0, 'To be decided'), (10, 'Not for public view'), (20, 'Allowed'), (30, 'Ready'), (40, 'Published'), (50, 'Unpublished')], default=0),
+            model_name="historicalpublicbarrier",
+            name="_public_view_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "To be decided"),
+                    (10, "Not for public view"),
+                    (20, "Allowed"),
+                    (30, "Ready"),
+                    (40, "Published"),
+                    (50, "Unpublished"),
+                ],
+                default=0,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='first_published_on',
+            model_name="historicalpublicbarrier",
+            name="first_published_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='last_published_on',
+            model_name="historicalpublicbarrier",
+            name="last_published_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='unpublished_on',
+            model_name="historicalpublicbarrier",
+            name="unpublished_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='_public_view_status',
-            field=models.PositiveIntegerField(choices=[(0, 'To be decided'), (10, 'Not for public view'), (20, 'Allowed'), (30, 'Ready'), (40, 'Published'), (50, 'Unpublished')], default=0),
+            model_name="publicbarrier",
+            name="_public_view_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "To be decided"),
+                    (10, "Not for public view"),
+                    (20, "Allowed"),
+                    (30, "Ready"),
+                    (40, "Published"),
+                    (50, "Unpublished"),
+                ],
+                default=0,
+            ),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='first_published_on',
+            model_name="publicbarrier",
+            name="first_published_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='last_published_on',
+            model_name="publicbarrier",
+            name="last_published_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='unpublished_on',
+            model_name="publicbarrier",
+            name="unpublished_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

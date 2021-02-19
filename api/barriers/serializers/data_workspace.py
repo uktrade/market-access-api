@@ -91,8 +91,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
                 "status": {
                     "id": item.new_record.status,
                     "name": status_lookup.get(item.new_record.status, "Unknown"),
-                }
-            } for item in history_items
+                },
+            }
+            for item in history_items
         ]
 
     def get_team_count(self, obj):

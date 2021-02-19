@@ -8,8 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0004_historicalinteraction_documents_cache'),
+        ("interactions", "0004_historicalinteraction_documents_cache"),
     ]
 
-    operations = [
-    ]
+    operations = []

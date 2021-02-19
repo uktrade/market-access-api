@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('collaboration', '0002_auto_20190730_1413'),
+        ("collaboration", "0002_auto_20190730_1413"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='teammember',
-            name='barrier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='barrier_team', to='barriers.BarrierInstance'),
+            model_name="teammember",
+            name="barrier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="barrier_team",
+                to="barriers.BarrierInstance",
+            ),
         ),
     ]

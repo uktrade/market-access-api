@@ -8,13 +8,19 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0003_auto_20190322_1221'),
+        ("interactions", "0003_auto_20190322_1221"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalinteraction',
-            name='documents_cache',
-            field=django.contrib.postgres.fields.ArrayField(base_field=django.contrib.postgres.fields.jsonb.JSONField(), blank=True, default=list, null=True, size=None),
+            model_name="historicalinteraction",
+            name="documents_cache",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=django.contrib.postgres.fields.jsonb.JSONField(),
+                blank=True,
+                default=list,
+                null=True,
+                size=None,
+            ),
         ),
     ]

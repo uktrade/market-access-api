@@ -23,24 +23,27 @@ from api.barriers.csv import _transform_csv_row, create_csv_response
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier, BarrierReportStage, PublicBarrier
-from api.barriers.serializers import (BarrierCsvExportSerializer,
-                                      BarrierDetailSerializer,
-                                      BarrierListSerializer,
-                                      BarrierReportSerializer,
-                                      PublicBarrierSerializer)
+from api.barriers.serializers import (
+    BarrierCsvExportSerializer,
+    BarrierDetailSerializer,
+    BarrierListSerializer,
+    BarrierReportSerializer,
+    PublicBarrierSerializer,
+)
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.history.manager import HistoryManager
 from api.interactions.models import Interaction
-from api.metadata.constants import (BARRIER_INTERACTION_TYPE,
-                                    PublicBarrierStatus)
+from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
 from api.user.helpers import has_profile, update_user_profile
-from api.user.models import (Profile, SavedSearch,
-                             get_my_barriers_saved_search,
-                             get_team_barriers_saved_search)
-from api.user.permissions import (AllRetrieveAndEditorUpdateOnly, IsEditor,
-                                  IsPublisher)
+from api.user.models import (
+    Profile,
+    SavedSearch,
+    get_my_barriers_saved_search,
+    get_team_barriers_saved_search,
+)
+from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
 

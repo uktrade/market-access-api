@@ -7,61 +7,63 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0010_convert_null_to_empty'),
+        ("interactions", "0010_convert_null_to_empty"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='document',
-            name='mime_type',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="document",
+            name="mime_type",
+            field=models.CharField(blank=True, default="", max_length=255),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='historicaldocument',
-            name='mime_type',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="historicaldocument",
+            name="mime_type",
+            field=models.CharField(blank=True, default="", max_length=255),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='historicalinteraction',
-            name='archived_reason',
-            field=models.TextField(blank=True, default=''),
+            model_name="historicalinteraction",
+            name="archived_reason",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='historicalinteraction',
-            name='documents_cache',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.JSONField(), blank=True, default=list, size=None),
+            model_name="historicalinteraction",
+            name="documents_cache",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.JSONField(), blank=True, default=list, size=None
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalinteraction',
-            name='text',
-            field=models.TextField(blank=True, default=''),
+            model_name="historicalinteraction",
+            name="text",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='historicalpublicbarriernote',
-            name='archived_reason',
-            field=models.TextField(blank=True, default=''),
+            model_name="historicalpublicbarriernote",
+            name="archived_reason",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='interaction',
-            name='archived_reason',
-            field=models.TextField(blank=True, default=''),
+            model_name="interaction",
+            name="archived_reason",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='interaction',
-            name='text',
-            field=models.TextField(blank=True, default=''),
+            model_name="interaction",
+            name="text",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='publicbarriernote',
-            name='archived_reason',
-            field=models.TextField(blank=True, default=''),
+            model_name="publicbarriernote",
+            name="archived_reason",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
     ]

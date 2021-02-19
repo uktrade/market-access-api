@@ -1,10 +1,12 @@
 from api.assessment.models import ResolvabilityAssessment
 
-from ...items.assessments.resolvability import (ApprovedHistoryItem,
-                                                ArchivedHistoryItem,
-                                                EffortToResolveHistoryItem,
-                                                ExplanationHistoryItem,
-                                                TimeToResolveHistoryItem)
+from ...items.assessments.resolvability import (
+    ApprovedHistoryItem,
+    ArchivedHistoryItem,
+    EffortToResolveHistoryItem,
+    ExplanationHistoryItem,
+    TimeToResolveHistoryItem,
+)
 from ..base import HistoryItemFactoryBase
 
 
@@ -20,4 +22,6 @@ class ResolvabilityAssessmentHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        return ResolvabilityAssessment.history.filter(barrier_id=barrier_id).order_by("id", "history_date")
+        return ResolvabilityAssessment.history.filter(barrier_id=barrier_id).order_by(
+            "id", "history_date"
+        )

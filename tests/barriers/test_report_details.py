@@ -8,7 +8,6 @@ from tests.barriers.factories import ReportFactory
 
 
 class TestReportDetail(APITestMixin):
-
     def test_report_gets_reference_code_generated(self):
         report = ReportFactory()
         assert report.code not in ("", None)
@@ -29,7 +28,7 @@ class TestReportDetail(APITestMixin):
         assert 1 == Barrier.objects.count()
         assert report.archive, "Expected True."
         assert creator == report.archived_by
-        assert "2020-02-02" == report.archived_on.strftime('%Y-%m-%d')
+        assert "2020-02-02" == report.archived_on.strftime("%Y-%m-%d")
         assert not report.archived_explanation
         assert not report.archived_reason
 

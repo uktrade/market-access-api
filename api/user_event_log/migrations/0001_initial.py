@@ -17,21 +17,50 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserEvent',
+            name="UserEvent",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('timestamp', models.DateTimeField(auto_now=True, db_index=True)),
-                ('type', models.CharField(choices=[('csv_download', 'Downloaded search results')], max_length=255)),
-                ('api_url_path', models.CharField(db_index=True, max_length=5000, verbose_name='API URL path')),
-                ('data', django.contrib.postgres.fields.jsonb.JSONField(encoder=django.core.serializers.json.DjangoJSONEncoder, null=True)),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("timestamp", models.DateTimeField(auto_now=True, db_index=True)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[("csv_download", "Downloaded search results")],
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "api_url_path",
+                    models.CharField(
+                        db_index=True, max_length=5000, verbose_name="API URL path"
+                    ),
+                ),
+                (
+                    "data",
+                    django.contrib.postgres.fields.jsonb.JSONField(
+                        encoder=django.core.serializers.json.DjangoJSONEncoder,
+                        null=True,
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ('-timestamp', '-pk'),
+                "ordering": ("-timestamp", "-pk"),
             },
         ),
         migrations.AddIndex(
-            model_name='userevent',
-            index=models.Index(fields=['api_url_path', 'timestamp'], name='user_event__api_url_1a6014_idx'),
+            model_name="userevent",
+            index=models.Index(
+                fields=["api_url_path", "timestamp"],
+                name="user_event__api_url_1a6014_idx",
+            ),
         ),
     ]

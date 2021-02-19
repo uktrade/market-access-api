@@ -8,38 +8,77 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0079_priority_not_null'),
+        ("barriers", "0079_priority_not_null"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='country_admin_areas',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, help_text='list of states, provinces, regions etc within a country', size=None),
+            model_name="barrierinstance",
+            name="country_admin_areas",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.UUIDField(),
+                blank=True,
+                default=list,
+                help_text="list of states, provinces, regions etc within a country",
+                size=None,
+            ),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='priority',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.PROTECT, related_name='barrier', to='metadata.BarrierPriority'),
+            model_name="barrierinstance",
+            name="priority",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="barrier",
+                to="metadata.BarrierPriority",
+            ),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='problem_status',
-            field=models.PositiveIntegerField(choices=[(1, 'A procedural, short-term barrier'), (2, 'A long-term strategic barrier')], help_text='type of problem, long term or short term', null=True),
+            model_name="barrierinstance",
+            name="problem_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "A procedural, short-term barrier"),
+                    (2, "A long-term strategic barrier"),
+                ],
+                help_text="type of problem, long term or short term",
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='country_admin_areas',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, help_text='list of states, provinces, regions etc within a country', size=None),
+            model_name="historicalbarrierinstance",
+            name="country_admin_areas",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.UUIDField(),
+                blank=True,
+                default=list,
+                help_text="list of states, provinces, regions etc within a country",
+                size=None,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='priority',
-            field=models.ForeignKey(blank=True, db_constraint=False, default=1, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='metadata.BarrierPriority'),
+            model_name="historicalbarrierinstance",
+            name="priority",
+            field=models.ForeignKey(
+                blank=True,
+                db_constraint=False,
+                default=1,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="+",
+                to="metadata.BarrierPriority",
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='problem_status',
-            field=models.PositiveIntegerField(choices=[(1, 'A procedural, short-term barrier'), (2, 'A long-term strategic barrier')], help_text='type of problem, long term or short term', null=True),
+            model_name="historicalbarrierinstance",
+            name="problem_status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "A procedural, short-term barrier"),
+                    (2, "A long-term strategic barrier"),
+                ],
+                help_text="type of problem, long term or short term",
+                null=True,
+            ),
         ),
     ]

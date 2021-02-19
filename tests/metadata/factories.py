@@ -1,8 +1,7 @@
 import factory
 
 from api.metadata.constants import OrganisationType
-from api.metadata.models import (BarrierPriority, BarrierTag, Category,
-                                 Organisation)
+from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
 
 
 class CategoryFactory(factory.django.DjangoModelFactory):
@@ -24,6 +23,7 @@ class BarrierPriorityFactory(factory.django.DjangoModelFactory):
     BarrierPriority records are set by a migration file:
      - /api/metadata/migrations/0009_auto_20181205_1432.py
     """
+
     class Meta:
         model = BarrierPriority
 

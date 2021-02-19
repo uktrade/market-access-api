@@ -10,19 +10,23 @@ from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.history.factories import (BarrierHistoryFactory,
-                                   EconomicAssessmentHistoryFactory,
-                                   NoteHistoryFactory,
-                                   PublicBarrierHistoryFactory,
-                                   PublicBarrierNoteHistoryFactory,
-                                   TeamMemberHistoryFactory)
+from api.history.factories import (
+    BarrierHistoryFactory,
+    EconomicAssessmentHistoryFactory,
+    NoteHistoryFactory,
+    PublicBarrierHistoryFactory,
+    PublicBarrierNoteHistoryFactory,
+    TeamMemberHistoryFactory,
+)
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PublicBarrierStatus
-from tests.assessment.factories import (EconomicAssessmentFactory,
-                                        EconomicImpactAssessmentFactory,
-                                        ResolvabilityAssessmentFactory,
-                                        StrategicAssessmentFactory)
+from tests.assessment.factories import (
+    EconomicAssessmentFactory,
+    EconomicImpactAssessmentFactory,
+    ResolvabilityAssessmentFactory,
+    StrategicAssessmentFactory,
+)
 from tests.interactions.factories import InteractionFactory
 from tests.metadata.factories import OrganisationFactory
 
@@ -31,16 +35,12 @@ class TestBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
 
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
     def test_archived_history(self):
         self.barrier.archive(
-            user=self.user,
-            reason="DUPLICATE",
-            explanation="It was a duplicate"
+            user=self.user, reason="DUPLICATE", explanation="It was a duplicate"
         )
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
@@ -108,7 +108,9 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
     def test_location_history(self):
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.admin_areas = [
+            "a88512e0-62d4-4808-95dc-d3beab05d0e9"
+        ]  # California
 
         self.barrier.save()
 
@@ -263,16 +265,16 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
     def test_categories_history(self):
         self.public_barrier.categories.add("109", "115")
 
-        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
@@ -284,7 +286,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.public_barrier.country = "e0f682ac-5d95-e211-a939-e4115bead28a"
         self.public_barrier.save()
 
-        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
@@ -297,7 +301,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.public_barrier.status_date = datetime.date(2020, 5, 1)
         self.public_barrier.save()
 
-        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
@@ -317,7 +323,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.public_barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
         self.public_barrier.save()
 
-        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
@@ -335,7 +343,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
         self.public_barrier.save()
 
-        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
@@ -361,7 +371,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.public_barrier.summary = "New summary"
         self.public_barrier.save()
 
-        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
@@ -373,7 +385,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.public_barrier.title = "New title"
         self.public_barrier.save()
 
-        items = PublicBarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier"
@@ -389,7 +403,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         note.text = "Edited note"
         note.save()
 
-        items = PublicBarrierNoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierNoteHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier_note"
@@ -405,7 +421,9 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         note.archived = True
         note.save()
 
-        items = PublicBarrierNoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = PublicBarrierNoteHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "public_barrier_note"
@@ -424,9 +442,7 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "documents", "users"]
 
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.assessment = EconomicAssessment.objects.create(
             barrier=self.barrier,
             rating="LOW",
@@ -440,7 +456,9 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.explanation = "New explanation"
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "economic_assessment"
@@ -452,7 +470,9 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.rating = "HIGH"
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "economic_assessment"
@@ -463,7 +483,9 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
     def test_documents_history(self):
         self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
 
         data = items[-1].data
 
@@ -481,7 +503,9 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.export_value = 2222
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "economic_assessment"
@@ -493,7 +517,9 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.import_market_size = 3333
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "economic_assessment"
@@ -505,7 +531,9 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.value_to_economy = 4444
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        items = EconomicAssessmentHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
         data = items[-1].data
 
         assert data["model"] == "economic_assessment"
@@ -518,9 +546,7 @@ class TestNoteHistory(APITestMixin, TestCase):
     fixtures = ["documents", "users", "barriers"]
 
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.note = Interaction.objects.create(
             barrier=self.barrier,
@@ -561,16 +587,12 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
     fixtures = ["users", "barriers"]
 
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
     def test_team_member_history(self):
         TeamMember.objects.create(
-            barrier=self.barrier,
-            user=self.user,
-            role="Contributor"
+            barrier=self.barrier, user=self.user, role="Contributor"
         )
 
         items = TeamMemberHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
@@ -590,9 +612,7 @@ class TestHistoryView(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
         self.note = Interaction.objects.create(
@@ -616,7 +636,9 @@ class TestHistoryView(APITestMixin, TestCase):
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.admin_areas = [
+            "a88512e0-62d4-4808-95dc-d3beab05d0e9"
+        ]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
@@ -630,9 +652,7 @@ class TestHistoryView(APITestMixin, TestCase):
         self.barrier.save()
 
         self.barrier.archive(
-            user=self.user,
-            reason="DUPLICATE",
-            explanation="It was a duplicate"
+            user=self.user, reason="DUPLICATE", explanation="It was a duplicate"
         )
 
         # Note changes
@@ -642,9 +662,7 @@ class TestHistoryView(APITestMixin, TestCase):
 
         # Team Member changes
         TeamMember.objects.create(
-            barrier=self.barrier,
-            user=self.user,
-            role="Contributor"
+            barrier=self.barrier, user=self.user, role="Contributor"
         )
 
         # Assessment changes
@@ -675,16 +693,13 @@ class TestHistoryView(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "archived",
-            "old_value": {
-                "archived": False,
-                "unarchived_reason": ""
-            },
+            "old_value": {"archived": False, "unarchived_reason": ""},
             "new_value": {
                 "archived": True,
                 "archived_reason": "DUPLICATE",
-                "archived_explanation": "It was a duplicate"
+                "archived_explanation": "It was a duplicate",
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -716,7 +731,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "summary",
             "old_value": "Some summary",
             "new_value": "New summary",
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -746,7 +761,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "title",
             "old_value": "Some title",
             "new_value": "New title",
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -776,7 +791,7 @@ class TestHistoryView(APITestMixin, TestCase):
                 "source": "COMPANY",
                 "other_source": "",
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -785,7 +800,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "term",
             "old_value": 2,
             "new_value": 1,
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -794,7 +809,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "product",
             "old_value": "Some product",
             "new_value": "New product",
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -805,14 +820,14 @@ class TestHistoryView(APITestMixin, TestCase):
                 "all_sectors": None,
                 "sectors": [
                     "af959812-6095-e211-a939-e4115bead28a",
-                    "9538cecc-5f95-e211-a939-e4115bead28a"
+                    "9538cecc-5f95-e211-a939-e4115bead28a",
                 ],
             },
             "new_value": {
                 "all_sectors": None,
                 "sectors": ["9538cecc-5f95-e211-a939-e4115bead28a"],
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -821,7 +836,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "companies",
             "old_value": [],
             "new_value": ["1", "2", "3"],
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -842,7 +857,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "text",
             "old_value": "Original note",
             "new_value": "Edited note",
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -850,11 +865,10 @@ class TestHistoryView(APITestMixin, TestCase):
             "model": "note",
             "field": "documents",
             "old_value": [],
-            "new_value": [{
-                "id": "eda7ee4e-4786-4507-a0ed-05a10169764b",
-                "name": "cat.jpg"
-            }],
-            "user": None
+            "new_value": [
+                {"id": "eda7ee4e-4786-4507-a0ed-05a10169764b", "name": "cat.jpg"}
+            ],
+            "user": None,
         } in history
 
         assert {
@@ -866,7 +880,7 @@ class TestHistoryView(APITestMixin, TestCase):
                 "id": "LOW",
                 "name": "Low",
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -878,7 +892,7 @@ class TestHistoryView(APITestMixin, TestCase):
                 "code": 4,
                 "name": "4: £ millions",
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -890,7 +904,7 @@ class TestHistoryView(APITestMixin, TestCase):
                 "id": 4,
                 "name": "4: within a year",
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -902,7 +916,7 @@ class TestHistoryView(APITestMixin, TestCase):
                 "id": 1,
                 "name": "1: Highly resource intensive (significant resources needed)",
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -914,7 +928,7 @@ class TestHistoryView(APITestMixin, TestCase):
                 "id": 3,
                 "name": "3: neutral to government wide objectives",
             },
-            "user": None
+            "user": None,
         } in history
 
         assert {
@@ -923,13 +937,10 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "user",
             "old_value": None,
             "new_value": {
-                "user": {
-                    "id": 4,
-                    "name": "Testo Useri"
-                },
-                "role": "Contributor"
+                "user": {"id": 4, "name": "Testo Useri"},
+                "role": "Contributor",
             },
-            "user": None
+            "user": None,
         } in history
 
 
@@ -938,9 +949,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
-        self.barrier = Barrier.objects.get(
-            pk="c33dad08-b09c-4e19-ae1a-be47796a8882"
-        )
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.assessment = EconomicAssessmentFactory(barrier=self.barrier, rating="LOW")
         self.note = InteractionFactory(barrier=self.barrier, text="Original note")
@@ -957,7 +966,9 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.admin_areas = ["a88512e0-62d4-4808-95dc-d3beab05d0e9"]  # California
+        self.barrier.admin_areas = [
+            "a88512e0-62d4-4808-95dc-d3beab05d0e9"
+        ]  # California
         self.barrier.priority_id = 2
         self.barrier.product = "New product"
         self.barrier.status = 5
@@ -971,9 +982,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         self.barrier.save()
 
         self.barrier.archive(
-            user=self.user,
-            reason="DUPLICATE",
-            explanation="It was a duplicate"
+            user=self.user, reason="DUPLICATE", explanation="It was a duplicate"
         )
 
         # Note changes
@@ -983,9 +992,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
 
         # Team Member changes
         TeamMember.objects.create(
-            barrier=self.barrier,
-            user=self.user,
-            role="Contributor"
+            barrier=self.barrier, user=self.user, role="Contributor"
         )
 
         # Assessment changes
@@ -1018,7 +1025,9 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         self.public_barrier.title = "New title"
         self.public_barrier.save()
 
-        items = CachedHistoryItem.objects.filter(barrier=self.barrier).values("model", "field")
+        items = CachedHistoryItem.objects.filter(barrier=self.barrier).values(
+            "model", "field"
+        )
         cached_changes = [(item["model"], item["field"]) for item in items]
 
         assert ("barrier", "archived") in cached_changes

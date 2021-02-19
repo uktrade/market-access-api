@@ -6,28 +6,44 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0063_auto_20200428_1008'),
+        ("barriers", "0063_auto_20200428_1008"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='public_eligibility',
-            field=models.BooleanField(default=None, help_text='Mark the barrier as either publishable or unpublishable to the public.', null=True),
+            model_name="barrierinstance",
+            name="public_eligibility",
+            field=models.BooleanField(
+                default=None,
+                help_text="Mark the barrier as either publishable or unpublishable to the public.",
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='public_eligibility_summary',
-            field=models.TextField(default=None, help_text='Public eligibility summary if provided by user.', null=True),
+            model_name="barrierinstance",
+            name="public_eligibility_summary",
+            field=models.TextField(
+                default=None,
+                help_text="Public eligibility summary if provided by user.",
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='public_eligibility',
-            field=models.BooleanField(default=None, help_text='Mark the barrier as either publishable or unpublishable to the public.', null=True),
+            model_name="historicalbarrierinstance",
+            name="public_eligibility",
+            field=models.BooleanField(
+                default=None,
+                help_text="Mark the barrier as either publishable or unpublishable to the public.",
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='public_eligibility_summary',
-            field=models.TextField(default=None, help_text='Public eligibility summary if provided by user.', null=True),
+            model_name="historicalbarrierinstance",
+            name="public_eligibility_summary",
+            field=models.TextField(
+                default=None,
+                help_text="Public eligibility summary if provided by user.",
+                null=True,
+            ),
         ),
     ]

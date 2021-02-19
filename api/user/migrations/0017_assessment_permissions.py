@@ -35,14 +35,24 @@ def assign_permissions(apps, schema_editor):
     user_content_type = ContentType.objects.get_for_model(User)
 
     add_ra_permission = Permission.objects.get(codename="add_resolvabilityassessment")
-    change_ra_permission = Permission.objects.get(codename="change_resolvabilityassessment")
-    archive_ra_permission = Permission.objects.get(codename="archive_resolvabilityassessment")
-    approve_ra_permission = Permission.objects.get(codename="approve_resolvabilityassessment")
+    change_ra_permission = Permission.objects.get(
+        codename="change_resolvabilityassessment"
+    )
+    archive_ra_permission = Permission.objects.get(
+        codename="archive_resolvabilityassessment"
+    )
+    approve_ra_permission = Permission.objects.get(
+        codename="approve_resolvabilityassessment"
+    )
 
     add_sa_permission = Permission.objects.get(codename="add_strategicassessment")
     change_sa_permission = Permission.objects.get(codename="change_strategicassessment")
-    archive_sa_permission = Permission.objects.get(codename="archive_strategicassessment")
-    approve_sa_permission = Permission.objects.get(codename="approve_strategicassessment")
+    archive_sa_permission = Permission.objects.get(
+        codename="archive_strategicassessment"
+    )
+    approve_sa_permission = Permission.objects.get(
+        codename="approve_strategicassessment"
+    )
 
     administrator_group = Group.objects.get(name="Administrator")
     administrator_group.permissions.add(
@@ -72,12 +82,16 @@ def assign_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0016_auto_20200901_1511'),
-        ('assessment', '0009_resolvability_and_strategic_assessments'),
+        ("user", "0016_auto_20200901_1511"),
+        ("assessment", "0009_resolvability_and_strategic_assessments"),
     ]
 
     operations = [
-        migrations.RunPython(migrate_permissions, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            migrate_permissions, reverse_code=migrations.RunPython.noop
+        ),
         migrations.RunPython(add_roles, reverse_code=delete_roles),
-        migrations.RunPython(assign_permissions, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            assign_permissions, reverse_code=migrations.RunPython.noop
+        ),
     ]

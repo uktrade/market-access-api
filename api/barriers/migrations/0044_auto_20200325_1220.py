@@ -8,18 +8,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0043_auto_20200325_1037'),
+        ("barriers", "0043_auto_20200325_1037"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='categories_cache',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=20), blank=True, default=list, null=True, size=None),
+            model_name="historicalbarrierinstance",
+            name="categories_cache",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(max_length=20),
+                blank=True,
+                default=list,
+                null=True,
+                size=None,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='priority',
-            field=models.ForeignKey(blank=True, db_constraint=False, default=None, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='metadata.BarrierPriority'),
+            model_name="historicalbarrierinstance",
+            name="priority",
+            field=models.ForeignKey(
+                blank=True,
+                db_constraint=False,
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="+",
+                to="metadata.BarrierPriority",
+            ),
         ),
     ]

@@ -7,23 +7,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0074_auto_20200716_0909'),
+        ("barriers", "0074_auto_20200716_0909"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalpublicbarrier',
-            name='internal_summary_at_update',
+            model_name="historicalpublicbarrier",
+            name="internal_summary_at_update",
             field=models.TextField(max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='publicbarrier',
-            name='barrier',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='public_barriers', to='barriers.BarrierInstance'),
+            model_name="publicbarrier",
+            name="barrier",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="public_barriers",
+                to="barriers.BarrierInstance",
+            ),
         ),
         migrations.AlterField(
-            model_name='publicbarrier',
-            name='internal_summary_at_update',
+            model_name="publicbarrier",
+            name="internal_summary_at_update",
             field=models.TextField(max_length=255, null=True),
         ),
     ]

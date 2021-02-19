@@ -21,13 +21,7 @@ class BarrierTeamSerializer(serializers.ModelSerializer):
             "created_on",
             "created_by",
         )
-        read_only_fields = (
-            "id",
-            "user",
-            "default",
-            "created_by",
-            "created_on"
-        )
+        read_only_fields = ("id", "user", "default", "created_by", "created_on")
 
     def get_created_by(self, obj):
         if obj.created_by is None:

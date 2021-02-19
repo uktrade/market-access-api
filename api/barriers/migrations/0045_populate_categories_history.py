@@ -22,13 +22,12 @@ def populate_categories_history(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0044_auto_20200325_1220'),
-        ('metadata', '0012_auto_20200318_1036'),
+        ("barriers", "0044_auto_20200325_1220"),
+        ("metadata", "0012_auto_20200318_1036"),
     ]
 
     operations = [
         migrations.RunPython(
-            populate_categories_history,
-            reverse_code=migrations.RunPython.noop
+            populate_categories_history, reverse_code=migrations.RunPython.noop
         ),
     ]

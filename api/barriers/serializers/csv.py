@@ -4,14 +4,22 @@ from rest_framework import serializers
 from api.barriers.models import Barrier
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
 from api.collaboration.models import TeamMember
-from api.metadata.constants import (BARRIER_PENDING, BARRIER_SOURCE,
-                                    BARRIER_TERMS,
-                                    GOVERNMENT_ORGANISATION_TYPES,
-                                    TRADE_DIRECTION_CHOICES, BarrierStatus,
-                                    PublicBarrierStatus)
-from api.metadata.utils import (get_admin_area, get_country, get_sector,
-                                get_trading_bloc,
-                                get_trading_bloc_overseas_regions)
+from api.metadata.constants import (
+    BARRIER_PENDING,
+    BARRIER_SOURCE,
+    BARRIER_TERMS,
+    GOVERNMENT_ORGANISATION_TYPES,
+    TRADE_DIRECTION_CHOICES,
+    BarrierStatus,
+    PublicBarrierStatus,
+)
+from api.metadata.utils import (
+    get_admin_area,
+    get_country,
+    get_sector,
+    get_trading_bloc,
+    get_trading_bloc_overseas_regions,
+)
 
 
 class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
@@ -65,12 +73,10 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         default="",
     )
     first_published_on = serializers.DateTimeField(
-        source="public_barrier.first_published_on",
-        format="%Y-%m-%d"
+        source="public_barrier.first_published_on", format="%Y-%m-%d"
     )
     last_published_on = serializers.DateTimeField(
-        source="public_barrier.last_published_on",
-        format="%Y-%m-%d"
+        source="public_barrier.last_published_on", format="%Y-%m-%d"
     )
     public_view_status = serializers.SerializerMethodField()
     changed_since_published = serializers.SerializerMethodField()
@@ -239,10 +245,15 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             ]
 
     def get_commodity_codes(self, obj):
-        return "; ".join([
-            str(barrier_commodity.simple_formatted_code)
-            for barrier_commodity in obj.barrier_commodities.all()
-        ]) + ";"
+        return (
+            "; ".join(
+                [
+                    str(barrier_commodity.simple_formatted_code)
+                    for barrier_commodity in obj.barrier_commodities.all()
+                ]
+            )
+            + ";"
+        )
 
     def get_public_id(self, obj):
         if obj.has_public_barrier and obj.public_barrier.is_currently_published:

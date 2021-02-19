@@ -12,7 +12,9 @@ def get_team_member_user_ids(barrier_id):
     """
     Helper to return a list of ids for users who are a team member at the given barrier.
     """
-    return TeamMember.objects.filter(barrier=barrier_id).values_list("user_id", flat=True)
+    return TeamMember.objects.filter(barrier=barrier_id).values_list(
+        "user_id", flat=True
+    )
 
 
 def get_or_create_public_barrier(barrier):
@@ -26,7 +28,7 @@ def get_or_create_public_barrier(barrier):
             "caused_by_trading_bloc": barrier.caused_by_trading_bloc,
             "sectors": barrier.sectors,
             "all_sectors": barrier.all_sectors,
-        }
+        },
     )
     if created:
         public_barrier.categories.set(barrier.categories.all())
@@ -35,4 +37,6 @@ def get_or_create_public_barrier(barrier):
 
 
 def get_published_public_barriers():
-    return PublicBarrier.objects.filter(_public_view_status=PublicBarrierStatus.PUBLISHED)
+    return PublicBarrier.objects.filter(
+        _public_view_status=PublicBarrierStatus.PUBLISHED
+    )

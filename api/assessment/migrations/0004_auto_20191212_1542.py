@@ -7,13 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0003_auto_20190809_1646'),
+        ("assessment", "0003_auto_20190809_1646"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='assessment',
-            name='barrier',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='barriers.BarrierInstance'),
+            model_name="assessment",
+            name="barrier",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="barriers.BarrierInstance",
+            ),
         ),
     ]

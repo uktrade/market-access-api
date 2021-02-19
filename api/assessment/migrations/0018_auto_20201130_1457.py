@@ -6,26 +6,26 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0017_remove_user_analysis_data'),
-        ('barriers', '0100_merge_20201124_1636'),
-        ('history', '0003_rename_assessment'),
+        ("assessment", "0017_remove_user_analysis_data"),
+        ("barriers", "0100_merge_20201124_1636"),
+        ("history", "0003_rename_assessment"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='economicassessment',
-            name='commercial_value',
+            model_name="economicassessment",
+            name="commercial_value",
         ),
         migrations.RemoveField(
-            model_name='economicassessment',
-            name='commercial_value_explanation',
+            model_name="economicassessment",
+            name="commercial_value_explanation",
         ),
         migrations.RemoveField(
-            model_name='historicaleconomicassessment',
-            name='commercial_value',
+            model_name="historicaleconomicassessment",
+            name="commercial_value",
         ),
         migrations.RemoveField(
-            model_name='historicaleconomicassessment',
-            name='commercial_value_explanation',
+            model_name="historicaleconomicassessment",
+            name="commercial_value_explanation",
         ),
     ]

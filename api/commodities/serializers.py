@@ -7,7 +7,6 @@ from .models import Commodity
 
 
 class CommoditySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Commodity
         fields = (

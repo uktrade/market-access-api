@@ -7,13 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0082_auto_20200812_0830'),
+        ("barriers", "0082_auto_20200812_0830"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='categories_cache',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.PositiveIntegerField(), blank=True, default=list, null=True, size=None),
+            model_name="historicalbarrierinstance",
+            name="categories_cache",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.PositiveIntegerField(),
+                blank=True,
+                default=list,
+                null=True,
+                size=None,
+            ),
         ),
     ]

@@ -7,13 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0003_auto_20190322_1221'),
+        ("interactions", "0003_auto_20190322_1221"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='interaction',
-            name='barrier',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='interactions_documents', to='barriers.BarrierInstance'),
+            model_name="interaction",
+            name="barrier",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="interactions_documents",
+                to="barriers.BarrierInstance",
+            ),
         ),
     ]

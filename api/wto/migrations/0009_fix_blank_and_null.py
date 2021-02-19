@@ -7,18 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wto', '0008_convert_null_to_empty'),
+        ("wto", "0008_convert_null_to_empty"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalwtoprofile',
-            name='member_states',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None),
+            model_name="historicalwtoprofile",
+            name="member_states",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.UUIDField(), blank=True, default=list, size=None
+            ),
         ),
         migrations.AlterField(
-            model_name='wtoprofile',
-            name='member_states',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.UUIDField(), blank=True, default=list, size=None),
+            model_name="wtoprofile",
+            name="member_states",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.UUIDField(), blank=True, default=list, size=None
+            ),
         ),
     ]

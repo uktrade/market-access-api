@@ -1,6 +1,9 @@
-from api.metadata.utils import (get_country, get_location_text,
-                                get_trading_bloc,
-                                get_trading_bloc_by_country_id)
+from api.metadata.utils import (
+    get_country,
+    get_location_text,
+    get_trading_bloc,
+    get_trading_bloc_by_country_id,
+)
 
 from .base import BaseHistoryItem
 
@@ -65,7 +68,9 @@ class CommoditiesHistoryItem(BaseBarrierHistoryItem):
             if commodity.get("country"):
                 commodity["country"] = get_country(commodity["country"].get("id"))
             elif commodity.get("trading_bloc"):
-                commodity["trading_bloc"] = get_trading_bloc(commodity["trading_bloc"].get("code"))
+                commodity["trading_bloc"] = get_trading_bloc(
+                    commodity["trading_bloc"].get("code")
+                )
         return record.commodities_cache
 
 

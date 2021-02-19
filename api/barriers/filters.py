@@ -11,9 +11,11 @@ from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.metadata.constants import TRADING_BLOCS, PublicBarrierStatus
 from api.metadata.models import BarrierPriority
-from api.metadata.utils import (get_countries,
-                                get_country_ids_by_overseas_region,
-                                get_trading_bloc_country_ids)
+from api.metadata.utils import (
+    get_countries,
+    get_country_ids_by_overseas_region,
+    get_trading_bloc_country_ids,
+)
 
 
 class BarrierFilterSet(django_filters.FilterSet):

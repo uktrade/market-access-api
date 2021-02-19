@@ -10,24 +10,24 @@ def create_blank_public_barriers(apps, schema_editor):
         public_barrier__isnull=True
     )
     for barrier in barriers_without_public_barrier:
-        PublicBarrier.objects.create(**{
-            "barrier": barrier,
-            "status": barrier.status,
-            "status_date": barrier.status_date,
-            "country": barrier.country,
-            "trading_bloc": barrier.trading_bloc,
-            "caused_by_trading_bloc": barrier.caused_by_trading_bloc,
-            "sectors": barrier.sectors,
-            "all_sectors": barrier.all_sectors,
-        })
+        PublicBarrier.objects.create(
+            **{
+                "barrier": barrier,
+                "status": barrier.status,
+                "status_date": barrier.status_date,
+                "country": barrier.country,
+                "trading_bloc": barrier.trading_bloc,
+                "caused_by_trading_bloc": barrier.caused_by_trading_bloc,
+                "sectors": barrier.sectors,
+                "all_sectors": barrier.all_sectors,
+            }
+        )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0101_auto_20201221_2005'),
+        ("barriers", "0101_auto_20201221_2005"),
     ]
 
-    operations = [
-        migrations.RunPython(create_blank_public_barriers)
-    ]
+    operations = [migrations.RunPython(create_blank_public_barriers)]

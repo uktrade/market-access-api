@@ -8,12 +8,12 @@ from django.http import StreamingHttpResponse
 
 from api.core.utils import EchoUTF8
 
-CSV_CONTENT_TYPE = 'text/csv; charset=utf-8'
+CSV_CONTENT_TYPE = "text/csv; charset=utf-8"
 INCOMPLETE_CSV_MESSAGE = (
-    '\r\n'
-    'An error occurred while generating the CSV file. The file is incomplete.'
-    '\r\n'
-).encode('utf-8')
+    "\r\n"
+    "An error occurred while generating the CSV file. The file is incomplete."
+    "\r\n"
+).encode("utf-8")
 
 
 def csv_iterator(rows, field_titles):
@@ -24,7 +24,7 @@ def csv_iterator(rows, field_titles):
             EchoUTF8(),
             extrasaction="ignore",
             fieldnames=field_titles.keys(),
-            quoting=csv.QUOTE_MINIMAL
+            quoting=csv.QUOTE_MINIMAL,
         )
 
         yield writer.writerow(field_titles)
@@ -47,7 +47,7 @@ def create_csv_response(rows, field_titles, filename):
         content_type=CSV_CONTENT_TYPE,
     )
 
-    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+    response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
     return response
 
 
@@ -67,10 +67,10 @@ def _transform_csv_value(value):
     formats.
     """
     if isinstance(value, datetime):
-        return value.strftime('%Y-%m-%d')
+        return value.strftime("%Y-%m-%d")
     if isinstance(value, Decimal):
         normalized_value = value.normalize()
-        return f'{normalized_value:f}'
+        return f"{normalized_value:f}"
     if isinstance(value, list):
         return "; ".join(str(x) for x in value)
     return value

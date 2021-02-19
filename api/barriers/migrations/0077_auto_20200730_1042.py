@@ -6,20 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0076_auto_20200728_1410'),
+        ("barriers", "0076_auto_20200728_1410"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='public_eligibility_summary',
-            field=models.TextField(blank=True, default='', help_text='Public eligibility summary if provided by user.'),
+            model_name="barrierinstance",
+            name="public_eligibility_summary",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="Public eligibility summary if provided by user.",
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='public_eligibility_summary',
-            field=models.TextField(blank=True, default='', help_text='Public eligibility summary if provided by user.'),
+            model_name="historicalbarrierinstance",
+            name="public_eligibility_summary",
+            field=models.TextField(
+                blank=True,
+                default="",
+                help_text="Public eligibility summary if provided by user.",
+            ),
             preserve_default=False,
         ),
     ]

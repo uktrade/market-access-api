@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('documents', '0005_convert_null_to_empty'),
+        ("documents", "0005_convert_null_to_empty"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='document',
-            name='archived_reason',
-            field=models.TextField(blank=True, default=''),
+            model_name="document",
+            name="archived_reason",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
     ]

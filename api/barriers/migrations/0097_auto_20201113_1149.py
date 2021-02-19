@@ -6,38 +6,72 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0096_fix_blank_and_null'),
+        ("barriers", "0096_fix_blank_and_null"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrier',
-            name='economic_assessment_eligibility',
-            field=models.BooleanField(blank=True, help_text='Is the barrier eligible for an economic assessment?', null=True),
+            model_name="barrier",
+            name="economic_assessment_eligibility",
+            field=models.BooleanField(
+                blank=True,
+                help_text="Is the barrier eligible for an economic assessment?",
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='barrier',
-            name='economic_assessment_eligibility_summary',
-            field=models.TextField(blank=True, help_text='Why is the barrier eligible/ineligible for an economic assessment?'),
+            model_name="barrier",
+            name="economic_assessment_eligibility_summary",
+            field=models.TextField(
+                blank=True,
+                help_text="Why is the barrier eligible/ineligible for an economic assessment?",
+            ),
         ),
         migrations.AddField(
-            model_name='barrier',
-            name='trade_category',
-            field=models.CharField(blank=True, choices=[('GOODS', 'Goods'), ('SERVICE', 'Service'), ('INVESTMENT', 'Investment'), ('PROCUREMENT', 'Procurement'), ('OTHER', 'Other')], max_length=32),
+            model_name="barrier",
+            name="trade_category",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("GOODS", "Goods"),
+                    ("SERVICE", "Service"),
+                    ("INVESTMENT", "Investment"),
+                    ("PROCUREMENT", "Procurement"),
+                    ("OTHER", "Other"),
+                ],
+                max_length=32,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrier',
-            name='economic_assessment_eligibility',
-            field=models.BooleanField(blank=True, help_text='Is the barrier eligible for an economic assessment?', null=True),
+            model_name="historicalbarrier",
+            name="economic_assessment_eligibility",
+            field=models.BooleanField(
+                blank=True,
+                help_text="Is the barrier eligible for an economic assessment?",
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrier',
-            name='economic_assessment_eligibility_summary',
-            field=models.TextField(blank=True, help_text='Why is the barrier eligible/ineligible for an economic assessment?'),
+            model_name="historicalbarrier",
+            name="economic_assessment_eligibility_summary",
+            field=models.TextField(
+                blank=True,
+                help_text="Why is the barrier eligible/ineligible for an economic assessment?",
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrier',
-            name='trade_category',
-            field=models.CharField(blank=True, choices=[('GOODS', 'Goods'), ('SERVICE', 'Service'), ('INVESTMENT', 'Investment'), ('PROCUREMENT', 'Procurement'), ('OTHER', 'Other')], max_length=32),
+            model_name="historicalbarrier",
+            name="trade_category",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("GOODS", "Goods"),
+                    ("SERVICE", "Service"),
+                    ("INVESTMENT", "Investment"),
+                    ("PROCUREMENT", "Procurement"),
+                    ("OTHER", "Other"),
+                ],
+                max_length=32,
+            ),
         ),
     ]

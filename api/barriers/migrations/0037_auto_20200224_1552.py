@@ -6,18 +6,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0036_auto_20200224_1551'),
+        ("barriers", "0036_auto_20200224_1551"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='archived_reason',
-            field=models.CharField(choices=[('DUPLICATE', 'Duplicate'), ('NOT_A_BARRIER', 'Not a barrier'), ('OTHER', 'Other')], max_length=25, null=True),
+            model_name="barrierinstance",
+            name="archived_reason",
+            field=models.CharField(
+                choices=[
+                    ("DUPLICATE", "Duplicate"),
+                    ("NOT_A_BARRIER", "Not a barrier"),
+                    ("OTHER", "Other"),
+                ],
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='archived_reason',
-            field=models.CharField(choices=[('DUPLICATE', 'Duplicate'), ('NOT_A_BARRIER', 'Not a barrier'), ('OTHER', 'Other')], max_length=25, null=True),
+            model_name="historicalbarrierinstance",
+            name="archived_reason",
+            field=models.CharField(
+                choices=[
+                    ("DUPLICATE", "Duplicate"),
+                    ("NOT_A_BARRIER", "Not a barrier"),
+                    ("OTHER", "Other"),
+                ],
+                max_length=25,
+                null=True,
+            ),
         ),
     ]

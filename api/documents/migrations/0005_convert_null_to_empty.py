@@ -11,12 +11,11 @@ def convert_null_to_empty(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('documents', '0004_auto_20201015_1407'),
+        ("documents", "0004_auto_20201015_1407"),
     ]
 
     operations = [
         migrations.RunPython(
-            convert_null_to_empty,
-            reverse_code=migrations.RunPython.noop
+            convert_null_to_empty, reverse_code=migrations.RunPython.noop
         ),
     ]

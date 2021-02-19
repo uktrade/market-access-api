@@ -6,8 +6,7 @@ from django.contrib.auth import get_user_model
 from django.template.defaultfilters import pluralize
 from notifications_python_client.notifications import NotificationsAPIClient
 
-from api.user.models import (get_my_barriers_saved_search,
-                             get_team_barriers_saved_search)
+from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,9 @@ def get_saved_searches_markdown(saved_searches):
         if saved_search.notify_about_updates:
             updated_count = saved_search.updated_count_since_notified
             if updated_count:
-                markdown += f"\n{updated_count} barrier{pluralize(updated_count)} updated\n"
+                markdown += (
+                    f"\n{updated_count} barrier{pluralize(updated_count)} updated\n"
+                )
 
             for barrier in saved_search.updated_barriers_since_notified:
                 markdown += f"\n* {barrier.title}\n"
@@ -55,7 +56,7 @@ def send_email(user, saved_searches):
             "first_name": user.first_name,
             "saved_searches": get_saved_searches_markdown(saved_searches),
             "dashboard_link": settings.DMAS_BASE_URL,
-        }
+        },
     )
 
 

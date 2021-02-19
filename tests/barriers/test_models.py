@@ -5,7 +5,6 @@ from tests.metadata.factories import OrganisationFactory
 
 
 class TestBarrierModel(TestCase):
-
     def test_caused_by_trading_bloc_clears_on_non_trading_bloc_country(self):
         barrier = BarrierFactory(
             country="82756b9a-5d95-e211-a939-e4115bead28a",

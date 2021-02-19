@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0002_auto_20190308_1105'),
+        ("interactions", "0002_auto_20190308_1105"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='document',
-            name='detached',
+            model_name="document",
+            name="detached",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='historicaldocument',
-            name='detached',
+            model_name="historicaldocument",
+            name="detached",
             field=models.BooleanField(default=False),
         ),
     ]

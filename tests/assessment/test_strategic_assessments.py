@@ -30,9 +30,7 @@ class TestStrategicAssessments(APITestMixin):
     def test_create_strategic_assessment(self, barrier):
         url = reverse("strategic-assessment-list")
         response = self.api_client.post(
-            url,
-            format="json",
-            data={"barrier_id": barrier.id, **self.test_data}
+            url, format="json", data={"barrier_id": barrier.id, **self.test_data}
         )
 
         assert response.status_code == HTTPStatus.CREATED
@@ -41,7 +39,9 @@ class TestStrategicAssessments(APITestMixin):
         assert response.data["hmg_strategy"] == "hmg_strategy test"
         assert response.data["government_policy"] == "government_policy test"
         assert response.data["trading_relations"] == "trading_relations test"
-        assert response.data["uk_interest_and_security"] == "uk_interest_and_security test"
+        assert (
+            response.data["uk_interest_and_security"] == "uk_interest_and_security test"
+        )
         assert response.data["uk_grants"] == "uk_grants test"
         assert response.data["competition"] == "competition test"
         assert response.data["additional_information"] == "additional_information test"
@@ -51,20 +51,16 @@ class TestStrategicAssessments(APITestMixin):
 
     def test_create_strategic_assessment_with_empty_data(self, barrier):
         url = reverse("strategic-assessment-list")
-        response = self.api_client.post(
-            url,
-            format="json",
-            data={}
-        )
+        response = self.api_client.post(url, format="json", data={})
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data["barrier_id"] == ['This field is required.']
-        assert response.data["hmg_strategy"] == ['This field is required.']
-        assert response.data["government_policy"] == ['This field is required.']
-        assert response.data["trading_relations"] == ['This field is required.']
-        assert response.data["uk_interest_and_security"] == ['This field is required.']
-        assert response.data["uk_grants"] == ['This field is required.']
-        assert response.data["competition"] == ['This field is required.']
-        assert response.data["scale"] == ['This field is required.']
+        assert response.data["barrier_id"] == ["This field is required."]
+        assert response.data["hmg_strategy"] == ["This field is required."]
+        assert response.data["government_policy"] == ["This field is required."]
+        assert response.data["trading_relations"] == ["This field is required."]
+        assert response.data["uk_interest_and_security"] == ["This field is required."]
+        assert response.data["uk_grants"] == ["This field is required."]
+        assert response.data["competition"] == ["This field is required."]
+        assert response.data["scale"] == ["This field is required."]
         assert "additional_information" not in response.data
 
     def test_update_strategic_assessment(self, barrier):
@@ -72,7 +68,9 @@ class TestStrategicAssessments(APITestMixin):
             barrier=barrier,
             scale=5,
         )
-        url = reverse("strategic-assessment-detail", kwargs={"pk": strategic_assessment.id})
+        url = reverse(
+            "strategic-assessment-detail", kwargs={"pk": strategic_assessment.id}
+        )
         response = self.api_client.patch(
             url,
             format="json",
@@ -80,7 +78,7 @@ class TestStrategicAssessments(APITestMixin):
                 "scale": "2",
                 "hmg_strategy": "New HMG strategy",
                 "additional_information": "New info",
-            }
+            },
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["scale"]["id"] == 2
@@ -91,12 +89,10 @@ class TestStrategicAssessments(APITestMixin):
 
     def test_approve_strategic_assessment(self, barrier):
         strategic_assessment = StrategicAssessmentFactory(barrier=barrier)
-        url = reverse("strategic-assessment-detail", kwargs={"pk": strategic_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"approved": True}
+        url = reverse(
+            "strategic-assessment-detail", kwargs={"pk": strategic_assessment.id}
         )
+        response = self.api_client.patch(url, format="json", data={"approved": True})
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is True
         assert response.data["reviewed_by"]["id"] == self.user.id
@@ -104,12 +100,10 @@ class TestStrategicAssessments(APITestMixin):
 
     def test_reject_strategic_assessment(self, barrier):
         strategic_assessment = StrategicAssessmentFactory(barrier=barrier)
-        url = reverse("strategic-assessment-detail", kwargs={"pk": strategic_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"approved": False}
+        url = reverse(
+            "strategic-assessment-detail", kwargs={"pk": strategic_assessment.id}
         )
+        response = self.api_client.patch(url, format="json", data={"approved": False})
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is False
         assert response.data["reviewed_by"]["id"] == self.user.id
@@ -117,26 +111,24 @@ class TestStrategicAssessments(APITestMixin):
 
     def test_archive_strategic_assessment(self, barrier):
         strategic_assessment = StrategicAssessmentFactory(barrier=barrier)
-        url = reverse("strategic-assessment-detail", kwargs={"pk": strategic_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"archived": True}
+        url = reverse(
+            "strategic-assessment-detail", kwargs={"pk": strategic_assessment.id}
         )
+        response = self.api_client.patch(url, format="json", data={"archived": True})
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
         assert response.data["modified_by"]["id"] == self.user.id
 
     def test_auto_archive_strategic_assessment(self, barrier):
-        strategic_assessment = StrategicAssessmentFactory(barrier=barrier,)
+        strategic_assessment = StrategicAssessmentFactory(
+            barrier=barrier,
+        )
         assert strategic_assessment.archived is False
 
         url = reverse("strategic-assessment-list")
         response = self.api_client.post(
-            url,
-            format="json",
-            data={"barrier_id": barrier.id, **self.test_data}
+            url, format="json", data={"barrier_id": barrier.id, **self.test_data}
         )
         assert response.status_code == HTTPStatus.CREATED
         strategic_assessment.refresh_from_db()
@@ -148,14 +140,22 @@ class TestStrategicAssessments(APITestMixin):
             **self.test_data,
         )
 
-        url = reverse("strategic-assessment-detail", kwargs={"pk": strategic_assessment.id})
+        url = reverse(
+            "strategic-assessment-detail", kwargs={"pk": strategic_assessment.id}
+        )
         response = self.api_client.get(url)
 
         assert response.data["hmg_strategy"] == self.test_data["hmg_strategy"]
         assert response.data["government_policy"] == self.test_data["government_policy"]
         assert response.data["trading_relations"] == self.test_data["trading_relations"]
-        assert response.data["uk_interest_and_security"] == self.test_data["uk_interest_and_security"]
+        assert (
+            response.data["uk_interest_and_security"]
+            == self.test_data["uk_interest_and_security"]
+        )
         assert response.data["uk_grants"] == self.test_data["uk_grants"]
         assert response.data["competition"] == self.test_data["competition"]
-        assert response.data["additional_information"] == self.test_data["additional_information"]
+        assert (
+            response.data["additional_information"]
+            == self.test_data["additional_information"]
+        )
         assert response.data["scale"]["id"] == self.test_data["scale"]

@@ -3,8 +3,7 @@ import logging
 
 from .comtrade import ComtradeClient
 from .countries import get_comtrade_country_name
-from .formatters import (percent_range, rca, rca_diff, rca_diff_glob,
-                         value_range)
+from .formatters import percent_range, rca, rca_diff, rca_diff_glob, value_range
 from .utils import avgtrade, group_and_average, trade_df, trade_df_ind
 from .valid_codes import valid_codes
 
@@ -58,7 +57,9 @@ class AssessmentCalculator:
             "United Kingdom": "the UK",
         }.get(country, country)
 
-    def calculate(self, commodity_codes, product, country1, country2="United Kingdom", year=None):
+    def calculate(
+        self, commodity_codes, product, country1, country2="United Kingdom", year=None
+    ):
         self.warnings = []
         commodity_codes = self.clean_commodity_codes(commodity_codes)
         start_year, end_year = self.get_year_range(country1, country2, year)
@@ -143,7 +144,13 @@ class AssessmentCalculator:
         df_avgs_ind = group_and_average(
             data=df_ap_avgs_ind,
             field="total",
-            group_by=("trade_flow", "reporter", "partner", "commodity_code", "products"),
+            group_by=(
+                "trade_flow",
+                "reporter",
+                "partner",
+                "commodity_code",
+                "products",
+            ),
             start_year=start_year,
             end_year=end_year,
         )
@@ -155,84 +162,134 @@ class AssessmentCalculator:
 
         # 1. Partner country imports of affected products from UK
         partner_from_uk = avgtrade(
-            df=affected_products_df, reporter_input=country1, partner_input=country2, direction="Import"
+            df=affected_products_df,
+            reporter_input=country1,
+            partner_input=country2,
+            direction="Import",
         )
 
         # 2. Partner country total goods imports from UK
         partner_from_uk_total = avgtrade(
-            df=all_products_df, reporter_input=country1, partner_input=country2, direction="Import"
+            df=all_products_df,
+            reporter_input=country1,
+            partner_input=country2,
+            direction="Import",
         )
 
         # 3. Partner country imports of affected products from world
         partner_from_world = avgtrade(
-            df=affected_products_df, reporter_input=country1, partner_input="World", direction="Import"
+            df=affected_products_df,
+            reporter_input=country1,
+            partner_input="World",
+            direction="Import",
         )
 
         # 4. Partner country total goods imports from World
         partner_from_world_total = avgtrade(
-            df=all_products_df, reporter_input=country1, partner_input="World", direction="Import"
+            df=all_products_df,
+            reporter_input=country1,
+            partner_input="World",
+            direction="Import",
         )
 
         # 5. World imports of affected products from UK
-        world_from_uk = avgtrade(df=affected_products_df, partner_input=country2, direction="Import")
+        world_from_uk = avgtrade(
+            df=affected_products_df, partner_input=country2, direction="Import"
+        )
 
         # 6. World total goods imports from UK
-        world_from_uk_total = avgtrade(df=all_products_df, partner_input=country2, direction="Import")
+        world_from_uk_total = avgtrade(
+            df=all_products_df, partner_input=country2, direction="Import"
+        )
 
         # 7. World imports of affected products from World
-        world_from_world = avgtrade(df=affected_products_df, partner_input="World", direction="Import")
+        world_from_world = avgtrade(
+            df=affected_products_df, partner_input="World", direction="Import"
+        )
 
         # 8. World total goods imports from World
-        world_from_world_total = avgtrade(df=all_products_df, partner_input="World", direction="Import")
+        world_from_world_total = avgtrade(
+            df=all_products_df, partner_input="World", direction="Import"
+        )
 
         # 9. World imports of affected products from partner country
-        world_from_partner = avgtrade(df=affected_products_df, partner_input=country1, direction="Import")
+        world_from_partner = avgtrade(
+            df=affected_products_df, partner_input=country1, direction="Import"
+        )
 
         # 10. World total goods imports from partner country
-        world_from_partner_total = avgtrade(df=all_products_df, partner_input=country1, direction="Import")
+        world_from_partner_total = avgtrade(
+            df=all_products_df, partner_input=country1, direction="Import"
+        )
 
         # Values from export data
 
         # 1. UK exports of affected products to partner country
         uk_to_partner = avgtrade(
-            df=affected_products_df, reporter_input=country2, partner_input=country1, direction="Export"
+            df=affected_products_df,
+            reporter_input=country2,
+            partner_input=country1,
+            direction="Export",
         )
 
         # 2. UK total goods exports to partner country
         uk_to_partner_total = avgtrade(
-            df=all_products_df, reporter_input=country2, partner_input=country1, direction="Export"
+            df=all_products_df,
+            reporter_input=country2,
+            partner_input=country1,
+            direction="Export",
         )
 
         # 3. World exports of affected products to partner country
-        world_to_partner = avgtrade(df=affected_products_df, partner_input=country1, direction="Export")
+        world_to_partner = avgtrade(
+            df=affected_products_df, partner_input=country1, direction="Export"
+        )
 
         # 4. World total goods exports to partner country
-        world_to_partner_total = avgtrade(df=all_products_df, partner_input=country1, direction="Export")
+        world_to_partner_total = avgtrade(
+            df=all_products_df, partner_input=country1, direction="Export"
+        )
 
         # 5. UK exports of affected products to the World
         uk_to_world = avgtrade(
-            df=affected_products_df, reporter_input=country2, partner_input="World", direction="Export"
+            df=affected_products_df,
+            reporter_input=country2,
+            partner_input="World",
+            direction="Export",
         )
 
         # 6. UK total goods exports to the World
         uk_to_world_total = avgtrade(
-            df=all_products_df, reporter_input=country2, partner_input="World", direction="Export"
+            df=all_products_df,
+            reporter_input=country2,
+            partner_input="World",
+            direction="Export",
         )
 
         # 7. World exports of affected products to World
-        world_to_world = avgtrade(df=affected_products_df, partner_input="World", direction="Export")
+        world_to_world = avgtrade(
+            df=affected_products_df, partner_input="World", direction="Export"
+        )
 
         # 8. World total goods exports to World
-        world_to_world_total = avgtrade(df=all_products_df, partner_input="World", direction="Export")
+        world_to_world_total = avgtrade(
+            df=all_products_df, partner_input="World", direction="Export"
+        )
 
         # 9. Partner country exports of affected products to World
         partner_to_world = avgtrade(
-            df=affected_products_df, reporter_input=country1, partner_input="World", direction="Export"
+            df=affected_products_df,
+            reporter_input=country1,
+            partner_input="World",
+            direction="Export",
         )
 
         # 10. Partner country total goods exports to World
         partner_to_world_total = avgtrade(
-            df=all_products_df, reporter_input=country1, partner_input="World", direction="Export"
+            df=all_products_df,
+            reporter_input=country1,
+            partner_input="World",
+            direction="Export",
         )
 
         # CALCULATING THE METRIC OUTPUTS USED IN THE MAB ASSESSMENT
@@ -242,7 +299,8 @@ class AssessmentCalculator:
             bilateral_rca_imp = 0
         else:
             bilateral_rca_imp = (partner_from_uk / partner_from_world_total) - (
-                (partner_from_world * partner_from_uk_total) / (partner_from_world_total ** 2)
+                (partner_from_world * partner_from_uk_total)
+                / (partner_from_world_total ** 2)
             )
 
         if world_to_partner_total == 0:
@@ -269,7 +327,7 @@ class AssessmentCalculator:
                 (uk_to_world_total * world_to_world) / (world_to_world_total ** 2)
             )
 
-        uk_global_rca = rca(uk_global_rca_imp,uk_global_rca_exp)
+        uk_global_rca = rca(uk_global_rca_imp, uk_global_rca_exp)
 
         # RCA Difference (UK Global minus Bilateral)
         rca_diff_imp = uk_global_rca_imp - bilateral_rca_imp
@@ -286,7 +344,8 @@ class AssessmentCalculator:
             partner_global_rca_imp = 0
         else:
             partner_global_rca_imp = (world_from_partner / world_from_world_total) - (
-                (world_from_partner_total * world_from_world) / (world_from_world_total ** 2)
+                (world_from_partner_total * world_from_world)
+                / (world_from_world_total ** 2)
             )
 
         if world_to_world_total == 0:
@@ -334,7 +393,9 @@ class AssessmentCalculator:
 
         # Imports of affected products as share of total partner country imports
         product_share_partner_imp = percent_range(
-            partner_from_world / partner_from_world_total if partner_from_world_total else 0,
+            partner_from_world / partner_from_world_total
+            if partner_from_world_total
+            else 0,
             world_to_partner / world_to_partner_total if world_to_partner_total else 0,
             decimal_places=2,
         )
@@ -384,24 +445,27 @@ class AssessmentCalculator:
                     "world_from_uk": world_from_uk,
                     "partner_from_uk": partner_from_uk,
                     "market_share": (
-                        partner_from_uk / world_from_uk
-                        if world_from_uk else 0
+                        partner_from_uk / world_from_uk if world_from_uk else 0
                     ),
                     "uk_share_of_import_market": (
                         partner_from_uk / partner_from_world
-                        if partner_from_world else 0
+                        if partner_from_world
+                        else 0
                     ),
                     "product_share_partner_import": (
                         partner_from_world / partner_from_world_total
-                        if partner_from_world_total else 0
+                        if partner_from_world_total
+                        else 0
                     ),
                     "product_share_uk_export_world": (
                         world_from_uk / world_from_uk_total
-                        if world_from_uk_total else 0
+                        if world_from_uk_total
+                        else 0
                     ),
                     "product_share_uk_export_partner": (
                         partner_from_uk / partner_from_uk_total
-                        if partner_from_uk_total else 0
+                        if partner_from_uk_total
+                        else 0
                     ),
                 },
                 "export": {
@@ -413,25 +477,22 @@ class AssessmentCalculator:
                     "partner_from_world": world_to_partner,
                     "world_from_uk": uk_to_world,
                     "partner_from_uk": uk_to_partner,
-                    "market_share": (
-                        uk_to_partner / uk_to_world
-                        if uk_to_world else 0
-                    ),
+                    "market_share": (uk_to_partner / uk_to_world if uk_to_world else 0),
                     "uk_share_of_import_market": (
-                        uk_to_partner / world_to_partner
-                        if world_to_partner else 0
+                        uk_to_partner / world_to_partner if world_to_partner else 0
                     ),
                     "product_share_partner_import": (
                         world_to_partner / world_to_partner_total
-                        if world_to_partner_total else 0
+                        if world_to_partner_total
+                        else 0
                     ),
                     "product_share_uk_export_world": (
-                        uk_to_world / uk_to_world_total
-                        if uk_to_world_total else 0
+                        uk_to_world / uk_to_world_total if uk_to_world_total else 0
                     ),
                     "product_share_uk_export_partner": (
                         uk_to_partner / uk_to_partner_total
-                        if uk_to_partner_total else 0
+                        if uk_to_partner_total
+                        else 0
                     ),
                 },
             },

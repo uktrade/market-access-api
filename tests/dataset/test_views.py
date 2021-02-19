@@ -13,7 +13,6 @@ from tests.barriers.factories import BarrierFactory
 
 
 class TestBarriersDataset(APITestMixin):
-
     def test_no_reports(self):
         """Test there are no reports using list"""
         url = reverse("dataset:barrier-list")
@@ -41,7 +40,8 @@ class TestBarriersDataset(APITestMixin):
             created_by=user,
             country=spain,
             sectors=(adv_engineering,),
-            status=2, status_date=datetime(2020, 1, 1, tzinfo=UTC),
+            status=2,
+            status_date=datetime(2020, 1, 1, tzinfo=UTC),
         )
         TeamMember.objects.create(barrier=db_barrier, user=user, role="Wobble")
 

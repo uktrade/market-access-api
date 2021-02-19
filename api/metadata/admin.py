@@ -10,6 +10,7 @@ class CategoryAdmin(admin.ModelAdmin):
     ModelAdmin class for customised behaviour for
     allowing Category edits.
     """
+
     list_display = ("title", "category")
 
 
@@ -23,5 +24,5 @@ class BarrierTagAdmin(OrderedModelAdmin):
         "created_by",
         "modified_on",
         "order",
-        'move_up_down_links',
+        "move_up_down_links",
     )

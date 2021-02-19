@@ -6,22 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0056_populate_covid_tags'),
+        ("barriers", "0056_populate_covid_tags"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='barrierinstance',
-            options={'ordering': ['-reported_on']},
+            name="barrierinstance",
+            options={"ordering": ["-reported_on"]},
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='is_summary_sensitive',
-            field=models.NullBooleanField(help_text='Does the summary (problem_description) contain sensitive information'),
+            model_name="barrierinstance",
+            name="is_summary_sensitive",
+            field=models.NullBooleanField(
+                help_text="Does the summary (problem_description) contain sensitive information"
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='is_summary_sensitive',
-            field=models.NullBooleanField(help_text='Does the summary (problem_description) contain sensitive information'),
+            model_name="historicalbarrierinstance",
+            name="is_summary_sensitive",
+            field=models.NullBooleanField(
+                help_text="Does the summary (problem_description) contain sensitive information"
+            ),
         ),
     ]

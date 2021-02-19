@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0087_auto_20200901_1511'),
+        ("barriers", "0087_auto_20200901_1511"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barriercommodity',
-            name='trading_bloc',
+            model_name="barriercommodity",
+            name="trading_bloc",
             field=models.CharField(choices=[], max_length=7, null=True),
         ),
         migrations.AlterField(
-            model_name='barriercommodity',
-            name='country',
+            model_name="barriercommodity",
+            name="country",
             field=models.UUIDField(null=True),
         ),
     ]

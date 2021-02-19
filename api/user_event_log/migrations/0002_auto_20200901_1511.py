@@ -7,13 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user_event_log', '0001_initial'),
+        ("user_event_log", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userevent',
-            name='data',
-            field=models.JSONField(encoder=django.core.serializers.json.DjangoJSONEncoder, null=True),
+            model_name="userevent",
+            name="data",
+            field=models.JSONField(
+                encoder=django.core.serializers.json.DjangoJSONEncoder, null=True
+            ),
         ),
     ]

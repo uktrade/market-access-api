@@ -36,6 +36,7 @@ def add_barrier_types(apps, schema_editor):
                 category=item["category"],
             ).save()
 
+
 def edit_barrier_types(apps, schema_editor):
     BarrierType = apps.get_model("metadata", "BarrierType")
 
@@ -53,10 +54,11 @@ def edit_barrier_types(apps, schema_editor):
                 category=item["category"],
             ).save()
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0009_auto_20181205_1432'),
+        ("metadata", "0009_auto_20181205_1432"),
     ]
 
     operations = [

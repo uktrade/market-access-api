@@ -6,14 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0018_auto_20201118_1133'),
-        ('barriers', '0096_fix_blank_and_null'),
+        ("metadata", "0018_auto_20201118_1133"),
+        ("barriers", "0096_fix_blank_and_null"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrier',
-            name='organisations',
-            field=models.ManyToManyField(help_text='Organisations that are related to the barrier', to='metadata.Organisation'),
+            model_name="barrier",
+            name="organisations",
+            field=models.ManyToManyField(
+                help_text="Organisations that are related to the barrier",
+                to="metadata.Organisation",
+            ),
         ),
     ]

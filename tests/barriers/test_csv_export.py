@@ -10,7 +10,6 @@ from tests.metadata.factories import OrganisationFactory
 
 
 class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
-
     def test_summary_is_not_official_sensitive(self):
         barrier = BarrierFactory(is_summary_sensitive=False)
 
@@ -37,10 +36,14 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         """ Include Assessment Explanation in the CSV """
         expected_explanation = "Wibble wobble!"
         barrier = BarrierFactory()
-        EconomicAssessmentFactory(barrier=barrier, approved=True, explanation=expected_explanation)
+        EconomicAssessmentFactory(
+            barrier=barrier, approved=True, explanation=expected_explanation
+        )
 
         serializer = BarrierCsvExportSerializer(barrier)
-        assert expected_explanation == serializer.data["economic_assessment_explanation"]
+        assert (
+            expected_explanation == serializer.data["economic_assessment_explanation"]
+        )
 
     def test_ecomomic_assessment_is_none(self):
         """ Default to None if there's no Assessment for the Barrier """
@@ -48,7 +51,9 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         barrier = BarrierFactory()
 
         serializer = BarrierCsvExportSerializer(barrier)
-        assert expected_explanation == serializer.data["economic_assessment_explanation"]
+        assert (
+            expected_explanation == serializer.data["economic_assessment_explanation"]
+        )
 
     def test_status_date_is_null(self):
         expected_status_date = None

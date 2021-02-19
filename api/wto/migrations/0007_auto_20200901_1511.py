@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wto', '0006_auto_20200812_0830'),
+        ("wto", "0006_auto_20200812_0830"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalwtoprofile',
-            name='wto_should_be_notified',
+            model_name="historicalwtoprofile",
+            name="wto_should_be_notified",
             field=models.BooleanField(null=True),
         ),
         migrations.AlterField(
-            model_name='wtoprofile',
-            name='wto_should_be_notified',
+            model_name="wtoprofile",
+            name="wto_should_be_notified",
             field=models.BooleanField(null=True),
         ),
     ]

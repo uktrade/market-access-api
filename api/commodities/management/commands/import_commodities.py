@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def import_commodities(self, csv_file, version):
         self.stdout.write("Importing commodities...")
 
-        with open(csv_file, 'r') as file:
+        with open(csv_file, "r") as file:
             reader = csv.DictReader(file)
             i = 0
             for line in reader:
@@ -43,8 +43,12 @@ class Command(BaseCommand):
     def add_parents(self, csv_file, version):
         self.stdout.write("Adding parents...")
         i = 0
-        for commodity in Commodity.objects.filter(parent_sid__isnull=False, version=version):
-            commodity.parent = Commodity.objects.get(sid=commodity.parent_sid, version=version)
+        for commodity in Commodity.objects.filter(
+            parent_sid__isnull=False, version=version
+        ):
+            commodity.parent = Commodity.objects.get(
+                sid=commodity.parent_sid, version=version
+            )
             commodity.save()
 
             if i % 1000 == 0:

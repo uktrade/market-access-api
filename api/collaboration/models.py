@@ -20,6 +20,7 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """
     TeamMember records for each Barrier
     """
+
     REPORTER = "Reporter"
     OWNER = "Owner"
     CONTRIBUTOR = "Contributor"

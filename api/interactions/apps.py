@@ -11,6 +11,5 @@ class InteractionsConfig(AppConfig):
         from .signals.handlers import interaction_documents_changed
 
         m2m_changed.connect(
-            interaction_documents_changed,
-            sender=Interaction.documents.through
+            interaction_documents_changed, sender=Interaction.documents.through
         )
