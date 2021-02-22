@@ -6,18 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0017_assessment_permissions'),
+        ("user", "0017_assessment_permissions"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='profile',
-            name='sso_user_id',
-            field=models.UUIDField(blank=True, help_text='Staff SSO UUID for reference', null=True),
+            model_name="profile",
+            name="sso_user_id",
+            field=models.UUIDField(
+                blank=True, help_text="Staff SSO UUID for reference", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='profile',
-            name='user_profile',
-            field=models.JSONField(blank=True, help_text='temporary field to hold sso profile json object', null=True),
+            model_name="profile",
+            name="user_profile",
+            field=models.JSONField(
+                blank=True,
+                help_text="temporary field to hold sso profile json object",
+                null=True,
+            ),
         ),
     ]

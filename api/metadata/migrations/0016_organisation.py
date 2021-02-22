@@ -6,16 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0015_nip_tag'),
+        ("metadata", "0015_nip_tag"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Organisation',
+            name="Organisation",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=300)),
-                ('organisation_type', models.IntegerField(choices=[(1, 'Ministerial departments'), (2, 'Devolved administrations')])),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=300)),
+                (
+                    "organisation_type",
+                    models.IntegerField(
+                        choices=[
+                            (1, "Ministerial departments"),
+                            (2, "Devolved administrations"),
+                        ]
+                    ),
+                ),
             ],
         ),
     ]

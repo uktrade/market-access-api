@@ -2,6 +2,7 @@ import datetime
 
 from api.metadata.constants import BarrierStatus, PublicBarrierStatus
 from api.metadata.utils import get_location_text
+
 from .base import BaseHistoryItem
 
 

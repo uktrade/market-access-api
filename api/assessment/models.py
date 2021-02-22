@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-
 from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
@@ -25,6 +24,7 @@ class EconomicAssessmentHistoricalModel(models.Model):
     """
     Abstract model for history models tracking document changes.
     """
+
     documents_cache = ArrayField(
         models.JSONField(),
         blank=True,
@@ -50,7 +50,8 @@ class EconomicAssessmentHistoricalModel(models.Model):
             {
                 "id": str(document["id"]),
                 "name": document["original_filename"],
-            } for document in self.instance.documents.values("id", "original_filename")
+            }
+            for document in self.instance.documents.values("id", "original_filename")
         ]
 
     def save(self, *args, **kwargs):
@@ -61,14 +62,20 @@ class EconomicAssessmentHistoricalModel(models.Model):
         abstract = True
 
 
-class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+class EconomicAssessment(
+    ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel
+):
     barrier = models.ForeignKey(
         "barriers.Barrier",
         related_name="economic_assessments",
         on_delete=models.CASCADE,
     )
-    automated_analysis_data = models.JSONField(encoder=DjangoJSONEncoder, blank=True, null=True)
-    rating = models.CharField(choices=ECONOMIC_ASSESSMENT_RATING, max_length=25, blank=True)
+    automated_analysis_data = models.JSONField(
+        encoder=DjangoJSONEncoder, blank=True, null=True
+    )
+    rating = models.CharField(
+        choices=ECONOMIC_ASSESSMENT_RATING, max_length=25, blank=True
+    )
     explanation = models.TextField(blank=True)
     ready_for_approval = models.BooleanField(default=False)
 
@@ -93,7 +100,7 @@ class EconomicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, Ba
     history = HistoricalRecords(bases=[EconomicAssessmentHistoricalModel])
 
     class Meta:
-        ordering = ("-created_on", )
+        ordering = ("-created_on",)
         permissions = (
             ("archive_economicassessment", "Can archive economic assessment"),
             ("approve_economicassessment", "Can approve economic assessment"),
@@ -111,6 +118,7 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     Analysts requested the name to be changed to Valuation Assessment
      - it reflects more what the numbers mean
     """
+
     id = models.UUIDField(primary_key=True, default=uuid4)
     economic_assessment = models.ForeignKey(
         "assessment.EconomicAssessment",
@@ -134,22 +142,31 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         return rating
 
     class Meta:
-        ordering = ("-created_on", )
+        ordering = ("-created_on",)
         permissions = (
-            ("archive_economicimpactassessment", "Can archive economic impact assessment"),
+            (
+                "archive_economicimpactassessment",
+                "Can archive economic impact assessment",
+            ),
         )
 
     def save(self, *args, **kwargs):
         if self._state.adding:
-            for economic_assessment in self.economic_assessment.barrier.economic_assessments.all():
-                for economic_impact_assessment in economic_assessment.economic_impact_assessments.filter(
+            for (
+                economic_assessment
+            ) in self.economic_assessment.barrier.economic_assessments.all():
+                for (
+                    economic_impact_assessment
+                ) in economic_assessment.economic_impact_assessments.filter(
                     archived=False
                 ):
                     economic_impact_assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
 
 
-class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+class ResolvabilityAssessment(
+    ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel
+):
     id = models.UUIDField(primary_key=True, default=uuid4)
     barrier = models.ForeignKey(
         "barriers.Barrier",
@@ -157,13 +174,15 @@ class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixi
         on_delete=models.CASCADE,
     )
     time_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_TIME)
-    effort_to_resolve = models.PositiveIntegerField(choices=RESOLVABILITY_ASSESSMENT_EFFORT)
+    effort_to_resolve = models.PositiveIntegerField(
+        choices=RESOLVABILITY_ASSESSMENT_EFFORT
+    )
     explanation = models.TextField(blank=True)
 
     history = HistoricalRecords()
 
     class Meta:
-        ordering = ("-created_on", )
+        ordering = ("-created_on",)
         permissions = (
             ("archive_resolvabilityassessment", "Can archive resolvability assessment"),
             ("approve_resolvabilityassessment", "Can approve resolvability assessment"),
@@ -171,12 +190,16 @@ class ResolvabilityAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixi
 
     def save(self, *args, **kwargs):
         if self._state.adding:
-            for assessment in self.barrier.resolvability_assessments.filter(archived=False):
+            for assessment in self.barrier.resolvability_assessments.filter(
+                archived=False
+            ):
                 assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
 
 
-class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel):
+class StrategicAssessment(
+    ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel
+):
     id = models.UUIDField(primary_key=True, default=uuid4)
     barrier = models.ForeignKey(
         "barriers.Barrier",
@@ -195,7 +218,7 @@ class StrategicAssessment(ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, B
     history = HistoricalRecords()
 
     class Meta:
-        ordering = ("-created_on", )
+        ordering = ("-created_on",)
         permissions = (
             ("archive_strategicassessment", "Can archive strategic assessment"),
             ("approve_strategicassessment", "Can approve strategic assessment"),

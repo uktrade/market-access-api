@@ -6,4 +6,4 @@ class MarketAccessDatasetViewCursorPagination(CursorPagination):
     Cursor Pagination for MarketAccessDatasetView
     """
 
-    ordering = ('created_on', 'pk')
+    ordering = ("created_on", "pk")

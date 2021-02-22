@@ -5,18 +5,19 @@ from django.db import migrations
 
 def migrate_country_to_location(apps, schema_editor):
     CachedHistoryItem = apps.get_model("history", "CachedHistoryItem")
-    CachedHistoryItem.objects.filter(model="public_barrier", field="country").update(field="location")
+    CachedHistoryItem.objects.filter(model="public_barrier", field="country").update(
+        field="location"
+    )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('history', '0001_initial'),
+        ("history", "0001_initial"),
     ]
 
     operations = [
         migrations.RunPython(
-            migrate_country_to_location,
-            reverse_code=migrations.RunPython.noop
+            migrate_country_to_location, reverse_code=migrations.RunPython.noop
         ),
     ]

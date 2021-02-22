@@ -8,22 +8,26 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('barriers', '0096_fix_blank_and_null'),
-        ('interactions', '0011_fix_blank_and_null'),
-        ('assessment', '0012_fix_blank_and_null'),
+        ("barriers", "0096_fix_blank_and_null"),
+        ("interactions", "0011_fix_blank_and_null"),
+        ("assessment", "0012_fix_blank_and_null"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='Assessment',
-            new_name='EconomicAssessment',
+            old_name="Assessment",
+            new_name="EconomicAssessment",
         ),
         migrations.RenameModel(
-            old_name='HistoricalAssessment',
-            new_name='HistoricalEconomicAssessment',
+            old_name="HistoricalAssessment",
+            new_name="HistoricalEconomicAssessment",
         ),
         migrations.AlterModelOptions(
-            name='historicaleconomicassessment',
-            options={'get_latest_by': 'history_date', 'ordering': ('-history_date', '-history_id'), 'verbose_name': 'historical economic assessment'},
+            name="historicaleconomicassessment",
+            options={
+                "get_latest_by": "history_date",
+                "ordering": ("-history_date", "-history_id"),
+                "verbose_name": "historical economic assessment",
+            },
         ),
     ]

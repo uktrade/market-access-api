@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0042_auto_20200325_1036'),
+        ("barriers", "0042_auto_20200325_1036"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='barrierinstance',
-            old_name='barrier_types',
-            new_name='categories',
+            model_name="barrierinstance",
+            old_name="barrier_types",
+            new_name="categories",
         ),
     ]

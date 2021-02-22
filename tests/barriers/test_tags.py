@@ -2,13 +2,12 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
+from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.metadata.factories import BarrierTagFactory
-from api.core.test_utils import APITestMixin
 
 
 class TestBarrierTags(APITestMixin, TestCase):
-
     def test_get_barrier_without_tags(self):
         barrier = BarrierFactory()
 
@@ -38,9 +37,7 @@ class TestBarrierTags(APITestMixin, TestCase):
         assert not barrier.tags.exists(), "Expected no tags to start with."
 
         url = reverse("get-barrier", kwargs={"pk": barrier.id})
-        payload = {
-            "tags": [tag.id]
-        }
+        payload = {"tags": [tag.id]}
         response = self.api_client.patch(url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -55,9 +52,7 @@ class TestBarrierTags(APITestMixin, TestCase):
         assert not barrier.tags.exists(), "Expected no tags to start with."
 
         url = reverse("get-barrier", kwargs={"pk": barrier.id})
-        payload = {
-            "tags": [123321]
-        }
+        payload = {"tags": [123321]}
         response = self.api_client.patch(url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
@@ -76,14 +71,18 @@ class TestBarrierTags(APITestMixin, TestCase):
 
         url = reverse("get-barrier", kwargs={"pk": barrier.id})
 
-        assert 1 == barrier.tags.count(), f"Expected only 1 tag, got {barrier.tags.count()}"
+        assert (
+            1 == barrier.tags.count()
+        ), f"Expected only 1 tag, got {barrier.tags.count()}"
         assert tag01.id == barrier.tags.first().id
 
         payload = {"tags": [tag02.id]}
         response = self.api_client.patch(url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 1 == barrier.tags.count(), f"Expected only 1 tag, got {barrier.tags.count()}"
+        assert (
+            1 == barrier.tags.count()
+        ), f"Expected only 1 tag, got {barrier.tags.count()}"
         assert tag02.id == barrier.tags.first().id
 
     def test_patch_barrier_extending_tags(self):
@@ -97,14 +96,18 @@ class TestBarrierTags(APITestMixin, TestCase):
 
         url = reverse("get-barrier", kwargs={"pk": barrier.id})
 
-        assert 1 == barrier.tags.count(), f"Expected only 1 tag, got {barrier.tags.count()}"
+        assert (
+            1 == barrier.tags.count()
+        ), f"Expected only 1 tag, got {barrier.tags.count()}"
         assert tag01.id == barrier.tags.first().id
 
         payload = {"tags": (tag01.id, tag02.id)}
         response = self.api_client.patch(url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 2 == barrier.tags.count(), f"Expected only 2 tags, got {barrier.tags.count()}"
+        assert (
+            2 == barrier.tags.count()
+        ), f"Expected only 2 tags, got {barrier.tags.count()}"
         tag_ids = list(barrier.tags.values_list("id", flat=True))
         assert {tag01.id, tag02.id} == set(tag_ids)
 
@@ -114,7 +117,9 @@ class TestBarrierTags(APITestMixin, TestCase):
         barrier = BarrierFactory(tags=tags)
         url = reverse("get-barrier", kwargs={"pk": barrier.id})
 
-        assert 2 == barrier.tags.count(), f"Expected only 2 tags, got {barrier.tags.count()}"
+        assert (
+            2 == barrier.tags.count()
+        ), f"Expected only 2 tags, got {barrier.tags.count()}"
 
         payload = {"tags": []}
         response = self.api_client.patch(url, format="json", data=payload)
@@ -141,7 +146,6 @@ class TestBarrierTags(APITestMixin, TestCase):
 
 
 class TestBarrierTagsFilter(APITestMixin, TestCase):
-
     def test_filter_barrier_tags__single_tag(self):
         tag = BarrierTagFactory()
         barrier = BarrierFactory(tags=(tag,))
@@ -185,7 +189,6 @@ class TestBarrierTagsFilter(APITestMixin, TestCase):
 
 
 class TestReportTags(APITestMixin, TestCase):
-
     def setUp(self):
         self.report = ReportFactory()
         self.url = reverse("get-report", kwargs={"pk": self.report.id})
@@ -242,14 +245,18 @@ class TestReportTags(APITestMixin, TestCase):
         tag02_title = "wibble"
         tag02 = BarrierTagFactory(title=tag02_title)
 
-        assert 1 == self.report.tags.count(), f"Expected only 1 tag, got {self.report.tags.count()}"
+        assert (
+            1 == self.report.tags.count()
+        ), f"Expected only 1 tag, got {self.report.tags.count()}"
         assert tag01.id == self.report.tags.first().id
 
         payload = {"tags": [tag02.id]}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 1 == self.report.tags.count(), f"Expected only 1 tag, got {self.report.tags.count()}"
+        assert (
+            1 == self.report.tags.count()
+        ), f"Expected only 1 tag, got {self.report.tags.count()}"
         assert tag02.id == self.report.tags.first().id
 
     def test_patch_report_extending_tags(self):
@@ -261,14 +268,18 @@ class TestReportTags(APITestMixin, TestCase):
         tag02_title = "wibble"
         tag02 = BarrierTagFactory(title=tag02_title)
 
-        assert 1 == self.report.tags.count(), f"Expected only 1 tag, got {self.report.tags.count()}"
+        assert (
+            1 == self.report.tags.count()
+        ), f"Expected only 1 tag, got {self.report.tags.count()}"
         assert tag01.id == self.report.tags.first().id
 
         payload = {"tags": (tag01.id, tag02.id)}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 2 == self.report.tags.count(), f"Expected only 2 tags, got {self.report.tags.count()}"
+        assert (
+            2 == self.report.tags.count()
+        ), f"Expected only 2 tags, got {self.report.tags.count()}"
         tag_ids = list(self.report.tags.values_list("id", flat=True))
         assert {tag01.id, tag02.id} == set(tag_ids)
 
@@ -277,7 +288,9 @@ class TestReportTags(APITestMixin, TestCase):
         tags = BarrierTagFactory.create_batch(2)
         self.report.tags.add(*tags)
 
-        assert 2 == self.report.tags.count(), f"Expected only 2 tags, got {self.report.tags.count()}"
+        assert (
+            2 == self.report.tags.count()
+        ), f"Expected only 2 tags, got {self.report.tags.count()}"
 
         payload = {"tags": []}
         response = self.api_client.patch(self.url, format="json", data=payload)

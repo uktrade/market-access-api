@@ -4,19 +4,18 @@ from django.db import migrations
 
 
 def delete_stale_report_stages(apps, schema_editor):
-    BarrierReportStage = apps.get_model('barriers', 'BarrierReportStage')
+    BarrierReportStage = apps.get_model("barriers", "BarrierReportStage")
     BarrierReportStage.objects.exclude(barrier__draft=True).delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0048_populate_draft'),
+        ("barriers", "0048_populate_draft"),
     ]
 
     operations = [
         migrations.RunPython(
-            delete_stale_report_stages,
-            reverse_code=migrations.RunPython.noop
+            delete_stale_report_stages, reverse_code=migrations.RunPython.noop
         ),
     ]

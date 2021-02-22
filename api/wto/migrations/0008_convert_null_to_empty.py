@@ -8,18 +8,19 @@ def convert_null_to_empty(apps, schema_editor):
     HistoricalWTOProfile = apps.get_model("wto", "HistoricalWTOProfile")
 
     WTOProfile.objects.filter(member_states__isnull=True).update(member_states=list())
-    HistoricalWTOProfile.objects.filter(member_states__isnull=True).update(member_states=list())
+    HistoricalWTOProfile.objects.filter(member_states__isnull=True).update(
+        member_states=list()
+    )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wto', '0007_auto_20200901_1511'),
+        ("wto", "0007_auto_20200901_1511"),
     ]
 
     operations = [
         migrations.RunPython(
-            convert_null_to_empty,
-            reverse_code=migrations.RunPython.noop
+            convert_null_to_empty, reverse_code=migrations.RunPython.noop
         ),
     ]

@@ -1,10 +1,9 @@
 import json
 import os
-import requests
 import textwrap
 
+import requests
 from dateutil.relativedelta import relativedelta
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -63,7 +62,9 @@ class Command(BaseCommand):
             "reports": {"total_count": reports.count()},
             "users": {
                 "total_count": users.distinct().count(),
-                "active_count": users.filter(last_login__gt=days_ago).distinct().count(),
+                "active_count": users.filter(last_login__gt=days_ago)
+                .distinct()
+                .count(),
             },
         }
 

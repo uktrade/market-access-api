@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0097_auto_20201113_1149'),
+        ("barriers", "0097_auto_20201113_1149"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrier',
-            name='commercial_value',
+            model_name="barrier",
+            name="commercial_value",
             field=models.BigIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='barrier',
-            name='commercial_value_explanation',
+            model_name="barrier",
+            name="commercial_value_explanation",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrier',
-            name='commercial_value',
+            model_name="historicalbarrier",
+            name="commercial_value",
             field=models.BigIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalbarrier',
-            name='commercial_value_explanation',
+            model_name="historicalbarrier",
+            name="commercial_value_explanation",
             field=models.TextField(blank=True),
         ),
     ]

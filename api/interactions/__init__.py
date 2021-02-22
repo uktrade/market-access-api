@@ -1,1 +1,1 @@
-default_app_config = 'api.interactions.apps.InteractionsConfig'
+default_app_config = "api.interactions.apps.InteractionsConfig"

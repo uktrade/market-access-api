@@ -4,38 +4,37 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q, CASCADE
+from django.db.models import CASCADE, Q
 from django.utils import timezone
 from hashid_field import HashidAutoField
-
 from simple_history.models import HistoricalRecords
 
+from api.barriers import validators
+from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
+from api.barriers.utils import random_barrier_reference
+from api.commodities.models import Commodity
+from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
+from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.constants import (
-    BarrierStatus,
     BARRIER_ARCHIVED_REASON,
-    BARRIER_SOURCE,
     BARRIER_PENDING,
+    BARRIER_SOURCE,
     BARRIER_TERMS,
-    PublicBarrierStatus,
+    GOVERNMENT_ORGANISATION_TYPES,
     STAGE_STATUS,
     TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
-    GOVERNMENT_ORGANISATION_TYPES,
+    BarrierStatus,
+    PublicBarrierStatus,
 )
-from api.commodities.models import Commodity
-from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
 from api.metadata.utils import (
     get_country,
-    get_trading_bloc_by_country_id,
     get_location_text,
+    get_trading_bloc_by_country_id,
 )
-from api.barriers import validators
-from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
-from api.barriers.utils import random_barrier_reference
-from api.commodities.utils import format_commodity_code
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

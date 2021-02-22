@@ -28,12 +28,11 @@ def populate_documents_history(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0004_historicalassessment_documents_cache'),
+        ("assessment", "0004_historicalassessment_documents_cache"),
     ]
 
     operations = [
         migrations.RunPython(
-            populate_documents_history,
-            reverse_code=migrations.RunPython.noop
+            populate_documents_history, reverse_code=migrations.RunPython.noop
         ),
     ]

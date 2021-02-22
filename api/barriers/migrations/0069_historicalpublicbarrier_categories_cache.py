@@ -7,13 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0068_public_barrier_permissions'),
+        ("barriers", "0068_public_barrier_permissions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='categories_cache',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=20), blank=True, default=list, null=True, size=None),
+            model_name="historicalpublicbarrier",
+            name="categories_cache",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.CharField(max_length=20),
+                blank=True,
+                default=list,
+                null=True,
+                size=None,
+            ),
         ),
     ]

@@ -1,7 +1,6 @@
-import pytest
-
 from unittest.mock import patch
 
+import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -28,7 +27,9 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        assert (
+            response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        )
 
     @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_email_as_username(self, mock_sso_api):
@@ -46,7 +47,9 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        assert (
+            response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        )
 
     @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username(self, mock_sso_api):
@@ -64,7 +67,9 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        assert (
+            response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        )
 
     @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_i_no_username_no_email(self, mock_sso_api):
@@ -82,7 +87,9 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == self.sso_user_data_1["email"]
-        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        assert (
+            response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        )
 
     @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_who_am_sso_data_none(self, mock_sso_api):
@@ -100,11 +107,15 @@ class TestUserView(APITestMixin):
         response_data = response.json()
 
         assert response_data["email"] == "Test.Email@Useri.com"
-        assert response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        assert (
+            response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
+        )
         assert response_data["first_name"] == user_test.first_name
         assert response_data["last_name"] == user_test.last_name
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     def test_user_country(self):
         """Test user's country"""
 
@@ -131,7 +142,9 @@ class TestUserView(APITestMixin):
             "user_profile": None,
         }
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     def test_user_internal(self):
         """Test user's internal flag"""
 
@@ -158,16 +171,16 @@ class TestUserView(APITestMixin):
             "user_profile": None,
         }
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     def test_user_profile(self):
         """Test user's internal flag"""
         profile = {
             "internal": False,
             "watch_lists": {
-                "watch_list_1": {
-                    "country":"955f66a0-5d95-e211-a939-e4115bead28a"
-                }
-            }
+                "watch_list_1": {"country": "955f66a0-5d95-e211-a939-e4115bead28a"}
+            },
         }
         user_test = create_test_user(user_profile=profile)
         api_client = self.create_api_client(user=user_test)
@@ -192,14 +205,14 @@ class TestUserView(APITestMixin):
             "user_profile": {
                 "internal": False,
                 "watch_lists": {
-                    "watch_list_1": {
-                        "country":"955f66a0-5d95-e211-a939-e4115bead28a"
-                    }
-                }
+                    "watch_list_1": {"country": "955f66a0-5d95-e211-a939-e4115bead28a"}
+                },
             },
         }
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     def test_user_edit_add_new_profile(self):
         """Test user's internal flag"""
 
@@ -234,9 +247,9 @@ class TestUserView(APITestMixin):
                     "internal": False,
                     "watch_lists": {
                         "watch_list_1": {
-                            "country":"955f66a0-5d95-e211-a939-e4115bead28a"
+                            "country": "955f66a0-5d95-e211-a939-e4115bead28a"
                         }
-                    }
+                    },
                 }
             },
         )

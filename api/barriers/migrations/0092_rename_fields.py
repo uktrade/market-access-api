@@ -6,48 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0091_auto_20201015_1407'),
+        ("barriers", "0091_auto_20201015_1407"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='barrierinstance',
-            old_name='country_admin_areas',
-            new_name='admin_areas',
+            model_name="barrierinstance",
+            old_name="country_admin_areas",
+            new_name="admin_areas",
         ),
         migrations.RenameField(
-            model_name='barrierinstance',
-            old_name='export_country',
-            new_name='country',
+            model_name="barrierinstance",
+            old_name="export_country",
+            new_name="country",
         ),
         migrations.RenameField(
-            model_name='barrierinstance',
-            old_name='barrier_title',
-            new_name='title',
+            model_name="barrierinstance",
+            old_name="barrier_title",
+            new_name="title",
         ),
         migrations.RenameField(
-            model_name='barrierinstance',
-            old_name='problem_status',
-            new_name='term',
+            model_name="barrierinstance",
+            old_name="problem_status",
+            new_name="term",
         ),
         migrations.RenameField(
-            model_name='historicalbarrierinstance',
-            old_name='country_admin_areas',
-            new_name='admin_areas',
+            model_name="historicalbarrierinstance",
+            old_name="country_admin_areas",
+            new_name="admin_areas",
         ),
         migrations.RenameField(
-            model_name='historicalbarrierinstance',
-            old_name='export_country',
-            new_name='country',
+            model_name="historicalbarrierinstance",
+            old_name="export_country",
+            new_name="country",
         ),
         migrations.RenameField(
-            model_name='historicalbarrierinstance',
-            old_name='barrier_title',
-            new_name='title',
+            model_name="historicalbarrierinstance",
+            old_name="barrier_title",
+            new_name="title",
         ),
         migrations.RenameField(
-            model_name='historicalbarrierinstance',
-            old_name='problem_status',
-            new_name='term',
+            model_name="historicalbarrierinstance",
+            old_name="problem_status",
+            new_name="term",
         ),
     ]

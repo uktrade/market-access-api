@@ -10,7 +10,7 @@ def convert_null_to_empty(apps, schema_editor):
     HistoricalPublicBarrier = apps.get_model("barriers", "HistoricalPublicBarrier")
     BarrierCommodity = apps.get_model("barriers", "BarrierCommodity")
 
-    barrier_fields =(
+    barrier_fields = (
         "archived_explanation",
         "archived_reason",
         "next_steps_summary",
@@ -29,11 +29,13 @@ def convert_null_to_empty(apps, schema_editor):
 
     for field in barrier_fields:
         Barrier.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
-        HistoricalBarrier.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
+        HistoricalBarrier.objects.filter(**{f"{field}__isnull": True}).update(
+            **{field: ""}
+        )
 
     BarrierCommodity.objects.filter(trading_bloc__isnull=True).update(trading_bloc="")
 
-    public_barrier_fields =(
+    public_barrier_fields = (
         "_summary",
         "_title",
         "archived_reason",
@@ -45,18 +47,19 @@ def convert_null_to_empty(apps, schema_editor):
 
     for field in public_barrier_fields:
         PublicBarrier.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
-        HistoricalPublicBarrier.objects.filter(**{f"{field}__isnull": True}).update(**{field: ""})
+        HistoricalPublicBarrier.objects.filter(**{f"{field}__isnull": True}).update(
+            **{field: ""}
+        )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0094_rename_barrier_model'),
+        ("barriers", "0094_rename_barrier_model"),
     ]
 
     operations = [
         migrations.RunPython(
-            convert_null_to_empty,
-            reverse_code=migrations.RunPython.noop
+            convert_null_to_empty, reverse_code=migrations.RunPython.noop
         ),
     ]

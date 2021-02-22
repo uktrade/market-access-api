@@ -1,7 +1,6 @@
-import pytest
-
 from unittest.mock import patch
 
+import pytest
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -13,12 +12,10 @@ from api.history.factories import TeamMemberHistoryFactory
 from tests.barriers.factories import BarrierFactory
 from tests.collaboration.factories import TeamMemberFactory
 
-
 UserModel = get_user_model()
 
 
 class TestListTeamMembers(APITestMixin):
-
     @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     def test_no_members_except_default(self, mock_creator):
         """Test there are no barrier members using list"""
@@ -34,13 +31,15 @@ class TestListTeamMembers(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert 1 == response.data["count"]
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     @patch("api.user.staff_sso.StaffSSO.get_user_details_by_id")
-    def test_add_existing_user_with_profile_with_sso_user_id_as_member(self, mock_sso_user):
+    def test_add_existing_user_with_profile_with_sso_user_id_as_member(
+        self, mock_sso_user
+    ):
         """Test adding a new member, already existing in the db"""
-        creator_user = create_test_user(
-            sso_user_id=self.sso_creator["user_id"]
-        )
+        creator_user = create_test_user(sso_user_id=self.sso_creator["user_id"])
         client = self.create_api_client(creator_user)
         mock_sso_user.return_value = self.sso_user_data_1
         list_report_url = reverse("list-reports")
@@ -88,7 +87,7 @@ class TestListTeamMembers(APITestMixin):
             last_name=self.sso_user_data_1["last_name"],
             email=self.sso_user_data_1["email"],
             username="",
-            sso_user_id=self.sso_user_data_1["user_id"]
+            sso_user_id=self.sso_user_data_1["user_id"],
         )
 
         add_mem_response = client.post(
@@ -100,8 +99,8 @@ class TestListTeamMembers(APITestMixin):
                         "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
-                "role": "dummy"
-            }
+                "role": "dummy",
+            },
         )
 
         assert add_mem_response.status_code == status.HTTP_201_CREATED
@@ -121,10 +120,14 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == self.sso_user_data_1["last_name"]
         member["role"] == "dummy"
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
     @patch("api.user.staff_sso.StaffSSO.get_user_details_by_id")
-    def test_add_existing_user_with_profile_without_sso_user_id_as_member(self, mock_sso_user, mock_creator):
+    def test_add_existing_user_with_profile_without_sso_user_id_as_member(
+        self, mock_sso_user, mock_creator
+    ):
         """Test adding a new member, already existing in the db"""
         client = self.api_client
         mock_creator.return_value = self.sso_creator
@@ -175,7 +178,7 @@ class TestListTeamMembers(APITestMixin):
             last_name="User",
             email="diff_user@Useri.com",
             username="",
-            internal=True
+            internal=True,
         )
 
         add_mem_response = client.post(
@@ -187,8 +190,8 @@ class TestListTeamMembers(APITestMixin):
                         "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
-                "role": "dummy"
-            }
+                "role": "dummy",
+            },
         )
 
         assert add_mem_response.status_code == status.HTTP_201_CREATED
@@ -208,7 +211,9 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == "User"
         member["role"] == "dummy"
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     @patch("api.user.staff_sso.StaffSSO.get_user_details_by_id")
     def test_add_existing_user_without_profile_as_member(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
@@ -271,8 +276,8 @@ class TestListTeamMembers(APITestMixin):
                         "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
-                "role": "dummy"
-            }
+                "role": "dummy",
+            },
         )
 
         assert add_mem_response.status_code == status.HTTP_201_CREATED
@@ -292,7 +297,9 @@ class TestListTeamMembers(APITestMixin):
         member["user"]["last_name"] == "User"
         member["role"] == "dummy"
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     @patch("api.user.staff_sso.StaffSSO.get_user_details_by_id")
     def test_multiple_members(self, mock_sso_user):
         """Test adding a new member, already existing in the db"""
@@ -347,8 +354,8 @@ class TestListTeamMembers(APITestMixin):
                         "sso_user_id": self.sso_user_data_1["user_id"],
                     }
                 },
-                "role": "dummy"
-            }
+                "role": "dummy",
+            },
         )
 
         assert add_mem_response.status_code == status.HTTP_201_CREATED
@@ -358,7 +365,7 @@ class TestListTeamMembers(APITestMixin):
             last_name="User",
             email="diff_user@Useri.com",
             username="",
-            sso_user_id=self.sso_user_data_2["user_id"]
+            sso_user_id=self.sso_user_data_2["user_id"],
         )
 
         add_mem_response = client.post(
@@ -370,8 +377,8 @@ class TestListTeamMembers(APITestMixin):
                         "sso_user_id": self.sso_user_data_2["user_id"],
                     }
                 },
-                "role": "dummy"
-            }
+                "role": "dummy",
+            },
         )
 
         assert add_mem_response.status_code == status.HTTP_201_CREATED
@@ -426,11 +433,13 @@ class TestListTeamMembers(APITestMixin):
         assert 1 == members.count()
         assert "Contributor" == members.first().role
         # Django User
-        assert 1 == UserModel.objects.filter(email=self.sso_user_data_1['email']).count()
+        assert (
+            1 == UserModel.objects.filter(email=self.sso_user_data_1["email"]).count()
+        )
         user = members.first().user
-        assert self.sso_user_data_1['email'] == user.email
-        assert self.sso_user_data_1['first_name'] == user.first_name
-        assert self.sso_user_data_1['last_name'] == user.last_name
+        assert self.sso_user_data_1["email"] == user.email
+        assert self.sso_user_data_1["first_name"] == user.first_name
+        assert self.sso_user_data_1["last_name"] == user.last_name
 
     def test_delete_member(self):
         user1 = create_test_user()
@@ -451,7 +460,9 @@ class TestListTeamMembers(APITestMixin):
         """
         user1 = create_test_user()
         barrier = BarrierFactory(created_by=user1)
-        member = TeamMemberFactory(barrier=barrier, user=user1, role="Protected role", default=True)
+        member = TeamMemberFactory(
+            barrier=barrier, user=user1, role="Protected role", default=True
+        )
         url = reverse("get-member", kwargs={"pk": member.id})
 
         assert 1 == TeamMember.objects.filter(barrier=barrier).count()
@@ -466,7 +477,9 @@ class TestListTeamMembers(APITestMixin):
         user2 = create_test_user()
         barrier = BarrierFactory(created_by=user1)
         TeamMemberFactory(barrier=barrier, user=user1, role="Reporter", default=True)
-        member = TeamMemberFactory(barrier=barrier, user=user1, role="Owner", default=True)
+        member = TeamMemberFactory(
+            barrier=barrier, user=user1, role="Owner", default=True
+        )
         url = reverse("get-member", kwargs={"pk": member.id})
 
         assert user1 == member.user
@@ -483,7 +496,9 @@ class TestListTeamMembers(APITestMixin):
         user2 = create_test_user()
         barrier = BarrierFactory(created_by=user1)
         TeamMemberFactory(barrier=barrier, user=user1, role="Reporter", default=True)
-        member = TeamMemberFactory(barrier=barrier, user=user1, role="Owner", default=True)
+        member = TeamMemberFactory(
+            barrier=barrier, user=user1, role="Owner", default=True
+        )
         url = reverse("get-member", kwargs={"pk": member.id})
 
         assert user1 == member.user
@@ -505,7 +520,9 @@ class TestListTeamMembers(APITestMixin):
         user1 = create_test_user()
         user2 = create_test_user()
         barrier = BarrierFactory(created_by=user1)
-        member = TeamMemberFactory(barrier=barrier, user=user1, role="Reporter", default=True)
+        member = TeamMemberFactory(
+            barrier=barrier, user=user1, role="Reporter", default=True
+        )
         url = reverse("get-member", kwargs={"pk": member.id})
 
         assert user1 == member.user

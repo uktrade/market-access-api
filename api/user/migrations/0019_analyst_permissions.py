@@ -20,12 +20,20 @@ def assign_permissions(apps, schema_editor):
 
     add_ea_permission = Permission.objects.get(codename="add_economicassessment")
     change_ea_permission = Permission.objects.get(codename="change_economicassessment")
-    archive_ea_permission = Permission.objects.get(codename="archive_economicassessment")
-    approve_ea_permission = Permission.objects.get(codename="approve_economicassessment")
+    archive_ea_permission = Permission.objects.get(
+        codename="archive_economicassessment"
+    )
+    approve_ea_permission = Permission.objects.get(
+        codename="approve_economicassessment"
+    )
 
     add_eia_permission = Permission.objects.get(codename="add_economicimpactassessment")
-    change_eia_permission = Permission.objects.get(codename="change_economicimpactassessment")
-    archive_eia_permission = Permission.objects.get(codename="archive_economicimpactassessment")
+    change_eia_permission = Permission.objects.get(
+        codename="change_economicimpactassessment"
+    )
+    archive_eia_permission = Permission.objects.get(
+        codename="archive_economicimpactassessment"
+    )
 
     analyst_group = Group.objects.get(name="Analyst")
     analyst_group.permissions.add(
@@ -53,10 +61,14 @@ def assign_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0018_auto_20201105_1239'),
+        ("user", "0018_auto_20201105_1239"),
     ]
 
     operations = [
-        migrations.RunPython(migrate_permissions, reverse_code=migrations.RunPython.noop),
-        migrations.RunPython(assign_permissions, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            migrate_permissions, reverse_code=migrations.RunPython.noop
+        ),
+        migrations.RunPython(
+            assign_permissions, reverse_code=migrations.RunPython.noop
+        ),
     ]

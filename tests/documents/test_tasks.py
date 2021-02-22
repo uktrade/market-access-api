@@ -1,13 +1,11 @@
 import pytest
+from botocore.stub import Stubber
 from django.utils.timezone import now
 
 from api.documents.tasks import delete_document
+from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
+
 from .my_entity_document.models import MyEntityDocument
-from api.documents.utils import get_bucket_name
-
-from api.documents.utils import get_s3_client_for_bucket
-from botocore.stub import Stubber
-
 
 # mark the whole module for db use
 pytestmark = pytest.mark.django_db

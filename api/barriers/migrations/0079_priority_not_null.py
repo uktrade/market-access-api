@@ -6,22 +6,15 @@ from django.db import migrations
 def populate_priority(apps, schema_editor):
     BarrierInstance = apps.get_model("barriers", "BarrierInstance")
     HistoricalBarrierInstance = apps.get_model("barriers", "HistoricalBarrierInstance")
-    BarrierInstance.objects.filter(
-        priority__isnull=True
-    ).update(priority=1)
-    HistoricalBarrierInstance.objects.filter(
-        priority__isnull=True
-    ).update(priority=1)
+    BarrierInstance.objects.filter(priority__isnull=True).update(priority=1)
+    HistoricalBarrierInstance.objects.filter(priority__isnull=True).update(priority=1)
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('barriers', '0078_merge_20200731_1111'),
+        ("barriers", "0078_merge_20200731_1111"),
     ]
 
     operations = [
-        migrations.RunPython(
-            populate_priority,
-            reverse_code=migrations.RunPython.noop
-        ),
+        migrations.RunPython(populate_priority, reverse_code=migrations.RunPython.noop),
     ]

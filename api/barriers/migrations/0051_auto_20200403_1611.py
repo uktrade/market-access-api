@@ -6,32 +6,32 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0050_update_report_stages'),
+        ("barriers", "0050_update_report_stages"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='is_resolved',
+            model_name="barrierinstance",
+            name="is_resolved",
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='resolved_date',
+            model_name="barrierinstance",
+            name="resolved_date",
         ),
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='resolved_status',
+            model_name="barrierinstance",
+            name="resolved_status",
         ),
         migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='is_resolved',
+            model_name="historicalbarrierinstance",
+            name="is_resolved",
         ),
         migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='resolved_date',
+            model_name="historicalbarrierinstance",
+            name="resolved_date",
         ),
         migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='resolved_status',
+            model_name="historicalbarrierinstance",
+            name="resolved_status",
         ),
     ]

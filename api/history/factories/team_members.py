@@ -1,10 +1,11 @@
 from api.collaboration.models import TeamMember
-from .base import HistoryItemFactoryBase
+
 from ..items.team_members import TeamMemberHistoryItem
+from .base import HistoryItemFactoryBase
 
 
 class TeamMemberHistoryFactory(HistoryItemFactoryBase):
-    history_item_classes = (TeamMemberHistoryItem, )
+    history_item_classes = (TeamMemberHistoryItem,)
 
     @classmethod
     def create_history_items(cls, new_record, old_record, fields=()):

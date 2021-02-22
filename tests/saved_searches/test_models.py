@@ -5,7 +5,6 @@ from rest_framework.test import APITestCase
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.models import BarrierPriority
 from api.user.models import SavedSearch
-
 from tests.barriers.factories import BarrierFactory, ReportFactory
 
 
@@ -28,9 +27,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
 
         assert barrier1 not in saved_search.barriers
@@ -48,9 +45,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_seen()
 
@@ -80,9 +75,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_seen()
 
@@ -119,9 +112,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_seen()
 
@@ -147,9 +138,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_seen()
 
@@ -175,9 +164,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user2 = create_test_user(sso_user_id=self.sso_user_data_2["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_notified()
 
@@ -209,9 +196,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_notified()
 
@@ -248,9 +233,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_notified()
 
@@ -277,9 +260,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_notified()
 
@@ -298,7 +279,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         saved_search = SavedSearch.objects.create(
             user=user,
             name="Medium",
-            filters={"priority": ["MEDIUM", "LOW"], "search": "test"}
+            filters={"priority": ["MEDIUM", "LOW"], "search": "test"},
         )
         query_dict = {
             "search": "test",
@@ -323,9 +304,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_notified()
         assert saved_search.new_barriers_since_notified.exists() is False
@@ -359,9 +338,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
         user = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         saved_search = SavedSearch.objects.create(
-            user=user,
-            name="Medium",
-            filters={"priority": ["MEDIUM"]}
+            user=user, name="Medium", filters={"priority": ["MEDIUM"]}
         )
         saved_search.mark_as_seen()
         assert saved_search.new_barrier_ids == []
@@ -396,7 +373,7 @@ class SavedSearchModelTestCase(APITestMixin, APITestCase):
                 "search": "test",
                 "country": ["5061b8be-5d95-e211-a939-e4115bead28a"],
                 "region": ["5616ccf5-ab4a-4c2c-9624-13c69be3c46b"],
-            }
+            },
         )
         assert saved_search.get_api_parameters() == {
             "priority": ["MEDIUM", "LOW"],

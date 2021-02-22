@@ -4,8 +4,8 @@ from django.db import models
 from django.db.models import Q
 from ordered_model.models import OrderedModel
 
-from api.metadata.constants import BARRIER_TYPE_CATEGORIES, OrganisationType
 from api.core.models import BaseModel
+from api.metadata.constants import BARRIER_TYPE_CATEGORIES, OrganisationType
 
 
 class GoodsManager(models.Manager):
@@ -56,15 +56,16 @@ class BarrierTag(OrderedModel, BaseModel):
     """
     Model representing tags that can be applied to barriers.
     """
+
     title = models.CharField(max_length=25, unique=True)
     description = models.CharField(
         blank=True,
         max_length=250,
-        help_text="Additional information about the tag to be shown to the end users. (optional)"
+        help_text="Additional information about the tag to be shown to the end users. (optional)",
     )
     show_at_reporting = models.BooleanField(
         default=False,
-        help_text="When set to True the tag is shown as an option during barrier reporting flow."
+        help_text="When set to True the tag is shown as an option during barrier reporting flow.",
     )
 
     def __str__(self):

@@ -16,10 +16,7 @@ class ImpactField(serializers.ChoiceField):
     def to_representation(self, value):
         if value:
             lookup = dict(ECONOMIC_ASSESSMENT_IMPACT)
-            return {
-                "id": value,
-                "name": lookup.get(int(value))
-            }
+            return {"id": value, "name": lookup.get(int(value))}
 
 
 class RatingField(serializers.ChoiceField):

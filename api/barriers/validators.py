@@ -2,8 +2,8 @@ from collections import defaultdict
 
 from rest_framework.exceptions import ValidationError
 
-from api.core.validate_utils import DataCombiner
 from api.barriers.report_stages import REPORT_CONDITIONS
+from api.core.validate_utils import DataCombiner
 
 
 class ReportReadyForSubmitValidator:
@@ -19,7 +19,7 @@ class ReportReadyForSubmitValidator:
         """Set the current instance."""
         self.instance = instance
 
-    def __call__(self, data=None):      # noqa: C901
+    def __call__(self, data=None):  # noqa: C901
         # TODO: refactor to remove complexity
         """Validate that all the fields required are set."""
         data_combiner = DataCombiner(self.instance, data)
@@ -49,15 +49,15 @@ class ReportReadyForSubmitValidator:
                     field_name = item["condition_field"]
                     errors[field_name] = [item["error_message"]]
 
-        sectors_affected = data_combiner.get_value('sectors_affected')
-        all_sectors = data_combiner.get_value('all_sectors')
-        sectors = data_combiner.get_value('sectors')
+        sectors_affected = data_combiner.get_value("sectors_affected")
+        all_sectors = data_combiner.get_value("all_sectors")
+        sectors = data_combiner.get_value("sectors")
 
         if sectors_affected and all_sectors is None and sectors == []:
-            errors['sectors'] = 'missing data'
+            errors["sectors"] = "missing data"
 
         if sectors_affected and all_sectors and sectors:
-            errors['sectors'] = 'conflicting input'
+            errors["sectors"] = "conflicting input"
 
         if errors:
             raise ValidationError(errors)

@@ -16,7 +16,9 @@ class CommodityList(generics.ListAPIView):
         codes = self.request.query_params.get("codes")
         if codes:
             cleaned_codes = [code[:10].ljust(10, "0") for code in codes.split(",")]
-            latest_version = Commodity.objects.aggregate(Max('version')).get("version__max")
+            latest_version = Commodity.objects.aggregate(Max("version")).get(
+                "version__max"
+            )
             queryset = queryset.filter(
                 code__in=cleaned_codes,
                 is_leaf=True,

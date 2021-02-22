@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 TAGS = {
     "COVID-19": {
         "description": "Barrier imposed because of the COVID-19 (coronavirus) pandemic.",
@@ -35,7 +34,7 @@ def delete_nip_tag(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0014_sectors'),
+        ("metadata", "0014_sectors"),
     ]
 
     operations = [

@@ -6,18 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0092_rename_fields'),
+        ("barriers", "0092_rename_fields"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='term',
-            field=models.PositiveIntegerField(choices=[(1, 'A procedural, short-term barrier'), (2, 'A long-term strategic barrier')], help_text='long term or short term', null=True),
+            model_name="barrierinstance",
+            name="term",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "A procedural, short-term barrier"),
+                    (2, "A long-term strategic barrier"),
+                ],
+                help_text="long term or short term",
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='term',
-            field=models.PositiveIntegerField(choices=[(1, 'A procedural, short-term barrier'), (2, 'A long-term strategic barrier')], help_text='long term or short term', null=True),
+            model_name="historicalbarrierinstance",
+            name="term",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "A procedural, short-term barrier"),
+                    (2, "A long-term strategic barrier"),
+                ],
+                help_text="long term or short term",
+                null=True,
+            ),
         ),
     ]

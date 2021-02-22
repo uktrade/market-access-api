@@ -1,5 +1,5 @@
 from api.wto.models import WTOProfile
-from .base import HistoryItemFactoryBase
+
 from ..items.wto import (
     CaseNumberHistoryItem,
     CommitteeNotificationDocumentHistoryItem,
@@ -11,6 +11,7 @@ from ..items.wto import (
     RaisedDateHistoryItem,
     WTONotifiedStatusHistoryItem,
 )
+from .base import HistoryItemFactoryBase
 
 
 class WTOHistoryFactory(HistoryItemFactoryBase):

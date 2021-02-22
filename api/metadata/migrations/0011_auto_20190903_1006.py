@@ -2,13 +2,13 @@
 
 from django.db import migrations
 
-
 types_to_edit = [
     {
         "old_title": "Intellectual property rights and regulations",
         "new_title": "Unfair application of intellectual property rights and regulations",
     },
 ]
+
 
 def edit_barrier_types(apps, schema_editor):
     """
@@ -29,7 +29,7 @@ def edit_barrier_types(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0010_auto_20190410_0854'),
+        ("metadata", "0010_auto_20190410_0854"),
     ]
 
     operations = [

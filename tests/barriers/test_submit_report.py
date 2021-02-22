@@ -6,14 +6,15 @@ from rest_framework.test import APITestCase
 from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.interactions.models import Interaction
-from tests.barriers.factories import ReportFactory, MinReportFactory
+from tests.barriers.factories import MinReportFactory, ReportFactory
 
 
 class TestSubmitReport(APITestMixin, APITestCase):
-
     def test_reported_as_resolved_in_full(self):
         resolved_in_full = 4
-        report = ReportFactory(status=resolved_in_full, status_date="2020-02-02", status_summary="wibble")
+        report = ReportFactory(
+            status=resolved_in_full, status_date="2020-02-02", status_summary="wibble"
+        )
         report.submit_report()
 
         barrier = Barrier.objects.get(id=report.id)
@@ -27,7 +28,10 @@ class TestSubmitReport(APITestMixin, APITestCase):
         reporter = "Reporter"
         owner = "Owner"
         user = create_test_user(
-            first_name="Marty", last_name="Bloggs", email="marty@wibble.com", username="marty.bloggs"
+            first_name="Marty",
+            last_name="Bloggs",
+            email="marty@wibble.com",
+            username="marty.bloggs",
         )
         api_client = self.create_api_client(user=user)
         report = ReportFactory(created_by=user)
@@ -128,17 +132,19 @@ class TestSubmitReport(APITestMixin, APITestCase):
 
     @freeze_time("2020-02-02")
     def test_check_all_fields_after_report_submit_1(self):
-        report = MinReportFactory(**{
-            "term": 2,
-            "status": 2,
-            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
-            "trade_direction": 1,
-            "sectors_affected": False,
-            "product": "Some product",
-            "source": "GOVT",
-            "title": "Some title",
-            "summary": "Some summary",
-        })
+        report = MinReportFactory(
+            **{
+                "term": 2,
+                "status": 2,
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
+                "trade_direction": 1,
+                "sectors_affected": False,
+                "product": "Some product",
+                "source": "GOVT",
+                "title": "Some title",
+                "summary": "Some summary",
+            }
+        )
         report.submit_report()
 
         url = reverse("get-barrier", kwargs={"pk": report.id})
@@ -161,22 +167,24 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.data["created_on"]
 
     def test_check_all_fields_after_report_submit_2(self):
-        report = MinReportFactory(**{
-            "term": 2,
-            "status_date": "2020-02-02",
-            "status": 2,
-            "status_summary": "some status summary",
-            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
-            "trade_direction": 2,
-            "sectors_affected": True,
-            "sectors": [
-                "af959812-6095-e211-a939-e4115bead28a",
-            ],
-            "product": "Some product",
-            "source": "GOVT",
-            "title": "Some title",
-            "summary": "Some summary",
-        })
+        report = MinReportFactory(
+            **{
+                "term": 2,
+                "status_date": "2020-02-02",
+                "status": 2,
+                "status_summary": "some status summary",
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
+                "trade_direction": 2,
+                "sectors_affected": True,
+                "sectors": [
+                    "af959812-6095-e211-a939-e4115bead28a",
+                ],
+                "product": "Some product",
+                "source": "GOVT",
+                "title": "Some title",
+                "summary": "Some summary",
+            }
+        )
         report.submit_report()
 
         url = reverse("get-barrier", kwargs={"pk": report.id})
@@ -202,18 +210,20 @@ class TestSubmitReport(APITestMixin, APITestCase):
 
     @freeze_time("2020-02-02")
     def test_report_submit_for_eu_barrier(self):
-        report = MinReportFactory(**{
-            "term": 2,
-            "status": 2,
-            "country": None,
-            "trading_bloc": "TB00016",
-            "trade_direction": 1,
-            "sectors_affected": False,
-            "product": "Some product",
-            "source": "GOVT",
-            "title": "Some title",
-            "summary": "Some summary",
-        })
+        report = MinReportFactory(
+            **{
+                "term": 2,
+                "status": 2,
+                "country": None,
+                "trading_bloc": "TB00016",
+                "trade_direction": 1,
+                "sectors_affected": False,
+                "product": "Some product",
+                "source": "GOVT",
+                "title": "Some title",
+                "summary": "Some summary",
+            }
+        )
         report.submit_report()
 
         url = reverse("get-barrier", kwargs={"pk": report.id})
@@ -226,19 +236,21 @@ class TestSubmitReport(APITestMixin, APITestCase):
 
     @freeze_time("2020-02-02")
     def test_report_submit_for_country_within_eu_barrier(self):
-        report = MinReportFactory(**{
-            "term": 2,
-            "status": 2,
-            "country": "82756b9a-5d95-e211-a939-e4115bead28a",
-            "trading_bloc": "",
-            "caused_by_trading_bloc": True,
-            "trade_direction": 1,
-            "sectors_affected": False,
-            "product": "Some product",
-            "source": "GOVT",
-            "title": "Some title",
-            "summary": "Some summary",
-        })
+        report = MinReportFactory(
+            **{
+                "term": 2,
+                "status": 2,
+                "country": "82756b9a-5d95-e211-a939-e4115bead28a",
+                "trading_bloc": "",
+                "caused_by_trading_bloc": True,
+                "trade_direction": 1,
+                "sectors_affected": False,
+                "product": "Some product",
+                "source": "GOVT",
+                "title": "Some title",
+                "summary": "Some summary",
+            }
+        )
         report.submit_report()
 
         url = reverse("get-barrier", kwargs={"pk": report.id})

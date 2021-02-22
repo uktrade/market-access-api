@@ -1,17 +1,14 @@
 from django.conf import settings
-
 from hawkrest import HawkAuthentication
-
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .constants import (
-    BARRIER_PENDING,
-    BARRIER_SOURCE,
-    BarrierStatus,
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
+    BARRIER_PENDING,
+    BARRIER_SOURCE,
     BARRIER_TERMS,
     ECONOMIC_ASSESSMENT_IMPACT,
     ECONOMIC_ASSESSMENT_RATING,
@@ -27,6 +24,7 @@ from .constants import (
     TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOCS,
+    BarrierStatus,
 )
 from .utils import (
     get_admin_areas,
@@ -34,10 +32,11 @@ from .utils import (
     get_barrier_tags,
     get_barrier_type_categories,
     get_categories,
+    get_government_organisations,
     get_os_regions_and_countries,
     get_reporting_stages,
     get_sectors,
-    get_wto_committee_groups, get_government_organisations,
+    get_wto_committee_groups,
 )
 
 

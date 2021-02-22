@@ -4,19 +4,16 @@ from django.db import migrations
 
 
 def populate_draft(apps, schema_editor):
-    BarrierInstance = apps.get_model('barriers', 'BarrierInstance')
+    BarrierInstance = apps.get_model("barriers", "BarrierInstance")
     BarrierInstance.objects.exclude(status=0).update(draft=False)
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0047_auto_20200401_0750'),
+        ("barriers", "0047_auto_20200401_0750"),
     ]
 
     operations = [
-        migrations.RunPython(
-            populate_draft,
-            reverse_code=migrations.RunPython.noop
-        ),
+        migrations.RunPython(populate_draft, reverse_code=migrations.RunPython.noop),
     ]

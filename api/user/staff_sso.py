@@ -1,6 +1,6 @@
 from logging import getLogger
-import requests
 
+import requests
 from django.conf import settings
 
 logger = getLogger(__name__)
@@ -15,10 +15,7 @@ class StaffSSO:
         if token is None:
             logger.warning("auth bearer token is empty")
         auth_string = f"Bearer {token}"
-        headers = {
-            'Authorization': auth_string,
-            'Cache-Control': "no-cache"
-        }
+        headers = {"Authorization": auth_string, "Cache-Control": "no-cache"}
         try:
             response = requests.request("GET", url, headers=headers)
             if response.status_code == 200:
@@ -36,20 +33,10 @@ class StaffSSO:
         url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"]
         token = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"]
         auth_string = f"Bearer {token}"
-        params = {
-            "user_id": user_id
-        }
-        headers = {
-            'Authorization': auth_string,
-            'Cache-Control': "no-cache"
-        }
+        params = {"user_id": user_id}
+        headers = {"Authorization": auth_string, "Cache-Control": "no-cache"}
         try:
-            response = requests.request(
-                "GET",
-                url,
-                params=params,
-                headers=headers
-            )
+            response = requests.request("GET", url, params=params, headers=headers)
             if response.status_code == 200:
                 return response.json()
             else:
@@ -65,20 +52,10 @@ class StaffSSO:
         url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"]
         token = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"]
         auth_string = f"Bearer {token}"
-        params = {
-            "email": email
-        }
-        headers = {
-            'Authorization': auth_string,
-            'Cache-Control': "no-cache"
-        }
+        params = {"email": email}
+        headers = {"Authorization": auth_string, "Cache-Control": "no-cache"}
         try:
-            response = requests.request(
-                "GET",
-                url,
-                params=params,
-                headers=headers
-            )
+            response = requests.request("GET", url, params=params, headers=headers)
             if response.status_code == 200:
                 return response.json()
             else:

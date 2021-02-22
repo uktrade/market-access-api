@@ -54,11 +54,22 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = (
-            "id", "size", "mime_type", "original_filename", "url", "status",
-            "av_clean", "av_reason",
+            "id",
+            "size",
+            "mime_type",
+            "original_filename",
+            "url",
+            "status",
+            "av_clean",
+            "av_reason",
         )
         read_only_fields = (
-            "url", "created_by", "created_on", "status", "av_clean", "av_reason",
+            "url",
+            "created_by",
+            "created_on",
+            "status",
+            "av_clean",
+            "av_reason",
         )
 
     def create(self, validated_data):

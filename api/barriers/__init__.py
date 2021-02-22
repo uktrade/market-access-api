@@ -1,1 +1,1 @@
-default_app_config = 'api.barriers.apps.BarriersConfig'
+default_app_config = "api.barriers.apps.BarriersConfig"

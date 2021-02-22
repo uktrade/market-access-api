@@ -6,38 +6,50 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0029_barrierinstance_barrier_types'),
+        ("barriers", "0029_barrierinstance_barrier_types"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='status_date',
-            field=models.DateField(help_text='date when status action occurred', null=True),
+            model_name="barrierinstance",
+            name="status_date",
+            field=models.DateField(
+                help_text="date when status action occurred", null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='status_date',
-            field=models.DateField(help_text='date when status action occurred', null=True),
+            model_name="historicalbarrierinstance",
+            name="status_date",
+            field=models.DateField(
+                help_text="date when status action occurred", null=True
+            ),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='all_sectors',
-            field=models.NullBooleanField(help_text='boolean to signify that all sectors are affected by this barrier'),
+            model_name="barrierinstance",
+            name="all_sectors",
+            field=models.NullBooleanField(
+                help_text="boolean to signify that all sectors are affected by this barrier"
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='all_sectors',
-            field=models.NullBooleanField(help_text='boolean to signify that all sectors are affected by this barrier'),
+            model_name="historicalbarrierinstance",
+            name="all_sectors",
+            field=models.NullBooleanField(
+                help_text="boolean to signify that all sectors are affected by this barrier"
+            ),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='sectors_affected',
-            field=models.NullBooleanField(help_text='boolean to signify one or more sectors are affected by this barrier'),
+            model_name="barrierinstance",
+            name="sectors_affected",
+            field=models.NullBooleanField(
+                help_text="boolean to signify one or more sectors are affected by this barrier"
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='sectors_affected',
-            field=models.NullBooleanField(help_text='boolean to signify one or more sectors are affected by this barrier'),
+            model_name="historicalbarrierinstance",
+            name="sectors_affected",
+            field=models.NullBooleanField(
+                help_text="boolean to signify one or more sectors are affected by this barrier"
+            ),
         ),
     ]

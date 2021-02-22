@@ -4,15 +4,17 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
 from api.user.helpers import get_django_user_by_sso_user_id
-from api.user.models import Profile
-from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
+from api.user.models import (
+    Profile,
+    get_my_barriers_saved_search,
+    get_team_barriers_saved_search,
+)
 from api.user.serializers import (
     GroupSerializer,
     SavedSearchSerializer,
@@ -21,11 +23,10 @@ from api.user.serializers import (
     WhoAmISerializer,
 )
 
-
 UserModel = get_user_model()
 
 
-@api_view(['GET', 'POST', 'PATCH'])
+@api_view(["GET", "POST", "PATCH"])
 @permission_classes([])
 def who_am_i(request):
     """Return the current user. This view is behind a login."""
@@ -37,7 +38,7 @@ def who_am_i(request):
     context = {"token": token}
     serializer = WhoAmISerializer(request.user, context=context)
 
-    if request.method == 'PATCH':
+    if request.method == "PATCH":
         req_profile = request.data.get("user_profile", None)
         if req_profile:
             try:
@@ -49,7 +50,7 @@ def who_am_i(request):
             request.user.profile.save()
             request.user.save()
 
-    if request.method == 'POST':
+    if request.method == "POST":
         return Response(data=request.data)
     return Response(data=serializer.data)
 

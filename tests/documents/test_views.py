@@ -9,7 +9,8 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin
-from api.documents.models import Document, UPLOAD_STATUSES
+from api.documents.models import UPLOAD_STATUSES, Document
+
 from .my_entity_document.models import MyEntityDocument
 
 

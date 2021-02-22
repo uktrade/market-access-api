@@ -28,12 +28,11 @@ def populate_documents_history(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0005_auto_20200320_0941'),
+        ("interactions", "0005_auto_20200320_0941"),
     ]
 
     operations = [
         migrations.RunPython(
-            populate_documents_history,
-            reverse_code=migrations.RunPython.noop
+            populate_documents_history, reverse_code=migrations.RunPython.noop
         ),
     ]

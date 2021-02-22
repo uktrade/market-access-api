@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 COVID_TAG_TITLE = "COVID-19"
 BREXIT_TAG_TITLE = "Brexit"
 
@@ -63,9 +62,7 @@ def populate_tags_history(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
     brexit_tag = BarrierTag.objects.get(title=BREXIT_TAG_TITLE)
 
-    HistoricalBarrierInstance.objects.filter(
-        eu_exit_related=1
-    ).update(
+    HistoricalBarrierInstance.objects.filter(eu_exit_related=1).update(
         tags_cache=[brexit_tag.id]
     )
 
@@ -80,21 +77,22 @@ def reverse_tags_history(apps, schema_editor):
 
     HistoricalBarrierInstance.objects.filter(
         tags_cache__contains=[brexit_tag.id]
-    ).update(
-        eu_exit_related=1
-    )
+    ).update(eu_exit_related=1)
 
 
 class Migration(migrations.Migration):
     """
     Converting eu_exit_related field to a tag where applicable.
     """
+
     dependencies = [
-        ('barriers', '0053_historicalbarrierinstance_tags_cache'),
+        ("barriers", "0053_historicalbarrierinstance_tags_cache"),
     ]
 
     operations = [
-        migrations.RunPython(create_default_tags, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            create_default_tags, reverse_code=migrations.RunPython.noop
+        ),
         migrations.RunPython(convert_to_tags, reverse_code=reverse_convert_to_tags),
         migrations.RunPython(populate_tags_history, reverse_code=reverse_tags_history),
     ]

@@ -23,6 +23,7 @@ class BarrierPriorityFactory(factory.django.DjangoModelFactory):
     BarrierPriority records are set by a migration file:
      - /api/metadata/migrations/0009_auto_20181205_1432.py
     """
+
     class Meta:
         model = BarrierPriority
 

@@ -6,32 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('collaboration', '0006_convert_null_to_empty'),
+        ("collaboration", "0006_convert_null_to_empty"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalteammember',
-            name='archived_reason',
-            field=models.TextField(blank=True, default=''),
+            model_name="historicalteammember",
+            name="archived_reason",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='historicalteammember',
-            name='role',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="historicalteammember",
+            name="role",
+            field=models.CharField(blank=True, default="", max_length=255),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='teammember',
-            name='archived_reason',
-            field=models.TextField(blank=True, default=''),
+            model_name="teammember",
+            name="archived_reason",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='teammember',
-            name='role',
-            field=models.CharField(blank=True, default='', max_length=255),
+            model_name="teammember",
+            name="role",
+            field=models.CharField(blank=True, default="", max_length=255),
             preserve_default=False,
         ),
     ]

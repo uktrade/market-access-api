@@ -13,19 +13,18 @@ class TestMassTransportMigration(TestMigrations):
     Using a sector called Mass Transport as that sector has been split to 3 new ones.
     If the migration works with this then it will work with simpler cases too.
     """
-    app = 'metadata'
-    migrate_from = '0013_barriertag'
-    migrate_to = '0014_sectors'
+
+    app = "metadata"
+    migrate_from = "0013_barriertag"
+    migrate_to = "0014_sectors"
 
     def setUpBeforeMigration(self, apps):
-        self.mass_transport_uuid_str = 'b5959812-6095-e211-a939-e4115bead28a'
-        self.barrier = BarrierFactory(
-            sectors=[self.mass_transport_uuid_str]
-        )
+        self.mass_transport_uuid_str = "b5959812-6095-e211-a939-e4115bead28a"
+        self.barrier = BarrierFactory(sectors=[self.mass_transport_uuid_str])
         self.expected_sectors = [
-            uuid.UUID('9738cecc-5f95-e211-a939-e4115bead28a'),  # Airports
-            uuid.UUID('aa22c9d2-5f95-e211-a939-e4115bead28a'),  # Railways
-            uuid.UUID('aa38cecc-5f95-e211-a939-e4115bead28a'),  # Maritime
+            uuid.UUID("9738cecc-5f95-e211-a939-e4115bead28a"),  # Airports
+            uuid.UUID("aa22c9d2-5f95-e211-a939-e4115bead28a"),  # Railways
+            uuid.UUID("aa38cecc-5f95-e211-a939-e4115bead28a"),  # Maritime
         ]
 
         assert 1 == len(self.barrier.sectors)
@@ -59,7 +58,5 @@ class TestMassTransportMigration(TestMigrations):
     def test_sectors_migration_adds_dest_sector_ids_to_history_items(self):
         for sector in self.expected_sectors:
             with self.subTest(sector=sector):
-                history_items = self.barrier.history.filter(
-                    sectors__contains=[sector]
-                )
+                history_items = self.barrier.history.filter(sectors__contains=[sector])
                 assert 5 == history_items.count()

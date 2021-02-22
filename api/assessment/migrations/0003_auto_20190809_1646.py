@@ -6,28 +6,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessment', '0002_auto_20190807_1527'),
+        ("assessment", "0002_auto_20190807_1527"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='assessment',
-            name='explanation',
+            model_name="assessment",
+            name="explanation",
             field=models.TextField(null=True),
         ),
         migrations.AlterField(
-            model_name='assessment',
-            name='impact',
-            field=models.CharField(choices=[('HIGH', 'High'), ('MEDIUMHIGH', 'Medium High'), ('MEDIUMLOW', 'Medium Low'), ('LOW', 'Low')], max_length=25, null=True),
+            model_name="assessment",
+            name="impact",
+            field=models.CharField(
+                choices=[
+                    ("HIGH", "High"),
+                    ("MEDIUMHIGH", "Medium High"),
+                    ("MEDIUMLOW", "Medium Low"),
+                    ("LOW", "Low"),
+                ],
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalassessment',
-            name='explanation',
+            model_name="historicalassessment",
+            name="explanation",
             field=models.TextField(null=True),
         ),
         migrations.AlterField(
-            model_name='historicalassessment',
-            name='impact',
-            field=models.CharField(choices=[('HIGH', 'High'), ('MEDIUMHIGH', 'Medium High'), ('MEDIUMLOW', 'Medium Low'), ('LOW', 'Low')], max_length=25, null=True),
+            model_name="historicalassessment",
+            name="impact",
+            field=models.CharField(
+                choices=[
+                    ("HIGH", "High"),
+                    ("MEDIUMHIGH", "Medium High"),
+                    ("MEDIUMLOW", "Medium Low"),
+                    ("LOW", "Low"),
+                ],
+                max_length=25,
+                null=True,
+            ),
         ),
     ]

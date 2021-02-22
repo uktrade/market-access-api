@@ -1,7 +1,7 @@
 import json
-import requests
-
 from decimal import Decimal
+
+import requests
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates
@@ -15,6 +15,7 @@ class ComtradeClient:
     https://comtrade.un.org/data/doc/api/#DataRequests
     https://github.com/ropensci/comtradr/blob/c61eb011d604eae1b6d11e0468c6588cd7154b4b/R/ct_search.R
     """
+
     base_url = "https://comtrade.un.org/api/get"
     partner_areas_url = "https://comtrade.un.org/Data/cache/partnerAreas.json"
     reporter_areas_url = "https://comtrade.un.org/Data/cache/reporterAreas.json"
@@ -44,7 +45,7 @@ class ComtradeClient:
         tidy=False,
     ):
         if isinstance(commodity_codes, str):
-            commodity_codes = (commodity_codes.lower(), )
+            commodity_codes = (commodity_codes.lower(),)
 
         # Restrict to 5 commodity codes per API call
         if len(commodity_codes) > 5:
@@ -66,7 +67,9 @@ class ComtradeClient:
                 tidy=tidy,
             )
 
-        params = self.get_params(start_year, end_year, trade_direction, commodity_codes, partners, reporters)
+        params = self.get_params(
+            start_year, end_year, trade_direction, commodity_codes, partners, reporters
+        )
 
         querystring = "&".join([f"{k}={v}" for k, v in params.items()])
         url = f"{self.base_url}?{querystring}"
@@ -89,7 +92,7 @@ class ComtradeClient:
             data = response.json()
         except json.decoder.JSONDecodeError:
             # try to handle - Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
-            data = json.loads(response.content.decode('utf-8-sig'))
+            data = json.loads(response.content.decode("utf-8-sig"))
 
         if self.cache:
             self.cache.set(cache_key, data, 7200)
@@ -120,14 +123,15 @@ class ComtradeClient:
     def tidytrade(self, rows):
         output = []
         for row in rows:
-            new_row = {
-                value: row.get(key)
-                for key, value in self.field_mapping.items()
-            }
+            new_row = {value: row.get(key) for key, value in self.field_mapping.items()}
             exchange_rate = exchange_rates.get(str(new_row["year"]))
             if exchange_rate is None:
-                raise ExchangeRateNotFound(f"Exchange rate not found for year: {new_row['year']}")
-            new_row["trade_value_gbp"] = Decimal(new_row["trade_value_usd"]) / exchange_rate
+                raise ExchangeRateNotFound(
+                    f"Exchange rate not found for year: {new_row['year']}"
+                )
+            new_row["trade_value_gbp"] = (
+                Decimal(new_row["trade_value_usd"]) / exchange_rate
+            )
             output.append(new_row)
         return output
 
@@ -153,10 +157,7 @@ class ComtradeClient:
             partners = [partners]
 
         try:
-            partner_ids = [
-                self.partner_areas[partner]
-                for partner in partners
-            ]
+            partner_ids = [self.partner_areas[partner] for partner in partners]
         except KeyError as e:
             raise CountryNotFound(f"Country not found in Comtrade API: {e}")
 
@@ -167,10 +168,7 @@ class ComtradeClient:
             reporters = [reporters]
 
         try:
-            reporter_ids = [
-                self.reporter_areas[reporter]
-                for reporter in reporters
-            ]
+            reporter_ids = [self.reporter_areas[reporter] for reporter in reporters]
         except KeyError as e:
             raise CountryNotFound(f"Country not found in Comtrade API: {e}")
 
@@ -181,8 +179,7 @@ class ComtradeClient:
         if self._partner_areas is None:
             data = self.fetch(self.partner_areas_url)
             self._partner_areas = {
-                result["text"]: result["id"]
-                for result in data["results"]
+                result["text"]: result["id"] for result in data["results"]
             }
         return self._partner_areas
 
@@ -191,8 +188,7 @@ class ComtradeClient:
         if self._reporter_areas is None:
             data = self.fetch(self.reporter_areas_url)
             self._reporter_areas = {
-                result["text"]: result["id"]
-                for result in data["results"]
+                result["text"]: result["id"] for result in data["results"]
             }
         return self._reporter_areas
 

@@ -8,7 +8,9 @@ def clean_saved_search_filters(apps, schema_editor):
 
     # Convert search list to string
     for saved_search in SavedSearch.objects.filter(filters__search__isnull=False):
-        if "search" in saved_search.filters and isinstance(saved_search.filters["search"], list):
+        if "search" in saved_search.filters and isinstance(
+            saved_search.filters["search"], list
+        ):
             try:
                 saved_search.filters["search"] = saved_search.filters["search"][0]
             except IndexError:
@@ -45,12 +47,11 @@ def clean_saved_search_filters(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0010_populate_saved_searches'),
+        ("user", "0010_populate_saved_searches"),
     ]
 
     operations = [
         migrations.RunPython(
-            clean_saved_search_filters,
-            reverse_code=migrations.RunPython.noop
+            clean_saved_search_filters, reverse_code=migrations.RunPython.noop
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('documents', '0003_update_bucket_ids'),
+        ("documents", "0003_update_bucket_ids"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='document',
-            name='bucket_id',
-            field=models.CharField(default='documents', max_length=255),
+            model_name="document",
+            name="bucket_id",
+            field=models.CharField(default="documents", max_length=255),
         ),
     ]

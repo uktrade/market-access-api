@@ -5,6 +5,7 @@ from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
+
 from .factories import ResolvabilityAssessmentFactory
 
 pytestmark = [pytest.mark.django_db]
@@ -24,8 +25,8 @@ class TestResolvabilityAssessments(APITestMixin):
                 "barrier_id": barrier.id,
                 "effort_to_resolve": "4",
                 "time_to_resolve": "2",
-                "explanation": "Explanation!!!"
-            }
+                "explanation": "Explanation!!!",
+            },
         )
 
         assert response.status_code == HTTPStatus.CREATED
@@ -40,15 +41,11 @@ class TestResolvabilityAssessments(APITestMixin):
 
     def test_create_resolvability_assessment_with_empty_data(self, barrier):
         url = reverse("resolvability-assessment-list")
-        response = self.api_client.post(
-            url,
-            format="json",
-            data={}
-        )
+        response = self.api_client.post(url, format="json", data={})
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data["barrier_id"] == ['This field is required.']
-        assert response.data["effort_to_resolve"] == ['This field is required.']
-        assert response.data["time_to_resolve"] == ['This field is required.']
+        assert response.data["barrier_id"] == ["This field is required."]
+        assert response.data["effort_to_resolve"] == ["This field is required."]
+        assert response.data["time_to_resolve"] == ["This field is required."]
         assert "explanation" not in response.data
 
     def test_update_resolvability_assessment(self, barrier):
@@ -57,15 +54,18 @@ class TestResolvabilityAssessments(APITestMixin):
             time_to_resolve=1,
             effort_to_resolve=1,
         )
-        url = reverse("resolvability-assessment-detail", kwargs={"pk": resolvability_assessment.id})
+        url = reverse(
+            "resolvability-assessment-detail",
+            kwargs={"pk": resolvability_assessment.id},
+        )
         response = self.api_client.patch(
             url,
             format="json",
             data={
                 "effort_to_resolve": "4",
                 "time_to_resolve": "3",
-                "explanation": "New explanation!!!"
-            }
+                "explanation": "New explanation!!!",
+            },
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["effort_to_resolve"]["id"] == 4
@@ -76,12 +76,11 @@ class TestResolvabilityAssessments(APITestMixin):
 
     def test_approve_resolvability_assessment(self, barrier):
         resolvability_assessment = ResolvabilityAssessmentFactory(barrier=barrier)
-        url = reverse("resolvability-assessment-detail", kwargs={"pk": resolvability_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"approved": True}
+        url = reverse(
+            "resolvability-assessment-detail",
+            kwargs={"pk": resolvability_assessment.id},
         )
+        response = self.api_client.patch(url, format="json", data={"approved": True})
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is True
         assert response.data["reviewed_by"]["id"] == self.user.id
@@ -89,12 +88,11 @@ class TestResolvabilityAssessments(APITestMixin):
 
     def test_reject_resolvability_assessment(self, barrier):
         resolvability_assessment = ResolvabilityAssessmentFactory(barrier=barrier)
-        url = reverse("resolvability-assessment-detail", kwargs={"pk": resolvability_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"approved": False}
+        url = reverse(
+            "resolvability-assessment-detail",
+            kwargs={"pk": resolvability_assessment.id},
         )
+        response = self.api_client.patch(url, format="json", data={"approved": False})
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is False
         assert response.data["reviewed_by"]["id"] == self.user.id
@@ -102,12 +100,11 @@ class TestResolvabilityAssessments(APITestMixin):
 
     def test_archive_resolvability_assessment(self, barrier):
         resolvability_assessment = ResolvabilityAssessmentFactory(barrier=barrier)
-        url = reverse("resolvability-assessment-detail", kwargs={"pk": resolvability_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"archived": True}
+        url = reverse(
+            "resolvability-assessment-detail",
+            kwargs={"pk": resolvability_assessment.id},
         )
+        response = self.api_client.patch(url, format="json", data={"archived": True})
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
@@ -129,8 +126,8 @@ class TestResolvabilityAssessments(APITestMixin):
                 "barrier_id": barrier.id,
                 "effort_to_resolve": "4",
                 "time_to_resolve": "2",
-                "explanation": "Explanation!!!"
-            }
+                "explanation": "Explanation!!!",
+            },
         )
         assert response.status_code == HTTPStatus.CREATED
         resolvability_assessment.refresh_from_db()
@@ -141,10 +138,13 @@ class TestResolvabilityAssessments(APITestMixin):
             barrier=barrier,
             time_to_resolve=1,
             effort_to_resolve=1,
-            explanation="Here's an explanation"
+            explanation="Here's an explanation",
         )
 
-        url = reverse("resolvability-assessment-detail", kwargs={"pk": resolvability_assessment.id})
+        url = reverse(
+            "resolvability-assessment-detail",
+            kwargs={"pk": resolvability_assessment.id},
+        )
         response = self.api_client.get(url)
 
         assert response.data["effort_to_resolve"]["id"] == 1

@@ -12,7 +12,6 @@ from tests.barriers.factories import ReportFactory
 
 
 class TestListInteractions(APITestMixin, APITestCase):
-
     def _submit_report(self, report):
         url = reverse("submit-report", kwargs={"pk": report.id})
         return self.api_client.put(url, format="json", data={})
@@ -350,7 +349,9 @@ class TestListInteractions(APITestMixin, APITestCase):
         assert docs_list_report_response.data["status"] == "not_virus_scanned"
         assert docs_list_report_response.data["signed_upload_url"] is not None
 
-    @pytest.mark.skip(reason="it was not being picked up by the runner due to the leading _")
+    @pytest.mark.skip(
+        reason="it was not being picked up by the runner due to the leading _"
+    )
     def test_add_document_with__size_mime_type(self):
         """Test add a document with size and mime type"""
         docs_list_url = reverse("barrier-documents")
@@ -1037,8 +1038,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         assert get_int_response.data["documents"][0]["id"] == uuid.UUID(document_id)
 
         get_doc_url = reverse(
-            "barrier-document-item",
-            kwargs={"entity_document_pk": document_id}
+            "barrier-document-item", kwargs={"entity_document_pk": document_id}
         )
         get_doc_response = self.api_client.get(get_doc_url)
         assert get_doc_response.status_code == status.HTTP_200_OK
@@ -1075,8 +1075,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         document_id = docs_list_report_response.data["id"]
 
         get_doc_url = reverse(
-            "barrier-document-item",
-            kwargs={"entity_document_pk": document_id}
+            "barrier-document-item", kwargs={"entity_document_pk": document_id}
         )
         get_doc_response = self.api_client.get(get_doc_url)
         assert get_doc_response.status_code == status.HTTP_200_OK
@@ -1121,7 +1120,7 @@ class TestListInteractions(APITestMixin, APITestCase):
             format="json",
             data={
                 "text": "sample interaction notes",
-                "documents": [document_id_1, document_id_2]
+                "documents": [document_id_1, document_id_2],
             },
         )
 
@@ -1141,8 +1140,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         assert len(get_int_response.data["documents"]) == 2
 
         get_doc_url = reverse(
-            "barrier-document-item",
-            kwargs={"entity_document_pk": document_id_1}
+            "barrier-document-item", kwargs={"entity_document_pk": document_id_1}
         )
         get_doc_response = self.api_client.get(get_doc_url)
         assert get_doc_response.status_code == status.HTTP_200_OK
@@ -1179,9 +1177,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         edit_int_response = self.api_client.put(
             get_interaction_url,
             format="json",
-            data={
-                "documents": [document_id_1]
-            },
+            data={"documents": [document_id_1]},
         )
         assert edit_int_response.status_code == status.HTTP_200_OK
 
@@ -1225,7 +1221,7 @@ class TestListInteractions(APITestMixin, APITestCase):
             format="json",
             data={
                 "text": "sample interaction notes",
-                "documents": [document_id_1, document_id_2]
+                "documents": [document_id_1, document_id_2],
             },
         )
 
@@ -1245,8 +1241,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         assert len(get_int_response.data["documents"]) == 2
 
         get_doc_url = reverse(
-            "barrier-document-item",
-            kwargs={"entity_document_pk": document_id_1}
+            "barrier-document-item", kwargs={"entity_document_pk": document_id_1}
         )
         get_doc_response = self.api_client.get(get_doc_url)
         assert get_doc_response.status_code == status.HTTP_200_OK
@@ -1283,9 +1278,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         edit_int_response = self.api_client.put(
             get_interaction_url,
             format="json",
-            data={
-                "documents": [document_id_1]
-            },
+            data={"documents": [document_id_1]},
         )
         assert edit_int_response.status_code == status.HTTP_200_OK
 
@@ -1296,8 +1289,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         assert doc.detached is True
 
         get_doc_url = reverse(
-            "barrier-document-item",
-            kwargs={"entity_document_pk": document_id_2}
+            "barrier-document-item", kwargs={"entity_document_pk": document_id_2}
         )
         get_doc_response = self.api_client.get(get_doc_url)
         assert get_doc_response.status_code == status.HTTP_200_OK

@@ -3,10 +3,11 @@ from http import HTTPStatus
 import pytest
 from rest_framework.reverse import reverse
 
-from .factories import EconomicAssessmentFactory, EconomicImpactAssessmentFactory
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import ECONOMIC_ASSESSMENT_RATING
 from tests.barriers.factories import BarrierFactory
+
+from .factories import EconomicAssessmentFactory, EconomicImpactAssessmentFactory
 
 pytestmark = [pytest.mark.django_db]
 
@@ -28,8 +29,8 @@ class TestEconomicImpactAssessments(APITestMixin):
             data={
                 "economic_assessment_id": economic_assessment.id,
                 "impact": "1",
-                "explanation": "Explanation!!!"
-            }
+                "explanation": "Explanation!!!",
+            },
         )
 
         assert response.status_code == HTTPStatus.CREATED
@@ -42,14 +43,10 @@ class TestEconomicImpactAssessments(APITestMixin):
 
     def test_create_economic_impact_assessment_with_empty_data(self):
         url = reverse("economic-impact-assessment-list")
-        response = self.api_client.post(
-            url,
-            format="json",
-            data={}
-        )
+        response = self.api_client.post(url, format="json", data={})
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data["economic_assessment_id"] == ['This field is required.']
-        assert response.data["impact"] == ['This field is required.']
+        assert response.data["economic_assessment_id"] == ["This field is required."]
+        assert response.data["impact"] == ["This field is required."]
         assert "explanation" not in response.data
 
     def test_update_economic_impact_assessment(self, economic_assessment):
@@ -57,14 +54,14 @@ class TestEconomicImpactAssessments(APITestMixin):
             economic_assessment=economic_assessment,
             impact=4,
         )
-        url = reverse("economic-impact-assessment-detail", kwargs={"pk": economic_impact_assessment.id})
+        url = reverse(
+            "economic-impact-assessment-detail",
+            kwargs={"pk": economic_impact_assessment.id},
+        )
         response = self.api_client.patch(
             url,
             format="json",
-            data={
-                "impact": "7",
-                "explanation": "New explanation!!!"
-            }
+            data={"impact": "7", "explanation": "New explanation!!!"},
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["impact"]["id"] == 7
@@ -76,12 +73,11 @@ class TestEconomicImpactAssessments(APITestMixin):
             economic_assessment=economic_assessment,
             impact=4,
         )
-        url = reverse("economic-impact-assessment-detail", kwargs={"pk": economic_impact_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"archived": True}
+        url = reverse(
+            "economic-impact-assessment-detail",
+            kwargs={"pk": economic_impact_assessment.id},
         )
+        response = self.api_client.patch(url, format="json", data={"archived": True})
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
@@ -114,8 +110,8 @@ class TestEconomicImpactAssessments(APITestMixin):
             data={
                 "economic_assessment_id": economic_assessment2.id,
                 "impact": "1",
-                "explanation": "Explanation!!!"
-            }
+                "explanation": "Explanation!!!",
+            },
         )
         assert response.status_code == HTTPStatus.CREATED
         economic_impact_assessment1.refresh_from_db()
@@ -130,7 +126,10 @@ class TestEconomicImpactAssessments(APITestMixin):
             explanation="Here's an explanation",
         )
 
-        url = reverse("economic-impact-assessment-detail", kwargs={"pk": economic_impact_assessment.id})
+        url = reverse(
+            "economic-impact-assessment-detail",
+            kwargs={"pk": economic_impact_assessment.id},
+        )
         response = self.api_client.get(url)
 
         assert response.data["impact"]["id"] == 7

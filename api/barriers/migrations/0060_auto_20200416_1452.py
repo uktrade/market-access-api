@@ -6,13 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0059_auto_20200415_1555'),
+        ("barriers", "0059_auto_20200415_1555"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='code',
-            field=models.CharField(db_index=True, help_text='readable reference code', max_length=255, null=True, unique=True),
+            model_name="barrierinstance",
+            name="code",
+            field=models.CharField(
+                db_index=True,
+                help_text="readable reference code",
+                max_length=255,
+                null=True,
+                unique=True,
+            ),
         ),
     ]

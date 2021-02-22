@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0017_add_gov_organisations'),
+        ("metadata", "0017_add_gov_organisations"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='organisation',
-            options={'ordering': ('name',)},
+            name="organisation",
+            options={"ordering": ("name",)},
         ),
         migrations.AlterUniqueTogether(
-            name='organisation',
-            unique_together={('name', 'organisation_type')},
+            name="organisation",
+            unique_together={("name", "organisation_type")},
         ),
     ]

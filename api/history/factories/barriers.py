@@ -1,11 +1,11 @@
 from api.barriers.models import Barrier
-from .base import HistoryItemFactoryBase
+
 from ..items.barriers import (
     ArchivedHistoryItem,
     CategoriesHistoryItem,
     CausedByTradingBlocHistoryItem,
-    CommercialValueHistoryItem,
     CommercialValueExplanationHistoryItem,
+    CommercialValueHistoryItem,
     CommoditiesHistoryItem,
     CompaniesHistoryItem,
     EconomicAssessmentEligibilityHistoryItem,
@@ -13,6 +13,7 @@ from ..items.barriers import (
     EndDateHistoryItem,
     IsSummarySensitiveHistoryItem,
     LocationHistoryItem,
+    OrganisationsHistoryItem,
     PriorityHistoryItem,
     ProductHistoryItem,
     PublicEligibilitySummaryHistoryItem,
@@ -25,8 +26,8 @@ from ..items.barriers import (
     TitleHistoryItem,
     TradeCategoryHistoryItem,
     TradeDirectionHistoryItem,
-    OrganisationsHistoryItem,
 )
+from .base import HistoryItemFactoryBase
 
 
 class BarrierHistoryFactory(HistoryItemFactoryBase):

@@ -1,3 +1,5 @@
+from ..exceptions import HistoryFactoryNotFound
+from ..utils import get_model_name
 from .assessments.economic import EconomicAssessmentHistoryFactory
 from .assessments.economic_impact import EconomicImpactAssessmentHistoryFactory
 from .assessments.resolvability import ResolvabilityAssessmentHistoryFactory
@@ -9,14 +11,12 @@ from .public_barriers import PublicBarrierHistoryFactory
 from .team_members import TeamMemberHistoryFactory
 from .wto import WTOHistoryFactory
 
-from ..exceptions import HistoryFactoryNotFound
-from ..utils import get_model_name
-
 
 class HistoryItemFactory:
     """
     Proxy class for specific factory classes
     """
+
     class_lookup = {}
     history_factory_classes = (
         EconomicAssessmentHistoryFactory,

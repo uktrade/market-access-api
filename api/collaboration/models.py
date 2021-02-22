@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
-
 from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
@@ -21,6 +20,7 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """
     TeamMember records for each Barrier
     """
+
     REPORTER = "Reporter"
     OWNER = "Owner"
     CONTRIBUTOR = "Contributor"

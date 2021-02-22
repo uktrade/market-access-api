@@ -6,28 +6,78 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0072_auto_20200710_2332'),
+        ("barriers", "0072_auto_20200710_2332"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (5, 'Dormant'), (6, 'Archived'), (7, 'Unknown')], default=0, help_text='status of the barrier instance'),
+            model_name="barrierinstance",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unfinished"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                    (7, "Unknown"),
+                ],
+                default=0,
+                help_text="status of the barrier instance",
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (5, 'Dormant'), (6, 'Archived'), (7, 'Unknown')], default=0, help_text='status of the barrier instance'),
+            model_name="historicalbarrierinstance",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unfinished"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                    (7, "Unknown"),
+                ],
+                default=0,
+                help_text="status of the barrier instance",
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalpublicbarrier',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (5, 'Dormant'), (6, 'Archived'), (7, 'Unknown')], default=0),
+            model_name="historicalpublicbarrier",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unfinished"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                    (7, "Unknown"),
+                ],
+                default=0,
+            ),
         ),
         migrations.AlterField(
-            model_name='publicbarrier',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unfinished'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (5, 'Dormant'), (6, 'Archived'), (7, 'Unknown')], default=0),
+            model_name="publicbarrier",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unfinished"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                    (7, "Unknown"),
+                ],
+                default=0,
+            ),
         ),
     ]

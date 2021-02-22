@@ -4,7 +4,7 @@ from django.db import migrations
 
 
 def populate_wto_barrier_ids(apps, schema_editor):
-    BarrierInstance = apps.get_model('barriers', 'BarrierInstance')
+    BarrierInstance = apps.get_model("barriers", "BarrierInstance")
 
     for barrier in BarrierInstance.objects.filter(wto_profile__isnull=False):
         wto_profile = barrier.wto_profile
@@ -15,12 +15,11 @@ def populate_wto_barrier_ids(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wto', '0004_auto_20200812_0815'),
+        ("wto", "0004_auto_20200812_0815"),
     ]
 
     operations = [
         migrations.RunPython(
-            populate_wto_barrier_ids,
-            reverse_code=migrations.RunPython.noop
+            populate_wto_barrier_ids, reverse_code=migrations.RunPython.noop
         ),
     ]

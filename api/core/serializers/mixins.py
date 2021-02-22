@@ -9,6 +9,7 @@ class AllowNoneAtToRepresentationMixin:
     Patch DRF to allow to_representation to be called for fields with None values.
     To be used with ModelSerializers
     """
+
     def to_representation(self, instance):
         """
         Object instance -> Dict of primitive datatypes.
@@ -40,6 +41,7 @@ class CustomUpdateMixin:
     """
     Allows a serializer's fields to have custom_update functions
     """
+
     def update(self, instance, validated_data):
         for field in self._writable_fields:
             if hasattr(field, "custom_update") and field.source in validated_data:
@@ -52,6 +54,7 @@ class AuditMixin:
     """
     Automatically update created_by and modified_by fields
     """
+
     def get_user(self):
         request = self.context.get("request")
         if request and hasattr(request, "user"):

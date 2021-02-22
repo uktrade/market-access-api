@@ -1,16 +1,17 @@
 from http import HTTPStatus
 
-from mock import patch
 import pytest
+from mock import patch
 from rest_framework.reverse import reverse
 
-from .factories import EconomicAssessmentFactory
 from api.assessment.automate.calculator import AssessmentCalculator
 from api.assessment.automate.exceptions import CountryNotFound
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Document
 from api.metadata.constants import ECONOMIC_ASSESSMENT_RATING
 from tests.barriers.factories import BarrierFactory
+
+from .factories import EconomicAssessmentFactory
 
 pytestmark = [pytest.mark.django_db]
 
@@ -28,8 +29,8 @@ class TestEconomicAssessments(APITestMixin):
             data={
                 "barrier_id": barrier.id,
                 "rating": ECONOMIC_ASSESSMENT_RATING.HIGH,
-                "explanation": "Explanation!!!"
-            }
+                "explanation": "Explanation!!!",
+            },
         )
 
         assert response.status_code == HTTPStatus.CREATED
@@ -44,13 +45,9 @@ class TestEconomicAssessments(APITestMixin):
 
     def test_create_economic_assessment_with_empty_data(self, barrier):
         url = reverse("economic-assessment-list")
-        response = self.api_client.post(
-            url,
-            format="json",
-            data={}
-        )
+        response = self.api_client.post(url, format="json", data={})
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data["barrier_id"] == ['This field is required.']
+        assert response.data["barrier_id"] == ["This field is required."]
         assert "rating" not in response.data
         assert "explanation" not in response.data
 
@@ -61,7 +58,9 @@ class TestEconomicAssessments(APITestMixin):
         )
         document = Document.objects.create(original_filename="test.jpg")
 
-        url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
+        url = reverse(
+            "economic-assessment-detail", kwargs={"pk": economic_assessment.id}
+        )
         response = self.api_client.patch(
             url,
             format="json",
@@ -69,7 +68,7 @@ class TestEconomicAssessments(APITestMixin):
                 "rating": ECONOMIC_ASSESSMENT_RATING.LOW,
                 "explanation": "New explanation!!!",
                 "documents": [str(document.id)],
-            }
+            },
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.LOW
@@ -83,11 +82,11 @@ class TestEconomicAssessments(APITestMixin):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
         assert economic_assessment.ready_for_approval is False
 
-        url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
+        url = reverse(
+            "economic-assessment-detail", kwargs={"pk": economic_assessment.id}
+        )
         response = self.api_client.patch(
-            url,
-            format="json",
-            data={"ready_for_approval": True}
+            url, format="json", data={"ready_for_approval": True}
         )
         assert response.status_code == HTTPStatus.OK
         assert response.data["ready_for_approval"] is True
@@ -97,12 +96,10 @@ class TestEconomicAssessments(APITestMixin):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
         assert economic_assessment.approved is None
 
-        url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"approved": True}
+        url = reverse(
+            "economic-assessment-detail", kwargs={"pk": economic_assessment.id}
         )
+        response = self.api_client.patch(url, format="json", data={"approved": True})
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is True
         assert response.data["reviewed_by"]["id"] == self.user.id
@@ -112,12 +109,10 @@ class TestEconomicAssessments(APITestMixin):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
         assert economic_assessment.approved is None
 
-        url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"approved": False}
+        url = reverse(
+            "economic-assessment-detail", kwargs={"pk": economic_assessment.id}
         )
+        response = self.api_client.patch(url, format="json", data={"approved": False})
         assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is False
         assert response.data["reviewed_by"]["id"] == self.user.id
@@ -127,12 +122,10 @@ class TestEconomicAssessments(APITestMixin):
         economic_assessment = EconomicAssessmentFactory(barrier=barrier)
         assert economic_assessment.archived is False
 
-        url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
-        response = self.api_client.patch(
-            url,
-            format="json",
-            data={"archived": True}
+        url = reverse(
+            "economic-assessment-detail", kwargs={"pk": economic_assessment.id}
         )
+        response = self.api_client.patch(url, format="json", data={"archived": True})
         assert response.status_code == HTTPStatus.OK
         assert response.data["archived"] is True
         assert response.data["archived_by"]["id"] == self.user.id
@@ -152,8 +145,8 @@ class TestEconomicAssessments(APITestMixin):
             data={
                 "barrier_id": barrier.id,
                 "rating": ECONOMIC_ASSESSMENT_RATING.LOW,
-                "explanation": "Explanation!!!"
-            }
+                "explanation": "Explanation!!!",
+            },
         )
         assert response.status_code == HTTPStatus.CREATED
         economic_assessment.refresh_from_db()
@@ -163,10 +156,12 @@ class TestEconomicAssessments(APITestMixin):
         economic_assessment = EconomicAssessmentFactory(
             barrier=barrier,
             rating=ECONOMIC_ASSESSMENT_RATING.HIGH,
-            explanation="Here's an explanation"
+            explanation="Here's an explanation",
         )
 
-        url = reverse("economic-assessment-detail", kwargs={"pk": economic_assessment.id})
+        url = reverse(
+            "economic-assessment-detail", kwargs={"pk": economic_assessment.id}
+        )
         response = self.api_client.get(url)
 
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.HIGH
@@ -182,11 +177,11 @@ class TestEconomicAssessments(APITestMixin):
             data={
                 "barrier_id": barrier.id,
                 "automate": True,
-            }
+            },
         )
 
         assert response.status_code == HTTPStatus.CREATED
-        assert response.data["automated_analysis_data"] == {'test': 'data'}
+        assert response.data["automated_analysis_data"] == {"test": "data"}
         assert response.data["approved"] is None
         assert response.data["archived"] is False
         assert response.data["ready_for_approval"] is False
@@ -207,7 +202,7 @@ class TestEconomicAssessments(APITestMixin):
             data={
                 "barrier_id": barrier.id,
                 "automate": True,
-            }
+            },
         )
 
         assert response.status_code == HTTPStatus.BAD_REQUEST

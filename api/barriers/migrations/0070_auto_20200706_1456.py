@@ -6,58 +6,58 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0069_historicalpublicbarrier_categories_cache'),
+        ("barriers", "0069_historicalpublicbarrier_categories_cache"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='historicalpublicbarrier',
-            old_name='summary',
-            new_name='_summary',
+            model_name="historicalpublicbarrier",
+            old_name="summary",
+            new_name="_summary",
         ),
         migrations.RenameField(
-            model_name='historicalpublicbarrier',
-            old_name='title',
-            new_name='_title',
+            model_name="historicalpublicbarrier",
+            old_name="title",
+            new_name="_title",
         ),
         migrations.RenameField(
-            model_name='publicbarrier',
-            old_name='summary',
-            new_name='_summary',
+            model_name="publicbarrier",
+            old_name="summary",
+            new_name="_summary",
         ),
         migrations.RenameField(
-            model_name='publicbarrier',
-            old_name='title',
-            new_name='_title',
+            model_name="publicbarrier",
+            old_name="title",
+            new_name="_title",
         ),
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='summary_updated_on',
+            model_name="historicalpublicbarrier",
+            name="summary_updated_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='title_updated_on',
+            model_name="historicalpublicbarrier",
+            name="title_updated_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='summary_updated_on',
+            model_name="publicbarrier",
+            name="summary_updated_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='title_updated_on',
+            model_name="publicbarrier",
+            name="title_updated_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='all_sectors',
+            model_name="historicalpublicbarrier",
+            name="all_sectors",
             field=models.NullBooleanField(),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='all_sectors',
+            model_name="publicbarrier",
+            name="all_sectors",
             field=models.NullBooleanField(),
         ),
     ]

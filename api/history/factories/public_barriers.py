@@ -1,5 +1,5 @@
 from api.barriers.models import PublicBarrier
-from .base import HistoryItemFactoryBase
+
 from ..items.public_barriers import (
     CategoriesHistoryItem,
     LocationHistoryItem,
@@ -9,6 +9,7 @@ from ..items.public_barriers import (
     SummaryHistoryItem,
     TitleHistoryItem,
 )
+from .base import HistoryItemFactoryBase
 
 
 class PublicBarrierHistoryFactory(HistoryItemFactoryBase):
@@ -26,4 +27,6 @@ class PublicBarrierHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        return PublicBarrier.history.filter(barrier_id=barrier_id).order_by("history_date")
+        return PublicBarrier.history.filter(barrier_id=barrier_id).order_by(
+            "history_date"
+        )

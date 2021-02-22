@@ -1,6 +1,6 @@
-from django.shortcuts import redirect
-from django.http import HttpResponse
 from django.conf import settings
+from django.http import HttpResponse
+from django.shortcuts import redirect
 
 
 def admin_override(request):

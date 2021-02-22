@@ -24,12 +24,10 @@ class BaseHistoryItem:
             "field": self.field,
             "old_value": self.get_old_value(),
             "new_value": self.get_new_value(),
-            "user": self._format_user(
-                self.new_record.history_user
-            ),
+            "user": self._format_user(self.new_record.history_user),
         }
         if hasattr(self, "get_field_info"):
-            data['field_info'] = self.get_field_info()
+            data["field_info"] = self.get_field_info()
         return data
 
     def get_empty_value(self):

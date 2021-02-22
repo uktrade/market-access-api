@@ -59,7 +59,6 @@ class BaseReportTestCase(APITestMixin, APITestCase):
 
 
 class TestReportProgress(BaseReportTestCase):
-
     def test_zero_progress(self):
         report = MinReportFactory()
         url = reverse("get-report", kwargs={"pk": report.id})
@@ -85,7 +84,7 @@ class TestReportProgress(BaseReportTestCase):
                 "payload": {
                     "term": ProblemStatus.AFFECTING_SINGLE,
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 10,
@@ -93,7 +92,7 @@ class TestReportProgress(BaseReportTestCase):
                 "payload": {
                     "status": BarrierStatus.UNFINISHED,
                 },
-                "expected_status": self.NOT_STARTED
+                "expected_status": self.NOT_STARTED,
             },
             {
                 "case": 11,
@@ -101,7 +100,7 @@ class TestReportProgress(BaseReportTestCase):
                     "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.UNFINISHED,
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 20,
@@ -110,7 +109,7 @@ class TestReportProgress(BaseReportTestCase):
                     "term": None,
                     "status": BarrierStatus.OPEN_PENDING_ACTION,
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 30,
@@ -118,7 +117,7 @@ class TestReportProgress(BaseReportTestCase):
                     "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.OPEN_PENDING_ACTION,
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
             {
                 "case": 40,
@@ -127,7 +126,7 @@ class TestReportProgress(BaseReportTestCase):
                     "term": ProblemStatus.AFFECTING_MULTIPLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 50,
@@ -137,7 +136,7 @@ class TestReportProgress(BaseReportTestCase):
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                     "status_date": "2020-02-02",
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 60,
@@ -145,9 +144,9 @@ class TestReportProgress(BaseReportTestCase):
                     "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                     "status_date": "2020-02-02",
-                    "status_summary": "wibble wobble"
+                    "status_summary": "wibble wobble",
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
         )
 
@@ -159,17 +158,30 @@ class TestReportProgress(BaseReportTestCase):
                 response = self._get_report(report)
 
                 assert status.HTTP_200_OK == response.status_code
-                assert tp["expected_status"] == self._stage_status(response, self.STAGE_1), \
-                    f"Failed at case {tp['case']}\n" \
-                    f"Expected Stage 1 to be {tp['expected_status']}\n" \
+                assert tp["expected_status"] == self._stage_status(
+                    response, self.STAGE_1
+                ), (
+                    f"Failed at case {tp['case']}\n"
+                    f"Expected Stage 1 to be {tp['expected_status']}\n"
                     f"Payload used {tp['payload']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_2), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_3), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_4), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_5), f"Case {tp['case']}"
+                )
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_2
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_3
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_4
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_5
+                ), f"Case {tp['case']}"
 
                 r = self._submit_report(report)
-                assert status.HTTP_400_BAD_REQUEST == r.status_code, f"Case {tp['case']}"
+                assert (
+                    status.HTTP_400_BAD_REQUEST == r.status_code
+                ), f"Case {tp['case']}"
 
     def test_report_progress__stage_2(self):
         """
@@ -185,15 +197,15 @@ class TestReportProgress(BaseReportTestCase):
                 "payload": {
                     "country": "82756b9a-5d95-e211-a939-e4115bead28a",
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 10,
                 "payload": {
                     "country": "82756b9a-5d95-e211-a939-e4115bead28a",
-                    "trade_direction": TradeDirections.EXPORT
+                    "trade_direction": TradeDirections.EXPORT,
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
         )
 
@@ -205,17 +217,30 @@ class TestReportProgress(BaseReportTestCase):
                 response = self._get_report(report)
 
                 assert status.HTTP_200_OK == response.status_code
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_1), f"Case {tp['case']}"
-                assert tp["expected_status"] == self._stage_status(response, self.STAGE_2), \
-                    f"Failed at case {tp['case']}\n" \
-                    f"Expected Stage 2 to be {tp['expected_status']}\n" \
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_1
+                ), f"Case {tp['case']}"
+                assert tp["expected_status"] == self._stage_status(
+                    response, self.STAGE_2
+                ), (
+                    f"Failed at case {tp['case']}\n"
+                    f"Expected Stage 2 to be {tp['expected_status']}\n"
                     f"Payload used {tp['payload']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_3), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_4), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_5), f"Case {tp['case']}"
+                )
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_3
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_4
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_5
+                ), f"Case {tp['case']}"
 
                 r = self._submit_report(report)
-                assert status.HTTP_400_BAD_REQUEST == r.status_code, f"Case {tp['case']}"
+                assert (
+                    status.HTTP_400_BAD_REQUEST == r.status_code
+                ), f"Case {tp['case']}"
 
     def test_report_progress__stage_3(self):
         """
@@ -231,14 +256,14 @@ class TestReportProgress(BaseReportTestCase):
                 "payload": {
                     "sectors_affected": True,
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
             {
                 "case": 10,
                 "payload": {
                     "sectors_affected": False,
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
             {
                 "case": 20,
@@ -249,7 +274,7 @@ class TestReportProgress(BaseReportTestCase):
                         "9538cecc-5f95-e211-a939-e4115bead28a",
                     ],
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
             {
                 "case": 30,
@@ -258,7 +283,7 @@ class TestReportProgress(BaseReportTestCase):
                     "all_sectors": True,
                     "sectors": [],
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
         )
 
@@ -270,17 +295,30 @@ class TestReportProgress(BaseReportTestCase):
                 response = self._get_report(report)
 
                 assert status.HTTP_200_OK == response.status_code
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_1), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_2), f"Case {tp['case']}"
-                assert tp["expected_status"] == self._stage_status(response, self.STAGE_3), \
-                    f"Failed at case {tp['case']}\n" \
-                    f"Expected Stage 3 to be {tp['expected_status']}\n" \
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_1
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_2
+                ), f"Case {tp['case']}"
+                assert tp["expected_status"] == self._stage_status(
+                    response, self.STAGE_3
+                ), (
+                    f"Failed at case {tp['case']}\n"
+                    f"Expected Stage 3 to be {tp['expected_status']}\n"
                     f"Payload used {tp['payload']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_4), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_5), f"Case {tp['case']}"
+                )
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_4
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_5
+                ), f"Case {tp['case']}"
 
                 r = self._submit_report(report)
-                assert status.HTTP_400_BAD_REQUEST == r.status_code, f"Case {tp['case']}"
+                assert (
+                    status.HTTP_400_BAD_REQUEST == r.status_code
+                ), f"Case {tp['case']}"
 
     def test_report_progress__stage_4(self):
         """
@@ -296,28 +334,28 @@ class TestReportProgress(BaseReportTestCase):
                 "payload": {
                     "product": "wibble",
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 10,
                 "payload": {
                     "source": "GOVT",
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 20,
                 "payload": {
                     "source": "OTHER",
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 30,
                 "payload": {
                     "title": "Wibble wobble",
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 40,
@@ -326,7 +364,7 @@ class TestReportProgress(BaseReportTestCase):
                     "source": "OTHER",
                     "title": "WOBBLE!",
                 },
-                "expected_status": self.IN_PROGRESS
+                "expected_status": self.IN_PROGRESS,
             },
             {
                 "case": 50,
@@ -336,7 +374,7 @@ class TestReportProgress(BaseReportTestCase):
                     "other_source": "happy happy",
                     "title": "WOBBLE!",
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
             {
                 "case": 50,
@@ -345,7 +383,7 @@ class TestReportProgress(BaseReportTestCase):
                     "source": "GOVT",
                     "title": "Yarp",
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
         )
 
@@ -357,17 +395,30 @@ class TestReportProgress(BaseReportTestCase):
                 response = self._get_report(report)
 
                 assert status.HTTP_200_OK == response.status_code
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_1), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_2), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_3), f"Case {tp['case']}"
-                assert tp["expected_status"] == self._stage_status(response, self.STAGE_4), \
-                    f"Failed at case {tp['case']}\n" \
-                    f"Expected Stage 4 to be {tp['expected_status']}\n" \
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_1
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_2
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_3
+                ), f"Case {tp['case']}"
+                assert tp["expected_status"] == self._stage_status(
+                    response, self.STAGE_4
+                ), (
+                    f"Failed at case {tp['case']}\n"
+                    f"Expected Stage 4 to be {tp['expected_status']}\n"
                     f"Payload used {tp['payload']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_5), f"Case {tp['case']}"
+                )
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_5
+                ), f"Case {tp['case']}"
 
                 r = self._submit_report(report)
-                assert status.HTTP_400_BAD_REQUEST == r.status_code, f"Case {tp['case']}"
+                assert (
+                    status.HTTP_400_BAD_REQUEST == r.status_code
+                ), f"Case {tp['case']}"
 
     def test_report_progress__stage_5(self):
         """
@@ -383,7 +434,7 @@ class TestReportProgress(BaseReportTestCase):
                 "payload": {
                     "summary": "Summary by Mary Sum.",
                 },
-                "expected_status": self.COMPLETED
+                "expected_status": self.COMPLETED,
             },
         )
 
@@ -395,17 +446,30 @@ class TestReportProgress(BaseReportTestCase):
                 response = self._get_report(report)
 
                 assert status.HTTP_200_OK == response.status_code
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_1), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_2), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_3), f"Case {tp['case']}"
-                assert self.NOT_STARTED == self._stage_status(response, self.STAGE_4), f"Case {tp['case']}"
-                assert tp["expected_status"] == self._stage_status(response, self.STAGE_5), \
-                    f"Failed at case {tp['case']}\n" \
-                    f"Expected Stage 5 to be {tp['expected_status']}\n" \
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_1
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_2
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_3
+                ), f"Case {tp['case']}"
+                assert self.NOT_STARTED == self._stage_status(
+                    response, self.STAGE_4
+                ), f"Case {tp['case']}"
+                assert tp["expected_status"] == self._stage_status(
+                    response, self.STAGE_5
+                ), (
+                    f"Failed at case {tp['case']}\n"
+                    f"Expected Stage 5 to be {tp['expected_status']}\n"
                     f"Payload used {tp['payload']}"
+                )
 
                 r = self._submit_report(report)
-                assert status.HTTP_400_BAD_REQUEST == r.status_code, f"Case {tp['case']}"
+                assert (
+                    status.HTTP_400_BAD_REQUEST == r.status_code
+                ), f"Case {tp['case']}"
 
     def test_report_progress__all_stages_completed(self):
         """
@@ -463,11 +527,21 @@ class TestReportProgress(BaseReportTestCase):
                 response = self._get_report(report)
 
                 assert status.HTTP_200_OK == response.status_code
-                assert self.COMPLETED == self._stage_status(response, self.STAGE_1), f"Case {tp['case']}"
-                assert self.COMPLETED == self._stage_status(response, self.STAGE_2), f"Case {tp['case']}"
-                assert self.COMPLETED == self._stage_status(response, self.STAGE_3), f"Case {tp['case']}"
-                assert self.COMPLETED == self._stage_status(response, self.STAGE_4), f"Case {tp['case']}"
-                assert self.COMPLETED == self._stage_status(response, self.STAGE_5), f"Case {tp['case']}"
+                assert self.COMPLETED == self._stage_status(
+                    response, self.STAGE_1
+                ), f"Case {tp['case']}"
+                assert self.COMPLETED == self._stage_status(
+                    response, self.STAGE_2
+                ), f"Case {tp['case']}"
+                assert self.COMPLETED == self._stage_status(
+                    response, self.STAGE_3
+                ), f"Case {tp['case']}"
+                assert self.COMPLETED == self._stage_status(
+                    response, self.STAGE_4
+                ), f"Case {tp['case']}"
+                assert self.COMPLETED == self._stage_status(
+                    response, self.STAGE_5
+                ), f"Case {tp['case']}"
 
                 r = self._submit_report(report)
                 assert status.HTTP_200_OK == r.status_code, f"Case {tp['case']}"

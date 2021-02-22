@@ -1,14 +1,13 @@
-from api.metadata.serializers import OrganisationSerializer
 from hashid_field.rest import HashidSerializerCharField
 from rest_framework import serializers
 
 from api.barriers.fields import (
     NoneToBlankCharField,
-    ReadOnlyStatusField,
-    ReadOnlyCountryField,
-    ReadOnlySectorsField,
     ReadOnlyAllSectorsField,
     ReadOnlyCategoriesField,
+    ReadOnlyCountryField,
+    ReadOnlySectorsField,
+    ReadOnlyStatusField,
     ReadOnlyTradingBlocField,
 )
 from api.barriers.helpers import get_published_public_barriers
@@ -18,7 +17,7 @@ from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.interactions.models import PublicBarrierNote
 from api.interactions.serializers import PublicBarrierNoteSerializer
 from api.metadata.fields import TradingBlocField
-
+from api.metadata.serializers import OrganisationSerializer
 
 PUBLIC_ID = "barriers.PublicBarrier.id"
 

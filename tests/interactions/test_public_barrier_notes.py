@@ -6,26 +6,24 @@ from rest_framework.test import APITestCase
 from api.barriers.helpers import get_or_create_public_barrier
 from api.core.test_utils import APITestMixin
 from api.interactions.models import PublicBarrierNote
-
 from tests.barriers.factories import BarrierFactory
 
 
 class PublicBarrierNoteTestCase(APITestMixin, APITestCase):
-
     def setUp(self):
         self.barrier = BarrierFactory(priority="LOW")
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
         self.note1 = PublicBarrierNote.objects.create(
-            public_barrier=self.public_barrier,
-            text="Note 1"
+            public_barrier=self.public_barrier, text="Note 1"
         )
         self.note2 = PublicBarrierNote.objects.create(
-            public_barrier=self.public_barrier,
-            text="Note 2"
+            public_barrier=self.public_barrier, text="Note 2"
         )
 
     def test_list_public_barrier_notes(self):
-        url = reverse("public-barrier-note-list", kwargs={"barrier_id": self.barrier.id})
+        url = reverse(
+            "public-barrier-note-list", kwargs={"barrier_id": self.barrier.id}
+        )
         response = self.api_client.get(url)
         assert response.status_code == HTTPStatus.OK
         assert response.data["count"] == 2
@@ -34,7 +32,9 @@ class PublicBarrierNoteTestCase(APITestMixin, APITestCase):
         assert self.note2.id in note_ids
 
     def test_create_public_barrier_notes(self):
-        url = reverse("public-barrier-note-list", kwargs={"barrier_id": self.barrier.id})
+        url = reverse(
+            "public-barrier-note-list", kwargs={"barrier_id": self.barrier.id}
+        )
         response = self.api_client.post(url, data={"text": "New Note"})
         assert response.status_code == HTTPStatus.CREATED
         assert response.data["text"] == "New Note"

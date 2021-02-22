@@ -22,7 +22,9 @@ class EconomicAssessmentRatingFieldMixin(metaclass=serializers.SerializerMetacla
             return assessment.get_rating_display()
 
 
-class EconomicAssessmentExplanationFieldMixin(metaclass=serializers.SerializerMetaclass):
+class EconomicAssessmentExplanationFieldMixin(
+    metaclass=serializers.SerializerMetaclass
+):
     economic_assessment_explanation = serializers.SerializerMethodField()
 
     def get_economic_assessment_explanation(self, obj):
@@ -33,6 +35,7 @@ class EconomicAssessmentExplanationFieldMixin(metaclass=serializers.SerializerMe
 
 class ValueToEconomyFieldMixin(metaclass=serializers.SerializerMetaclass):
     """ Value of UK exports of affected goods to partner country """
+
     value_to_economy = serializers.SerializerMethodField()
 
     def get_value_to_economy(self, obj):
@@ -60,7 +63,9 @@ class ValuationAssessmentRatingFieldMixin(metaclass=serializers.SerializerMetacl
             return assessment.latest_valuation_assessment.rating
 
 
-class ValuationAssessmentExplanationFieldMixin(metaclass=serializers.SerializerMetaclass):
+class ValuationAssessmentExplanationFieldMixin(
+    metaclass=serializers.SerializerMetaclass
+):
     valuation_assessment_explanation = serializers.SerializerMethodField()
 
     def get_valuation_assessment_explanation(self, obj):
@@ -69,10 +74,12 @@ class ValuationAssessmentExplanationFieldMixin(metaclass=serializers.SerializerM
             return assessment.latest_valuation_assessment.explanation
 
 
-class AssessmentFieldsMixin(EconomicAssessmentRatingFieldMixin,
-                            EconomicAssessmentExplanationFieldMixin,
-                            ValueToEconomyFieldMixin,
-                            ImportMarketSizeFieldMixin,
-                            ValuationAssessmentRatingFieldMixin,
-                            ValuationAssessmentExplanationFieldMixin):
+class AssessmentFieldsMixin(
+    EconomicAssessmentRatingFieldMixin,
+    EconomicAssessmentExplanationFieldMixin,
+    ValueToEconomyFieldMixin,
+    ImportMarketSizeFieldMixin,
+    ValuationAssessmentRatingFieldMixin,
+    ValuationAssessmentExplanationFieldMixin,
+):
     pass

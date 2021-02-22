@@ -1,5 +1,4 @@
 from api.core.test_utils import APITestMixin
-
 from api.metadata.models import Category
 
 

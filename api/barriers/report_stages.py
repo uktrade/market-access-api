@@ -2,7 +2,6 @@ import operator
 
 from api.core.validate_utils import DataCombiner
 
-
 REPORT_CONDITIONS = [
     {
         "stage": "1.1",
@@ -28,7 +27,7 @@ REPORT_CONDITIONS = [
                 "value": (3, 4),
                 "non_null_field": "status_date",
                 "error_message": "status_date can not be null when status is resolved",
-            }
+            },
         ],
     },
     {
@@ -37,12 +36,7 @@ REPORT_CONDITIONS = [
         "required": ["location", "trade_direction"],
         "conditional": [],
     },
-    {
-        "stage": "1.3",
-        "order": 3,
-        "required": ["sectors_affected"],
-        "conditional": []
-    },
+    {"stage": "1.3", "order": 3, "required": ["sectors_affected"], "conditional": []},
     {
         "stage": "1.4",
         "order": 4,

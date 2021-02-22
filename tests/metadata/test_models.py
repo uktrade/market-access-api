@@ -6,7 +6,6 @@ from tests.metadata.factories import BarrierTagFactory
 
 
 class TestBarrierTags(TestCase):
-
     def test_tag_ordering(self):
         new_tag = BarrierTagFactory()
 
@@ -20,7 +19,6 @@ class TestBarrierTags(TestCase):
 
 
 class TestOrganisations(TestCase):
-
     def test_goverment_organisations(self):
         """ There should be 23 MD and 3 DA - correct as of Nov 2020 """
         md_qs = Organisation.objects.filter(

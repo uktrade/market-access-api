@@ -25,7 +25,9 @@ from .fields import (
 )
 
 
-class EconomicImpactAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
+class EconomicImpactAssessmentSerializer(
+    AuditMixin, CustomUpdateMixin, serializers.ModelSerializer
+):
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     economic_assessment_id = serializers.IntegerField()
@@ -59,14 +61,18 @@ class EconomicImpactAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializ
         )
 
 
-class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
+class EconomicAssessmentSerializer(
+    AuditMixin, CustomUpdateMixin, serializers.ModelSerializer
+):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     barrier_id = serializers.UUIDField()
     created_by = UserField(required=False)
     documents = DocumentsField(required=False)
-    economic_impact_assessments = EconomicImpactAssessmentSerializer(required=False, many=True)
+    economic_impact_assessments = EconomicImpactAssessmentSerializer(
+        required=False, many=True
+    )
     modified_by = UserField(required=False)
     rating = RatingField(required=False)
     reviewed_by = UserField(required=False)
@@ -127,7 +133,9 @@ class EconomicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.Mo
         return super().create(validated_data)
 
 
-class ResolvabilityAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
+class ResolvabilityAssessmentSerializer(
+    AuditMixin, CustomUpdateMixin, serializers.ModelSerializer
+):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()
@@ -171,7 +179,9 @@ class ResolvabilityAssessmentSerializer(AuditMixin, CustomUpdateMixin, serialize
         )
 
 
-class StrategicAssessmentSerializer(AuditMixin, CustomUpdateMixin, serializers.ModelSerializer):
+class StrategicAssessmentSerializer(
+    AuditMixin, CustomUpdateMixin, serializers.ModelSerializer
+):
     approved = ApprovedField(required=False)
     archived = ArchivedField(required=False)
     barrier_id = serializers.UUIDField()

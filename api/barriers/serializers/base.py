@@ -11,6 +11,7 @@ from api.barriers.fields import (
     BarrierPriorityField,
     CategoriesField,
     CommoditiesField,
+    OrganisationsField,
     PublicEligibilityField,
     SectorsField,
     SourceField,
@@ -22,22 +23,26 @@ from api.barriers.fields import (
     TradeDirectionField,
     UserField,
     WTOProfileField,
-    OrganisationsField,
 )
 from api.barriers.models import Barrier, BarrierUserHit
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
+
 from .mixins import LocationFieldMixin
 from .public_barriers import NestedPublicBarrierSerializer
 
 
-class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.ModelSerializer):
+class BarrierSerializerBase(
+    LocationFieldMixin, CustomUpdateMixin, serializers.ModelSerializer
+):
     admin_areas = AdminAreasField(required=False)
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     archived_reason = ArchivedReasonField(required=False)
     economic_assessments = EconomicAssessmentSerializer(required=False, many=True)
-    resolvability_assessments = ResolvabilityAssessmentSerializer(required=False, many=True)
+    resolvability_assessments = ResolvabilityAssessmentSerializer(
+        required=False, many=True
+    )
     strategic_assessments = StrategicAssessmentSerializer(required=False, many=True)
     categories = CategoriesField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
@@ -86,7 +91,9 @@ class BarrierSerializerBase(LocationFieldMixin, CustomUpdateMixin, serializers.M
     def get_last_seen_on(self, obj):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
-            hit, _created = BarrierUserHit.objects.get_or_create(user=request.user, barrier=obj)
+            hit, _created = BarrierUserHit.objects.get_or_create(
+                user=request.user, barrier=obj
+            )
             last_seen = hit.last_seen
             hit.save()
             return last_seen

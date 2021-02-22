@@ -33,9 +33,7 @@ def edit_report_stages(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0032_auto_20190722_0905'),
+        ("barriers", "0032_auto_20190722_0905"),
     ]
 
-    operations = [
-        migrations.RunPython(edit_report_stages)
-    ]
+    operations = [migrations.RunPython(edit_report_stages)]

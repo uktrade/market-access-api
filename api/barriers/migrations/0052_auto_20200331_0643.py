@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metadata', '0013_barriertag'),
-        ('barriers', '0051_auto_20200403_1611'),
+        ("metadata", "0013_barriertag"),
+        ("barriers", "0051_auto_20200403_1611"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='tags',
-            field=models.ManyToManyField(to='metadata.BarrierTag'),
+            model_name="barrierinstance",
+            name="tags",
+            field=models.ManyToManyField(to="metadata.BarrierTag"),
         ),
     ]

@@ -7,13 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0008_historicalpublicbarriernote_publicbarriernote'),
+        ("interactions", "0008_historicalpublicbarriernote_publicbarriernote"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalinteraction',
-            name='documents_cache',
-            field=django.contrib.postgres.fields.ArrayField(base_field=models.JSONField(), blank=True, default=list, null=True, size=None),
+            model_name="historicalinteraction",
+            name="documents_cache",
+            field=django.contrib.postgres.fields.ArrayField(
+                base_field=models.JSONField(),
+                blank=True,
+                default=list,
+                null=True,
+                size=None,
+            ),
         ),
     ]

@@ -1,17 +1,18 @@
 from api.assessment.models import StrategicAssessment
-from ..base import HistoryItemFactoryBase
+
 from ...items.assessments.strategic import (
+    AdditionalInformationHistoryItem,
     ApprovedHistoryItem,
     ArchivedHistoryItem,
-    HMGStrategyHistoryItem,
-    GovernmentPolicyHistoryItem,
-    TradingRelationsHistoryItem,
-    UKInterestAndSecurityHistoryItem,
-    UKGrantsHistoryItem,
     CompetitionHistoryItem,
-    AdditionalInformationHistoryItem,
+    GovernmentPolicyHistoryItem,
+    HMGStrategyHistoryItem,
     ScaleHistoryItem,
+    TradingRelationsHistoryItem,
+    UKGrantsHistoryItem,
+    UKInterestAndSecurityHistoryItem,
 )
+from ..base import HistoryItemFactoryBase
 
 
 class StrategicAssessmentHistoryFactory(HistoryItemFactoryBase):
@@ -31,4 +32,6 @@ class StrategicAssessmentHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        return StrategicAssessment.history.filter(barrier_id=barrier_id).order_by("id", "history_date")
+        return StrategicAssessment.history.filter(barrier_id=barrier_id).order_by(
+            "id", "history_date"
+        )

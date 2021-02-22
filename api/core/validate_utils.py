@@ -3,7 +3,6 @@ from typing import Sequence
 
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
-
 from rest_framework.utils import model_meta
 
 

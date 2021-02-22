@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0099_populate_commercial_value'),
-        ('barriers', '0098_historicalbarrier_organisations_cache'),
+        ("barriers", "0099_populate_commercial_value"),
+        ("barriers", "0098_historicalbarrier_organisations_cache"),
     ]
 
-    operations = [
-    ]
+    operations = []

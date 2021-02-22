@@ -7,13 +7,15 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0003_profile_internal'),
+        ("user", "0003_profile_internal"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='user_profile',
-            field=django.contrib.postgres.fields.jsonb.JSONField(help_text='temporary field to hold sso profile json object', null=True),
+            model_name="profile",
+            name="user_profile",
+            field=django.contrib.postgres.fields.jsonb.JSONField(
+                help_text="temporary field to hold sso profile json object", null=True
+            ),
         ),
     ]

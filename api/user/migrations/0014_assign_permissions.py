@@ -13,17 +13,11 @@ def assign_permissions(apps, schema_editor):
 
     change_user_permission, created = Permission.objects.get_or_create(
         codename="change_user",
-        defaults={
-            "name": "Can change user",
-            "content_type": user_content_type
-        }
+        defaults={"name": "Can change user", "content_type": user_content_type},
     )
     list_users_permission, created = Permission.objects.get_or_create(
         codename="list_users",
-        defaults={
-            "name": "Can list users",
-            "content_type": user_content_type
-        }
+        defaults={"name": "Can list users", "content_type": user_content_type},
     )
 
     administrator_group = Group.objects.get(name="Administrator")
@@ -34,10 +28,12 @@ def assign_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('contenttypes', '0001_initial'),
-        ('user', '0013_add_permission_groups'),
+        ("contenttypes", "0001_initial"),
+        ("user", "0013_add_permission_groups"),
     ]
 
     operations = [
-        migrations.RunPython(assign_permissions, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            assign_permissions, reverse_code=migrations.RunPython.noop
+        ),
     ]

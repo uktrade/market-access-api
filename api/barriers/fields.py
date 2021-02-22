@@ -2,8 +2,8 @@ from rest_framework import serializers
 
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import BarrierCommodity
-from api.commodities.serializers import BarrierCommoditySerializer
 from api.commodities.models import Commodity
+from api.commodities.serializers import BarrierCommoditySerializer
 from api.core.utils import cleansed_username, sort_list_of_dicts
 from api.interactions.models import Document
 from api.metadata.constants import (
@@ -11,11 +11,11 @@ from api.metadata.constants import (
     BARRIER_PENDING,
     BARRIER_SOURCE,
     BARRIER_TERMS,
-    BarrierStatus,
-    PublicBarrierStatus,
     STAGE_STATUS,
     TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
+    BarrierStatus,
+    PublicBarrierStatus,
 )
 from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
 from api.metadata.serializers import (
@@ -109,7 +109,9 @@ class CommoditiesField(serializers.ListField):
             country = commodity_data.get("country")
             trading_bloc = commodity_data.get("trading_bloc", "")
             hs6_code = code[:6].ljust(10, "0")
-            commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest("version")
+            commodity = Commodity.objects.filter(code=hs6_code, is_leaf=True).latest(
+                "version"
+            )
             barrier_commodity, created = BarrierCommodity.objects.get_or_create(
                 barrier=self.parent.instance,
                 commodity=commodity,
@@ -119,9 +121,9 @@ class CommoditiesField(serializers.ListField):
             )
             added_commodities.append(barrier_commodity.id)
 
-        BarrierCommodity.objects.filter(
-            barrier=self.parent.instance
-        ).exclude(id__in=added_commodities).delete()
+        BarrierCommodity.objects.filter(barrier=self.parent.instance).exclude(
+            id__in=added_commodities
+        ).delete()
 
 
 class PublicEligibilityField(serializers.BooleanField):
@@ -254,13 +256,15 @@ class WTOProfileField(serializers.Field):
         return serializer.to_internal_value(data)
 
     def custom_update(self, validated_data):
-        wto_profile = validated_data.pop('wto_profile')
+        wto_profile = validated_data.pop("wto_profile")
 
         if wto_profile:
             document_fields = ("committee_notification_document", "meeting_minutes")
             for field_name in document_fields:
                 if field_name in self.parent.initial_data["wto_profile"]:
-                    document_id = self.parent.initial_data["wto_profile"].get(field_name) or None
+                    document_id = (
+                        self.parent.initial_data["wto_profile"].get(field_name) or None
+                    )
                     if document_id:
                         try:
                             Document.objects.get(pk=document_id)
@@ -268,7 +272,9 @@ class WTOProfileField(serializers.Field):
                             continue
                     wto_profile[f"{field_name}_id"] = document_id
 
-            WTOProfile.objects.update_or_create(barrier=self.parent.instance, defaults=wto_profile)
+            WTOProfile.objects.update_or_create(
+                barrier=self.parent.instance, defaults=wto_profile
+            )
 
 
 class NoneToBlankCharField(serializers.CharField):
@@ -284,7 +290,6 @@ class NoneToBlankCharField(serializers.CharField):
 
 
 class FilterableReadOnlyField(serializers.Field):
-
     def __init__(self, to_repr_keys=(), **kwargs):
         """
         Allows to use the same format with the ability to only include the keys needed for the given serializer.
@@ -337,17 +342,16 @@ class ReadOnlyStatusField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only status fields.
     """
+
     def get_data(self, value):
-        return {
-            "id": value,
-            "name": BarrierStatus.name(value)
-        }
+        return {"id": value, "name": BarrierStatus.name(value)}
 
 
 class ReadOnlyCountryField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only country fields.
     """
+
     def get_data(self, value):
         if value:
             value = str(value)
@@ -355,7 +359,7 @@ class ReadOnlyCountryField(FilterableReadOnlyField):
             return {
                 "id": value,
                 "name": country.get("name"),
-                "trading_bloc": country.get("trading_bloc")
+                "trading_bloc": country.get("trading_bloc"),
             }
 
 
@@ -369,6 +373,7 @@ class ReadOnlySectorsField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only sectors fields.
     """
+
     def get_data(self, value):
         def sector_name(sid):
             sector = get_sector(str(sid)) or {}
@@ -386,6 +391,7 @@ class ReadOnlyAllSectorsField(serializers.Field):
     """
     Field serializer to be used with read only all_sectors fields.
     """
+
     def to_representation(self, value):
         return value or False
 
@@ -397,10 +403,10 @@ class ReadOnlyCategoriesField(FilterableReadOnlyField):
     """
     Field serializer to be used with read only categories fields.
     """
+
     def get_data(self, value):
         return [
-            {"id": category.id, "title": category.title}
-            for category in value.all()
+            {"id": category.id, "title": category.title} for category in value.all()
         ]
 
 

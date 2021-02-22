@@ -5,14 +5,14 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import Barrier
+from api.core.test_utils import APITestMixin, create_test_user
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import PublicBarrierStatus
 from api.metadata.models import BarrierPriority, Organisation
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
-from tests.metadata.factories import CategoryFactory, BarrierPriorityFactory
+from tests.metadata.factories import BarrierPriorityFactory, CategoryFactory
 
 
 # TODO: consider removing this test case.

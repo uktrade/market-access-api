@@ -7,18 +7,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0071_auto_20200709_0835'),
+        ("barriers", "0071_auto_20200709_0835"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalpublicbarrier',
-            name='published_versions',
+            model_name="historicalpublicbarrier",
+            name="published_versions",
             field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
         ),
         migrations.AddField(
-            model_name='publicbarrier',
-            name='published_versions',
+            model_name="publicbarrier",
+            name="published_versions",
             field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
         ),
     ]

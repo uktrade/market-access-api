@@ -1,9 +1,7 @@
 from api.interactions.models import PublicBarrierNote
+
+from ..items.public_barrier_notes import ArchivedHistoryItem, TextHistoryItem
 from .base import HistoryItemFactoryBase
-from ..items.public_barrier_notes import (
-    ArchivedHistoryItem,
-    TextHistoryItem,
-)
 
 
 class PublicBarrierNoteHistoryFactory(HistoryItemFactoryBase):

@@ -24,11 +24,12 @@ class BasePermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         allowed_action = view.action in self.allowed_actions
-        user_has_group_permission = _has_group_permission(request.user, self.required_groups)
+        user_has_group_permission = _has_group_permission(
+            request.user, self.required_groups
+        )
         authenticated_user = request.user and request.user.is_authenticated
         return bool(
-            authenticated_user and
-            (allowed_action or user_has_group_permission)
+            authenticated_user and (allowed_action or user_has_group_permission)
         )
 
 
@@ -37,7 +38,11 @@ class AllRetrieveAndEditorUpdateOnly(BasePermission):
     Allow GET to all authenticated users
     Allow PATCH to authenticated editors, publishers and admins
     """
-    allowed_actions = ('list', 'retrieve',)
+
+    allowed_actions = (
+        "list",
+        "retrieve",
+    )
     required_groups = (
         UserRoles.EDITOR,
         UserRoles.PUBLISHER,
@@ -49,6 +54,7 @@ class IsSifter(BasePermission):
     """
     Roles that have Sifter permissions.
     """
+
     required_groups = (
         UserRoles.SIFTER,
         UserRoles.EDITOR,
@@ -61,6 +67,7 @@ class IsEditor(BasePermission):
     """
     Roles that have Editor permissions.
     """
+
     required_groups = (
         UserRoles.EDITOR,
         UserRoles.PUBLISHER,
@@ -72,6 +79,7 @@ class IsPublisher(BasePermission):
     """
     Roles that have Publisher permissions.
     """
+
     required_groups = (
         UserRoles.PUBLISHER,
         UserRoles.ADMIN,
@@ -82,6 +90,5 @@ class IsAdmin(BasePermission):
     """
     Roles that have Publisher permissions.
     """
-    required_groups = (
-        UserRoles.ADMIN,
-    )
+
+    required_groups = (UserRoles.ADMIN,)

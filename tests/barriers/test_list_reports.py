@@ -5,13 +5,12 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from api.core.test_utils import APITestMixin, create_test_user
 from api.barriers.models import Barrier
+from api.core.test_utils import APITestMixin, create_test_user
 from tests.barriers.factories import ReportFactory
 
 
 class TestListReports(APITestMixin, APITestCase):
-
     def setUp(self):
         self.url = reverse("list-reports")
 
@@ -29,18 +28,9 @@ class TestListReports(APITestMixin, APITestCase):
 
     def test_list_reports_are_ordered_by_created_on(self):
         user = create_test_user(sso_user_id=self.sso_creator["user_id"])
-        r1 = ReportFactory(
-            created_on=datetime(2020, 1, 1, tzinfo=UTC),
-            created_by=user
-        )
-        r2 = ReportFactory(
-            created_on=datetime(2020, 2, 2, tzinfo=UTC),
-            created_by=user
-        )
-        r3 = ReportFactory(
-            created_on=datetime(2020, 3, 3, tzinfo=UTC),
-            created_by=user
-        )
+        r1 = ReportFactory(created_on=datetime(2020, 1, 1, tzinfo=UTC), created_by=user)
+        r2 = ReportFactory(created_on=datetime(2020, 2, 2, tzinfo=UTC), created_by=user)
+        r3 = ReportFactory(created_on=datetime(2020, 3, 3, tzinfo=UTC), created_by=user)
 
         order_by = "created_on"
         url = f'{reverse("list-reports")}?order_by={order_by}'
@@ -59,10 +49,7 @@ class TestListReports(APITestMixin, APITestCase):
         Users are only allowed to see their own draft barriers.
         """
         creator = create_test_user(sso_user_id=self.sso_creator["user_id"])
-        ReportFactory(
-            created_on=datetime(2020, 1, 1, tzinfo=UTC),
-            created_by=creator
-        )
+        ReportFactory(created_on=datetime(2020, 1, 1, tzinfo=UTC), created_by=creator)
         user1 = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
 
         assert 1 == Barrier.objects.count()
@@ -112,15 +99,11 @@ class TestListReports(APITestMixin, APITestCase):
         assert 0 == response.data["count"]
 
     def test_post_invalid_term_gives_400(self):
-        response = self.api_client.post(
-            self.url, format="json", data={"term": 3}
-        )
+        response = self.api_client.post(self.url, format="json", data={"term": 3})
         assert status.HTTP_400_BAD_REQUEST == response.status_code
 
     def test_post_invalid_status_gives_400(self):
-        response = self.api_client.post(
-            self.url, format="json", data={"status": 33}
-        )
+        response = self.api_client.post(self.url, format="json", data={"status": 33})
         assert status.HTTP_400_BAD_REQUEST == response.status_code
 
     def test_post_country_name_gives_400(self):
@@ -142,9 +125,7 @@ class TestListReports(APITestMixin, APITestCase):
         assert status.HTTP_400_BAD_REQUEST == response.status_code
 
     def test_post_source_alone_gives_400(self):
-        response = self.api_client.post(
-            self.url, format="json", data={"source": 1}
-        )
+        response = self.api_client.post(self.url, format="json", data={"source": 1})
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_post_invalid_source_gives_400(self):

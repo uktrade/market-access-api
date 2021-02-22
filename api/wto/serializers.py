@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from api.metadata.fields import CountryListField
+
 from .fields import WTOCommitteeField
 from .models import WTOProfile
 
@@ -27,7 +28,7 @@ class WTOProfileSerializer(serializers.ModelSerializer):
             "raised_date",
             "case_number",
         )
-        read_only_fields = ("id", )
+        read_only_fields = ("id",)
 
     def get_serialized_document(self, document):
         if document is not None:

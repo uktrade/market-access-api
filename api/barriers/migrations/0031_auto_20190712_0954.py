@@ -6,48 +6,106 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0030_auto_20190415_1016'),
+        ("barriers", "0030_auto_20190415_1016"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='barrierinstance',
-            name='sub_status',
-            field=models.CharField(choices=[('UK_GOVT', 'UK government'), ('FOR_GOVT', 'Foreign government'), ('BUS', 'Affected business'), ('OTHER', 'Other')], default=None, help_text='barrier sub status', max_length=25, null=True),
+            model_name="barrierinstance",
+            name="sub_status",
+            field=models.CharField(
+                choices=[
+                    ("UK_GOVT", "UK government"),
+                    ("FOR_GOVT", "Foreign government"),
+                    ("BUS", "Affected business"),
+                    ("OTHER", "Other"),
+                ],
+                default=None,
+                help_text="barrier sub status",
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='barrierinstance',
-            name='sub_status_other',
-            field=models.CharField(help_text='barrier sub status text for other choice', max_length=255, null=True),
+            model_name="barrierinstance",
+            name="sub_status_other",
+            field=models.CharField(
+                help_text="barrier sub status text for other choice",
+                max_length=255,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='sub_status',
-            field=models.CharField(choices=[('UK_GOVT', 'UK government'), ('FOR_GOVT', 'Foreign government'), ('BUS', 'Affected business'), ('OTHER', 'Other')], default=None, help_text='barrier sub status', max_length=25, null=True),
+            model_name="historicalbarrierinstance",
+            name="sub_status",
+            field=models.CharField(
+                choices=[
+                    ("UK_GOVT", "UK government"),
+                    ("FOR_GOVT", "Foreign government"),
+                    ("BUS", "Affected business"),
+                    ("OTHER", "Other"),
+                ],
+                default=None,
+                help_text="barrier sub status",
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalbarrierinstance',
-            name='sub_status_other',
-            field=models.CharField(help_text='barrier sub status text for other choice', max_length=255, null=True),
+            model_name="historicalbarrierinstance",
+            name="sub_status_other",
+            field=models.CharField(
+                help_text="barrier sub status text for other choice",
+                max_length=255,
+                null=True,
+            ),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='eu_exit_related',
-            field=models.PositiveIntegerField(choices=[(1, 'Yes'), (2, 'No'), (3, 'Dont know')], null=True),
+            model_name="barrierinstance",
+            name="eu_exit_related",
+            field=models.PositiveIntegerField(
+                choices=[(1, "Yes"), (2, "No"), (3, "Dont know")], null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='barrierinstance',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unknown'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (5, 'Dormant'), (6, 'Archived')], default=0, help_text='status of the barrier instance'),
+            model_name="barrierinstance",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unknown"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                ],
+                default=0,
+                help_text="status of the barrier instance",
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='eu_exit_related',
-            field=models.PositiveIntegerField(choices=[(1, 'Yes'), (2, 'No'), (3, 'Dont know')], null=True),
+            model_name="historicalbarrierinstance",
+            name="eu_exit_related",
+            field=models.PositiveIntegerField(
+                choices=[(1, "Yes"), (2, "No"), (3, "Dont know")], null=True
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrierinstance',
-            name='status',
-            field=models.PositiveIntegerField(choices=[(0, 'Unknown'), (1, 'Open: Pending action'), (2, 'Open: In progress'), (3, 'Resolved: In part'), (4, 'Resolved: In full'), (5, 'Dormant'), (6, 'Archived')], default=0, help_text='status of the barrier instance'),
+            model_name="historicalbarrierinstance",
+            name="status",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (0, "Unknown"),
+                    (1, "Open: Pending action"),
+                    (2, "Open: In progress"),
+                    (3, "Resolved: In part"),
+                    (4, "Resolved: In full"),
+                    (5, "Dormant"),
+                    (6, "Archived"),
+                ],
+                default=0,
+                help_text="status of the barrier instance",
+            ),
         ),
     ]

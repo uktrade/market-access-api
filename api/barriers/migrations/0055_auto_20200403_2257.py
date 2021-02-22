@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0054_convert_to_tags'),
+        ("barriers", "0054_convert_to_tags"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='barrierinstance',
-            name='eu_exit_related',
+            model_name="barrierinstance",
+            name="eu_exit_related",
         ),
         migrations.RemoveField(
-            model_name='historicalbarrierinstance',
-            name='eu_exit_related',
+            model_name="historicalbarrierinstance",
+            name="eu_exit_related",
         ),
     ]

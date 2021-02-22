@@ -1,7 +1,8 @@
 import csv
-from csv import DictWriter
 from collections import defaultdict
+from csv import DictWriter
 
+from dateutil.parser import parse
 from django.core.files.temp import NamedTemporaryFile
 from django.db import transaction
 from django.db.models import Count
@@ -9,18 +10,16 @@ from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import now
-
-from dateutil.parser import parse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, serializers, status, mixins
-from rest_framework.decorators import api_view, action
+from rest_framework import generics, mixins, serializers, status
+from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from simple_history.utils import bulk_create_with_history
 
-from api.barriers.csv import create_csv_response, _transform_csv_row
+from api.barriers.csv import _transform_csv_row, create_csv_response
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier, BarrierReportStage, PublicBarrier
@@ -38,11 +37,16 @@ from api.history.manager import HistoryManager
 from api.interactions.models import Interaction
 from api.metadata.constants import BARRIER_INTERACTION_TYPE, PublicBarrierStatus
 from api.user.helpers import has_profile, update_user_profile
-from api.user.models import get_my_barriers_saved_search, get_team_barriers_saved_search
-from api.user.models import Profile, SavedSearch
-from api.user.permissions import IsPublisher, IsEditor, AllRetrieveAndEditorUpdateOnly
+from api.user.models import (
+    Profile,
+    SavedSearch,
+    get_my_barriers_saved_search,
+    get_team_barriers_saved_search,
+)
+from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
+
 from .filters import BarrierFilterSet, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 

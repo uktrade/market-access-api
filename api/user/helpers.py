@@ -4,7 +4,6 @@ from api.core.utils import cleansed_username
 from api.user.models import Profile
 from api.user.staff_sso import sso
 
-
 UserModel = get_user_model()
 
 

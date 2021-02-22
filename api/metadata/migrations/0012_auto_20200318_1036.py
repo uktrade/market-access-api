@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0043_auto_20200325_1037'),
-        ('metadata', '0011_auto_20190903_1006'),
+        ("barriers", "0043_auto_20200325_1037"),
+        ("metadata", "0011_auto_20190903_1006"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='BarrierType',
-            new_name='Category',
+            old_name="BarrierType",
+            new_name="Category",
         ),
     ]

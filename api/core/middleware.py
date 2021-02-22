@@ -4,7 +4,6 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.urls import resolve
 
-
 logger = logging.getLogger(__name__)
 
 
