@@ -1,6 +1,6 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2021-02-04_13-40
+# Generated: 2021-02-23_13-23
 # ======
 amqp==2.6.1
 asgiref==3.3.1
@@ -9,10 +9,10 @@ boto3==1.14.54
 botocore==1.17.63
 celery==4.4.5
 certifi==2020.12.5
-cffi==1.14.4
+cffi==1.14.5
 chardet==4.0.0
 dj-database-url==0.5.0
-django==3.1.6
+django==3.1.7
 django-celery-beat==2.0.0
 django-environ==0.4.5
 django-extensions==3.0.9
