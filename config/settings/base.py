@@ -1,6 +1,7 @@
 import os
 import ssl
 from pathlib import Path
+import sys
 
 import dj_database_url
 import environ
@@ -10,6 +11,7 @@ from django.core.exceptions import ImproperlyConfigured
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
+from django_log_formatter_ecs import ECSFormatter
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = Path(__file__).parents[2]
@@ -319,6 +321,54 @@ STATIC_URL = "/static/"
 # ============================================
 DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="info").upper()
 
+ENABLED_HANDLERS = env.list("ENABLED_LOGGING_HANDLERS", default=["ecs", "stdout"])
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "ecs_formatter": {
+            "()": ECSFormatter,
+        },
+        "simple": {
+            "format": "{asctime} {levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "ecs": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,  # noqa F405
+            "formatter": "ecs_formatter",
+        },
+        "stdout": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,  # noqa F405
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ENABLED_HANDLERS,
+        "level": os.getenv("ROOT_LOG_LEVEL", "INFO"),  # noqa F405
+    },
+    "loggers": {
+        "django": {
+            "handlers": ENABLED_HANDLERS,
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa F405
+            "propagate": False,
+        },
+        "django.server": {
+            "handlers": ENABLED_HANDLERS,
+            "level": os.getenv("DJANGO_SERVER_LOG_LEVEL", "ERROR"),  # noqa F405
+            "propagate": False,
+        },
+        "django.db.backends": {
+            "handlers": ENABLED_HANDLERS,
+            "level": os.getenv("DJANGO_DB_LOG_LEVEL", "ERROR"),  # noqa F405
+            "propagate": False,
+        },
+    },
+}
 
 CELERY_BEAT_SCHEDULE = {}
 
