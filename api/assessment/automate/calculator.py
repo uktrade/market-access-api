@@ -163,23 +163,23 @@ class AssessmentCalculator:
         # 1. Partner country imports of affected products from UK
         partner_from_uk = avgtrade(
             df=affected_products_df,
-            reporter_input=country1,
-            partner_input=country2,
+            reporter_input=get_comtrade_country_name(country1),
+            partner_input=get_comtrade_country_name(country2),
             direction="Import",
         )
 
         # 2. Partner country total goods imports from UK
         partner_from_uk_total = avgtrade(
             df=all_products_df,
-            reporter_input=country1,
-            partner_input=country2,
+            reporter_input=get_comtrade_country_name(country1),
+            partner_input=get_comtrade_country_name(country2),
             direction="Import",
         )
 
         # 3. Partner country imports of affected products from world
         partner_from_world = avgtrade(
             df=affected_products_df,
-            reporter_input=country1,
+            reporter_input=get_comtrade_country_name(country1),
             partner_input="World",
             direction="Import",
         )
@@ -187,19 +187,23 @@ class AssessmentCalculator:
         # 4. Partner country total goods imports from World
         partner_from_world_total = avgtrade(
             df=all_products_df,
-            reporter_input=country1,
+            reporter_input=get_comtrade_country_name(country1),
             partner_input="World",
             direction="Import",
         )
 
         # 5. World imports of affected products from UK
         world_from_uk = avgtrade(
-            df=affected_products_df, partner_input=country2, direction="Import"
+            df=affected_products_df,
+            partner_input=get_comtrade_country_name(country2),
+            direction="Import",
         )
 
         # 6. World total goods imports from UK
         world_from_uk_total = avgtrade(
-            df=all_products_df, partner_input=country2, direction="Import"
+            df=all_products_df,
+            partner_input=get_comtrade_country_name(country2),
+            direction="Import",
         )
 
         # 7. World imports of affected products from World
@@ -214,12 +218,16 @@ class AssessmentCalculator:
 
         # 9. World imports of affected products from partner country
         world_from_partner = avgtrade(
-            df=affected_products_df, partner_input=country1, direction="Import"
+            df=affected_products_df,
+            partner_input=get_comtrade_country_name(country1),
+            direction="Import",
         )
 
         # 10. World total goods imports from partner country
         world_from_partner_total = avgtrade(
-            df=all_products_df, partner_input=country1, direction="Import"
+            df=all_products_df,
+            partner_input=get_comtrade_country_name(country1),
+            direction="Import",
         )
 
         # Values from export data
@@ -227,33 +235,37 @@ class AssessmentCalculator:
         # 1. UK exports of affected products to partner country
         uk_to_partner = avgtrade(
             df=affected_products_df,
-            reporter_input=country2,
-            partner_input=country1,
+            reporter_input=get_comtrade_country_name(country2),
+            partner_input=get_comtrade_country_name(country1),
             direction="Export",
         )
 
         # 2. UK total goods exports to partner country
         uk_to_partner_total = avgtrade(
             df=all_products_df,
-            reporter_input=country2,
-            partner_input=country1,
+            reporter_input=get_comtrade_country_name(country2),
+            partner_input=get_comtrade_country_name(country1),
             direction="Export",
         )
 
         # 3. World exports of affected products to partner country
         world_to_partner = avgtrade(
-            df=affected_products_df, partner_input=country1, direction="Export"
+            df=affected_products_df,
+            partner_input=get_comtrade_country_name(country1),
+            direction="Export",
         )
 
         # 4. World total goods exports to partner country
         world_to_partner_total = avgtrade(
-            df=all_products_df, partner_input=country1, direction="Export"
+            df=all_products_df,
+            partner_input=get_comtrade_country_name(country1),
+            direction="Export",
         )
 
         # 5. UK exports of affected products to the World
         uk_to_world = avgtrade(
             df=affected_products_df,
-            reporter_input=country2,
+            reporter_input=get_comtrade_country_name(country2),
             partner_input="World",
             direction="Export",
         )
@@ -261,7 +273,7 @@ class AssessmentCalculator:
         # 6. UK total goods exports to the World
         uk_to_world_total = avgtrade(
             df=all_products_df,
-            reporter_input=country2,
+            reporter_input=get_comtrade_country_name(country2),
             partner_input="World",
             direction="Export",
         )
@@ -279,7 +291,7 @@ class AssessmentCalculator:
         # 9. Partner country exports of affected products to World
         partner_to_world = avgtrade(
             df=affected_products_df,
-            reporter_input=country1,
+            reporter_input=get_comtrade_country_name(country1),
             partner_input="World",
             direction="Export",
         )
@@ -287,7 +299,7 @@ class AssessmentCalculator:
         # 10. Partner country total goods exports to World
         partner_to_world_total = avgtrade(
             df=all_products_df,
-            reporter_input=country1,
+            reporter_input=get_comtrade_country_name(country1),
             partner_input="World",
             direction="Export",
         )
