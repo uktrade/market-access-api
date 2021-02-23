@@ -1,0 +1,24 @@
+{
+    "validation": {
+        "status": {
+            "name": "Ok",
+            "value": 0,
+            "category": 0,
+            "description": "",
+            "helpUrl": "For more reference visit http://comtrade.un.org/data/dev/portal/"
+        },
+        "message": null,
+        "count": {
+            "value": 0,
+            "started": "2021-02-23T18:21:17.9040542+01:00",
+            "finished": "2021-02-23T18:21:18.5430669+01:00",
+            "durationSeconds": 0.6390127
+        },
+        "datasetTimer": {
+            "started": "2021-02-23T18:21:17.9040542+01:00",
+            "finished": "2021-02-23T18:21:19.087077+01:00",
+            "durationSeconds": 1.1830228
+        }
+    },
+    "dataset": []
+}

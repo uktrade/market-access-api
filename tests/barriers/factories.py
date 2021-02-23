@@ -72,6 +72,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Barrier
 
+    id = factory.Faker("uuid4")
     term = 1
     status = 1
     country = "985f66a0-5d95-e211-a939-e4115bead28a"  # Angola

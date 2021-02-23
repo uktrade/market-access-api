@@ -19,10 +19,13 @@ services:
       context: .
       dockerfile: docker/local/Dockerfile
     entrypoint: dockerize -wait tcp://db:5432 -timeout 60s docker/local/entrypoint.sh
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/usr/src/app:delegated
     env_file: docker-compose.env
     ports:
+      - "3000:3000"
+      - "5000:5000"
       - "8880:8000"
       - "8882:22"
     depends_on:

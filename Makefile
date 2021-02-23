@@ -102,7 +102,7 @@ __dumpfile := market_access_$(shell date +%Y%m%d_%H%M).gz
 .PHONY: pg-dump
 pg-dump: ## Creates a DB backup in ./db_dumps folder.
 	@echo "$$(tput setaf 3)🥟   Creating dump file ./db_dumps/$(__dumpfile)  🙈"
-	@docker-compose exec db bash -c "mkdir -p /var/lib/postgresql/dumps && pg_dump -U postgres market_access | gzip > /var/lib/postgresql/dumps/$(__dumpfile)"
+	@docker-compose exec db bash -c "mkdir -p /var/lib/postgresql/dumps && pg_dump -U postgres postgres | gzip > /var/lib/postgresql/dumps/$(__dumpfile)"
 
 __devdumpfile := DEV_market_access_$(shell date +%Y%m%d_%H%M).gz
 .PHONY: pg-dump-dev
@@ -113,7 +113,15 @@ pg-dump-dev: ## Creates a DB backup of DEV in ./db_dumps folder.
 	@echo "$$(tput setaf 10)  - requires conduit plugin to be istalled (cf install-plugin conduit) "
 	@echo "$$(tput setaf 10)=========="
 	@echo "🥟   $$(tput setab 4)$$(tput setaf 0)[ DEV ]$$(tput sgr 0)$$(tput setaf 3) Creating dump file ./db_dumps/$(__devdumpfile)  🙈"
-	@cf conduit market-access-dev-db -- pg_dump | gzip > db_dumps/$(__devdumpfile)
+	@cf conduit market-access-dev-db-r1 -- pg_dump | gzip > db_dumps/$(__devdumpfile)
+
+
+.PHONY: pg-reset
+pg-reset: ## Creates a DB backup in ./db_dumps folder.
+	@echo "Resetting DB"
+	@docker-compose exec db bash -c "dropdb -h localhost -U postgres postgres"
+	@docker-compose exec db bash -c "createdb -h localhost -U postgres postgres"
+
 
 dumpfile =
 .PHONY: pg-restore-db
@@ -127,6 +135,11 @@ else
 	@docker-compose exec db bash -c "./docker-entrypoint-initdb.d/utils/drop_db_dmas_api.sh && ./docker-entrypoint-initdb.d/utils/create_db_dmas_api.sh && ./docker-entrypoint-initdb.d/utils/restore_dump_dmas_api.sh $(dumpfile)"
 endif
 
+.PHONY: django-generate-data
+django-generate-data: ## Show django migrations.
+	docker-compose exec web ./manage.py create_fake_barriers
+# ==================================================
+
 
 # SSH COMMANDS (to debug via ssh)
 # ==================================================
@@ -139,3 +152,8 @@ django-debug: ## Run the SSH server on `web` - mainly use to expose python inter
 django-ssh: ## Connect to `web` over SSH.
 	ssh -p8882 root@api.market-access.local -t 'cd /usr/src/app; bash -l'
 # ==================================================
+
+
+.PHONY: django-ssh
+django-notebook: ## Connect to `web` over SSH.
+	docker-compose exec --env RUN_MAIN=1 --env DJANGO_ALLOW_ASYNC_UNSAFE=true web python manage.py shell_plus --notebook

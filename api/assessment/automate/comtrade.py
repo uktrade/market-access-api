@@ -86,13 +86,23 @@ class ComtradeClient:
             data = self.cache.get(cache_key)
             if data:
                 return data
-
+        print(url)
         response = requests.get(url)
         try:
             data = response.json()
-        except json.decoder.JSONDecodeError:
+        except json.decoder.JSONDecodeError as e:
             # try to handle - Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
+            print(e)
+            print(response.content)
             data = json.loads(response.content.decode("utf-8-sig"))
+
+        from django.utils.text import slugify
+
+        hashed_url = slugify(url)
+        with open(hashed_url + ".json", "w") as file:
+            file.seek(0)
+            json.dump(data, file)
+            file.truncate()
 
         if self.cache:
             self.cache.set(cache_key, data, 7200)
