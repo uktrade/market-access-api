@@ -1,5 +1,4 @@
 from api.assessment.utils import calculate_barrier_economic_assessment
-from django.core.cache import cache
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -10,12 +9,10 @@ from api.assessment.models import (
     StrategicAssessment,
 )
 from api.barriers.fields import UserField
-from api.barriers.models import Barrier
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 from api.documents.fields import DocumentsField
 
-from .automate.calculator import AssessmentCalculator
 from .automate.exceptions import ComtradeError
 from .fields import (
     EffortToResolveField,
