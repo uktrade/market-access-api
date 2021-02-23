@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import (
     EconomicAssessment,
     EconomicImpactAssessment,
-    EconomicAssessmentHistoricalModel,
     StrategicAssessment,
     ResolvabilityAssessment,
 )
