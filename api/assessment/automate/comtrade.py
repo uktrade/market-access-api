@@ -107,7 +107,7 @@ class ComtradeClient:
         partners=None,
         reporters=None,
     ):
-        params = {}
+        params = {"fmt": "json"}
         if start_year and end_year:
             params.update(self.get_date_params(start_year, end_year))
         if trade_direction:
