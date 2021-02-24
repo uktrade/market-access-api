@@ -1,7 +1,7 @@
-from django.utils.text import slugify
 import os
+
 import simplejson as json
-import requests
+from django.utils.text import slugify
 
 
 def patched_comtrade_fetch(self, url):

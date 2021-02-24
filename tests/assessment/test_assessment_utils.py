@@ -1,12 +1,8 @@
-from mock import patch
+import pytest
 from api.assessment.automate.calculator import AssessmentCalculator
 from api.assessment.utils import calculate_barrier_economic_assessment
-from http import HTTPStatus
-
-import pytest
-from rest_framework.reverse import reverse
-
 from api.core.test_utils import APITestMixin
+from mock import patch
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 
 pytestmark = [pytest.mark.django_db]

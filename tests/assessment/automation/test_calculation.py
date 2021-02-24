@@ -1,18 +1,14 @@
-from typing import Dict
-from api.assessment.automate.comtrade import ComtradeClient
-from tests.assessment.automation.utils import patched_comtrade_fetch
-from mock import patch
-from api.assessment.automate.calculator import AssessmentCalculator
-from api.assessment.utils import calculate_barrier_economic_assessment
-from http import HTTPStatus
-from jsondiff import diff
-
 import os
-import simplejson as json
+from typing import Dict
+
 import pytest
-from rest_framework.reverse import reverse
-from django.core.cache import cache
+import simplejson as json
+from api.assessment.automate.calculator import AssessmentCalculator
+from api.assessment.automate.comtrade import ComtradeClient
 from api.core.test_utils import APITestMixin
+from jsondiff import diff
+from mock import patch
+from tests.assessment.automation.utils import patched_comtrade_fetch
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 
 pytestmark = [pytest.mark.django_db]
