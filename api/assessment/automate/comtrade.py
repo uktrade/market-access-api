@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal
+from typing import List
 
 import requests
 
@@ -149,8 +150,8 @@ class ComtradeClient:
         }
         return {"rg": ",".join([lookup.get(td) for td in trade_direction])}
 
-    def get_commodity_codes_params(self, commodity_codes):
-        return {"cc": ",".join(commodity_codes)}
+    def get_commodity_codes_params(self, commodity_codes: List[str]):
+        return {"cc": ",".join(sorted(commodity_codes))}
 
     def get_partners_params(self, partners):
         if isinstance(partners, str):
