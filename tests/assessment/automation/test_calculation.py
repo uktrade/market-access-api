@@ -25,15 +25,6 @@ class TestAssessmentUtils(APITestMixin):
             with open(snapshot_filename, "w") as snapshot_file:
                 snapshot_data = json.dump(test_data, snapshot_file, use_decimal=True)
             snapshot_data = test_data
-        print(
-            "DIFF",
-            diff(
-                json.dumps(test_data, sort_keys=True, use_decimal=True),
-                json.dumps(snapshot_data, sort_keys=True, use_decimal=True),
-                load=True,
-                dump=True,
-            ),
-        )
         return bool(
             diff(
                 json.dumps(test_data, sort_keys=True, use_decimal=True),
