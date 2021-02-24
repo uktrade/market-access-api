@@ -195,7 +195,7 @@ class AssessmentCalculator:
         # 5. World imports of affected products from UK
         world_from_uk = avgtrade(
             df=affected_products_df,
-            partner_input=get_comtrade_country_name(country2),
+            partner_input=country2,
             direction="Import",
         )
 
