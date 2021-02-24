@@ -164,7 +164,7 @@ class AssessmentCalculator:
         partner_from_uk = avgtrade(
             df=affected_products_df,
             reporter_input=country1,
-            partner_input=get_comtrade_country_name(country2),
+            partner_input=country2,
             direction="Import",
         )
 
@@ -172,7 +172,7 @@ class AssessmentCalculator:
         partner_from_uk_total = avgtrade(
             df=all_products_df,
             reporter_input=country1,
-            partner_input=get_comtrade_country_name(country2),
+            partner_input=country2,
             direction="Import",
         )
 
