@@ -1,3 +1,4 @@
+from api.assessment.automate.countries import get_comtrade_country_name
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
@@ -62,6 +63,13 @@ def trade_df_ind(x, df_input):
 
 
 def avgtrade(df, partner_input, direction, reporter_input=None):
+    """
+    Calculates average trade flow between two trade partners
+    """
+    # Country inputs need to be normalised
+    partner_input = get_comtrade_country_name(partner_input)
+    reporter_input = get_comtrade_country_name(reporter_input)
+
     if reporter_input:
         df_filt = [
             item

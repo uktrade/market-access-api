@@ -194,12 +194,16 @@ class AssessmentCalculator:
 
         # 5. World imports of affected products from UK
         world_from_uk = avgtrade(
-            df=affected_products_df, partner_input=country2, direction="Import"
+            df=affected_products_df,
+            partner_input=country2,
+            direction="Import",
         )
 
         # 6. World total goods imports from UK
         world_from_uk_total = avgtrade(
-            df=all_products_df, partner_input=country2, direction="Import"
+            df=all_products_df,
+            partner_input=country2,
+            direction="Import",
         )
 
         # 7. World imports of affected products from World
@@ -214,12 +218,16 @@ class AssessmentCalculator:
 
         # 9. World imports of affected products from partner country
         world_from_partner = avgtrade(
-            df=affected_products_df, partner_input=country1, direction="Import"
+            df=affected_products_df,
+            partner_input=country1,
+            direction="Import",
         )
 
         # 10. World total goods imports from partner country
         world_from_partner_total = avgtrade(
-            df=all_products_df, partner_input=country1, direction="Import"
+            df=all_products_df,
+            partner_input=country1,
+            direction="Import",
         )
 
         # Values from export data
@@ -242,12 +250,16 @@ class AssessmentCalculator:
 
         # 3. World exports of affected products to partner country
         world_to_partner = avgtrade(
-            df=affected_products_df, partner_input=country1, direction="Export"
+            df=affected_products_df,
+            partner_input=country1,
+            direction="Export",
         )
 
         # 4. World total goods exports to partner country
         world_to_partner_total = avgtrade(
-            df=all_products_df, partner_input=country1, direction="Export"
+            df=all_products_df,
+            partner_input=country1,
+            direction="Export",
         )
 
         # 5. UK exports of affected products to the World
