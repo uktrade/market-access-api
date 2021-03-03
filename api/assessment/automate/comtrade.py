@@ -80,7 +80,7 @@ class ComtradeClient:
 
     def fetch(self, url):
         if self.cache:
-            cache_key = f"comtrade:{url}"
+            cache_key = f"comtrade-api:{url}"
             data = self.cache.get(cache_key)
             if data:
                 return data
@@ -206,6 +206,6 @@ class ComtradeClient:
                 valid_years.append(year)
 
             if len(valid_years) == 3:
-                break
+                return valid_years
 
         return valid_years
