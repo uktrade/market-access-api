@@ -39,7 +39,7 @@ class AssessmentCalculator:
         )
 
         if not valid_years:
-            raise CountryYearlyDataNotFound(f"Years with trade data unavailable")
+            raise CountryYearlyDataNotFound("Years with trade data unavailable")
 
         if not use_most_recent and valid_years[0] != year:
             self.warnings.append(
