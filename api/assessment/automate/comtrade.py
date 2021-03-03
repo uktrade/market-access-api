@@ -37,8 +37,7 @@ class ComtradeClient:
 
     def get(
         self,
-        start_year=None,
-        end_year=None,
+        years=None,
         trade_direction=None,
         commodity_codes=None,
         partners=None,
@@ -51,16 +50,14 @@ class ComtradeClient:
         # Restrict to 5 commodity codes per API call
         if len(commodity_codes) > 5:
             return self.get(
-                start_year=start_year,
-                end_year=end_year,
+                years=years,
                 trade_direction=trade_direction,
                 commodity_codes=commodity_codes[:5],
                 partners=partners,
                 reporters=reporters,
                 tidy=tidy,
             ) + self.get(
-                start_year=start_year,
-                end_year=end_year,
+                years=years,
                 trade_direction=trade_direction,
                 commodity_codes=commodity_codes[5:],
                 partners=partners,
@@ -69,7 +66,7 @@ class ComtradeClient:
             )
 
         params = self.get_params(
-            start_year, end_year, trade_direction, commodity_codes, partners, reporters
+            years, trade_direction, commodity_codes, partners, reporters
         )
 
         querystring = "&".join([f"{k}={v}" for k, v in params.items()])
@@ -83,7 +80,7 @@ class ComtradeClient:
 
     def fetch(self, url):
         if self.cache:
-            cache_key = f"comtrade:{url}"
+            cache_key = f"comtrade-api:{url}"
             data = self.cache.get(cache_key)
             if data:
                 return data
@@ -101,16 +98,15 @@ class ComtradeClient:
 
     def get_params(
         self,
-        start_year=None,
-        end_year=None,
+        years=None,
         trade_direction=None,
         commodity_codes=None,
         partners=None,
         reporters=None,
     ):
         params = {"fmt": "json"}
-        if start_year and end_year:
-            params.update(self.get_date_params(start_year, end_year))
+        if years:
+            params.update(self.get_date_params(years))
         if trade_direction:
             params.update(self.get_trade_direction_params(trade_direction))
         if commodity_codes:
@@ -136,8 +132,7 @@ class ComtradeClient:
             output.append(new_row)
         return output
 
-    def get_date_params(self, start_year, end_year):
-        years = range(start_year, end_year + 1)
+    def get_date_params(self, years):
         return {"ps": ",".join([str(year) for year in years])}
 
     def get_trade_direction_params(self, trade_direction):
@@ -193,11 +188,13 @@ class ComtradeClient:
             }
         return self._reporter_areas
 
-    def get_valid_year(self, target_year, country1, country2):
+    def get_valid_years(self, target_year, country1, country2):
+
+        valid_years = []
+
         for year in range(target_year, 2000, -1):
             data = self.get(
-                start_year=year,
-                end_year=year,
+                years=[year],
                 trade_direction=("imports", "exports"),
                 commodity_codes="TOTAL",
                 reporters=(country1, country2),
@@ -206,4 +203,9 @@ class ComtradeClient:
             years = [item["yr"] for item in data]
 
             if len(years) == 4 and all(y == year for y in years):
-                return year
+                valid_years.append(year)
+
+            if len(valid_years) == 3:
+                return valid_years
+
+        return valid_years

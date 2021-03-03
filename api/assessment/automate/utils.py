@@ -1,7 +1,9 @@
-from api.assessment.automate.countries import get_comtrade_country_name
+import decimal
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
+
+from api.assessment.automate.countries import get_comtrade_country_name
 
 
 def trade_df(x, df_input, products):
@@ -62,7 +64,7 @@ def trade_df_ind(x, df_input):
     return df_filt
 
 
-def avgtrade(df, partner_input, direction, reporter_input=None):
+def avgtrade(df, partner_input, direction, reporter_input=None, num_years=3):
     """
     Calculates average trade flow between two trade partners
     """
@@ -90,10 +92,17 @@ def avgtrade(df, partner_input, direction, reporter_input=None):
     )
 
     count = 0
-    total = 0
+    total = decimal.Decimal(0)
     for item in df_filt:
         total += item["total"]
         count += 1
+
+    if num_years:
+        # Some years may have missing data for a trade_direction
+        # if the number of data years is provided we need to make sure
+        # the average is calculated on the number of years and not on the
+        # number of data rows
+        count = num_years
 
     if count == 0:
         return 0
@@ -115,11 +124,11 @@ def group_and_sum(data, sum_field, group_by):
     return output
 
 
-def group_and_average(data, field, group_by, start_year, end_year):
+def group_and_average(data, field, group_by, years):
     grouper = itemgetter(*group_by)
     output = []
     for key, grp in groupby(sorted(data, key=grouper), grouper):
-        summary_row = {str(year): 0 for year in range(start_year, end_year + 1)}
+        summary_row = {str(year): 0 for year in years}
 
         total = 0
         for index, row in enumerate(grp):
@@ -128,7 +137,7 @@ def group_and_average(data, field, group_by, start_year, end_year):
             summary_row[str(row["year"])] = row[field]
             total += row[field]
 
-        summary_row["average"] = total / (1 + end_year - start_year)
+        summary_row["average"] = total / len(years)
         output.append(summary_row)
     return output
 
