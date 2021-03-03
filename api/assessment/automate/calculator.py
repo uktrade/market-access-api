@@ -1,6 +1,8 @@
 import datetime
 import logging
 
+from api.assessment.automate.exceptions import CountryYearlyDataNotFound
+
 from .comtrade import ComtradeClient
 from .countries import get_comtrade_country_name
 from .formatters import percent_range, rca, rca_diff, rca_diff_glob, value_range
@@ -35,6 +37,9 @@ class AssessmentCalculator:
             get_comtrade_country_name(country1),
             get_comtrade_country_name(country2),
         )
+
+        if not valid_years:
+            raise CountryYearlyDataNotFound(f"Years with trade data unavailable")
 
         if not use_most_recent and valid_years[0] != year:
             self.warnings.append(
@@ -382,14 +387,6 @@ class AssessmentCalculator:
         # Value of UK exports of affected products to partner country
         uk_exports_affected = value_range(partner_from_uk, uk_to_partner)
 
-        # Market share of UK exports of products affected (UK to partner / UK to world)
-        # Do we still need this? Not in current MAB assessment template.
-        # share_exports_affected = percent_range(
-        #     partner_from_uk / world_from_uk,
-        #     uk_to_partner / uk_to_world,
-        #     decimal_places=1,
-        # )
-
         # UK share of import market
         uk_market_share = percent_range(
             partner_from_uk / partner_from_world if partner_from_world else 0,
@@ -426,6 +423,7 @@ class AssessmentCalculator:
             "product": product,
             "start_year": years[-1],
             "end_year": years[0],
+            "years": years,
             "warnings": self.warnings,
             "export_potential": {
                 "uk_global_rca": uk_global_rca,

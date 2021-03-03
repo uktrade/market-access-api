@@ -8,3 +8,7 @@ class CountryNotFound(ComtradeError):
 
 class ExchangeRateNotFound(ComtradeError):
     pass
+
+
+class CountryYearlyDataNotFound(ComtradeError):
+    pass
