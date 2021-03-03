@@ -67,6 +67,7 @@ class AssessmentCalculator:
         self.warnings = []
         commodity_codes = self.clean_commodity_codes(commodity_codes)
         years = self.get_year_range(country1, country2, year)
+        num_years = len(years)
 
         logger.info("Fetching data for affected products")
         affected_products_df = self.client.get(
@@ -165,6 +166,7 @@ class AssessmentCalculator:
             reporter_input=country1,
             partner_input=country2,
             direction="Import",
+            num_years=num_years,
         )
 
         # 2. Partner country total goods imports from UK
@@ -173,6 +175,7 @@ class AssessmentCalculator:
             reporter_input=country1,
             partner_input=country2,
             direction="Import",
+            num_years=num_years,
         )
 
         # 3. Partner country imports of affected products from world
@@ -181,6 +184,7 @@ class AssessmentCalculator:
             reporter_input=country1,
             partner_input="World",
             direction="Import",
+            num_years=num_years,
         )
 
         # 4. Partner country total goods imports from World
@@ -189,6 +193,7 @@ class AssessmentCalculator:
             reporter_input=country1,
             partner_input="World",
             direction="Import",
+            num_years=num_years,
         )
 
         # 5. World imports of affected products from UK
@@ -196,6 +201,7 @@ class AssessmentCalculator:
             df=affected_products_df,
             partner_input=country2,
             direction="Import",
+            num_years=num_years,
         )
 
         # 6. World total goods imports from UK
@@ -203,16 +209,23 @@ class AssessmentCalculator:
             df=all_products_df,
             partner_input=country2,
             direction="Import",
+            num_years=num_years,
         )
 
         # 7. World imports of affected products from World
         world_from_world = avgtrade(
-            df=affected_products_df, partner_input="World", direction="Import"
+            df=affected_products_df,
+            partner_input="World",
+            direction="Import",
+            num_years=num_years,
         )
 
         # 8. World total goods imports from World
         world_from_world_total = avgtrade(
-            df=all_products_df, partner_input="World", direction="Import"
+            df=all_products_df,
+            partner_input="World",
+            direction="Import",
+            num_years=num_years,
         )
 
         # 9. World imports of affected products from partner country
@@ -220,6 +233,7 @@ class AssessmentCalculator:
             df=affected_products_df,
             partner_input=country1,
             direction="Import",
+            num_years=num_years,
         )
 
         # 10. World total goods imports from partner country
@@ -227,6 +241,7 @@ class AssessmentCalculator:
             df=all_products_df,
             partner_input=country1,
             direction="Import",
+            num_years=num_years,
         )
 
         # Values from export data
@@ -237,6 +252,7 @@ class AssessmentCalculator:
             reporter_input=country2,
             partner_input=country1,
             direction="Export",
+            num_years=num_years,
         )
 
         # 2. UK total goods exports to partner country
@@ -245,6 +261,7 @@ class AssessmentCalculator:
             reporter_input=country2,
             partner_input=country1,
             direction="Export",
+            num_years=num_years,
         )
 
         # 3. World exports of affected products to partner country
@@ -252,6 +269,7 @@ class AssessmentCalculator:
             df=affected_products_df,
             partner_input=country1,
             direction="Export",
+            num_years=num_years,
         )
 
         # 4. World total goods exports to partner country
@@ -259,6 +277,7 @@ class AssessmentCalculator:
             df=all_products_df,
             partner_input=country1,
             direction="Export",
+            num_years=num_years,
         )
 
         # 5. UK exports of affected products to the World
@@ -267,6 +286,7 @@ class AssessmentCalculator:
             reporter_input=country2,
             partner_input="World",
             direction="Export",
+            num_years=num_years,
         )
 
         # 6. UK total goods exports to the World
@@ -275,16 +295,23 @@ class AssessmentCalculator:
             reporter_input=country2,
             partner_input="World",
             direction="Export",
+            num_years=num_years,
         )
 
         # 7. World exports of affected products to World
         world_to_world = avgtrade(
-            df=affected_products_df, partner_input="World", direction="Export"
+            df=affected_products_df,
+            partner_input="World",
+            direction="Export",
+            num_years=num_years,
         )
 
         # 8. World total goods exports to World
         world_to_world_total = avgtrade(
-            df=all_products_df, partner_input="World", direction="Export"
+            df=all_products_df,
+            partner_input="World",
+            direction="Export",
+            num_years=num_years,
         )
 
         # 9. Partner country exports of affected products to World
@@ -293,6 +320,7 @@ class AssessmentCalculator:
             reporter_input=country1,
             partner_input="World",
             direction="Export",
+            num_years=num_years,
         )
 
         # 10. Partner country total goods exports to World
@@ -301,6 +329,7 @@ class AssessmentCalculator:
             reporter_input=country1,
             partner_input="World",
             direction="Export",
+            num_years=num_years,
         )
 
         # CALCULATING THE METRIC OUTPUTS USED IN THE MAB ASSESSMENT

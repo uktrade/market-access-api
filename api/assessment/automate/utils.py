@@ -1,3 +1,4 @@
+import decimal
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
@@ -63,7 +64,7 @@ def trade_df_ind(x, df_input):
     return df_filt
 
 
-def avgtrade(df, partner_input, direction, reporter_input=None):
+def avgtrade(df, partner_input, direction, reporter_input=None, num_years=3):
     """
     Calculates average trade flow between two trade partners
     """
@@ -91,10 +92,17 @@ def avgtrade(df, partner_input, direction, reporter_input=None):
     )
 
     count = 0
-    total = 0
+    total = decimal.Decimal(0)
     for item in df_filt:
         total += item["total"]
         count += 1
+
+    if num_years:
+        # Some years may have missing data for a trade_direction
+        # if the number of data years is provided we need to make sure
+        # the average is calculated on the number of years and not on the
+        # number of data rows
+        count = num_years
 
     if count == 0:
         return 0
