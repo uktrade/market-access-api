@@ -1,7 +1,8 @@
-from api.assessment.automate.countries import get_comtrade_country_name
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
+
+from api.assessment.automate.countries import get_comtrade_country_name
 
 
 def trade_df(x, df_input, products):
@@ -115,11 +116,11 @@ def group_and_sum(data, sum_field, group_by):
     return output
 
 
-def group_and_average(data, field, group_by, start_year, end_year):
+def group_and_average(data, field, group_by, years):
     grouper = itemgetter(*group_by)
     output = []
     for key, grp in groupby(sorted(data, key=grouper), grouper):
-        summary_row = {str(year): 0 for year in range(start_year, end_year + 1)}
+        summary_row = {str(year): 0 for year in years}
 
         total = 0
         for index, row in enumerate(grp):
@@ -128,7 +129,7 @@ def group_and_average(data, field, group_by, start_year, end_year):
             summary_row[str(row["year"])] = row[field]
             total += row[field]
 
-        summary_row["average"] = total / (1 + end_year - start_year)
+        summary_row["average"] = total / len(years)
         output.append(summary_row)
     return output
 

@@ -55,6 +55,19 @@ class TestAssessmentUtils(APITestMixin):
                     "040719",
                 ],
             },
+            {
+                "country": "a45f66a0-5d95-e211-a939-e4115bead28a",  # Bangladesh
+                "commodities": ["9301", "930591"],
+            },
+            {
+                "country": "1a0be5c4-5d95-e211-a939-e4115bead28a",  # Saudi Arabia
+                "commodities": [
+                    "020410",
+                    "020421",
+                    "020441",
+                    "020430",
+                ],
+            },
         ]
 
         for country_commodity_pair in country_commodity_pairs:

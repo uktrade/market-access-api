@@ -30,19 +30,18 @@ class AssessmentCalculator:
             # The most recent year for which annual data may be available on Comtrade
             year = datetime.datetime.now().year - 1
 
-        end_year = self.client.get_valid_year(
+        valid_years = self.client.get_valid_years(
             year,
             get_comtrade_country_name(country1),
             get_comtrade_country_name(country2),
         )
-        start_year = end_year - 2
 
-        if not use_most_recent and end_year != year:
+        if not use_most_recent and valid_years[0] != year:
             self.warnings.append(
-                f"Your chosen years {year-2}-{year} were not available. "
-                f"{start_year}-{end_year} were downloaded instead."
+                f"Your chosen ending year {year} was not available. "
+                f"Years {','.join(valid_years)} were downloaded instead."
             )
-        return (start_year, end_year)
+        return valid_years
 
     def clean_commodity_codes(self, commodity_codes):
         invalid_codes = set(commodity_codes) - set(valid_codes)
@@ -62,12 +61,11 @@ class AssessmentCalculator:
     ):
         self.warnings = []
         commodity_codes = self.clean_commodity_codes(commodity_codes)
-        start_year, end_year = self.get_year_range(country1, country2, year)
+        years = self.get_year_range(country1, country2, year)
 
         logger.info("Fetching data for affected products")
         affected_products_df = self.client.get(
-            start_year=start_year,
-            end_year=end_year,
+            years=years,
             trade_direction=("imports", "exports"),
             commodity_codes=commodity_codes,
             reporters="All",
@@ -81,8 +79,7 @@ class AssessmentCalculator:
 
         logger.info("Fetching data for all products")
         all_products_df = self.client.get(
-            start_year=start_year,
-            end_year=end_year,
+            years=years,
             trade_direction=("imports", "exports"),
             commodity_codes="TOTAL",
             reporters="All",
@@ -128,16 +125,14 @@ class AssessmentCalculator:
             data=df_total_avgs,
             field="total",
             group_by=("trade_flow", "products", "reporter", "partner"),
-            start_year=start_year,
-            end_year=end_year,
+            years=years,
         )
 
         df_avgs = group_and_average(
             data=df_ap_avgs,
             field="total",
             group_by=("trade_flow", "products", "reporter", "partner"),
-            start_year=start_year,
-            end_year=end_year,
+            years=years,
         )
         df_avgs += df_total_avgs
 
@@ -151,8 +146,7 @@ class AssessmentCalculator:
                 "commodity_code",
                 "products",
             ),
-            start_year=start_year,
-            end_year=end_year,
+            years=years,
         )
         df_avgs_ind += df_total_avgs
 
@@ -390,11 +384,11 @@ class AssessmentCalculator:
 
         # Market share of UK exports of products affected (UK to partner / UK to world)
         # Do we still need this? Not in current MAB assessment template.
-        share_exports_affected = percent_range(
-            partner_from_uk / world_from_uk,
-            uk_to_partner / uk_to_world,
-            decimal_places=1,
-        )
+        # share_exports_affected = percent_range(
+        #     partner_from_uk / world_from_uk,
+        #     uk_to_partner / uk_to_world,
+        #     decimal_places=1,
+        # )
 
         # UK share of import market
         uk_market_share = percent_range(
@@ -430,8 +424,8 @@ class AssessmentCalculator:
             "version": self.version,
             "commodity_codes": commodity_codes,
             "product": product,
-            "start_year": start_year,
-            "end_year": end_year,
+            "start_year": years[-1],
+            "end_year": years[0],
             "warnings": self.warnings,
             "export_potential": {
                 "uk_global_rca": uk_global_rca,
