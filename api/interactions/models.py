@@ -1,14 +1,18 @@
-from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
-from django.db import models
-from django.db.models import Q
-from django.urls import reverse
-from simple_history.models import HistoricalRecords
+import re
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
+
+from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from django.db.models import Q
+from django.urls import reverse
+
+from notifications_python_client.notifications import NotificationsAPIClient
+from simple_history.models import HistoricalRecords
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -83,6 +87,28 @@ class InteractionHistoricalModel(models.Model):
         abstract = True
 
 
+def _handle_tagged_users(note_text, barrier, created_by):
+    user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")
+    emails = (i[1:] for i in user_regex.finditer(note_text))
+    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+    barrier_id = str(barrier.code)
+    barrier_name = str(barrier.title)
+    mentioned_by = f"{created_by.first_name} {created_by.last_name}"
+
+    for email in emails:
+        first_name = email.split(".")[0]
+        client.send_email_notification(
+            email_address=email,
+            template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
+            personalisation={
+                "first_name": first_name,
+                "mentioned_by": mentioned_by,
+                "barrier_number": barrier_id,
+                "barrier_name": barrier_name,
+            },
+        )
+
+
 class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """ Interaction records for each Barrier """
 
@@ -104,6 +130,10 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     objects = InteractionManager()
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        _handle_tagged_users(self.text, self.barrier, self.created_by)
+
     @property
     def created_user(self):
         return self._cleansed_username(self.created_by)
@@ -122,6 +152,10 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     text = models.TextField()
 
     history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        _handle_tagged_users(self.text, self.public_barrier, self.created_by)
 
     @property
     def barrier(self):
