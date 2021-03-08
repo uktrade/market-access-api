@@ -6,6 +6,7 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
@@ -87,14 +88,29 @@ class InteractionHistoricalModel(models.Model):
         abstract = True
 
 
+class Mention(BaseModel):
+    barrier = models.ForeignKey(
+        "barriers.Barrier",
+        related_name="interactions_documents",
+        on_delete=models.CASCADE,
+    )
+    email_used = models.EmailField
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL)
+
+
 def _handle_tagged_users(note_text, barrier, created_by):
+    # Prepare values used in mentions
     user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")
     emails = (i[1:] for i in user_regex.finditer(note_text))
-    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     barrier_id = str(barrier.code)
     barrier_name = str(barrier.title)
     mentioned_by = f"{created_by.first_name} {created_by.last_name}"
 
+    # prepare structes used to record and send mentions
+    user_obj = get_user_model()
+    users = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
+    mentions = []
+    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     for email in emails:
         first_name = email.split(".")[0]
         client.send_email_notification(
@@ -107,6 +123,18 @@ def _handle_tagged_users(note_text, barrier, created_by):
                 "barrier_name": barrier_name,
             },
         )
+
+        mentions.append(
+            Mention(
+                created_by=created_by,
+                modified_by=created_by,
+                barrier=barrier,
+                email_used=email,
+                recipient=users[email],
+            )
+        )
+
+    Mention.objects.bulk_create(mentions)
 
 
 class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
