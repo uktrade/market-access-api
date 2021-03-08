@@ -91,22 +91,28 @@ class InteractionHistoricalModel(models.Model):
 class Mention(BaseModel):
     barrier = models.ForeignKey(
         "barriers.Barrier",
-        related_name="interactions_documents",
+        related_name="mention",
         on_delete=models.CASCADE,
     )
     email_used = models.EmailField
-    recipient = models.ForeignKey(settings.AUTH_USER_MODEL)
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
 
 
 def _handle_tagged_users(note_text, barrier, created_by):
     # Prepare values used in mentions
-    user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")
+    user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")  # noqa W605
     emails = (i[1:] for i in user_regex.finditer(note_text))
     barrier_id = str(barrier.code)
     barrier_name = str(barrier.title)
     mentioned_by = f"{created_by.first_name} {created_by.last_name}"
 
-    # prepare structes used to record and send mentions
+    # prepare structures used to record and send mentions
     user_obj = get_user_model()
     users = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
     mentions = []
