@@ -58,6 +58,7 @@ jobs:
       DMAS_BASE_URL: 'https://dummy.market-access.net'
       NOTIFY_API_KEY: ''
       NOTIFY_SAVED_SEARCHES_TEMPLATE_ID: ''
+      NOTIFY_BARRIER_NOTIFCATION_ID: ''
       PUBLIC_DATA_AWS_ACCESS_KEY_ID: 'dummy'
       PUBLIC_DATA_AWS_SECRET_ACCESS_KEY: 'dummy'
       PUBLIC_DATA_BUCKET: 'dummy'
