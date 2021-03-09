@@ -108,9 +108,11 @@ def _handle_tagged_users(note_text, barrier, created_by):
     # Prepare values used in mentions
     user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")  # noqa W605
     emails = (i[1:] for i in user_regex.finditer(note_text))
-    barrier_id = str(barrier.code)
+    barrier_id = str(barrier.id)
     barrier_name = str(barrier.title)
-    mentioned_by = f"{created_by.first_name} {created_by.last_name}"
+    mentioned_by = "anonymous"
+    if created_by:
+        mentioned_by = f"{created_by.first_name} {created_by.last_name}"
 
     # prepare structures used to record and send mentions
     user_obj = get_user_model()
