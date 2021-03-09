@@ -14,6 +14,7 @@ from tests.metadata.factories import OrganisationFactory
 
 class TestBarrierDetails(APITestMixin, APITestCase):
     def setUp(self):
+        super().setUp()
         self.barrier = BarrierFactory()
         self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
 
@@ -304,6 +305,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
 class TestHibernateEndpoint(APITestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.barrier = BarrierFactory()
         self.url = reverse("hibernate-barrier", kwargs={"pk": self.barrier.id})
 
@@ -340,6 +342,7 @@ class TestHibernateEndpoint(APITestMixin, TestCase):
 
 class TestBarrierTradeDirection(APITestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.barrier = BarrierFactory()
         self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
 
@@ -396,6 +399,7 @@ class TestBarrierTradeDirection(APITestMixin, TestCase):
 
 class TestBarrierPublicEligibility(APITestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.barrier = BarrierFactory()
         self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
 

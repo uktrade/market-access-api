@@ -12,6 +12,7 @@ class TestMiddleware(TestCase):
     """
 
     def setUp(self):
+        super().setUp()
         get_response = Mock()
         self.middleware = StatsMiddleware(get_response)
         self.request = Mock(spec=[""])

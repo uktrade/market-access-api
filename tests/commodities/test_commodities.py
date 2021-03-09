@@ -11,6 +11,7 @@ class CommoditiesTest(APITestMixin, TestCase):
     trading_bloc_id = "TB00016"
 
     def setUp(self):
+        super().setUp()
         CommodityFactory(code="2105000000", description="Ice cream")
         CommodityFactory(code="1704903000", description="White chocolate")
         CommodityFactory(code="0810200000", description="Other fruit")

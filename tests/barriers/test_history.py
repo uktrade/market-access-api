@@ -35,6 +35,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
 
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
@@ -265,6 +266,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
@@ -442,6 +444,7 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "documents", "users"]
 
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.assessment = EconomicAssessment.objects.create(
             barrier=self.barrier,
@@ -546,6 +549,7 @@ class TestNoteHistory(APITestMixin, TestCase):
     fixtures = ["documents", "users", "barriers"]
 
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.note = Interaction.objects.create(
@@ -587,6 +591,7 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
     fixtures = ["users", "barriers"]
 
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
@@ -612,6 +617,7 @@ class TestHistoryView(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
@@ -949,6 +955,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
 
     @freeze_time("2020-03-02")
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.assessment = EconomicAssessmentFactory(barrier=self.barrier, rating="LOW")

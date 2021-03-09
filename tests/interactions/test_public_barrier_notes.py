@@ -11,6 +11,7 @@ from tests.barriers.factories import BarrierFactory
 
 class PublicBarrierNoteTestCase(APITestMixin, APITestCase):
     def setUp(self):
+        super().setUp()
         self.barrier = BarrierFactory(priority="LOW")
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
         self.note1 = PublicBarrierNote.objects.create(

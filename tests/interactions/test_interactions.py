@@ -17,6 +17,7 @@ class TestListInteractions(APITestMixin, APITestCase):
         return self.api_client.put(url, format="json", data={})
 
     def setUp(self):
+        super().setUp()
         # NULL next_steps_summary as that creates an interaction when the report is submitted
         self.report = ReportFactory(next_steps_summary="")
 
