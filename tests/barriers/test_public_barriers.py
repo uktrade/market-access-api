@@ -324,9 +324,13 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
         pb1, _ = self.publish_barrier(barrier=self.barrier)
 
         with freeze_time("2020-02-02"):
-            _note1 = PublicBarrierNote.objects.create(public_barrier=pb1, text="wibble")
+            _note1 = PublicBarrierNote.objects.create(
+                public_barrier=pb1, text="wibble", created_by=self.mock_user
+            )
         with freeze_time("2020-02-03"):
-            note2 = PublicBarrierNote.objects.create(public_barrier=pb1, text="wobble")
+            note2 = PublicBarrierNote.objects.create(
+                public_barrier=pb1, text="wobble", created_by=self.mock_user
+            )
 
         r = self.api_client.get(url)
 

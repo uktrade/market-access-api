@@ -401,6 +401,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         note = PublicBarrierNote.objects.create(
             public_barrier=self.public_barrier,
             text="Original note",
+            created_by=self.mock_user,
         )
         note.text = "Edited note"
         note.save()
@@ -419,6 +420,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         note = PublicBarrierNote.objects.create(
             public_barrier=self.public_barrier,
             text="Original note",
+            created_by=self.mock_user,
         )
         note.archived = True
         note.save()
@@ -556,6 +558,7 @@ class TestNoteHistory(APITestMixin, TestCase):
             barrier=self.barrier,
             kind="COMMENT",
             text="Original note",
+            created_by=self.mock_user,
         )
 
     def test_documents_history(self):
@@ -607,7 +610,7 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
         assert data["field"] == "user"
         assert data["old_value"] is None
         assert data["new_value"] == {
-            "user": {"id": 4, "name": "Testo Useri"},
+            "user": {"id": 5, "name": "Testo Useri"},
             "role": "Contributor",
         }
 
@@ -625,6 +628,7 @@ class TestHistoryView(APITestMixin, TestCase):
             barrier=self.barrier,
             kind="COMMENT",
             text="Original note",
+            created_by=self.mock_user,
         )
 
     def get_history_by_field(self, history, field):
@@ -943,7 +947,7 @@ class TestHistoryView(APITestMixin, TestCase):
             "field": "user",
             "old_value": None,
             "new_value": {
-                "user": {"id": 4, "name": "Testo Useri"},
+                "user": {"id": 5, "name": "Testo Useri"},
                 "role": "Contributor",
             },
             "user": None,
@@ -958,8 +962,13 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
-        self.assessment = EconomicAssessmentFactory(barrier=self.barrier, rating="LOW")
-        self.note = InteractionFactory(barrier=self.barrier, text="Original note")
+
+        self.assessment = EconomicAssessmentFactory(
+            barrier=self.barrier, rating="LOW", created_by=self.mock_user
+        )
+        self.note = InteractionFactory(
+            barrier=self.barrier, text="Original note", created_by=self.mock_user
+        )
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
     @freeze_time("2020-04-01")

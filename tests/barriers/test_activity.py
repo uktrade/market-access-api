@@ -30,6 +30,7 @@ class TestActivityView(APITestMixin, TestCase):
             barrier=self.barrier,
             kind="COMMENT",
             text="Original note",
+            created_by=self.mock_user,
         )
 
     @freeze_time("2020-04-01")

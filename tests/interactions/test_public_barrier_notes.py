@@ -15,10 +15,10 @@ class PublicBarrierNoteTestCase(APITestMixin, APITestCase):
         self.barrier = BarrierFactory(priority="LOW")
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
         self.note1 = PublicBarrierNote.objects.create(
-            public_barrier=self.public_barrier, text="Note 1"
+            public_barrier=self.public_barrier, text="Note 1", created_by=self.mock_user
         )
         self.note2 = PublicBarrierNote.objects.create(
-            public_barrier=self.public_barrier, text="Note 2"
+            public_barrier=self.public_barrier, text="Note 2", created_by=self.mock_user
         )
 
     def test_list_public_barrier_notes(self):
