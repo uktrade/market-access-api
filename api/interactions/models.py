@@ -115,9 +115,7 @@ def _handle_tagged_users(
     emails: Dict[str, str] = (i[1:] for i in user_regex.finditer(note_text))
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
-    mentioned_by: str = "anonymous"
-    if created_by:
-        mentioned_by = f"{created_by.first_name} {created_by.last_name}"
+    mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
 
     # prepare structures used to record and send mentions
     user_obj = get_user_model()
