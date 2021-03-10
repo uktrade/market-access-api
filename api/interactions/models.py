@@ -1,4 +1,5 @@
 import re
+from typing import Dict, List
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
@@ -104,30 +105,34 @@ class Mention(BaseModel):
     )
 
 
-def _handle_tagged_users(note_text, barrier, created_by):
+def _handle_tagged_users(
+    note_text: models.TextField,
+    barrier,
+    created_by,
+):
     # Prepare values used in mentions
     user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")  # noqa W605
-    emails = (i[1:] for i in user_regex.finditer(note_text))
-    barrier_id = str(barrier.id)
-    barrier_name = str(barrier.title)
-    mentioned_by = "anonymous"
+    emails: Dict[str, str] = (i[1:] for i in user_regex.finditer(note_text))
+    barrier_code: str = str(barrier.code)
+    barrier_name: str = str(barrier.title)
+    mentioned_by: str = "anonymous"
     if created_by:
         mentioned_by = f"{created_by.first_name} {created_by.last_name}"
 
     # prepare structures used to record and send mentions
     user_obj = get_user_model()
-    users = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
-    mentions = []
+    users: List[str] = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
+    mentions: List[Mention] = []
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     for email in emails:
-        first_name = email.split(".")[0]
+        first_name: str = email.split(".")[0]
         client.send_email_notification(
             email_address=email,
             template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
             personalisation={
                 "first_name": first_name,
                 "mentioned_by": mentioned_by,
-                "barrier_number": barrier_id,
+                "barrier_number": barrier_code,
                 "barrier_name": barrier_name,
             },
         )
@@ -191,7 +196,7 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_tagged_users(self.text, self.public_barrier, self.created_by)
+        _handle_tagged_users(self.text, self.public_barrier.barrier, self.created_by)
 
     @property
     def barrier(self):
