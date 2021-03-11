@@ -4,10 +4,13 @@ from secrets import token_hex
 
 import factory
 import pytest
+
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, User
 from django.test.client import Client
 from django.utils.timezone import now
+
+from mock import patch
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.fields import DateField, DateTimeField
 from rest_framework.test import APIClient
@@ -184,6 +187,22 @@ class APITestMixin:
         ],
         "access_profiles": ["full-access"],
     }
+
+    def setUp(self):
+        super().setUp()
+        self.patch_notify = patch("api.interactions.models.NotificationsAPIClient")
+        self.mock_notify = self.patch_notify.start()
+        self.mock_user = User(
+            username=User.objects.make_random_password(),
+            first_name="TestFirst",
+            last_name="TestLast",
+        )
+        self.mock_user.save()
+
+    def tearDown(self):
+        self.mock_user.delete()
+        self.patch_notify.stop()
+        super().tearDown()
 
     @property
     def user(self):

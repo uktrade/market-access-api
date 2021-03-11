@@ -44,6 +44,7 @@ class TestListBarriersBlankSystem(APITestMixin, APITestCase):
 
 class TestListBarriers(APITestMixin, APITestCase):
     def setUp(self):
+        super().setUp()
         self.url = reverse("list-barriers")
 
     def test_list_barriers_exclude_reports(self):

@@ -13,6 +13,7 @@ class BarrierModifiedByTestCase(APITestMixin, APITestCase):
     """
 
     def setUp(self):
+        super().setUp()
         self.barrier = BarrierFactory()
         self.user1 = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
         self.user2 = create_test_user(sso_user_id=self.sso_user_data_2["user_id"])

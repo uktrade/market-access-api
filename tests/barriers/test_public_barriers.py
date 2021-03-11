@@ -40,6 +40,7 @@ from tests.user.factories import UserFactoryMixin
 
 class PublicBarrierBaseTestCase(UserFactoryMixin, APITestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.barrier: Barrier = BarrierFactory()
         self.url = self.get_barrier_url(barrier=self.barrier)
 
@@ -323,9 +324,13 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
         pb1, _ = self.publish_barrier(barrier=self.barrier)
 
         with freeze_time("2020-02-02"):
-            _note1 = PublicBarrierNote.objects.create(public_barrier=pb1, text="wibble")
+            _note1 = PublicBarrierNote.objects.create(
+                public_barrier=pb1, text="wibble", created_by=self.mock_user
+            )
         with freeze_time("2020-02-03"):
-            note2 = PublicBarrierNote.objects.create(public_barrier=pb1, text="wobble")
+            note2 = PublicBarrierNote.objects.create(
+                public_barrier=pb1, text="wobble", created_by=self.mock_user
+            )
 
         r = self.api_client.get(url)
 
@@ -1044,6 +1049,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
 class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.barrier = BarrierFactory(
             country="1f0be5c4-5d95-e211-a939-e4115bead28a",  # Singapore
             sectors=["9b38cecc-5f95-e211-a939-e4115bead28a"],  # Chemicals
@@ -1283,6 +1289,7 @@ class TestPublicBarrierContributors(PublicBarrierBaseTestCase):
     """
 
     def setUp(self):
+        super().setUp()
         self.publisher = self.create_publisher()
         self.client = self.create_api_client(user=self.publisher)
         self.barrier = BarrierFactory()
@@ -1362,6 +1369,7 @@ class TestPublicBarrierContributors(PublicBarrierBaseTestCase):
 
 class TestArchivingBarriers(PublicBarrierBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.publisher = self.create_publisher()
         self.client = self.create_api_client(user=self.publisher)
         self.barrier: Barrier = BarrierFactory()
@@ -1418,6 +1426,7 @@ class TestArchivingBarriers(PublicBarrierBaseTestCase):
 
 class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
     def setUp(self):
+        super().setUp()
         self.publisher = self.create_publisher()
         self.client = self.create_api_client(user=self.publisher)
         self.barrier = BarrierFactory()

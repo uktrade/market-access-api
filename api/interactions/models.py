@@ -1,14 +1,20 @@
-from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
-from django.db import models
-from django.db.models import Q
-from django.urls import reverse
-from simple_history.models import HistoricalRecords
+import re
+from typing import Dict, List
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from django.db.models import Q
+from django.urls import reverse
+
+from notifications_python_client.notifications import NotificationsAPIClient
+from simple_history.models import HistoricalRecords
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -83,6 +89,65 @@ class InteractionHistoricalModel(models.Model):
         abstract = True
 
 
+class Mention(BaseModel):
+    barrier = models.ForeignKey(
+        "barriers.Barrier",
+        related_name="mention",
+        on_delete=models.CASCADE,
+    )
+    email_used = models.EmailField
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+
+
+def _handle_tagged_users(
+    note_text: models.TextField,
+    barrier,
+    created_by,
+):
+    # Prepare values used in mentions
+    user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")  # noqa W605
+    emails: Dict[str, str] = (i[1:] for i in user_regex.finditer(note_text))
+    barrier_code: str = str(barrier.code)
+    barrier_name: str = str(barrier.title)
+    mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
+
+    # prepare structures used to record and send mentions
+    user_obj = get_user_model()
+    users: List[str] = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
+    mentions: List[Mention] = []
+    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+    for email in emails:
+        first_name: str = email.split(".")[0]
+        client.send_email_notification(
+            email_address=email,
+            template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
+            personalisation={
+                "first_name": first_name,
+                "mentioned_by": mentioned_by,
+                "barrier_number": barrier_code,
+                "barrier_name": barrier_name,
+            },
+        )
+
+        mentions.append(
+            Mention(
+                created_by=created_by,
+                modified_by=created_by,
+                barrier=barrier,
+                email_used=email,
+                recipient=users[email],
+            )
+        )
+
+    Mention.objects.bulk_create(mentions)
+
+
 class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """ Interaction records for each Barrier """
 
@@ -104,6 +169,10 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     objects = InteractionManager()
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        _handle_tagged_users(self.text, self.barrier, self.created_by)
+
     @property
     def created_user(self):
         return self._cleansed_username(self.created_by)
@@ -122,6 +191,10 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     text = models.TextField()
 
     history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        _handle_tagged_users(self.text, self.public_barrier.barrier, self.created_by)
 
     @property
     def barrier(self):

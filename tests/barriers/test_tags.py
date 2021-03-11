@@ -190,6 +190,7 @@ class TestBarrierTagsFilter(APITestMixin, TestCase):
 
 class TestReportTags(APITestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.report = ReportFactory()
         self.url = reverse("get-report", kwargs={"pk": self.report.id})
 

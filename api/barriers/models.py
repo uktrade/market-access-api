@@ -671,18 +671,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         ]
 
     def add_new_version(self):
-        # self.published_versions structure:
-        # {
-        #     "latest_version": 3,
-        #     "versions": {
-        #         1: {
-        #                "version": 1,
-        #                "published_on: "datetime",
-        #            },
-        #         2: {...},
-        #         3: {...}
-        #     }
-        # }
         latest_version = self.published_versions.get("latest_version", "0")
         new_version = str(int(latest_version) + 1)
         entry = {

@@ -12,6 +12,7 @@ from tests.barriers.factories import ReportFactory
 
 class TestListReports(APITestMixin, APITestCase):
     def setUp(self):
+        super().setUp()
         self.url = reverse("list-reports")
 
     def test_create_report(self):

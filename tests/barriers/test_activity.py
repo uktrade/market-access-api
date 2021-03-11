@@ -22,6 +22,7 @@ class TestActivityView(APITestMixin, TestCase):
 
     @freeze_time("2020-03-01")
     def setUp(self):
+        super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
 
@@ -29,6 +30,7 @@ class TestActivityView(APITestMixin, TestCase):
             barrier=self.barrier,
             kind="COMMENT",
             text="Original note",
+            created_by=self.mock_user,
         )
 
     @freeze_time("2020-04-01")
