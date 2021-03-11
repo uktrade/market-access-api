@@ -213,6 +213,8 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     history = HistoricalRecords(bases=[InteractionHistoricalModel])
 
+    mentions = GenericRelation("Mention")
+
     objects = InteractionManager()
 
     def save(self, *args, **kwargs):
