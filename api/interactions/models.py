@@ -1,4 +1,5 @@
 import re
+import urllib.parse
 from typing import List
 
 from api.barriers.mixins import BarrierRelatedMixin
@@ -137,6 +138,7 @@ def _handle_tagged_users(note_text: models.TextField, barrier, created_by, inter
     users: List[str] = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
     mentions: List[Mention] = []
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+    barrier_url = urllib.parse.urljoin(settings.FRONTEND_DOMAIN, "barriers", barrier.id)
     for email in emails:
         first_name: str = email.split(".")[0]
         client.send_email_notification(
@@ -147,6 +149,7 @@ def _handle_tagged_users(note_text: models.TextField, barrier, created_by, inter
                 "mentioned_by": mentioned_by,
                 "barrier_number": barrier_code,
                 "barrier_name": barrier_name,
+                "barrier_url": barrier_url
             },
         )
 
