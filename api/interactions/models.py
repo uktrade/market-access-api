@@ -1,6 +1,6 @@
 import re
 import urllib.parse
-from typing import List
+from typing import Dict, List
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
@@ -8,8 +8,7 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.fields import (GenericForeignKey,
-                                                GenericRelation)
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -135,10 +134,14 @@ def _handle_tagged_users(note_text: models.TextField, barrier, created_by, inter
 
     # prepare structures used to record and send mentions
     user_obj = get_user_model()
-    users: List[str] = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
+    users: Dict[str, settings.AUTH_USER_MODEL] = {
+        u.email: u for u in user_obj.objects.filter(email__in=emails)
+    }
     mentions: List[Mention] = []
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-    barrier_url = urllib.parse.urljoin(settings.FRONTEND_DOMAIN, f"barriers/{barrier.id}")
+    barrier_url = urllib.parse.urljoin(
+        settings.FRONTEND_DOMAIN, f"barriers/{barrier.id}"
+    )
     for email in emails:
         first_name: str = email.split(".")[0]
         client.send_email_notification(
@@ -149,7 +152,7 @@ def _handle_tagged_users(note_text: models.TextField, barrier, created_by, inter
                 "mentioned_by": mentioned_by,
                 "barrier_number": barrier_code,
                 "barrier_name": barrier_name,
-                "barrier_url": barrier_url
+                "barrier_url": barrier_url,
             },
         )
 
