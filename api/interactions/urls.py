@@ -2,6 +2,7 @@ from api.interactions.views import (
     BarrierInteractionDetail,
     BarrierInteractionList,
     DocumentViewSet,
+    ExcludeNotifcation,
     MentionList,
     PublicBarrierNoteDetail,
     PublicBarrierNoteList,
@@ -64,6 +65,11 @@ urlpatterns = [
     path(
         "mentions/mark-as-unread/<int:pk>",
         MentionList.as_view({"get": "mark_as_unread"}),
+        name="mentions-mark-as-read",
+    ),
+    path(
+        "mentions/exclude-from-notification",
+        ExcludeNotifcation.as_view(),
         name="mentions-mark-as-read",
     ),
 ]

@@ -124,8 +124,10 @@ class Mention(BaseModel):
 
 
 class ExcludeFromNotifcation(BaseModel):
-    excluded_user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    excluded_user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING,
+        related_name="excluded_notification",
     )
     exclude_email = models.EmailField()
 
