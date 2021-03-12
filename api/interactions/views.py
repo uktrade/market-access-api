@@ -1,19 +1,20 @@
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-from rest_framework import generics
-from rest_framework.exceptions import ValidationError
-
 from api.assessment.models import EconomicAssessment
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.documents.views import BaseEntityDocumentModelViewSet
-from api.interactions.models import Document, Interaction, PublicBarrierNote
+from api.interactions.models import Document, Interaction, Mention, PublicBarrierNote
 from api.interactions.serializers import (
     DocumentSerializer,
     InteractionSerializer,
+    MentionSerializer,
     PublicBarrierNoteSerializer,
 )
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
 
 class DocumentViewSet(BaseEntityDocumentModelViewSet):
@@ -147,3 +148,24 @@ class PublicBarrierNoteDetail(
 
     def perform_destroy(self, instance):
         instance.archive(self.request.user)
+
+
+class MentionList(viewsets.ModelViewSet):
+    serializer_class = MentionSerializer
+
+    def get_queryset(self):
+        return Mention.objects.filter(recipient=self.request.user)
+
+    def mark_as_read(self, request, pk):
+        mention = self.get_queryset().get(pk=pk)
+        mention.read_by_recipient = True
+        mention.save()
+        serializer = MentionSerializer(mention)
+        return Response(serializer.data)
+
+    def mark_as_unread(self, request, pk):
+        mention = self.get_queryset().get(pk=pk)
+        mention.read_by_recipient = False
+        mention.save()
+        serializer = MentionSerializer(mention)
+        return Response(serializer.data)

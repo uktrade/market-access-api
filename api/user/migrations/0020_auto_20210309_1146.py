@@ -6,38 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0019_analyst_permissions'),
+        ("user", "0019_analyst_permissions"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='mybarrierssavedsearch',
-            name='notify_about_additions',
+            model_name="mybarrierssavedsearch",
+            name="notify_about_additions",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='mybarrierssavedsearch',
-            name='notify_about_updates',
+            model_name="mybarrierssavedsearch",
+            name="notify_about_updates",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='savedsearch',
-            name='notify_about_additions',
+            model_name="savedsearch",
+            name="notify_about_additions",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='savedsearch',
-            name='notify_about_updates',
+            model_name="savedsearch",
+            name="notify_about_updates",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='teambarrierssavedsearch',
-            name='notify_about_additions',
+            model_name="teambarrierssavedsearch",
+            name="notify_about_additions",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='teambarrierssavedsearch',
-            name='notify_about_updates',
+            model_name="teambarrierssavedsearch",
+            name="notify_about_updates",
             field=models.BooleanField(default=True),
         ),
     ]

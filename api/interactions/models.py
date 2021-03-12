@@ -7,6 +7,8 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
@@ -101,13 +103,26 @@ class Mention(BaseModel):
         on_delete=models.SET_NULL,
         related_name="+",
     )
+    read_by_recipient = models.BooleanField(default=False)
+    content_type = models.ForeignKey(
+        ContentType, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    object_id = models.PositiveIntegerField(null=True)
+    content_object = GenericForeignKey()
+
+    class Meta:
+        ordering = [
+            "-created_on",
+        ]
+
+    def get_related_message(self):
+        related_interaction = self.content_object
+        if related_interaction:
+            return related_interaction.text
+        return "Message could not be found"
 
 
-def _handle_tagged_users(
-    note_text: models.TextField,
-    barrier,
-    created_by,
-):
+def _handle_tagged_users(note_text: models.TextField, barrier, created_by, interaction):
     # Prepare values used in mentions
     regex = r"\@([a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk)"
     matches = re.finditer(regex, str(note_text), re.MULTILINE)
@@ -141,6 +156,7 @@ def _handle_tagged_users(
                 barrier=barrier,
                 email_used=email,
                 recipient=users[email],
+                content_object=interaction,
             )
         )
 
@@ -166,11 +182,13 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     history = HistoricalRecords(bases=[InteractionHistoricalModel])
 
+    mentions = GenericRelation("Mention")
+
     objects = InteractionManager()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_tagged_users(self.text, self.barrier, self.created_by)
+        _handle_tagged_users(self.text, self.barrier, self.created_by, self)
 
     @property
     def created_user(self):
@@ -191,9 +209,13 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     history = HistoricalRecords()
 
+    mentions = GenericRelation("Mention")
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_tagged_users(self.text, self.public_barrier.barrier, self.created_by)
+        _handle_tagged_users(
+            self.text, self.public_barrier.barrier, self.created_by, self
+        )
 
     @property
     def barrier(self):

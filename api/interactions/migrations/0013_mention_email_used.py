@@ -6,14 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('interactions', '0012_mention'),
+        ("interactions", "0012_mention"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mention',
-            name='email_used',
-            field=models.EmailField(default='fake.email@test.domain.gov.uk', max_length=254),
+            model_name="mention",
+            name="email_used",
+            field=models.EmailField(
+                default="fake.email@test.domain.gov.uk", max_length=254
+            ),
             preserve_default=False,
         ),
     ]

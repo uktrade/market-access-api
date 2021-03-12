@@ -1,6 +1,6 @@
+from api.interactions.models import Document, Interaction, Mention, PublicBarrierNote
+from api.user.serializers import UserDetailSerializer, UserMinimalDetailSerializer
 from rest_framework import serializers
-
-from api.interactions.models import Document, Interaction, PublicBarrierNote
 
 
 class InteractionSerializer(serializers.ModelSerializer):
@@ -125,3 +125,34 @@ class PublicBarrierNoteSerializer(serializers.ModelSerializer):
     def get_created_by(self, obj):
         if obj.created_by is not None:
             return {"id": obj.created_by.id, "name": obj.created_user}
+
+
+class MentionSerializer(serializers.ModelSerializer):
+
+    message = serializers.SerializerMethodField()
+    created_by = UserMinimalDetailSerializer(read_only=True)
+    barrier = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Mention
+        fields = (
+            "id",
+            "barrier",
+            "email_used",
+            "created_on",
+            "created_by",
+            "read_by_recipient",
+            "message",
+            "recipient",
+        )
+
+    def get_barrier(self, instance):
+        from api.barriers.serializers.barriers import BarrierMinimumDetailSerializer
+
+        return BarrierMinimumDetailSerializer(instance.barrier).data
+
+    def get_message(self, instance):
+        interaction = instance.content_object
+        if interaction:
+            return interaction.text
+        return "Message not available"
