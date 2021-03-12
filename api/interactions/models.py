@@ -5,14 +5,12 @@ from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
-
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
 
@@ -95,7 +93,7 @@ class Mention(BaseModel):
         related_name="mention",
         on_delete=models.CASCADE,
     )
-    email_used = models.EmailField
+    email_used = models.EmailField()
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -111,8 +109,9 @@ def _handle_tagged_users(
     created_by,
 ):
     # Prepare values used in mentions
-    user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")  # noqa W605
-    emails: Dict[str, str] = (i[1:] for i in user_regex.finditer(note_text))
+    regex = r"\@([a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk)"
+    matches = re.finditer(regex, str(note_text), re.MULTILINE)
+    emails = [match.group(1) for match in matches]
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
     mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
