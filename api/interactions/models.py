@@ -123,11 +123,27 @@ class Mention(BaseModel):
         return "Message could not be found"
 
 
+class ExcludeFromNotifcation(BaseModel):
+    excluded_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
+    exclude_email = models.EmailField()
+
+
 def _handle_tagged_users(note_text: models.TextField, barrier, created_by, interaction):
     # Prepare values used in mentions
-    regex = r"\@([a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk)"
+    regex = r"\@([a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk)"  # noqa
     matches = re.finditer(regex, str(note_text), re.MULTILINE)
-    emails = [match.group(1) for match in matches]
+    emails: List[str] = [
+        match.group(1) for match in matches
+    ]  # Get all emails for mentions
+    exclude_emails: List[str] = [
+        i.exclude_email
+        for i in ExcludeFromNotifcation.objects.filter(exclude_email__in=emails)
+    ]
+    emails = [
+        e for e in emails if e not in exclude_emails
+    ]  # remove explicitly excluded emails
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
     mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
