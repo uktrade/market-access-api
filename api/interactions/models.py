@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List
+from typing import List
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
@@ -7,7 +7,8 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.fields import (GenericForeignKey,
+                                                GenericRelation)
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
