@@ -132,10 +132,12 @@ class ExcludeFromNotifcation(BaseModel):
     exclude_email = models.EmailField()
 
 
-def _get_mentions(note_text: models.TextField) -> List[str]:
-    regex = r"\@([a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk)"  # noqa
-    matches = re.finditer(regex, str(note_text), re.MULTILINE)
-    emails: List[str] = list({match.group(1) for match in matches})  # dedupe emails
+def _get_mentions(note_text: str) -> List[str]:
+    regex = r"@.+?@.*?gov\.uk"
+    matches = re.finditer(regex, note_text, re.MULTILINE)
+    emails: List[str] = sorted(
+        {m.group()[1:] for m in matches}
+    )  # dedupe emails, strip leading '@'
     return emails
 
 
@@ -151,7 +153,7 @@ def _handle_tagged_users(
     note_text: models.TextField, barrier, created_by, interaction
 ) -> None:
     # Prepare values used in mentions
-    emails: List[str] = _get_mentions(note_text)
+    emails: List[str] = _get_mentions(str(note_text))
     emails = _remove_excluded(emails)
 
     barrier_code: str = str(barrier.code)
