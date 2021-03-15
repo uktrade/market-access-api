@@ -1,12 +1,14 @@
 from http import HTTPStatus
 from unittest.mock import patch
 
+from api.barriers.models import Barrier
 from api.interactions.models import (
     ExcludeFromNotifcation,
     Interaction,
+    Mention,
     PublicBarrierNote,
     _get_mentions,
-    _handle_tagged_users,
+    _handle_mention_notification,
     _remove_excluded,
 )
 from django.contrib.auth.models import User
@@ -23,6 +25,52 @@ class BaseNotificationTestCase(TestCase):
     def tearDown(self):
         self.patch_notify.stop()
         super().tearDown()
+
+
+class TestMentionNotification(BaseNotificationTestCase):
+    def setUp(self):
+        super().setUp()
+        self.mock_barrier = Barrier()
+        self.mock_barrier.code = "example code"
+        self.mock_barrier.title = "example title"
+        self.mock_barrier.save()
+
+        self.user = User.objects.create_user("foo", "foo@test.gov.uk", "bar")
+        self.user2 = User.objects.create_user("foo2", "foo2@test.gov.uk", "bar2")
+        self.user3 = User.objects.create_user("foo3", "foo3@test.gov.uk", "bar3")
+
+    def test_one_notification(self):
+        text = "test mention @foo@test.gov.uk"
+        assert Mention.objects.filter().exists() is False
+
+        _handle_mention_notification(text, self.mock_barrier, self.user)
+
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 1
+
+    def test_many_notification(self):
+        text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
+        assert Mention.objects.filter().exists() is False
+
+        _handle_mention_notification(text, self.mock_barrier, self.user)
+
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 3
+
+    def test_exclude_notification(self):
+        excluded = ExcludeFromNotifcation.objects.create(
+            excluded_user=self.user2,
+            exclude_email=self.user2.email,
+            created_by=self.user2,
+            modified_by=self.user2,
+        )
+        text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
+        assert Mention.objects.filter().exists() is False
+
+        _handle_mention_notification(text, self.mock_barrier, self.user)
+
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 2
 
 
 class TestRemoveExcluded(BaseNotificationTestCase):
@@ -98,7 +146,7 @@ those 3 values should fail. The working example should be @good.name@nosuch.dept
         assert res == expected
 
 
-class TestExcludeNotifcationREST(TestCase):
+class TestExcludeNotifcationREST(BaseNotificationTestCase):
     def setUp(self):
         super().setUp()
         self.url = reverse("mentions-mark-as-read")

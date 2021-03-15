@@ -8,7 +8,6 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -109,7 +108,7 @@ class Mention(BaseModel):
         ContentType, null=True, blank=True, on_delete=models.SET_NULL
     )
     object_id = models.PositiveIntegerField(null=True)
-    content_object = GenericForeignKey()
+    text = models.TextField()
 
     class Meta:
         ordering = [
@@ -117,10 +116,7 @@ class Mention(BaseModel):
         ]
 
     def get_related_message(self):
-        related_interaction = self.content_object
-        if related_interaction:
-            return related_interaction.text
-        return "Message could not be found"
+        return self.text
 
 
 class ExcludeFromNotifcation(BaseModel):
@@ -133,7 +129,7 @@ class ExcludeFromNotifcation(BaseModel):
 
 
 def _get_mentions(note_text: str) -> List[str]:
-    regex = r"@.+?@.*?gov\.uk"
+    regex = r"@\S*?@\S*?gov\.uk"
     matches = re.finditer(regex, note_text, re.MULTILINE)
     emails: List[str] = sorted(
         {m.group()[1:] for m in matches}
@@ -149,8 +145,8 @@ def _remove_excluded(emails: List[str]) -> List[str]:
     return [e for e in emails if e not in exclude_emails]
 
 
-def _handle_tagged_users(
-    note_text: models.TextField, barrier, created_by, interaction
+def _handle_mention_notification(
+    note_text: models.TextField, barrier, created_by
 ) -> None:
     # Prepare values used in mentions
     emails: List[str] = _get_mentions(str(note_text))
@@ -191,7 +187,7 @@ def _handle_tagged_users(
                 barrier=barrier,
                 email_used=email,
                 recipient=users[email],
-                content_object=interaction,
+                text=note_text,
             )
         )
 
@@ -217,13 +213,11 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     history = HistoricalRecords(bases=[InteractionHistoricalModel])
 
-    mentions = GenericRelation("Mention")
-
     objects = InteractionManager()
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_tagged_users(self.text, self.barrier, self.created_by, self)
+        _handle_mention_notification(self.text, self.barrier, self.created_by)
 
     @property
     def created_user(self):
@@ -244,12 +238,10 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     history = HistoricalRecords()
 
-    mentions = GenericRelation("Mention")
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_tagged_users(
-            self.text, self.public_barrier.barrier, self.created_by, self
+        _handle_mention_notification(
+            self.text, self.public_barrier.barrier, self.created_by
         )
 
     @property
