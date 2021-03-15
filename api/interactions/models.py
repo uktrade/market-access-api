@@ -132,22 +132,33 @@ class ExcludeFromNotifcation(BaseModel):
     exclude_email = models.EmailField()
 
 
-def _handle_tagged_users(note_text: models.TextField, barrier, created_by, interaction):
-    # Prepare values used in mentions
+def _get_mentions(note_text: models.TextField) -> List[str]:
     regex = r"\@([a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk)"  # noqa
     matches = re.finditer(regex, str(note_text), re.MULTILINE)
-    emails: List[str] = [
-        match.group(1) for match in matches
-    ]  # Get all emails for mentions
+    emails: List[str] = list({match.group(1) for match in matches})  # dedupe emails
+    return emails
+
+
+def _remove_excluded(emails: List[str]) -> List[str]:
     exclude_emails: List[str] = [
         i.exclude_email
         for i in ExcludeFromNotifcation.objects.filter(exclude_email__in=emails)
     ]
-    emails = [
-        e for e in emails if e not in exclude_emails
-    ]  # remove explicitly excluded emails
+    return [e for e in emails if e not in exclude_emails]
+
+
+def _handle_tagged_users(
+    note_text: models.TextField, barrier, created_by, interaction
+) -> None:
+    # Prepare values used in mentions
+    emails: List[str] = _get_mentions(note_text)
+    emails = _remove_excluded(emails)
+
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
+    barrier_url: str = urllib.parse.urljoin(
+        settings.FRONTEND_DOMAIN, f"barriers/{barrier.id}"
+    )
     mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
 
     # prepare structures used to record and send mentions
@@ -157,9 +168,6 @@ def _handle_tagged_users(note_text: models.TextField, barrier, created_by, inter
     }
     mentions: List[Mention] = []
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-    barrier_url = urllib.parse.urljoin(
-        settings.FRONTEND_DOMAIN, f"barriers/{barrier.id}"
-    )
     for email in emails:
         first_name: str = email.split(".")[0]
         client.send_email_notification(
