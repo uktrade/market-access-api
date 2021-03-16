@@ -1,8 +1,9 @@
 from http import HTTPStatus
 from unittest.mock import patch
 
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, PublicBarrier
 from api.interactions.models import (
+    Document,
     ExcludeFromNotifcation,
     Interaction,
     Mention,
@@ -27,18 +28,131 @@ class BaseNotificationTestCase(TestCase):
         super().tearDown()
 
 
-class TestMentionNotification(BaseNotificationTestCase):
+class NotificationSetUp(BaseNotificationTestCase):
     def setUp(self):
         super().setUp()
-        self.mock_barrier = Barrier()
-        self.mock_barrier.code = "example code"
-        self.mock_barrier.title = "example title"
-        self.mock_barrier.save()
 
         self.user = User.objects.create_user("foo", "foo@test.gov.uk", "bar")
         self.user2 = User.objects.create_user("foo2", "foo2@test.gov.uk", "bar2")
         self.user3 = User.objects.create_user("foo3", "foo3@test.gov.uk", "bar3")
 
+        self.mock_barrier = Barrier()
+        self.mock_barrier.code = "example code"
+        self.mock_barrier.title = "example title"
+        self.mock_barrier.created_by = self.user
+        self.mock_barrier.save()
+
+
+class TestPublicBarrierNotification(NotificationSetUp):
+    count = 1
+
+    def setUp(self):
+        super().setUp()
+        self.mock_pub_bar = PublicBarrier.objects.get(barrier=self.mock_barrier)
+
+    def test_single_mention_publicbarriernote(self):
+        text = "test mention @foo@test.gov.uk"
+        publicbarriernote = PublicBarrierNote(
+            created_by=self.user,
+            public_barrier=self.mock_pub_bar,
+            text=text,
+        )
+
+        assert Mention.objects.filter().exists() is False
+        publicbarriernote.save()
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 1
+
+    def test_many_mentions_publicbarriernote(self):
+        text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
+        publicbarriernote = PublicBarrierNote(
+            created_by=self.user,
+            public_barrier=self.mock_pub_bar,
+            text=text,
+        )
+
+        assert Mention.objects.filter().exists() is False
+        publicbarriernote.save()
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 3
+
+    def test_exclude_mentions_publicbarriernote(self):
+        excluded = ExcludeFromNotifcation.objects.create(
+            excluded_user=self.user2,
+            exclude_email=self.user2.email,
+            created_by=self.user2,
+            modified_by=self.user2,
+        )
+        text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
+        publicbarriernote = PublicBarrierNote(
+            created_by=self.user,
+            public_barrier=self.mock_pub_bar,
+            text=text,
+        )
+
+        assert Mention.objects.filter().exists() is False
+        publicbarriernote.save()
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 2
+
+
+class TestInteractionNotification(NotificationSetUp):
+    def test_single_mention_interaction(self):
+        text = "test mention @foo@test.gov.uk"
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        assert Mention.objects.filter().exists() is False
+        interaction.save()
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 1
+
+    def test_many_mentions_interaction(self):
+        text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        assert Mention.objects.filter().exists() is False
+        interaction.save()
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 3
+
+    def test_exclude_mentions_interaction(self):
+        excluded = ExcludeFromNotifcation.objects.create(
+            excluded_user=self.user2,
+            exclude_email=self.user2.email,
+            created_by=self.user2,
+            modified_by=self.user2,
+        )
+        text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        assert Mention.objects.filter().exists() is False
+        interaction.save()
+        assert Mention.objects.filter().exists() is True
+        assert Mention.objects.filter().count() == 2
+
+
+class TestMentionNotification(NotificationSetUp):
     def test_one_notification(self):
         text = "test mention @foo@test.gov.uk"
         assert Mention.objects.filter().exists() is False
