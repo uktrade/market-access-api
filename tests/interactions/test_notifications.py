@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 from api.barriers.models import Barrier, PublicBarrier
 from api.interactions.models import (
-    Document,
     ExcludeFromNotifcation,
     Interaction,
     Mention,
@@ -226,7 +225,7 @@ This is an example test for bad1@value.gov.uk and @bad2@value.com with @bad4@tra
 those 3 values should fail. The working example should be @good.name@nosuch.dept.gov.uk
 @good.first.name@trade.gov.uk and @goodish@very.many.many.vhosts.for.this.test.gov.uk and this @good.first.third.name@gov.uk and some words
 @good1@digital.trade.gov.uk
-@good2@digital.trade.gov.uk"""
+@good2@digital.trade.gov.uk"""  # noqa
 
         expected = sorted(
             [
@@ -254,7 +253,10 @@ those 3 values should fail. The working example should be @good.name@nosuch.dept
         assert res == expected
 
     def test_dedupe_mentions(self):
-        data = "@good1@trade.gov.uk and @good1@trade.gov.uk and @good1@trade.gov.uk and @good2@trade.gov.uk and @good2@trade.gov.uk"
+        data = (
+            "@good1@trade.gov.uk and @good1@trade.gov.uk and @good1@trade.gov.uk and "
+            "@good2@trade.gov.uk and @good2@trade.gov.uk"
+        )
         expected = ["good1@trade.gov.uk", "good2@trade.gov.uk"]
         res = _get_mentions(data)
         assert res == expected
