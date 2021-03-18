@@ -156,7 +156,16 @@ class TestMentionNotification(NotificationSetUp):
         text = "test mention @foo@test.gov.uk"
         assert Mention.objects.filter().exists() is False
 
-        _handle_mention_notification(text, self.mock_barrier, self.user)
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        _handle_mention_notification(interaction, self.mock_barrier, self.user)
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 1
@@ -165,7 +174,16 @@ class TestMentionNotification(NotificationSetUp):
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
         assert Mention.objects.filter().exists() is False
 
-        _handle_mention_notification(text, self.mock_barrier, self.user)
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        _handle_mention_notification(interaction, self.mock_barrier, self.user)
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
@@ -180,7 +198,16 @@ class TestMentionNotification(NotificationSetUp):
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
         assert Mention.objects.filter().exists() is False
 
-        _handle_mention_notification(text, self.mock_barrier, self.user)
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        _handle_mention_notification(interaction, self.mock_barrier, self.user)
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 2
