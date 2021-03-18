@@ -1,3 +1,5 @@
+import datetime
+
 from api.assessment.models import EconomicAssessment
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.mixins import TeamMemberModelMixin
@@ -16,12 +18,10 @@ from api.interactions.serializers import (
     PublicBarrierNoteSerializer,
 )
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
-
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.base import View
-from django.http import HttpResponse
-
 from rest_framework import generics, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -186,7 +186,12 @@ class MentionList(viewsets.ModelViewSet):
     serializer_class = MentionSerializer
 
     def get_queryset(self):
-        return Mention.objects.filter(recipient=self.request.user)
+        return Mention.objects.filter(
+            recipient=self.request.user,
+            created_on__date__gte=(
+                datetime.datetime.now() - datetime.timedelta(days=30)
+            ),
+        )
 
     def mark_as_read(self, request, pk):
         mention = self.get_queryset().get(pk=pk)
@@ -201,3 +206,11 @@ class MentionList(viewsets.ModelViewSet):
         mention.save()
         serializer = MentionSerializer(mention)
         return Response(serializer.data)
+
+
+class MentionDetail(
+    TeamMemberModelMixin,
+    generics.RetrieveAPIView,
+):
+    queryset = Mention.objects.all()
+    serializer_class = MentionSerializer

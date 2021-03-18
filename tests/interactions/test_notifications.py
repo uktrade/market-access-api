@@ -2,15 +2,10 @@ from http import HTTPStatus
 from unittest.mock import patch
 
 from api.barriers.models import Barrier, PublicBarrier
-from api.interactions.models import (
-    ExcludeFromNotifcation,
-    Interaction,
-    Mention,
-    PublicBarrierNote,
-    _get_mentions,
-    _handle_mention_notification,
-    _remove_excluded,
-)
+from api.interactions.models import (ExcludeFromNotifcation, Interaction,
+                                     Mention, PublicBarrierNote, _get_mentions,
+                                     _handle_mention_notification,
+                                     _remove_excluded)
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.reverse import reverse
@@ -156,7 +151,16 @@ class TestMentionNotification(NotificationSetUp):
         text = "test mention @foo@test.gov.uk"
         assert Mention.objects.filter().exists() is False
 
-        _handle_mention_notification(text, self.mock_barrier, self.user)
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        _handle_mention_notification(interaction, self.mock_barrier, self.user)
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 1
@@ -165,7 +169,16 @@ class TestMentionNotification(NotificationSetUp):
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
         assert Mention.objects.filter().exists() is False
 
-        _handle_mention_notification(text, self.mock_barrier, self.user)
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        _handle_mention_notification(interaction, self.mock_barrier, self.user)
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
@@ -180,7 +193,16 @@ class TestMentionNotification(NotificationSetUp):
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
         assert Mention.objects.filter().exists() is False
 
-        _handle_mention_notification(text, self.mock_barrier, self.user)
+        interaction = Interaction(
+            created_by=self.user,
+            barrier=self.mock_barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+
+        _handle_mention_notification(interaction, self.mock_barrier, self.user)
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 2

@@ -132,6 +132,7 @@ class MentionSerializer(serializers.ModelSerializer):
     message = serializers.SerializerMethodField()
     created_by = UserMinimalDetailSerializer(read_only=True)
     barrier = serializers.SerializerMethodField()
+    go_to_url_path = serializers.SerializerMethodField()
 
     class Meta:
         model = Mention
@@ -145,6 +146,7 @@ class MentionSerializer(serializers.ModelSerializer):
             "message",
             "recipient",
             "text",
+            "go_to_url_path",
         )
 
     def get_barrier(self, instance):
@@ -154,3 +156,6 @@ class MentionSerializer(serializers.ModelSerializer):
 
     def get_message(self, instance):
         return instance.text
+
+    def get_go_to_url_path(self, obj):
+        return obj.content_object.get_note_url_path()

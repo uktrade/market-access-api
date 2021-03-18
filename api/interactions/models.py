@@ -1,6 +1,6 @@
 import re
 import urllib.parse
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
@@ -8,6 +8,7 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -108,6 +109,7 @@ class Mention(BaseModel):
         ContentType, null=True, blank=True, on_delete=models.SET_NULL
     )
     object_id = models.PositiveIntegerField(null=True)
+    content_object = GenericForeignKey("content_type", "object_id")
     text = models.TextField()
 
     class Meta:
@@ -128,6 +130,79 @@ class ExcludeFromNotifcation(BaseModel):
     exclude_email = models.EmailField()
 
 
+class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    """ Interaction records for each Barrier """
+
+    barrier = models.ForeignKey(
+        "barriers.Barrier",
+        related_name="interactions_documents",
+        on_delete=models.CASCADE,
+    )
+    kind = models.CharField(choices=BARRIER_INTERACTION_TYPE, max_length=25)
+    text = models.TextField(blank=True)
+    pinned = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+    documents = models.ManyToManyField(
+        Document, related_name="documents", help_text="Interaction documents"
+    )
+
+    history = HistoricalRecords(bases=[InteractionHistoricalModel])
+
+    objects = InteractionManager()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        _handle_mention_notification(self, self.barrier, self.created_by)
+
+    def get_note_url_path(self):
+        """
+        Get the frontend url path used in emails and other notifications
+        """
+        return f"/barriers/{self.barrier.id}/"
+
+    @property
+    def created_user(self):
+        return self._cleansed_username(self.created_by)
+
+    @property
+    def modified_user(self):
+        return self._cleansed_username(self.modified_by)
+
+
+class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
+    public_barrier = models.ForeignKey(
+        "barriers.PublicBarrier",
+        related_name="notes",
+        on_delete=models.CASCADE,
+    )
+    text = models.TextField()
+
+    history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        _handle_mention_notification(self, self.public_barrier.barrier, self.created_by)
+
+    def get_note_url_path(self):
+        """
+        Get the frontend url path used in emails and other notifications
+        """
+        return f"/barriers/{self.barrier.id}/public/"
+
+    @property
+    def barrier(self):
+        return self.public_barrier.barrier
+
+    @property
+    def created_user(self):
+        return self._cleansed_username(self.created_by)
+
+    @property
+    def modified_user(self):
+        return self._cleansed_username(self.modified_by)
+
+
 def _get_mentions(note_text: str) -> List[str]:
     regex = r"@\S*?@\S*?gov\.uk"
     matches = re.finditer(regex, note_text, re.MULTILINE)
@@ -146,17 +221,20 @@ def _remove_excluded(emails: List[str]) -> List[str]:
 
 
 def _handle_mention_notification(
-    note_text: models.TextField, barrier, created_by
+    note: Union[Interaction, PublicBarrierNote],
+    barrier,
+    created_by,
 ) -> None:
     # Prepare values used in mentions
+    note_text = note.text
+    note_url_path = note.get_note_url_path()
+
     emails: List[str] = _get_mentions(str(note_text))
     emails = _remove_excluded(emails)
 
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
-    barrier_url: str = urllib.parse.urljoin(
-        settings.FRONTEND_DOMAIN, f"barriers/{barrier.id}"
-    )
+    barrier_url: str = urllib.parse.urljoin(settings.FRONTEND_DOMAIN, note_url_path)
     mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
 
     # prepare structures used to record and send mentions
@@ -188,70 +266,8 @@ def _handle_mention_notification(
                 email_used=email,
                 recipient=users[email],
                 text=note_text,
+                content_object=note,
             )
         )
 
     Mention.objects.bulk_create(mentions)
-
-
-class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
-    """ Interaction records for each Barrier """
-
-    barrier = models.ForeignKey(
-        "barriers.Barrier",
-        related_name="interactions_documents",
-        on_delete=models.CASCADE,
-    )
-    kind = models.CharField(choices=BARRIER_INTERACTION_TYPE, max_length=25)
-    text = models.TextField(blank=True)
-    pinned = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-
-    documents = models.ManyToManyField(
-        Document, related_name="documents", help_text="Interaction documents"
-    )
-
-    history = HistoricalRecords(bases=[InteractionHistoricalModel])
-
-    objects = InteractionManager()
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        _handle_mention_notification(self.text, self.barrier, self.created_by)
-
-    @property
-    def created_user(self):
-        return self._cleansed_username(self.created_by)
-
-    @property
-    def modified_user(self):
-        return self._cleansed_username(self.modified_by)
-
-
-class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
-    public_barrier = models.ForeignKey(
-        "barriers.PublicBarrier",
-        related_name="notes",
-        on_delete=models.CASCADE,
-    )
-    text = models.TextField()
-
-    history = HistoricalRecords()
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        _handle_mention_notification(
-            self.text, self.public_barrier.barrier, self.created_by
-        )
-
-    @property
-    def barrier(self):
-        return self.public_barrier.barrier
-
-    @property
-    def created_user(self):
-        return self._cleansed_username(self.created_by)
-
-    @property
-    def modified_user(self):
-        return self._cleansed_username(self.modified_by)
