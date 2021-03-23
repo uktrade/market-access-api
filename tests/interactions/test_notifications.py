@@ -2,10 +2,15 @@ from http import HTTPStatus
 from unittest.mock import patch
 
 from api.barriers.models import Barrier, PublicBarrier
-from api.interactions.models import (ExcludeFromNotifcation, Interaction,
-                                     Mention, PublicBarrierNote, _get_mentions,
-                                     _handle_mention_notification,
-                                     _remove_excluded)
+from api.interactions.models import (
+    ExcludeFromNotifcation,
+    Interaction,
+    Mention,
+    PublicBarrierNote,
+    _get_mentions,
+    _handle_mention_notification,
+    _remove_excluded,
+)
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.reverse import reverse

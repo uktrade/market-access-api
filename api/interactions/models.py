@@ -121,7 +121,7 @@ class Mention(BaseModel):
         return self.text
 
 
-class ExcludeFromNotifcation(BaseModel):
+class ExcludeFromNotifications(BaseModel):
     excluded_user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.DO_NOTHING,
@@ -215,7 +215,7 @@ def _get_mentions(note_text: str) -> List[str]:
 def _remove_excluded(emails: List[str]) -> List[str]:
     exclude_emails: List[str] = [
         i.exclude_email
-        for i in ExcludeFromNotifcation.objects.filter(exclude_email__in=emails)
+        for i in ExcludeFromNotifications.objects.filter(exclude_email__in=emails)
     ]
     return [e for e in emails if e not in exclude_emails]
 
