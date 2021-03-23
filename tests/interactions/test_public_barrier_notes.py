@@ -6,6 +6,7 @@ from rest_framework.test import APITestCase
 from api.barriers.helpers import get_or_create_public_barrier
 from api.core.test_utils import APITestMixin
 from api.interactions.models import PublicBarrierNote
+
 from tests.barriers.factories import BarrierFactory
 
 

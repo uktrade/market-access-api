@@ -1,12 +1,13 @@
-from django.urls import path
-
 from api.interactions.views import (
     BarrierInteractionDetail,
     BarrierInteractionList,
     DocumentViewSet,
+    ExcludeNotifcation,
+    MentionList,
     PublicBarrierNoteDetail,
     PublicBarrierNoteList,
 )
+from django.urls import path
 
 document_collection = DocumentViewSet.as_view({"get": "list", "post": "create"})
 
@@ -54,5 +55,21 @@ urlpatterns = [
         "public-barrier-notes/<int:pk>",
         PublicBarrierNoteDetail.as_view(),
         name="public-barrier-note-detail",
+    ),
+    path("mentions", MentionList.as_view({"get": "list"}), name="mentions"),
+    path(
+        "mentions/mark-as-read/<int:pk>",
+        MentionList.as_view({"get": "mark_as_read"}),
+        name="mentions-mark-as-read",
+    ),
+    path(
+        "mentions/mark-as-unread/<int:pk>",
+        MentionList.as_view({"get": "mark_as_unread"}),
+        name="mentions-mark-as-read",
+    ),
+    path(
+        "mentions/exclude-from-notification",
+        ExcludeNotifcation.as_view(),
+        name="mentions-mark-as-read",
     ),
 ]

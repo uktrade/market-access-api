@@ -1,19 +1,52 @@
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-from rest_framework import generics
-from rest_framework.exceptions import ValidationError
-
 from api.assessment.models import EconomicAssessment
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.documents.views import BaseEntityDocumentModelViewSet
-from api.interactions.models import Document, Interaction, PublicBarrierNote
+from api.interactions.models import (
+    Document,
+    ExcludeFromNotifcation,
+    Interaction,
+    Mention,
+    PublicBarrierNote,
+)
 from api.interactions.serializers import (
     DocumentSerializer,
     InteractionSerializer,
+    MentionSerializer,
     PublicBarrierNoteSerializer,
 )
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
+
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.views.generic.base import View
+from django.http import HttpResponse
+
+from rest_framework import generics, viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+
+
+class ExcludeNotifcation(View):
+    def post(self, request):
+        ExcludeFromNotifcation.objects.get_or_create(
+            excluded_user=request.user,
+            exclude_email=request.user.email,
+            created_by=request.user,
+            modified_by=request.user,
+        )
+        # if the record already exists don't duplicated it, else create the record
+        return HttpResponse("success")
+
+    def delete(self, request):
+        user_qs = ExcludeFromNotifcation.objects.filter(excluded_user=request.user)
+        if not user_qs.exists():
+            # The user is not in the excluded list
+            return HttpResponse("success")
+
+        u = user_qs[0]
+        u.delete()
+        return HttpResponse("success")
 
 
 class DocumentViewSet(BaseEntityDocumentModelViewSet):
@@ -147,3 +180,24 @@ class PublicBarrierNoteDetail(
 
     def perform_destroy(self, instance):
         instance.archive(self.request.user)
+
+
+class MentionList(viewsets.ModelViewSet):
+    serializer_class = MentionSerializer
+
+    def get_queryset(self):
+        return Mention.objects.filter(recipient=self.request.user)
+
+    def mark_as_read(self, request, pk):
+        mention = self.get_queryset().get(pk=pk)
+        mention.read_by_recipient = True
+        mention.save()
+        serializer = MentionSerializer(mention)
+        return Response(serializer.data)
+
+    def mark_as_unread(self, request, pk):
+        mention = self.get_queryset().get(pk=pk)
+        mention.read_by_recipient = False
+        mention.save()
+        serializer = MentionSerializer(mention)
+        return Response(serializer.data)

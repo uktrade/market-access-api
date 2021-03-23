@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from secrets import token_hex
+from unittest.mock import patch
 
 import factory
 import pytest
@@ -10,7 +11,6 @@ from django.contrib.auth.models import Permission, User
 from django.test.client import Client
 from django.utils.timezone import now
 
-from mock import patch
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.fields import DateField, DateTimeField
 from rest_framework.test import APIClient

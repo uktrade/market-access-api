@@ -1,18 +1,18 @@
 import re
+import urllib.parse
 from typing import Dict, List
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
-
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
-
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
 
@@ -95,7 +95,7 @@ class Mention(BaseModel):
         related_name="mention",
         on_delete=models.CASCADE,
     )
-    email_used = models.EmailField
+    email_used = models.EmailField()
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -103,23 +103,67 @@ class Mention(BaseModel):
         on_delete=models.SET_NULL,
         related_name="+",
     )
+    read_by_recipient = models.BooleanField(default=False)
+    content_type = models.ForeignKey(
+        ContentType, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    object_id = models.PositiveIntegerField(null=True)
+    text = models.TextField()
+
+    class Meta:
+        ordering = [
+            "-created_on",
+        ]
+
+    def get_related_message(self):
+        return self.text
 
 
-def _handle_tagged_users(
-    note_text: models.TextField,
-    barrier,
-    created_by,
-):
+class ExcludeFromNotifcation(BaseModel):
+    excluded_user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING,
+        related_name="excluded_notification",
+    )
+    exclude_email = models.EmailField()
+
+
+def _get_mentions(note_text: str) -> List[str]:
+    regex = r"@\S*?@\S*?gov\.uk"
+    matches = re.finditer(regex, note_text, re.MULTILINE)
+    emails: List[str] = sorted(
+        {m.group()[1:] for m in matches}
+    )  # dedupe emails, strip leading '@'
+    return emails
+
+
+def _remove_excluded(emails: List[str]) -> List[str]:
+    exclude_emails: List[str] = [
+        i.exclude_email
+        for i in ExcludeFromNotifcation.objects.filter(exclude_email__in=emails)
+    ]
+    return [e for e in emails if e not in exclude_emails]
+
+
+def _handle_mention_notification(
+    note_text: models.TextField, barrier, created_by
+) -> None:
     # Prepare values used in mentions
-    user_regex = re.compile("\@[a-zA-Z.]+\@[a-zA-Z.]+\.gov\.uk")  # noqa W605
-    emails: Dict[str, str] = (i[1:] for i in user_regex.finditer(note_text))
+    emails: List[str] = _get_mentions(str(note_text))
+    emails = _remove_excluded(emails)
+
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
+    barrier_url: str = urllib.parse.urljoin(
+        settings.FRONTEND_DOMAIN, f"barriers/{barrier.id}"
+    )
     mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
 
     # prepare structures used to record and send mentions
     user_obj = get_user_model()
-    users: List[str] = {u.email: u for u in user_obj.objects.filter(email__in=emails)}
+    users: Dict[str, settings.AUTH_USER_MODEL] = {
+        u.email: u for u in user_obj.objects.filter(email__in=emails)
+    }
     mentions: List[Mention] = []
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     for email in emails:
@@ -132,6 +176,7 @@ def _handle_tagged_users(
                 "mentioned_by": mentioned_by,
                 "barrier_number": barrier_code,
                 "barrier_name": barrier_name,
+                "barrier_url": barrier_url,
             },
         )
 
@@ -142,6 +187,7 @@ def _handle_tagged_users(
                 barrier=barrier,
                 email_used=email,
                 recipient=users[email],
+                text=note_text,
             )
         )
 
@@ -171,7 +217,7 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_tagged_users(self.text, self.barrier, self.created_by)
+        _handle_mention_notification(self.text, self.barrier, self.created_by)
 
     @property
     def created_user(self):
@@ -194,7 +240,9 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_tagged_users(self.text, self.public_barrier.barrier, self.created_by)
+        _handle_mention_notification(
+            self.text, self.public_barrier.barrier, self.created_by
+        )
 
     @property
     def barrier(self):

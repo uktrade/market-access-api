@@ -63,6 +63,11 @@ class BarrierDetailSerializer(BarrierSerializerBase):
         )
 
 
+class BarrierMinimumDetailSerializer(BarrierSerializerBase):
+    class Meta(BarrierSerializerBase.Meta):
+        fields = ("id", "title")
+
+
 class BarrierListSerializer(BarrierSerializerBase):
     class Meta(BarrierSerializerBase.Meta):
         fields = (

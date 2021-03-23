@@ -1,17 +1,17 @@
 import os
 import ssl
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import dj_database_url
 import environ
 import sentry_sdk
 from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
+from django_log_formatter_ecs import ECSFormatter
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
-from django_log_formatter_ecs import ECSFormatter
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = Path(__file__).parents[2]
@@ -400,3 +400,5 @@ PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = env("PUBLIC_DATA_AWS_SECRET_ACCESS_KEY")
 PUBLIC_DATA_BUCKET = env("PUBLIC_DATA_BUCKET")
 PUBLIC_DATA_BUCKET_REGION = env("PUBLIC_DATA_BUCKET_REGION")
 PUBLIC_DATA_KEY_PREFIX = env("PUBLIC_DATA_KEY_PREFIX")
+
+FRONTEND_DOMAIN = env("FRONTEND_DOMAIN", default="http://localhost:9880")

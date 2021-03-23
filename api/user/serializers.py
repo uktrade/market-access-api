@@ -1,14 +1,13 @@
 from logging import getLogger
 
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
-from django.db.models import Q
-from rest_framework import serializers
-
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
 from api.user.models import Profile, SavedSearch
 from api.user.staff_sso import sso
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
+from django.db.models import Q
+from rest_framework import serializers
 
 UserModel = get_user_model()
 logger = getLogger(__name__)
@@ -173,6 +172,17 @@ class UserDetailSerializer(serializers.ModelSerializer):
             group_ids = self.get_validated_group_ids()
             instance.groups.set(group_ids)
         return super().update(instance, validated_data)
+
+
+class UserMinimalDetailSerializer(UserDetailSerializer):
+    class Meta:
+        model = UserModel
+        fields = (
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+        )
 
 
 class UserListSerializer(serializers.ModelSerializer):
