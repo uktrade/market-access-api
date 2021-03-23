@@ -209,7 +209,7 @@ def _get_mentions(note_text: str) -> List[str]:
     emails: List[str] = sorted(
         {m.group()[1:] for m in matches}
     )  # dedupe emails, strip leading '@'
-    return emails
+    return [email.lower() for email in emails]
 
 
 def _remove_excluded(emails: List[str]) -> List[str]:
@@ -240,7 +240,7 @@ def _handle_mention_notification(
     # prepare structures used to record and send mentions
     user_obj = get_user_model()
     users: Dict[str, settings.AUTH_USER_MODEL] = {
-        u.email: u for u in user_obj.objects.filter(email__in=emails)
+        u.email.lower(): u for u in user_obj.objects.filter(email__iregex=r'('+'|'.join(emails)+')')
     }
     mentions: List[Mention] = []
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
