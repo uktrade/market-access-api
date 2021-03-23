@@ -13,6 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.urls import reverse
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
@@ -203,48 +204,78 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         return self._cleansed_username(self.modified_by)
 
 
-def _get_mentions(note_text: str) -> List[str]:
+user_type = Dict[str, settings.AUTH_USER_MODEL]
+note_union = Union[Interaction, PublicBarrierNote]
+
+
+def _get_user_object(user_obj: settings.AUTH_USER_MODEL, emails: List[str]):
+    # This function exists to make unit tests easier to write
+    return list(
+        u
+        for u in user_obj.objects.annotate(lowered_email=Lower("email"))
+        .filter(lowered_email__in=emails)
+        .order_by("lowered_email")
+    )
+
+
+def _get_mentioned_users(note_text: str) -> user_type:
     regex = r"@\S*?@\S*?gov\.uk"
     matches = re.finditer(regex, note_text, re.MULTILINE)
     emails: List[str] = sorted(
-        {m.group()[1:] for m in matches}
+        {m.group()[1:].lower() for m in matches}
     )  # dedupe emails, strip leading '@'
-    return emails
+
+    user_obj: settings.AUTH_USER_MODEL = get_user_model()
+    users: List[settings.AUTH_USER_MODEL] = _get_user_object(user_obj, emails)
+    output: user_type = dict(zip(emails, users))
+
+    return output
 
 
 def _remove_excluded(emails: List[str]) -> List[str]:
     exclude_emails: List[str] = [
         i.exclude_email
-        for i in ExcludeFromNotifications.objects.filter(exclude_email__in=emails)
+        for i in ExcludeFromNotifications.objects.annotate(
+            lowered_exclude_email=Lower("exclude_email")
+        ).filter(lowered_exclude_email__in=emails)
     ]
     return [e for e in emails if e not in exclude_emails]
 
 
 def _handle_mention_notification(
-    note: Union[Interaction, PublicBarrierNote],
+    note: note_union,
     barrier,
     created_by,
 ) -> None:
     # Prepare values used in mentions
     note_text = note.text
     note_url_path = note.get_note_url_path()
+    users: user_type = _get_mentioned_users(str(note_text))
+    # record mentions
+    mentions: List[Mention] = [
+        Mention(
+            created_by=created_by,
+            modified_by=created_by,
+            barrier=barrier,
+            email_used=email,
+            recipient=user,
+            text=note_text,
+            content_object=note,
+        )
+        for email, user in users.items()
+    ]
+    Mention.objects.bulk_create(mentions)
 
-    emails: List[str] = _get_mentions(str(note_text))
-    emails = _remove_excluded(emails)
-
+    # prepare values used in notifications
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
     barrier_url: str = urllib.parse.urljoin(settings.FRONTEND_DOMAIN, note_url_path)
     mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
 
-    # prepare structures used to record and send mentions
-    user_obj = get_user_model()
-    users: Dict[str, settings.AUTH_USER_MODEL] = {
-        u.email: u for u in user_obj.objects.filter(email__in=emails)
-    }
-    mentions: List[Mention] = []
+    # Send notification
+    notification_emails: List[str] = _remove_excluded(list(users.keys()))
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-    for email in emails:
+    for email in notification_emails:
         first_name: str = email.split(".")[0]
         client.send_email_notification(
             email_address=email,
@@ -257,17 +288,3 @@ def _handle_mention_notification(
                 "barrier_url": barrier_url,
             },
         )
-
-        mentions.append(
-            Mention(
-                created_by=created_by,
-                modified_by=created_by,
-                barrier=barrier,
-                email_used=email,
-                recipient=users[email],
-                text=note_text,
-                content_object=note,
-            )
-        )
-
-    Mention.objects.bulk_create(mentions)
