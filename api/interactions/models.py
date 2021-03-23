@@ -220,6 +220,12 @@ def _remove_excluded(emails: List[str]) -> List[str]:
     return [e for e in emails if e not in exclude_emails]
 
 
+def _is_email_excluded(email: str) -> bool:
+    return (
+        ExcludeFromNotifications.objects.filter(exclude_email__iexact=email).count() > 0
+    )
+
+
 def _handle_mention_notification(
     note: Union[Interaction, PublicBarrierNote],
     barrier,
@@ -230,7 +236,7 @@ def _handle_mention_notification(
     note_url_path = note.get_note_url_path()
 
     emails: List[str] = _get_mentions(str(note_text))
-    emails = _remove_excluded(emails)
+    # emails = _remove_excluded(emails)
 
     barrier_code: str = str(barrier.code)
     barrier_name: str = str(barrier.title)
@@ -240,34 +246,39 @@ def _handle_mention_notification(
     # prepare structures used to record and send mentions
     user_obj = get_user_model()
     users: Dict[str, settings.AUTH_USER_MODEL] = {
-        u.email.lower(): u for u in user_obj.objects.filter(email__iregex=r'('+'|'.join(emails)+')')
+        u.email.lower(): u
+        for u in user_obj.objects.filter(email__iregex=r"(" + "|".join(emails) + ")")
     }
     mentions: List[Mention] = []
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     for email in emails:
-        first_name: str = email.split(".")[0]
-        client.send_email_notification(
-            email_address=email,
-            template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
-            personalisation={
-                "first_name": first_name,
-                "mentioned_by": mentioned_by,
-                "barrier_number": barrier_code,
-                "barrier_name": barrier_name,
-                "barrier_url": barrier_url,
-            },
-        )
-
-        mentions.append(
-            Mention(
-                created_by=created_by,
-                modified_by=created_by,
-                barrier=barrier,
-                email_used=email,
-                recipient=users[email],
-                text=note_text,
-                content_object=note,
+        if not _is_email_excluded(email):
+            # Only send email notifications if email is not in the excluded list
+            first_name: str = email.split(".")[0]
+            client.send_email_notification(
+                email_address=email,
+                template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
+                personalisation={
+                    "first_name": first_name,
+                    "mentioned_by": mentioned_by,
+                    "barrier_number": barrier_code,
+                    "barrier_name": barrier_name,
+                    "barrier_url": barrier_url,
+                },
             )
-        )
+
+        if users.get(email):
+            # Not all emails have a Django user
+            mentions.append(
+                Mention(
+                    created_by=created_by,
+                    modified_by=created_by,
+                    barrier=barrier,
+                    email_used=email,
+                    recipient=users[email],
+                    text=note_text,
+                    content_object=note,
+                )
+            )
 
     Mention.objects.bulk_create(mentions)

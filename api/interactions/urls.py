@@ -67,7 +67,7 @@ urlpatterns = [
     path(
         "mentions/mark-as-unread/<int:pk>",
         MentionList.as_view({"get": "mark_as_unread"}),
-        name="mentions-mark-as-read",
+        name="mentions-mark-as-unread",
     ),
     path(
         "mentions/mark-all-as-read",

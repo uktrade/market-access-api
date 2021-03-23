@@ -4,13 +4,20 @@ from api.assessment.models import EconomicAssessment
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.documents.views import BaseEntityDocumentModelViewSet
-from api.interactions.models import (Document, ExcludeFromNotifications,
-                                     Interaction, Mention, PublicBarrierNote)
-from api.interactions.serializers import (DocumentSerializer,
-                                          ExcludeFromNotificationsSerializer,
-                                          InteractionSerializer,
-                                          MentionSerializer,
-                                          PublicBarrierNoteSerializer)
+from api.interactions.models import (
+    Document,
+    ExcludeFromNotifications,
+    Interaction,
+    Mention,
+    PublicBarrierNote,
+)
+from api.interactions.serializers import (
+    DocumentSerializer,
+    ExcludeFromNotificationsSerializer,
+    InteractionSerializer,
+    MentionSerializer,
+    PublicBarrierNoteSerializer,
+)
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.db import transaction
 from django.shortcuts import get_object_or_404
