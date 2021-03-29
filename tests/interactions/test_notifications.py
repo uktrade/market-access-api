@@ -3,15 +3,11 @@ from unittest.mock import patch
 
 import pytest
 from api.barriers.models import Barrier, PublicBarrier
-from api.interactions.models import (
-    ExcludeFromNotifications,
-    Interaction,
-    Mention,
-    PublicBarrierNote,
-    _get_mentioned_users,
-    _handle_mention_notification,
-    _remove_excluded,
-)
+from api.interactions.models import (ExcludeFromNotification, Interaction,
+                                     Mention, PublicBarrierNote,
+                                     _get_mentioned_users,
+                                     _handle_mention_notification,
+                                     _remove_excluded)
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.reverse import reverse
@@ -77,7 +73,7 @@ class TestPublicBarrierNotification(NotificationSetUp):
         assert Mention.objects.filter().count() == 3
 
     def test_excluded_emails_should_still_create_mentions(self):
-        excluded = ExcludeFromNotifications.objects.create(
+        excluded = ExcludeFromNotification.objects.create(
             excluded_user=self.user2,
             exclude_email=self.user2.email,
             created_by=self.user2,
@@ -130,7 +126,7 @@ class TestInteractionNotification(NotificationSetUp):
         assert Mention.objects.filter().count() == 3
 
     def test_exclude_mentions_interaction(self):
-        excluded = ExcludeFromNotifications.objects.create(
+        excluded = ExcludeFromNotification.objects.create(
             excluded_user=self.user2,
             exclude_email=self.user2.email,
             created_by=self.user2,
@@ -191,7 +187,7 @@ class TestMentionNotification(NotificationSetUp):
 
     @pytest.mark.skip()
     def test_exclude_notification(self):
-        excluded = ExcludeFromNotifications.objects.create(
+        excluded = ExcludeFromNotification.objects.create(
             excluded_user=self.user2,
             exclude_email=self.user2.email,
             created_by=self.user2,
@@ -222,19 +218,19 @@ class TestRemoveExcluded(BaseNotificationTestCase):
         user2 = User.objects.create_user("foo2", "foo2@test.com", "bar3")
         user3 = User.objects.create_user("foo3", "foo3@test.com", "bar3")
 
-        excluded1 = ExcludeFromNotifications.objects.create(
+        excluded1 = ExcludeFromNotification.objects.create(
             excluded_user=user1,
             exclude_email=user1.email,
             created_by=user1,
             modified_by=user1,
         )
-        excluded2 = ExcludeFromNotifications.objects.create(
+        excluded2 = ExcludeFromNotification.objects.create(
             excluded_user=user2,
             exclude_email=user2.email,
             created_by=user2,
             modified_by=user2,
         )
-        excluded3 = ExcludeFromNotifications.objects.create(
+        excluded3 = ExcludeFromNotification.objects.create(
             excluded_user=user3,
             exclude_email=user3.email,
             created_by=user3,
@@ -309,7 +305,7 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
     @pytest.mark.skip()
     def test_exclude_notifcation(self):
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).exists()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).exists()
             is False
         )
 
@@ -317,7 +313,7 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
         assert res.status_code == HTTPStatus.OK
         assert res.content == b"success"
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).count()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
             == 1
         )
 
@@ -326,28 +322,28 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
         assert res.status_code == HTTPStatus.OK
         assert res.content == b"success"
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).count()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
             == 1
         )
 
     @pytest.mark.skip()
     def test_remove_from_exclude_notification(self):
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).exists()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).exists()
             is False
         )
-        excluded = ExcludeFromNotifications.objects.create(
+        excluded = ExcludeFromNotification.objects.create(
             excluded_user=self.user,
             exclude_email=self.user.email,
             created_by=self.user,
             modified_by=self.user,
         )
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).exists()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).exists()
             is True
         )
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).count()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
             == 1
         )
 
@@ -355,11 +351,11 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
         assert res.status_code == HTTPStatus.OK
         assert res.content == b"success"
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).exists()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).exists()
             is False
         )
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).count()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
             == 0
         )
 
@@ -368,10 +364,10 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
         assert res.status_code == HTTPStatus.OK
         assert res.content == b"success"
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).exists()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).exists()
             is False
         )
         assert (
-            ExcludeFromNotifications.objects.filter(excluded_user=self.user).count()
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
             == 0
         )

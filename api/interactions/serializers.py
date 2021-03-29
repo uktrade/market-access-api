@@ -1,4 +1,5 @@
-from api.interactions.models import Document, Interaction, Mention, PublicBarrierNote
+from api.interactions.models import (Document, Interaction, Mention,
+                                     PublicBarrierNote)
 from api.user.serializers import UserMinimalDetailSerializer
 from rest_framework import serializers
 
@@ -150,7 +151,8 @@ class MentionSerializer(serializers.ModelSerializer):
         )
 
     def get_barrier(self, instance):
-        from api.barriers.serializers.barriers import BarrierMinimumDetailSerializer
+        from api.barriers.serializers.barriers import \
+            BarrierMinimumDetailSerializer
 
         return BarrierMinimumDetailSerializer(instance.barrier).data
 
@@ -164,5 +166,5 @@ class MentionSerializer(serializers.ModelSerializer):
         return obj.content_object.get_note_url_path()
 
 
-class ExcludeFromNotificationsSerializer(serializers.Serializer):
+class ExcludeFromNotificationSerializer(serializers.Serializer):
     mention_notifications_enabled = serializers.BooleanField()

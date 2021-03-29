@@ -4,40 +4,26 @@ from api.assessment.models import EconomicAssessment
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.documents.views import BaseEntityDocumentModelViewSet
-from api.interactions.models import (
-    Document,
-    ExcludeFromNotifications,
-    Interaction,
-    Mention,
-    PublicBarrierNote,
-)
-from api.interactions.serializers import (
-    DocumentSerializer,
-    ExcludeFromNotificationsSerializer,
-    InteractionSerializer,
-    MentionSerializer,
-    PublicBarrierNoteSerializer,
-)
+from api.interactions.models import (Document, ExcludeFromNotification,
+                                     Interaction, Mention, PublicBarrierNote)
+from api.interactions.serializers import (DocumentSerializer,
+                                          ExcludeFromNotificationSerializer,
+                                          InteractionSerializer,
+                                          MentionSerializer,
+                                          PublicBarrierNoteSerializer)
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.db import transaction
-from django.shortcuts import get_object_or_404
-from rest_framework import generics, viewsets
-from rest_framework.exceptions import ValidationError
-from rest_framework.response import Response
-
-from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.base import View
-from django.http import HttpResponse
-
 from rest_framework import generics, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 
-class ExcludeNotifcation(View):
+class ExcludeNotification(View):
     def post(self, request):
-        ExcludeFromNotifcation.objects.get_or_create(
+        ExcludeFromNotification.objects.get_or_create(
             excluded_user=request.user,
             exclude_email=request.user.email,
             created_by=request.user,
@@ -47,7 +33,7 @@ class ExcludeNotifcation(View):
         return HttpResponse("success")
 
     def delete(self, request):
-        user_qs = ExcludeFromNotifcation.objects.filter(excluded_user=request.user)
+        user_qs = ExcludeFromNotification.objects.filter(excluded_user=request.user)
         if not user_qs.exists():
             # The user is not in the excluded list
             return HttpResponse("success")
@@ -60,18 +46,18 @@ class ExcludeNotifcation(View):
 class ExcludeFromNotificationsView(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         user_has_exclusion = (
-            ExcludeFromNotifications.objects.filter(excluded_user=request.user).count()
+            ExcludeFromNotification.objects.filter(excluded_user=request.user).count()
             > 0
         )
 
         if user_has_exclusion:
-            data = ExcludeFromNotificationsSerializer(
+            data = ExcludeFromNotificationSerializer(
                 data={"mention_notifications_enabled": False}
             )
             data.is_valid()
             return Response(data.validated_data)
         else:
-            data = ExcludeFromNotificationsSerializer(
+            data = ExcludeFromNotificationSerializer(
                 data={"mention_notifications_enabled": True}
             )
             data.is_valid()
@@ -80,7 +66,7 @@ class ExcludeFromNotificationsView(viewsets.ViewSet):
     def create(self, request):
         # if request.user.is_anonymous():
         #     raise Exception("User is anonymous")
-        ExcludeFromNotifications.objects.get_or_create(
+        ExcludeFromNotification.objects.get_or_create(
             excluded_user=request.user,
             defaults={
                 "exclude_email": request.user.email,
@@ -92,7 +78,7 @@ class ExcludeFromNotificationsView(viewsets.ViewSet):
         return Response({"status": "success"})
 
     def destroy(self, request):
-        user_qs = ExcludeFromNotifications.objects.filter(excluded_user=request.user)
+        user_qs = ExcludeFromNotification.objects.filter(excluded_user=request.user)
         if not user_qs.exists():
             # The user is not in the excluded list
             return Response({"status": "success"})
