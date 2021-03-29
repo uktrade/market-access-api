@@ -1,6 +1,6 @@
 import re
 import urllib.parse
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
@@ -8,10 +8,12 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Lower
 from django.urls import reverse
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
@@ -108,6 +110,7 @@ class Mention(BaseModel):
         ContentType, null=True, blank=True, on_delete=models.SET_NULL
     )
     object_id = models.PositiveIntegerField(null=True)
+    content_object = GenericForeignKey("content_type", "object_id")
     text = models.TextField()
 
     class Meta:
@@ -119,79 +122,13 @@ class Mention(BaseModel):
         return self.text
 
 
-class ExcludeFromNotifcation(BaseModel):
+class ExcludeFromNotification(BaseModel):
     excluded_user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.DO_NOTHING,
         related_name="excluded_notification",
     )
     exclude_email = models.EmailField()
-
-
-def _get_mentions(note_text: str) -> List[str]:
-    regex = r"@\S*?@\S*?gov\.uk"
-    matches = re.finditer(regex, note_text, re.MULTILINE)
-    emails: List[str] = sorted(
-        {m.group()[1:] for m in matches}
-    )  # dedupe emails, strip leading '@'
-    return emails
-
-
-def _remove_excluded(emails: List[str]) -> List[str]:
-    exclude_emails: List[str] = [
-        i.exclude_email
-        for i in ExcludeFromNotifcation.objects.filter(exclude_email__in=emails)
-    ]
-    return [e for e in emails if e not in exclude_emails]
-
-
-def _handle_mention_notification(
-    note_text: models.TextField, barrier, created_by
-) -> None:
-    # Prepare values used in mentions
-    emails: List[str] = _get_mentions(str(note_text))
-    emails = _remove_excluded(emails)
-
-    barrier_code: str = str(barrier.code)
-    barrier_name: str = str(barrier.title)
-    barrier_url: str = urllib.parse.urljoin(
-        settings.FRONTEND_DOMAIN, f"barriers/{barrier.id}"
-    )
-    mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
-
-    # prepare structures used to record and send mentions
-    user_obj = get_user_model()
-    users: Dict[str, settings.AUTH_USER_MODEL] = {
-        u.email: u for u in user_obj.objects.filter(email__in=emails)
-    }
-    mentions: List[Mention] = []
-    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-    for email in emails:
-        first_name: str = email.split(".")[0]
-        client.send_email_notification(
-            email_address=email,
-            template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
-            personalisation={
-                "first_name": first_name,
-                "mentioned_by": mentioned_by,
-                "barrier_number": barrier_code,
-                "barrier_name": barrier_name,
-                "barrier_url": barrier_url,
-            },
-        )
-
-        mentions.append(
-            Mention(
-                created_by=created_by,
-                modified_by=created_by,
-                barrier=barrier,
-                email_used=email,
-                recipient=users[email],
-                text=note_text,
-            )
-        )
-
-    Mention.objects.bulk_create(mentions)
 
 
 class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
@@ -217,7 +154,13 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_mention_notification(self.text, self.barrier, self.created_by)
+        _handle_mention_notification(self, self.barrier, self.created_by)
+
+    def get_note_url_path(self):
+        """
+        Get the frontend url path used in emails and other notifications
+        """
+        return f"/barriers/{self.barrier.id}/"
 
     @property
     def created_user(self):
@@ -240,9 +183,13 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        _handle_mention_notification(
-            self.text, self.public_barrier.barrier, self.created_by
-        )
+        _handle_mention_notification(self, self.public_barrier.barrier, self.created_by)
+
+    def get_note_url_path(self):
+        """
+        Get the frontend url path used in emails and other notifications
+        """
+        return f"/barriers/{self.barrier.id}/public/"
 
     @property
     def barrier(self):
@@ -255,3 +202,89 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+
+user_type = Dict[str, settings.AUTH_USER_MODEL]
+note_union = Union[Interaction, PublicBarrierNote]
+
+
+def _get_user_object(user_obj: settings.AUTH_USER_MODEL, emails: List[str]):
+    # This function exists to make unit tests easier to write
+    return list(
+        u
+        for u in user_obj.objects.annotate(lowered_email=Lower("email"))
+        .filter(lowered_email__in=emails)
+        .order_by("lowered_email")
+    )
+
+
+def _get_mentioned_users(note_text: str) -> user_type:
+    regex = r"@\S*?@\S*?gov\.uk"
+    matches = re.finditer(regex, note_text, re.MULTILINE)
+    emails: List[str] = sorted(
+        {m.group()[1:].lower() for m in matches}
+    )  # dedupe emails, strip leading '@'
+
+    user_obj: settings.AUTH_USER_MODEL = get_user_model()
+    users: List[settings.AUTH_USER_MODEL] = _get_user_object(user_obj, emails)
+    output: user_type = dict(zip(emails, users))
+
+    return output
+
+
+def _remove_excluded(emails: List[str]) -> List[str]:
+    exclude_emails: List[str] = [
+        i.exclude_email
+        for i in ExcludeFromNotification.objects.annotate(
+            lowered_exclude_email=Lower("exclude_email")
+        ).filter(lowered_exclude_email__in=emails)
+    ]
+    return [e for e in emails if e not in exclude_emails]
+
+
+def _handle_mention_notification(
+    note: note_union,
+    barrier,
+    created_by,
+) -> None:
+    # Prepare values used in mentions
+    note_text = note.text
+    note_url_path = note.get_note_url_path()
+    users: user_type = _get_mentioned_users(str(note_text))
+    # record mentions
+    mentions: List[Mention] = [
+        Mention(
+            created_by=created_by,
+            modified_by=created_by,
+            barrier=barrier,
+            email_used=email,
+            recipient=user,
+            text=note_text,
+            content_object=note,
+        )
+        for email, user in users.items()
+    ]
+    Mention.objects.bulk_create(mentions)
+
+    # prepare values used in notifications
+    barrier_code: str = str(barrier.code)
+    barrier_name: str = str(barrier.title)
+    barrier_url: str = urllib.parse.urljoin(settings.FRONTEND_DOMAIN, note_url_path)
+    mentioned_by: str = f"{created_by.first_name} {created_by.last_name}"
+
+    # Send notification
+    notification_emails: List[str] = _remove_excluded(list(users.keys()))
+    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+    for email in notification_emails:
+        first_name: str = email.split(".")[0]
+        client.send_email_notification(
+            email_address=email,
+            template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
+            personalisation={
+                "first_name": first_name,
+                "mentioned_by": mentioned_by,
+                "barrier_number": barrier_code,
+                "barrier_name": barrier_name,
+                "barrier_url": barrier_url,
+            },
+        )

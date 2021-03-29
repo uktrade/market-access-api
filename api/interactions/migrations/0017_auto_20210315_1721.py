@@ -10,19 +10,23 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('interactions', '0016_excludefromnotifcation'),
+        ("interactions", "0016_excludefromnotifcation"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mention',
-            name='text',
+            model_name="mention",
+            name="text",
             field=models.TextField(default=django.utils.timezone.now),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='excludefromnotifcation',
-            name='excluded_user',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.DO_NOTHING, related_name='excluded_notification', to=settings.AUTH_USER_MODEL),
+            model_name="excludefromnotifcation",
+            name="excluded_user",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="excluded_notification",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

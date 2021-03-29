@@ -1,35 +1,29 @@
+import datetime
+
 from api.assessment.models import EconomicAssessment
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.documents.views import BaseEntityDocumentModelViewSet
-from api.interactions.models import (
-    Document,
-    ExcludeFromNotifcation,
-    Interaction,
-    Mention,
-    PublicBarrierNote,
-)
-from api.interactions.serializers import (
-    DocumentSerializer,
-    InteractionSerializer,
-    MentionSerializer,
-    PublicBarrierNoteSerializer,
-)
+from api.interactions.models import (Document, ExcludeFromNotification,
+                                     Interaction, Mention, PublicBarrierNote)
+from api.interactions.serializers import (DocumentSerializer,
+                                          ExcludeFromNotificationSerializer,
+                                          InteractionSerializer,
+                                          MentionSerializer,
+                                          PublicBarrierNoteSerializer)
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
-
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.base import View
-from django.http import HttpResponse
-
 from rest_framework import generics, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 
-class ExcludeNotifcation(View):
+class ExcludeNotification(View):
     def post(self, request):
-        ExcludeFromNotifcation.objects.get_or_create(
+        ExcludeFromNotification.objects.get_or_create(
             excluded_user=request.user,
             exclude_email=request.user.email,
             created_by=request.user,
@@ -39,7 +33,7 @@ class ExcludeNotifcation(View):
         return HttpResponse("success")
 
     def delete(self, request):
-        user_qs = ExcludeFromNotifcation.objects.filter(excluded_user=request.user)
+        user_qs = ExcludeFromNotification.objects.filter(excluded_user=request.user)
         if not user_qs.exists():
             # The user is not in the excluded list
             return HttpResponse("success")
@@ -47,6 +41,51 @@ class ExcludeNotifcation(View):
         u = user_qs[0]
         u.delete()
         return HttpResponse("success")
+
+
+class ExcludeFromNotificationsView(viewsets.ViewSet):
+    def retrieve(self, request, pk=None):
+        user_has_exclusion = (
+            ExcludeFromNotification.objects.filter(excluded_user=request.user).count()
+            > 0
+        )
+
+        if user_has_exclusion:
+            data = ExcludeFromNotificationSerializer(
+                data={"mention_notifications_enabled": False}
+            )
+            data.is_valid()
+            return Response(data.validated_data)
+        else:
+            data = ExcludeFromNotificationSerializer(
+                data={"mention_notifications_enabled": True}
+            )
+            data.is_valid()
+            return Response(data.validated_data)
+
+    def create(self, request):
+        # if request.user.is_anonymous():
+        #     raise Exception("User is anonymous")
+        ExcludeFromNotification.objects.get_or_create(
+            excluded_user=request.user,
+            defaults={
+                "exclude_email": request.user.email,
+                "created_by": request.user,
+                "modified_by": request.user,
+            },
+        )
+        # if the record already exists don't duplicated it, else create the record
+        return Response({"status": "success"})
+
+    def destroy(self, request):
+        user_qs = ExcludeFromNotification.objects.filter(excluded_user=request.user)
+        if not user_qs.exists():
+            # The user is not in the excluded list
+            return Response({"status": "success"})
+
+        u = user_qs[0]
+        u.delete()
+        return Response({"status": "success"})
 
 
 class DocumentViewSet(BaseEntityDocumentModelViewSet):
@@ -186,7 +225,12 @@ class MentionList(viewsets.ModelViewSet):
     serializer_class = MentionSerializer
 
     def get_queryset(self):
-        return Mention.objects.filter(recipient=self.request.user)
+        return Mention.objects.filter(
+            recipient=self.request.user,
+            created_on__date__gte=(
+                datetime.datetime.now() - datetime.timedelta(days=30)
+            ),
+        )
 
     def mark_as_read(self, request, pk):
         mention = self.get_queryset().get(pk=pk)
@@ -201,3 +245,23 @@ class MentionList(viewsets.ModelViewSet):
         mention.save()
         serializer = MentionSerializer(mention)
         return Response(serializer.data)
+
+    def mark_all_as_read(self, request):
+        self.get_queryset().filter(recipient=request.user).update(
+            read_by_recipient=True
+        )
+        return Response({"status": "success"})
+
+    def mark_all_as_unread(self, request):
+        self.get_queryset().filter(recipient=request.user).update(
+            read_by_recipient=False
+        )
+        return Response({"status": "success"})
+
+
+class MentionDetail(
+    TeamMemberModelMixin,
+    generics.RetrieveAPIView,
+):
+    queryset = Mention.objects.all()
+    serializer_class = MentionSerializer
