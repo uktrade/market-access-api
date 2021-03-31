@@ -1,7 +1,5 @@
-from hashid_field.rest import HashidSerializerCharField
-from rest_framework import serializers
-
 from api.barriers.fields import (
+    DisplayChoiceField,
     NoneToBlankCharField,
     ReadOnlyAllSectorsField,
     ReadOnlyCategoriesField,
@@ -16,8 +14,11 @@ from api.barriers.serializers.mixins import LocationFieldMixin
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.interactions.models import PublicBarrierNote
 from api.interactions.serializers import PublicBarrierNoteSerializer
+from api.metadata.constants import PublicBarrierStatus
 from api.metadata.fields import TradingBlocField
 from api.metadata.serializers import OrganisationSerializer
+from hashid_field.rest import HashidSerializerCharField
+from rest_framework import serializers
 
 PUBLIC_ID = "barriers.PublicBarrier.id"
 
@@ -27,9 +28,27 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
     Simple serializer for use within BarrierDetailSerializer.
     """
 
+    id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
+    title = NoneToBlankCharField()
+    summary = NoneToBlankCharField()
+    unpublished_changes = serializers.SerializerMethodField()
+    public_view_status_display = DisplayChoiceField(
+        source="public_view_status", choices=PublicBarrierStatus.choices
+    )
+
     class Meta:
         model = PublicBarrier
-        fields = ("public_view_status",)
+        fields = (
+            "id",
+            "public_view_status",
+            "public_view_status_display",
+            "title",
+            "summary",
+            "unpublished_changes",
+        )
+
+    def get_unpublished_changes(self, obj):
+        return obj.unpublished_changes
 
 
 class PublicBarrierSerializer(

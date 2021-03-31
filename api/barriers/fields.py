@@ -1,5 +1,3 @@
-from rest_framework import serializers
-
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import BarrierCommodity
 from api.commodities.models import Commodity
@@ -27,6 +25,7 @@ from api.metadata.serializers import (
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
+from rest_framework import serializers
 
 
 class ArchivedField(serializers.BooleanField):
@@ -419,3 +418,20 @@ class BarrierReportStageListingField(serializers.RelatedField):
             "status_id": value.status,
             "status_desc": stage_status_dict[value.status],
         }
+
+
+class DisplayChoiceField(serializers.ChoiceField):
+    def to_representation(self, obj):
+        if obj == "" and self.allow_blank:
+            return obj
+        return self._choices[obj]
+
+    def to_internal_value(self, data):
+        # To support inserts with the value
+        if data == "" and self.allow_blank:
+            return ""
+
+        for key, val in self._choices.items():
+            if val == data:
+                return key
+        self.fail("invalid_choice", input=data)

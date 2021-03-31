@@ -1,11 +1,10 @@
+from api.barriers.models import Barrier
+from api.barriers.serializers import DataWorkspaceSerializer
+from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 from django.conf import settings
 from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-
-from api.barriers.models import Barrier
-from api.barriers.serializers import DataWorkspaceSerializer
-from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 
 
 class BarrierList(generics.ListAPIView):

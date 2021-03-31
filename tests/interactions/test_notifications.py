@@ -3,11 +3,15 @@ from unittest.mock import patch
 
 import pytest
 from api.barriers.models import Barrier, PublicBarrier
-from api.interactions.models import (ExcludeFromNotification, Interaction,
-                                     Mention, PublicBarrierNote,
-                                     _get_mentioned_users,
-                                     _handle_mention_notification,
-                                     _remove_excluded)
+from api.interactions.models import (
+    ExcludeFromNotification,
+    Interaction,
+    Mention,
+    PublicBarrierNote,
+    _get_mentioned_users,
+    _handle_mention_notification,
+    _remove_excluded,
+)
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.reverse import reverse
@@ -313,8 +317,7 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
         assert res.status_code == HTTPStatus.OK
         assert res.content == b"success"
         assert (
-            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
-            == 1
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count() == 1
         )
 
         # Show that repeated calls do not create repeated DB rows
@@ -322,8 +325,7 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
         assert res.status_code == HTTPStatus.OK
         assert res.content == b"success"
         assert (
-            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
-            == 1
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count() == 1
         )
 
     @pytest.mark.skip()
@@ -343,8 +345,7 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
             is True
         )
         assert (
-            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
-            == 1
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count() == 1
         )
 
         res = self.client.delete(self.url)
@@ -355,8 +356,7 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
             is False
         )
         assert (
-            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
-            == 0
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count() == 0
         )
 
         # show that repeated calls to delete an exclusion does not cause an error
@@ -368,6 +368,5 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
             is False
         )
         assert (
-            ExcludeFromNotification.objects.filter(excluded_user=self.user).count()
-            == 0
+            ExcludeFromNotification.objects.filter(excluded_user=self.user).count() == 0
         )
