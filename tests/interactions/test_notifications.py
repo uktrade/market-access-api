@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from api.barriers.models import Barrier, PublicBarrier
+from api.collaboration.models import TeamMember
 from api.interactions.models import (
     ExcludeFromNotification,
     Interaction,
@@ -58,10 +59,13 @@ class TestPublicBarrierNotification(NotificationSetUp):
             text=text,
         )
 
+        assert TeamMember.objects.filter().exists() is False
         assert Mention.objects.filter().exists() is False
         publicbarriernote.save()
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 1
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 1
 
     def test_many_mentions_publicbarriernote(self):
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
@@ -71,10 +75,13 @@ class TestPublicBarrierNotification(NotificationSetUp):
             text=text,
         )
 
+        assert TeamMember.objects.filter().exists() is False
         assert Mention.objects.filter().exists() is False
         publicbarriernote.save()
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 3
 
     def test_excluded_emails_should_still_create_mentions(self):
         excluded = ExcludeFromNotification.objects.create(
@@ -91,9 +98,12 @@ class TestPublicBarrierNotification(NotificationSetUp):
         )
 
         assert Mention.objects.filter().exists() is False
+        assert TeamMember.objects.filter().exists() is False
         publicbarriernote.save()
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 3
 
 
 class TestInteractionNotification(NotificationSetUp):
@@ -109,9 +119,12 @@ class TestInteractionNotification(NotificationSetUp):
         )
 
         assert Mention.objects.filter().exists() is False
+        assert TeamMember.objects.filter().exists() is False
         interaction.save()
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 1
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 1
 
     def test_many_mentions_interaction(self):
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
@@ -125,9 +138,12 @@ class TestInteractionNotification(NotificationSetUp):
         )
 
         assert Mention.objects.filter().exists() is False
+        assert TeamMember.objects.filter().exists() is False
         interaction.save()
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 3
 
     def test_exclude_mentions_interaction(self):
         excluded = ExcludeFromNotification.objects.create(
@@ -147,14 +163,18 @@ class TestInteractionNotification(NotificationSetUp):
         )
 
         assert Mention.objects.filter().exists() is False
+        assert TeamMember.objects.filter().exists() is False
         interaction.save()
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 3
 
 
 class TestMentionNotification(NotificationSetUp):
     def test_one_notification(self):
         text = "test mention @foo@test.gov.uk"
+        assert TeamMember.objects.filter().exists() is False
         assert Mention.objects.filter().exists() is False
 
         interaction = Interaction(
@@ -170,10 +190,13 @@ class TestMentionNotification(NotificationSetUp):
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 1
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 1
 
     def test_many_notification(self):
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
         assert Mention.objects.filter().exists() is False
+        assert TeamMember.objects.filter().exists() is False
 
         interaction = Interaction(
             created_by=self.user,
@@ -188,6 +211,8 @@ class TestMentionNotification(NotificationSetUp):
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 3
 
     @pytest.mark.skip()
     def test_exclude_notification(self):
@@ -199,6 +224,7 @@ class TestMentionNotification(NotificationSetUp):
         )
         text = "test mention @foo@test.gov.uk, @foo2@test.gov.uk, @foo3@test.gov.uk"
         assert Mention.objects.filter().exists() is False
+        assert TeamMember.objects.filter().exists() is False
 
         interaction = Interaction(
             created_by=self.user,
@@ -213,6 +239,8 @@ class TestMentionNotification(NotificationSetUp):
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3
+        assert TeamMember.objects.filter().exists() is True
+        assert TeamMember.objects.filter().count() == 3
 
 
 class TestRemoveExcluded(BaseNotificationTestCase):
