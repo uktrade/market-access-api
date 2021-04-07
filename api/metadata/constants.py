@@ -238,6 +238,39 @@ TRADING_BLOCS = {
             "3e6809d6-89f6-4590-8458-1d0dab73ad1a",  # Europe
         ],
     },
+    "TB00017": {
+        "code": "TB00017",
+        "name": "Gulf Cooperation Council (GCC)",
+        "short_name": "the GCC",
+        "country_ids": [
+
+        ],
+        "overseas_regions": [
+
+        ],
+    },
+    "TB00013": {
+        "code": "TB00013",
+        "name": "Eurasian Economic Union (EAEU)",
+        "short_name": "the EAEU",
+        "country_ids": [
+
+        ],
+        "overseas_regions": [
+
+        ],
+    },
+    "TB00026": {
+        "code": "TB00026",
+        "name": "Southern Common Market (Mercosur)",
+        "short_name": "the Mercosur",
+        "country_ids": [
+
+        ],
+        "overseas_regions": [
+
+        ],
+    }
 }
 
 
