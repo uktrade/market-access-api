@@ -3,6 +3,7 @@ import urllib.parse
 from typing import Dict, List, Union
 
 from api.barriers.mixins import BarrierRelatedMixin
+from api.collaboration.models import TeamMember
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
@@ -265,6 +266,15 @@ def _handle_mention_notification(
         for email, user in users.items()
     ]
     Mention.objects.bulk_create(mentions)
+
+    for user in users.values():
+        TeamMember.objects.get_or_create(
+            created_by=created_by,
+            modified_by=created_by,
+            barrier=barrier,
+            user=user,
+            role=TeamMember.CONTRIBUTOR,
+        )
 
     # prepare values used in notifications
     barrier_code: str = str(barrier.code)
