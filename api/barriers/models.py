@@ -307,6 +307,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
         null=True,
         help_text="Mark the barrier as either publishable or unpublishable to the public.",
     )
+    public_eligibility_postponed = models.BooleanField(
+        blank=True,
+        default=False,
+        help_text="If public eligibility has been marked to be reviewed later.",
+    )
     public_eligibility_summary = models.TextField(
         blank=True,
         help_text="Public eligibility summary if provided by user.",
@@ -772,6 +777,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def public_view_status(self):
+
         # set default if eligibility is avail on the internal barrier
         if self._public_view_status == PublicBarrierStatus.UNKNOWN:
             if self.barrier.public_eligibility is True:
@@ -800,6 +806,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             ):
                 self._public_view_status = PublicBarrierStatus.ELIGIBLE
                 self.save()
+
+        if self.barrier.public_eligibility_postponed is True:
+            self._public_view_status = PublicBarrierStatus.REVIEW_LATER
+            self.save()
 
         return self._public_view_status
 

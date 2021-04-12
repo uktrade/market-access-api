@@ -78,6 +78,7 @@ class PublicBarrierStatus(StatusNameMixin):
     READY = 30
     PUBLISHED = 40
     UNPUBLISHED = 50
+    REVIEW_LATER = 60
 
     choices = Choices(
         (UNKNOWN, "Not yet sifted"),
@@ -86,6 +87,7 @@ class PublicBarrierStatus(StatusNameMixin):
         (READY, "Ready"),
         (PUBLISHED, "Published"),
         (UNPUBLISHED, "Unpublished"),
+        (REVIEW_LATER, "Review later"),
     )
 
 
@@ -248,7 +250,7 @@ TRADING_BLOCS = {
             "4a61b8be-5d95-e211-a939-e4115bead28a",
             "5661b8be-5d95-e211-a939-e4115bead28a",
             "1a0be5c4-5d95-e211-a939-e4115bead28a",
-            "b46ee1ca-5d95-e211-a939-e4115bead28a"
+            "b46ee1ca-5d95-e211-a939-e4115bead28a",
         ],
         "overseas_regions": [
             "c4679b44-079e-4394-8bf7-bb0881a5031d",
@@ -263,11 +265,9 @@ TRADING_BLOCS = {
             "a65f66a0-5d95-e211-a939-e4115bead28a",
             "786a9ab2-5d95-e211-a939-e4115bead28a",
             "7e6a9ab2-5d95-e211-a939-e4115bead28a",
-            "5961b8be-5d95-e211-a939-e4115bead28a"
+            "5961b8be-5d95-e211-a939-e4115bead28a",
         ],
-        "overseas_regions": [
-            "cb2864aa-d19f-44b6-946c-d850a3fd7e3a"
-        ],
+        "overseas_regions": ["cb2864aa-d19f-44b6-946c-d850a3fd7e3a"],
     },
     "TB00026": {
         "code": "TB00026",
@@ -277,12 +277,12 @@ TRADING_BLOCS = {
             "b66ee1ca-5d95-e211-a939-e4115bead28a",
             "b05f66a0-5d95-e211-a939-e4115bead28a",
             "4f61b8be-5d95-e211-a939-e4115bead28a",
-            "9c5f66a0-5d95-e211-a939-e4115bead28a"
+            "9c5f66a0-5d95-e211-a939-e4115bead28a",
         ],
         "overseas_regions": [
             "5616ccf5-ab4a-4c2c-9624-13c69be3c46b",
         ],
-    }
+    },
 }
 
 

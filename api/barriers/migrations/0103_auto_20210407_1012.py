@@ -6,18 +6,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0102_create_blank_public_barriers'),
+        ("barriers", "0102_create_blank_public_barriers"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='barrier',
-            name='trading_bloc',
-            field=models.CharField(blank=True, choices=[('TB00016', 'European Union'), ('TB00017', 'Gulf Cooperation Council (GCC)'), ('TB00013', 'Eurasian Economic Union (EAEU)'), ('TB00026', 'Southern Common Market (Mercosur)')], max_length=7),
+            model_name="barrier",
+            name="trading_bloc",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("TB00016", "European Union"),
+                    ("TB00017", "Gulf Cooperation Council (GCC)"),
+                    ("TB00013", "Eurasian Economic Union (EAEU)"),
+                    ("TB00026", "Southern Common Market (Mercosur)"),
+                ],
+                max_length=7,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalbarrier',
-            name='trading_bloc',
-            field=models.CharField(blank=True, choices=[('TB00016', 'European Union'), ('TB00017', 'Gulf Cooperation Council (GCC)'), ('TB00013', 'Eurasian Economic Union (EAEU)'), ('TB00026', 'Southern Common Market (Mercosur)')], max_length=7),
+            model_name="historicalbarrier",
+            name="trading_bloc",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("TB00016", "European Union"),
+                    ("TB00017", "Gulf Cooperation Council (GCC)"),
+                    ("TB00013", "Eurasian Economic Union (EAEU)"),
+                    ("TB00026", "Southern Common Market (Mercosur)"),
+                ],
+                max_length=7,
+            ),
         ),
     ]
