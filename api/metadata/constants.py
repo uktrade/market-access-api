@@ -202,7 +202,7 @@ TRADE_DIRECTION_CHOICES = Choices(
 TRADING_BLOCS = {
     "TB00016": {
         "code": "TB00016",
-        "name": "European Union",
+        "name": "European Union (EU)",
         "short_name": "the EU",
         "country_ids": [
             "a05f66a0-5d95-e211-a939-e4115bead28a",  # Austria
