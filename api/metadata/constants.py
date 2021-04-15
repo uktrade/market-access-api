@@ -202,7 +202,7 @@ TRADE_DIRECTION_CHOICES = Choices(
 TRADING_BLOCS = {
     "TB00016": {
         "code": "TB00016",
-        "name": "European Union",
+        "name": "European Union (EU)",
         "short_name": "the EU",
         "country_ids": [
             "a05f66a0-5d95-e211-a939-e4115bead28a",  # Austria
@@ -238,6 +238,51 @@ TRADING_BLOCS = {
             "3e6809d6-89f6-4590-8458-1d0dab73ad1a",  # Europe
         ],
     },
+    "TB00017": {
+        "code": "TB00017",
+        "name": "Gulf Cooperation Council (GCC)",
+        "short_name": "the GCC",
+        "country_ids": [
+            "a35f66a0-5d95-e211-a939-e4115bead28a",
+            "7d6a9ab2-5d95-e211-a939-e4115bead28a",
+            "4a61b8be-5d95-e211-a939-e4115bead28a",
+            "5661b8be-5d95-e211-a939-e4115bead28a",
+            "1a0be5c4-5d95-e211-a939-e4115bead28a",
+            "b46ee1ca-5d95-e211-a939-e4115bead28a"
+        ],
+        "overseas_regions": [
+            "c4679b44-079e-4394-8bf7-bb0881a5031d",
+        ],
+    },
+    "TB00013": {
+        "code": "TB00013",
+        "name": "Eurasian Economic Union (EAEU)",
+        "short_name": "the EAEU",
+        "country_ids": [
+            "9d5f66a0-5d95-e211-a939-e4115bead28a",
+            "a65f66a0-5d95-e211-a939-e4115bead28a",
+            "786a9ab2-5d95-e211-a939-e4115bead28a",
+            "7e6a9ab2-5d95-e211-a939-e4115bead28a",
+            "5961b8be-5d95-e211-a939-e4115bead28a"
+        ],
+        "overseas_regions": [
+            "cb2864aa-d19f-44b6-946c-d850a3fd7e3a"
+        ],
+    },
+    "TB00026": {
+        "code": "TB00026",
+        "name": "Southern Common Market (Mercosur)",
+        "short_name": "the Mercosur",
+        "country_ids": [
+            "b66ee1ca-5d95-e211-a939-e4115bead28a",
+            "b05f66a0-5d95-e211-a939-e4115bead28a",
+            "4f61b8be-5d95-e211-a939-e4115bead28a",
+            "9c5f66a0-5d95-e211-a939-e4115bead28a"
+        ],
+        "overseas_regions": [
+            "5616ccf5-ab4a-4c2c-9624-13c69be3c46b",
+        ],
+    }
 }
 
 

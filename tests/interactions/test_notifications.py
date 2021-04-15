@@ -4,15 +4,11 @@ from unittest.mock import patch
 import pytest
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.models import TeamMember
-from api.interactions.models import (
-    ExcludeFromNotification,
-    Interaction,
-    Mention,
-    PublicBarrierNote,
-    _get_mentioned_users,
-    _handle_mention_notification,
-    _remove_excluded,
-)
+from api.interactions.models import (ExcludeFromNotification, Interaction,
+                                     Mention, PublicBarrierNote,
+                                     _get_mentioned_users,
+                                     _handle_mention_notification,
+                                     _remove_excluded)
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.reverse import reverse
