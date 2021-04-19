@@ -3,9 +3,27 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from api.barriers.models import Barrier, BarrierUserHit
-from api.collaboration.models import TeamMember
-from api.interactions.models import ExcludeFromNotification, Mention, TeamMember
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
+from api.barriers.models import (
+    Barrier,
+    BarrierReportStage,
+    BarrierUserHit,
+    PublicBarrier,
+)
+from api.interactions.models import (
+    Document,
+    ExcludeFromNotification,
+    Interaction,
+    Mention,
+    PublicBarrierNote,
+    TeamMember,
+)
+from api.metadata.models import BarrierTag
 from api.user.models import (
     MyBarriersSavedSearch,
     Profile,
@@ -15,6 +33,7 @@ from api.user.models import (
 from api.user_event_log.models import UserEvent
 
 User = settings.AUTH_USER_MODEL
+
 
 # These 5 functions have to be run in the same atomic DB operation
 
