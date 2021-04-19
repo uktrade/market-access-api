@@ -56,6 +56,56 @@ def update_user_attribute(bad_user: User, good_user: User) -> None:
     Mention.objects.filter(recipient=bad_user).update(recipient=good_user)
 
 
+def update_basemodel_attributes(bad_user: User, good_user: User) -> None:
+    # update the created_by attribute
+    Barrier.objects.filter(created_by=bad_user).update(created_by=good_user)
+    BarrierReportStage.objects.filter(created_by=bad_user).update(created_by=good_user)
+    BarrierTag.objects.filter(created_by=bad_user).update(created_by=good_user)
+    Document.objects.filter(created_by=bad_user).update(created_by=good_user)
+    EconomicAssessment.objects.filter(created_by=bad_user).update(created_by=good_user)
+    EconomicImpactAssessment.objects.filter(created_by=bad_user).update(
+        created_by=good_user
+    )
+    ExcludeFromNotification.objects.filter(created_by=bad_user).update(
+        created_by=good_user
+    )
+    Interaction.objects.filter(created_by=bad_user).update(created_by=good_user)
+    Mention.objects.filter(created_by=bad_user).update(created_by=good_user)
+    PublicBarrier.objects.filter(created_by=bad_user).update(created_by=good_user)
+    PublicBarrierNote.objects.filter(created_by=bad_user).update(created_by=good_user)
+    ResolvabilityAssessment.objects.filter(created_by=bad_user).update(
+        created_by=good_user
+    )
+    StrategicAssessment.objects.filter(created_by=bad_user).update(created_by=good_user)
+    TeamMember.objects.filter(created_by=bad_user).update(created_by=good_user)
+
+    # update the modified_by attribute
+    Barrier.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+    BarrierReportStage.objects.filter(modified_by=bad_user).update(
+        modified_by=good_user
+    )
+    BarrierTag.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+    Document.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+    EconomicAssessment.objects.filter(modified_by=bad_user).update(
+        modified_by=good_user
+    )
+    EconomicImpactAssessment.objects.filter(modified_by=bad_user).update(
+        modified_by=good_user
+    )
+    ExcludeFromNotification.objects.filter(modified_by=bad_user).update(
+        modified_by=good_user
+    )
+    Interaction.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+    Mention.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+    PublicBarrier.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+    PublicBarrierNote.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+    ResolvabilityAssessment.objects.filter(modified_by=bad_user).update(
+        modified_by=good_user
+    )
+    StrategicAssessment.objects.filter(modified_by=bad_user).update(
+        modified_by=good_user
+    )
+    TeamMember.objects.filter(modified_by=bad_user).update(modified_by=good_user)
 class Command(BaseCommand):
     """
     https://uktrade.atlassian.net/browse/MAR-919
@@ -80,3 +130,4 @@ class Command(BaseCommand):
             good_user: User = user_obj.objects.get(id=options["good_user_id"])
 
             update_user_attribute(bad_user, good_user)
+            update_basemodel_attributes(bad_user, good_user)
