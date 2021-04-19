@@ -106,6 +106,25 @@ def update_basemodel_attributes(bad_user: User, good_user: User) -> None:
         modified_by=good_user
     )
     TeamMember.objects.filter(modified_by=bad_user).update(modified_by=good_user)
+
+
+def update_achivable_attributes(bad_user: User, good_user: User) -> None:
+    # update the archived_by attribute
+    Barrier.objects.filter(archived_by=bad_user).update(archived_by=good_user)
+    Document.objects.filter(archived_by=bad_user).update(archived_by=good_user)
+    EconomicAssessment.objects.filter(archived_by=bad_user).update(
+        archived_by=good_user
+    )
+    EconomicImpactAssessment.objects.filter(archived_by=bad_user).update(
+        archived_by=good_user
+    )
+    Interaction.objects.filter(archived_by=bad_user).update(archived_by=good_user)
+    PublicBarrier.objects.filter(archived_by=bad_user).update(archived_by=good_user)
+    PublicBarrierNote.objects.filter(archived_by=bad_user).update(archived_by=good_user)
+    StrategicAssessment.objects.filter(archived_by=bad_user).update(
+        archived_by=good_user
+    )
+    TeamMember.objects.filter(archived_by=bad_user).update(archived_by=good_user)
 class Command(BaseCommand):
     """
     https://uktrade.atlassian.net/browse/MAR-919
@@ -131,3 +150,4 @@ class Command(BaseCommand):
 
             update_user_attribute(bad_user, good_user)
             update_basemodel_attributes(bad_user, good_user)
+            update_achivable_attributes(bad_user, good_user)
