@@ -125,6 +125,26 @@ def update_achivable_attributes(bad_user: User, good_user: User) -> None:
         archived_by=good_user
     )
     TeamMember.objects.filter(archived_by=bad_user).update(archived_by=good_user)
+
+
+def update_fullyachivable_attributes(bad_user: User, good_user: User) -> None:
+    # update the unarchived_by attribute
+    Barrier.objects.filter(unarchived_by=bad_user).update(unarchived_by=good_user)
+    PublicBarrier.objects.filter(unarchived_by=bad_user).update(unarchived_by=good_user)
+
+
+def update_approval_attributes(bad_user: User, good_user: User) -> None:
+    EconomicAssessment.objects.filter(reviewed_by=bad_user).update(
+        reviewed_by=good_user
+    )
+    StrategicAssessment.objects.filter(reviewed_by=bad_user).update(
+        reviewed_by=good_user
+    )
+    ResolvabilityAssessment.objects.filter(reviewed_by=bad_user).update(
+        reviewed_by=good_user
+    )
+
+
 class Command(BaseCommand):
     """
     https://uktrade.atlassian.net/browse/MAR-919
@@ -151,3 +171,5 @@ class Command(BaseCommand):
             update_user_attribute(bad_user, good_user)
             update_basemodel_attributes(bad_user, good_user)
             update_achivable_attributes(bad_user, good_user)
+            update_fullyachivable_attributes(bad_user, good_user)
+            update_approval_attributes(bad_user, good_user)
