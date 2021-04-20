@@ -31,7 +31,6 @@ from api.interactions.models import (
 from api.metadata.models import BarrierTag
 from api.user.models import (
     MyBarriersSavedSearch,
-    Profile,
     SavedSearch,
     TeamBarriersSavedSearch,
 )
@@ -56,7 +55,6 @@ base_models: List[settings.AUTH_USER_MODEL] = [
 user_models: List[settings.AUTH_USER_MODEL] = [
     BarrierUserHit,
     MyBarriersSavedSearch,
-    Profile,
     SavedSearch,
     TeamBarriersSavedSearch,
     TeamMember,
@@ -200,9 +198,6 @@ class TestBadUsersBugFix(TestCase):
         data_row["MyBarriersSavedSearch"] = MyBarriersSavedSearch.objects.create(
             user=test_user,
         )
-        data_row["Profile"] = Profile.objects.get(
-            user=test_user,
-        )
         data_row["SavedSearch"] = SavedSearch.objects.create(user=test_user, filters={})
         data_row["TeamBarriersSavedSearch"] = TeamBarriersSavedSearch.objects.create(
             user=test_user,
@@ -228,9 +223,6 @@ class TestBadUsersBugFix(TestCase):
             _check_orm_attribute(klass, "modified_by")
 
         for klass in user_models:
-            # Every user has one profile, can't be checked generically
-            if klass.__name__ == "Profile":
-                continue
             _check_orm_attribute(klass, "user")
 
         for klass in archive_by_models:

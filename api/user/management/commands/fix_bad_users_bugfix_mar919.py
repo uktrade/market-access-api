@@ -26,7 +26,6 @@ from api.interactions.models import (
 from api.metadata.models import BarrierTag
 from api.user.models import (
     MyBarriersSavedSearch,
-    Profile,
     SavedSearch,
     TeamBarriersSavedSearch,
 )
@@ -41,7 +40,6 @@ def update_user_attribute(
     TeamMember.objects.filter(user=bad_user).update(user=good_user)
     BarrierUserHit.objects.filter(user=bad_user).update(user=good_user)
     MyBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
-    # Profile.objects.filter(user=bad_user).update(user=good_user)
     SavedSearch.objects.filter(user=bad_user).update(user=good_user)
     TeamBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
     UserEvent.objects.filter(user=bad_user).update(user=good_user)
