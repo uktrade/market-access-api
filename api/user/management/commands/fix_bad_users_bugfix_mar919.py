@@ -15,8 +15,8 @@ from api.barriers.models import (
     BarrierUserHit,
     PublicBarrier,
 )
+from api.documents.models import Document
 from api.interactions.models import (
-    Document,
     ExcludeFromNotification,
     Interaction,
     Mention,
@@ -41,14 +41,14 @@ def update_user_attribute(
     TeamMember.objects.filter(user=bad_user).update(user=good_user)
     BarrierUserHit.objects.filter(user=bad_user).update(user=good_user)
     MyBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
-    Profile.objects.filter(user=bad_user).update(user=good_user)
+    # Profile.objects.filter(user=bad_user).update(user=good_user)
     SavedSearch.objects.filter(user=bad_user).update(user=good_user)
     TeamBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
     UserEvent.objects.filter(user=bad_user).update(user=good_user)
 
     # Update misc User attributes
     ExcludeFromNotification.objects.filter(excluded_user=bad_user).update(
-        uexcluded_user=good_user
+        excluded_user=good_user
     )
     Mention.objects.filter(recipient=bad_user).update(recipient=good_user)
 
@@ -159,12 +159,12 @@ class Command(BaseCommand):
 
     help = "this command will move all data from the bad user to the good user"
 
-    def add_parametter(self, parser):
+    def add_arguments(self, parser):
         parser.add_argument(
-            "bad_user_id", type=int, help="The rowId of the bad User record"
+            "--bad_user_id", type=int, help="The rowId of the bad User record"
         )
         parser.add_argument(
-            "good_user_id", typw=str, help="The rowId of the good User record"
+            "--good_user_id", type=int, help="The rowId of the good User record"
         )
 
     def handle(self, *args, **options):

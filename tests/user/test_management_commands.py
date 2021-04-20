@@ -20,9 +20,7 @@ from api.barriers.models import (
     Stage,
 )
 from api.core.test_utils import create_test_user
-from api.documents.models import (
-    Document,
-)
+from api.documents.models import Document
 from api.interactions.models import (
     ExcludeFromNotification,
     Interaction,
@@ -255,3 +253,12 @@ class TestBadUsersBugFix(TestCase):
 
         self.check_count_on_all_objects(self.good_user, 0)
         self.check_count_on_all_objects(self.bad_user, 1)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=self.bad_user.id,
+            good_user_id=self.good_user.id,
+        )
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 0)
