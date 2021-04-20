@@ -8,12 +8,12 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('interactions', '0018_auto_20210323_1117'),
+        ("interactions", "0018_auto_20210323_1117"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='ExcludeFromNotifications',
-            new_name='ExcludeFromNotification',
+            old_name="ExcludeFromNotifications",
+            new_name="ExcludeFromNotification",
         ),
     ]

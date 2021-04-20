@@ -262,6 +262,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             "ready": PublicBarrierStatus.READY,
             "published": PublicBarrierStatus.PUBLISHED,
             "unpublished": PublicBarrierStatus.UNPUBLISHED,
+            "review_later": PublicBarrierStatus.REVIEW_LATER,
         }
         statuses = [
             status_lookup.get(status)

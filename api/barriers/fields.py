@@ -128,9 +128,15 @@ class CommoditiesField(serializers.ListField):
 class PublicEligibilityField(serializers.BooleanField):
     def custom_update(self, validated_data):
         public_eligibility = validated_data.get("public_eligibility")
+        public_eligibility_postponed = validated_data.get(
+            "public_eligibility_postponed"
+        )
         public_barrier, created = get_or_create_public_barrier(self.parent.instance)
 
-        if public_eligibility is True and public_barrier._public_view_status in (
+        if public_eligibility_postponed is True:
+            public_barrier.public_view_status = PublicBarrierStatus.REVIEW_LATER
+            public_barrier.save()
+        elif public_eligibility is True and public_barrier._public_view_status in (
             PublicBarrierStatus.INELIGIBLE,
             PublicBarrierStatus.UNKNOWN,
         ):
