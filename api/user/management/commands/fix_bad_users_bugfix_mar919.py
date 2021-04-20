@@ -32,13 +32,11 @@ from api.user.models import (
 )
 from api.user_event_log.models import UserEvent
 
-User = settings.AUTH_USER_MODEL
-
 
 # These 5 functions have to be run in the same atomic DB operation
-
-
-def update_user_attribute(bad_user: User, good_user: User) -> None:
+def update_user_attribute(
+    bad_user: settings.AUTH_USER_MODEL, good_user: settings.AUTH_USER_MODEL
+) -> None:
     # Update the user attribute
     TeamMember.objects.filter(user=bad_user).update(user=good_user)
     BarrierUserHit.objects.filter(user=bad_user).update(user=good_user)
@@ -46,7 +44,6 @@ def update_user_attribute(bad_user: User, good_user: User) -> None:
     Profile.objects.filter(user=bad_user).update(user=good_user)
     SavedSearch.objects.filter(user=bad_user).update(user=good_user)
     TeamBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
-    TeamMember.objects.filter(user=bad_user).update(user=good_user)
     UserEvent.objects.filter(user=bad_user).update(user=good_user)
 
     # Update misc User attributes
@@ -56,7 +53,9 @@ def update_user_attribute(bad_user: User, good_user: User) -> None:
     Mention.objects.filter(recipient=bad_user).update(recipient=good_user)
 
 
-def update_basemodel_attributes(bad_user: User, good_user: User) -> None:
+def update_basemodel_attributes(
+    bad_user: settings.AUTH_USER_MODEL, good_user: settings.AUTH_USER_MODEL
+) -> None:
     # update the created_by attribute
     Barrier.objects.filter(created_by=bad_user).update(created_by=good_user)
     BarrierReportStage.objects.filter(created_by=bad_user).update(created_by=good_user)
@@ -108,7 +107,9 @@ def update_basemodel_attributes(bad_user: User, good_user: User) -> None:
     TeamMember.objects.filter(modified_by=bad_user).update(modified_by=good_user)
 
 
-def update_achivable_attributes(bad_user: User, good_user: User) -> None:
+def update_achivable_attributes(
+    bad_user: settings.AUTH_USER_MODEL, good_user: settings.AUTH_USER_MODEL
+) -> None:
     # update the archived_by attribute
     Barrier.objects.filter(archived_by=bad_user).update(archived_by=good_user)
     Document.objects.filter(archived_by=bad_user).update(archived_by=good_user)
@@ -127,13 +128,17 @@ def update_achivable_attributes(bad_user: User, good_user: User) -> None:
     TeamMember.objects.filter(archived_by=bad_user).update(archived_by=good_user)
 
 
-def update_fullyachivable_attributes(bad_user: User, good_user: User) -> None:
+def update_fullyachivable_attributes(
+    bad_user: settings.AUTH_USER_MODEL, good_user: settings.AUTH_USER_MODEL
+) -> None:
     # update the unarchived_by attribute
     Barrier.objects.filter(unarchived_by=bad_user).update(unarchived_by=good_user)
     PublicBarrier.objects.filter(unarchived_by=bad_user).update(unarchived_by=good_user)
 
 
-def update_approval_attributes(bad_user: User, good_user: User) -> None:
+def update_approval_attributes(
+    bad_user: settings.AUTH_USER_MODEL, good_user: settings.AUTH_USER_MODEL
+) -> None:
     EconomicAssessment.objects.filter(reviewed_by=bad_user).update(
         reviewed_by=good_user
     )
@@ -165,8 +170,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with transaction.atomic():
             user_obj = get_user_model()
-            bad_user: User = user_obj.objects.get(id=options["bad_user_id"])
-            good_user: User = user_obj.objects.get(id=options["good_user_id"])
+            bad_user: settings.AUTH_USER_MODEL = user_obj.objects.get(
+                id=options["bad_user_id"]
+            )
+            good_user: settings.AUTH_USER_MODEL = user_obj.objects.get(
+                id=options["good_user_id"]
+            )
 
             update_user_attribute(bad_user, good_user)
             update_basemodel_attributes(bad_user, good_user)
