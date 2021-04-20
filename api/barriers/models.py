@@ -779,9 +779,11 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def public_view_status(self):
         # set default if eligibility is avail on the internal barrier
         if self._public_view_status == PublicBarrierStatus.UNKNOWN:
-            if self.barrier.public_eligibility is True:
+            if self.barrier.public_eligibility_postponed is True:
+                self._public_view_status = PublicBarrierStatus.REVIEW_LATER
+            elif self.barrier.public_eligibility is True:
                 self._public_view_status = PublicBarrierStatus.ELIGIBLE
-            if self.barrier.public_eligibility is False:
+            elif self.barrier.public_eligibility is False:
                 self._public_view_status = PublicBarrierStatus.INELIGIBLE
 
         # The internal barrier might get withdrawn from the public domain
@@ -790,24 +792,26 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         #
         # Note: cannot automatically change from published
         #       the public barrier would need to be unpublished first
+        PRE_PUBLISHING_STATUSES = [PublicBarrierStatus.REVIEW_LATER, PublicBarrierStatus.INELIGIBLE, PublicBarrierStatus.ELIGIBLE]
         if self._public_view_status != PublicBarrierStatus.PUBLISHED:
             if (
                 self.barrier.public_eligibility_postponed is True
             ):
                 self._public_view_status = PublicBarrierStatus.REVIEW_LATER
                 self.save()
-                return self._public_view_status
+
             # Marking the public barrier ineligible
-            if (
+            elif (
                 self.barrier.public_eligibility is False
-                and self._public_view_status != PublicBarrierStatus.INELIGIBLE
+                and self._public_view_status in PRE_PUBLISHING_STATUSES
             ):
                 self._public_view_status = PublicBarrierStatus.INELIGIBLE
                 self.save()
+
             # Marking the public barrier eligible
-            if (
+            elif (
                 self.barrier.public_eligibility is True
-                and self._public_view_status == PublicBarrierStatus.INELIGIBLE
+                and self._public_view_status in PRE_PUBLISHING_STATUSES
             ):
                 self._public_view_status = PublicBarrierStatus.ELIGIBLE
                 self.save()
