@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.db.utils import IntegrityError
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -39,15 +40,18 @@ def update_user_attribute(
     # Update the user attribute
     TeamMember.objects.filter(user=bad_user).update(user=good_user)
     BarrierUserHit.objects.filter(user=bad_user).update(user=good_user)
-    MyBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
+    if not MyBarriersSavedSearch.objects.filter(user=good_user).exists():
+        MyBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
     SavedSearch.objects.filter(user=bad_user).update(user=good_user)
-    TeamBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
+    if not TeamBarriersSavedSearch.objects.filter(user=good_user).exists():
+        TeamBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
     UserEvent.objects.filter(user=bad_user).update(user=good_user)
 
     # Update misc User attributes
-    ExcludeFromNotification.objects.filter(excluded_user=bad_user).update(
-        excluded_user=good_user
-    )
+    if not ExcludeFromNotification.objects.filter(excluded_user=good_user).exists():
+        ExcludeFromNotification.objects.filter(excluded_user=bad_user).update(
+            excluded_user=good_user
+        )
     Mention.objects.filter(recipient=bad_user).update(recipient=good_user)
 
 

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.db.transaction import atomic
 from django.test import TestCase
+import uuid
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -98,6 +99,7 @@ class TestBadUsersBugFix(TestCase):
     def create_data_records(
         self, test_user: settings.AUTH_USER_MODEL
     ) -> Dict[str, settings.AUTH_USER_MODEL]:
+        rand_str: str = str(uuid.uuid4())[:20]
         data_row: Dict[str, settings.AUTH_USER_MODEL] = {}
 
         data_row["Barrier"] = Barrier.objects.create(
@@ -116,12 +118,13 @@ class TestBadUsersBugFix(TestCase):
             stage=stage,
         )
         data_row["BarrierTag"] = BarrierTag.objects.create(
-            created_by=test_user, modified_by=test_user
+            created_by=test_user, modified_by=test_user, title=rand_str
         )
         data_row["Document"] = Document.objects.create(
             created_by=test_user,
             modified_by=test_user,
             archived_by=test_user,
+            path=rand_str,
         )
         data_row["EconomicAssessment"] = EconomicAssessment.objects.create(
             created_by=test_user,
@@ -214,6 +217,19 @@ class TestBadUsersBugFix(TestCase):
         def _check_orm_attribute(klass: settings.AUTH_USER_MODEL, attribute: str):
             name: str = klass.__name__
             res: int = klass.objects.filter(**{attribute: test_user}).count()
+
+            # There can only be one or zero of these objects
+            if klass in [
+                MyBarriersSavedSearch,
+                TeamBarriersSavedSearch,
+                ExcludeFromNotification,
+            ]:
+                expected_val: int = int(bool(expected_count))
+                assert (
+                    res == expected_val
+                ), f"failed on object {name} attribute {attribute} expected {expected_count}"
+                return
+
             assert (
                 res == expected_count
             ), f"failed on object {name} attribute {attribute}"
@@ -245,6 +261,61 @@ class TestBadUsersBugFix(TestCase):
 
         self.check_count_on_all_objects(self.good_user, 0)
         self.check_count_on_all_objects(self.bad_user, 1)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=self.bad_user.id,
+            good_user_id=self.good_user.id,
+        )
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 0)
+
+    def test_one_bad_user_impo(self):
+        data_row = self.create_data_records(self.bad_user)
+
+        self.check_count_on_all_objects(self.good_user, 0)
+        self.check_count_on_all_objects(self.bad_user, 1)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=self.bad_user.id,
+            good_user_id=self.good_user.id,
+        )
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 0)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=self.bad_user.id,
+            good_user_id=self.good_user.id,
+        )
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 0)
+
+    def test_one_bad_user_one_good(self):
+        data_row1 = self.create_data_records(self.bad_user)
+        data_row2 = self.create_data_records(self.good_user)
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 1)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=self.bad_user.id,
+            good_user_id=self.good_user.id,
+        )
+
+        self.check_count_on_all_objects(self.good_user, 2)
+        self.check_count_on_all_objects(self.bad_user, 0)
+
+    def test_one_good_user(self):
+        data_row = self.create_data_records(self.good_user)
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 0)
 
         call_command(
             "fix_bad_users_bugfix_mar919",
