@@ -792,18 +792,20 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         #
         # Note: cannot automatically change from published
         #       the public barrier would need to be unpublished first
-        PRE_PUBLISHING_STATUSES = [PublicBarrierStatus.REVIEW_LATER, PublicBarrierStatus.INELIGIBLE, PublicBarrierStatus.ELIGIBLE]
+        PRE_PUBLISHING_STATUSES = [
+            PublicBarrierStatus.REVIEW_LATER,
+            PublicBarrierStatus.INELIGIBLE,
+            PublicBarrierStatus.ELIGIBLE,
+        ]
         if self._public_view_status != PublicBarrierStatus.PUBLISHED:
-            if (
-                self.barrier.public_eligibility_postponed is True
-            ):
+            if self.barrier.public_eligibility_postponed is True:
                 self._public_view_status = PublicBarrierStatus.REVIEW_LATER
                 self.save()
 
             # Marking the public barrier ineligible
             elif (
                 self.barrier.public_eligibility is False
-                and self._public_view_status in PRE_PUBLISHING_STATUSES
+                and self._public_view_status != PublicBarrierStatus.INELIGIBLE
             ):
                 self._public_view_status = PublicBarrierStatus.INELIGIBLE
                 self.save()
