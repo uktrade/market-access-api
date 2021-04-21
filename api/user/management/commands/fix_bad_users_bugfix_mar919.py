@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.utils import IntegrityError
+from django.db.models import Q
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -25,11 +25,7 @@ from api.interactions.models import (
     TeamMember,
 )
 from api.metadata.models import BarrierTag
-from api.user.models import (
-    MyBarriersSavedSearch,
-    SavedSearch,
-    TeamBarriersSavedSearch,
-)
+from api.user.models import MyBarriersSavedSearch, SavedSearch, TeamBarriersSavedSearch
 from api.user_event_log.models import UserEvent
 
 
@@ -40,19 +36,30 @@ def update_user_attribute(
     # Update the user attribute
     TeamMember.objects.filter(user=bad_user).update(user=good_user)
     BarrierUserHit.objects.filter(user=bad_user).update(user=good_user)
+    SavedSearch.objects.filter(user=bad_user).update(user=good_user)
+
+    UserEvent.objects.filter(user=bad_user).update(user=good_user)
+    Mention.objects.filter(recipient=bad_user).update(recipient=good_user)
+
+    # Explicitly delete one-to-one user relations for bad users.
     if not MyBarriersSavedSearch.objects.filter(user=good_user).exists():
         MyBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
-    SavedSearch.objects.filter(user=bad_user).update(user=good_user)
+    if MyBarriersSavedSearch.objects.filter(user=bad_user).exists():
+        MyBarriersSavedSearch.objects.filter(user=bad_user).delete()
     if not TeamBarriersSavedSearch.objects.filter(user=good_user).exists():
         TeamBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
-    UserEvent.objects.filter(user=bad_user).update(user=good_user)
+    if TeamBarriersSavedSearch.objects.filter(user=bad_user).exists():
+        TeamBarriersSavedSearch.objects.filter(user=bad_user).delete()
 
-    # Update misc User attributes
+    # These are the misc User attributes. They are all one-to-one relations
     if not ExcludeFromNotification.objects.filter(excluded_user=good_user).exists():
         ExcludeFromNotification.objects.filter(excluded_user=bad_user).update(
             excluded_user=good_user
         )
-    Mention.objects.filter(recipient=bad_user).update(recipient=good_user)
+    if ExcludeFromNotification.objects.filter(
+        Q(excluded_user=bad_user) & ~Q(excluded_user=good_user)
+    ).exists():
+        ExcludeFromNotification.objects.filter(excluded_user=bad_user).delete()
 
 
 def update_basemodel_attributes(
@@ -141,6 +148,7 @@ def update_fullyachivable_attributes(
 def update_approval_attributes(
     bad_user: settings.AUTH_USER_MODEL, good_user: settings.AUTH_USER_MODEL
 ) -> None:
+    # update the reviewed_by attribute
     EconomicAssessment.objects.filter(reviewed_by=bad_user).update(
         reviewed_by=good_user
     )
