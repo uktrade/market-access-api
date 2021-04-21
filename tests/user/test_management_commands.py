@@ -325,3 +325,24 @@ class TestBadUsersBugFix(TestCase):
 
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 0)
+
+    def test_one_random_user(self):
+        junk_user1 = create_test_user()
+
+        data_row1 = self.create_data_records(self.bad_user)
+        data_row2 = self.create_data_records(self.good_user)
+        data_row3 = self.create_data_records(junk_user1)
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 1)
+        self.check_count_on_all_objects(junk_user1, 1)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=self.bad_user.id,
+            good_user_id=self.good_user.id,
+        )
+
+        self.check_count_on_all_objects(self.good_user, 2)
+        self.check_count_on_all_objects(self.bad_user, 0)
+        self.check_count_on_all_objects(junk_user1, 1)
