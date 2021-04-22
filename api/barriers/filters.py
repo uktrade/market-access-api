@@ -52,7 +52,6 @@ class BarrierFilterSet(django_filters.FilterSet):
     text = django_filters.Filter(method="text_search")
 
     user = django_filters.Filter(method="my_barriers")
-    user_draft = django_filters.Filter(method="my_draft_barriers")
 
     team = django_filters.Filter(method="team_barriers")
     member = django_filters.Filter(method="member_filter")
@@ -219,13 +218,6 @@ class BarrierFilterSet(django_filters.FilterSet):
                 .exclude(created_by=current_user)
                 .distinct()
             )
-        return queryset
-
-    def my_draft_barriers(self, queryset, name, value):
-        if value:
-            current_user = self.get_user()
-            qs = queryset.filter(created_by=current_user, draft=True)
-            return qs
         return queryset
 
     def member_filter(self, queryset, name, value):
