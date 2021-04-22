@@ -50,7 +50,9 @@ class BarrierFilterSet(django_filters.FilterSet):
     location = django_filters.BaseInFilter(method="location_filter")
     search = django_filters.Filter(method="text_search")
     text = django_filters.Filter(method="text_search")
+
     user = django_filters.Filter(method="my_barriers")
+
     team = django_filters.Filter(method="team_barriers")
     member = django_filters.Filter(method="member_filter")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
@@ -202,16 +204,20 @@ class BarrierFilterSet(django_filters.FilterSet):
     def my_barriers(self, queryset, name, value):
         if value:
             current_user = self.get_user()
-            qs = queryset.filter(created_by=current_user)
+            qs = queryset.filter(created_by=current_user, draft=False)
             return qs
         return queryset
 
     def team_barriers(self, queryset, name, value):
         if value:
             current_user = self.get_user()
-            return queryset.filter(
-                Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
-            ).distinct()
+            return (
+                queryset.filter(
+                    Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
+                )
+                .exclude(created_by=current_user)
+                .distinct()
+            )
         return queryset
 
     def member_filter(self, queryset, name, value):
