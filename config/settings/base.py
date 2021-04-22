@@ -57,14 +57,15 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    "django_audit_log_middleware",
     "django_celery_beat",
     "django_extensions",
     "django_filters",
     "hawkrest",
     "oauth2_provider",
+    "ordered_model",
     "rest_framework",
     "simple_history",
-    "ordered_model",
 ]
 
 LOCAL_APPS = [
@@ -102,6 +103,7 @@ MIDDLEWARE = [
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "hawkrest.middleware.HawkResponseMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "django_audit_log_middleware.AuditLogMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
