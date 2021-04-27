@@ -1,3 +1,4 @@
+from api.history.factories.public_barriers import PublicBarrierHistoryFactory
 from django.conf import settings
 from rest_framework import serializers
 
@@ -79,6 +80,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         source="public_barrier.last_published_on", format="%Y-%m-%d"
     )
     public_view_status = serializers.SerializerMethodField()
+    last_public_view_status_update = serializers.SerializerMethodField()
+    public_eligibility_summary = serializers.CharField()
     changed_since_published = serializers.SerializerMethodField()
     commodity_codes = serializers.SerializerMethodField()
     public_id = serializers.SerializerMethodField()
@@ -263,6 +266,21 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         if obj.has_public_barrier:
             return obj.public_barrier.get__public_view_status_display()
         return PublicBarrierStatus.choices[PublicBarrierStatus.UNKNOWN]
+
+    def get_last_public_view_status_update(self, obj):
+        history_items = PublicBarrierHistoryFactory.get_history_items(barrier_id=obj.id)
+        changes_that_include_publice_view_status = filter(
+            lambda history_item: history_item.data["field"] == "public_view_status",
+            history_items,
+        )
+        change_dates = {
+            change.data["date"] for change in changes_that_include_publice_view_status
+        }
+        try:
+            return max(change_dates)
+        except ValueError:
+            # Empty sequence
+            return None
 
     def get_changed_since_published(self, obj):
         if obj.has_public_barrier and obj.public_barrier.is_currently_published:
