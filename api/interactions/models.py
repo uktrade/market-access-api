@@ -3,7 +3,6 @@ import urllib.parse
 from typing import Dict, List, Union
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
@@ -215,7 +214,7 @@ user_type = Dict[str, settings.AUTH_USER_MODEL]
 note_union = Union[Interaction, PublicBarrierNote]
 
 
-def _get_user_object(user_obj: user_type, emails: List[str]) -> List[user_type]:
+def _get_user_object(emails: List[str]) -> List[user_type]:
     # This function exists to make unit tests easier to write
     output: List[settings.AUTH_USER_MODEL] = []
     for email in emails:
@@ -233,8 +232,7 @@ def _get_mentioned_users(note_text: str) -> user_type:
         {m.group()[1:].lower() for m in matches}
     )  # dedupe emails, strip leading '@'
 
-    user_obj: user_type = get_user_model()
-    users: List[user_type] = _get_user_object(user_obj, emails)
+    users: List[user_type] = _get_user_object(emails)
     output: user_type = dict(zip(emails, users))
 
     return output
