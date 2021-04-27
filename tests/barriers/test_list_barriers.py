@@ -669,6 +669,22 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert 1 == response.data["count"]
         assert str(barrier1.id) == response.data["results"][0]["id"]
 
+    def test_dataset_barrier_list_returns_without_error(self):
+        BarrierFactory(status=1, status_summary="it wobbles!", status_date="2020-02-02")
+        BarrierFactory(status=2, status_summary="it wobbles!", status_date="2020-02-02")
+        BarrierFactory(status=3, status_summary="it wobbles!", status_date="2020-02-02")
+        BarrierFactory(status=4, status_summary="it wobbles!", status_date="2020-02-02")
+        creator = create_test_user(sso_user_id=self.sso_creator["user_id"])
+        client = self.create_api_client(user=creator)
+
+        url = reverse("dataset:barrier-list")
+        response = client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 4 == len(response.data["results"])
+        assert response.data["next"] is None
+        assert response.data["previous"] is None
+
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
     def test_changed_filter(self):
