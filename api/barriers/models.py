@@ -777,6 +777,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def public_view_status(self):
+        _old_public_view_status = self._public_view_status
+
         # set default if eligibility is avail on the internal barrier
         if self._public_view_status == PublicBarrierStatus.UNKNOWN:
             if self.barrier.public_eligibility_postponed is True:
@@ -793,29 +795,22 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         # Note: cannot automatically change from published
         #       the public barrier would need to be unpublished first
         if self._public_view_status != PublicBarrierStatus.PUBLISHED:
-            if (
-                self.barrier.public_eligibility_postponed is True
-                and self._public_view_status != PublicBarrierStatus.REVIEW_LATER
-            ):
+            if self.barrier.public_eligibility_postponed is True:
                 self._public_view_status = PublicBarrierStatus.REVIEW_LATER
-                self.save()
 
             # Marking the public barrier ineligible
-            elif (
-                self.barrier.public_eligibility is False
-                and self._public_view_status != PublicBarrierStatus.INELIGIBLE
-            ):
+            elif self.barrier.public_eligibility is False:
                 self._public_view_status = PublicBarrierStatus.INELIGIBLE
-                self.save()
 
             # Marking the public barrier eligible
-            elif (
-                self.barrier.public_eligibility is True
-                and self._public_view_status in [PublicBarrierStatus.INELIGIBLE, PublicBarrierStatus.REVIEW_LATER]
+            elif self.barrier.public_eligibility is True and not (
+                self._public_view_status == PublicBarrierStatus.READY
             ):
                 self._public_view_status = PublicBarrierStatus.ELIGIBLE
-                self.save()
 
+        if _old_public_view_status != self._public_view_status:
+            # only save when the public view status changes
+            self.save()
         return self._public_view_status
 
     @public_view_status.setter
