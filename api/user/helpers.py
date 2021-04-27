@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 
 from api.core.utils import cleansed_username
-from api.user.models import Profile
-from api.user.staff_sso import sso
+from .models import Profile
+from .staff_sso import sso
 
 UserModel = get_user_model()
 
