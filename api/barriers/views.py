@@ -391,6 +391,8 @@ class BarrierListExportView(generics.ListAPIView):
         "first_published_on": "First published date",
         "last_published_on": "Last published date",
         "public_view_status": "Public view status",
+        "public_eligibility_summary": "Public eligibility summary",
+        "last_public_view_status_update": "Last public view status update",
         "changed_since_published": "Changed since published",
         "public_id": "Public ID",
         "public_title": "Public title",
