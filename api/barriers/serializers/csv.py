@@ -277,7 +277,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             change.data["date"] for change in changes_that_include_publice_view_status
         }
         try:
-            return max(change_dates).isoformat()
+            return max(change_dates)
         except ValueError:
             # Empty sequence
             return None
