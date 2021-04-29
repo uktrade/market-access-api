@@ -35,13 +35,14 @@ def update_user_attribute(
 ) -> None:
     # Update the user attribute
     TeamMember.objects.filter(user=bad_user).update(user=good_user)
-    BarrierUserHit.objects.filter(user=bad_user).update(user=good_user)
     SavedSearch.objects.filter(user=bad_user).update(user=good_user)
 
     UserEvent.objects.filter(user=bad_user).update(user=good_user)
     Mention.objects.filter(recipient=bad_user).update(recipient=good_user)
 
     # Explicitly delete one-to-one user relations for bad users.
+    if not BarrierUserHit.objects.filter(user=good_user).exists():
+        BarrierUserHit.objects.filter(user=bad_user).update(user=good_user)
     if not MyBarriersSavedSearch.objects.filter(user=good_user).exists():
         MyBarriersSavedSearch.objects.filter(user=bad_user).update(user=good_user)
     if MyBarriersSavedSearch.objects.filter(user=bad_user).exists():

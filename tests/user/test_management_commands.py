@@ -210,10 +210,15 @@ class TestBadUsersBugFix(TestCase):
 
         return data_row
 
-    def check_count_on_all_objects(
-        self, test_user: settings.AUTH_USER_MODEL, expected_count: 0
+    def check_count_on_all_objects(  # noqa
+        self,
+        test_user: settings.AUTH_USER_MODEL,
+        expected_count: 0,
+        skip_models: models.Model = [],
     ):
-        def _check_orm_attribute(klass: settings.AUTH_USER_MODEL, attribute: str):
+        def _check_orm_attribute(klass: models.Model, attribute: str):
+            if klass in skip_models:
+                return
             name: str = klass.__name__
             res: int = klass.objects.filter(**{attribute: test_user}).count()
 
@@ -222,6 +227,7 @@ class TestBadUsersBugFix(TestCase):
                 MyBarriersSavedSearch,
                 TeamBarriersSavedSearch,
                 ExcludeFromNotification,
+                BarrierUserHit,
             ]:
                 expected_val: int = int(bool(expected_count))
                 assert (
@@ -307,6 +313,8 @@ class TestBadUsersBugFix(TestCase):
             good_user_id=self.good_user.id,
         )
 
+        self.check_count_on_all_objects(self.good_user, 2)
+        self.check_count_on_all_objects(self.bad_user, 0, skip_models=[BarrierUserHit])
 
     def test_two_users_one_barrier(self):
         data_row1 = self.create_data_records(self.bad_user)
@@ -362,5 +370,5 @@ class TestBadUsersBugFix(TestCase):
         )
 
         self.check_count_on_all_objects(self.good_user, 2)
-        self.check_count_on_all_objects(self.bad_user, 0)
+        self.check_count_on_all_objects(self.bad_user, 0, skip_models=[BarrierUserHit])
         self.check_count_on_all_objects(junk_user1, 1)
