@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.core.management import call_command
+from django.db import models
 from django.db.transaction import atomic
 from django.test import TestCase
 import uuid
@@ -37,7 +38,7 @@ from api.user.models import (
 )
 from api.user_event_log.models import UserEvent
 
-base_models: List[settings.AUTH_USER_MODEL] = [
+base_models: List[models.Model] = [
     Barrier,
     BarrierReportStage,
     BarrierTag,
@@ -53,7 +54,7 @@ base_models: List[settings.AUTH_USER_MODEL] = [
     StrategicAssessment,
     TeamMember,
 ]
-user_models: List[settings.AUTH_USER_MODEL] = [
+user_models: List[models.Model] = [
     BarrierUserHit,
     MyBarriersSavedSearch,
     SavedSearch,
@@ -61,7 +62,7 @@ user_models: List[settings.AUTH_USER_MODEL] = [
     TeamMember,
     UserEvent,
 ]
-archive_by_models: List[settings.AUTH_USER_MODEL] = [
+archive_by_models: List[models.Model] = [
     Barrier,
     Document,
     EconomicAssessment,
@@ -72,13 +73,13 @@ archive_by_models: List[settings.AUTH_USER_MODEL] = [
     StrategicAssessment,
     TeamMember,
 ]
-unarchived_by_models: List[settings.AUTH_USER_MODEL] = [Barrier, PublicBarrier]
-reviewed_by_models: List[settings.AUTH_USER_MODEL] = [
+unarchived_by_models: List[models.Model] = [Barrier, PublicBarrier]
+reviewed_by_models: List[models.Model] = [
     StrategicAssessment,
     ResolvabilityAssessment,
 ]
-excluded_user_models: List[settings.AUTH_USER_MODEL] = [ExcludeFromNotification]
-recipient_models: List[settings.AUTH_USER_MODEL] = [Mention]
+excluded_user_models: List[models.Model] = [ExcludeFromNotification]
+recipient_models: List[models.Model] = [Mention]
 
 
 class TestBadUsersBugFix(TestCase):
@@ -96,11 +97,9 @@ class TestBadUsersBugFix(TestCase):
         self.notification_patch.stop()
 
     @atomic
-    def create_data_records(
-        self, test_user: settings.AUTH_USER_MODEL
-    ) -> Dict[str, settings.AUTH_USER_MODEL]:
+    def create_data_records(self, test_user: models.Model) -> Dict[str, models.Model]:
         rand_str: str = str(uuid.uuid4())[:20]
-        data_row: Dict[str, settings.AUTH_USER_MODEL] = {}
+        data_row: Dict[str, models.Model] = {}
 
         data_row["Barrier"] = Barrier.objects.create(
             created_by=test_user,
@@ -301,6 +300,25 @@ class TestBadUsersBugFix(TestCase):
 
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 1)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=self.bad_user.id,
+            good_user_id=self.good_user.id,
+        )
+
+
+    def test_two_users_one_barrier(self):
+        data_row1 = self.create_data_records(self.bad_user)
+        data_row2 = self.create_data_records(self.good_user)
+
+        self.check_count_on_all_objects(self.good_user, 1)
+        self.check_count_on_all_objects(self.bad_user, 1)
+
+        dupped = BarrierUserHit.objects.create(
+            user=self.good_user,
+            barrier=data_row1["Barrier"],
+        )
 
         call_command(
             "fix_bad_users_bugfix_mar919",
