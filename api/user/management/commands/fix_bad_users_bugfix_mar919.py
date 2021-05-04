@@ -194,4 +194,6 @@ class Command(BaseCommand):
             update_fullyachivable_attributes(bad_user, good_user)
             update_approval_attributes(bad_user, good_user)
 
+            good_user.username = bad_user.username
             bad_user.delete()
+            good_user.save()
