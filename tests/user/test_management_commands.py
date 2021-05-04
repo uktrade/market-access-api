@@ -2,6 +2,7 @@ from typing import Dict, List
 from unittest.mock import patch
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.db import models
 from django.db.transaction import atomic
@@ -291,11 +292,14 @@ class TestBadUsersBugFix(TestCase):
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 0)
 
-        call_command(
-            "fix_bad_users_bugfix_mar919",
-            bad_user_id=self.bad_user.id,
-            good_user_id=self.good_user.id,
-        )
+        try:
+            call_command(
+                "fix_bad_users_bugfix_mar919",
+                bad_user_id=self.bad_user.id,
+                good_user_id=self.good_user.id,
+            )
+        except User.DoesNotExist:
+            pass
 
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 0)
@@ -334,7 +338,7 @@ class TestBadUsersBugFix(TestCase):
             good_user_id=self.good_user.id,
         )
 
-        self.check_count_on_all_objects(self.good_user, 2)
+        self.check_count_on_all_objects(self.good_user, 2, skip_models=[BarrierUserHit])
         self.check_count_on_all_objects(self.bad_user, 0)
 
     def test_one_good_user(self):
