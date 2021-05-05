@@ -277,6 +277,25 @@ class TestBadUsersBugFix(TestCase):
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 0)
 
+    def test_good_user_update_and_bad_user_removed(self):
+        assert User.objects.filter(id=self.good_user.id).count() == 1
+        assert User.objects.filter(id=self.bad_user.id).count() == 1
+        local_good = User.objects.get(id=self.good_user.id)
+        local_bad = User.objects.get(id=self.bad_user.id)
+        assert local_good.email != local_bad.email
+        assert local_good.username != local_bad.username
+
+        self.create_data_records(local_bad)
+
+        call_command(
+            "fix_bad_users_bugfix_mar919",
+            bad_user_id=local_bad.id,
+            good_user_id=local_good.id,
+        )
+        assert User.objects.filter(id=local_good.id).count() == 1
+        assert User.objects.filter(id=local_bad.id).count() == 0
+        assert User.objects.get(id=local_good.id).username == local_bad.username
+
     def test_one_bad_user_impo(self):
         data_row = self.create_data_records(self.bad_user)
 
