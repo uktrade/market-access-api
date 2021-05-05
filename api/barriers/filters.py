@@ -406,21 +406,33 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
 
     def awaiting_review_from_filter(self, queryset, name, value):
         AWAITING_REVIEW_FROM_MAP = AWAITING_REVIEW_FROM._identifier_map
+        q_filters = Q()
         if AWAITING_REVIEW_FROM_MAP["CONTENT"] in value:
-            queryset = queryset.filter(light_touch_reviews__content_approval=False)
+            q_filters = q_filters | Q(light_touch_reviews__content_team_approval=False)
+            # queryset = queryset.filter(light_touch_reviews__content_approval=False)
         if AWAITING_REVIEW_FROM_MAP["CONTENT_AFTER_CHANGES"] in value:
-            queryset = queryset.filter(
+            q_filters = q_filters | Q(
                 light_touch_reviews__has_content_changed_since_approval=True
             )
+            # queryset = queryset.filter(
+            #     light_touch_reviews__has_content_changed_since_approval=True
+            # )
         if AWAITING_REVIEW_FROM_MAP["HM_TRADE_COMMISSION"] in value:
-            queryset = queryset.filter(
+            q_filters = q_filters | Q(
                 light_touch_reviews__hm_trade_commissioner_approval=False,
                 light_touch_reviews__hm_trade_commissioner_approval_enabled=True,
             )
+            # queryset = queryset.filter(
+            #     light_touch_reviews__hm_trade_commissioner_approval=False,
+            #     light_touch_reviews__hm_trade_commissioner_approval_enabled=True,
+            # )
         if AWAITING_REVIEW_FROM_MAP["GOVERNMENT_ORGANISATION"] in value:
-            queryset = queryset
+            # queryset = queryset
+            # queryset.annotate(organisation_ids=ArrayAgg('barrier__organisations'))
+            # q_filters = q_filters | Q(organisation_ids=F("light_touch_reviews__government_organisation_approvals"))
+            pass
 
-        return queryset
+        return queryset.filter(q_filters)
 
     def organisation_filter(self, queryset, name, value):
         """
