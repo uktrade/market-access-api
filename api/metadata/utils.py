@@ -7,7 +7,7 @@ from django.core.cache import cache
 from mohawk import Sender
 from urlobject import URLObject
 
-from api.wto import models
+from api.wto import models as wto_models
 
 from .constants import (
     BARRIER_TYPE_CATEGORIES,
@@ -219,7 +219,7 @@ def get_trading_bloc_overseas_regions(trading_bloc_code):
 
 def get_wto_committee_groups():
     committee_groups = []
-    for group in models.WTOCommitteeGroup.objects.all():
+    for group in wto_models.WTOCommitteeGroup.objects.all():
         committee_groups.append(
             {
                 "id": str(group.id),

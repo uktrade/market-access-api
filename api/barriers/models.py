@@ -2,13 +2,13 @@ import datetime
 from uuid import uuid4
 
 import django_filters
-from api.collaboration import models as col_models
+from api.collaboration import models as collaboration_models
 from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata import models as md_models
-from api.metadata import utils
+from api.metadata import models as metadata_models
+from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
     BARRIER_ARCHIVED_REASON,
     BARRIER_PENDING,
@@ -272,7 +272,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(blank=True)
-    categories = models.ManyToManyField(md_models.Category, related_name="barriers")
+    categories = models.ManyToManyField(
+        metadata_models.Category, related_name="barriers"
+    )
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
     # Barrier status
@@ -324,7 +326,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     # Barrier priority
     priority = models.ForeignKey(
-        md_models.BarrierPriority,
+        metadata_models.BarrierPriority,
         default=1,
         related_name="barrier",
         on_delete=models.PROTECT,
@@ -349,13 +351,13 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
     draft = models.BooleanField(default=True)
     organisations = models.ManyToManyField(
-        md_models.Organisation,
+        metadata_models.Organisation,
         help_text="Organisations that are related to the barrier",
     )
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
-    tags = models.ManyToManyField(md_models.BarrierTag)
+    tags = models.ManyToManyField(metadata_models.BarrierTag)
 
     def __str__(self):
         if self.title is None:
@@ -378,17 +380,17 @@ class Barrier(FullyArchivableMixin, BaseModel):
     @property
     def country_name(self):
         if self.country:
-            country = utils.get_country(str(self.country))
+            country = metadata_utils.get_country(str(self.country))
             return country.get("name")
 
     @property
     def country_trading_bloc(self):
         if self.country:
-            return utils.get_trading_bloc_by_country_id(str(self.country))
+            return metadata_utils.get_trading_bloc_by_country_id(str(self.country))
 
     @property
     def location(self):
-        return utils.get_location_text(
+        return metadata_utils.get_location_text(
             country_id=self.country,
             trading_bloc=self.trading_bloc,
             caused_by_trading_bloc=self.caused_by_trading_bloc,
@@ -659,7 +661,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     all_sectors = models.BooleanField(blank=True, null=True)
     categories = models.ManyToManyField(
-        md_models.Category, related_name="public_barriers"
+        metadata_models.Category, related_name="public_barriers"
     )
 
     published_versions = models.JSONField(default=dict)
@@ -777,7 +779,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def location(self):
-        return utils.get_location_text(
+        return metadata_utils.get_location_text(
             country_id=self.country,
             trading_bloc=self.trading_bloc,
             caused_by_trading_bloc=self.caused_by_trading_bloc,
@@ -913,7 +915,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_location(self):
-        return utils.get_location_text(
+        return metadata_utils.get_location_text(
             country_id=self.barrier.country,
             trading_bloc=self.barrier.trading_bloc,
             caused_by_trading_bloc=self.barrier.caused_by_trading_bloc,
@@ -1120,7 +1122,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         or priority is not yet set for that barrier
         """
         UNKNOWN = "UNKNOWN"
-        priorities = md_models.BarrierPriority.objects.filter(code__in=value)
+        priorities = metadata_models.BarrierPriority.objects.filter(code__in=value)
         if UNKNOWN in value:
             return queryset.filter(
                 Q(priority__isnull=True) | Q(priority__in=priorities)
@@ -1144,7 +1146,9 @@ class BarrierFilterSet(django_filters.FilterSet):
                 location_values.append(location)
 
         # Add all countries within the overseas regions
-        for country in cache.get_or_set("dh_countries", utils.get_countries, 72000):
+        for country in cache.get_or_set(
+            "dh_countries", metadata_utils.get_countries, 72000
+        ):
             if (
                 country["overseas_region"]
                 and country["overseas_region"]["id"] in location_values
@@ -1184,8 +1188,8 @@ class BarrierFilterSet(django_filters.FilterSet):
             if "country_trading_bloc" in self.data:
                 trading_bloc_countries = []
                 for trading_bloc in self.data["country_trading_bloc"].split(","):
-                    trading_bloc_countries += utils.get_trading_bloc_country_ids(
-                        trading_bloc
+                    trading_bloc_countries += (
+                        metadata_utils.get_trading_bloc_country_ids(trading_bloc)
                     )
 
                 tb_queryset = tb_queryset | queryset.filter(
@@ -1234,7 +1238,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def member_filter(self, queryset, name, value):
         if value:
-            member = get_object_or_404(col_models.TeamMember, pk=value)
+            member = get_object_or_404(collaboration_models.TeamMember, pk=value)
             return queryset.filter(barrier_team__user=member.user).distinct()
         return queryset
 
@@ -1419,7 +1423,9 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     def region_filter(self, queryset, name, value):
         countries = set()
         for region_id in value:
-            countries.update(utils.get_country_ids_by_overseas_region(region_id))
+            countries.update(
+                metadata_utils.get_country_ids_by_overseas_region(region_id)
+            )
         return queryset.filter(barrier__country__in=countries)
 
     def status_filter(self, queryset, name, value):
