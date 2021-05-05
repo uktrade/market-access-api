@@ -9,7 +9,11 @@ from django_filters.widgets import BooleanWidget
 
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
-from api.metadata.constants import TRADING_BLOCS, PublicBarrierStatus
+from api.metadata.constants import (
+    AWAITING_REVIEW_FROM,
+    TRADING_BLOCS,
+    PublicBarrierStatus,
+)
 from api.metadata.models import BarrierPriority
 from api.metadata.utils import (
     get_countries,
@@ -387,6 +391,9 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     region = django_filters.BaseInFilter(method="region_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     organisation = django_filters.BaseInFilter(method="organisation_filter")
+    awaiting_review_from = django_filters.BaseInFilter(
+        method="awaiting_review_from_filter"
+    )
 
     def sector_filter(self, queryset, name, value):
         """
@@ -396,6 +403,24 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         return queryset.filter(
             Q(barrier__all_sectors=True) | Q(barrier__sectors__overlap=value)
         )
+
+    def awaiting_review_from_filter(self, queryset, name, value):
+        AWAITING_REVIEW_FROM_MAP = AWAITING_REVIEW_FROM._identifier_map
+        if AWAITING_REVIEW_FROM_MAP["CONTENT"] in value:
+            queryset = queryset.filter(light_touch_reviews__content_approval=False)
+        if AWAITING_REVIEW_FROM_MAP["CONTENT_AFTER_CHANGES"] in value:
+            queryset = queryset.filter(
+                light_touch_reviews__has_content_changed_since_approval=True
+            )
+        if AWAITING_REVIEW_FROM_MAP["HM_TRADE_COMMISSION"] in value:
+            queryset = queryset.filter(
+                light_touch_reviews__hm_trade_commissioner_approval=False,
+                light_touch_reviews__hm_trade_commissioner_approval_enabled=True,
+            )
+        if AWAITING_REVIEW_FROM_MAP["GOVERNMENT_ORGANISATION"] in value:
+            queryset = queryset
+
+        return queryset
 
     def organisation_filter(self, queryset, name, value):
         """

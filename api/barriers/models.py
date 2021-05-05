@@ -554,11 +554,18 @@ class PublicBarrierHistoricalModel(models.Model):
         default=list,
     )
 
-    def get_changed_fields(self, old_history):
+    light_touch_reviews_cache = models.JSONField(default=dict)
+
+    def get_changed_fields(self, old_history):  # noqa: C901, E261
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
+
+        if (self.light_touch_reviews_cache or {}) != (
+            old_history.light_touch_reviews_cache or {}
+        ):
+            changed_fields.add("light_touch_reviews")
 
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
@@ -595,6 +602,18 @@ class PublicBarrierHistoricalModel(models.Model):
             self.instance.categories.values_list("id", flat=True)
         )
 
+    def update_light_touch_reviews(self):
+        light_touch_reviews: PublicBarrierLightTouchReviews = (
+            self.instance.light_touch_reviews
+        )
+        self.light_touch_reviews_cache = {
+            "content_team_approval": light_touch_reviews.content_team_approval,
+            "has_content_changed_since_approval": light_touch_reviews.has_content_changed_since_approval,
+            "hm_trade_commissioner_approval": light_touch_reviews.hm_trade_commissioner_approval,
+            "hm_trade_commissioner_approval_enabled": light_touch_reviews.hm_trade_commissioner_approval_enabled,
+            "government_organisation_approvals": light_touch_reviews.government_organisation_approvals,
+        }
+
     @property
     def public_view_status(self):
         return self._public_view_status
@@ -609,10 +628,27 @@ class PublicBarrierHistoricalModel(models.Model):
 
     def save(self, *args, **kwargs):
         self.update_categories()
+        self.update_light_touch_reviews()
         super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
+
+
+class PublicBarrierLightTouchReviews(FullyArchivableMixin, BaseModel):
+    public_barrier = models.OneToOneField(
+        "PublicBarrier", related_name="light_touch_reviews", on_delete=models.CASCADE
+    )
+
+    content_team_approval = models.BooleanField(default=False, blank=True)
+    has_content_changed_since_approval = models.BooleanField(default=False, blank=True)
+    hm_trade_commissioner_approval = models.BooleanField(default=False, blank=True)
+    hm_trade_commissioner_approval_enabled = models.BooleanField(
+        default=False, blank=True
+    )
+    government_organisation_approvals = ArrayField(
+        models.IntegerField(blank=True), blank=True, null=False, default=list
+    )
 
 
 class PublicBarrier(FullyArchivableMixin, BaseModel):
@@ -803,8 +839,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 self._public_view_status = PublicBarrierStatus.INELIGIBLE
 
             # Marking the public barrier eligible
-            elif self.barrier.public_eligibility is True and not (
-                self._public_view_status == PublicBarrierStatus.READY
+            elif (
+                self.barrier.public_eligibility is True
+                and self._public_view_status
+                in [PublicBarrierStatus.INELIGIBLE, PublicBarrierStatus.REVIEW_LATER]
             ):
                 self._public_view_status = PublicBarrierStatus.ELIGIBLE
 

@@ -310,3 +310,11 @@ GOVERNMENT_ORGANISATION_TYPES = (
     OrganisationType.NON_MINISTERIAL_DEPARTMENTS,
     OrganisationType.AGENCIES_AND_OTHER_PUBLIC_BODIES,
 )
+
+
+AWAITING_REVIEW_FROM = Choices(
+    (0, "CONTENT", "Content"),
+    (10, "CONTENT_AFTER_CHANGES", "Content (edited since last review)"),
+    (20, "HM_TRADE_COMMISSION", "HM Trade Commission"),
+    (30, "GOVERNMENT_ORGANISATION", "Government organisation"),
+)

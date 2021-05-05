@@ -17,6 +17,13 @@ class CategoriesHistoryItem(BasePublicBarrierHistoryItem):
         return record.categories_cache or []
 
 
+class LightTouchReviewsHistoryItem(BasePublicBarrierHistoryItem):
+    field = "light_touch_reviews"
+
+    def get_value(self, record):
+        return record.light_touch_reviews_cache
+
+
 class LocationHistoryItem(BasePublicBarrierHistoryItem):
     field = "location"
 
