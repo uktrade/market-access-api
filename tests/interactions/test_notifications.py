@@ -1,5 +1,7 @@
 from http import HTTPStatus
+from itertools import cycle
 from unittest.mock import patch
+import uuid
 
 import pytest
 from api.barriers.models import Barrier, PublicBarrier
@@ -13,9 +15,13 @@ from api.interactions.models import (
     _handle_mention_notification,
     _remove_excluded,
 )
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+# from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.reverse import reverse
+
+User = get_user_model()
 
 
 class BaseNotificationTestCase(TestCase):
@@ -24,7 +30,19 @@ class BaseNotificationTestCase(TestCase):
         self.patch_notify = patch("api.interactions.models.NotificationsAPIClient")
         self.mock_notify = self.patch_notify.start()
 
+        self.mock_uuids = {
+            "1": str(uuid.uuid4()),
+            "2": str(uuid.uuid4()),
+            "3": str(uuid.uuid4()),
+        }
+        self.patch_sso = patch("api.interactions.models.staff_sso.sso")
+        self.mock_sso = self.patch_sso.start()
+        self.mock_sso.get_user_details_by_email.side_effect = cycle(
+            [{"user_id": i} for i in self.mock_uuids.values()]
+        )
+
     def tearDown(self):
+        self.patch_sso.stop()
         self.patch_notify.stop()
         super().tearDown()
 
@@ -34,8 +52,14 @@ class NotificationSetUp(BaseNotificationTestCase):
         super().setUp()
 
         self.user = User.objects.create_user("foo", "foo@test.gov.uk", "bar")
+        self.user.profile.sso_user_id = self.mock_uuids["1"]
+        self.user.profile.save()
         self.user2 = User.objects.create_user("foo2", "foo2@test.gov.uk", "bar2")
+        self.user2.profile.sso_user_id = self.mock_uuids["2"]
+        self.user2.profile.save()
         self.user3 = User.objects.create_user("foo3", "foo3@test.gov.uk", "bar3")
+        self.user3.profile.sso_user_id = self.mock_uuids["3"]
+        self.user3.profile.save()
 
         self.mock_barrier = Barrier()
         self.mock_barrier.code = "example code"

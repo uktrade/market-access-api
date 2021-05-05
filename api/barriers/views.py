@@ -47,7 +47,7 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPub
 from api.user_event_log.constants import USER_EVENT_TYPES
 from api.user_event_log.utils import record_user_event
 
-from .filters import BarrierFilterSet, PublicBarrierFilterSet
+from .models import BarrierFilterSet, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 
 
