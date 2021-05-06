@@ -409,7 +409,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         q_filters = Q()
         if AWAITING_REVIEW_FROM_MAP["CONTENT"] in value:
             q_filters = q_filters | Q(light_touch_reviews__content_team_approval=False)
-            queryset = queryset.filter(title__isnull=False, summary__isnull=False)
+            # queryset = queryset.filter(title__isnull=False, summary__isnull=False)
             # queryset = queryset.filter(light_touch_reviews__content_approval=False)
         if AWAITING_REVIEW_FROM_MAP["CONTENT_AFTER_CHANGES"] in value:
             q_filters = q_filters | Q(
