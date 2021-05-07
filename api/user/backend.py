@@ -41,7 +41,9 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
         )
         num_of_profile: int = profiles.count()
         if num_of_profile > 1:
-            pass  # TODO: handle duplicate profiles bug
+            raise NotImplementedError(
+                "The system has found multiple User profiles for you. The fix for this is being written"
+            )  # TODO: handle duplicate profiles bug
         if num_of_profile == 1:
             p = CustomAuthbrokerBackend._build_profile(profiles.first())
             return p.user
