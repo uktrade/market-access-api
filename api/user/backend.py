@@ -38,50 +38,28 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
             profile_obj.user.is_active = True
             profile_obj.user.is_staff = True
             profile_obj.user.username = raw_profile["email_user_id"]  #
-            profile_obj.save()
+            profile_obj.save()  # This saves the user object as well.
 
             return profile_obj
 
-        # Look for current style user record
+        # If possible use the existing profile object
         profile = Profile.objects.filter(
             Q(sso_email_user_id=raw_profile["email_user_id"])
-        ).first()
-        if profile:
-            p = _build_profile(profile)
+            | Q(sso_user_id=raw_profile["user_id"])
+        )
+        num_of_profile = profile.count()
+        if num_of_profile > 1:
+            pass  # TODO: handle duplicate profiles bug
+        if num_of_profile == 1:
+            p = _build_profile(profile.first())
             return p.user
 
-        # Look for legacy style user record
-        profile = Profile.objects.filter(Q(sso_user_id=raw_profile["user_id"])).first()
-        if profile:
-            p = _build_profile(profile)
-            return p.user
+        # Try to get an existing old bad user object or create a new object
+        try:
+            user = User.objects.get(username=email)
+        except User.DoesNotExist:
+            user = User()
+            user.save()  # initialise the profile objects
 
-        # else:
-        #     profile = Profile.objects.filter().first()
-
-        #     if profile:
-        #         profile.sso_email_user_id = profile["email_user_id"]
-        #         profile.user.email = profile["email"]
-        #         # contact emails ?
-        #         user.first_name = profile["first_name"]  # might change over time
-        #         user.last_name = profile["last_name"]  # might change over time
-        #         user.save()
-
-        #         return user
-        #     else:
-        #         # New users or problem users
-        #         user = User(
-        #             username=profile["email"],
-        #             email=profile["email"],
-        #             first_name=profile["first_name"],
-        #             last_name=profile["last_name"],
-        #             profile=Profile(
-        #                 sso_email_user_id=raw_profile["email_user_id"],
-        #                 # location="foo",
-        #                 # internal="bar",
-        #             ),
-        #         )
-        #         user.set_unusable_password()
-        #         user.save()
-
-        #         return user
+        p = _build_profile(user.profile)
+        return p.user
