@@ -45,7 +45,9 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
                 "The system has found multiple User profiles for you. The fix for this is being written"
             )  # TODO: handle duplicate profiles bug
         if num_of_profile == 1:
-            p = CustomAuthbrokerBackend._build_profile(profiles.first())
+            p = CustomAuthbrokerBackend._build_profile(
+                profiles.first(), email, raw_profile
+            )
             return p.user
 
         # Try to get an existing old bad user object or create a new object
@@ -55,5 +57,5 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
             user: User = User()
             user.save()  # initialise the profile objects
 
-        p = CustomAuthbrokerBackend._build_profile(user.profile)
+        p = CustomAuthbrokerBackend._build_profile(user.profile, email, raw_profile)
         return p.user
