@@ -35,8 +35,6 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
             profile_obj.user.last_name = raw_profile[
                 "last_name"
             ]  # might change over time
-            profile_obj.user.is_active = True
-            profile_obj.user.is_staff = True
             profile_obj.user.username = raw_profile["email_user_id"]  #
             profile_obj.save()  # This saves the user object as well.
 
