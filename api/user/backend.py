@@ -5,6 +5,9 @@ from authbroker_client.utils import (
     has_valid_token,
 )
 from django.contrib.auth import get_user_model
+from django.db.models import Q
+
+from api.user.models import Profile
 
 User = get_user_model()
 
@@ -18,21 +21,38 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
         return None
 
     @staticmethod
-    def verify_user_object(profile):
+    def verify_user_object(profile) -> User:
+        def _build_profile(profile_obj):
+            profile_obj.sso_user_id = profile["user_id"]
+            profile_obj.sso_email_user_id = profile["email_user_id"]
+            profile_obj.user.email = profile["email"]
+            # contact emails ?
+            profile_obj.user.first_name = profile[
+                "first_name"
+            ]  # might change over time
+            profile_obj.user.last_name = profile["last_name"]  # might change over time
+            profile_obj.user.is_active = True
+            profile_obj.user.is_staff = True
+            profile_obj.save()
+
+            return profile_obj
+
         # Look for legacy style user record
-        profile = Profile.objects.filter(sso_user_id=profile["user_id"]).first()
+        profile = Profile.objects.filter(Q(sso_user_id=profile["user_id"])).first()
 
         if profile:
-            profile.sso_email_user_id = profile["email_user_id"]
-            profile.user.email = profile["email"]
-            # contact emails ?
-            user.first_name = profile["first_name"]  # might change over time
-            user.last_name = profile["last_name"]  # might change over time
-            user.save()
+            p = _build_profile(profile)
+            return p.user
 
-            return user
+        profile = Profile.objects.filter(
+            Q(sso_email_user_id=profile["email_user_id"])
+        ).first()
+        if profile:
+            p = _build_profile(profile)
+            return p.user
+
         else:
-            profile = Profile.objects.filter(sso_email_user_id=profile["email_user_id"]).first()
+            profile = Profile.objects.filter().first()
 
             if profile:
                 profile.sso_email_user_id = profile["email_user_id"]
@@ -50,11 +70,11 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
                     email=profile["email"],
                     first_name=profile["first_name"],
                     last_name=profile["last_name"],
-                    profile = Profile(
+                    profile=Profile(
                         sso_email_user_id=profile["email_user_id"],
-                        #location="foo",
-                        #internal="bar",
-                    )
+                        # location="foo",
+                        # internal="bar",
+                    ),
                 )
                 user.set_unusable_password()
                 user.save()
