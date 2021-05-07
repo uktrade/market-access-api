@@ -1,11 +1,8 @@
-from authbroker_client.backends import AuthbrokerBackend
-from authbroker_client.utils import (
-    get_client,
-    get_profile,
-    has_valid_token,
-)
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, QuerySet
+
+from authbroker_client.backends import AuthbrokerBackend
+from authbroker_client.utils import get_client, get_profile, has_valid_token
 
 from api.user.models import Profile
 
@@ -22,41 +19,39 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
 
     @staticmethod
     def verify_user_object(raw_profile) -> User:
-        email = raw_profile["email"]
+        email: str = raw_profile["email"]
 
-        def _build_profile(profile_obj):
-            profile_obj.sso_user_id = raw_profile["user_id"]
-            profile_obj.sso_email_user_id = raw_profile["email_user_id"]
-            profile_obj.user.email = raw_profile.get("contact_email") or email
+        def _build_profile(profile: Profile) -> Profile:
+            profile.sso_user_id = raw_profile["user_id"]
+            profile.sso_email_user_id = raw_profile["email_user_id"]
+            profile.user.email = raw_profile.get("contact_email") or email
             # contact emails ?
-            profile_obj.user.first_name = raw_profile[
+            profile.user.first_name = raw_profile[
                 "first_name"
             ]  # might change over time
-            profile_obj.user.last_name = raw_profile[
-                "last_name"
-            ]  # might change over time
-            profile_obj.user.username = raw_profile["email_user_id"]  #
-            profile_obj.save()  # This saves the user object as well.
+            profile.user.last_name = raw_profile["last_name"]  # might change over time
+            profile.user.username = raw_profile["email_user_id"]  #
+            profile.save()  # This saves the user object as well.
 
-            return profile_obj
+            return profile
 
         # If possible use the existing profile object
-        profile = Profile.objects.filter(
+        profiles: QuerySet = Profile.objects.filter(
             Q(sso_email_user_id=raw_profile["email_user_id"])
             | Q(sso_user_id=raw_profile["user_id"])
         )
-        num_of_profile = profile.count()
+        num_of_profile: int = profiles.count()
         if num_of_profile > 1:
             pass  # TODO: handle duplicate profiles bug
         if num_of_profile == 1:
-            p = _build_profile(profile.first())
+            p = _build_profile(profiles.first())
             return p.user
 
         # Try to get an existing old bad user object or create a new object
         try:
-            user = User.objects.get(username=email)
+            user: User = User.objects.get(username=email)
         except User.DoesNotExist:
-            user = User()
+            user: User = User()
             user.save()  # initialise the profile objects
 
         p = _build_profile(user.profile)
