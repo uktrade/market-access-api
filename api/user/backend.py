@@ -18,22 +18,21 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
         return None
 
     @staticmethod
+    def _build_profile(profile: Profile, email: str, raw_profile: dict) -> Profile:
+        profile.sso_user_id = raw_profile["user_id"]
+        profile.sso_email_user_id = raw_profile["email_user_id"]
+        profile.user.email = raw_profile.get("contact_email") or email
+        # contact emails ?
+        profile.user.first_name = raw_profile["first_name"]  # might change over time
+        profile.user.last_name = raw_profile["last_name"]  # might change over time
+        profile.user.username = raw_profile["email_user_id"]  #
+        profile.save()  # This saves the user object as well.
+
+        return profile
+
+    @staticmethod
     def verify_user_object(raw_profile) -> User:
         email: str = raw_profile["email"]
-
-        def _build_profile(profile: Profile) -> Profile:
-            profile.sso_user_id = raw_profile["user_id"]
-            profile.sso_email_user_id = raw_profile["email_user_id"]
-            profile.user.email = raw_profile.get("contact_email") or email
-            # contact emails ?
-            profile.user.first_name = raw_profile[
-                "first_name"
-            ]  # might change over time
-            profile.user.last_name = raw_profile["last_name"]  # might change over time
-            profile.user.username = raw_profile["email_user_id"]  #
-            profile.save()  # This saves the user object as well.
-
-            return profile
 
         # If possible use the existing profile object
         profiles: QuerySet = Profile.objects.filter(
@@ -44,7 +43,7 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
         if num_of_profile > 1:
             pass  # TODO: handle duplicate profiles bug
         if num_of_profile == 1:
-            p = _build_profile(profiles.first())
+            p = CustomAuthbrokerBackend._build_profile(profiles.first())
             return p.user
 
         # Try to get an existing old bad user object or create a new object
@@ -54,5 +53,5 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
             user: User = User()
             user.save()  # initialise the profile objects
 
-        p = _build_profile(user.profile)
+        p = CustomAuthbrokerBackend._build_profile(user.profile)
         return p.user
