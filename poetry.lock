@@ -771,7 +771,7 @@ description = "Reusable Django app to facilitate gov.uk Staff Single Sign On"
 name = "django-staff-sso-client"
 optional = false
 python-versions = "*"
-version = "3.1.0"
+version = "3.0.0"
 
 [package.dependencies]
 Django = ">=2.2,<4"
@@ -2428,7 +2428,7 @@ django-simple-history = [
     {file = "django_simple_history-2.11.0-py2.py3-none-any.whl", hash = "sha256:b46191e97bb59b82e0ef20ae316021f7337fec50e5acbbd5a757b37910759af0"},
 ]
 django-staff-sso-client = [
-    {file = "django_staff_sso_client-3.1.0-py3-none-any.whl", hash = "sha256:7cfcfb432656bb249605d859712c6cdd1a0b6be97d02b8d4cca18faad8a9f2c0"},
+    {file = "django_staff_sso_client-3.0.0-py3-none-any.whl", hash = "sha256:2e06fc2819c9689b718a04ad5235694720e00641d72612e517bb3435b0fa4d40"},
 ]
 django-timezone-field = [
     {file = "django-timezone-field-4.1.2.tar.gz", hash = "sha256:cffac62452d060e365938aa9c9f7b72d70d8b26b9c60243bce227b35abd1b9df"},
