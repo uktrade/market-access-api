@@ -615,7 +615,7 @@ description = "A high-level Python Web framework that encourages rapid developme
 name = "django"
 optional = false
 python-versions = ">=3.6"
-version = "3.1.8"
+version = "3.1.10"
 
 [package.dependencies]
 asgiref = ">=3.2.10,<4"
@@ -771,7 +771,7 @@ description = "Reusable Django app to facilitate gov.uk Staff Single Sign On"
 name = "django-staff-sso-client"
 optional = false
 python-versions = "*"
-version = "3.1.0"
+version = "3.0.0"
 
 [package.dependencies]
 Django = ">=2.2,<4"
@@ -2161,7 +2161,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "b3fee3fca0cba5e5983e11f2334c4b35a8012d5441584a506fa761bc8123d92d"
+content-hash = "0050a63524590becad2f2ae33d85114b5f709d1cffc79da32997f51c25712be2"
 lock-version = "1.0"
 python-versions = "^3.7"
 
@@ -2374,8 +2374,8 @@ dj-database-url = [
     {file = "dj_database_url-0.5.0-py2.py3-none-any.whl", hash = "sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9"},
 ]
 django = [
-    {file = "Django-3.1.8-py3-none-any.whl", hash = "sha256:c348b3ddc452bf4b62361f0752f71a339140c777ebea3cdaaaa8fdb7f417a862"},
-    {file = "Django-3.1.8.tar.gz", hash = "sha256:f8393103e15ec2d2d313ccbb95a3f1da092f9f58d74ac1c61ca2ac0436ae1eac"},
+    {file = "Django-3.1.10-py3-none-any.whl", hash = "sha256:973c968e63518859732f018975364785dd96f0581b1e4b12e2a4b749415ac43a"},
+    {file = "Django-3.1.10.tar.gz", hash = "sha256:cd6ec37db950a384dba3341b135394fdc776ede4d149fc7abde1e45a21ec4f22"},
 ]
 django-celery-beat = [
     {file = "django-celery-beat-2.0.0.tar.gz", hash = "sha256:fdf1255eecfbeb770c6521fe3e69989dfc6373cd5a7f0fe62038d37f80f47e48"},
@@ -2428,7 +2428,7 @@ django-simple-history = [
     {file = "django_simple_history-2.11.0-py2.py3-none-any.whl", hash = "sha256:b46191e97bb59b82e0ef20ae316021f7337fec50e5acbbd5a757b37910759af0"},
 ]
 django-staff-sso-client = [
-    {file = "django_staff_sso_client-3.1.0-py3-none-any.whl", hash = "sha256:7cfcfb432656bb249605d859712c6cdd1a0b6be97d02b8d4cca18faad8a9f2c0"},
+    {file = "django_staff_sso_client-3.0.0-py3-none-any.whl", hash = "sha256:2e06fc2819c9689b718a04ad5235694720e00641d72612e517bb3435b0fa4d40"},
 ]
 django-timezone-field = [
     {file = "django-timezone-field-4.1.2.tar.gz", hash = "sha256:cffac62452d060e365938aa9c9f7b72d70d8b26b9c60243bce227b35abd1b9df"},

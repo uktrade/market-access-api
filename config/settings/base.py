@@ -144,7 +144,7 @@ AUTH_USER_MODEL = "auth.User"
 # django-oauth-toolkit settings
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "user.backend.CustomAuthbrokerBackend",
+    "authbroker_client.backends.AuthbrokerBackend",
 ]
 
 VCAP_SERVICES = env.json("VCAP_SERVICES", default={})

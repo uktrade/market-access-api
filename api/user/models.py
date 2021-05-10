@@ -31,13 +31,7 @@ class Profile(models.Model):
     sso_user_id = models.UUIDField(
         blank=True,
         null=True,
-        help_text="Legacy Staff SSO UUID for reference",
-    )
-    sso_email_user_id = models.CharField(
-        blank=True,
-        null=True,
-        max_length=255,
-        help_text="Canonical Staff SSO UUID for reference",
+        help_text="Staff SSO UUID for reference",
     )
 
 
