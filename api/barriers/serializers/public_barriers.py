@@ -32,7 +32,10 @@ class PublicBarrierLightTouchReviewsSerializer(serializers.ModelSerializer):
             "hm_trade_commissioner_approval",
             "hm_trade_commissioner_approval_enabled",
             "government_organisation_approvals",
+            "missing_government_organisation_approvals",
+            "enabled",
         )
+        read_only_fields = ("missing_government_organisation_approvals", "enabled")
 
 
 class NestedPublicBarrierSerializer(serializers.ModelSerializer):

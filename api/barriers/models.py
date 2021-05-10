@@ -603,9 +603,14 @@ class PublicBarrierHistoricalModel(models.Model):
         )
 
     def update_light_touch_reviews(self):
-        light_touch_reviews: PublicBarrierLightTouchReviews = (
-            self.instance.light_touch_reviews
-        )
+        try:
+            light_touch_reviews: PublicBarrierLightTouchReviews = (
+                self.instance.light_touch_reviews
+            )
+        except PublicBarrier.light_touch_reviews.RelatedObjectDoesNotExist:
+            light_touch_reviews = PublicBarrierLightTouchReviews.objects.create(
+                public_barrier=self.instance
+            )
         self.light_touch_reviews_cache = {
             "content_team_approval": light_touch_reviews.content_team_approval,
             "has_content_changed_since_approval": light_touch_reviews.has_content_changed_since_approval,
@@ -649,6 +654,20 @@ class PublicBarrierLightTouchReviews(FullyArchivableMixin, BaseModel):
     government_organisation_approvals = ArrayField(
         models.IntegerField(blank=True), blank=True, null=False, default=list
     )
+    missing_government_organisation_approvals = ArrayField(
+        models.IntegerField(blank=True), blank=True, null=False, default=list
+    )
+    enabled = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        organisation_approval_ids = self.government_organisation_approvals
+        all_organisation_ids = (
+            self.public_barrier.barrier.organisations.all().values_list("id", flat=True)
+        )
+        self.missing_government_organisation_approvals = list(
+            set(all_organisation_ids) - set(organisation_approval_ids)
+        )
+        super().save(*args, **kwargs)
 
 
 class PublicBarrier(FullyArchivableMixin, BaseModel):
@@ -710,6 +729,18 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 "Can mark barrier as ready for publishing",
             ),
         ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # ensure public barrier has light touch reviews
+        (
+            light_touch_reviews,
+            created,
+        ) = PublicBarrierLightTouchReviews.objects.get_or_create(public_barrier=self)
+        if not light_touch_reviews.enabled:
+            if self._title and self._summary:
+                light_touch_reviews.enabled = True
+                light_touch_reviews.save()
 
     def add_new_version(self):
         latest_version = self.published_versions.get("latest_version", "0")

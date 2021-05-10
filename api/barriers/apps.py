@@ -18,8 +18,12 @@ class BarriersConfig(AppConfig):
             public_barrier_categories_changed,
             public_barrier_content_update,
             public_barrier_light_touch_reviews_changed,
+            barrier_organisations_changed,
         )
 
+        m2m_changed.connect(
+            barrier_organisations_changed, sender=Barrier.organisations.through
+        )
         m2m_changed.connect(
             barrier_categories_changed, sender=Barrier.categories.through
         )

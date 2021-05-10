@@ -33,6 +33,12 @@ def barrier_categories_changed(sender, instance, action, **kwargs):
             instance.save()
 
 
+def barrier_organisations_changed(sender, instance, action, **kwargs):
+
+    if action in ("post_add", "post_remove"):
+        instance.public_barrier.light_touch_reviews.save()
+
+
 def barrier_tags_changed(sender, instance, action, **kwargs):
     """
     Triggered when barriers.tags (m2m field) is changed
@@ -75,7 +81,6 @@ def public_barrier_categories_changed(sender, instance, action, **kwargs):
 def public_barrier_light_touch_reviews_changed(
     sender, instance: PublicBarrierLightTouchReviews, **kwargs
 ):
-
     if hasattr(instance, "light_touch_reviews_history_saved"):
         historical_instance = HistoricalPublicBarrier.objects.filter(
             id=instance.public_barrier.id
@@ -94,19 +99,28 @@ def public_barrier_content_update(
     When public barrier summary or title is changed remove content team approval and
     flag that content has changed since last approval
     """
-    previous_instance = PublicBarrier.objects.get(id=instance.id)
-    has_public_content_changed = (instance.title != previous_instance.title) or (
-        instance.summary != previous_instance.summary
-    )
-
-    if has_public_content_changed:
-        light_touch_reviews: PublicBarrierLightTouchReviews = (
-            instance.light_touch_reviews
+    try:
+        previous_instance = PublicBarrier.objects.get(id=instance.id)
+        has_public_content_changed = (instance.title != previous_instance.title) or (
+            instance.summary != previous_instance.summary
         )
-        if light_touch_reviews.content_team_approval is True:
-            light_touch_reviews.content_team_approval = False
-            light_touch_reviews.has_content_changed_since_approval = True
-            light_touch_reviews.save()
+
+        if has_public_content_changed:
+            try:
+                light_touch_reviews: PublicBarrierLightTouchReviews = (
+                    instance.light_touch_reviews
+                )
+            except PublicBarrier.light_touch_reviews.RelatedObjectDoesNotExist:
+                light_touch_reviews = PublicBarrierLightTouchReviews.objects.create(
+                    public_barrier=instance
+                )
+            if light_touch_reviews.content_team_approval is True:
+                light_touch_reviews.content_team_approval = False
+                light_touch_reviews.has_content_changed_since_approval = True
+                light_touch_reviews.save()
+    except PublicBarrier.DoesNotExist:
+        # There is no update as the object has just been created
+        pass
 
 
 @receiver(post_create_historical_record)
