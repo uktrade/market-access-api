@@ -13,10 +13,18 @@ User = get_user_model()
 
 class CustomAuthbrokerBackend(AuthbrokerBackend):
     def authenticate(self, request, **kwargs):
+        print(f"STUB:1: {request}")
+        logging.warning(f"STUB:1: {request}")
         client = get_client(request)
+        print(f"STUB:2: {client}")
+        logging.warning(f"STUB:2: {client}")
         if has_valid_token(client):
             profile = get_profile(client)
+            print(f"STUB:3: {profile}")
+            logging.warning(f"STUB:3: {profile}")
             return self.verify_user_object(profile)
+        print(f"STUB:4: NO USER")
+        logging.warning(f"STUB:4: NO USER")
         return None
 
     @staticmethod
@@ -34,8 +42,8 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
 
     @staticmethod
     def verify_user_object(raw_profile) -> User:
-        print(f"STUB: {raw_profile}")
-        logging.warning(f"STUB: {raw_profile}")
+        print(f"STUB:5: {raw_profile}")
+        logging.warning(f"STUB:5: {raw_profile}")
         email: str = raw_profile["email"]
 
         # If possible use the existing profile object
