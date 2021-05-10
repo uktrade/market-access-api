@@ -394,7 +394,7 @@ class BarrierListExportView(generics.ListAPIView):
         "public_eligibility_summary": "Public eligibility summary",
         # TODO: last_public_view_status_update takes too long to calculate
         # on production, and needs to be denormalised. Will be addressed in MAR-940
-        # "last_public_view_status_update": "Last public view status update",
+        "last_public_view_status_update": "Last public view status update",
         "changed_since_published": "Changed since published",
         "public_id": "Public ID",
         "public_title": "Public title",
