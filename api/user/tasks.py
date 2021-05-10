@@ -49,8 +49,8 @@ def get_saved_searches_markdown(saved_searches):
 
 def send_email(user, saved_searches):
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-    print("STUB: {user.values()}")
-    logging.warning("STUB: {user.values()}")
+    print(f"STUB: {user.values()}")
+    logging.warning(f"STUB: {user.values()}")
     client.send_email_notification(
         email_address=user.email,
         template_id=settings.NOTIFY_SAVED_SEARCHES_TEMPLATE_ID,
