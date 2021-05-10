@@ -1,6 +1,6 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2021-05-07_11-00
+# Generated: 2021-05-10_14-47
 # ======
 amqp==2.6.1
 asgiref==3.3.4
