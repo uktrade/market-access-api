@@ -25,40 +25,44 @@ class TestCustomAuthbrokerBackend(TestCase):
         user.save()
         profile_data = user.profile
 
-        profile_data.sso_user_id != self.mock_raw_profile["user_id"]
-        profile_data.sso_email_user_id != self.mock_raw_profile["email_user_id"]
-        profile_data.user.email != self.mock_raw_profile.get("contact_email")
+        assert profile_data.sso_user_id != self.mock_raw_profile["user_id"]
+        assert profile_data.sso_email_user_id != self.mock_raw_profile["email_user_id"]
+        assert profile_data.user.email != self.mock_raw_profile.get("contact_email")
         # contact emails ?
-        profile_data.user.first_name != self.mock_raw_profile[
-            "first_name"
-        ]  # might change over time
-        profile_data.user.last_name != self.mock_raw_profile[
-            "last_name"
-        ]  # might change over time
-        profile_data.user.username != self.mock_raw_profile["email_user_id"]
+        assert (
+            profile_data.user.first_name != self.mock_raw_profile["first_name"]
+        )  # might change over time
+        assert (
+            profile_data.user.last_name != self.mock_raw_profile["last_name"]
+        )  # might change over time
+        assert profile_data.user.username != self.mock_raw_profile["email_user_id"]
 
         CustomAuthbrokerBackend._build_profile(
             profile_data, self.mock_raw_profile["email"], self.mock_raw_profile
         )
 
-        profile_data.sso_user_id == self.mock_raw_profile["user_id"]
-        profile_data.sso_email_user_id == self.mock_raw_profile["email_user_id"]
-        profile_data.user.email == self.mock_raw_profile.get("contact_email")
+        assert profile_data.sso_user_id == self.mock_raw_profile["user_id"]
+        assert profile_data.sso_email_user_id == self.mock_raw_profile["email_user_id"]
+        assert profile_data.user.email == self.mock_raw_profile.get("contact_email")
         # contact emails ?
-        profile_data.user.first_name == self.mock_raw_profile[
-            "first_name"
-        ]  # might change over time
-        profile_data.user.last_name == self.mock_raw_profile[
-            "last_name"
-        ]  # might change over time
-        profile_data.user.username == self.mock_raw_profile["email_user_id"]  #
+        assert (
+            profile_data.user.first_name == self.mock_raw_profile["first_name"]
+        )  # might change over time
+        assert (
+            profile_data.user.last_name == self.mock_raw_profile["last_name"]
+        )  # might change over time
+        assert profile_data.user.username == self.mock_raw_profile["email_user_id"]  #
 
     def test_verify_user_object(self):
         user = CustomAuthbrokerBackend.verify_user_object(self.mock_raw_profile)
 
-        user.first_name == self.mock_raw_profile["first_name"]  # might change over time
-        user.last_name == self.mock_raw_profile["last_name"]  # might change over time
-        user.username == self.mock_raw_profile["email_user_id"]
-        user.profile.sso_user_id == self.mock_raw_profile["user_id"]
-        user.profile.sso_email_user_id == self.mock_raw_profile["email_user_id"]
-        user.profile.user.email == self.mock_raw_profile.get("contact_email")
+        assert (
+            user.first_name == self.mock_raw_profile["first_name"]
+        )  # might change over time
+        assert (
+            user.last_name == self.mock_raw_profile["last_name"]
+        )  # might change over time
+        assert user.username == self.mock_raw_profile["email_user_id"]
+        assert user.profile.sso_user_id == self.mock_raw_profile["user_id"]
+        assert user.profile.sso_email_user_id == self.mock_raw_profile["email_user_id"]
+        assert user.profile.user.email == self.mock_raw_profile.get("contact_email")
