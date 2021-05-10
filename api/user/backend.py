@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.db.models import Q, QuerySet
 
@@ -32,6 +34,8 @@ class CustomAuthbrokerBackend(AuthbrokerBackend):
 
     @staticmethod
     def verify_user_object(raw_profile) -> User:
+        print(f"STUB: {raw_profile}")
+        logging.warning(f"STUB: {raw_profile}")
         email: str = raw_profile["email"]
 
         # If possible use the existing profile object
