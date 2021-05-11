@@ -2,13 +2,7 @@ import re
 import urllib.parse
 from typing import Dict, List, Union
 
-from api.barriers.mixins import BarrierRelatedMixin
-from api.collaboration.models import TeamMember
-from api.core.models import ArchivableMixin, BaseModel
-from api.documents.models import AbstractEntityDocumentModel
-from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
@@ -16,6 +10,15 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.urls import reverse
+
+from api.barriers.mixins import BarrierRelatedMixin
+from api.collaboration.models import TeamMember
+from api.core.models import ArchivableMixin, BaseModel
+from api.documents.models import AbstractEntityDocumentModel
+from api.metadata.constants import BARRIER_INTERACTION_TYPE
+from api.user import helpers
+from api.user import staff_sso
+
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
 
@@ -205,18 +208,21 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         return self._cleansed_username(self.modified_by)
 
 
+# Manual made types from readability
+user_type = settings.AUTH_USER_MODEL
 user_type = Dict[str, settings.AUTH_USER_MODEL]
 note_union = Union[Interaction, PublicBarrierNote]
 
 
-def _get_user_object(user_obj: settings.AUTH_USER_MODEL, emails: List[str]):
+def _get_user_object(emails: List[str]) -> List[user_type]:
     # This function exists to make unit tests easier to write
-    return list(
-        u
-        for u in user_obj.objects.annotate(lowered_email=Lower("email"))
-        .filter(lowered_email__in=emails)
-        .order_by("lowered_email")
-    )
+    output: List[settings.AUTH_USER_MODEL] = []
+    for email in emails:
+        sso_json = staff_sso.sso.get_user_details_by_email(email)
+        user = helpers.get_django_user_by_sso_user_id(sso_json["user_id"])
+        output.append(user)
+
+    return output
 
 
 def _get_mentioned_users(note_text: str) -> user_type:
@@ -226,8 +232,7 @@ def _get_mentioned_users(note_text: str) -> user_type:
         {m.group()[1:].lower() for m in matches}
     )  # dedupe emails, strip leading '@'
 
-    user_obj: settings.AUTH_USER_MODEL = get_user_model()
-    users: List[settings.AUTH_USER_MODEL] = _get_user_object(user_obj, emails)
+    users: List[user_type] = _get_user_object(emails)
     output: user_type = dict(zip(emails, users))
 
     return output
