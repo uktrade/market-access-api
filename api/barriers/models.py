@@ -1192,7 +1192,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         or priority is not yet set for that barrier
         """
         UNKNOWN = "UNKNOWN"
-        priorities = BarrierPriority.objects.filter(code__in=value)
+        priorities = metadata_models.BarrierPriority.objects.filter(code__in=value)
         if UNKNOWN in value:
             return queryset.filter(
                 Q(priority__isnull=True) | Q(priority__in=priorities)
@@ -1216,7 +1216,7 @@ class BarrierFilterSet(django_filters.FilterSet):
                 location_values.append(location)
 
         # Add all countries within the overseas regions
-        for country in cache.get_or_set("dh_countries", get_countries, 72000):
+        for country in cache.get_or_set("dh_countries", metadata_utils.get_countries, 72000):
             if (
                 country["overseas_region"]
                 and country["overseas_region"]["id"] in location_values
@@ -1256,7 +1256,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             if "country_trading_bloc" in self.data:
                 trading_bloc_countries = []
                 for trading_bloc in self.data["country_trading_bloc"].split(","):
-                    trading_bloc_countries += get_trading_bloc_country_ids(trading_bloc)
+                    trading_bloc_countries += metadata_utils.get_trading_bloc_country_ids(trading_bloc)
 
                 tb_queryset = tb_queryset | queryset.filter(
                     country__in=trading_bloc_countries,
@@ -1304,7 +1304,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def member_filter(self, queryset, name, value):
         if value:
-            member = get_object_or_404(TeamMember, pk=value)
+            member = get_object_or_404(collaboration_models.TeamMember, pk=value)
             return queryset.filter(barrier_team__user=member.user).distinct()
         return queryset
 
@@ -1522,7 +1522,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     def region_filter(self, queryset, name, value):
         countries = set()
         for region_id in value:
-            countries.update(get_country_ids_by_overseas_region(region_id))
+            countries.update(metadata_utils.get_country_ids_by_overseas_region(region_id))
         return queryset.filter(barrier__country__in=countries)
 
     def status_filter(self, queryset, name, value):
