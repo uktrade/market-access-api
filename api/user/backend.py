@@ -13,8 +13,9 @@ User = get_user_model()
 
 class CustomAuthbrokerBackend(AuthbrokerBackend):
     def authenticate(self, request, **kwargs):
-        print(f"STUB:1: {request}")
-        logging.warning(f"STUB:1: {request}")
+        tmp = [(k, v) for k, v in request.items()]
+        print(f"STUB:1: {tmp}")
+        logging.warning(f"STUB:1: {tmp}")
         client = get_client(request)
         print(f"STUB:2: {client}")
         logging.warning(f"STUB:2: {client}")
