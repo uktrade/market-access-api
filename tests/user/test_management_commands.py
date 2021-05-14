@@ -83,11 +83,9 @@ excluded_user_models: List[models.Model] = [ExcludeFromNotification]
 recipient_models: List[models.Model] = [Mention]
 
 
-class TestBadUsersBugFix(TestCase):
+class DbFixTestBase(TestCase):
     def setUp(self):
         super().setUp()
-        self.bad_user = create_test_user()
-        self.good_user = create_test_user()
 
         self.notification_patch = patch(
             "api.interactions.models.NotificationsAPIClient"
@@ -261,6 +259,33 @@ class TestBadUsersBugFix(TestCase):
 
         for klass in recipient_models:
             _check_orm_attribute(klass, "recipient")
+
+
+class TestFixAllUsers(DbFixTestBase):
+    def test_update_user_profiles(self):
+        self.user1 = create_test_user()
+        self.user2 = create_test_user()
+        self.user3 = create_test_user()
+
+        self.user1.profile.sso_email_user_id = None
+        self.user1.save()
+        self.user2.profile.sso_email_user_id = None
+        self.user3.save()
+        self.user3.profile.sso_email_user_id = None
+        self.user3.save()
+
+        call_command("fix_all_users_for_sso_system")
+
+        assert self.user1.profile.sso_email_user_id is not None
+        assert self.user2.profile.sso_email_user_id is not None
+        assert self.user3.profile.sso_email_user_id is not None
+
+
+class TestBadUsersBugFix(DbFixTestBase):
+    def setUp(self):
+        super().setUp()
+        self.bad_user = create_test_user()
+        self.good_user = create_test_user()
 
     def test_one_bad_user(self):
         data_row = self.create_data_records(self.bad_user)

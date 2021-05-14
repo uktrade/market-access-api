@@ -146,6 +146,7 @@ class APITestMixin:
     pytestmark = pytest.mark.django_db  # use db
     sso_creator = {
         "email": "barrier.creator@unittest.uk",
+        "email_user_id": "barrier.creator-87419484@unittest.uk",
         "user_id": "87419484-c6c1-4ab7-b124-a7c0376622c7",
         "first_name": "Barrier",
         "last_name": "Creator",
@@ -158,8 +159,10 @@ class APITestMixin:
         ],
         "access_profiles": ["full-access"],
     }
+
     sso_user_data_1 = {
         "email": "unit1.test1@unittest.uk",
+        "email_user_id": "unit1.test1-907a7a2c@unittest.uk",
         "user_id": "907a7a2c-b6cd-454f-3764-a4388ec2a42b",
         "first_name": "Unit1",
         "last_name": "Test1",
@@ -175,6 +178,7 @@ class APITestMixin:
 
     sso_user_data_2 = {
         "email": "unit2.test2@unittest.uk",
+        "email_user_id": "unit2.test2-e5e9394c@unittest.uk",
         "user_id": "e5e9394c-daed-498e-b9f3-69228b44fbfa",
         "first_name": "Unit2",
         "last_name": "Test2",
