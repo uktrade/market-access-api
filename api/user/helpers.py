@@ -55,6 +55,20 @@ def update_user_profile(user, auth_token):
     user.profile.save()
 
 
+def update_user_profile_user_id(user, user_id):
+    sso_user = sso.get_user_details_by_id(user_id)
+    user.username = sso_user.get("email_user_id")
+    user.email = sso_user.get("email")
+    user.first_name = sso_user["first_name"]
+    user.last_name = sso_user["last_name"]
+
+    # Profile
+    user.profile.sso_user_id = sso_user["user_id"]
+    user.profile.sso_email_user_id = sso_user["email_user_id"]
+
+    user.save()
+
+
 def has_profile(user):
     try:
         return user.profile
