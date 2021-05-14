@@ -27,6 +27,25 @@ class StaffSSO:
             logger.error(f"Error occurred while requesting user info from SSO, {exc}")
             return None
 
+    def get_user_details_by_email_user_id(self, email_user_id):
+        if not settings.SSO_ENABLED:
+            return None
+        url = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"]
+        token = settings.OAUTH2_PROVIDER["RESOURCE_SERVER_AUTH_TOKEN"]
+        auth_string = f"Bearer {token}"
+        params = {"email_user_id": email_user_id}
+        headers = {"Authorization": auth_string, "Cache-Control": "no-cache"}
+        try:
+            response = requests.request("GET", url, params=params, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.warning("Introspect endpoint on SSO was not successful")
+                return None
+        except Exception as exc:
+            logger.error(f"Error occurred while requesting user info from SSO, {exc}")
+            return None
+
     def get_user_details_by_id(self, user_id):
         if not settings.SSO_ENABLED:
             return None
