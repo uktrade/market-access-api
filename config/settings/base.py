@@ -144,7 +144,6 @@ AUTH_USER_MODEL = "auth.User"
 # django-oauth-toolkit settings
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "authbroker_client.backends.AuthbrokerBackend",
 ]
 
 VCAP_SERVICES = env.json("VCAP_SERVICES", default={})
@@ -234,6 +233,7 @@ if SSO_ENABLED:
     OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"] = env(
         "RESOURCE_SERVER_USER_INTROSPECT_URL"
     )
+    OAUTH2_PROVIDER["OAUTH2_VALIDATOR_CLASS"] = "api.user.authentication.SSOAuthValidator"
 
 # DRF
 REST_FRAMEWORK = {
