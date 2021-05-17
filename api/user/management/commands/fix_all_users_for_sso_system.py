@@ -33,7 +33,7 @@ class Command(BaseCommand):
             Q(sso_user_id__isnull=True)
         )  # If sso_user_id is null
         for profile in profiles_with_guid:
-            sso_user = sso.get_user_details_by_email(Profile.user.username)
+            sso_user = sso.get_user_details_by_email(profile.user.username)
             user = UserModel.objects.filter(username=sso_user["email_user_id"])
             # No existing user from the SSO exists so change this user into an SSO user
             if not user.exists():
@@ -44,3 +44,4 @@ class Command(BaseCommand):
             bad_user = profile.user
             with transaction.atomic():
                 move_all_data_from_bad_user_to_good_user(bad_user, good_user)
+                bad_user.delete()

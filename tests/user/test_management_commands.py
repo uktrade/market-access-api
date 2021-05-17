@@ -2,6 +2,7 @@ from typing import Dict, List
 from unittest.mock import patch
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.db import models
@@ -81,6 +82,8 @@ reviewed_by_models: List[models.Model] = [
 ]
 excluded_user_models: List[models.Model] = [ExcludeFromNotification]
 recipient_models: List[models.Model] = [Mention]
+
+UserModel = get_user_model()
 
 
 class DbFixTestBase(TestCase):
@@ -270,11 +273,15 @@ class DbFixTestBase(TestCase):
 class TestFixAllUsers(DbFixTestBase):
     def setUp(self):
         super().setUp()
-        self._mock_user_sso_db = {}
+        self._mock_user_sso_db_by_id = {}
+        self._mock_user_sso_db_by_email = {}
         self.helper_sso_patch = patch("api.user.helpers.sso")
         self.helper_sso_mock = self.helper_sso_patch.start()
         self.helper_sso_mock.get_user_details_by_id.side_effect = (
-            lambda x: self._mock_user_sso_db[str(x)]
+            lambda x: self._mock_user_sso_db_by_id[str(x)]
+        )
+        self.sso_mock.get_user_details_by_email = (
+            lambda x: self._mock_user_sso_db_by_email[str(x)]
         )
 
     def tearDown(self):
@@ -282,7 +289,7 @@ class TestFixAllUsers(DbFixTestBase):
         super().tearDown()
 
     def _add_user_to_mockdb(self, user):
-        self._mock_user_sso_db[str(user.profile.sso_user_id)] = {
+        db_row = {
             "user_id": str(user.profile.sso_user_id),
             "email_user_id": str(user.profile.sso_email_user_id),
             "last_name": user.last_name,
@@ -290,6 +297,25 @@ class TestFixAllUsers(DbFixTestBase):
             "email": user.email,
             "username": str(user.profile.sso_email_user_id),
         }
+
+        self._mock_user_sso_db_by_id[str(user.profile.sso_user_id)] = db_row
+        self._mock_user_sso_db_by_email[str(user.email)] = db_row
+
+    def test_replace_bad_user_with_new_user(self):
+        mock_user = create_test_user()
+        self._add_user_to_mockdb(mock_user)
+        bad_user = UserModel(username=mock_user.email)
+        bad_user.save()
+        data_row = self.create_data_records(bad_user)
+
+        self.check_count_on_all_objects(bad_user, 1)
+
+        call_command("fix_all_users_for_sso_system")
+
+        # The bad user has been deleted
+        assert UserModel.objects.filter(id=bad_user.id).exists() is False
+        mock_user.refresh_from_db()
+        self.check_count_on_all_objects(mock_user, 1)
 
     def test_update_good_current_user_to_new_user(self):
         # First build mock data
