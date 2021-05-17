@@ -40,8 +40,12 @@ class Command(BaseCommand):
                 update_user_profile_user_id(profile.user, sso_user["email_user_id"])
                 continue
 
+            # If we have duplicate User objects, The email in this username points to
+            # an existing profile. Move everything over to the existing profile and
+            # delete this duplicate
             good_user = user.first()
             bad_user = profile.user
             with transaction.atomic():
                 move_all_data_from_bad_user_to_good_user(bad_user, good_user)
                 bad_user.delete()
+                continue
