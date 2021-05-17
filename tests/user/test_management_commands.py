@@ -92,7 +92,13 @@ class DbFixTestBase(TestCase):
         )
         self.notification_mock = self.notification_patch.start()
 
+        self.sso_patch = patch(
+            "api.user.management.commands.fix_all_users_for_sso_system.sso"
+        )
+        self.sso_mock = self.sso_patch.start()
+
     def tearDown(self):
+        self.sso_patch.stop()
         self.notification_patch.stop()
 
     @atomic
@@ -262,11 +268,44 @@ class DbFixTestBase(TestCase):
 
 
 class TestFixAllUsers(DbFixTestBase):
-    def test_update_user_profiles(self):
+    def setUp(self):
+        super().setUp()
+        self._mock_user_sso_db = {}
+        self.helper_sso_patch = patch("api.user.helpers.sso")
+        self.helper_sso_mock = self.helper_sso_patch.start()
+        self.helper_sso_mock.get_user_details_by_id.side_effect = (
+            lambda x: self._mock_user_sso_db[str(x)]
+        )
+
+    def tearDown(self):
+        self.helper_sso_patch.stop()
+        super().tearDown()
+
+    def _add_user_to_mockdb(self, user):
+        self._mock_user_sso_db[str(user.profile.sso_user_id)] = {
+            "user_id": str(user.profile.sso_user_id),
+            "email_user_id": str(user.profile.sso_email_user_id),
+            "last_name": user.last_name,
+            "first_name": user.first_name,
+            "email": user.email,
+            "username": str(user.profile.sso_email_user_id),
+        }
+
+    def test_update_good_current_user_to_new_user(self):
+        # First build mock data
         self.user1 = create_test_user()
         self.user2 = create_test_user()
         self.user3 = create_test_user()
 
+        # User mock data in mock SSO calls
+        self._add_user_to_mockdb(self.user1)
+        self._add_user_to_mockdb(self.user2)
+        self._add_user_to_mockdb(self.user3)
+
+        assert self.user1.profile.sso_email_user_id != self.user1.username
+        assert self.user2.profile.sso_email_user_id != self.user2.username
+        assert self.user2.profile.sso_email_user_id != self.user3.username
+        # Model current good user objects. they have the user_id GUID but not the email_user_id
         self.user1.profile.sso_email_user_id = None
         self.user1.save()
         self.user2.profile.sso_email_user_id = None
@@ -274,11 +313,22 @@ class TestFixAllUsers(DbFixTestBase):
         self.user3.profile.sso_email_user_id = None
         self.user3.save()
 
+        assert self.user1.profile.sso_email_user_id is None
+        assert self.user2.profile.sso_email_user_id is None
+        assert self.user3.profile.sso_email_user_id is None
+
         call_command("fix_all_users_for_sso_system")
 
+        # Refresh the ORM objects to show that the sso_email_user_id values have been set.
+        self.user1.refresh_from_db()
+        self.user2.refresh_from_db()
+        self.user3.refresh_from_db()
         assert self.user1.profile.sso_email_user_id is not None
         assert self.user2.profile.sso_email_user_id is not None
         assert self.user3.profile.sso_email_user_id is not None
+        assert self.user1.profile.sso_email_user_id == self.user1.username
+        assert self.user2.profile.sso_email_user_id == self.user2.username
+        assert self.user3.profile.sso_email_user_id == self.user3.username
 
 
 class TestBadUsersBugFix(DbFixTestBase):
