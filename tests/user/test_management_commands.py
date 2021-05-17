@@ -301,6 +301,85 @@ class TestFixAllUsers(DbFixTestBase):
         self._mock_user_sso_db_by_id[str(user.profile.sso_user_id)] = db_row
         self._mock_user_sso_db_by_email[str(user.email)] = db_row
 
+    def test_remove_badly_formatted_users(self):
+        good_user = create_test_user()
+        self._add_user_to_mockdb(good_user)
+        data_row = self.create_data_records(good_user)
+
+        bad_user1 = create_test_user()
+        bad_user1.username = "bob1"
+        bad_user1.profile.sso_user_id = None
+        bad_user1.save()
+
+        bad_user2 = create_test_user()
+        bad_user2.username = "bob2"
+        bad_user2.profile.sso_user_id = None
+        bad_user2.save()
+
+        self.check_count_on_all_objects(good_user, 1)
+
+        call_command("fix_all_users_for_sso_system")
+
+        # The bad user has been deleted
+        assert UserModel.objects.filter(id=bad_user1.id).exists() is False
+        assert UserModel.objects.filter(id=bad_user2.id).exists() is False
+        good_user.refresh_from_db()
+        self.check_count_on_all_objects(good_user, 1)
+
+    def test_multiple_bad_users_one_good_user(self):
+        good_user = create_test_user()
+        self._add_user_to_mockdb(good_user)
+        data_row = self.create_data_records(good_user)
+
+        db_row = self._mock_user_sso_db_by_email[str(good_user.email)].copy()
+
+        bad_user1 = create_test_user()
+        bad_user1.username = bad_user1.email
+        bad_user1.profile.sso_user_id = None
+        bad_user1.save()
+        data_row = self.create_data_records(bad_user1)
+        self._add_user_to_mockdb(bad_user1)
+        db1 = db_row.copy()
+        db1["email"] = bad_user1.email
+        self._mock_user_sso_db_by_email[bad_user1.email] = db1
+
+        bad_user2 = create_test_user()
+        bad_user2.username = bad_user2.email
+        bad_user2.profile.sso_user_id = None
+        bad_user2.save()
+        data_row = self.create_data_records(bad_user2)
+        self._add_user_to_mockdb(bad_user2)
+        db1 = db_row.copy()
+        db1["email"] = bad_user2.email
+        self._mock_user_sso_db_by_email[bad_user2.email] = db1
+
+        self.check_count_on_all_objects(good_user, 1)
+
+        call_command("fix_all_users_for_sso_system")
+
+        # The bad user has been deleted
+        assert UserModel.objects.filter(id=bad_user1.id).exists() is False
+        assert UserModel.objects.filter(id=bad_user2.id).exists() is False
+        good_user.refresh_from_db()
+        self.check_count_on_all_objects(good_user, 3)
+
+    def test_bad_user_and_good_user_exists(self):
+        good_user = create_test_user()
+        self._add_user_to_mockdb(good_user)
+        bad_user = UserModel(username=good_user.email)
+        bad_user.save()
+        self.create_data_records(bad_user)
+        data_row = self.create_data_records(good_user)
+
+        self.check_count_on_all_objects(good_user, 1)
+
+        call_command("fix_all_users_for_sso_system")
+
+        # The bad user has been deleted
+        assert UserModel.objects.filter(id=bad_user.id).exists() is False
+        good_user.refresh_from_db()
+        self.check_count_on_all_objects(good_user, 2)
+
     def test_replace_bad_user_with_new_user(self):
         mock_user = create_test_user()
         self._add_user_to_mockdb(mock_user)
