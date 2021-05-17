@@ -33,6 +33,12 @@ class Command(BaseCommand):
             Q(sso_user_id__isnull=True)
         )  # If sso_user_id is null
         for profile in profiles_with_guid:
+            # Remove the few badly formatted user objects.
+            if "@" not in profile.user.username:
+                profile.user.delete()
+                profile.delete()
+                continue
+
             sso_user = sso.get_user_details_by_email(profile.user.username)
             user = UserModel.objects.filter(username=sso_user["email_user_id"])
             # No existing user from the SSO exists so change this user into an SSO user
