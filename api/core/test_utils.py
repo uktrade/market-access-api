@@ -52,6 +52,7 @@ def create_test_user(
     internal=False,
     user_profile=None,
     sso_user_id=None,
+    sso_email_user_id=None,
     **user_attrs,
 ):
     """
@@ -91,7 +92,16 @@ def create_test_user(
     if sso_user_id is None:
         sso_user_id = uuid.uuid4()
 
+    if sso_email_user_id is None:
+        email_parts = user.email.split("@")
+        raw_user_id = str(sso_user_id)
+        if len(email_parts) != 2:
+            sso_email_user_id = f"example.data-{raw_user_id[:8]}@digital.trade.gov.uk"
+        else:
+            sso_email_user_id = email_parts[0] + f"-{raw_user_id[:8]}@" + email_parts[1]
+
     user.profile.sso_user_id = sso_user_id
+    user.profile.sso_email_user_id = sso_email_user_id
     user.profile.save()
     user.save()
 
