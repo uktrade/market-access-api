@@ -304,7 +304,7 @@ class TestFixAllUsers(DbFixTestBase):
     def test_remove_badly_formatted_users(self):
         good_user = create_test_user()
         self._add_user_to_mockdb(good_user)
-        data_row = self.create_data_records(good_user)
+        self.create_data_records(good_user)
 
         bad_user1 = create_test_user()
         bad_user1.username = "bob1"
@@ -329,7 +329,7 @@ class TestFixAllUsers(DbFixTestBase):
     def test_multiple_bad_users_one_good_user(self):
         good_user = create_test_user()
         self._add_user_to_mockdb(good_user)
-        data_row = self.create_data_records(good_user)
+        self.create_data_records(good_user)
 
         db_row = self._mock_user_sso_db_by_email[str(good_user.email)].copy()
 
@@ -337,7 +337,7 @@ class TestFixAllUsers(DbFixTestBase):
         bad_user1.username = bad_user1.email
         bad_user1.profile.sso_user_id = None
         bad_user1.save()
-        data_row = self.create_data_records(bad_user1)
+        self.create_data_records(bad_user1)
         self._add_user_to_mockdb(bad_user1)
         db1 = db_row.copy()
         db1["email"] = bad_user1.email
@@ -347,7 +347,7 @@ class TestFixAllUsers(DbFixTestBase):
         bad_user2.username = bad_user2.email
         bad_user2.profile.sso_user_id = None
         bad_user2.save()
-        data_row = self.create_data_records(bad_user2)
+        self.create_data_records(bad_user2)
         self._add_user_to_mockdb(bad_user2)
         db1 = db_row.copy()
         db1["email"] = bad_user2.email
@@ -369,7 +369,7 @@ class TestFixAllUsers(DbFixTestBase):
         bad_user = UserModel(username=good_user.email)
         bad_user.save()
         self.create_data_records(bad_user)
-        data_row = self.create_data_records(good_user)
+        self.create_data_records(good_user)
 
         self.check_count_on_all_objects(good_user, 1)
 
@@ -385,7 +385,7 @@ class TestFixAllUsers(DbFixTestBase):
         self._add_user_to_mockdb(mock_user)
         bad_user = UserModel(username=mock_user.email)
         bad_user.save()
-        data_row = self.create_data_records(bad_user)
+        self.create_data_records(bad_user)
 
         self.check_count_on_all_objects(bad_user, 1)
 
@@ -443,7 +443,7 @@ class TestBadUsersBugFix(DbFixTestBase):
         self.good_user = create_test_user()
 
     def test_one_bad_user(self):
-        data_row = self.create_data_records(self.bad_user)
+        self.create_data_records(self.bad_user)
 
         self.check_count_on_all_objects(self.good_user, 0)
         self.check_count_on_all_objects(self.bad_user, 1)
@@ -477,7 +477,7 @@ class TestBadUsersBugFix(DbFixTestBase):
         assert User.objects.get(id=local_good.id).username == local_bad.username
 
     def test_one_bad_user_impo(self):
-        data_row = self.create_data_records(self.bad_user)
+        self.create_data_records(self.bad_user)
 
         self.check_count_on_all_objects(self.good_user, 0)
         self.check_count_on_all_objects(self.bad_user, 1)
@@ -504,8 +504,8 @@ class TestBadUsersBugFix(DbFixTestBase):
         self.check_count_on_all_objects(self.bad_user, 0)
 
     def test_one_bad_user_one_good(self):
-        data_row1 = self.create_data_records(self.bad_user)
-        data_row2 = self.create_data_records(self.good_user)
+        self.create_data_records(self.bad_user)
+        self.create_data_records(self.good_user)
 
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 1)
@@ -521,7 +521,7 @@ class TestBadUsersBugFix(DbFixTestBase):
 
     def test_two_users_one_barrier(self):
         data_row1 = self.create_data_records(self.bad_user)
-        data_row2 = self.create_data_records(self.good_user)
+        self.create_data_records(self.good_user)
 
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 1)
@@ -541,7 +541,7 @@ class TestBadUsersBugFix(DbFixTestBase):
         self.check_count_on_all_objects(self.bad_user, 0)
 
     def test_one_good_user(self):
-        data_row = self.create_data_records(self.good_user)
+        self.create_data_records(self.good_user)
 
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 0)
@@ -558,9 +558,9 @@ class TestBadUsersBugFix(DbFixTestBase):
     def test_one_random_user(self):
         junk_user1 = create_test_user()
 
-        data_row1 = self.create_data_records(self.bad_user)
-        data_row2 = self.create_data_records(self.good_user)
-        data_row3 = self.create_data_records(junk_user1)
+        self.create_data_records(self.bad_user)
+        self.create_data_records(self.good_user)
+        self.create_data_records(junk_user1)
 
         self.check_count_on_all_objects(self.good_user, 1)
         self.check_count_on_all_objects(self.bad_user, 1)
