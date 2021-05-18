@@ -409,6 +409,27 @@ class TestFixAllUsers(DbFixTestBase):
         mock_user.refresh_from_db()
         self.check_count_on_all_objects(mock_user, 1)
 
+    def test_multipe_current_good_user(self):
+        # First build mock data
+        self.user1 = create_test_user()
+        self.user2 = create_test_user()
+        self.user1.profile.sso_email_user_id = None
+        self.user1.save()
+        self.user2.profile.sso_email_user_id = None
+        self.user2.profile.sso_user_id = self.user1.profile.sso_user_id
+        self.user2.save()
+
+        # User mock data in mock SSO calls
+        self._add_user_to_mockdb(self.user1)
+        self._add_user_to_mockdb(self.user2)
+
+        call_command("fix_all_users_for_sso_system")
+
+        assert UserModel.objects.filter(id=self.user2.id).exists() is False
+        self.user1.refresh_from_db()
+        assert self.user1.profile.sso_email_user_id is not None
+        assert self.user1.profile.sso_email_user_id == self.user1.username
+
     def test_update_good_current_user_to_new_user(self):
         # First build mock data
         self.user1 = create_test_user()
@@ -427,7 +448,7 @@ class TestFixAllUsers(DbFixTestBase):
         self.user1.profile.sso_email_user_id = None
         self.user1.save()
         self.user2.profile.sso_email_user_id = None
-        self.user3.save()
+        self.user2.save()
         self.user3.profile.sso_email_user_id = None
         self.user3.save()
 

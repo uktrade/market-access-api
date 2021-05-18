@@ -58,7 +58,13 @@ def update_user_profile(user, auth_token):
 def update_user_profile_user_id(user, user_id):
     sso_user = sso.get_user_details_by_id(user_id)
     if not sso_user:
-        raise LookupError(f"Bad SSO user_id. This ID oes not exists: {user_id}")
+        raise LookupError(f"Bad SSO user_id. This ID does not exists: {user_id}")
+
+    if UserModel.objects.filter(username=sso_user.get("email_user_id")).exists():
+        raise LookupError(
+            f"A user with username {sso_user.get('email_user_id')} already exists"
+        )
+
     user.username = sso_user.get("email_user_id")
     user.email = sso_user.get("email")
     user.first_name = sso_user["first_name"]

@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 logging.warning(exc)
                 logging.warning(
                     f"""
-Bad sso_user_id {profile.sso_user_id} does not match SSO any user.
+Bad sso_user_id {profile.sso_user_id} either Id does not exists on SSO or User is duplicated.
 Updating User {profile.user.__dict__} with Profile {profile.__dict__} removing bad sso_user_id
                     """
                 )
