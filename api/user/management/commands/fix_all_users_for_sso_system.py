@@ -57,6 +57,15 @@ Updating User {profile.user.__dict__} with Profile {profile.__dict__} removing b
                 continue
 
             sso_user = sso.get_user_details_by_email(profile.user.username)
+            if not sso_user:
+                sso_user = sso.get_user_details_by_email(profile.user.email)
+                if not sso_user:
+                    # There is no SSO matching this uaer_id, username or email
+                    # Therefore this is a bad user object. Delete itFd
+                    profile.user.delete()
+                    profile.delete()
+                    continue
+
             user = UserModel.objects.filter(username=sso_user["email_user_id"])
             # No existing user from the SSO exists so change this user into an SSO user
             if not user.exists():

@@ -409,6 +409,16 @@ class TestFixAllUsers(DbFixTestBase):
         mock_user.refresh_from_db()
         self.check_count_on_all_objects(mock_user, 1)
 
+    def test_badly_formatted_usr(self):
+        self.user1 = create_test_user()
+        self.user1.username = self.user1.email
+        self.user1.profile.sso_user_id = None
+        self.user1.save()
+
+        call_command("fix_all_users_for_sso_system")
+
+        assert UserModel.objects.filter(id=self.user1.id).exists() is False
+
     def test_update_good_user_object(self):
         # Make mock data with username being email address
         self.user1 = create_test_user()
