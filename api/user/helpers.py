@@ -55,16 +55,7 @@ def update_user_profile(user, auth_token):
     user.profile.save()
 
 
-def update_user_profile_user_id(user, user_id):
-    sso_user = sso.get_user_details_by_id(user_id)
-    if not sso_user:
-        raise LookupError(f"Bad SSO user_id. This ID does not exists: {user_id}")
-
-    if UserModel.objects.filter(username=sso_user.get("email_user_id")).exists():
-        raise LookupError(
-            f"A user with username {sso_user.get('email_user_id')} already exists"
-        )
-
+def update_user_with_sso_dict(user, sso_user):
     user.username = sso_user.get("email_user_id")
     user.email = sso_user.get("email")
     user.first_name = sso_user["first_name"]
@@ -75,6 +66,18 @@ def update_user_profile_user_id(user, user_id):
     user.profile.sso_email_user_id = sso_user["email_user_id"]
 
     user.save()
+
+
+def update_user_profile_user_id(user, user_id):
+    sso_user = sso.get_user_details_by_id(user_id)
+    if not sso_user:
+        raise LookupError(f"Bad SSO user_id. This ID does not exists: {user_id}")
+
+    if UserModel.objects.filter(username=sso_user.get("email_user_id")).exists():
+        raise LookupError(
+            f"A user with username {sso_user.get('email_user_id')} already exists"
+        )
+    return update_user_with_sso_dict(user, sso_user)
 
 
 def has_profile(user):
