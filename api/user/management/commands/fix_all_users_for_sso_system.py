@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -5,6 +7,7 @@ from django.db.models import Q
 
 from api.user.fix_bad_user_helper import move_all_data_from_bad_user_to_good_user
 from api.user.helpers import update_user_profile_user_id
+from api.interactions.models import ExcludeFromNotification
 from api.user.models import Profile
 from api.user.staff_sso import sso
 
@@ -25,7 +28,21 @@ class Command(BaseCommand):
             ~Q(sso_user_id__isnull=True)
         )  # If sso_user_id is not null
         for profile in profiles_with_guid:
-            update_user_profile_user_id(profile.user, profile.sso_user_id)
+            try:
+                update_user_profile_user_id(profile.user, profile.sso_user_id)
+            except LookupError as exc:
+                logging.warning(exc)
+                logging.warning(
+                    f"""
+Bad sso_user_id {profile.sso_user_id} does not match SSO any user.
+Updating User {profile.user.__dict__} with Profile {profile.__dict__} removing bad sso_user_id
+                    """
+                )
+                ExcludeFromNotification.objects.filter(
+                    excluded_user=profile.user
+                ).delete()
+                profile.sso_user_id = None
+                profile.save()
 
         # At this point every valid user has the username set to sso email_user_id
         # and the user has one profile with a valid ss_user_id

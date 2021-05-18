@@ -278,10 +278,10 @@ class TestFixAllUsers(DbFixTestBase):
         self.helper_sso_patch = patch("api.user.helpers.sso")
         self.helper_sso_mock = self.helper_sso_patch.start()
         self.helper_sso_mock.get_user_details_by_id.side_effect = (
-            lambda x: self._mock_user_sso_db_by_id[str(x)]
+            lambda x: self._mock_user_sso_db_by_id.get(str(x))
         )
         self.sso_mock.get_user_details_by_email = (
-            lambda x: self._mock_user_sso_db_by_email[str(x)]
+            lambda x: self._mock_user_sso_db_by_email.get(str(x))
         )
 
     def tearDown(self):
@@ -368,6 +368,8 @@ class TestFixAllUsers(DbFixTestBase):
         self._add_user_to_mockdb(good_user)
         bad_user = UserModel(username=good_user.email)
         bad_user.save()
+        self._add_user_to_mockdb(good_user)
+        self._add_user_to_mockdb(bad_user)
         self.create_data_records(bad_user)
         self.create_data_records(good_user)
 
@@ -379,6 +381,17 @@ class TestFixAllUsers(DbFixTestBase):
         assert UserModel.objects.filter(id=bad_user.id).exists() is False
         good_user.refresh_from_db()
         self.check_count_on_all_objects(good_user, 2)
+
+    def test_bad_sso_userid(self):
+        mock_user = create_test_user()
+        self.create_data_records(mock_user)
+
+        self.check_count_on_all_objects(mock_user, 1)
+
+        call_command("fix_all_users_for_sso_system")
+
+        # The bad user has been deleted
+        assert UserModel.objects.filter(id=mock_user.id).exists() is False
 
     def test_replace_bad_user_with_new_user(self):
         mock_user = create_test_user()
