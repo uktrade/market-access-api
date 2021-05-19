@@ -848,29 +848,28 @@ class PublicBarrierViewSet(
             public_barrier.light_touch_reviews
         )
         serializer = LightTouchApprovalSerializer(data=request.data.get("approvals"))
-        if serializer.is_valid():
-            data = serializer.validated_data
-
-            approved_organisation_ids = []
-            for organisation_approval in data["organisations"]:
-                if organisation_approval["approval"]:
-                    approved_organisation_ids.append(
-                        organisation_approval["organisation_id"]
-                    )
-            light_touch_reviews.government_organisation_approvals = (
-                approved_organisation_ids
-            )
-            light_touch_reviews.content_team_approval = data.get("content", False)
-            if light_touch_reviews.content_team_approval is True:
-                light_touch_reviews.has_content_changed_since_approval = False
-            light_touch_reviews.hm_trade_commissioner_approval = data.get(
-                "hm_commissioner", False
-            )
-            light_touch_reviews.save()
-
-            return Response({"status": "success"})
-        else:
+        if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = serializer.validated_data
+
+        approved_organisation_ids = []
+        for organisation_approval in data["organisations"]:
+            if organisation_approval["approval"]:
+                approved_organisation_ids.append(
+                    organisation_approval["organisation_id"]
+                )
+        light_touch_reviews.government_organisation_approvals = (
+            approved_organisation_ids
+        )
+        light_touch_reviews.content_team_approval = data.get("content", False)
+        if light_touch_reviews.content_team_approval is True:
+            light_touch_reviews.has_content_changed_since_approval = False
+        light_touch_reviews.hm_trade_commissioner_approval = data.get(
+            "hm_commissioner", False
+        )
+        light_touch_reviews.save()
+
+        return Response({"status": "success"})
 
     @action(methods=["post"], detail=True, permission_classes=())
     def enable_hm_trade_commissioner_approvals(self, request, *Args, **kwargs):
@@ -882,16 +881,13 @@ class PublicBarrierViewSet(
         serializer = LightTouchReviewsEnableHMTradeCommissionerSerializer(
             data=request.data
         )
-        if serializer.is_valid():
-            data = serializer.validated_data
-            light_touch_reviews.hm_trade_commissioner_approval_enabled = data["enabled"]
-            light_touch_reviews.hm_trade_commissioner_approval = False
-            light_touch_reviews.save()
-            return Response({"status": "success"})
-
-        else:
+        if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        data = serializer.validated_data
+        light_touch_reviews.hm_trade_commissioner_approval_enabled = data["enabled"]
+        light_touch_reviews.hm_trade_commissioner_approval = False
+        light_touch_reviews.save()
+        return Response({"status": "success"})
 
 class LightTouchOrganisationApprovalSerializer(serializers.Serializer):
     organisation_id = serializers.CharField()
