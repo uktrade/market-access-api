@@ -109,7 +109,7 @@ def public_barrier_content_update(
     )
 
     if not has_public_content_changed:
-        return 
+        return
 
     try:
         light_touch_reviews: PublicBarrierLightTouchReviews = (

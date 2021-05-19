@@ -889,6 +889,7 @@ class PublicBarrierViewSet(
         light_touch_reviews.save()
         return Response({"status": "success"})
 
+
 class LightTouchOrganisationApprovalSerializer(serializers.Serializer):
     organisation_id = serializers.CharField()
     approval = serializers.BooleanField()
