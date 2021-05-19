@@ -22,7 +22,12 @@ from simple_history.utils import bulk_create_with_history
 from api.barriers.csv import _transform_csv_row, create_csv_response
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.models import Barrier, BarrierReportStage, PublicBarrier
+from api.barriers.models import (
+    Barrier,
+    BarrierReportStage,
+    PublicBarrier,
+    PublicBarrierLightTouchReviews,
+)
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierDetailSerializer,
@@ -767,11 +772,12 @@ class PublicBarrierViewSet(
             "barrier__organisations",
             "barrier__categories",
             "barrier__priority",
+            "light_touch_reviews",
         )
 
         return qs.distinct("id")
 
-    def get_object(self):
+    def get_object(self) -> PublicBarrier:
         barrier = get_object_or_404(self.barriers_qs, pk=self.kwargs.get("pk"))
         public_barrier, _created = get_or_create_public_barrier(barrier)
         return public_barrier
@@ -834,3 +840,66 @@ class PublicBarrierViewSet(
         r = self.update_status_action(PublicBarrierStatus.UNPUBLISHED)
         public_release_to_s3()
         return r
+
+    @action(methods=["post"], detail=True, permission_classes=())
+    def mark_approvals(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        light_touch_reviews: PublicBarrierLightTouchReviews = (
+            public_barrier.light_touch_reviews
+        )
+        serializer = LightTouchApprovalSerializer(data=request.data.get("approvals"))
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = serializer.validated_data
+
+        approved_organisation_ids = []
+        for organisation_approval in data["organisations"]:
+            if organisation_approval["approval"]:
+                approved_organisation_ids.append(
+                    organisation_approval["organisation_id"]
+                )
+        light_touch_reviews.government_organisation_approvals = (
+            approved_organisation_ids
+        )
+        light_touch_reviews.content_team_approval = data.get("content", False)
+        if light_touch_reviews.content_team_approval is True:
+            light_touch_reviews.has_content_changed_since_approval = False
+        light_touch_reviews.hm_trade_commissioner_approval = data.get(
+            "hm_commissioner", False
+        )
+        light_touch_reviews.save()
+
+        return Response({"status": "success"})
+
+    @action(methods=["post"], detail=True, permission_classes=())
+    def enable_hm_trade_commissioner_approvals(self, request, *Args, **kwargs):
+        public_barrier = self.get_object()
+        light_touch_reviews: PublicBarrierLightTouchReviews = (
+            public_barrier.light_touch_reviews
+        )
+
+        serializer = LightTouchReviewsEnableHMTradeCommissionerSerializer(
+            data=request.data
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = serializer.validated_data
+        light_touch_reviews.hm_trade_commissioner_approval_enabled = data["enabled"]
+        light_touch_reviews.hm_trade_commissioner_approval = False
+        light_touch_reviews.save()
+        return Response({"status": "success"})
+
+
+class LightTouchOrganisationApprovalSerializer(serializers.Serializer):
+    organisation_id = serializers.CharField()
+    approval = serializers.BooleanField()
+
+
+class LightTouchApprovalSerializer(serializers.Serializer):
+    organisations = LightTouchOrganisationApprovalSerializer(many=True)
+    content = serializers.BooleanField()
+    hm_commissioner = serializers.BooleanField()
+
+
+class LightTouchReviewsEnableHMTradeCommissionerSerializer(serializers.Serializer):
+    enabled = serializers.BooleanField()

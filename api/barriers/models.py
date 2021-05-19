@@ -20,6 +20,7 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
     TRADING_BLOCS,
+    AWAITING_REVIEW_FROM,
     BarrierStatus,
     PublicBarrierStatus,
 )
@@ -562,11 +563,18 @@ class PublicBarrierHistoricalModel(models.Model):
         default=list,
     )
 
-    def get_changed_fields(self, old_history):
+    light_touch_reviews_cache = models.JSONField(default=dict)
+
+    def get_changed_fields(self, old_history):  # noqa: C901, E261
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
+
+        if (self.light_touch_reviews_cache or {}) != (
+            old_history.light_touch_reviews_cache or {}
+        ):
+            changed_fields.add("light_touch_reviews")
 
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
@@ -603,6 +611,23 @@ class PublicBarrierHistoricalModel(models.Model):
             self.instance.categories.values_list("id", flat=True)
         )
 
+    def update_light_touch_reviews(self):
+        try:
+            light_touch_reviews: PublicBarrierLightTouchReviews = (
+                self.instance.light_touch_reviews
+            )
+        except PublicBarrier.light_touch_reviews.RelatedObjectDoesNotExist:
+            light_touch_reviews = PublicBarrierLightTouchReviews.objects.create(
+                public_barrier=self.instance
+            )
+        self.light_touch_reviews_cache = {
+            "content_team_approval": light_touch_reviews.content_team_approval,
+            "has_content_changed_since_approval": light_touch_reviews.has_content_changed_since_approval,
+            "hm_trade_commissioner_approval": light_touch_reviews.hm_trade_commissioner_approval,
+            "hm_trade_commissioner_approval_enabled": light_touch_reviews.hm_trade_commissioner_approval_enabled,
+            "government_organisation_approvals": light_touch_reviews.government_organisation_approvals,
+        }
+
     @property
     def public_view_status(self):
         return self._public_view_status
@@ -617,10 +642,41 @@ class PublicBarrierHistoricalModel(models.Model):
 
     def save(self, *args, **kwargs):
         self.update_categories()
+        self.update_light_touch_reviews()
         super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
+
+
+class PublicBarrierLightTouchReviews(FullyArchivableMixin, BaseModel):
+    public_barrier = models.OneToOneField(
+        "PublicBarrier", related_name="light_touch_reviews", on_delete=models.CASCADE
+    )
+
+    content_team_approval = models.BooleanField(default=False, blank=True)
+    has_content_changed_since_approval = models.BooleanField(default=False, blank=True)
+    hm_trade_commissioner_approval = models.BooleanField(default=False, blank=True)
+    hm_trade_commissioner_approval_enabled = models.BooleanField(
+        default=False, blank=True
+    )
+    government_organisation_approvals = ArrayField(
+        models.IntegerField(blank=True), blank=True, null=False, default=list
+    )
+    missing_government_organisation_approvals = ArrayField(
+        models.IntegerField(blank=True), blank=True, null=False, default=list
+    )
+    enabled = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        organisation_approval_ids = self.government_organisation_approvals
+        all_organisation_ids = (
+            self.public_barrier.barrier.organisations.all().values_list("id", flat=True)
+        )
+        self.missing_government_organisation_approvals = list(
+            set(all_organisation_ids) - set(organisation_approval_ids)
+        )
+        super().save(*args, **kwargs)
 
 
 class PublicBarrier(FullyArchivableMixin, BaseModel):
@@ -684,6 +740,18 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 "Can mark barrier as ready for publishing",
             ),
         ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # ensure public barrier has light touch reviews
+        (
+            light_touch_reviews,
+            created,
+        ) = PublicBarrierLightTouchReviews.objects.get_or_create(public_barrier=self)
+        if not light_touch_reviews.enabled:
+            if self._title and self._summary:
+                light_touch_reviews.enabled = True
+                light_touch_reviews.save()
 
     def add_new_version(self):
         latest_version = self.published_versions.get("latest_version", "0")
@@ -813,8 +881,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 self._public_view_status = PublicBarrierStatus.INELIGIBLE
 
             # Marking the public barrier eligible
-            elif self.barrier.public_eligibility is True and not (
-                self._public_view_status == PublicBarrierStatus.READY
+            elif (
+                self.barrier.public_eligibility is True
+                and self._public_view_status
+                in [PublicBarrierStatus.INELIGIBLE, PublicBarrierStatus.REVIEW_LATER]
             ):
                 self._public_view_status = PublicBarrierStatus.ELIGIBLE
 
@@ -1146,9 +1216,7 @@ class BarrierFilterSet(django_filters.FilterSet):
                 location_values.append(location)
 
         # Add all countries within the overseas regions
-        for country in cache.get_or_set(
-            "dh_countries", metadata_utils.get_countries, 72000
-        ):
+        for country in cache.get_or_set("dh_countries", metadata_utils.get_countries, 72000):
             if (
                 country["overseas_region"]
                 and country["overseas_region"]["id"] in location_values
@@ -1188,9 +1256,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             if "country_trading_bloc" in self.data:
                 trading_bloc_countries = []
                 for trading_bloc in self.data["country_trading_bloc"].split(","):
-                    trading_bloc_countries += (
-                        metadata_utils.get_trading_bloc_country_ids(trading_bloc)
-                    )
+                    trading_bloc_countries += metadata_utils.get_trading_bloc_country_ids(trading_bloc)
 
                 tb_queryset = tb_queryset | queryset.filter(
                     country__in=trading_bloc_countries,
@@ -1403,6 +1469,9 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     region = django_filters.BaseInFilter(method="region_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     organisation = django_filters.BaseInFilter(method="organisation_filter")
+    awaiting_review_from = django_filters.BaseInFilter(
+        method="awaiting_review_from_filter"
+    )
 
     def sector_filter(self, queryset, name, value):
         """
@@ -1412,6 +1481,36 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         return queryset.filter(
             Q(barrier__all_sectors=True) | Q(barrier__sectors__overlap=value)
         )
+
+    def awaiting_review_from_filter(self, queryset, name, value):
+        AWAITING_REVIEW_FROM_MAP = AWAITING_REVIEW_FROM._identifier_map
+        q_filters = Q()
+        if AWAITING_REVIEW_FROM_MAP["CONTENT"] in value:
+            q_filters = q_filters | Q(
+                light_touch_reviews__enabled=True,
+                light_touch_reviews__content_team_approval=False,
+            )
+
+        if AWAITING_REVIEW_FROM_MAP["CONTENT_AFTER_CHANGES"] in value:
+            q_filters = q_filters | Q(
+                light_touch_reviews__enabled=True,
+                light_touch_reviews__has_content_changed_since_approval=True,
+            )
+
+        if AWAITING_REVIEW_FROM_MAP["HM_TRADE_COMMISSION"] in value:
+            q_filters = q_filters | Q(
+                light_touch_reviews__enabled=True,
+                light_touch_reviews__hm_trade_commissioner_approval=False,
+                light_touch_reviews__hm_trade_commissioner_approval_enabled=True,
+            )
+
+        if AWAITING_REVIEW_FROM_MAP["GOVERNMENT_ORGANISATION"] in value:
+            q_filters = q_filters | Q(
+                light_touch_reviews__enabled=True,
+                light_touch_reviews__missing_government_organisation_approvals__len__gt=0,
+            )
+
+        return queryset.filter(q_filters)
 
     def organisation_filter(self, queryset, name, value):
         """
@@ -1423,9 +1522,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     def region_filter(self, queryset, name, value):
         countries = set()
         for region_id in value:
-            countries.update(
-                metadata_utils.get_country_ids_by_overseas_region(region_id)
-            )
+            countries.update(metadata_utils.get_country_ids_by_overseas_region(region_id))
         return queryset.filter(barrier__country__in=countries)
 
     def status_filter(self, queryset, name, value):

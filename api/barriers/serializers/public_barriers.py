@@ -9,7 +9,7 @@ from api.barriers.fields import (
     ReadOnlyTradingBlocField,
 )
 from api.barriers.helpers import get_published_public_barriers
-from api.barriers.models import PublicBarrier
+from api.barriers.models import PublicBarrier, PublicBarrierLightTouchReviews
 from api.barriers.serializers.mixins import LocationFieldMixin
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.interactions.models import PublicBarrierNote
@@ -21,6 +21,21 @@ from hashid_field.rest import HashidSerializerCharField
 from rest_framework import serializers
 
 PUBLIC_ID = "barriers.PublicBarrier.id"
+
+
+class PublicBarrierLightTouchReviewsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PublicBarrierLightTouchReviews
+        fields = (
+            "content_team_approval",
+            "has_content_changed_since_approval",
+            "hm_trade_commissioner_approval",
+            "hm_trade_commissioner_approval_enabled",
+            "government_organisation_approvals",
+            "missing_government_organisation_approvals",
+            "enabled",
+        )
+        read_only_fields = ("missing_government_organisation_approvals", "enabled")
 
 
 class NestedPublicBarrierSerializer(serializers.ModelSerializer):
@@ -83,6 +98,7 @@ class PublicBarrierSerializer(
     internal_id = serializers.SerializerMethodField()
     latest_note = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(source="internal_created_on")
+    light_touch_reviews = PublicBarrierLightTouchReviewsSerializer()
 
     class Meta:
         model = PublicBarrier
@@ -135,6 +151,7 @@ class PublicBarrierSerializer(
             "internal_government_organisations",
             "latest_note",
             "reported_on",
+            "light_touch_reviews",
         )
         read_only_fields = (
             "id",
