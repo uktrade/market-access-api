@@ -14,40 +14,70 @@ def get_django_user_by_sso_user_id(sso_user_id):
     except Profile.DoesNotExist:
         sso_user = sso.get_user_details_by_id(sso_user_id)
         email = sso_user.get("email")
-        contact_email = sso_user.get("contact_email") or email
         first_name = sso_user.get("first_name")
         last_name = sso_user.get("last_name")
+
         try:
-            user = UserModel.objects.get(username=email)
-            user.email = contact_email
+            user = UserModel.objects.get(
+                username=sso_user["email_user_id"],
+            )
+            user.email = email
             user.first_name = first_name
             user.last_name = last_name
             user.save()
         except UserModel.DoesNotExist:
             user = UserModel(
-                username=email,
-                email=contact_email,
+                username=sso_user["email_user_id"],
+                email=email,
                 first_name=first_name,
                 last_name=last_name,
             )
             user.save()
+
+        user.profile.sso_email_user_id = sso_user["email_user_id"]
         user.profile.sso_user_id = sso_user_id
         user.profile.save()
+
     return user
 
 
 def update_user_profile(user, auth_token):
     context = {"token": auth_token}
     sso_user = sso.get_logged_in_user_details(context)
-    email = sso_user.get("email")
-    user.username = email
-    user.email = sso_user.get("contact_email") or email
+    user.username = sso_user.get("email_user_id")
+    user.email = sso_user.get("email")
     user.first_name = sso_user["first_name"]
     user.last_name = sso_user["last_name"]
     user.save()
     # Profile
     user.profile.sso_user_id = sso_user["user_id"]
+    user.profile.sso_email_user_id = sso_user["email_user_id"]
     user.profile.save()
+
+
+def update_user_with_sso_dict(user, sso_user):
+    user.username = sso_user.get("email_user_id")
+    user.email = sso_user.get("email")
+    user.first_name = sso_user["first_name"]
+    user.last_name = sso_user["last_name"]
+
+    # Profile
+    user.profile.sso_user_id = sso_user["user_id"]
+    user.profile.sso_email_user_id = sso_user["email_user_id"]
+
+    user.save()
+
+
+def update_user_profile_user_id(user, user_id):
+    sso_user = sso.get_user_details_by_id(user_id)
+    if not sso_user:
+        raise LookupError(f"Bad SSO user_id. This ID does not exists: {user_id}")
+
+    if UserModel.objects.filter(username=sso_user.get("email_user_id")).exists():
+        raise LookupError(
+            f"A user with username {sso_user.get('email_user_id')} already exists"
+        )
+    return update_user_with_sso_dict(user, sso_user)
 
 
 def has_profile(user):
