@@ -1293,11 +1293,14 @@ class BarrierFilterSet(django_filters.FilterSet):
     def team_barriers(self, queryset, name, value):
         if value:
             current_user = self.get_user()
+            
             return (
                 queryset.filter(
                     Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
                 )
-                .exclude(created_by=current_user)
+                .exclude(
+                    Q(created_by=current_user) & Q(barrier_team__user=current_user) & Q(barrier_team__role__ne="Owner")
+                )
                 .distinct()
             )
         return queryset
