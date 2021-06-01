@@ -46,7 +46,7 @@ MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
 class Stage(models.Model):
-    """ Reporting workflow stages  """
+    """Reporting workflow stages"""
 
     code = models.CharField(max_length=4)
     description = models.CharField(max_length=MAX_LENGTH)
@@ -57,7 +57,7 @@ class Stage(models.Model):
 
 
 class ReportManager(models.Manager):
-    """ Manage reports within the model, with draft=True """
+    """Manage reports within the model, with draft=True"""
 
     def get_queryset(self):
         return super().get_queryset().filter(Q(draft=True) & Q(archived=False))
@@ -206,7 +206,7 @@ class BarrierHistoricalModel(models.Model):
 
 
 class Barrier(FullyArchivableMixin, BaseModel):
-    """ Barrier Instance, converted from a completed and accepted Report """
+    """Barrier Instance, converted from a completed and accepted Report"""
 
     id = models.UUIDField(primary_key=True, default=uuid4)
     code = models.CharField(
@@ -399,7 +399,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         )
 
     def current_progress(self):
-        """ checks current dataset to see how far reporting workflow is done """
+        """checks current dataset to see how far reporting workflow is done"""
         progress_list = []
         for stage in REPORT_CONDITIONS:
             stage_code, status = report_stage_status(self, stage)
@@ -442,7 +442,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def government_organisations(self):
-        """ Only returns government organisations """
+        """Only returns government organisations"""
         return self.organisations.filter(
             organisation_type__in=GOVERNMENT_ORGANISATION_TYPES
         )
@@ -459,7 +459,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         self.organisations.set(non_gov_orgs_qs | queryset)
 
     def submit_report(self, submitted_by=None):
-        """ submit a report, convert it into a barrier """
+        """submit a report, convert it into a barrier"""
         for validator in [validators.ReportReadyForSubmitValidator()]:
             validator.set_instance(self)
             validator()
@@ -895,7 +895,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @public_view_status.setter
     def public_view_status(self, value):
-        """ Set relevant date automatically """
+        """Set relevant date automatically"""
         status = int(value)
         self._public_view_status = status
         # auto update date fields based on the new status
@@ -1063,7 +1063,7 @@ class BarrierUserHit(models.Model):
 
 
 class BarrierReportStage(BaseModel):
-    """ Many to Many between report and workflow stage """
+    """Many to Many between report and workflow stage"""
 
     barrier = models.ForeignKey(
         Barrier, related_name="progress", on_delete=models.CASCADE
@@ -1216,7 +1216,9 @@ class BarrierFilterSet(django_filters.FilterSet):
                 location_values.append(location)
 
         # Add all countries within the overseas regions
-        for country in cache.get_or_set("dh_countries", metadata_utils.get_countries, 72000):
+        for country in cache.get_or_set(
+            "dh_countries", metadata_utils.get_countries, 72000
+        ):
             if (
                 country["overseas_region"]
                 and country["overseas_region"]["id"] in location_values
@@ -1256,7 +1258,9 @@ class BarrierFilterSet(django_filters.FilterSet):
             if "country_trading_bloc" in self.data:
                 trading_bloc_countries = []
                 for trading_bloc in self.data["country_trading_bloc"].split(","):
-                    trading_bloc_countries += metadata_utils.get_trading_bloc_country_ids(trading_bloc)
+                    trading_bloc_countries += (
+                        metadata_utils.get_trading_bloc_country_ids(trading_bloc)
+                    )
 
                 tb_queryset = tb_queryset | queryset.filter(
                     country__in=trading_bloc_countries,
@@ -1522,7 +1526,9 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     def region_filter(self, queryset, name, value):
         countries = set()
         for region_id in value:
-            countries.update(metadata_utils.get_country_ids_by_overseas_region(region_id))
+            countries.update(
+                metadata_utils.get_country_ids_by_overseas_region(region_id)
+            )
         return queryset.filter(barrier__country__in=countries)
 
     def status_filter(self, queryset, name, value):
