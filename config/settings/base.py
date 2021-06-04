@@ -233,7 +233,9 @@ if SSO_ENABLED:
     OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"] = env(
         "RESOURCE_SERVER_USER_INTROSPECT_URL"
     )
-    OAUTH2_PROVIDER["OAUTH2_VALIDATOR_CLASS"] = "api.user.authentication.SSOAuthValidator"
+    OAUTH2_PROVIDER[
+        "OAUTH2_VALIDATOR_CLASS"
+    ] = "api.user.authentication.SSOAuthValidator"
 
 # DRF
 REST_FRAMEWORK = {
