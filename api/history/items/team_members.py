@@ -9,7 +9,17 @@ from django.core.exceptions import ObjectDoesNotExist
 from .base import BaseHistoryItem
 
 # Getting my User object prepared
-backup_user = get_user_model().objects.get(email="ciaran.doherty@digital.trade.gov.uk")
+try:
+    backup_user = get_user_model().objects.get(
+        email="ciaran.doherty@digital.trade.gov.uk"
+    )
+except ObjectDoesNotExist:
+    # If I do not exist we are using a test system
+    # make a fake user with my email
+    get_user_model().objects.get_or_create(
+        email="ciaran.doherty@digital.trade.gov.uk",
+        username="ciaran.doherty@digital.trade.gov.uk",
+    )
 
 
 class TeamMemberHistoryItem(BaseHistoryItem):
