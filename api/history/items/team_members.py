@@ -10,18 +10,24 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .base import BaseHistoryItem
 
+AuthUser = get_user_model()
 # Getting my User object prepared
 try:
-    backup_user = get_user_model().objects.get(
-        email="ciaran.doherty@digital.trade.gov.uk"
-    )
+    obj = AuthUser.objects.filter(email="ciaran.doherty@digital.trade.gov.uk")
+    if obj.exists():
+        backup_user = obj.first()
+    else:
+        backup_user, _ = AuthUser.objects.get_or_create(
+            email="ciaran.doherty@digital.trade.gov.uk",
+            username="ciaran.doherty@digital.trade.gov.uk",
+        )
 except Exception as exc:
     # If I do not exist we are using a test system
     # make a fake user with my email
     logging.warning(
         f"Bad backup history user 'ciaran.doherty@digital.trade.gov.uk' did not exist. Got error {exc}"
     )
-    backup_user, _ = get_user_model().objects.get_or_create(
+    backup_user, _ = AuthUser.objects.get_or_create(
         email="ciaran.doherty@digital.trade.gov.uk",
         username="ciaran.doherty@digital.trade.gov.uk",
     )
