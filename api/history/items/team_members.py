@@ -3,6 +3,8 @@ From the fix for MAR-919 we have left 79 orphaned histories.
 To fix this, the orphaned histories are a set to have the default user (me)
 I can't help with any of histories but I can  stop the page crashing.
 """
+import logging
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -13,10 +15,13 @@ try:
     backup_user = get_user_model().objects.get(
         email="ciaran.doherty@digital.trade.gov.uk"
     )
-except ObjectDoesNotExist:
+except Exception as exc:
     # If I do not exist we are using a test system
     # make a fake user with my email
-    get_user_model().objects.get_or_create(
+    logging.warning(
+        f"Bad backup history user 'ciaran.doherty@digital.trade.gov.uk' did not exist. Got error {exc}"
+    )
+    backup_user, _ = get_user_model().objects.get_or_create(
         email="ciaran.doherty@digital.trade.gov.uk",
         username="ciaran.doherty@digital.trade.gov.uk",
     )
