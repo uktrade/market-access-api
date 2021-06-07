@@ -83,6 +83,7 @@ LOCAL_APPS = [
     "api.dataset",
     "api.history",
     "api.wto",
+    "api.action_plans",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -243,7 +244,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 400,
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "oauth2_provider.contrib.rest_framework.OAuth2Authentication"
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+        # 'rest_framework.authentication.SessionAuthentication',
     ],
     "DEFAULT_PERMISSION_CLASSES": ["api.core.permissions.IsAuthenticated"],
 }
@@ -280,11 +282,7 @@ if HAWK_ENABLED:
     )
 
     HAWK_CREDENTIALS = {
-        HAWK_ID: {
-            "id": HAWK_ID,
-            "key": HAWK_KEY,
-            "algorithm": HAWK_ALGORITHM,
-        },
+        HAWK_ID: {"id": HAWK_ID, "key": HAWK_KEY, "algorithm": HAWK_ALGORITHM,},
         DATAHUB_HAWK_ID: {
             "id": DATAHUB_HAWK_ID,
             "key": DATAHUB_HAWK_KEY,
@@ -330,13 +328,8 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "ecs_formatter": {
-            "()": ECSFormatter,
-        },
-        "simple": {
-            "format": "{asctime} {levelname} {message}",
-            "style": "{",
-        },
+        "ecs_formatter": {"()": ECSFormatter,},
+        "simple": {"format": "{asctime} {levelname} {message}", "style": "{",},
     },
     "handlers": {
         "ecs": {

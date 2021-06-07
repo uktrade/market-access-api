@@ -11,6 +11,7 @@ from api.interactions.urls import urlpatterns as interaction_urls
 from api.metadata.views import MetadataView
 from api.user.urls import urlpatterns as user_urls
 from api.user.views import UserDetail, who_am_i
+from api.action_plans.urls import urlpatterns as action_plans_urls
 
 urlpatterns = []
 
@@ -37,4 +38,5 @@ urlpatterns += (
     + team_urls
     + assessment_urls
     + user_urls
+    + action_plans_urls
 )
