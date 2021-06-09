@@ -1,5 +1,9 @@
 import logging
 
+from django.contrib.auth import get_user_model
+
+UserModel = get_user_model()
+
 
 class SetAuthUserMiddleware:
     """
@@ -14,11 +18,11 @@ class SetAuthUserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        logging.warning(f"STUB: {request.environ['HTTP_AUTHORIZATION']}")
+        token = request.environ["HTTP_AUTHORIZATION"].split(" ")[-1]
+        logging.warning(f"STUB:token {token}")
         try:
-            logging.warning(f"STUB: {request.auth.token}")
+            user = UserModel.objects.get(profile__user_id=token)
+            logging.warning(f"STUB:user {user}")
         except Exception as exc:
-            logging.warning(f"STUB: WARNING {exc}")
-        # for key in request.__dict__.keys():
-        #     logging.warning(f"STUB:{key} {getattr(request, key)}")
+            logging.warning(f"STUB ERROR {exc}")
         return self.get_response(request)
