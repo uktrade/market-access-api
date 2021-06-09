@@ -70,7 +70,7 @@ class ActionPlanTaskViewSet(viewsets.ModelViewSet):
         )
         client.send_email_notification(
             email_address=django_user.email,
-            template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,
+            template_id=settings.NOTIFY_ACTION_PLAN_NOTIFCATION_ID,
             personalisation={
                 "first_name": django_user.first_name,
                 "mentioned_by": f"{django_user.first_name} {django_user.last_name}",
