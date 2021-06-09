@@ -21,7 +21,7 @@ class SetAuthUserMiddleware:
         token = request.environ["HTTP_AUTHORIZATION"].split(" ")[-1]
         logging.warning(f"STUB:token {token}")
         try:
-            user = UserModel.objects.get(profile__user_id=token)
+            user = UserModel.objects.get(profile__sso_user_id=token)
             logging.warning(f"STUB:user {user}")
         except Exception as exc:
             logging.warning(f"STUB ERROR {exc}")
