@@ -14,6 +14,11 @@ class SetAuthUserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        logging.warning("STUB: {request.environ['HTTP_AUTHORIZATION']}")
+        try:
+            logging.warning("STUB: {request.auth.token}")
+        except Exception as exc:
+            logging.warning("STUB: WARNING {exc}")
         for key in request.__dict__:
             logging.warning(f"STUB:{key} {getattr(request, key)}")
         return self.get_response(request)
