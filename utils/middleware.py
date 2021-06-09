@@ -15,5 +15,5 @@ class SetAuthUserMiddleware:
 
     def __call__(self, request):
         for key in request.__dict__:
-            logging.warning(f"STUB:{key} {getattr(request, key).__dict__}")
+            logging.warning(f"STUB:{key} {getattr(request, key)}")
         return self.get_response(request)
