@@ -103,6 +103,7 @@ MIDDLEWARE = [
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "hawkrest.middleware.HawkResponseMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "utils.middleware.SetAuthUserMiddleware",
     "django_audit_log_middleware.AuditLogMiddleware",
 ]
 

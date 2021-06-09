@@ -72,14 +72,14 @@ class SSOAuthValidator(OAuth2Validator):
 
         try:
             content = response.json()
+            if "mocksso:8888" in introspection_url:
+                content["email_user_id"] = "ciaran.doherty@digital.trade.gov.uk"
+                content["email"] = "ciaran.doherty@digital.trade.gov.uk"
         except ValueError:
             log.exception("Introspection: Failed to parse response as json")
             return None
 
-        if not content["active"]:
-            return None
-
-        if "active" not in content:
+        if not content.get("active", None):
             return None
 
         max_caching_time = datetime.now() + timedelta(
