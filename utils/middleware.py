@@ -14,5 +14,5 @@ class SetAuthUserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        logging.warning(f"STUB:1 |{request.user}| |{request.session}|")
+        logging.warning(f"STUB:1 |{request.user}| |{request.session.__dict__}|")
         return self.get_response(request)
