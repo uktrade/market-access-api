@@ -5,8 +5,6 @@ from rest_framework import serializers
 
 class ActionPlanTaskSerializer(serializers.ModelSerializer):
 
-    # assigned_to = UserListSerializer(many=False)
-
     assigned_to_email = serializers.SerializerMethodField()
     action_type_display = serializers.SerializerMethodField()
 
