@@ -19,6 +19,6 @@ class SetAuthUserMiddleware:
             logging.warning("STUB: {request.auth.token}")
         except Exception as exc:
             logging.warning("STUB: WARNING {exc}")
-        for key in request.__dict__.keys():
-            logging.warning(f"STUB:{key} {getattr(request, key)}")
+        # for key in request.__dict__.keys():
+        #     logging.warning(f"STUB:{key} {getattr(request, key)}")
         return self.get_response(request)
