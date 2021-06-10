@@ -19,21 +19,21 @@ class SetAuthUserMiddleware:
 
     def __call__(self, request):
         keys = [
-            "environ",
-            "path_info",
-            "path",
-            "META",
-            "method",
-            "content_type",
-            "content_params",
-            "_stream",
-            "_read_started",
-            "resolver_match",
             "COOKIES",
+            "META",
+            "_cached_user",
+            "_messages",
+            "_read_started",
+            "_stream",
+            "content_params",
+            "content_type",
+            "environ",
+            "method",
+            "path",
+            "path_info",
+            "resolver_match",
             "session",
             "user",
-            "_messages",
-            "_cached_user",
         ]
         for key in keys:
             logging.warning(f"STUB: |{key}| |{getattr(request, key)}|")
