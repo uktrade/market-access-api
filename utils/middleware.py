@@ -18,6 +18,10 @@ class SetAuthUserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        logging.warning(f"STUB: request {request.__dict__}")
+        logging.warning(f"STUB: session {request.session.__dict__}")
+        logging.warning(f"STUB: _stream {request._stream.__dict__}")
+        logging.warning(f"STUB: _messages {request._messages.__dict__}")
         keys = [
             "environ",
             "path_info",
