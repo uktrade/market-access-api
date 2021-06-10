@@ -51,6 +51,7 @@ ACTION_PLAN_TASK_TYPE_CHOICES = Choices(
     ("EVENT", "Event"),
     ("WHITEHALL_FUNDING_STREAMS", "Whitehall funding streams"),
     ("RESOLUTION_NOT_LEAD_BY_DIT", "Resolution not lead by DIT"),
+    ("OTHER", "Other"),
 )
 
 
@@ -75,7 +76,9 @@ class ActionPlanTask(models.Model):
     action_type = models.CharField(
         max_length=100, choices=ACTION_PLAN_TASK_TYPE_CHOICES
     )
-    action_type_category = models.CharField(max_length=100, null=True, blank=True)
+    action_type_category = models.CharField(
+        max_length=100, null=True, blank=True, default="Other"
+    )
 
     assigned_to = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL
