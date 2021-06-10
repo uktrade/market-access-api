@@ -18,12 +18,35 @@ class SetAuthUserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        keys = "".join([f"|{key}|" for key in request.session.__dict__.keys()])
-        logging.warning(f"STUB: session KEYS {keys}")
-        keys = "".join([f"|{key}|" for key in request._stream.__dict__.keys()])
-        logging.warning(f"STUB: _stream KEYS {keys}")
-        keys = "".join([f"|{key}|" for key in request._messages.__dict__.keys()])
-        logging.warning(f"STUB: _messages KEYS {keys}")
+        sessions_keys = [
+            "_SessionBase__session_key",
+            "accessed",
+            "modified",
+            "serializer",
+            "_session_cache",
+        ]
+        stream_keys = ["stream", "remaining", "buffer", "buf_size"]
+        message_keys = [
+            "request",
+            "_queued_messages",
+            "used",
+            "added_new",
+            "storages",
+            "_used_storages",
+        ]
+
+        for key in sessions_keys:
+            logging.warning(f"STUB:session: |{key}| |{getattr(request, key)}|")
+        for key in stream_keys:
+            logging.warning(f"STUB:stream: |{key}| |{getattr(request, key)}|")
+        for key in message_keys:
+            logging.warning(f"STUB:message: |{key}| |{getattr(request, key)}|")
+        # keys = "".join([f"|{key}|" for key in request.session.__dict__.keys()])  #
+        # logging.warning(f"STUB: session KEYS {sessions_keys}")
+        # keys = "".join([f"|{key}|" for key in request._stream.__dict__.keys()])
+        # logging.warning(f"STUB: _stream KEYS {stream_keys}")
+        # keys = "".join([f"|{key}|" for key in request._messages.__dict__.keys()])
+        # logging.warning(f"STUB: _messages KEYS {message_keys}")
         # keys = [
         #     "environ",
         #     "path_info",
