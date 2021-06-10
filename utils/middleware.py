@@ -19,7 +19,7 @@ class SetAuthUserMiddleware:
 
     def __call__(self, request):
         sessions_keys = [
-            "_SessionBase__session_key",
+            # "_SessionBase__session_key",
             "accessed",
             "modified",
             "serializer",
