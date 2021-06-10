@@ -18,8 +18,25 @@ class SetAuthUserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        keys = "".join([f" |{key}| " for key in request.__dict__.keys()])
-        logging.warning(f"STUB: {keys}")
+        keys = [
+            "environ",
+            "path_info",
+            "path",
+            "META",
+            "method",
+            "content_type",
+            "content_params",
+            "_stream",
+            "_read_started",
+            "resolver_match",
+            "COOKIES",
+            "session",
+            "user",
+            "_messages",
+            "_cached_user",
+        ]
+        for key in keys:
+            logging.warning(f"STUB: |{key}| |{getattr(request, key)}|")
 
         token = request.environ["HTTP_AUTHORIZATION"].split(" ")[-1]
         logging.warning(f"STUB:token {token}")
