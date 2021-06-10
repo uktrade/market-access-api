@@ -18,11 +18,11 @@ class SetAuthUserMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        keys = "".join([f"|key|" for keys in request.session.__dict__.keys()])
+        keys = "".join([f"|{key}|" for key in request.session.__dict__.keys()])
         logging.warning(f"STUB: session KEYS {keys}")
-        keys = "".join([f"|key|" for keys in request._stream.__dict__.keys()])
+        keys = "".join([f"|{key}|" for key in request._stream.__dict__.keys()])
         logging.warning(f"STUB: _stream KEYS {keys}")
-        keys = "".join([f"|key|" for keys in request._messages.__dict__.keys()])
+        keys = "".join([f"|{key}|" for key in request._messages.__dict__.keys()])
         logging.warning(f"STUB: _messages KEYS {keys}")
         # keys = [
         #     "environ",
