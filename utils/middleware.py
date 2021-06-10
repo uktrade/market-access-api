@@ -36,11 +36,13 @@ class SetAuthUserMiddleware:
         ]
 
         for key in sessions_keys:
-            logging.warning(f"STUB:session: |{key}| |{getattr(request, key)}|")
+            logging.warning(f"STUB:session: |{key}| |{getattr(request.session, key)}|")
         for key in stream_keys:
-            logging.warning(f"STUB:stream: |{key}| |{getattr(request, key)}|")
+            logging.warning(f"STUB:stream: |{key}| |{getattr(request._stream, key)}|")
         for key in message_keys:
-            logging.warning(f"STUB:message: |{key}| |{getattr(request, key)}|")
+            logging.warning(
+                f"STUB:message: |{key}| |{getattr(request._messages, key)}|"
+            )
         # keys = "".join([f"|{key}|" for key in request.session.__dict__.keys()])  #
         # logging.warning(f"STUB: session KEYS {sessions_keys}")
         # keys = "".join([f"|{key}|" for key in request._stream.__dict__.keys()])
