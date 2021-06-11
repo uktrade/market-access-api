@@ -29,7 +29,13 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
         return obj.assigned_to.email
 
     def get_action_type_display(self, obj):
-        return f"{obj.get_action_type_display()} - {obj.action_type_category}"
+        action_type = obj.get_action_type_display()
+        action_type_category = obj.action_type_category
+        if not action_type_category:
+            return action_type
+        if (action_type == "Other") and (obj.action_type_category == "Other"):
+            return "Other"
+        return f"{action_type} = {action_type_category}"
 
 
 class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
