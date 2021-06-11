@@ -35,7 +35,7 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
             return action_type
         if (action_type == "Other") and (obj.action_type_category == "Other"):
             return "Other"
-        return f"{action_type} = {action_type_category}"
+        return f"{action_type} - {action_type_category}"
 
 
 class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
