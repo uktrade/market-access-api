@@ -23,6 +23,8 @@ class ActionPlan(models.Model):
         related_name="owned_action_plans",
     )
 
+    current_status = models.TextField(default="", blank=True)
+
 
 class ActionPlanMilestone(models.Model):
 

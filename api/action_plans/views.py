@@ -23,14 +23,59 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 
     lookup_field = "barrier"
 
+    def notify(self, django_user, barrier):
+        barrier_obj = Barrier.objects.get(id=barrier)
+        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+        barrier_url = urllib.parse.urljoin(
+            settings.FRONTEND_DOMAIN, f"/barriers/{barrier}/action_plan"
+        )
+        client.send_email_notification(
+            email_address=django_user.email,
+            template_id=settings.NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID,
+            personalisation={
+                "first_name": django_user.first_name,
+                "mentioned_by": f"{django_user.first_name} {django_user.last_name}",
+                "barrier_number": barrier_obj.code,
+                "barrier_name": barrier_obj.title,
+                "barrier_url": barrier_url,
+            },
+        )
+
     def retrieve(self, request, barrier, *args, **kwargs):
         try:
             instance = self.get_object()
         except Http404 as e:
             barrier = Barrier.objects.get(pk=barrier)
-            instance = ActionPlan(barrier=barrier, owner=barrier.created_by)
+            owner = barrier.barrier_team.get(role="Owner")
+            instance = ActionPlan(barrier=barrier, owner=owner)
             instance.save()
         serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def update(self, request, barrier, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+
+        sso_user_id = self.request.data.get("owner")
+        django_user = None
+        if sso_user_id:
+            django_user = get_django_user_by_sso_user_id(sso_user_id)
+            data = {**request.data, "owner": django_user.id}
+        else:
+            data = request.data
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if django_user:
+            self.notify(django_user, barrier)
+
+        if getattr(instance, "_prefetched_objects_cache", None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
         return Response(serializer.data)
 
 

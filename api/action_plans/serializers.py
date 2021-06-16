@@ -50,9 +50,21 @@ class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
 class ActionPlanSerializer(serializers.ModelSerializer):
 
     milestones = ActionPlanMilestoneSerializer(many=True)
+    owner_email = serializers.SerializerMethodField()
 
     class Meta:
         model = ActionPlan
-        fields = ("id", "barrier", "owner", "milestones")
+        fields = (
+            "id",
+            "barrier",
+            "owner",
+            "milestones",
+            "current_status",
+            "owner_email",
+        )
         lookup_field = "barrier"
+
+    def get_owner_email(self, obj):
+        if obj.owner:
+            return obj.owner.email
 

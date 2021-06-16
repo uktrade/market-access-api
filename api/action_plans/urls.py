@@ -13,7 +13,9 @@ router = DefaultRouter(trailing_slash=False)
 urlpatterns = router.urls + [
     path(
         "barriers/<uuid:barrier>/action_plan",
-        ActionPlanViewSet.as_view({"get": "retrieve"}),
+        ActionPlanViewSet.as_view(
+            {"get": "retrieve", "put": "update", "patch": "partial_update",}
+        ),
         name="action-plans",
     ),
     path(
