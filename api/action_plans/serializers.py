@@ -26,7 +26,8 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
         )
 
     def get_assigned_to_email(self, obj):
-        return obj.assigned_to.email
+        if obj.assigned_to:
+            return obj.assigned_to.email
 
     def get_action_type_display(self, obj):
         action_type = obj.get_action_type_display()
