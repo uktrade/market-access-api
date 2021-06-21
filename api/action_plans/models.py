@@ -24,6 +24,7 @@ class ActionPlan(models.Model):
     )
 
     current_status = models.TextField(default="", blank=True)
+    current_status_last_updated = models.DateTimeField(null=True, blank=True)
 
 
 class ActionPlanMilestone(models.Model):

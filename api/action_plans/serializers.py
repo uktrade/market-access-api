@@ -60,6 +60,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "owner",
             "milestones",
             "current_status",
+            "current_status_last_updated",
             "owner_email",
         )
         lookup_field = "barrier"

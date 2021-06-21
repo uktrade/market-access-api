@@ -70,6 +70,7 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
 
         if django_user:
             self.notify(django_user, barrier)
+            barrier.barrier_team.add(django_user)
 
         if getattr(instance, "_prefetched_objects_cache", None):
             # If 'prefetch_related' has been applied to a queryset, we need to
