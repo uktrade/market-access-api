@@ -6,6 +6,7 @@ from api.action_plans.serializers import (
     ActionPlanTaskSerializer,
 )
 from api.barriers.models import Barrier
+from api.collaboration.models import TeamMember
 from api.user.helpers import get_django_user_by_sso_user_id
 from django.conf import settings
 from django.http import Http404
@@ -71,7 +72,10 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
         if django_user:
             self.notify(django_user, barrier)
             barrier = Barrier.objects.get(pk=barrier)
-            barrier.barrier_team.add(django_user)
+            if not barrier.barrier_team.filter(user=django_user).exists():
+                TeamMember.objects.create(
+                    barrier=barrier, user=django_user, role=TeamMember.CONTRIBUTOR,
+                )
 
         if getattr(instance, "_prefetched_objects_cache", None):
             # If 'prefetch_related' has been applied to a queryset, we need to
