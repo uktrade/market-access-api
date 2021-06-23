@@ -65,7 +65,7 @@ def generate_s3_and_send_email(
         email_address=email,
         template_id=settings.NOTIFY_GENERATED_FILE_ID,
         personalisation={
-            "first_name": first_name,
+            "first_name": first_name.capitalize(),
             "file_name": s3_filename,
             "file_url": presigned_url,
         },
