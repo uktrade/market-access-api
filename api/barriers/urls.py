@@ -9,6 +9,7 @@ from api.barriers.views import (
     BarrierList,
     BarrierListExportView,
     BarrierListS3Download,
+    BarrierListS3EmailFile,
     BarrierOpenActionRequired,
     BarrierOpenInProgress,
     BarrierReportDetail,
@@ -31,6 +32,11 @@ router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barri
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path("barriers/export", BarrierListExportView.as_view(), name="barriers-export"),
+    path(
+        "barriers/s3-email",
+        BarrierListS3EmailFile.as_view(),
+        name="barriers-s3-email",
+    ),
     path(
         "barriers/s3-download",
         BarrierListS3Download.as_view(),
