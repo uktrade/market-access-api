@@ -292,6 +292,7 @@ def _handle_mention_notification(
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     for email in notification_emails:
         first_name: str = email.split(".")[0]
+        first_name = first_name.capitalize()
         client.send_email_notification(
             email_address=email,
             template_id=settings.NOTIFY_BARRIER_NOTIFCATION_ID,

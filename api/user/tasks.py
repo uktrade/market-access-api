@@ -53,7 +53,7 @@ def send_email(user, saved_searches):
         email_address=user.email,
         template_id=settings.NOTIFY_SAVED_SEARCHES_TEMPLATE_ID,
         personalisation={
-            "first_name": user.first_name,
+            "first_name": str(user.first_name).capitalize(),
             "saved_searches": get_saved_searches_markdown(saved_searches),
             "dashboard_link": settings.DMAS_BASE_URL,
         },
