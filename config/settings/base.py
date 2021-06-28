@@ -143,6 +143,7 @@ AUTH_USER_MODEL = "auth.User"
 
 # django-oauth-toolkit settings
 AUTHENTICATION_BACKENDS = [
+    "oauth2_provider.backends.OAuth2Backend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
