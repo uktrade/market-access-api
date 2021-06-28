@@ -4,8 +4,6 @@ from csv import DictWriter
 from datetime import datetime
 from decimal import Decimal
 
-from django.http import StreamingHttpResponse
-
 from api.core.utils import EchoUTF8
 
 CSV_CONTENT_TYPE = "text/csv; charset=utf-8"
@@ -36,19 +34,6 @@ def csv_iterator(rows, field_titles):
         # contents (while re-raising the exception).
         yield INCOMPLETE_CSV_MESSAGE
         raise
-
-
-def create_csv_response(rows, field_titles, filename):
-    """Creates a CSV HTTP response."""
-    # Note: FileResponse is not used as it is designed for file-like objects, while we are using
-    # a generator here.
-    response = StreamingHttpResponse(
-        csv_iterator(rows, field_titles),
-        content_type=CSV_CONTENT_TYPE,
-    )
-
-    response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
-    return response
 
 
 def _transform_csv_row(row):
