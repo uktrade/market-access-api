@@ -1,6 +1,6 @@
 import json
 from decimal import Decimal
-from typing import List
+from typing import List, Dict
 
 import requests
 
@@ -34,6 +34,15 @@ class ComtradeClient:
 
     def __init__(self, cache=None):
         self.cache = cache
+        data = requests.get(self.partner_areas_url).json()
+        self.reporter_areas: Dict[str, str] = {
+            result["text"]: result["id"] for result in data["results"]
+        }
+
+        data = requests.get(self.partner_areas_url).json()
+        self.reporter_areas: Dict[str, str] = {
+            result["text"]: result["id"] for result in data["results"]
+        }
 
     def get(
         self,
@@ -170,26 +179,7 @@ class ComtradeClient:
 
         return {"r": ",".join(reporter_ids)}
 
-    @property
-    def partner_areas(self):
-        if self._partner_areas is None:
-            data = self.fetch(self.partner_areas_url)
-            self._partner_areas = {
-                result["text"]: result["id"] for result in data["results"]
-            }
-        return self._partner_areas
-
-    @property
-    def reporter_areas(self):
-        if self._reporter_areas is None:
-            data = self.fetch(self.reporter_areas_url)
-            self._reporter_areas = {
-                result["text"]: result["id"] for result in data["results"]
-            }
-        return self._reporter_areas
-
     def get_valid_years(self, target_year, country1, country2):
-
         valid_years = []
 
         for year in range(target_year, 2000, -1):
