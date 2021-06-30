@@ -1,13 +1,15 @@
+import json
 import os
 from typing import Dict
+from unittest.mock import patch
 
 import pytest
-import simplejson as json
+from jsondiff import diff
+
 from api.assessment.automate.calculator import AssessmentCalculator
 from api.assessment.automate.comtrade import ComtradeClient
 from api.core.test_utils import APITestMixin
-from jsondiff import diff
-from mock import patch
+
 from tests.assessment.automation.utils import patched_comtrade_fetch
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 
@@ -36,7 +38,6 @@ class TestAssessmentUtils(APITestMixin):
 
     @patch.object(ComtradeClient, "fetch", new=patched_comtrade_fetch)
     def test_assessment_calculator(self):
-
         country_commodity_pairs = [
             {
                 "country": "5961b8be-5d95-e211-a939-e4115bead28a",  # Russia,
