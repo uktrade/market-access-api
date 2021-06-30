@@ -65,6 +65,7 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "simple_history",
     "ordered_model",
+    "django_audit_log_middleware",
 ]
 
 LOCAL_APPS = [
@@ -103,6 +104,7 @@ MIDDLEWARE = [
     "oauth2_provider.middleware.OAuth2TokenMiddleware",
     "hawkrest.middleware.HawkResponseMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "django_audit_log_middleware.AuditLogMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -144,6 +146,7 @@ AUTH_USER_MODEL = "auth.User"
 
 # django-oauth-toolkit settings
 AUTHENTICATION_BACKENDS = [
+    "oauth2_provider.backends.OAuth2Backend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
@@ -163,6 +166,7 @@ NOTIFY_BARRIER_NOTIFCATION_ID = env("NOTIFY_BARRIER_NOTIFCATION_ID")
 NOTIFY_ACTION_PLAN_NOTIFCATION_ID = env("NOTIFY_ACTION_PLAN_NOTIFCATION_ID")
 NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID = env("NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID")
 
+NOTIFY_GENERATED_FILE_ID = env("NOTIFY_GENERATED_FILE_ID")
 # DMAS Frontend
 DMAS_BASE_URL = env("DMAS_BASE_URL")
 
