@@ -90,4 +90,4 @@ class ActionPlanTask(models.Model):
     stakeholders = models.TextField(default="", blank=True)
 
     class Meta:
-        ordering = ("-start_date", "-completion_date")
+        ordering = ("start_date", "completion_date")
