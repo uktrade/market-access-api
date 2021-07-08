@@ -2,6 +2,9 @@ import json
 from decimal import Decimal
 from typing import List, Dict
 
+from django.conf import settings
+from psycopg2 import sql, extras
+import psycopg2
 import requests
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
@@ -15,6 +18,10 @@ class ComtradeClient:
     References:
     https://comtrade.un.org/data/doc/api/#DataRequests
     https://github.com/ropensci/comtradr/blob/c61eb011d604eae1b6d11e0468c6588cd7154b4b/R/ct_search.R
+
+    Update from ticket MAR-1102:
+    This data has been moved into our own databse. The UNs' API has not been brought in
+    So the old API calls here have been move over to a series of DB calls
     """
 
     base_url = "https://comtrade.un.org/api/get"
@@ -33,7 +40,16 @@ class ComtradeClient:
     _reporter_areas = None
 
     def __init__(self, cache=None):
+        self.pg_conn = psycopg2.connect(
+            host=settings.COMTRADE_DB_HOST,
+            database=settings.COMTRADE_DB_NAME,
+            user=settings.COMTRADE_DB_USER,
+            password=settings.COMTRADE_DB_PWORD,
+            port=settings.COMTRADE_DB_PORT,
+            options="-c search_path=un",  # data in un schema not public schema
+        )
         self.cache = cache
+
         data = requests.get(self.partner_areas_url).json()
         self.reporter_areas: Dict[str, str] = {
             result["text"]: result["id"] for result in data["results"]
@@ -53,6 +69,11 @@ class ComtradeClient:
         reporters=None,
         tidy=False,
     ):
+        query = sql.SQL(
+            "SELECT * FROM comtrade__goods WHERE period IN ? AND trade_flow_control IN ? partner_code IN ? AND reporter_code IN ?"
+        )
+        with self.pg_conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            pass
         if isinstance(commodity_codes, str):
             commodity_codes = (commodity_codes.lower(),)
 
