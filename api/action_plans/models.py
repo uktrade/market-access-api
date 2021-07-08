@@ -7,6 +7,11 @@ from model_utils.choices import Choices
 
 User = get_user_model()
 
+ACTION_PLAN_RAG_STATUS_CHOICES = Choices(
+    ("ON_TRACK", "On track"),
+    ("RISK_OF_DELAY", "Risk of delay"),
+    ("DELAYED", "Delayed"),
+)
 
 class ActionPlan(models.Model):
 
@@ -25,6 +30,7 @@ class ActionPlan(models.Model):
 
     current_status = models.TextField(default="", blank=True)
     current_status_last_updated = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=100, null=True, blank=True, choices=ACTION_PLAN_RAG_STATUS_CHOICES)
 
 
 class ActionPlanMilestone(models.Model):
