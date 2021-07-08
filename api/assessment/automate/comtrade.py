@@ -77,75 +77,12 @@ class ComtradeClient:
         if isinstance(commodity_codes, str):
             commodity_codes = (commodity_codes.lower(),)
 
-        # Restrict to 5 commodity codes per API call
-        if len(commodity_codes) > 5:
-            return self.get(
-                years=years,
-                trade_direction=trade_direction,
-                commodity_codes=commodity_codes[:5],
-                partners=partners,
-                reporters=reporters,
-                tidy=tidy,
-            ) + self.get(
-                years=years,
-                trade_direction=trade_direction,
-                commodity_codes=commodity_codes[5:],
-                partners=partners,
-                reporters=reporters,
-                tidy=tidy,
-            )
-
-        params = self.get_params(
-            years, trade_direction, commodity_codes, partners, reporters
-        )
-
-        querystring = "&".join([f"{k}={v}" for k, v in params.items()])
-        url = f"{self.base_url}?{querystring}"
         data = self.fetch(url)
         dataset = data["dataset"]
 
         if tidy:
             return self.tidytrade(dataset)
         return dataset
-
-    def fetch(self, url):
-        if self.cache:
-            cache_key = f"comtrade-api:{url}"
-            data = self.cache.get(cache_key)
-            if data:
-                return data
-
-        response = requests.get(url)
-        try:
-            data = response.json()
-        except json.decoder.JSONDecodeError:
-            # try to handle - Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)
-            data = json.loads(response.content.decode("utf-8-sig"))
-
-        if self.cache:
-            self.cache.set(cache_key, data, 7200)
-        return data
-
-    def get_params(
-        self,
-        years=None,
-        trade_direction=None,
-        commodity_codes=None,
-        partners=None,
-        reporters=None,
-    ):
-        params = {"fmt": "json"}
-        if years:
-            params.update(self.get_date_params(years))
-        if trade_direction:
-            params.update(self.get_trade_direction_params(trade_direction))
-        if commodity_codes:
-            params.update(self.get_commodity_codes_params(commodity_codes))
-        if partners:
-            params.update(self.get_partners_params(partners))
-        if reporters:
-            params.update(self.get_reporters_params(reporters))
-        return params
 
     def tidytrade(self, rows):
         output = []
