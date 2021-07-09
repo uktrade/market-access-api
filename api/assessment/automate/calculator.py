@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import List
 
 from api.assessment.automate.exceptions import CountryYearlyDataNotFound
 
@@ -14,17 +15,12 @@ logger = logging.getLogger(__name__)
 
 class AssessmentCalculator:
     _client = None
-    warnings = []
+    warnings: List[str] = []
     version = "1.01"
 
     def __init__(self, cache=None):
         self.cache = cache
-
-    @property
-    def client(self):
-        if self._client is None:
-            self._client = ComtradeClient(cache=self.cache)
-        return self._client
+        self.client = ComtradeClient(cache=self.cache)
 
     def get_year_range(self, country1, country2, year=None):
         use_most_recent = year is None
