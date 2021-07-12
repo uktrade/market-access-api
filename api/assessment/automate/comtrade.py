@@ -1,10 +1,8 @@
-import json
 from decimal import Decimal
 from itertools import chain
 from typing import Dict, List, Tuple
 
 import psycopg2
-import requests
 from django.conf import settings
 from psycopg2 import extras, sql
 
