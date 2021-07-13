@@ -31,7 +31,7 @@ class ActionPlan(models.Model):
     current_status = models.TextField(default="", blank=True)
     current_status_last_updated = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=100, null=True, blank=True, choices=ACTION_PLAN_RAG_STATUS_CHOICES)
-
+    strategic_context = models.TextField(default="", blank=True)
 
 class ActionPlanMilestone(models.Model):
 
@@ -41,7 +41,7 @@ class ActionPlanMilestone(models.Model):
     )
 
     objective = models.TextField()
-    completion_date = models.DateField()
+    completion_date = models.DateField(null=True, blank=True)
 
 
 ACTION_PLAN_TASK_CHOICES = Choices(
@@ -94,6 +94,7 @@ class ActionPlanTask(models.Model):
     )
 
     stakeholders = models.TextField(default="", blank=True)
+    outcome = models.TextField(default="", blank=True)
 
     class Meta:
         ordering = ("start_date", "completion_date")

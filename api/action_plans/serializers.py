@@ -23,6 +23,7 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
             "action_type_display",
             "assigned_to",
             "assigned_to_email",
+            "outcome",
         )
 
     def get_assigned_to_email(self, obj):
@@ -64,6 +65,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "current_status_last_updated",
             "owner_email",
             "status",
+            "strategic_context",
         )
         lookup_field = "barrier"
 
