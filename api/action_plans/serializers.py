@@ -24,6 +24,7 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
             "assigned_to",
             "assigned_to_email",
             "outcome",
+            "progress",
         )
 
     def get_assigned_to_email(self, obj):

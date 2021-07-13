@@ -13,6 +13,7 @@ ACTION_PLAN_RAG_STATUS_CHOICES = Choices(
     ("DELAYED", "Delayed"),
 )
 
+
 class ActionPlan(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -30,8 +31,11 @@ class ActionPlan(models.Model):
 
     current_status = models.TextField(default="", blank=True)
     current_status_last_updated = models.DateTimeField(null=True, blank=True)
-    status = models.CharField(max_length=100, null=True, blank=True, choices=ACTION_PLAN_RAG_STATUS_CHOICES)
+    status = models.CharField(
+        max_length=100, null=True, blank=True, choices=ACTION_PLAN_RAG_STATUS_CHOICES
+    )
     strategic_context = models.TextField(default="", blank=True)
+
 
 class ActionPlanMilestone(models.Model):
 
@@ -95,6 +99,7 @@ class ActionPlanTask(models.Model):
 
     stakeholders = models.TextField(default="", blank=True)
     outcome = models.TextField(default="", blank=True)
+    progress = models.TextField(default="", blank=True)
 
     class Meta:
         ordering = ("start_date", "completion_date")
