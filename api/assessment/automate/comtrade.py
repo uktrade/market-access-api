@@ -129,18 +129,20 @@ class ComtradeClient:
 
         return reporter_ids
 
-    def get_valid_years(self, target_year, country1, country2):
-        valid_years = []
+    def get_valid_years(
+        self, target_year: str, country1: str, country2: str
+    ) -> List[str]:
+        valid_years: List[str] = []
 
-        for year in range(target_year, 2000, -1):
-            data = self.get(
-                years=[year],
+        for year in range(int(target_year), 2000, -1):
+            data: List[Dict[str, str]] = self.get(
+                years=[str(year)],
                 trade_direction=("imports", "exports"),
                 commodity_codes="TOTAL",
                 reporters=(country1, country2),
                 partners="World",
             )
-            years = [item["yr"] for item in data]
+            years: List[str] = [item["yr"] for item in data]
 
             if len(years) == 4 and all(y == year for y in years):
                 valid_years.append(year)
@@ -150,9 +152,11 @@ class ComtradeClient:
 
         return valid_years
 
-    def tidytrade(self, rows):
-        output = []
+    def tidytrade(self, rows: Dict[str, str]) -> List[Dict[str, str]]:
+        output: List[Dict[str, str]] = []
         for row in rows:
-            new_row = {value: row.get(key) for key, value in self.field_mapping.items()}
+            new_row: Dict[str, str] = {
+                value: row.get(key) for key, value in self.field_mapping.items()
+            }
             output.append(new_row)
         return output
