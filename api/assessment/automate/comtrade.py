@@ -34,14 +34,12 @@ class ComtradeClient:
         "commodity": "cmdDescE",
         "trade_value_usd": "TradeValue",
     }
-    _partner_areas = None
-    _reporter_areas = None
 
     def __init__(self, cache=None):
         self.cache = cache
 
         data: dict = requests.get(self.partner_areas_url).json()
-        self.reporter_areas: Dict[str, str] = {
+        self.partner_areas: Dict[str, str] = {
             result["text"]: result["id"] for result in data["results"]
         }
 
