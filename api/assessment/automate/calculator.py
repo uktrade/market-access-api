@@ -1,6 +1,6 @@
 import datetime
 import logging
-from typing import List
+from typing import List, Optional
 
 from api.assessment.automate.exceptions import CountryYearlyDataNotFound
 
@@ -22,13 +22,15 @@ class AssessmentCalculator:
         self.cache = cache
         self.client = ComtradeClient(cache=self.cache)
 
-    def get_year_range(self, country1, country2, year=None):
-        use_most_recent = year is None
+    def get_year_range(
+        self, country1: str, country2: str, year: Optional[str] = None
+    ) -> List[str]:
+        use_most_recent: bool = year is None
         if use_most_recent:
             # The most recent year for which annual data may be available on Comtrade
-            year = datetime.datetime.now().year - 1
+            year = str(datetime.datetime.now().year - 1)
 
-        valid_years = self.client.get_valid_years(
+        valid_years: List[str] = self.client.get_valid_years(
             year,
             get_comtrade_country_name(country1),
             get_comtrade_country_name(country2),
