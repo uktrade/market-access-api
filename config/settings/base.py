@@ -148,12 +148,13 @@ COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="password")
 DATABASES = {
     "default": dj_database_url.config(env="DATABASE_URL", default=""),
     "comtrade": {
-        "host": COMTRADE_DB_HOST,
-        "database": COMTRADE_DB_NAME,
-        "user": COMTRADE_DB_USER,
-        "password": COMTRADE_DB_PWORD,
-        "port": COMTRADE_DB_PORT,
-        "options": "-c search_path=un",  # data in un schema not public schema
+        "HOST": COMTRADE_DB_HOST,
+        "DATABASE": COMTRADE_DB_NAME,
+        "USER": COMTRADE_DB_USER,
+        "PASSWORD": COMTRADE_DB_PWORD,
+        "PORT": COMTRADE_DB_PORT,
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "OPTIONS": "-c search_path=un",  # data in un schema not public schema
     },
 }
 
