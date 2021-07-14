@@ -2,9 +2,9 @@ from decimal import Decimal
 from itertools import chain
 from typing import Dict, List, Tuple
 
-import psycopg2
-from django.conf import settings
+from django.db import connections
 from psycopg2 import extras, sql
+import requests
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates
@@ -38,14 +38,6 @@ class ComtradeClient:
     _reporter_areas = None
 
     def __init__(self, cache=None):
-        self.pg_conn = psycopg2.connect(
-            host=settings.COMTRADE_DB_HOST,
-            database=settings.COMTRADE_DB_NAME,
-            user=settings.COMTRADE_DB_USER,
-            password=settings.COMTRADE_DB_PWORD,
-            port=settings.COMTRADE_DB_PORT,
-            options="-c search_path=un",  # data in un schema not public schema
-        )
         self.cache = cache
 
         data: dict = requests.get(self.partner_areas_url).json()
@@ -80,7 +72,9 @@ class ComtradeClient:
             "SELECT *, 'TOTAL' as commodity_code FROM comtrade__goods WHERE "
             "period IN ? AND trade_flow_code IN ? partner_code IN ? AND reporter_code IN ?"
         )
-        with self.pg_conn.cursor(cursor_factory=extras.RealDictCursor) as cur:
+        with connections["my_db_alias"].cursor(
+            cursor_factory=extras.RealDictCursor
+        ) as cur:
             cur.execute(query, [period, trade_flow_code, partner_code, reporter_code])
             data = cur.fetchall()
 

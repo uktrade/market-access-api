@@ -135,9 +135,27 @@ if SENTRY_DSN:
         integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
     )
 
+COMTRADE_DB_HOST = env("COMTRADE_DB_HOST", default="localhost")
+COMTRADE_DB_NAME = env(
+    "COMTRADE_DB_NAME", default="rdsbroker_a6496fe4_2087_486c_a5ac_ca452e2e1b63"
+)
+COMTRADE_DB_PORT = env("COMTRADE_DB_PORT", default="9999")
+COMTRADE_DB_USER = env("COMTRADE_DB_USER", default="market_access_dev")
+COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="su4aogo1booCeghaic")
+
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
+DATABASES = {
+    "default": dj_database_url.config(env="DATABASE_URL", default=""),
+    "comtrade": {
+        "host": COMTRADE_DB_HOST,
+        "database": COMTRADE_DB_NAME,
+        "user": COMTRADE_DB_USER,
+        "password": COMTRADE_DB_PWORD,
+        "port": COMTRADE_DB_PORT,
+        "options": "-c search_path=un",  # data in un schema not public schema
+    },
+}
 
 HASHID_FIELD_SALT = env("DJANGO_HASHID_FIELD_SALT")
 HASHID_FIELD_ALLOW_INT_LOOKUP = False
@@ -401,13 +419,5 @@ PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = env("PUBLIC_DATA_AWS_SECRET_ACCESS_KEY")
 PUBLIC_DATA_BUCKET = env("PUBLIC_DATA_BUCKET")
 PUBLIC_DATA_BUCKET_REGION = env("PUBLIC_DATA_BUCKET_REGION")
 PUBLIC_DATA_KEY_PREFIX = env("PUBLIC_DATA_KEY_PREFIX")
-
-COMTRADE_DB_HOST = env("COMTRADE_DB_HOST", default="localhost")
-COMTRADE_DB_NAME = env(
-    "COMTRADE_DB_NAME", default="rdsbroker_a6496fe4_2087_486c_a5ac_ca452e2e1b63"
-)
-COMTRADE_DB_PORT = env("COMTRADE_DB_PORT", default="9999")
-COMTRADE_DB_USER = env("COMTRADE_DB_USER", default="market_access_dev")
-COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="su4aogo1booCeghaic")
 
 FRONTEND_DOMAIN = env("FRONTEND_DOMAIN", default="http://localhost:9880")
