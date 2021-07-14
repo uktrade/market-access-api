@@ -10,7 +10,6 @@ from api.assessment.automate.calculator import AssessmentCalculator
 from api.assessment.automate.comtrade import ComtradeClient
 from api.core.test_utils import APITestMixin
 
-from tests.assessment.automation.utils import patched_comtrade_fetch
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 
 pytestmark = [pytest.mark.django_db]
@@ -36,7 +35,6 @@ class TestAssessmentUtils(APITestMixin):
             )
         )
 
-    @patch.object(ComtradeClient, "fetch", new=patched_comtrade_fetch)
     def test_assessment_calculator(self):
         country_commodity_pairs = [
             {
