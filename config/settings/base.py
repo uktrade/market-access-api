@@ -135,13 +135,13 @@ if SENTRY_DSN:
         integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
     )
 
-COMTRADE_DB_HOST = env("COMTRADE_DB_HOST", default="localhost")
+COMTRADE_DB_HOST = env("COMTRADE_DB_HOST", default="comtrade")
 COMTRADE_DB_NAME = env(
     "COMTRADE_DB_NAME", default="rdsbroker_a6496fe4_2087_486c_a5ac_ca452e2e1b63"
 )
-COMTRADE_DB_PORT = env("COMTRADE_DB_PORT", default="9999")
-COMTRADE_DB_USER = env("COMTRADE_DB_USER", default="market_access_dev")
-COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="su4aogo1booCeghaic")
+COMTRADE_DB_PORT = env("COMTRADE_DB_PORT", default="5432")
+COMTRADE_DB_USER = env("COMTRADE_DB_USER", default="password")
+COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="password")
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -154,7 +154,9 @@ DATABASES = {
         "PASSWORD": COMTRADE_DB_PWORD,
         "PORT": COMTRADE_DB_PORT,
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "OPTIONS": "-c search_path=un",  # data in un schema not public schema
+        "OPTIONS": {
+            "options": "-c search_path=un"
+        },  # data in un schema not public schema
     },
 }
 
