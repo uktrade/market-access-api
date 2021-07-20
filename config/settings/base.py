@@ -136,17 +136,16 @@ if SENTRY_DSN:
     )
 
 COMTRADE_DB_HOST = env("COMTRADE_DB_HOST", default="comtrade")
-COMTRADE_DB_NAME = env("COMTRADE_DB_NAME", default="postgres")
-COMTRADE_DB_PORT = env("COMTRADE_DB_PORT", default="5432")
-COMTRADE_DB_USER = env("COMTRADE_DB_USER", default="postgres")
+COMTRADE_DB_NAME = env("COMTRADE_DB_NAME", default="comtrade")
+COMTRADE_DB_PORT = env("COMTRADE_DB_PORT", default="5432")  # the docker mapped port
+COMTRADE_DB_USER = env("COMTRADE_DB_USER", default="comtrade_user")
 COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="postgres")
-COMTRADE_DB = "comtrade"
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 DATABASES = {
     "default": dj_database_url.config(env="DATABASE_URL", default=""),
-    COMTRADE_DB: {
+    COMTRADE_DB_PWORD: {
         "NAME": COMTRADE_DB_NAME,
         "HOST": COMTRADE_DB_HOST,
         "USER": COMTRADE_DB_USER,
