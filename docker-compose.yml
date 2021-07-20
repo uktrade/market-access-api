@@ -16,13 +16,19 @@ services:
 
   comtrade:
     image: postgres
+    build:
+      context: ./comtrade_db
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=comtrade_user
+      - POSTGRES_DB=comtrade
     # volumes:
-    #   - ./db:/var/lib/postgresql/data:delegated
-    #   - ./db_dumps:/var/lib/postgresql/dumps:delegated
+    # #   - ./db:/var/lib/postgresql/data:delegated
+    # #   - ./db_dumps:/var/lib/postgresql/dumps:delegated
     #   - ./docker/local/postgres:/docker-entrypoint-initdb.d:delegated
-    # ports:
-    #   - "8881:5432"
-    env_file: docker-compose.env
+    ports:
+      - "8883:5432"
+
     networks:
       - webnet
 
