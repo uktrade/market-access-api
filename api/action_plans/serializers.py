@@ -1,6 +1,6 @@
-from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
-from api.user.serializers import UserListSerializer
 from rest_framework import serializers
+
+from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 
 
 class ActionPlanTaskSerializer(serializers.ModelSerializer):
@@ -73,4 +73,3 @@ class ActionPlanSerializer(serializers.ModelSerializer):
     def get_owner_email(self, obj):
         if obj.owner:
             return obj.owner.email
-

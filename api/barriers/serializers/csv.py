@@ -1,10 +1,10 @@
-from api.history.factories.public_barriers import PublicBarrierHistoryFactory
 from django.conf import settings
 from rest_framework import serializers
 
 from api.barriers.models import Barrier
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
 from api.collaboration.models import TeamMember
+from api.history.factories.public_barriers import PublicBarrierHistoryFactory
 from api.metadata.constants import (
     BARRIER_PENDING,
     BARRIER_SOURCE,

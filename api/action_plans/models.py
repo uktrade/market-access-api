@@ -1,9 +1,10 @@
 from uuid import uuid4
 
-from api.barriers.models import Barrier
 from django.contrib.auth import get_user_model
 from django.db import models
 from model_utils.choices import Choices
+
+from api.barriers.models import Barrier
 
 User = get_user_model()
 

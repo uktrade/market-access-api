@@ -10,17 +10,15 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.urls import reverse
+from notifications_python_client.notifications import NotificationsAPIClient
+from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.collaboration.models import TeamMember
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
-from api.user import helpers
-from api.user import staff_sso
-
-from notifications_python_client.notifications import NotificationsAPIClient
-from simple_history.models import HistoricalRecords
+from api.user import helpers, staff_sso
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 

@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import BarrierCommodity
 from api.commodities.models import Commodity
@@ -25,7 +27,6 @@ from api.metadata.serializers import (
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
-from rest_framework import serializers
 
 
 class ArchivedField(serializers.BooleanField):
