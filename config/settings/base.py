@@ -150,7 +150,7 @@ DATABASES = {
         "HOST": COMTRADE_DB_HOST,
         "USER": COMTRADE_DB_USER,
         "PASSWORD": COMTRADE_DB_PWORD,
-        "PORT": COMTRADE_DB_PORT,
+        "PORT": COMTRADE_DB!_PORT,
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "OPTIONS": {
             "options": "-c search_path=un"

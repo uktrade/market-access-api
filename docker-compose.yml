@@ -25,11 +25,13 @@ services:
       - FAKE_METADATA=True
       - DH_METADATA_URL=https://datahub-api-dev.london.cloudapps.digital/v4/metadata/
 
-    # volumes:
-    # #   - ./db:/var/lib/postgresql/data:delegated
-    # #   - ./db_dumps:/var/lib/postgresql/dumps:delegated
-    #   - ./docker/local/postgres:/docker-entrypoint-initdb.d:delegated
-    ports:
+    volumes:
+      - ./comtrade_data:/var/lib/comtrade_postgresql/data
+      - ./db_dumps:/var/lib/comtrade_postgresql/dumps
+      # - ./docker/local/postgres:/docker-entrypoint-initdb.d:delegated
+      # - ./comtrade_db:db.dump.sql
+      # - ./comtrade_db:/init-db.sh
+      ports:
       - "8883:5432"
 
     networks:
