@@ -22,6 +22,9 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=comtrade_user
       - POSTGRES_DB=comtrade
+      - FAKE_METADATA=True
+      - DH_METADATA_URL=https://datahub-api-dev.london.cloudapps.digital/v4/metadata/
+
     # volumes:
     # #   - ./db:/var/lib/postgresql/data:delegated
     # #   - ./db_dumps:/var/lib/postgresql/dumps:delegated
@@ -45,6 +48,7 @@ services:
       - "8882:22"
     depends_on:
       - db
+      - comtrade
     networks:
       - webnet
 
