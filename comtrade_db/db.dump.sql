@@ -22,7 +22,7 @@ DROP DATABASE comtrade;
 --
 
 CREATE DATABASE comtrade WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.UTF-8';
-
+CREATE ROLE comtrade_manager;
 
 ALTER DATABASE comtrade OWNER TO "comtrade_user";
 
@@ -354,37 +354,6 @@ CREATE INDEX ix_un_comtrade__services_20210612t010000_year ON un.comtrade__servi
 --
 
 GRANT ALL ON DATABASE comtrade TO comtrade_manager;
-
-
---
--- Name: SCHEMA un; Type: ACL; Schema: -; Owner: comtrade_manager
---
-
-GRANT USAGE ON SCHEMA un TO comtrade_reader;
-GRANT USAGE ON SCHEMA un TO market_access_dev;
-
-
---
--- Name: TABLE comtrade__goods; Type: ACL; Schema: un; Owner: comtrade_manager
---
-
-GRANT SELECT ON TABLE un.comtrade__goods TO comtrade_reader;
-GRANT SELECT ON TABLE un.comtrade__goods TO market_access_dev;
-
-
---
--- Name: TABLE comtrade__services; Type: ACL; Schema: un; Owner: comtrade_manager
---
-
-GRANT SELECT ON TABLE un.comtrade__services TO comtrade_reader;
-GRANT SELECT ON TABLE un.comtrade__services TO market_access_dev;
-
-
---
--- Name: SEQUENCE comtrade__services_20210612t010000_id_seq; Type: ACL; Schema: un; Owner: comtrade_manager
---
-
-GRANT SELECT ON SEQUENCE un.comtrade__services_20210612t010000_id_seq TO comtrade_reader;
 
 
 --
