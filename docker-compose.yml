@@ -31,7 +31,7 @@ services:
       # - ./docker/local/postgres:/docker-entrypoint-initdb.d:delegated
       # - ./comtrade_db:db.dump.sql
       # - ./comtrade_db:/init-db.sh
-      ports:
+    ports:
       - "8883:5432"
 
     networks:
