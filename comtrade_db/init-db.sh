@@ -1,4 +1,4 @@
 #!/bin/bash
 
-psql -f /db-dumps/db.dump.sql comtrade;
+psql -U comtrade_user -f /db-dumps/db.dump.sql comtrade;
 
