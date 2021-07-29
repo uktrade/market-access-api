@@ -145,7 +145,7 @@ COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="postgres")
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 DATABASES = {
     "default": dj_database_url.config(env="DATABASE_URL", default=""),
-    COMTRADE_DB_PWORD: {
+    "comtrade": {
         "NAME": COMTRADE_DB_NAME,
         "HOST": COMTRADE_DB_HOST,
         "USER": COMTRADE_DB_USER,
@@ -157,8 +157,6 @@ DATABASES = {
         },  # data in un schema not public schema
     },
 }
-
-DATABASE_ROUTERS = ["database_routers.default.DatabaseRouter"]
 
 HASHID_FIELD_SALT = env("DJANGO_HASHID_FIELD_SALT")
 HASHID_FIELD_ALLOW_INT_LOOKUP = False
