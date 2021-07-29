@@ -23,9 +23,6 @@ DROP DATABASE comtrade;
 
 CREATE DATABASE comtrade WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.UTF-8';
 
-
-ALTER DATABASE comtrade OWNER TO "comtrade_user";
-
 \connect comtrade
 
 SET statement_timeout = 0;
