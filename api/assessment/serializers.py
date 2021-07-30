@@ -1,6 +1,3 @@
-from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
-
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
@@ -12,6 +9,8 @@ from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 from api.documents.fields import DocumentsField
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .automate.exceptions import ComtradeError
 from .fields import (
@@ -234,7 +233,5 @@ class StrategicAssessmentSerializer(
         )
 
     def get_is_current(self, obj):
-        return (
-            EconomicAssessment.objects.filter(created_on__gt=obj.created_on).count()
-            == 0
-        )
+        return EconomicAssessment.objects.filter(created_on__gt=obj.created_on).exists()
+
