@@ -12,8 +12,6 @@ from api.core.test_utils import APITestMixin
 
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 
-pytestmark = [pytest.mark.django_db]
-
 
 class TestAssessmentUtils(APITestMixin):
     def matches_snapshot(self, test_name: str, test_data: Dict):
@@ -35,6 +33,7 @@ class TestAssessmentUtils(APITestMixin):
             )
         )
 
+    @pytest.mark.django_db(databases=["default", "comtrade"])
     def test_assessment_calculator(self):
         country_commodity_pairs = [
             {
