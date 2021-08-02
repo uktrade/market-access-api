@@ -68,7 +68,7 @@ class ComtradeClient:
 
         query: sql.SQL = sql.SQL(
             "SELECT *, 'TOTAL' as commodity_code FROM comtrade__goods WHERE "
-            "period IN ? AND trade_flow_code IN ? partner_code IN ? AND reporter_code IN ?"
+            "period IN %s AND trade_flow_code IN %s AND partner_code IN %s AND reporter_code IN %s"
         )
         with connections["comtrade"].cursor() as cur:
             cur.execute(query, [period, trade_flow_code, partner_code, reporter_code])
