@@ -47,6 +47,8 @@ CREATE SCHEMA un;
 
 
 ALTER SCHEMA un OWNER TO comtrade_manager;
+GRANT ALL ON SCHEMA un TO comtrade_user;
+CREATE SCHEMA un AUTHORIZATION comtrade_user;
 
 SET default_tablespace = '';
 
