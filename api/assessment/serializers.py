@@ -234,4 +234,3 @@ class StrategicAssessmentSerializer(
 
     def get_is_current(self, obj):
         return EconomicAssessment.objects.filter(created_on__gt=obj.created_on).exists()
-
