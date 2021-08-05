@@ -1,7 +1,9 @@
-from api.assessment.models import (EconomicAssessment,
-                                   EconomicImpactAssessment,
-                                   ResolvabilityAssessment,
-                                   StrategicAssessment)
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.assessment.utils import calculate_barrier_economic_assessment
 from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
@@ -11,8 +13,13 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from .automate.exceptions import ComtradeError
-from .fields import (EffortToResolveField, ImpactField, RatingField,
-                     StrategicAssessmentScaleField, TimeToResolveField)
+from .fields import (
+    EffortToResolveField,
+    ImpactField,
+    RatingField,
+    StrategicAssessmentScaleField,
+    TimeToResolveField,
+)
 
 
 class EconomicImpactAssessmentSerializer(
@@ -93,7 +100,7 @@ class EconomicAssessmentSerializer(
             "reviewed_by",
             "reviewed_on",
             "value_to_economy",
-            "is_current"
+            "is_current",
         )
         read_only_fields = (
             "id",
@@ -105,7 +112,7 @@ class EconomicAssessmentSerializer(
             "modified_by",
             "reviewed_by",
             "reviewed_on",
-            "is_current"
+            "is_current",
         )
 
     def create(self, validated_data):
@@ -121,7 +128,10 @@ class EconomicAssessmentSerializer(
         return super().create(validated_data)
 
     def get_is_current(self, obj):
-        return EconomicAssessment.objects.filter(created_on__gt=obj.created_on).count() == 0
+        return (
+            EconomicAssessment.objects.filter(created_on__gt=obj.created_on).count()
+            == 0
+        )
 
 
 class ResolvabilityAssessmentSerializer(
@@ -207,7 +217,7 @@ class StrategicAssessmentSerializer(
             "scale",
             "created_on",
             "created_by",
-            "is_current"
+            "is_current",
         )
         read_only_fields = (
             "id",
@@ -219,8 +229,8 @@ class StrategicAssessmentSerializer(
             "modified_by",
             "reviewed_by",
             "reviewed_on",
-            "is_current"
+            "is_current",
         )
 
     def get_is_current(self, obj):
-        return EconomicAssessment.objects.filter(created_on__gt=obj.created_on).count() == 0
+        return EconomicAssessment.objects.filter(created_on__gt=obj.created_on).exists()

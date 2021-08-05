@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
+from api.action_plans.urls import urlpatterns as action_plans_urls
 from api.assessment.urls import urlpatterns as assessment_urls
 from api.barriers.urls import urlpatterns as barrier_urls
 from api.collaboration.urls import urlpatterns as team_urls
@@ -37,4 +38,5 @@ urlpatterns += (
     + team_urls
     + assessment_urls
     + user_urls
+    + action_plans_urls
 )

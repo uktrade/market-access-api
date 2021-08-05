@@ -2,28 +2,6 @@ import datetime
 from uuid import uuid4
 
 import django_filters
-from api.collaboration import models as collaboration_models
-from api.commodities.models import Commodity
-from api.commodities.utils import format_commodity_code
-from api.core.exceptions import ArchivingException
-from api.core.models import BaseModel, FullyArchivableMixin
-from api.metadata import models as metadata_models
-from api.metadata import utils as metadata_utils
-from api.metadata.constants import (
-    BARRIER_ARCHIVED_REASON,
-    BARRIER_PENDING,
-    BARRIER_SOURCE,
-    BARRIER_TERMS,
-    GOVERNMENT_ORGANISATION_TYPES,
-    STAGE_STATUS,
-    TRADE_CATEGORIES,
-    TRADE_DIRECTION_CHOICES,
-    TRADING_BLOC_CHOICES,
-    TRADING_BLOCS,
-    AWAITING_REVIEW_FROM,
-    BarrierStatus,
-    PublicBarrierStatus,
-)
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVector
@@ -37,6 +15,29 @@ from django.utils import timezone
 from django_filters.widgets import BooleanWidget
 from hashid_field import HashidAutoField
 from simple_history.models import HistoricalRecords
+
+from api.collaboration import models as collaboration_models
+from api.commodities.models import Commodity
+from api.commodities.utils import format_commodity_code
+from api.core.exceptions import ArchivingException
+from api.core.models import BaseModel, FullyArchivableMixin
+from api.metadata import models as metadata_models
+from api.metadata import utils as metadata_utils
+from api.metadata.constants import (
+    AWAITING_REVIEW_FROM,
+    BARRIER_ARCHIVED_REASON,
+    BARRIER_PENDING,
+    BARRIER_SOURCE,
+    BARRIER_TERMS,
+    GOVERNMENT_ORGANISATION_TYPES,
+    STAGE_STATUS,
+    TRADE_CATEGORIES,
+    TRADE_DIRECTION_CHOICES,
+    TRADING_BLOC_CHOICES,
+    TRADING_BLOCS,
+    BarrierStatus,
+    PublicBarrierStatus,
+)
 
 from . import validators
 from .report_stages import REPORT_CONDITIONS, report_stage_status
