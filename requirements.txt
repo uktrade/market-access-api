@@ -1,6 +1,6 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2021-08-06_16-11
+# Generated: 2021-08-10_15-54
 # ======
 amqp==2.6.1; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 asgiref==3.4.1; python_version >= "3.6"
@@ -8,7 +8,7 @@ billiard==3.6.4.0; python_version >= "2.7" and python_full_version < "3.0.0" or 
 boto3==1.17.112; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.6.0")
 botocore==1.20.112; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0"
 celery==4.4.5; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
-certifi==2021.5.30; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version < "4"
+certifi==2021.5.30; python_version >= "3.6" and python_version < "4" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0")
 cffi==1.14.6; platform_python_implementation == "CPython" and sys_platform == "win32" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0")
 charset-normalizer==2.0.4; python_full_version >= "3.6.0" and python_version >= "3"
 dj-database-url==0.5.0
@@ -31,7 +31,7 @@ django-timezone-field==4.2.1; python_version >= "3.5"
 django==3.2.5; python_version >= "3.6"
 djangorestframework==3.12.1; python_version >= "3.5"
 docopt==0.6.2; python_version >= "3.6"
-elastic-apm==5.9.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0" and python_version < "4")
+elastic-apm==6.3.3; python_version >= "3.6" and python_version < "4"
 future==0.18.2; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 gevent==20.9.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 greenlet==1.1.1; python_version >= "2.7" and python_full_version < "3.0.0" and platform_python_implementation == "CPython" or python_full_version >= "3.5.0" and platform_python_implementation == "CPython"
