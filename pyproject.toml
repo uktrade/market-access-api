@@ -9,7 +9,7 @@ python = "^3.7"
 boto3 = "~=1.17.86"
 celery = "==4.4.5"
 dj-database-url = "==0.5.0"
-Django = "==3.1.13"
+Django = "==3.2.5"
 django-audit-log-middleware = "0.0.4"
 django-celery-beat = "2.0.0"
 django-environ = "==0.4.5"
@@ -57,5 +57,5 @@ jsondiff = "==1.1.2"
 simplejson = "==3.17.2"
 
 [build-system]
-requires = ["poetry~=1.1.6"]
+requires = ["poetry~=1.1.7"]
 build-backend = "poetry.masonry.api"
