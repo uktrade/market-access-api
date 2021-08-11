@@ -3,7 +3,7 @@ from itertools import chain
 from typing import Dict, List, Tuple
 
 from django.db import connections
-from psycopg2 import extras, sql
+from psycopg2 import sql
 import requests
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
@@ -72,7 +72,8 @@ class ComtradeClient:
         )
         with connections["comtrade"].cursor() as cur:
             cur.execute(query, [period, trade_flow_code, partner_code, reporter_code])
-            data = cur.fetchall()
+            desc = cur.description
+            data = [dict(zip([col[0] for col in desc], row)) for row in cur.fetchall()]
 
         if not tidy:
             for row in data:
