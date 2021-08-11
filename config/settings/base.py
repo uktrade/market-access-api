@@ -154,7 +154,6 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "OPTIONS": {
             "options": "-c search_path=un,public",
-            "sslmode": "require",
         },  # data in un schema not public schema
         "TEST": {
             "MIGRATE": False,
