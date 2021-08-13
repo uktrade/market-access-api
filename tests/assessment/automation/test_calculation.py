@@ -37,7 +37,7 @@ class TestAssessmentUtils(APITestMixin):
         )
 
     @patch("api.assessment.automate.comtrade.make_dict_results")
-    # @pytest.mark.django_db(databases=["default", "comtrade"])
+    @pytest.mark.django_db(databases=["default", "comtrade"])
     def test_assessment_calculator(self, mock_results):
         mock_results.side_effects = [DATA1, DATA2, DATA3, DATA4]
         country_commodity_pairs = [
