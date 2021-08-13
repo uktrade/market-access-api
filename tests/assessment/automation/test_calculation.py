@@ -11,6 +11,9 @@ from api.assessment.automate.comtrade import ComtradeClient
 from api.core.test_utils import APITestMixin
 
 from tests.barriers.factories import BarrierFactory, CommodityFactory
+from tests.assessment.automation.calculation_fixtures import DATA1, DATA2, DATA3, DATA4
+
+pytestmark = [pytest.mark.django_db]
 
 
 class TestAssessmentUtils(APITestMixin):
@@ -22,19 +25,21 @@ class TestAssessmentUtils(APITestMixin):
                 snapshot_data = json.load(snapshot_file)
         except Exception:
             with open(snapshot_filename, "w") as snapshot_file:
-                snapshot_data = json.dump(test_data, snapshot_file, use_decimal=True)
+                snapshot_data = json.dump(test_data, snapshot_file)
             snapshot_data = test_data
         return bool(
             diff(
-                json.dumps(test_data, sort_keys=True, use_decimal=True),
-                json.dumps(snapshot_data, sort_keys=True, use_decimal=True),
+                json.dumps(test_data, sort_keys=True),
+                json.dumps(snapshot_data, sort_keys=True),
                 load=True,
                 dump=True,
             )
         )
 
+    @patch("api.assessment.automate.calculator.make_dict_results")
     @pytest.mark.django_db(databases=["default", "comtrade"])
-    def test_assessment_calculator(self):
+    def test_assessment_calculator(self, mock_results):
+        mock_results.side_effects = [DATA1, DATA2, DATA3, DATA4]
         country_commodity_pairs = [
             {
                 "country": "5961b8be-5d95-e211-a939-e4115bead28a",  # Russia,

@@ -28,7 +28,7 @@ django-shell: ## Drop into django's shell (with iphython).
 
 .PHONY: django-test
 django-test: ## Run django tests (keeps existing test db).
-	docker-compose exec web pytest tests/$(path)
+	docker-compose exec web pytest tests/assessment/automation/test_calculation.py #tests/$(path)
 
 .PHONY: django-test-create-db
 django-test-create-db: ## Run django tests (recreates test db).

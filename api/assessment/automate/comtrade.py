@@ -10,6 +10,13 @@ from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates
 
 
+# This function exists to make writing the unit tests easier.
+# Just mock this function instead
+def make_dict_results(cursor):
+    desc = cursor.description
+    return [dict(zip([col[0] for col in desc], row)) for row in cursor.fetchall()]
+
+
 class ComtradeClient:
     """
     Client for the Comtrade API
@@ -72,19 +79,18 @@ class ComtradeClient:
         )
         with connections["comtrade"].cursor() as cur:
             cur.execute(query, [period, trade_flow_code, partner_code, reporter_code])
-            desc = cur.description
-            data = [dict(zip([col[0] for col in desc], row)) for row in cur.fetchall()]
+            data = make_dict_results(cur)
 
-        if not tidy:
-            for row in data:
-                exchange_rate = exchange_rates.get(str(row["year"]))
-                if exchange_rate is None:
-                    raise ExchangeRateNotFound(
-                        f"Exchange rate not found for year: {row['year']}"
-                    )
-                row["trade_value_gbp"] = Decimal(row["trade_value_usd"]) / exchange_rate
-        else:
-            data = self.tidytrade(data)
+        if tidy:
+            return self.tidytrade(data)
+
+        for row in data:
+            exchange_rate = exchange_rates.get(str(row["year"]))
+            if exchange_rate is None:
+                raise ExchangeRateNotFound(
+                    f"Exchange rate not found for year: {row['year']}"
+                )
+            row["trade_value_gbp"] = Decimal(row["trade_value_usd"]) / exchange_rate
 
         return data
 
