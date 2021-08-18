@@ -293,4 +293,3 @@ class HistoryManager:
         return WTOHistoryFactory.get_history_items(
             barrier_id=barrier_id, fields=fields, start_date=start_date,
         )
-
