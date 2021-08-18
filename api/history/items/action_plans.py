@@ -1,4 +1,30 @@
 from api.history.items.base import BaseHistoryItem
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+
+AuthUser = get_user_model()
+
+
+def get_default_user():
+    # Getting my User object prepared
+    try:
+        obj = AuthUser.objects.filter(email="ciaran.doherty@digital.trade.gov.uk")
+        if obj.exists():
+            backup_user = obj.first()
+        else:
+            backup_user, _ = AuthUser.objects.get_or_create(
+                email="ciaran.doherty@digital.trade.gov.uk",
+                username="ciaran.doherty@digital.trade.gov.uk",
+            )
+    except Exception as exc:
+        # If I do not exist we are using a test system
+        # make a fake user with my email
+        backup_user, _ = AuthUser.objects.get_or_create(
+            email="ciaran.doherty@digital.trade.gov.uk",
+            username="ciaran.doherty@digital.trade.gov.uk",
+        )
+
+    return backup_user
 
 
 class ActionPlanHistoryItem(BaseHistoryItem):
@@ -10,6 +36,21 @@ class ActionPlanHistoryItem(BaseHistoryItem):
 
 class ActionPlanOwnerHistoryItem(ActionPlanHistoryItem):
     field = "owner"
+
+    def get_empty_value(self):
+        return None
+
+    def get_value(self, record):
+        try:
+            # Check that the user exists
+            user = getattr(record, "owner", None)
+        except ObjectDoesNotExist:
+            # default to me if user does not exist.
+            backup_user = get_default_user()
+            record.user = backup_user
+            record.save()
+
+        return {"owner": self._format_user(record.owner)}
 
 
 class ActionPlanCurrentStatusHistoryItem(ActionPlanHistoryItem):
@@ -76,6 +117,23 @@ class ActionPlanTaskActionTypeCategoryHistoryItem(ActionPlanTaskHistoryItem):
 
 class ActionPlanTaskAssignedToHistoryItem(ActionPlanTaskHistoryItem):
     field = "assigned_to"
+
+    def get_empty_value(self):
+        return None
+
+    def get_value(self, record):
+        try:
+            # Check that the user exists
+            user = getattr(record, "assigned_to", None)
+        except ObjectDoesNotExist:
+            # default to me if user does not exist.
+            backup_user = get_default_user()
+            record.user = backup_user
+            record.save()
+
+        return {
+            "assigned_to": self._format_user(record.assigned_to),
+        }
 
 
 class ActionPlanTaskStakeholdersHistoryItem(ActionPlanTaskHistoryItem):
