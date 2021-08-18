@@ -1,11 +1,5 @@
 import urllib.parse
 
-from django.conf import settings
-from django.http import Http404
-from notifications_python_client.notifications import NotificationsAPIClient
-from rest_framework import status, viewsets
-from rest_framework.response import Response
-
 from api.action_plans.serializers import (
     ActionPlanMilestoneSerializer,
     ActionPlanSerializer,
@@ -13,7 +7,13 @@ from api.action_plans.serializers import (
 )
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
+from api.history.manager import HistoryManager
 from api.user.helpers import get_django_user_by_sso_user_id
+from django.conf import settings
+from django.http import Http404
+from notifications_python_client.notifications import NotificationsAPIClient
+from rest_framework import generics, status, viewsets
+from rest_framework.response import Response
 
 from .models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 
@@ -75,9 +75,7 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
             barrier = Barrier.objects.get(pk=barrier)
             if not barrier.barrier_team.filter(user=django_user).exists():
                 TeamMember.objects.create(
-                    barrier=barrier,
-                    user=django_user,
-                    role=TeamMember.CONTRIBUTOR,
+                    barrier=barrier, user=django_user, role=TeamMember.CONTRIBUTOR,
                 )
 
         if getattr(instance, "_prefetched_objects_cache", None):
@@ -178,3 +176,21 @@ class ActionPlanTaskViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class ActionPlanFullHistory(generics.GenericAPIView):
+    """
+    Full audit history of changes made to a ActionPlan and related models
+    """
+
+    def get(self, request, pk):
+        barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
+        action_plan = barrier.action_plans
+        history_items = HistoryManager.get_action_plan_history(
+            ActionPlan=action_plan, ignore_creation_items=True, use_cache=True,
+        )
+        response = {
+            "action_plan_id": str(pk),
+            "history": [item.data for item in history_items],
+        }
+        return Response(response, status=status.HTTP_200_OK)
