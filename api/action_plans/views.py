@@ -177,20 +177,3 @@ class ActionPlanTaskViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
-
-class ActionPlanFullHistory(generics.GenericAPIView):
-    """
-    Full audit history of changes made to a ActionPlan and related models
-    """
-
-    def get(self, request, pk):
-        barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
-        action_plan = barrier.action_plans
-        history_items = HistoryManager.get_action_plan_history(
-            ActionPlan=action_plan, ignore_creation_items=True, use_cache=True,
-        )
-        response = {
-            "action_plan_id": str(pk),
-            "history": [item.data for item in history_items],
-        }
-        return Response(response, status=status.HTTP_200_OK)

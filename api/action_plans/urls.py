@@ -1,5 +1,4 @@
 from api.action_plans.views import (
-    ActionPlanFullHistory,
     ActionPlanMilestoneViewSet,
     ActionPlanTaskViewSet,
     ActionPlanViewSet,
@@ -52,10 +51,5 @@ urlpatterns = router.urls + [
             }
         ),
         name="action-plans-tasks-detail",
-    ),
-    path(
-        "barriers/<uuid:pk>/action_plan/full_history",
-        ActionPlanFullHistory.as_view(),
-        name="history",
     ),
 ]

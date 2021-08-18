@@ -67,8 +67,6 @@ class ActionPlanTaskHistoryFactory(HistoryItemFactoryBase):
 
     @classmethod
     def get_history(cls, barrier_id):
-        # action_plan = ActionPlan.objects.get(barrier_id)
-        # milestones
         return ActionPlanTask.history.filter(
             milestone__action_plan__barrier_id=barrier_id
         ).order_by("id", "history_date")
