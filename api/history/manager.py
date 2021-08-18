@@ -60,8 +60,8 @@ class HistoryManager:
 
     @classmethod
     def get_full_history(cls, barrier, ignore_creation_items=False, use_cache=False):
-        # if use_cache:
-        #     return cls.get_full_history_cached(barrier, ignore_creation_items)
+        if use_cache:
+            return cls.get_full_history_cached(barrier, ignore_creation_items)
 
         if ignore_creation_items:
             start_date = barrier.reported_on
