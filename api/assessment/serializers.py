@@ -1,3 +1,5 @@
+import logging
+
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
@@ -20,6 +22,9 @@ from .fields import (
     StrategicAssessmentScaleField,
     TimeToResolveField,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class EconomicImpactAssessmentSerializer(
@@ -122,7 +127,9 @@ class EconomicAssessmentSerializer(
                     validated_data["barrier_id"]
                 )
             except ComtradeError as e:
-                raise ValidationError(e)
+                logger.error(e)
+                raise
+                # raise ValidationError(e)
             validated_data["automated_analysis_data"] = data
 
         return super().create(validated_data)
