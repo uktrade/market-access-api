@@ -128,12 +128,12 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # Sentry
-SENTRY_DSN = os.environ.get("SENTRY_DSN")
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
-    )
+# SENTRY_DSN = os.environ.get("SENTRY_DSN")
+# if SENTRY_DSN:
+#     sentry_sdk.init(
+#         dsn=SENTRY_DSN,
+#         integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
+#     )
 
 COMTRADE_DB_HOST = env("COMTRADE_DB_HOST", default="comtrade")
 COMTRADE_DB_NAME = env("COMTRADE_DB_NAME", default="comtrade")
@@ -355,6 +355,7 @@ STATIC_URL = "/static/"
 DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="info").upper()
 
 ENABLED_HANDLERS = env.list("ENABLED_LOGGING_HANDLERS", default=["ecs", "stdout"])
+ENABLED_HANDLERS = ["stdout"]
 
 LOGGING = {
     "version": 1,
