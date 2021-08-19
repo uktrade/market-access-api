@@ -1,3 +1,5 @@
+import logging
+
 from decimal import Decimal
 from itertools import chain
 from typing import Dict, List, Tuple
@@ -8,6 +10,9 @@ import requests
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates
+
+
+logger = logging.getLogger(__name__)
 
 
 # This function exists to make writing the unit tests easier.
@@ -79,6 +84,8 @@ class ComtradeClient:
         )
         with connections["comtrade"].cursor() as cur:
             cur.execute(query, [period, trade_flow_code, partner_code, reporter_code])
+            logger.info(query)
+            logger.info([period, trade_flow_code, partner_code, reporter_code])
             data = make_dict_results(cur)
 
         if tidy:
