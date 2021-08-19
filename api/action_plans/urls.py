@@ -1,11 +1,10 @@
-from django.urls import path
-from rest_framework.routers import DefaultRouter
-
 from api.action_plans.views import (
     ActionPlanMilestoneViewSet,
     ActionPlanTaskViewSet,
     ActionPlanViewSet,
 )
+from django.urls import path
+from rest_framework.routers import DefaultRouter
 
 app_name = "action_plans"
 
@@ -15,11 +14,7 @@ urlpatterns = router.urls + [
     path(
         "barriers/<uuid:barrier>/action_plan",
         ActionPlanViewSet.as_view(
-            {
-                "get": "retrieve",
-                "put": "update",
-                "patch": "partial_update",
-            }
+            {"get": "retrieve", "put": "update", "patch": "partial_update",}
         ),
         name="action-plans",
     ),

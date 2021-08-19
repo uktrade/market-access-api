@@ -3,6 +3,7 @@ from uuid import uuid4
 from api.barriers.models import Barrier
 from django.contrib.auth import get_user_model
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 from .constants import (
     ACTION_PLAN_RAG_STATUS_CHOICES,
@@ -35,6 +36,8 @@ class ActionPlan(models.Model):
     )
     strategic_context = models.TextField(default="", blank=True)
 
+    history = HistoricalRecords()
+
 
 class ActionPlanMilestone(models.Model):
 
@@ -45,6 +48,8 @@ class ActionPlanMilestone(models.Model):
 
     objective = models.TextField()
     completion_date = models.DateField(null=True, blank=True)
+
+    history = HistoricalRecords()
 
 
 class ActionPlanTask(models.Model):
@@ -79,6 +84,8 @@ class ActionPlanTask(models.Model):
     stakeholders = models.TextField(default="", blank=True)
     outcome = models.TextField(default="", blank=True)
     progress = models.TextField(default="", blank=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ("start_date", "completion_date")
