@@ -69,6 +69,7 @@ class ComtradeClient:
         reporters: List[str] = [],
         tidy=False,
     ):
+        logger.info("Years: %s", years)
         period: Tuple[int] = self.get_date_params(years)
         trade_flow_code: Tuple[int] = self.get_trade_direction_params(trade_direction)
         if isinstance(partners, str):
