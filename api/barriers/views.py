@@ -2,22 +2,6 @@ import csv
 from collections import defaultdict
 from itertools import chain
 
-from dateutil.parser import parse
-from django.db import transaction
-from django.db.models import Count
-from django.http import JsonResponse, StreamingHttpResponse
-from django.shortcuts import get_object_or_404
-from django.utils import timezone
-from django.utils.timezone import now
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, mixins, serializers, status
-from rest_framework.decorators import action, api_view
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.filters import OrderingFilter
-from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
-from simple_history.utils import bulk_create_with_history
-
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import (
@@ -46,6 +30,21 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
+from dateutil.parser import parse
+from django.db import transaction
+from django.db.models import Count
+from django.http import JsonResponse, StreamingHttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.utils.timezone import now
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, mixins, serializers, status
+from rest_framework.decorators import action, api_view
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import OrderingFilter
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+from simple_history.utils import bulk_create_with_history
 
 from .models import BarrierFilterSet, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
@@ -256,10 +255,7 @@ class BarrierList(generics.ListAPIView):
     queryset = (
         Barrier.barriers.all()
         .select_related("priority")
-        .prefetch_related(
-            "tags",
-            "organisations",
-        )
+        .prefetch_related("tags", "organisations",)
     )
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
@@ -323,9 +319,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
     """
 
     queryset = (
-        Barrier.barriers.annotate(
-            team_count=Count("barrier_team"),
-        )
+        Barrier.barriers.annotate(team_count=Count("barrier_team"),)
         .all()
         .select_related(
             "wto_profile__committee_notified",
@@ -428,11 +422,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
 
         # Make celery call don't wait for return
         generate_s3_and_send_email.delay(
-            barrier_ids,
-            s3_filename,
-            email,
-            first_name,
-            self.field_titles,
+            barrier_ids, s3_filename, email, first_name, self.field_titles,
         )
 
         return JsonResponse({"success": True})
@@ -480,9 +470,11 @@ class BarrierFullHistory(generics.GenericAPIView):
     def get(self, request, pk):
         barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_full_history(
+            # TODO: MAR-1068 - Re-enable use_cache=True - Temporarily disabled due to
+            # not caching action plans history entries correctly
             barrier=barrier,
             ignore_creation_items=True,
-            use_cache=True,
+            use_cache=False,
         )
         response = {
             "barrier_id": str(pk),
@@ -703,10 +695,7 @@ class PublicBarrierViewSet(
     barriers_qs = (
         Barrier.barriers.all()
         .select_related("priority")
-        .prefetch_related(
-            "tags",
-            "organisations",
-        )
+        .prefetch_related("tags", "organisations",)
     )
     http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = (AllRetrieveAndEditorUpdateOnly,)
