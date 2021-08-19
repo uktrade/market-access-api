@@ -154,7 +154,9 @@ DATABASES = {
         "PASSWORD": COMTRADE_DB_PWORD,
         "PORT": COMTRADE_DB_PORT,
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "OPTIONS": "-c search_path=un",  # data in un schema not public schema
+        "OPTIONS": {
+            "options": "-c search_path=un"
+        },  # data in un schema not public schema
     },
 }
 

@@ -14,6 +14,18 @@ services:
     networks:
       - webnet
 
+  comtrade:
+    image: postgres
+    # volumes:
+    #   - ./db:/var/lib/postgresql/data:delegated
+    #   - ./db_dumps:/var/lib/postgresql/dumps:delegated
+    #   - ./docker/local/postgres:/docker-entrypoint-initdb.d:delegated
+    # ports:
+    #   - "8881:5432"
+    env_file: docker-compose.env
+    networks:
+      - webnet
+
   web:
     build:
       context: .
