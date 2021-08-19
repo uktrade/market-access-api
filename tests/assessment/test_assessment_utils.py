@@ -9,14 +9,6 @@ pytestmark = [pytest.mark.django_db]
 
 
 class TestAssessmentUtils(APITestMixin):
-    def setUp(self):
-        super().setUp()
-        self.patch_conn = patch("psycopg2.connect")
-        self.addCleanup(patch.stopall)
-        self.mock_conn = self.patch_conn.start()
-        cur = self.mock_conn.return_value.cursor.__enter__.return_value
-        cur.fetchall.return_value = [{}, {}, {}]
-
     @pytest.fixture
     def barrier(self):
         barrier = BarrierFactory(country="5961b8be-5d95-e211-a939-e4115bead28a")
