@@ -1163,12 +1163,13 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.filter(priority__in=priorities)
 
     def has_action_plan_filter(self, queryset, name, value):
-        if value:
-            from api.action_plans.models import ActionPlanMilestone
+        if not value:
+            return queryset
 
-            milestones = ActionPlanMilestone.objects.all()
-            return queryset.filter(action_plans__milestones__in=milestones)
-        return queryset
+        from api.action_plans.models import ActionPlanMilestone
+
+        milestones = ActionPlanMilestone.objects.all()
+        return queryset.filter(action_plans__milestones__in=milestones)
 
     def clean_location_value(self, value):
         """
