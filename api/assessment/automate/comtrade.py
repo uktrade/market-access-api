@@ -80,13 +80,22 @@ class ComtradeClient:
         reporter_code: Tuple[int] = self.get_reporters_params(reporters)
 
         query: sql.SQL = sql.SQL(
-            "SELECT *, 'TOTAL' as commodity_code FROM comtrade__goods WHERE "
-            "period IN %s AND trade_flow_code IN %s AND partner_code IN %s AND reporter_code IN %s"
+            "SELECT * FROM comtrade__goods WHERE "
+            "commodity_code IN %s AND "
+            "period IN %s AND "
+            "trade_flow_code IN %s AND "
+            "partner_code IN %s AND "
+            "reporter_code IN %s"
         )
         with connections["comtrade"].cursor() as cur:
-            cur.execute(query, [period, trade_flow_code, partner_code, reporter_code])
+            cur.execute(
+                query,
+                [commodity_codes, period, trade_flow_code, partner_code, reporter_code],
+            )
             logger.info(query)
-            logger.info([period, trade_flow_code, partner_code, reporter_code])
+            logger.info(
+                [commodity_codes, period, trade_flow_code, partner_code, reporter_code]
+            )
             data = make_dict_results(cur)
 
         if tidy:
