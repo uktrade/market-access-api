@@ -91,15 +91,6 @@ class ComtradeClient:
 
         if tidy:
             return self.tidytrade(data)
-
-        for row in data:
-            exchange_rate = exchange_rates.get(str(row["year"]))
-            if exchange_rate is None:
-                raise ExchangeRateNotFound(
-                    f"Exchange rate not found for year: {row['year']}"
-                )
-            row["trade_value_gbp"] = Decimal(row["trade_value_usd"]) / exchange_rate
-
         return data
 
     def get_date_params(self, years: List[str]) -> Tuple[int]:
@@ -163,11 +154,17 @@ class ComtradeClient:
 
         return valid_years
 
-    def tidytrade(self, rows: Dict[str, str]) -> List[Dict[str, str]]:
-        output: List[Dict[str, str]] = []
+    def tidytrade(self, rows):
+        output = []
         for row in rows:
-            new_row: Dict[str, str] = {
-                value: row.get(key) for key, value in self.field_mapping.items()
-            }
+            new_row = {value: row.get(key) for key, value in self.field_mapping.items()}
+            exchange_rate = exchange_rates.get(str(new_row["year"]))
+            if exchange_rate is None:
+                raise ExchangeRateNotFound(
+                    f"Exchange rate not found for year: {new_row['year']}"
+                )
+            new_row["trade_value_gbp"] = (
+                Decimal(new_row["trade_value_usd"]) / exchange_rate
+            )
             output.append(new_row)
         return output
