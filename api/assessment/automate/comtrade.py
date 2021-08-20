@@ -144,6 +144,7 @@ class ComtradeClient:
                 reporters=(country1, country2),
                 partners="World",
             )
+            logger.info("data=%s", data)
             years: List[str] = [item["yr"] for item in data]
 
             if len(years) == 4 and all(y == year for y in years):
