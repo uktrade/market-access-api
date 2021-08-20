@@ -137,6 +137,7 @@ class ComtradeClient:
         valid_years: List[str] = []
 
         for year in range(int(target_year), 2000, -1):
+            logger.info("country1=%s country2=%s", country1, country2)
             data: List[Dict[str, str]] = self.get(
                 years=[str(year)],
                 trade_direction=("imports", "exports"),
@@ -144,7 +145,6 @@ class ComtradeClient:
                 reporters=(country1, country2),
                 partners="World",
             )
-            logger.info("data=%s", data)
             years: List[str] = [item["yr"] for item in data]
 
             if len(years) == 4 and all(y == year for y in years):
