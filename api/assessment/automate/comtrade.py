@@ -2,7 +2,7 @@ import logging
 
 from decimal import Decimal
 from itertools import chain
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from django.db import connections
 from psycopg2 import sql
@@ -72,30 +72,29 @@ class ComtradeClient:
         logger.info("Years: %s", years)
         period: Tuple[int] = self.get_date_params(years)
         trade_flow_code: Tuple[int] = self.get_trade_direction_params(trade_direction)
-        if isinstance(partners, str):
-            partners = [partners]
-        partner_code: Tuple[int] = self.get_partners_params(partners)
-        if isinstance(reporters, str):
-            reporters = [reporters]
-        reporter_code: Tuple[int] = self.get_reporters_params(reporters)
 
-        query: sql.SQL = sql.SQL(
-            "SELECT * FROM comtrade__goods WHERE "
-            "commodity_code IN %s AND "
-            "period IN %s AND "
-            "trade_flow_code IN %s AND "
-            "partner_code IN %s AND "
-            "reporter_code IN %s"
+        conditions = [
+            ("commodity_code IN %s", commodity_codes),
+            ("period IN %s", period),
+            ("trade_flow_code IN %s", trade_flow_code),
+        ]
+
+        partner_code = self.get_partners_params(partners)
+        if partner_code:
+            conditions.append(("partner_code IN %s", partner_code))
+
+        reporter_code = self.get_reporters_params(reporters)
+        if reporter_code:
+            conditions.append(("reporter_code IN %s", reporter_code))
+
+        query: sql.SQL = sql.SQL("SELECT * FROM comtrade__goods WHERE {}").format(
+            " AND ".join(clause for clause, _ in conditions)
         )
+        values = [val for _, val in conditions]
         with connections["comtrade"].cursor() as cur:
-            cur.execute(
-                query,
-                [commodity_codes, period, trade_flow_code, partner_code, reporter_code],
-            )
+            cur.execute(query, values)
             logger.info(query)
-            logger.info(
-                [commodity_codes, period, trade_flow_code, partner_code, reporter_code]
-            )
+            logger.info(values)
             data = make_dict_results(cur)
 
         if tidy:
@@ -119,7 +118,10 @@ class ComtradeClient:
     def get_commodity_codes_params(self, commodity_codes: List[str]):
         return {"cc": ",".join(sorted(commodity_codes))}
 
-    def get_partners_params(self, partners: List[str]) -> Tuple[int]:
+    def get_partners_params(self, partners: List[str]) -> Optional[Tuple[int]]:
+        if partners == ["all"]:
+            return None
+
         try:
             partner_ids: Tuple[int] = tuple(
                 [int(self.partner_areas[partner]) for partner in partners]
@@ -129,7 +131,9 @@ class ComtradeClient:
 
         return partner_ids
 
-    def get_reporters_params(self, reporters: List[str]) -> Tuple[int]:
+    def get_reporters_params(self, reporters: List[str]) -> Optional[Tuple[int]]:
+        if reporters == ["all"]:
+            return None
 
         try:
             reporter_ids = tuple(
