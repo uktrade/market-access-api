@@ -147,7 +147,7 @@ class ComtradeClient:
                 reporters=(country1, country2),
                 partners="World",
             )
-            years: List[str] = [item["yr"] for item in data]
+            years: List[str] = [item["period"] for item in data]
 
             if len(years) == 4 and all(y == year for y in years):
                 valid_years.append(year)
