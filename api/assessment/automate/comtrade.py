@@ -37,13 +37,14 @@ class ComtradeClient:
 
     def get(
         self,
-        years=None,
-        trade_direction=None,
-        commodity_codes=None,
-        partners=None,
-        reporters=None,
+        years,
+        commodity_codes,
+        partners,
+        reporters,
         tidy=False,
     ):
+        trade_direction = ("imports", "exports")
+
         if isinstance(commodity_codes, str):
             commodity_codes = (commodity_codes.lower(),)
 
@@ -51,14 +52,12 @@ class ComtradeClient:
         if len(commodity_codes) > 5:
             return self.get(
                 years=years,
-                trade_direction=trade_direction,
                 commodity_codes=commodity_codes[:5],
                 partners=partners,
                 reporters=reporters,
                 tidy=tidy,
             ) + self.get(
                 years=years,
-                trade_direction=trade_direction,
                 commodity_codes=commodity_codes[5:],
                 partners=partners,
                 reporters=reporters,
@@ -195,7 +194,6 @@ class ComtradeClient:
         for year in range(target_year, 2000, -1):
             data = self.get(
                 years=[year],
-                trade_direction=("imports", "exports"),
                 commodity_codes="TOTAL",
                 reporters=(country1, country2),
                 partners="World",

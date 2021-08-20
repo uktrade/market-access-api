@@ -65,7 +65,6 @@ class AssessmentCalculator:
         logger.info("Fetching data for affected products")
         affected_products_df = self.client.get(
             years=years,
-            trade_direction=("imports", "exports"),
             commodity_codes=commodity_codes,
             reporters="All",
             partners=(
@@ -79,7 +78,6 @@ class AssessmentCalculator:
         logger.info("Fetching data for all products")
         all_products_df = self.client.get(
             years=years,
-            trade_direction=("imports", "exports"),
             commodity_codes="TOTAL",
             reporters="All",
             partners=(
