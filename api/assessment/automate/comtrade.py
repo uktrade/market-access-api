@@ -136,8 +136,10 @@ class ComtradeClient:
     ) -> List[str]:
         valid_years: List[str] = []
 
+        logger.info(
+            "target_year=%s country1=%s country2=%s", target_year, country1, country2
+        )
         for year in range(int(target_year), 2000, -1):
-            logger.info("country1=%s country2=%s", country1, country2)
             data: List[Dict[str, str]] = self.get(
                 years=[str(year)],
                 trade_direction=("imports", "exports"),
