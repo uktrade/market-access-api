@@ -92,7 +92,7 @@ class AssessmentCalculator:
         all_products_df = self.client.get(
             years=years,
             trade_direction=("imports", "exports"),
-            commodity_codes=["TOTAL"],
+            commodity_codes=("TOTAL",),
             reporters="All",
             partners=partners,
             tidy=True,
