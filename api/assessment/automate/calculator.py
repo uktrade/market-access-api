@@ -35,6 +35,7 @@ class AssessmentCalculator:
             get_comtrade_country_name(country1),
             get_comtrade_country_name(country2),
         )
+        logger.info("valid_years=%s", valid_years)
 
         if not valid_years:
             raise CountryYearlyDataNotFound("Years with trade data unavailable")
