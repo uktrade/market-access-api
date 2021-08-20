@@ -152,7 +152,7 @@ class ComtradeClient:
             data: List[Dict[str, str]] = self.get(
                 years=[str(year)],
                 trade_direction=("imports", "exports"),
-                commodity_codes="TOTAL",
+                commodity_codes=["TOTAL"],
                 reporters=(country1, country2),
                 partners="World",
             )

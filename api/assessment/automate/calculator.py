@@ -68,17 +68,23 @@ class AssessmentCalculator:
         years = self.get_year_range(country1, country2, year)
         num_years = len(years)
 
+        partners = (
+            get_comtrade_country_name(country1),
+            get_comtrade_country_name(country2),
+            "World",
+        )
+
+        logger.info(
+            "years=%s commodity_codes=%s partners=%s", years, commodity_codes, partners
+        )
+
         logger.info("Fetching data for affected products")
         affected_products_df = self.client.get(
             years=years,
             trade_direction=("imports", "exports"),
             commodity_codes=commodity_codes,
             reporters="All",
-            partners=(
-                get_comtrade_country_name(country1),
-                get_comtrade_country_name(country2),
-                "World",
-            ),
+            partners=partners,
             tidy=True,
         )
 
@@ -86,13 +92,9 @@ class AssessmentCalculator:
         all_products_df = self.client.get(
             years=years,
             trade_direction=("imports", "exports"),
-            commodity_codes="TOTAL",
+            commodity_codes=["TOTAL"],
             reporters="All",
-            partners=(
-                get_comtrade_country_name(country1),
-                get_comtrade_country_name(country2),
-                "World",
-            ),
+            partners=partners,
             tidy=True,
         )
 
