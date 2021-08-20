@@ -65,7 +65,7 @@ class AssessmentCalculator:
     ):
         self.warnings = []
         commodity_codes = self.clean_commodity_codes(commodity_codes)
-        years = self.get_year_range(country1, country2, year)
+        years = [str(y) for y in self.get_year_range(country1, country2, year)]
         num_years = len(years)
 
         partners = (
