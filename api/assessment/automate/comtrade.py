@@ -37,15 +37,6 @@ class ComtradeClient:
 
     partner_areas_url = "https://comtrade.un.org/Data/cache/partnerAreas.json"
     reporter_areas_url = "https://comtrade.un.org/Data/cache/reporterAreas.json"
-    field_mapping = {
-        "period": "yr",
-        "trade_flow": "rgDesc",
-        "report": "rtTitle",
-        "partner": "ptTitle",
-        "commodity_code": "cmdCode",
-        "commodity": "cmdDescE",
-        "trade_value_usd": "TradeValue",
-    }
 
     def __init__(self, cache=None):
         self.cache = cache
@@ -178,12 +169,14 @@ class ComtradeClient:
     def tidytrade(self, rows):
         output = []
         for row in rows:
-            new_row = {value: row.get(key) for key, value in self.field_mapping.items()}
-            exchange_rate = exchange_rates.get(str(row["year"]))
+            new_row = row.copy()
+            exchange_rate = exchange_rates.get(str(new_row["year"]))
             if exchange_rate is None:
                 raise ExchangeRateNotFound(
-                    f"Exchange rate not found for year: {row['year']}"
+                    f"Exchange rate not found for year: {new_row['year']}"
                 )
-            row["trade_value_gbp"] = Decimal(row["trade_value_usd"]) / exchange_rate
+            new_row["trade_value_gbp"] = (
+                Decimal(new_row["trade_value_usd"]) / exchange_rate
+            )
             output.append(new_row)
         return output
