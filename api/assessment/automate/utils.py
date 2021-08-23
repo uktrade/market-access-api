@@ -115,7 +115,7 @@ def group_and_sum(data, sum_field, group_by):
 
     output = []
     for key, grp in groupby(sorted(data, key=grouper), grouper):
-        if isinstance(key, [str, int]):
+        if isinstance(key, (str, int)):
             key = (key,)
         item = dict(zip(group_by, key))
         item["total"] = sum(x[sum_field] for x in grp)
