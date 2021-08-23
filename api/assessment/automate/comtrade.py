@@ -73,11 +73,16 @@ class ComtradeClient:
         period: Tuple[int] = self.get_date_params(years)
         trade_flow_code: Tuple[int] = self.get_trade_direction_params(trade_direction)
 
+        if isinstance(commodity_codes, list):
+            commodity_codes = tuple(commodity_codes)
+
         conditions = [
             ("commodity_code IN %s", commodity_codes),
             ("period IN %s", period),
-            ("trade_flow_code IN %s", trade_flow_code),
         ]
+
+        if trade_flow_code:
+            conditions.append(("trade_flow_code IN %s", trade_flow_code))
 
         partner_code = self.get_partners_params(partners)
         if partner_code:
@@ -88,7 +93,7 @@ class ComtradeClient:
             conditions.append(("reporter_code IN %s", reporter_code))
 
         query: sql.SQL = sql.SQL("SELECT * FROM comtrade__goods WHERE {}").format(
-            " AND ".join(clause for clause, _ in conditions)
+            sql.SQL(" AND ").join(sql.SQL(clause) for clause, _ in conditions)
         )
         values = [val for _, val in conditions]
         with connections["comtrade"].cursor() as cur:
@@ -119,7 +124,7 @@ class ComtradeClient:
         return {"cc": ",".join(sorted(commodity_codes))}
 
     def get_partners_params(self, partners: List[str]) -> Optional[Tuple[int]]:
-        if partners == ["all"]:
+        if partners == ("All",):
             return None
 
         try:
@@ -132,7 +137,7 @@ class ComtradeClient:
         return partner_ids
 
     def get_reporters_params(self, reporters: List[str]) -> Optional[Tuple[int]]:
-        if reporters == ["all"]:
+        if reporters == ("All",):
             return None
 
         try:
@@ -158,7 +163,7 @@ class ComtradeClient:
                 trade_direction=("imports", "exports"),
                 commodity_codes=("TOTAL",),
                 reporters=(country1, country2),
-                partners="World",
+                partners=("World",),
             )
             years: List[str] = [item["period"] for item in data]
 
@@ -174,13 +179,11 @@ class ComtradeClient:
         output = []
         for row in rows:
             new_row = {value: row.get(key) for key, value in self.field_mapping.items()}
-            exchange_rate = exchange_rates.get(str(new_row["year"]))
+            exchange_rate = exchange_rates.get(str(row["year"]))
             if exchange_rate is None:
                 raise ExchangeRateNotFound(
-                    f"Exchange rate not found for year: {new_row['year']}"
+                    f"Exchange rate not found for year: {row['year']}"
                 )
-            new_row["trade_value_gbp"] = (
-                Decimal(new_row["trade_value_usd"]) / exchange_rate
-            )
+            row["trade_value_gbp"] = Decimal(row["trade_value_usd"]) / exchange_rate
             output.append(new_row)
         return output

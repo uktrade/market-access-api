@@ -63,6 +63,14 @@ class AssessmentCalculator:
     def calculate(
         self, commodity_codes, product, country1, country2="United Kingdom", year=None
     ):
+        logger.info(
+            "commodity_codes=%s product=%s country1=%s country2=%s year=%s",
+            commodity_codes,
+            product,
+            country1,
+            country2,
+            year,
+        )
         self.warnings = []
         commodity_codes = self.clean_commodity_codes(commodity_codes)
         years = [str(y) for y in self.get_year_range(country1, country2, year)]
@@ -83,7 +91,7 @@ class AssessmentCalculator:
             years=years,
             trade_direction=("imports", "exports"),
             commodity_codes=commodity_codes,
-            reporters="All",
+            reporters=("All",),
             partners=partners,
             tidy=True,
         )
@@ -93,7 +101,7 @@ class AssessmentCalculator:
             years=years,
             trade_direction=("imports", "exports"),
             commodity_codes=("TOTAL",),
-            reporters="All",
+            reporters=("All",),
             partners=partners,
             tidy=True,
         )
