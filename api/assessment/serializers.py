@@ -128,8 +128,7 @@ class EconomicAssessmentSerializer(
                 )
             except ComtradeError as e:
                 logger.error(e)
-                raise
-                # raise ValidationError(e)
+                raise ValidationError(e)
             validated_data["automated_analysis_data"] = data
 
         return super().create(validated_data)
