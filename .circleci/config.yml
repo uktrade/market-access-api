@@ -68,6 +68,9 @@ jobs:
       PUBLIC_DATA_BUCKET_REGION: 'us-east-1'
       PUBLIC_DATA_KEY_PREFIX: 'dummy/'
       PIP_USE_FEATURE: 2020-resolver
+      COMTRADE_TEST_DB_HOST: localhost
+      COMTRADE_TEST_DB_NAME: market_access
+      COMTRADE_TEST_DB_USER: postgres
 
     working_directory: ~/market-access-api
 
@@ -91,6 +94,23 @@ jobs:
           key: v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
           paths:
             - /home/circleci/.cache/pypoetry/virtualenvs
+
+      - run:
+          name: Install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.1
+
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+
+      - run:
+          name: Initialise comtrade data
+          command: |
+            sudo apt install -y postgresql-client
+            psql -h localhost -U postgres -d market_access -f docker/local/comtrade_test_db/10_create_goods_table.sql
+            psql -h localhost -U postgres -d market_access -f docker/local/comtrade_test_db/20_insert_test_data.sql
 
       - run:
           name: run tests
