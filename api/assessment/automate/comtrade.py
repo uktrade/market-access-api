@@ -1,8 +1,12 @@
 import json
+import psycopg2
+import requests
+
 from decimal import Decimal
+from psycopg2 import sql
 from typing import List
 
-import requests
+from django.conf import settings
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates
@@ -34,6 +38,14 @@ class ComtradeClient:
 
     def __init__(self, cache=None):
         self.cache = cache
+        self.db_conn = psycopg2.connect(
+            host=settings.COMTRADE_DB_HOST,
+            port=settings.COMTRADE_DB_PORT,
+            dbname=settings.COMTRADE_DB_NAME,
+            user=settings.COMTRADE_DB_USER,
+            password=settings.COMTRADE_DB_PWORD,
+            options=settings.COMTRADE_DB_OPTIONS,
+        )
 
     def get(
         self,
@@ -188,17 +200,35 @@ class ComtradeClient:
         return self._reporter_areas
 
     def get_valid_years(self, target_year, country1, country2):
+        query = sql.SQL(
+            "SELECT year FROM comtrade__goods WHERE "
+            "commodity_code = 'TOTAL' AND "
+            "trade_flow_code IN {} AND "
+            "period = %s AND "
+            "partner_code = %s AND "
+            "reporter_code IN %s",
+        ).format(
+            sql.Literal((self.IMPORTS_TRADE_FLOW_CODE, self.EXPORTS_TRADE_FLOW_CODE)),
+        )
 
         valid_years = []
-
         for year in range(target_year, 2000, -1):
-            data = self.get(
-                years=[year],
-                commodity_codes="TOTAL",
-                reporters=(country1, country2),
-                partners="World",
+            partner_code = self.partner_areas["World"]
+            reporters_codes = (
+                self.reporter_areas[country1],
+                self.reporter_areas[country2],
             )
-            years = [item["yr"] for item in data]
+            parameters = [
+                year,
+                partner_code,
+                reporters_codes,
+            ]
+
+            years = []
+            with self.db_conn.cursor() as cursor:
+                cursor.execute(query, parameters)
+                for row in cursor.fetchall():
+                    years.append(row[0])
 
             if len(years) == 4 and all(y == year for y in years):
                 valid_years.append(year)

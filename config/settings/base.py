@@ -288,7 +288,11 @@ if HAWK_ENABLED:
     )
 
     HAWK_CREDENTIALS = {
-        HAWK_ID: {"id": HAWK_ID, "key": HAWK_KEY, "algorithm": HAWK_ALGORITHM,},
+        HAWK_ID: {
+            "id": HAWK_ID,
+            "key": HAWK_KEY,
+            "algorithm": HAWK_ALGORITHM,
+        },
         DATAHUB_HAWK_ID: {
             "id": DATAHUB_HAWK_ID,
             "key": DATAHUB_HAWK_KEY,
@@ -334,8 +338,13 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "ecs_formatter": {"()": ECSFormatter,},
-        "simple": {"format": "{asctime} {levelname} {message}", "style": "{",},
+        "ecs_formatter": {
+            "()": ECSFormatter,
+        },
+        "simple": {
+            "format": "{asctime} {levelname} {message}",
+            "style": "{",
+        },
     },
     "handlers": {
         "ecs": {
@@ -403,3 +412,10 @@ PUBLIC_DATA_BUCKET_REGION = env("PUBLIC_DATA_BUCKET_REGION")
 PUBLIC_DATA_KEY_PREFIX = env("PUBLIC_DATA_KEY_PREFIX")
 
 FRONTEND_DOMAIN = env("FRONTEND_DOMAIN", default="http://localhost:9880")
+
+COMTRADE_DB_HOST = env("COMTRADE_DB_HOST")
+COMTRADE_DB_PORT = env("COMTRADE_DB_PORT")
+COMTRADE_DB_NAME = env("COMTRADE_DB_NAME")
+COMTRADE_DB_USER = env("COMTRADE_DB_USER")
+COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD")
+COMTRADE_DB_OPTIONS = env("COMTRADE_DB_OPTIONS")
