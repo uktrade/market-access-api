@@ -4,7 +4,6 @@ import requests
 
 from decimal import Decimal
 from psycopg2 import sql
-from typing import List
 
 from django.conf import settings
 
