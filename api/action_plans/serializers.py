@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
+from rest_framework import serializers
 
 
 class ActionPlanTaskSerializer(serializers.ModelSerializer):
@@ -67,6 +66,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "owner_email",
             "status",
             "strategic_context",
+            "strategic_context_last_updated",
         )
         lookup_field = "barrier"
 

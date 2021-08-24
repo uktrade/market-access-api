@@ -17,8 +17,8 @@ User = get_user_model()
 class ActionPlan(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid4)
-    barrier = models.ForeignKey(
-        Barrier, on_delete=models.CASCADE, related_name="action_plans"
+    barrier = models.OneToOneField(
+        Barrier, on_delete=models.CASCADE, related_name="action_plan"
     )
 
     owner = models.ForeignKey(
@@ -35,6 +35,7 @@ class ActionPlan(models.Model):
         max_length=100, null=True, blank=True, choices=ACTION_PLAN_RAG_STATUS_CHOICES
     )
     strategic_context = models.TextField(default="", blank=True)
+    strategic_context_last_updated = models.DateTimeField(null=True, blank=True)
 
     history = HistoricalRecords()
 
