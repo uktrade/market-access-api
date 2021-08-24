@@ -72,9 +72,13 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
         return obj.milestones.count()
 
     def get_number_of_objectives_complete(self, obj):
-        return obj.milestones.annotate(
-            incomplete_tasks=Count("tasks", exclude=Q(tasks__status="COMPLETED"))
-        ).filter(incomplete_tasks=0)
+        return (
+            obj.milestones.annotate(
+                incomplete_tasks=Count("tasks", exclude=Q(tasks__status="COMPLETED"))
+            )
+            .filter(incomplete_tasks=0)
+            .count()
+        )
 
     def get_number_of_interventions(self, obj):
         return ActionPlanTask.objects.filter(milestone__action_plan=obj).count()
@@ -174,6 +178,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "value_to_economy",
             "wto_profile",
             "government_organisations",
+            "last_published_on",
             # action plans
             "action_plan_added",
             "action_plan",
