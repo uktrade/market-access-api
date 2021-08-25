@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class AssessmentCalculator:
     warnings = []
-    version = "1.01"
+    version = "1.01 (Comtrade SQL)"
 
     def __init__(self, cache=None):
         self.client = ComtradeClient(cache)
@@ -431,6 +431,7 @@ class AssessmentCalculator:
 
         assessment_data = {
             "version": self.version,
+            "data_source": self.client.DATA_SOURCE,
             "commodity_codes": commodity_codes,
             "product": product,
             "start_year": years[-1],

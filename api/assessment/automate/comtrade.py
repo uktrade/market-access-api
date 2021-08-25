@@ -32,6 +32,7 @@ class ComtradeClient:
     _reporter_areas = None
     IMPORTS_TRADE_FLOW_CODE = 1
     EXPORTS_TRADE_FLOW_CODE = 2
+    DATA_SOURCE = "Comtrade SQL"
 
     def __init__(self, cache=None):
         self.cache = cache
