@@ -1,13 +1,14 @@
 from logging import getLogger
 
-from api.core.utils import cleansed_username
-from api.user.helpers import get_username
-from api.user.models import Profile, SavedSearch
-from api.user.staff_sso import sso
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 from rest_framework import serializers
+
+from api.core.utils import cleansed_username
+from api.user.helpers import get_username
+from api.user.models import Profile, SavedSearch
+from api.user.staff_sso import sso
 
 UserModel = get_user_model()
 logger = getLogger(__name__)

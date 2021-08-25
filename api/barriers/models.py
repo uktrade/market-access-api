@@ -10,6 +10,7 @@ from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
+    AWAITING_REVIEW_FROM,
     BARRIER_ARCHIVED_REASON,
     BARRIER_PENDING,
     BARRIER_SOURCE,
@@ -20,7 +21,6 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
     TRADING_BLOCS,
-    AWAITING_REVIEW_FROM,
     BarrierStatus,
     PublicBarrierStatus,
 )
@@ -103,25 +103,11 @@ class BarrierHistoricalModel(models.Model):
     """
 
     categories_cache = ArrayField(
-        models.PositiveIntegerField(),
-        blank=True,
-        default=list,
+        models.PositiveIntegerField(), blank=True, default=list,
     )
-    commodities_cache = ArrayField(
-        models.JSONField(),
-        blank=True,
-        default=list,
-    )
-    tags_cache = ArrayField(
-        models.IntegerField(),
-        blank=True,
-        default=list,
-    )
-    organisations_cache = ArrayField(
-        models.IntegerField(),
-        blank=True,
-        default=list,
-    )
+    commodities_cache = ArrayField(models.JSONField(), blank=True, default=list,)
+    tags_cache = ArrayField(models.IntegerField(), blank=True, default=list,)
+    organisations_cache = ArrayField(models.IntegerField(), blank=True, default=list,)
 
     def get_changed_fields(self, old_history):
         changed_fields = set(self.diff_against(old_history).changed_fields)
@@ -234,31 +220,19 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="list of states, provinces, regions etc within a country",
     )
     trading_bloc = models.CharField(
-        choices=TRADING_BLOC_CHOICES,
-        max_length=7,
-        blank=True,
+        choices=TRADING_BLOC_CHOICES, max_length=7, blank=True,
     )
     caused_by_trading_bloc = models.BooleanField(null=True)
     trade_direction = models.SmallIntegerField(
-        choices=TRADE_DIRECTION_CHOICES,
-        blank=True,
-        null=True,
+        choices=TRADE_DIRECTION_CHOICES, blank=True, null=True,
     )
     sectors_affected = models.BooleanField(
-        help_text="Does the barrier affect any sectors?",
-        null=True,
-        blank=True,
+        help_text="Does the barrier affect any sectors?", null=True, blank=True,
     )
     all_sectors = models.BooleanField(
-        help_text="Does the barrier affect all sectors?",
-        null=True,
-        blank=True,
+        help_text="Does the barrier affect all sectors?", null=True, blank=True,
     )
-    sectors = ArrayField(
-        models.UUIDField(),
-        blank=True,
-        default=list,
-    )
+    sectors = ArrayField(models.UUIDField(), blank=True, default=list,)
     companies = models.JSONField(blank=True, null=True)
     product = models.CharField(max_length=MAX_LENGTH, blank=True)
     source = models.CharField(choices=BARRIER_SOURCE, max_length=25, blank=True)
@@ -280,15 +254,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     # Barrier status
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
-    sub_status = models.CharField(
-        choices=BARRIER_PENDING,
-        max_length=25,
-        blank=True,
-    )
+    sub_status = models.CharField(choices=BARRIER_PENDING, max_length=25, blank=True,)
     sub_status_other = models.CharField(
-        max_length=MAX_LENGTH,
-        blank=True,
-        help_text="Text if sub status is 'OTHER'",
+        max_length=MAX_LENGTH, blank=True, help_text="Text if sub status is 'OTHER'",
     )
     status_summary = models.TextField(blank=True)
     status_date = models.DateField(
@@ -321,8 +289,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="If public eligibility has been marked to be reviewed later.",
     )
     public_eligibility_summary = models.TextField(
-        blank=True,
-        help_text="Public eligibility summary if provided by user.",
+        blank=True, help_text="Public eligibility summary if provided by user.",
     )
 
     # Barrier priority
@@ -341,9 +308,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Store reporting stages before submitting",
     )
     archived_reason = models.CharField(
-        choices=BARRIER_ARCHIVED_REASON,
-        max_length=25,
-        blank=True,
+        choices=BARRIER_ARCHIVED_REASON, max_length=25, blank=True,
     )
     archived_explanation = models.TextField(blank=True)
     commodities = models.ManyToManyField(Commodity, through="BarrierCommodity")
@@ -558,9 +523,7 @@ class PublicBarrierHistoricalModel(models.Model):
     """
 
     categories_cache = ArrayField(
-        models.CharField(max_length=20),
-        blank=True,
-        default=list,
+        models.CharField(max_length=20), blank=True, default=list,
     )
 
     light_touch_reviews_cache = models.JSONField(default=dict)
@@ -670,8 +633,8 @@ class PublicBarrierLightTouchReviews(FullyArchivableMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         organisation_approval_ids = self.government_organisation_approvals
-        all_organisation_ids = (
-            self.public_barrier.barrier.organisations.all().values_list("id", flat=True)
+        all_organisation_ids = self.public_barrier.barrier.organisations.all().values_list(
+            "id", flat=True
         )
         self.missing_government_organisation_approvals = list(
             set(all_organisation_ids) - set(organisation_approval_ids)
@@ -710,9 +673,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     # caused_by_country_trading_bloc = models.BooleanField(null=True)
     caused_by_trading_bloc = models.BooleanField(blank=True, null=True)
     trading_bloc = models.CharField(
-        choices=TRADING_BLOC_CHOICES,
-        max_length=7,
-        blank=True,
+        choices=TRADING_BLOC_CHOICES, max_length=7, blank=True,
     )
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     all_sectors = models.BooleanField(blank=True, null=True)
@@ -1134,6 +1095,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     text = django_filters.Filter(method="text_search")
 
     user = django_filters.Filter(method="my_barriers")
+    has_action_plan = django_filters.Filter(method="has_action_plan_filter")
 
     team = django_filters.Filter(method="team_barriers")
     member = django_filters.Filter(method="member_filter")
@@ -1200,6 +1162,15 @@ class BarrierFilterSet(django_filters.FilterSet):
         else:
             return queryset.filter(priority__in=priorities)
 
+    def has_action_plan_filter(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        from api.action_plans.models import ActionPlanMilestone
+
+        milestones = ActionPlanMilestone.objects.all()
+        return queryset.filter(action_plans__milestones__in=milestones)
+
     def clean_location_value(self, value):
         """
         Splits a list of locations into countries, regions and trading blocs
@@ -1258,13 +1229,12 @@ class BarrierFilterSet(django_filters.FilterSet):
             if "country_trading_bloc" in self.data:
                 trading_bloc_countries = []
                 for trading_bloc in self.data["country_trading_bloc"].split(","):
-                    trading_bloc_countries += (
-                        metadata_utils.get_trading_bloc_country_ids(trading_bloc)
+                    trading_bloc_countries += metadata_utils.get_trading_bloc_country_ids(
+                        trading_bloc
                     )
 
                 tb_queryset = tb_queryset | queryset.filter(
-                    country__in=trading_bloc_countries,
-                    caused_by_trading_bloc=True,
+                    country__in=trading_bloc_countries, caused_by_trading_bloc=True,
                 )
 
         return tb_queryset | queryset.filter(
@@ -1403,16 +1373,12 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "with" in value:
             assessment_queryset = (
                 assessment_queryset
-                | queryset.filter(
-                    economic_assessments__archived=False,
-                ).distinct()
+                | queryset.filter(economic_assessments__archived=False,).distinct()
             )
         if "without" in value:
             assessment_queryset = (
                 assessment_queryset
-                | queryset.filter(
-                    economic_assessments__isnull=True,
-                ).distinct()
+                | queryset.filter(economic_assessments__isnull=True,).distinct()
             )
         if "ready_for_approval" in value:
             assessment_queryset = (

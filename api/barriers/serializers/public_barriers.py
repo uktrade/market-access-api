@@ -1,3 +1,6 @@
+from hashid_field.rest import HashidSerializerCharField
+from rest_framework import serializers
+
 from api.barriers.fields import (
     DisplayChoiceField,
     NoneToBlankCharField,
@@ -17,8 +20,6 @@ from api.interactions.serializers import PublicBarrierNoteSerializer
 from api.metadata.constants import PublicBarrierStatus
 from api.metadata.fields import TradingBlocField
 from api.metadata.serializers import OrganisationSerializer
-from hashid_field.rest import HashidSerializerCharField
-from rest_framework import serializers
 
 PUBLIC_ID = "barriers.PublicBarrier.id"
 

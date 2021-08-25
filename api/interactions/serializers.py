@@ -1,6 +1,7 @@
+from rest_framework import serializers
+
 from api.interactions.models import Document, Interaction, Mention, PublicBarrierNote
 from api.user.serializers import UserMinimalDetailSerializer
-from rest_framework import serializers
 
 
 class InteractionSerializer(serializers.ModelSerializer):

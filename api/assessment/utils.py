@@ -1,4 +1,5 @@
 from django.core.cache import cache
+
 from api.assessment.automate.calculator import AssessmentCalculator
 from api.barriers.models import Barrier
 
