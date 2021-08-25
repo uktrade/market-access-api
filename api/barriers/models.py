@@ -1086,6 +1086,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     """
 
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
+    ignore_all_sectors = django_filters.Filter(method="ignore_all_sectors_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
     category = django_filters.BaseInFilter("categories", distinct=True)
@@ -1145,6 +1146,12 @@ class BarrierFilterSet(django_filters.FilterSet):
         which is ArrayField
         """
         return queryset.filter(Q(all_sectors=True) | Q(sectors__overlap=value))
+
+    def ignore_all_sectors_filter(self, queryset, name, value):
+        """
+        ignore all barriers that have 'all sectors' as the sector
+        """
+        return queryset.filter(Q(all_sectors=False))
 
     def priority_filter(self, queryset, name, value):
         """
