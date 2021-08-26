@@ -6,12 +6,10 @@ from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import create_test_user
 from django.test import TestCase
 from tests.action_plans.factories import (
-    ActionPlanFactory,
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
 )
 from tests.barriers.factories import BarrierFactory
-from tests.user.factories import UserFactoryMixin
 
 pytestmark = [pytest.mark.django_db]
 
