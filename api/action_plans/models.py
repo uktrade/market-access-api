@@ -39,8 +39,6 @@ class ActionPlan(models.Model):
 
     history = HistoricalRecords()
 
-    history = HistoricalRecords()
-
 
 class ActionPlanMilestone(models.Model):
 
