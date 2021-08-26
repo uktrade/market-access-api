@@ -105,6 +105,9 @@ jobs:
           name: Wait for db
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
 
+      # Writing to the already existing market_access database as setting up two postgres instances on circleci, at
+      # least with the docker executor, isn't easily possible due to clashing ports. You can't change the port that the
+      # postgres docker image binds to without creating your own image and this is a much simpler solution.
       - run:
           name: Initialise comtrade data
           command: |
