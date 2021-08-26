@@ -9,14 +9,21 @@ from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
-from api.metadata.constants import (AWAITING_REVIEW_FROM,
-                                    BARRIER_ARCHIVED_REASON, BARRIER_PENDING,
-                                    BARRIER_SOURCE, BARRIER_TERMS,
-                                    GOVERNMENT_ORGANISATION_TYPES,
-                                    STAGE_STATUS, TRADE_CATEGORIES,
-                                    TRADE_DIRECTION_CHOICES,
-                                    TRADING_BLOC_CHOICES, TRADING_BLOCS,
-                                    BarrierStatus, PublicBarrierStatus)
+from api.metadata.constants import (
+    AWAITING_REVIEW_FROM,
+    BARRIER_ARCHIVED_REASON,
+    BARRIER_PENDING,
+    BARRIER_SOURCE,
+    BARRIER_TERMS,
+    GOVERNMENT_ORGANISATION_TYPES,
+    STAGE_STATUS,
+    TRADE_CATEGORIES,
+    TRADE_DIRECTION_CHOICES,
+    TRADING_BLOC_CHOICES,
+    TRADING_BLOCS,
+    BarrierStatus,
+    PublicBarrierStatus,
+)
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVector
@@ -1144,6 +1151,8 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         ignore all barriers that have 'all sectors' as the sector
         """
+        if not value:
+            return queryset
         return queryset.exclude(all_sectors=True)
 
     def priority_filter(self, queryset, name, value):
