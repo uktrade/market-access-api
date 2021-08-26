@@ -62,7 +62,7 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
         )
 
     def get_action_plan_owner(self, obj):
-        if not obj or not obj.owner:
+        if not obj.owner:
             return None
         return obj.owner.email
 
