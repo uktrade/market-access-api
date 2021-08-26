@@ -1,6 +1,7 @@
 from datetime import date
 
 import pytest
+from api.action_plans.models import ActionPlan
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import create_test_user
 from django.test import TestCase
@@ -15,16 +16,13 @@ from tests.user.factories import UserFactoryMixin
 pytestmark = [pytest.mark.django_db]
 
 
-class TestDataWarehouseExport(UserFactoryMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-
+class TestDataWarehouseExport(TestCase):
     def test_datawarehouse_action_plans_values(self):
 
         owner = create_test_user()
 
         barrier = BarrierFactory(status_date=date.today())
-        action_plan = ActionPlanFactory(
+        ActionPlan.objects.filter(barrier=barrier).update(
             barrier=barrier,
             owner=owner,
             current_status="Progress update here",
@@ -32,6 +30,8 @@ class TestDataWarehouseExport(UserFactoryMixin, TestCase):
             strategic_context="Strategic context text",
             strategic_context_last_updated=date(2021, 7, 1),
         )
+        action_plan = barrier.action_plan
+        barrier.refresh_from_db()
 
         data_with_empty_action_plan = DataWorkspaceSerializer(barrier).data
         assert data_with_empty_action_plan["action_plan_added"] is False

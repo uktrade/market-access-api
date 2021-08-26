@@ -138,7 +138,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "id",
             "import_market_size",
             "is_summary_sensitive",
-            "last_seen_on",
             "location",
             "modified_by",
             "modified_on",

@@ -3,6 +3,7 @@ from uuid import uuid4
 from api.barriers.models import Barrier
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
 from simple_history.models import HistoricalRecords
 
 from .constants import (
@@ -38,6 +39,21 @@ class ActionPlan(models.Model):
     strategic_context_last_updated = models.DateTimeField(null=True, blank=True)
 
     history = HistoricalRecords()
+
+
+def create_action_plan_on_barrier_post_save(sender, instance: Barrier, **kwargs):
+    """
+    Create an ActionPlan model whenever a Barrier is created.
+    At this moment in time Barriers are created via the save method of the model,
+    so a signal should be safe to use
+    """
+    try:
+        instance.action_plan
+    except Barrier.action_plan.RelatedObjectDoesNotExist:
+        ActionPlan.objects.get_or_create(barrier=instance)
+
+
+post_save.connect(create_action_plan_on_barrier_post_save, sender=Barrier)
 
 
 class ActionPlanMilestone(models.Model):
