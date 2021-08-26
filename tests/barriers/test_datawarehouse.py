@@ -34,7 +34,7 @@ class TestDataWarehouseExport(UserFactoryMixin, TestCase):
         )
 
         data_with_empty_action_plan = DataWorkspaceSerializer(barrier).data
-        assert data_with_empty_action_plan["action_plan_added"] == False
+        assert data_with_empty_action_plan["action_plan_added"] is False
         assert (
             data_with_empty_action_plan["action_plan"]["progress_update"]
             == "Progress update here"
@@ -80,7 +80,7 @@ class TestDataWarehouseExport(UserFactoryMixin, TestCase):
         )
 
         data_with_action_plan = DataWorkspaceSerializer(barrier).data
-        assert data_with_action_plan["action_plan_added"] == True
+        assert data_with_action_plan["action_plan_added"] is True
         assert (
             data_with_action_plan["action_plan"]["action_plan_percent_complete"]
             == "0.0%"
