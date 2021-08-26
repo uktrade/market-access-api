@@ -1,4 +1,4 @@
-from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
+from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import BarrierStatus
@@ -30,8 +30,6 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
             "strategic_context_updated_on",
             "progress_update",
             "progress_update_updated_on",
-            # "delivery_confidence",
-            # "delivery_confidence_updated_on",
             "action_plan_owner",
             "number_of_objectives",
             "number_of_objectives_complete",
@@ -48,7 +46,7 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
         return (
             obj.strategic_context_last_updated
             and obj.strategic_context_last_updated.strftime(
-                settings.DEFAULT_EXPORT_DATETIME_FORMAT
+                settings.DEFAULT_EXPORT_DATE_FORMAT
             )
         )
 
@@ -59,7 +57,7 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
         return (
             obj.current_status_last_updated
             and obj.current_status_last_updated.strftime(
-                settings.DEFAULT_EXPORT_DATETIME_FORMAT
+                settings.DEFAULT_EXPORT_DATE_FORMAT
             )
         )
 
@@ -74,9 +72,10 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
     def get_number_of_objectives_complete(self, obj):
         return (
             obj.milestones.annotate(
-                incomplete_tasks=Count("tasks", exclude=Q(tasks__status="COMPLETED"))
+                incomplete_tasks=Count("tasks", filter=~Q(tasks__status="COMPLETED")),
+                tasks_count=Count("tasks"),
             )
-            .filter(incomplete_tasks=0)
+            .filter(incomplete_tasks=0, tasks_count__gt=0)
             .count()
         )
 
@@ -90,15 +89,15 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
 
     def get_all_intervention_types(self, obj):
         intervention_types = [
-            f"{task.action_type_category} - {task.action_type}"
-            for task in ActionPlanTask.objects.filter(
-                milestone__action_plan=obj, status="COMPLETED"
-            )
+            f"{task.action_type_category} - {task.get_action_type_display()}"
+            for task in ActionPlanTask.objects.filter(milestone__action_plan=obj)
         ]
         return ",".join(intervention_types)
 
     def get_action_plan_percent_complete(self, obj):
         total_interventions = self.get_number_of_interventions(obj)
+        if total_interventions == 0:
+            return None
         num_complete_intervention = self.get_number_of_interventions_complete(obj)
         completion_percentage = (num_complete_intervention / total_interventions) * 100
         return f"{completion_percentage}%"
@@ -178,7 +177,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "value_to_economy",
             "wto_profile",
             "government_organisations",
-            "last_published_on",
             # action plans
             "action_plan_added",
             "action_plan",
