@@ -97,7 +97,7 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
     def get_action_plan_percent_complete(self, obj):
         total_interventions = self.get_number_of_interventions(obj)
         if total_interventions == 0:
-            return None
+            return "N/A"
         num_complete_intervention = self.get_number_of_interventions_complete(obj)
         completion_percentage = (num_complete_intervention / total_interventions) * 100
         return f"{completion_percentage}%"
