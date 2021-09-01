@@ -4,6 +4,7 @@ from api.barriers.models import Barrier
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
+from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
 from .constants import (
@@ -39,6 +40,14 @@ class ActionPlan(models.Model):
     strategic_context_last_updated = models.DateTimeField(null=True, blank=True)
 
     history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        if self.strategic_context:
+            self.strategic_context_last_updated = timezone.now()
+        if self.current_status:
+            self.current_status_last_updated = timezone.now()
+
+        super().save(*args, **kwargs)
 
 
 def create_action_plan_on_barrier_post_save(sender, instance: Barrier, **kwargs):

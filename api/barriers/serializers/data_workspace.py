@@ -202,5 +202,5 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_action_plan_added(self, obj):
         if not obj.action_plan:
-            return None
+            return False
         return obj.action_plan.milestones.count() > 0
