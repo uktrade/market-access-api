@@ -2,12 +2,11 @@ import datetime
 import string
 
 import factory
-from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyInteger, FuzzyText
-
 from api.barriers.models import Barrier, PublicBarrier
 from api.commodities.models import Commodity
 from api.metadata.models import BarrierPriority
 from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
+from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyInteger, FuzzyText
 
 
 def fuzzy_sector():

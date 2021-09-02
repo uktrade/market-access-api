@@ -1,16 +1,113 @@
-from rest_framework import serializers
-
+from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import BarrierStatus
+from django.conf import settings
+from django.db.models import Count, Q
+from rest_framework import serializers
 
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
 
 
+class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
+    strategic_context = serializers.SerializerMethodField()
+    strategic_context_updated_on = serializers.SerializerMethodField()
+    progress_update = serializers.SerializerMethodField()
+    progress_update_updated_on = serializers.SerializerMethodField()
+    action_plan_owner = serializers.SerializerMethodField()
+    number_of_objectives = serializers.SerializerMethodField()
+    number_of_objectives_complete = serializers.SerializerMethodField()
+    number_of_interventions = serializers.SerializerMethodField()
+    number_of_interventions_complete = serializers.SerializerMethodField()
+    all_intervention_types = serializers.SerializerMethodField()
+    action_plan_percent_complete = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ActionPlan
+        fields = (
+            "strategic_context",
+            "strategic_context_updated_on",
+            "progress_update",
+            "progress_update_updated_on",
+            "action_plan_owner",
+            "number_of_objectives",
+            "number_of_objectives_complete",
+            "number_of_interventions",
+            "number_of_interventions_complete",
+            "all_intervention_types",
+            "action_plan_percent_complete",
+        )
+
+    def get_strategic_context(self, obj):
+        return obj.strategic_context
+
+    def get_strategic_context_updated_on(self, obj):
+        return (
+            obj.strategic_context_last_updated
+            and obj.strategic_context_last_updated.strftime(
+                settings.DEFAULT_EXPORT_DATE_FORMAT
+            )
+        )
+
+    def get_progress_update(self, obj):
+        return obj.current_status
+
+    def get_progress_update_updated_on(self, obj):
+        return (
+            obj.current_status_last_updated
+            and obj.current_status_last_updated.strftime(
+                settings.DEFAULT_EXPORT_DATE_FORMAT
+            )
+        )
+
+    def get_action_plan_owner(self, obj):
+        if not obj.owner:
+            return None
+        return obj.owner.email
+
+    def get_number_of_objectives(self, obj):
+        return obj.milestones.count()
+
+    def get_number_of_objectives_complete(self, obj):
+        return (
+            obj.milestones.annotate(
+                incomplete_tasks=Count("tasks", filter=~Q(tasks__status="COMPLETED")),
+                tasks_count=Count("tasks"),
+            )
+            .filter(incomplete_tasks=0, tasks_count__gt=0)
+            .count()
+        )
+
+    def get_number_of_interventions(self, obj):
+        return ActionPlanTask.objects.filter(milestone__action_plan=obj).count()
+
+    def get_number_of_interventions_complete(self, obj):
+        return ActionPlanTask.objects.filter(
+            milestone__action_plan=obj, status="COMPLETED"
+        ).count()
+
+    def get_all_intervention_types(self, obj):
+        intervention_types = [
+            f"{task.action_type_category} - {task.get_action_type_display()}"
+            for task in ActionPlanTask.objects.filter(milestone__action_plan=obj)
+        ]
+        return ",".join(intervention_types)
+
+    def get_action_plan_percent_complete(self, obj):
+        total_interventions = self.get_number_of_interventions(obj)
+        if total_interventions == 0:
+            return "N/A"
+        num_complete_intervention = self.get_number_of_interventions_complete(obj)
+        completion_percentage = (num_complete_intervention / total_interventions) * 100
+        return f"{completion_percentage}%"
+
+
 class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     status_history = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
+    action_plan_added = serializers.SerializerMethodField()
+    action_plan = DataworkspaceActionPlanSerializer()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -41,6 +138,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "id",
             "import_market_size",
             "is_summary_sensitive",
+            "location",
             "modified_by",
             "modified_on",
             "other_source",
@@ -50,6 +148,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "public_barrier",
             "public_eligibility",
             "public_eligibility_summary",
+            "public_eligibility_postponed",
             "resolvability_assessments",
             "sectors",
             "sectors_affected",
@@ -76,13 +175,15 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "valuation_assessment_rating",
             "value_to_economy",
             "wto_profile",
+            "government_organisations",
+            # action plans
+            "action_plan_added",
+            "action_plan",
         )
 
     def get_status_history(self, obj):
         history_items = CachedHistoryItem.objects.filter(
-            barrier=obj,
-            model="barrier",
-            field="status",
+            barrier=obj, model="barrier", field="status",
         )
         status_lookup = dict(BarrierStatus.choices)
         return [
@@ -98,3 +199,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_team_count(self, obj):
         return TeamMember.objects.filter(barrier=obj).count()
+
+    def get_action_plan_added(self, obj):
+        if not obj.action_plan:
+            return False
+        return obj.action_plan.milestones.count() > 0
