@@ -13,18 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 class AssessmentCalculator:
-    _client = None
     warnings = []
-    version = "1.01"
+    version = "1.01 (Comtrade SQL)"
 
     def __init__(self, cache=None):
-        self.cache = cache
-
-    @property
-    def client(self):
-        if self._client is None:
-            self._client = ComtradeClient(cache=self.cache)
-        return self._client
+        self.client = ComtradeClient(cache)
 
     def get_year_range(self, country1, country2, year=None):
         use_most_recent = year is None
@@ -70,31 +63,21 @@ class AssessmentCalculator:
         num_years = len(years)
 
         logger.info("Fetching data for affected products")
+        partners = (
+            get_comtrade_country_name(country1),
+            get_comtrade_country_name(country2),
+            "World",
+        )
         affected_products_df = self.client.get(
             years=years,
-            trade_direction=("imports", "exports"),
             commodity_codes=commodity_codes,
-            reporters="All",
-            partners=(
-                get_comtrade_country_name(country1),
-                get_comtrade_country_name(country2),
-                "World",
-            ),
-            tidy=True,
+            partners=partners,
         )
 
         logger.info("Fetching data for all products")
         all_products_df = self.client.get(
             years=years,
-            trade_direction=("imports", "exports"),
-            commodity_codes="TOTAL",
-            reporters="All",
-            partners=(
-                get_comtrade_country_name(country1),
-                get_comtrade_country_name(country2),
-                "World",
-            ),
-            tidy=True,
+            partners=partners,
         )
 
         relationship_list = (
@@ -448,6 +431,7 @@ class AssessmentCalculator:
 
         assessment_data = {
             "version": self.version,
+            "data_source": self.client.DATA_SOURCE,
             "commodity_codes": commodity_codes,
             "product": product,
             "start_year": years[-1],

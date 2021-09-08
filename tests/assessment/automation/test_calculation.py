@@ -36,7 +36,6 @@ class TestAssessmentUtils(APITestMixin):
 
     @patch.object(ComtradeClient, "fetch", new=patched_comtrade_fetch)
     def test_assessment_calculator(self):
-
         country_commodity_pairs = [
             {
                 "country": "5961b8be-5d95-e211-a939-e4115bead28a",  # Russia,
