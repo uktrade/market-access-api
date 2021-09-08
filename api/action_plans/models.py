@@ -3,6 +3,8 @@ from uuid import uuid4
 from api.barriers.models import Barrier
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
+from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
 from .constants import (
@@ -17,8 +19,8 @@ User = get_user_model()
 class ActionPlan(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid4)
-    barrier = models.ForeignKey(
-        Barrier, on_delete=models.CASCADE, related_name="action_plans"
+    barrier = models.OneToOneField(
+        Barrier, on_delete=models.CASCADE, related_name="action_plan"
     )
 
     owner = models.ForeignKey(
@@ -35,8 +37,32 @@ class ActionPlan(models.Model):
         max_length=100, null=True, blank=True, choices=ACTION_PLAN_RAG_STATUS_CHOICES
     )
     strategic_context = models.TextField(default="", blank=True)
+    strategic_context_last_updated = models.DateTimeField(null=True, blank=True)
 
     history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        if self.strategic_context:
+            self.strategic_context_last_updated = timezone.now()
+        if self.current_status:
+            self.current_status_last_updated = timezone.now()
+
+        super().save(*args, **kwargs)
+
+
+def create_action_plan_on_barrier_post_save(sender, instance: Barrier, **kwargs):
+    """
+    Create an ActionPlan model whenever a Barrier is created.
+    At this moment in time Barriers are created via the save method of the model,
+    so a signal should be safe to use
+    """
+    try:
+        instance.action_plan
+    except Barrier.action_plan.RelatedObjectDoesNotExist:
+        ActionPlan.objects.get_or_create(barrier=instance)
+
+
+post_save.connect(create_action_plan_on_barrier_post_save, sender=Barrier)
 
 
 class ActionPlanMilestone(models.Model):
