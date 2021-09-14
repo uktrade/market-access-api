@@ -10,7 +10,7 @@ MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
 class TeamMemberManager(models.Manager):
-    """ Manage barrier team member within the model, with archived not False """
+    """Manage barrier team member within the model, with archived not False"""
 
     def get_queryset(self):
         return super(TeamMemberManager, self).get_queryset().filter(Q(archived=False))

@@ -1,4 +1,5 @@
 import pytest
+
 from api.assessment.automate.countries import get_comtrade_country_name
 
 pytestmark = [pytest.mark.django_db]

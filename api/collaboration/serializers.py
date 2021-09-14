@@ -5,7 +5,7 @@ from api.user.serializers import UserListSerializer
 
 
 class BarrierTeamSerializer(serializers.ModelSerializer):
-    """ Serializer for listing Barriers team members """
+    """Serializer for listing Barriers team members"""
 
     created_by = serializers.SerializerMethodField()
     user = UserListSerializer()

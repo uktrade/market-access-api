@@ -24,7 +24,7 @@ MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
 class Document(AbstractEntityDocumentModel):
-    """ Document item related to interaction """
+    """Document item related to interaction"""
 
     size = models.IntegerField(null=True)
     mime_type = models.CharField(max_length=MAX_LENGTH, blank=True)
@@ -41,7 +41,7 @@ class Document(AbstractEntityDocumentModel):
 
 
 class InteractionManager(models.Manager):
-    """ Manage barrier interactions within the model, with archived not False """
+    """Manage barrier interactions within the model, with archived not False"""
 
     def get_queryset(self):
         return super(InteractionManager, self).get_queryset().filter(Q(archived=False))
@@ -134,7 +134,7 @@ class ExcludeFromNotification(BaseModel):
 
 
 class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
-    """ Interaction records for each Barrier """
+    """Interaction records for each Barrier"""
 
     barrier = models.ForeignKey(
         "barriers.Barrier",

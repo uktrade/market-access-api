@@ -24,14 +24,14 @@ jobs:
 
     environment:
       DATABASE_URL: 'postgresql://postgres@localhost/market_access'
-      DATAHUB_SECRET: 'secret'
-      DH_HAWK_ID: 'dh_hawk_id'
-      DH_HAWK_KEY: 'dh_hawk_key'
+      DATAHUB_SECRET: 'secret' # pragma: allowlist secret
+      DH_HAWK_ID: 'dh_hawk_id' # pragma: allowlist secret
+      DH_HAWK_KEY: 'dh_hawk_key' # pragma: allowlist secret
       DJANGO_HASHID_FIELD_SALT: 'dash-of-salt'
       DJANGO_SETTINGS_MODULE: 'config.settings.test'
       DEBUG: 'False'
       ELASTIC_APM_ENABLED: 'False'
-      SECRET_KEY: 'changeme'
+      SECRET_KEY: 'changeme' # pragma: allowlist secret
       SSO_ENABLED: 'True'
       SENTRY_DSN: ''
       SENTRY_ENVIRONMENT: ''
@@ -46,13 +46,13 @@ jobs:
       HAWK_ID: 'metadata'
       AUTHBROKER_URL: 'http://localhost:5000/o/'
       AUTHBROKER_CLIENT_ID: 'auth client'
-      AUTHBROKER_CLIENT_SECRET: auth secret
+      AUTHBROKER_CLIENT_SECRET: auth secret # pragma: allowlist secret
       ALLOWED_ADMIN_IPS: '1.2.3.4'
       RESTRICT_ADMIN: 'False'
-      AV_V2_SERVICE_URL: 'https://test:secret@av-api/scan'
+      AV_V2_SERVICE_URL: 'https://test:secret@av-api/scan' # pragma: allowlist secret
       DEFAULT_BUCKET: 'market-access-enc-dev'
       AWS_ACCESS_KEY_ID: 'access_key'
-      AWS_SECRET_ACCESS_KEY: 'access_secret'
+      AWS_SECRET_ACCESS_KEY: 'access_secret' # pragma: allowlist secret
       AWS_DEFAULT_REGION: 'eu-west-2'
       REDIS_BASE_URL: 'redis://localhost'
       DMAS_BASE_URL: 'https://dummy.market-access.net'
@@ -63,7 +63,7 @@ jobs:
       NOTIFY_ACTION_PLAN_NOTIFCATION_ID: ''
       NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID: ''
       PUBLIC_DATA_AWS_ACCESS_KEY_ID: 'dummy'
-      PUBLIC_DATA_AWS_SECRET_ACCESS_KEY: 'dummy'
+      PUBLIC_DATA_AWS_SECRET_ACCESS_KEY: 'dummy' # pragma: allowlist secret
       PUBLIC_DATA_BUCKET: 'dummy'
       PUBLIC_DATA_BUCKET_REGION: 'us-east-1'
       PUBLIC_DATA_KEY_PREFIX: 'dummy/'

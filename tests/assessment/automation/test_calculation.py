@@ -3,11 +3,12 @@ from typing import Dict
 
 import pytest
 import simplejson as json
+from jsondiff import diff
+from mock import patch
+
 from api.assessment.automate.calculator import AssessmentCalculator
 from api.assessment.automate.comtrade import ComtradeClient
 from api.core.test_utils import APITestMixin
-from jsondiff import diff
-from mock import patch
 from tests.assessment.automation.utils import patched_comtrade_fetch
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 

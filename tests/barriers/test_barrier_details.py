@@ -232,7 +232,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert not response.data["categories"]
 
     def test_update_barrier_adds_user_as_contributor(self):
-        """ Users who edit a barrier should be  added as a Contributor automatically. """
+        """Users who edit a barrier should be  added as a Contributor automatically."""
         assert not get_team_members(self.barrier)
 
         payload = {"title": "Wibble wobble"}

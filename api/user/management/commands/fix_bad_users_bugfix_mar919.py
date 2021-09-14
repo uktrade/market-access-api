@@ -1,9 +1,9 @@
-from api.user.fix_bad_user_helper import move_all_data_from_bad_user_to_good_user
-
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.conf import settings
+
+from api.user.fix_bad_user_helper import move_all_data_from_bad_user_to_good_user
 
 
 class Command(BaseCommand):

@@ -1,3 +1,4 @@
+import uuid
 from typing import Dict, List
 from unittest.mock import patch
 
@@ -8,7 +9,6 @@ from django.core.management import call_command
 from django.db import models
 from django.db.transaction import atomic
 from django.test import TestCase
-import uuid
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -33,11 +33,7 @@ from api.interactions.models import (
     TeamMember,
 )
 from api.metadata.models import BarrierTag
-from api.user.models import (
-    MyBarriersSavedSearch,
-    SavedSearch,
-    TeamBarriersSavedSearch,
-)
+from api.user.models import MyBarriersSavedSearch, SavedSearch, TeamBarriersSavedSearch
 from api.user_event_log.models import UserEvent
 
 base_models: List[models.Model] = [

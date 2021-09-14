@@ -1,11 +1,10 @@
 import json
+from decimal import Decimal
+
 import psycopg2
 import requests
-
-from decimal import Decimal
-from psycopg2 import sql
-
 from django.conf import settings
+from psycopg2 import sql
 
 from .exceptions import CountryNotFound, ExchangeRateNotFound
 from .exchange_rates import exchange_rates

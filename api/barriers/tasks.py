@@ -5,7 +5,6 @@ from typing import Dict, List
 
 from celery import shared_task
 from django.conf import settings
-
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.csv import _transform_csv_row

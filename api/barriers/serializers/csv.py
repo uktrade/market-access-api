@@ -24,7 +24,7 @@ from api.metadata.utils import (
 
 
 class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
-    """ Serializer for CSV export """
+    """Serializer for CSV export"""
 
     id = serializers.UUIDField()
     code = serializers.CharField()
@@ -130,7 +130,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         return term_dict.get(obj.term, "Unknown")
 
     def get_status(self, obj):
-        """  Custom Serializer Method Field for exposing current status display value """
+        """Custom Serializer Method Field for exposing current status display value"""
         status_dict = dict(BarrierStatus.choices)
         sub_status_dict = dict(BARRIER_PENDING)
         status = status_dict.get(obj.status, "Unknown")
@@ -197,12 +197,12 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         return [category.title for category in obj.categories.all()]
 
     def get_source(self, obj):
-        """  Custom Serializer Method Field for exposing source display value """
+        """Custom Serializer Method Field for exposing source display value"""
         source_dict = dict(BARRIER_SOURCE)
         return source_dict.get(obj.source, "Unknown")
 
     def get_priority(self, obj):
-        """  Custom Serializer Method Field for exposing barrier priority """
+        """Custom Serializer Method Field for exposing barrier priority"""
         if obj.priority:
             return obj.priority.name
         else:

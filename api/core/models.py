@@ -86,7 +86,7 @@ class ArchivableMixin(models.Model):
 
 
 class FullyArchivableMixin(ArchivableMixin):
-    """ Archivable mixin with extra fields for unarchiving."""
+    """Archivable mixin with extra fields for unarchiving."""
 
     unarchived_reason = models.TextField(blank=True)
     unarchived_on = models.DateTimeField(blank=True, null=True)

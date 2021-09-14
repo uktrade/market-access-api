@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
 

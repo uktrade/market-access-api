@@ -1,10 +1,11 @@
 from datetime import date
 
 import pytest
+from django.test import TestCase
+
 from api.action_plans.models import ActionPlan
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import create_test_user
-from django.test import TestCase
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,

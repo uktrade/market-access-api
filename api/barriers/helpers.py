@@ -4,7 +4,7 @@ from api.metadata.constants import PublicBarrierStatus
 
 
 def get_team_members(barrier_id):
-    """ Helper to return all members for a barrier """
+    """Helper to return all members for a barrier"""
     return TeamMember.objects.filter(barrier=barrier_id)
 
 

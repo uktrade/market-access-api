@@ -20641,4 +20641,3 @@ VALUES
 ('H1', 2018, 2018, '2018', 1, FALSE, 2, 'Export', 44, 'Bahamas', 'BHS', 826, 'United Kingdom', 'GBR', 'TOTAL', 'Age control night according participant event.', 1, 'No Quantity', 0, 1, 8189),
 ('H1', 2017, 2017, '2017', 1, FALSE, 1, 'Import', 516, 'Namibia', 'NAM', 0, 'World', 'WLD', '8459', 'Industry grow investment describe question because world of since safe serious government section.', 1, 'No Quantity', 0, 1, 8754),
 ('H1', 2017, 2017, '2017', 1, FALSE, 1, 'Import', 28, 'Antigua and Barbuda', 'ATG', 0, 'World', 'WLD', '020410', 'Two in eight thus by night require myself important history.', 1, 'No Quantity', 0, 1, 593);
-

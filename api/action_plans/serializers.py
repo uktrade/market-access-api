@@ -1,5 +1,6 @@
-from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 from rest_framework import serializers
+
+from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 
 
 class ActionPlanTaskSerializer(serializers.ModelSerializer):

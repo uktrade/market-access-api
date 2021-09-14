@@ -36,16 +36,24 @@ class HistoryManager:
             use_cache=use_cache,
         )
         history += cls.get_economic_assessment_history(
-            barrier_id=barrier.pk, fields=("rating",), use_cache=use_cache,
+            barrier_id=barrier.pk,
+            fields=("rating",),
+            use_cache=use_cache,
         )
         history += cls.get_economic_impact_assessment_history(
-            barrier_id=barrier.pk, fields=("impact",), use_cache=use_cache,
+            barrier_id=barrier.pk,
+            fields=("impact",),
+            use_cache=use_cache,
         )
         history += cls.get_resolvability_assessment_history(
-            barrier_id=barrier.pk, fields=("time_to_resolve",), use_cache=use_cache,
+            barrier_id=barrier.pk,
+            fields=("time_to_resolve",),
+            use_cache=use_cache,
         )
         history += cls.get_strategic_assessment_history(
-            barrier_id=barrier.pk, fields=("scale",), use_cache=use_cache,
+            barrier_id=barrier.pk,
+            fields=("scale",),
+            use_cache=use_cache,
         )
         return history
 
@@ -87,7 +95,8 @@ class HistoryManager:
 
         if start_date:
             history += cls.get_team_history(
-                barrier.pk, start_date=start_date + datetime.timedelta(seconds=1),
+                barrier.pk,
+                start_date=start_date + datetime.timedelta(seconds=1),
             )
         else:
             history += cls.get_team_history(barrier.pk)
@@ -128,7 +137,10 @@ class HistoryManager:
 
     @classmethod
     def get_cached_history_items(cls, barrier_id, model, fields=(), start_date=None):
-        queryset = CachedHistoryItem.objects.filter(barrier_id=barrier_id, model=model,)
+        queryset = CachedHistoryItem.objects.filter(
+            barrier_id=barrier_id,
+            model=model,
+        )
         if start_date:
             queryset = queryset.filter(date__gt=start_date)
         if fields:
@@ -148,7 +160,9 @@ class HistoryManager:
             )
 
         return EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
@@ -164,7 +178,9 @@ class HistoryManager:
             )
 
         return EconomicImpactAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
@@ -173,11 +189,16 @@ class HistoryManager:
     ):
         if use_cache:
             return cls.get_cached_history_items(
-                barrier_id, model="barrier", fields=fields, start_date=start_date,
+                barrier_id,
+                model="barrier",
+                fields=fields,
+                start_date=start_date,
             )
 
         return BarrierHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
@@ -187,13 +208,19 @@ class HistoryManager:
 
         return [
             *ActionPlanHistoryFactory.get_history_items(
-                barrier_id=barrier_id, fields=fields, start_date=start_date,
+                barrier_id=barrier_id,
+                fields=fields,
+                start_date=start_date,
             ),
             *ActionPlanTaskHistoryFactory.get_history_items(
-                barrier_id=barrier_id, fields=fields, start_date=start_date,
+                barrier_id=barrier_id,
+                fields=fields,
+                start_date=start_date,
             ),
             *ActionPlanMilestoneHistoryFactory.get_history_items(
-                barrier_id=barrier_id, fields=fields, start_date=start_date,
+                barrier_id=barrier_id,
+                fields=fields,
+                start_date=start_date,
             ),
         ]
 
@@ -201,11 +228,16 @@ class HistoryManager:
     def get_notes_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
         if use_cache:
             return cls.get_cached_history_items(
-                barrier_id, model="note", fields=fields, start_date=start_date,
+                barrier_id,
+                model="note",
+                fields=fields,
+                start_date=start_date,
             )
 
         return NoteHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
@@ -221,7 +253,9 @@ class HistoryManager:
             )
 
         return PublicBarrierHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
@@ -237,7 +271,9 @@ class HistoryManager:
             )
 
         return PublicBarrierNoteHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
@@ -253,7 +289,9 @@ class HistoryManager:
             )
 
         return ResolvabilityAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
@@ -269,27 +307,39 @@ class HistoryManager:
             )
 
         return StrategicAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
     def get_team_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
         if use_cache:
             return cls.get_cached_history_items(
-                barrier_id, model="team_member", fields=fields, start_date=start_date,
+                barrier_id,
+                model="team_member",
+                fields=fields,
+                start_date=start_date,
             )
 
         return TeamMemberHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )
 
     @classmethod
     def get_wto_history(cls, barrier_id, fields=(), start_date=None, use_cache=False):
         if use_cache:
             return cls.get_cached_history_items(
-                barrier_id, model="wto", fields=fields, start_date=start_date,
+                barrier_id,
+                model="wto",
+                fields=fields,
+                start_date=start_date,
             )
 
         return WTOHistoryFactory.get_history_items(
-            barrier_id=barrier_id, fields=fields, start_date=start_date,
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
         )

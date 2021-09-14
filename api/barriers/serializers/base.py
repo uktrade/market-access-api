@@ -99,13 +99,13 @@ class BarrierSerializerBase(
             return last_seen
 
     def validate_public_eligibility(self, attrs):
-        """ Check for permissions here """
+        """Check for permissions here"""
         # TODO: check user permissions - this field should only be updated
         #       by the publishing team
         return attrs
 
     def validate_public_eligibility_summary(self, attrs):
-        """ Check for permissions here """
+        """Check for permissions here"""
         # TODO: check user permissions - this field should only be updated
         #       by the publishing team
         return attrs
