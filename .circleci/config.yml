@@ -127,12 +127,12 @@ jobs:
 
   format_and_secrets_checks:
     docker:
-      - image: circleci/python:3.6
-    working_directory: ~/app
+      - image: circleci/python:3.7
+    working_directory: ~/market-access-api
     steps:
       - checkout
       - run:
-          command: pip install pre-commit
+          command: sudo pip install pre-commit
       - restore_cache:
           keys:
             - pre-commit-cache-{{ arch }}-{{ .Branch }}
