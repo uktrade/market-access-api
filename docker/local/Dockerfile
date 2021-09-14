@@ -1,19 +1,19 @@
 FROM centos:8
 
 RUN dnf -y update \
- && dnf -y install \
+    && dnf -y install \
     gcc \
-	wget \
+    wget \
     postgresql \
     # packages so python can be compiled
-	nano \
-	make \
-	which \
+    nano \
+    make \
+    which \
     openssl-devel \
     bzip2-devel \
-	zlib-devel \
+    zlib-devel \
     libffi \
-	libffi-devel \
+    libffi-devel \
     # packages for pytest
     sqlite-devel \
     # packages for localdef
@@ -22,8 +22,8 @@ RUN dnf -y update \
     # packages for ssh server
     openssh-server \
     openssh-clients \
- && dnf -y clean all \
- && rm -rf /var/cache/dnf
+    && dnf -y clean all \
+    && rm -rf /var/cache/dnf
 
 ENV PYTHON_VERSION 3.9.2
 RUN wget --no-verbose https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz \
@@ -34,7 +34,7 @@ RUN wget --no-verbose https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$
     && make altinstall
 
 RUN ln -s /usr/local/bin/python3.9 /usr/bin/python \
- && ln -s /usr/local/bin/pip3.9 /usr/bin/pip
+    && ln -s /usr/local/bin/pip3.9 /usr/bin/pip
 
 # SSH
 RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
@@ -63,15 +63,19 @@ ENV LC_ALL en_GB.utf-8
 
 # Set PYTHONUNBUFFERED so output is displayed in the Docker log
 ENV PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.1.7
+    POETRY_VERSION=1.1.8 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=200 \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_CREATE=false
 
 WORKDIR /usr/src/app
 
 # Poetry commands reference https://python-poetry.org/docs/cli/#run
 COPY pyproject.toml poetry.lock ./
 RUN pip install --upgrade pip \
- && pip install poetry==$POETRY_VERSION \
- && poetry lock \
- && poetry export --without-hashes -f requirements.txt -o requirements.txt \
- && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
- && pip install -r requirements-dev.txt
+    && pip install poetry==$POETRY_VERSION \
+    && poetry export --without-hashes -f requirements.txt -o requirements.txt \
+    && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
+    && pip install -r requirements-dev.txt
