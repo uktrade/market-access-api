@@ -71,7 +71,6 @@ WORKDIR /usr/src/app
 COPY pyproject.toml poetry.lock ./
 RUN pip install --upgrade pip \
     && pip install poetry==$POETRY_VERSION \
-    && poetry lock \
     && poetry export --without-hashes -f requirements.txt -o requirements.txt \
     && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
     && pip install -r requirements-dev.txt
