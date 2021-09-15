@@ -442,7 +442,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     @freeze_time("2020-02-02")
     def test_public_barrier_patch_as_publisher(self):
-        """ Publishers can patch public barriers """
+        """Publishers can patch public barriers"""
         user = self.create_publisher()
         client = self.create_api_client(user=user)
         public_title = "New public facing title!"
@@ -457,7 +457,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     @freeze_time("2020-02-02")
     def test_public_barrier_patch_as_admin(self):
-        """ Admins can patch public barriers """
+        """Admins can patch public barriers"""
         user = self.create_admin()
         client = self.create_api_client(user=user)
         public_title = "New public facing title!"
@@ -472,7 +472,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     @freeze_time("2020-02-02")
     def test_public_barrier_patch_summary_as_publisher(self):
-        """ Publishers can patch public barriers """
+        """Publishers can patch public barriers"""
         user = self.create_publisher()
         client = self.create_api_client(user=user)
         public_summary = "New public facing summary!"
@@ -487,7 +487,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     # === READY ====
     def test_public_barrier_marked_ready_as_standard_user(self):
-        """ Standard users cannot mark public barriers ready (to be published) """
+        """Standard users cannot mark public barriers ready (to be published)"""
         user = self.create_standard_user()
         url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -496,7 +496,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     def test_public_barrier_marked_ready_as_sifter(self):
-        """ Sifters cannot mark public barriers ready (to be published) """
+        """Sifters cannot mark public barriers ready (to be published)"""
         user = self.create_sifter()
         url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -505,7 +505,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     def test_public_barrier_marked_ready_as_editor(self):
-        """ Editors can mark public barriers ready (to be published) """
+        """Editors can mark public barriers ready (to be published)"""
         user = self.create_editor()
         url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -515,7 +515,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert PublicBarrierStatus.READY == response.data["public_view_status"]
 
     def test_public_barrier_marked_ready_as_publisher(self):
-        """ Publishers can mark public barriers ready (to be published) """
+        """Publishers can mark public barriers ready (to be published)"""
         user = self.create_publisher()
         url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -525,7 +525,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert PublicBarrierStatus.READY == response.data["public_view_status"]
 
     def test_public_barrier_marked_ready_as_admin(self):
-        """ Admins can mark public barriers ready (to be published) """
+        """Admins can mark public barriers ready (to be published)"""
         user = self.create_admin()
         url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -536,7 +536,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     # === UNPREPARED ====
     def test_public_barrier_marked_unprepared_as_standard_user(self):
-        """ Standard users cannot mark a public barriers unprepared (not ready) """
+        """Standard users cannot mark a public barriers unprepared (not ready)"""
         user = self.create_standard_user()
         url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -545,7 +545,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     def test_public_barrier_marked_unprepared_as_sifter(self):
-        """ Sifter cannot mark a public barriers unprepared (not ready) """
+        """Sifter cannot mark a public barriers unprepared (not ready)"""
         user = self.create_sifter()
         url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -554,7 +554,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     def test_public_barrier_marked_unprepared_as_editor(self):
-        """ Editors can mark a public barriers unprepared (not ready) """
+        """Editors can mark a public barriers unprepared (not ready)"""
         user = self.create_editor()
         url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -564,7 +564,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
 
     def test_public_barrier_marked_unprepared_as_publisher(self):
-        """ Publishers can mark a public barriers unprepared (not ready) """
+        """Publishers can mark a public barriers unprepared (not ready)"""
         user = self.create_publisher()
         url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -574,7 +574,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
 
     def test_public_barrier_marked_unprepared_as_admin(self):
-        """ Admins can mark a public barriers unprepared (not ready) """
+        """Admins can mark a public barriers unprepared (not ready)"""
         user = self.create_admin()
         url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
@@ -586,7 +586,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
     # === IGNORE ALL CHANGES ====
     @freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_standard_user(self):
-        """ Standard users cannot ignore all changes """
+        """Standard users cannot ignore all changes"""
         user = self.create_standard_user()
         url = reverse(
             "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
@@ -598,7 +598,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     @freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_sifter(self):
-        """ Sifters cannot ignore all changes """
+        """Sifters cannot ignore all changes"""
         user = self.create_sifter()
         url = reverse(
             "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
@@ -610,7 +610,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     @freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_editor(self):
-        """ Editors can ignore all changes """
+        """Editors can ignore all changes"""
         user = self.create_editor()
         url = reverse(
             "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
@@ -624,7 +624,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     @freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_publisher(self):
-        """ Publishers can ignore all changes """
+        """Publishers can ignore all changes"""
         user = self.create_publisher()
         url = reverse(
             "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
@@ -638,7 +638,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     @freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_admin(self):
-        """ Admins can ignore all changes """
+        """Admins can ignore all changes"""
         user = self.create_admin()
         url = reverse(
             "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
@@ -652,25 +652,25 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
     # === PUBLISH ====
     def test_public_barrier_publish_as_standard_user(self):
-        """ Standard users are not allowed to publish public barriers """
+        """Standard users are not allowed to publish public barriers"""
         user = self.create_standard_user()
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     def test_public_barrier_publish_as_sifter(self):
-        """ Sifters are not allowed to publish public barriers """
+        """Sifters are not allowed to publish public barriers"""
         user = self.create_sifter()
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     def test_public_barrier_publish_as_editor(self):
-        """ Editors are not allowed to publish public barriers """
+        """Editors are not allowed to publish public barriers"""
         user = self.create_editor()
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     def test_public_barrier_publish_as_publisher(self):
-        """ Publishers are allowed to publish public barriers """
+        """Publishers are allowed to publish public barriers"""
         user = self.create_publisher()
         pb, response = self.publish_barrier(user=user)
 
@@ -681,7 +681,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["unpublished_on"]
 
     def test_public_barrier_publish_as_admin(self):
-        """ Admins are allowed to publish public barriers """
+        """Admins are allowed to publish public barriers"""
         user = self.create_admin()
         pb, response = self.publish_barrier(user=user)
 

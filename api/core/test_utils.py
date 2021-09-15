@@ -5,12 +5,10 @@ from unittest.mock import patch
 
 import factory
 import pytest
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission, User
 from django.test.client import Client
 from django.utils.timezone import now
-
 from oauth2_provider.models import AccessToken, Application
 from rest_framework.fields import DateField, DateTimeField
 from rest_framework.test import APIClient
@@ -127,7 +125,7 @@ class AdminTestMixin:
 
     pytestmark = pytest.mark.django_db  # use db
 
-    PASSWORD = "password"
+    PASSWORD = "password"  # pragma: allowlist secret
 
     @property
     def user(self):

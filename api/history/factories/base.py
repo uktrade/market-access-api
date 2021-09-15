@@ -23,12 +23,12 @@ class HistoryItemFactoryBase:
 
     @classmethod
     def get_history(cls, barrier_id):
-        """ Fetch the history for a model """
+        """Fetch the history for a model"""
         raise NotImplementedError
 
     @classmethod
     def get_history_items(cls, barrier_id, fields=(), start_date=None):
-        """ Gets HistoryItems for all changes made to the object"""
+        """Gets HistoryItems for all changes made to the object"""
         history_items = []
         history = cls.get_history(barrier_id)
         old_record = None

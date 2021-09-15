@@ -9,7 +9,7 @@ from api.metadata.constants import BARRIER_TYPE_CATEGORIES, OrganisationType
 
 
 class GoodsManager(models.Manager):
-    """ Manage reports within the model, with status 0 """
+    """Manage reports within the model, with status 0"""
 
     def get_queryset(self):
         return (
@@ -20,7 +20,7 @@ class GoodsManager(models.Manager):
 
 
 class ServicesManager(models.Manager):
-    """ Manage barriers within the model, with status not 0 """
+    """Manage barriers within the model, with status not 0"""
 
     def get_queryset(self):
         return (
@@ -73,7 +73,7 @@ class BarrierTag(OrderedModel, BaseModel):
 
 
 class BarrierPriority(models.Model):
-    """ Model representing Priority to be set for each Barrier """
+    """Model representing Priority to be set for each Barrier"""
 
     code = models.CharField(max_length=10, null=False, unique=True)
     name = models.CharField(max_length=25)

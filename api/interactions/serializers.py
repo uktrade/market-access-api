@@ -5,7 +5,7 @@ from api.user.serializers import UserMinimalDetailSerializer
 
 
 class InteractionSerializer(serializers.ModelSerializer):
-    """ Serialzer for Barrier Ineractions """
+    """Serialzer for Barrier Ineractions"""
 
     created_by = serializers.SerializerMethodField()
     documents = serializers.SerializerMethodField()

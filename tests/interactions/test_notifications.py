@@ -1,9 +1,15 @@
+import uuid
 from http import HTTPStatus
 from itertools import cycle
 from unittest.mock import patch
-import uuid
 
 import pytest
+from django.contrib.auth import get_user_model
+
+# from django.contrib.auth.models import User
+from django.test import TestCase
+from rest_framework.reverse import reverse
+
 from api.barriers.models import Barrier, PublicBarrier
 from api.collaboration.models import TeamMember
 from api.interactions.models import (
@@ -15,11 +21,6 @@ from api.interactions.models import (
     _handle_mention_notification,
     _remove_excluded,
 )
-from django.contrib.auth import get_user_model
-
-# from django.contrib.auth.models import User
-from django.test import TestCase
-from rest_framework.reverse import reverse
 
 User = get_user_model()
 
@@ -356,7 +357,7 @@ class TestExcludeNotifcationREST(BaseNotificationTestCase):
         super().setUp()
         self.url = reverse("mentions-exclude-from-notifications")
         self.user = User.objects.create_user("foo", "myemail@test.com", "bar")
-        self.client.login(username="foo", password="bar")
+        self.client.login(username="foo", password="bar")  # pragma: allowlist secret
 
     @pytest.mark.skip()
     def test_exclude_notifcation(self):

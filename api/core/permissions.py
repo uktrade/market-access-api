@@ -8,7 +8,7 @@ class IsAuthenticated(BasePermission):
     """
 
     def has_permission(self, request, view):
-        """ Ignore usual authentication and autherization if SSO is not enabled """
+        """Ignore usual authentication and autherization if SSO is not enabled"""
         if not settings.SSO_ENABLED:
             return True
         return request.user and request.user.is_authenticated

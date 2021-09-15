@@ -18,12 +18,12 @@ Market Access API uses Docker compose to setup and run all the necessary compone
     git clone https://github.com/uktrade/market-access-api
     cd market-access-api
     ```
-4. Copy the env file - `cp docker-compose.local-template.env docker-compose.env`         
+4. Copy the env file - `cp docker-compose.local-template.env docker-compose.env`
 
 #### Install
 1. Build the images and spin up the containers by running - `docker-compose up --build`
 2. Set up git hooks by running - `make git-hooks`
-3. Enter bash within the django container using `docker-compose exec web bash`  
+3. Enter bash within the django container using `docker-compose exec web bash`
 then create a superuser `py3 manage.py createsuperuser --email your@email.here`
 4. To start the dev server run - `make django-run`
 5. The API is now accessible via http://api.market-access.local:8880
@@ -59,7 +59,7 @@ Dependencies:
     ```
 
 2.  Install Python 3.7.
-    
+
     [See this guide](https://docs.python-guide.org/starting/installation/) for detailed instructions for different platforms.
 
 3.  Create and activate the virtualenv:
@@ -104,7 +104,7 @@ There are some machine to machine APIs that are called on the backend and we use
     ```shell
     ./manage.py createsuperuser
     ```
-    
+
 8. Start the server:
 
     ```shell
@@ -117,8 +117,8 @@ There are some machine to machine APIs that are called on the backend and we use
     celery worker -A config -l info -Q celery,long-running -B
     ```
 
-    Note that in production the long-running queue is run in a separate worker with the 
-    `-O fair --prefetch-multiplier 1` arguments for better fairness when long-running tasks 
+    Note that in production the long-running queue is run in a separate worker with the
+    `-O fair --prefetch-multiplier 1` arguments for better fairness when long-running tasks
     are running or pending execution.
 
 To run the tests:

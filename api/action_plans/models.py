@@ -1,11 +1,12 @@
 from uuid import uuid4
 
-from api.barriers.models import Barrier
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
+
+from api.barriers.models import Barrier
 
 from .constants import (
     ACTION_PLAN_RAG_STATUS_CHOICES,

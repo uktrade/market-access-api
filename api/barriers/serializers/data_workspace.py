@@ -1,10 +1,11 @@
+from django.conf import settings
+from django.db.models import Count, Q
+from rest_framework import serializers
+
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import BarrierStatus
-from django.conf import settings
-from django.db.models import Count, Q
-from rest_framework import serializers
 
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
@@ -183,7 +184,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_status_history(self, obj):
         history_items = CachedHistoryItem.objects.filter(
-            barrier=obj, model="barrier", field="status",
+            barrier=obj,
+            model="barrier",
+            field="status",
         )
         status_lookup = dict(BarrierStatus.choices)
         return [

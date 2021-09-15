@@ -34,7 +34,7 @@ class EconomicAssessmentExplanationFieldMixin(
 
 
 class ValueToEconomyFieldMixin(metaclass=serializers.SerializerMetaclass):
-    """ Value of UK exports of affected goods to partner country """
+    """Value of UK exports of affected goods to partner country"""
 
     value_to_economy = serializers.SerializerMethodField()
 
@@ -48,7 +48,7 @@ class ImportMarketSizeFieldMixin(metaclass=serializers.SerializerMetaclass):
     import_market_size = serializers.SerializerMethodField()
 
     def get_import_market_size(self, obj):
-        """ Size of import market for affected product(s) """
+        """Size of import market for affected product(s)"""
         assessment = obj.current_economic_assessment
         if assessment:
             return assessment.export_potential.get("import_market_size")

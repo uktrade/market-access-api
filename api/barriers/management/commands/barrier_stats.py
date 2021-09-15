@@ -14,7 +14,7 @@ from ...models import Barrier
 
 
 class Command(BaseCommand):
-    """ send stats of Barriers into preferred output channel, terminal or slack or email """
+    """send stats of Barriers into preferred output channel, terminal or slack or email"""
 
     help = "collects and posts barrier statistics to chosen channel"
 

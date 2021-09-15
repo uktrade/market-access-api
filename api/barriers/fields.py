@@ -305,7 +305,7 @@ class FilterableReadOnlyField(serializers.Field):
         super().__init__(**kwargs)
 
     def get_data(self, value):
-        """ To be implemented """
+        """To be implemented"""
         return {}
 
     def filter_dict(self, data):

@@ -5,9 +5,9 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import Q
 
+from api.interactions.models import ExcludeFromNotification
 from api.user.fix_bad_user_helper import move_all_data_from_bad_user_to_good_user
 from api.user.helpers import update_user_profile_user_id, update_user_with_sso_dict
-from api.interactions.models import ExcludeFromNotification
 from api.user.models import Profile
 from api.user.staff_sso import sso
 

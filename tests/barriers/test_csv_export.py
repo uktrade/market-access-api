@@ -17,7 +17,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert barrier.summary == serializer.data["summary"]
 
     def test_summary_is_official_sensitive(self):
-        """ If the summary is marked sensitive mask it in the CSV """
+        """If the summary is marked sensitive mask it in the CSV"""
         barrier = BarrierFactory(is_summary_sensitive=True)
         expected_summary = "OFFICIAL-SENSITIVE (see it on DMAS)"
 
@@ -25,7 +25,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert expected_summary == serializer.data["summary"]
 
     def test_link(self):
-        """ Use barrier code for the link in the CSV """
+        """Use barrier code for the link in the CSV"""
         barrier = BarrierFactory()
         expected_link = f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}"
 
@@ -33,7 +33,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert expected_link == serializer.data["link"]
 
     def test_economic_assessment(self):
-        """ Include Assessment Explanation in the CSV """
+        """Include Assessment Explanation in the CSV"""
         expected_explanation = "Wibble wobble!"
         barrier = BarrierFactory()
         EconomicAssessmentFactory(
@@ -46,7 +46,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         )
 
     def test_ecomomic_assessment_is_none(self):
-        """ Default to None if there's no Assessment for the Barrier """
+        """Default to None if there's no Assessment for the Barrier"""
         expected_explanation = None
         barrier = BarrierFactory()
 

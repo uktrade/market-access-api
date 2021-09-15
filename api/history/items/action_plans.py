@@ -1,6 +1,7 @@
-from api.history.items.base import BaseHistoryItem
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+
+from api.history.items.base import BaseHistoryItem
 
 AuthUser = get_user_model()
 

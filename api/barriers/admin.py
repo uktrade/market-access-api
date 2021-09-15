@@ -11,11 +11,11 @@ class BarrierAdmin(admin.ModelAdmin):
     """
 
     def has_add_permission(self, request, obj=None):
-        """ No Add permission """
+        """No Add permission"""
         return False
 
     def has_delete_permission(self, request, obj=None):
-        """ No Delete permission """
+        """No Delete permission"""
         return False
 
     list_display = ("id", "code", "reported_on", "archived")
