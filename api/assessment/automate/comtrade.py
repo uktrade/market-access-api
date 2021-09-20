@@ -88,12 +88,12 @@ class ComtradeClient:
             if reporter_code:
                 conditions.append(("reporter_code IN %s", reporter_code))
 
-        query: sql.SQL = sql.SQL("SELECT * FROM comtrade__goods WHERE {}").format(
-            sql.SQL(" AND ").join(sql.SQL(clause) for clause, _ in conditions)
+        query: sql.SQL = sql.SQL("SELECT * FROM %s.comtrade__goods WHERE {}").format(
+            sql.SQL(" AND ").join(sql.SQL(clause) for clause, _ in conditions),
         )
         values = [val for _, val in conditions]
         with self.db_conn.cursor() as cursor:
-            cursor.execute(query, values)
+            cursor.execute(query, [settings.COMTRADE_DB_SCHEMA, *values])
             data = make_dict_results(cursor)
 
         return self.add_gbp_trade_value(data)
@@ -153,7 +153,7 @@ class ComtradeClient:
 
     def get_valid_years(self, target_year, country1, country2):
         query = sql.SQL(
-            "SELECT year FROM comtrade__goods WHERE "
+            "SELECT year FROM %s.comtrade__goods WHERE "
             "commodity_code = 'TOTAL' AND "
             "trade_flow_code IN {} AND "
             "period = %s AND "
@@ -171,6 +171,7 @@ class ComtradeClient:
                 self.reporter_areas[country2],
             )
             parameters = [
+                settings.COMTRADE_DB_SCHEMA,
                 year,
                 partner_code,
                 reporters_codes,
