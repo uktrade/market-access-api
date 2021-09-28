@@ -20,9 +20,6 @@ class AssessmentCalculator:
         self.client = ComtradeClient(cache)
 
     def get_year_range(self, country1, country2, year=None):
-        assert country1 is not None
-        assert country2 is not None
-        print("get-year_range", country1, country2)
 
         use_most_recent = year is None
         if use_most_recent:
