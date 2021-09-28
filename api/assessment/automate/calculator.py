@@ -20,6 +20,7 @@ class AssessmentCalculator:
         self.client = ComtradeClient(cache)
 
     def get_year_range(self, country1, country2, year=None):
+
         use_most_recent = year is None
         if use_most_recent:
             # The most recent year for which annual data may be available on Comtrade

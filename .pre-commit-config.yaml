@@ -7,7 +7,7 @@ repos:
       - id: trailing-whitespace
       - id: detect-private-key
   - repo: https://github.com/psf/black
-    rev: 21.7b0
+    rev: 21.9b0
     hooks:
       - id: black
         exclude: migrations
@@ -18,7 +18,7 @@ repos:
         exclude: migrations
         args: ["--profile", "black"]
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.8.4
+    rev: 3.9.2
     hooks:
       - id: flake8
         args: ['--config=.flake8']
@@ -29,6 +29,6 @@ repos:
       - id: detect-secrets
         args: ['--exclude-files', 'README.md']
   - repo: https://github.com/syntaqx/git-hooks
-    rev: v0.0.16
+    rev: v0.0.17
     hooks:
       - id: circleci-config-validate

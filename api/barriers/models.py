@@ -1,4 +1,5 @@
 import datetime
+from typing import List
 from uuid import uuid4
 
 import django_filters
@@ -7,7 +8,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.db import models
-from django.db.models import CASCADE, CharField, F, Q
+from django.db.models import CASCADE, CharField, F, Q, QuerySet
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
@@ -1141,6 +1142,9 @@ class BarrierFilterSet(django_filters.FilterSet):
     team = django_filters.Filter(method="team_barriers")
     member = django_filters.Filter(method="member_filter")
     archived = django_filters.BooleanFilter("archived", widget=BooleanWidget)
+    economic_assessment_eligibility = django_filters.BaseInFilter(
+        method="economic_assessment_eligibility_filter"
+    )
     economic_assessment = django_filters.BaseInFilter(
         method="economic_assessment_filter"
     )
@@ -1416,6 +1420,31 @@ class BarrierFilterSet(django_filters.FilterSet):
             wto_queryset = wto_queryset | queryset.filter(wto_profile__isnull=True)
 
         return queryset & wto_queryset
+
+    def economic_assessment_eligibility_filter(
+        self, queryset: QuerySet, name: str, value: List[str]
+    ):
+        if not value:
+            return queryset
+
+        base_query = queryset.none()
+
+        if "eligible" in value:
+            base_query = base_query | queryset.filter(
+                economic_assessment_eligibility=True
+            )
+
+        if "ineligible" in value:
+            base_query = base_query | queryset.filter(
+                economic_assessment_eligibility=False
+            )
+
+        if "not_yet_marked" in value:
+            base_query = base_query | queryset.filter(
+                economic_assessment_eligibility__isnull=True
+            )
+
+        return base_query
 
     def economic_assessment_filter(self, queryset, name, value):
         assessment_queryset = queryset.none()
