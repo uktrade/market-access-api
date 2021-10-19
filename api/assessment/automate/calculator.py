@@ -21,6 +21,9 @@ class AssessmentCalculator:
 
     def get_year_range(self, country1, country2, year=None):
 
+        assert country1 is not None
+        assert country2 is not None
+
         use_most_recent = year is None
         if use_most_recent:
             # The most recent year for which annual data may be available on Comtrade
@@ -58,6 +61,7 @@ class AssessmentCalculator:
     def calculate(
         self, commodity_codes, product, country1, country2="United Kingdom", year=None
     ):
+        assert country1 is not None
         self.warnings = []
         commodity_codes = self.clean_commodity_codes(commodity_codes)
         years = self.get_year_range(country1, country2, year)
