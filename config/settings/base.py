@@ -127,11 +127,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Sentry
-SENTRY_DSN = os.environ.get("SENTRY_DSN")
+SENTRY_DSN = env.str("SENTRY_DSN", None)
+SENTRY_ENVIRONMENT = env.str("SENTRY_ENVIRONMENT")
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
+        environment=SENTRY_ENVIRONMENT,
         integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
     )
 
