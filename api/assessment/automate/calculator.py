@@ -67,7 +67,9 @@ class AssessmentCalculator:
         years = self.get_year_range(country1, country2, year)
         num_years = len(years)
 
-        logger.info(f"Fetching data for affected products for country {country1}")
+        logger.info(
+            f"Fetching data for affected products for {country1}, {product}, {commodity_codes}, {years}"
+        )
         partners = (
             get_comtrade_country_name(country1),
             get_comtrade_country_name(country2),
