@@ -21,4 +21,5 @@ exchange_rates = {
     "2017": Decimal("1.2888"),
     "2018": Decimal("1.335"),
     "2019": Decimal("1.2766"),
+    "2020": Decimal("1.1491"),
 }
