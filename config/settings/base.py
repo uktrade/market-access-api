@@ -127,7 +127,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-SENTRY_DSN = env.str("SENTRY_DSN", None)
+SENTRY_DSN = env.str("SENTRY_DSN")
 SENTRY_ENVIRONMENT = env.str("SENTRY_ENVIRONMENT")
 if SENTRY_DSN:
     sentry_sdk.init(
