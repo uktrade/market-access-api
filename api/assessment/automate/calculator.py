@@ -21,9 +21,6 @@ class AssessmentCalculator:
 
     def get_year_range(self, country1, country2, year=None):
 
-        assert country1 is not None
-        assert country2 is not None
-
         use_most_recent = year is None
         if use_most_recent:
             # The most recent year for which annual data may be available on Comtrade
@@ -61,14 +58,14 @@ class AssessmentCalculator:
     def calculate(
         self, commodity_codes, product, country1, country2="United Kingdom", year=None
     ):
-        assert country1 is not None
         self.warnings = []
         commodity_codes = self.clean_commodity_codes(commodity_codes)
         years = self.get_year_range(country1, country2, year)
         num_years = len(years)
 
         logger.info(
-            f"Fetching data for affected products for {country1}, {product}, {commodity_codes}, {years}"
+            f"Fetching data for affected products for {country1} with commodity"
+            f" codes {commodity_codes} over years {years}"
         )
         partners = (
             get_comtrade_country_name(country1),
@@ -81,7 +78,10 @@ class AssessmentCalculator:
             partners=partners,
         )
 
-        logger.info("Fetching data for all products")
+        logger.info(
+            f"Fetching data for all products for countries {country1}"
+            f" {country2} over years {years}"
+        )
         all_products_df = self.client.get(
             years=years,
             partners=partners,
@@ -100,7 +100,10 @@ class AssessmentCalculator:
             ("Export", "World", country1),
         )
 
-        logger.info("Calculating values")
+        logger.info(
+            f"Calculating assessment values for countries"
+            f" {country1} {country2} over years {years}"
+        )
 
         df_ap_avgs = []
         for relationship in relationship_list:

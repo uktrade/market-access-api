@@ -6,7 +6,6 @@ from api.barriers.models import Barrier
 
 def calculate_barrier_economic_assessment(barrier_id: str):
     barrier = Barrier.objects.get(pk=barrier_id)
-    assert barrier.country_name is not None
     assessment_calculator = AssessmentCalculator(cache=cache)
     commodity_codes = [c.trimmed_code for c in barrier.commodities.all()]
     return assessment_calculator.calculate(
