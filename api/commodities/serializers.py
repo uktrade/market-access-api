@@ -16,6 +16,7 @@ class CommoditySerializer(serializers.ModelSerializer):
             "level",
             "description",
             "full_description",
+            "classification",
         )
 
 
