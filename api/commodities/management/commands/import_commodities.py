@@ -25,17 +25,18 @@ class Command(BaseCommand):
             for line in reader:
                 padded_code = line["Commodity code"].ljust(10, "0")
                 if Commodity.objects.filter(code=padded_code).count() == 0:
+                    # only create new commodity if it does not already exist
                     commodity = Commodity.objects.create(
                         version=version,
                         code=line["Commodity code"].ljust(10, "0"),
-                        # suffix=line["Suffix"],
-                        # level=line["HS Level"],
-                        # indent=line["Indent"],
+                        suffix=line["Suffix"],
+                        level=line["HS Level"],
+                        indent=line["Indent"],
                         description=line["Description"],
                         is_leaf=(line["Suffix"] == "80"),
                         sid=line["SID"],
                         parent_sid=line["Parent SID"] or None,
-                        classification="H4",
+                        classification=line.get("Classification", "H5"),
                     )
 
                 if i % 1000 == 0:
