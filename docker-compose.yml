@@ -13,7 +13,7 @@ services:
       - ./docker/local/comtrade_test_db:/docker-entrypoint-initdb.d:delegated
 
   db:
-    image: postgres:13
+    image: postgres
     volumes:
       - ./db:/var/lib/postgresql/data:delegated
       - ./db_dumps:/var/lib/postgresql/dumps:delegated
