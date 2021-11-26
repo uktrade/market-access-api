@@ -1,9 +1,12 @@
 import datetime
+import urllib.parse
 from typing import List
 from uuid import uuid4
 
 import django_filters
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
@@ -15,6 +18,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
 from hashid_field import HashidAutoField
+from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
 
 from api.collaboration import models as collaboration_models
@@ -378,6 +382,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
                 "change_barrier_public_eligibility",
                 "Can change barrier public eligibility",
             ),
+            ("download_barriers", "Can download barriers"),
         ]
 
     @property
@@ -660,7 +665,7 @@ class PublicBarrierLightTouchReviews(FullyArchivableMixin, BaseModel):
     has_content_changed_since_approval = models.BooleanField(default=False, blank=True)
     hm_trade_commissioner_approval = models.BooleanField(default=False, blank=True)
     hm_trade_commissioner_approval_enabled = models.BooleanField(
-        default=False, blank=True
+        default=True, blank=True
     )
     government_organisation_approvals = ArrayField(
         models.IntegerField(blank=True), blank=True, null=False, default=list
@@ -1519,6 +1524,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
 
     status = django_filters.BaseInFilter("_public_view_status", method="status_filter")
     country = django_filters.BaseInFilter("country")
+    location = django_filters.BaseInFilter(method="location_filter")
     region = django_filters.BaseInFilter(method="region_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     organisation = django_filters.BaseInFilter(method="organisation_filter")
@@ -1625,3 +1631,96 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
             _public_view_status__in=statuses
         )
         return queryset & public_queryset
+
+    def location_filter(self, queryset, name, value):
+        """
+        custom filter for retrieving barriers of all countries of an overseas region
+        """
+        location = self.clean_location_value(value)
+
+        tb_queryset = queryset.none()
+
+        if location["trading_blocs"]:
+            tb_queryset = queryset.filter(
+                barrier__trading_bloc__in=location["trading_blocs"]
+            )
+
+            if "country_trading_bloc" in self.data:
+                trading_bloc_countries = []
+                for trading_bloc in self.data["country_trading_bloc"].split(","):
+                    trading_bloc_countries += (
+                        metadata_utils.get_trading_bloc_country_ids(trading_bloc)
+                    )
+
+                tb_queryset = tb_queryset | queryset.filter(
+                    barrier__country__in=trading_bloc_countries,
+                    barrier__caused_by_trading_bloc=True,
+                )
+
+        return tb_queryset | queryset.filter(
+            Q(barrier__country__in=location["countries"])
+            | Q(barrier__country__in=location["overseas_region_countries"])
+            | Q(barrier__admin_areas__overlap=location["countries"])
+        )
+
+
+User = get_user_model()
+
+
+class BarrierRequestDownloadApproval(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="barrier_request_download_approvals",
+    )
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    notification_sent = models.BooleanField(default=False)
+    notification_sent_at = models.DateTimeField(null=True, blank=True)
+
+    def send_notification(self):
+        if self.notification_sent:
+            return
+
+        recipient_emails = settings.SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS
+
+        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+        group_id = Group.objects.get(
+            name=settings.APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME
+        ).id
+        user_group_approval_path = f"/users/add/?group={group_id}".format(
+            group_id=group_id
+        )
+        approval_url: str = urllib.parse.urljoin(
+            settings.FRONTEND_DOMAIN, user_group_approval_path
+        )
+        for recipient_email in recipient_emails:
+            client.send_email_notification(
+                email_address=recipient_email,
+                template_id=settings.SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID,
+                personalisation={
+                    "first_name": self.user.first_name.capitalize(),
+                    "last_name": self.user.last_name.capitalize(),
+                    "administration_link": approval_url,
+                },
+            )
+
+        self.notification_sent = True
+        self.notification_sent_at = timezone.now()
+        self.save()
+
+
+class BarrierSearchCSVDownloadEvent(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="barrier_search_csv_download_events",
+    )
+    created = models.DateTimeField(auto_now_add=True)

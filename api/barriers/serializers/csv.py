@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, BarrierRequestDownloadApproval
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
 from api.collaboration.models import TeamMember
 from api.history.factories.public_barriers import PublicBarrierHistoryFactory
@@ -330,3 +330,9 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             for org in obj.organisations.all()
             if org.organisation_type in GOVERNMENT_ORGANISATION_TYPES
         ]
+
+
+class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BarrierRequestDownloadApproval
+        fields = ("id", "user")

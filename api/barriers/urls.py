@@ -13,6 +13,7 @@ from api.barriers.views import (
     BarrierReportDetail,
     BarrierReportList,
     BarrierReportSubmit,
+    BarrierRequestDownloadApproval,
     BarrierResolveInFull,
     BarrierResolveInPart,
     BarrierStatusChangeUnknown,
@@ -33,6 +34,11 @@ urlpatterns = router.urls + [
         "barriers/s3-email",
         BarrierListS3EmailFile.as_view(),
         name="barriers-s3-email",
+    ),
+    path(
+        "barriers/request-download-approval",
+        BarrierRequestDownloadApproval.as_view(),
+        name="barriers-request-download-approval",
     ),
     re_path(
         "barriers/(?P<code>[A-Z]-[0-9]{2}-[A-Z0-9]{3})",
