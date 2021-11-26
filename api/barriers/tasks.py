@@ -8,7 +8,7 @@ from django.conf import settings
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.csv import _transform_csv_row
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 
@@ -57,6 +57,12 @@ def generate_s3_and_send_email(
 ) -> None:
     queryset = Barrier.objects.filter(id__in=barrier_ids)
     serializer = BarrierCsvExportSerializer(queryset, many=True)
+
+    # save the download event in the database
+    BarrierSearchCSVDownloadEvent.objects.create(
+        email=email,
+        barrier_ids=",".join(barrier_ids),
+    )
 
     presigned_url = generate_and_upload_to_s3(s3_filename, field_titles, serializer)
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)

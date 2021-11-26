@@ -10,6 +10,7 @@ from django.contrib.auth.models import Group
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
+from django.core.validators import int_list_validator
 from django.db import models
 from django.db.models import CASCADE, CharField, F, Q, QuerySet
 from django.db.models import Value as V
@@ -1716,11 +1717,6 @@ class BarrierRequestDownloadApproval(models.Model):
 
 class BarrierSearchCSVDownloadEvent(models.Model):
 
-    user = models.ForeignKey(
-        User,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="barrier_search_csv_download_events",
-    )
+    email = models.EmailField()
+    barrier_ids = models.CharField(validators=[int_list_validator], max_length=255)
     created = models.DateTimeField(auto_now_add=True)
