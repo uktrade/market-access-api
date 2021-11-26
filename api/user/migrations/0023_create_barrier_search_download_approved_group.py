@@ -3,10 +3,10 @@
 from django.db import migrations
 
 
-# Migration that creates a user group called "Barrier download approved user"
+# Migration that creates a user group called "Download approved user"
 def create_barrier_search_download_approved_group(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
-    Group.objects.create(name="Barrier download approved user")
+    Group.objects.create(name="Download approved user")
 
     # create a "download_barrier" Permission and add it to the group
     Permission = apps.get_model("auth", "Permission")
@@ -20,13 +20,13 @@ def create_barrier_search_download_approved_group(apps, schema_editor):
             "content_type": barrier_content_type,
         },
     )
-    group = Group.objects.get(name="Barrier download approved user")
+    group = Group.objects.get(name="Download approved user")
     group.permissions.add(download_barriers_permission)
 
 
 def undo_create_barrier_search_download_approved_group(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
-    Group.objects.filter(name="Barrier download approved user").delete()
+    Group.objects.filter(name="Download approved user").delete()
 
     # remove "download_barriers" Permission
     Permission = apps.get_model("auth", "Permission")
