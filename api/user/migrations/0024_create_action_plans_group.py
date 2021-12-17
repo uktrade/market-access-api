@@ -19,7 +19,7 @@ def create_action_plans_group(apps, schema_editor):
             "content_type": action_plan_content_type,
         },
     )
-    group = Group.objects.get(name="Action plans user")
+    group = Group.objects.get(name="Action plan user")
     group.permissions.add(view_action_plans_permission)
 
 
