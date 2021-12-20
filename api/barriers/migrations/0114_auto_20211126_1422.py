@@ -40,5 +40,5 @@ class Migration(migrations.Migration):
             field=models.EmailField(default="", max_length=254),
             preserve_default=False,
         ),
-        migrations.RunPython.noop(remove_existing_download_entries, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(remove_existing_download_entries, reverse_code=migrations.RunPython.noop),
     ]
