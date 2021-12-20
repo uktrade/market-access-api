@@ -1693,9 +1693,7 @@ class BarrierRequestDownloadApproval(models.Model):
         group_id = Group.objects.get(
             name=settings.APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME
         ).id
-        user_group_approval_path = f"/users/add/?group={group_id}".format(
-            group_id=group_id
-        )
+        user_group_approval_path = f"/users/add/?group={group_id}"
         approval_url: str = urllib.parse.urljoin(
             settings.FRONTEND_DOMAIN, user_group_approval_path
         )

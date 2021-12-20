@@ -110,11 +110,6 @@ class WhoAmISerializer(serializers.ModelSerializer):
 
     def get_has_approved_digital_trade_email(self, obj):
         email_domain = obj.email.split("@")[-1].lower()
-        print(
-            "settings.APPROVED_DIGITAL_TRADE_EMAILS",
-            settings.APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS,
-            email_domain,
-        )
         return email_domain in settings.APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS
 
     def get_permissions(self, obj):

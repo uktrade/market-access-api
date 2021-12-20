@@ -7,7 +7,6 @@ def create_action_plans_group(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
     Group.objects.create(name="Action plan user")
 
-    # create a "download_barrier" Permission and add it to the group
     Permission = apps.get_model("auth", "Permission")
     ContentType = apps.get_model("contenttypes", "ContentType")
     ActionPlan = apps.get_model("action_plans", "ActionPlan")
@@ -22,6 +21,19 @@ def create_action_plans_group(apps, schema_editor):
     group = Group.objects.get(name="Action plan user")
     group.permissions.add(view_action_plans_permission)
 
+def reverse_create_action_plans_group(apps, schema_editor):
+    Group = apps.get_model("auth", "Group")
+    Group.objects.filter(name="Action plan user").delete()
+
+    Permission = apps.get_model("auth", "Permission")
+    ContentType = apps.get_model("contenttypes", "ContentType")
+    ActionPlan = apps.get_model("action_plans", "ActionPlan")
+    action_plan_content_type = ContentType.objects.get_for_model(ActionPlan)
+    view_action_plans_permission = Permission.objects.get(
+        codename="view_action_plans",
+        content_type=action_plan_content_type,
+    )
+    view_action_plans_permission.delete()
 
 class Migration(migrations.Migration):
 
@@ -29,4 +41,4 @@ class Migration(migrations.Migration):
         ("user", "0023_create_barrier_search_download_approved_group"),
     ]
 
-    operations = [migrations.RunPython(create_action_plans_group)]
+    operations = [migrations.RunPython(create_action_plans_group, reverse_code=reverse_create_action_plans_group)]
