@@ -13,12 +13,6 @@ def remove_existing_download_entries(apps, schema_editor):
     )
     BarrierSearchCsvDownloadEvent.objects.all().delete()
 
-def reverse_remove_existing_download_entries(apps, schema_editor):
-    """
-    Reverse remove existing barriersearchcsvdownloadevent
-    """
-    pass
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -46,5 +40,5 @@ class Migration(migrations.Migration):
             field=models.EmailField(default="", max_length=254),
             preserve_default=False,
         ),
-        migrations.RunPython(remove_existing_download_entries, reverse_code=reverse_remove_existing_download_entries),
+        migrations.RunPython.noop(remove_existing_download_entries, reverse_code=migrations.RunPython.noop),
     ]
