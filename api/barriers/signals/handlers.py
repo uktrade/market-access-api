@@ -1,7 +1,9 @@
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from simple_history.signals import post_create_historical_record
 
 from api.barriers.models import (
+    BarrierRequestDownloadApproval,
     HistoricalBarrier,
     HistoricalPublicBarrier,
     PublicBarrier,
@@ -137,3 +139,9 @@ def post_create_historical_record(sender, history_instance, **kwargs):
 
     for item in items:
         CachedHistoryItem.create_from_history_item(item)
+
+
+@receiver(post_save, sender=BarrierRequestDownloadApproval)
+def send_barrier_download_request_notification(sender, instance, created, **kwargs):
+    if created:
+        instance.send_notification()

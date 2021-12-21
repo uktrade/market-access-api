@@ -71,6 +71,9 @@ jobs:
       COMTRADE_TEST_DB_HOST: localhost
       COMTRADE_TEST_DB_NAME: market_access
       COMTRADE_TEST_DB_USER: postgres
+      SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID: 'change-me'
+      SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS: john.doe@example.org
+      APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS: ''
 
     working_directory: ~/market-access-api
 
