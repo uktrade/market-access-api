@@ -9,7 +9,7 @@ attrs==21.2.0; python_version >= "3.6" and python_full_version < "3.0.0" or pyth
 billiard==3.6.4.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 boto3==1.17.112; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.6.0")
 botocore==1.20.112; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0"
-celery==4.4.7; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
+celery==5.2.2; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 certifi==2021.10.8; python_version >= "3.6" and python_version < "4" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0")
 cffi==1.15.0; platform_python_implementation == "CPython" and sys_platform == "win32" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0")
 charset-normalizer==2.0.8; python_full_version >= "3.6.0" and python_version >= "3"
