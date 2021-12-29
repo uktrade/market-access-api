@@ -45,7 +45,7 @@ idna==3.3; python_version >= "3.5" and python_full_version < "3.0.0" or python_f
 importlib-metadata==4.8.2; python_version < "3.8" and python_version >= "3.6" and (python_version >= "3.6" and python_full_version < "3.0.0" and python_version < "3.8" or python_full_version >= "3.5.0" and python_version < "3.8" and python_version >= "3.6")
 iniconfig==1.1.1; python_version >= "3.6"
 jmespath==0.10.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0"
-kombu==4.6.11; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
+kombu==5.2.3; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.5.0"
 kubi-ecs-logger==0.1.0; python_version >= "3.6" and python_version < "4"
 marshmallow==3.6.1; python_version >= "3.6" and python_version < "4"
 mohawk==1.1.0
