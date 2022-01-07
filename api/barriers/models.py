@@ -1705,6 +1705,7 @@ class BarrierRequestDownloadApproval(models.Model):
                     "first_name": self.user.first_name.capitalize(),
                     "last_name": self.user.last_name.capitalize(),
                     "administration_link": approval_url,
+                    "email_address": self.user.email,
                 },
             )
 
