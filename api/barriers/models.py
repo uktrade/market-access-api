@@ -1717,5 +1717,5 @@ class BarrierRequestDownloadApproval(models.Model):
 class BarrierSearchCSVDownloadEvent(models.Model):
 
     email = models.EmailField()
-    barrier_ids = models.CharField(validators=[int_list_validator], max_length=255)
+    barrier_ids = models.TextField(validators=[int_list_validator])
     created = models.DateTimeField(auto_now_add=True)
