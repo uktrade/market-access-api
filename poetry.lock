@@ -648,7 +648,7 @@ python-versions = "*"
 
 [[package]]
 name = "django"
-version = "3.2.7"
+version = "3.2.11"
 description = "A high-level Python Web framework that encourages rapid development and clean, pragmatic design."
 category = "main"
 optional = false
@@ -2005,7 +2005,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "38e46d71011fd090089bf6517e0f67fb547f26f7e32e5d9933b061728a84feee"
+content-hash = "2b90a54fb0dfbf20d1a63d76365ad380ee01b5c4bf01437406098850d1cd2241"
 
 [metadata.files]
 amqp = [
@@ -2229,8 +2229,8 @@ dj-database-url = [
     {file = "dj_database_url-0.5.0-py2.py3-none-any.whl", hash = "sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9"},
 ]
 django = [
-    {file = "Django-3.2.7-py3-none-any.whl", hash = "sha256:e93c93565005b37ddebf2396b4dc4b6913c1838baa82efdfb79acedd5816c240"},
-    {file = "Django-3.2.7.tar.gz", hash = "sha256:95b318319d6997bac3595517101ad9cc83fe5672ac498ba48d1a410f47afecd2"},
+    {file = "Django-3.2.11-py3-none-any.whl", hash = "sha256:0a0a37f0b93aef30c4bf3a839c187e1175bcdeb7e177341da0cb7b8194416891"},
+    {file = "Django-3.2.11.tar.gz", hash = "sha256:69c94abe5d6b1b088bf475e09b7b74403f943e34da107e798465d2045da27e75"},
 ]
 django-audit-log-middleware = [
     {file = "django_audit_log_middleware-0.0.4.tar.gz", hash = "sha256:e92b1b594db68720ac35edfecc21daaf8d1c446af00622ade4de14bcbc43329b"},
