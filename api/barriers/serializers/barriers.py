@@ -90,6 +90,7 @@ class BarrierListSerializer(BarrierSerializerBase):
             "status",
             "status_date",
             "status_summary",
+            "summary",
             "tags",
             "title",
             "trade_direction",
