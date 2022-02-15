@@ -95,4 +95,5 @@ class BarrierListSerializer(BarrierSerializerBase):
             "title",
             "trade_direction",
             "trading_bloc",
+            "status_summary",
         )
