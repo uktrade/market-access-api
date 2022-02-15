@@ -6,7 +6,9 @@ from django.db import migrations
 # create new Category with title of "Import controls" a description of "" and category of "GOODS"
 def add_import_controls_category(apps, schema_editor):
     Category = apps.get_model("barriers", "Category")
-    Category.objects.create(title="Import controls", description="", category="GOODS")
+    Category.objects.get_or_create(
+        title="Import controls", defaults={"description": "", "category": "GOODS"}
+    )
 
 
 class Migration(migrations.Migration):
