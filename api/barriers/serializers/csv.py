@@ -101,6 +101,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "code",
             "title",
             "status",
+            "status_summary",
             "status_date",
             "priority",
             "overseas_region",
