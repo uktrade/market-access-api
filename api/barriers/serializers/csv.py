@@ -152,7 +152,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         else:
             return obj.summary or None
 
-    def status_summary(self, obj):
+    def get_status_summary(self, obj):
         if obj.is_summary_sensitive:
             return "OFFICIAL-SENSITIVE (see it on DMAS)"
         else:
