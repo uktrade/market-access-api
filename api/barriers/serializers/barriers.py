@@ -49,6 +49,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "strategic_assessments",
             "sub_status",
             "sub_status_other",
+            "summary",
             "tags",
             "term",
             "title",
@@ -89,10 +90,8 @@ class BarrierListSerializer(BarrierSerializerBase):
             "status",
             "status_date",
             "status_summary",
-            "summary",
             "tags",
             "title",
             "trade_direction",
             "trading_bloc",
-            "status_summary",
         )
