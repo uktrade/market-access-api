@@ -49,7 +49,6 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "strategic_assessments",
             "sub_status",
             "sub_status_other",
-            "summary",
             "tags",
             "term",
             "title",
