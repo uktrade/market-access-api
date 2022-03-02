@@ -19,12 +19,15 @@ Market Access API uses Docker compose to setup and run all the necessary compone
     cd market-access-api
     ```
 4. Copy the env file - `cp docker-compose.local-template.env docker-compose.env`
+5. Set values for the env file variables indicated `<<CHECK_VAULT>>`, set `FAKE_METADATA` to `True`
+6. Set `MOCK_SSO_EMAIL_USER_ID` in docker-compose.yml to the email you will use as superuser in Install step 3
+7. Update Makefile so `django-run` command uses port `0:8883`
 
 #### Install
 1. Build the images and spin up the containers by running - `docker-compose up --build`
 2. Set up git hooks by running - `make git-hooks`
 3. Enter bash within the django container using `docker-compose exec web bash`
-then create a superuser `py3 manage.py createsuperuser --email your@email.here`
+then create a superuser `py3 manage.py createsuperuser --email your@email.here` then `exit` the container
 4. To start the dev server run - `make django-run`
 5. The API is now accessible via http://api.market-access.local:8880
 
