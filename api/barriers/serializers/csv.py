@@ -32,6 +32,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     status = serializers.SerializerMethodField()
     status_date = serializers.SerializerMethodField()
     summary = serializers.SerializerMethodField()
+    status_summary = serializers.SerializerMethodField()
     title = serializers.CharField()
     sectors = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
@@ -101,6 +102,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "code",
             "title",
             "status",
+            "status_summary",
             "status_date",
             "priority",
             "overseas_region",
@@ -149,6 +151,12 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return "OFFICIAL-SENSITIVE (see it on DMAS)"
         else:
             return obj.summary or None
+
+    def get_status_summary(self, obj):
+        if obj.is_summary_sensitive:
+            return "OFFICIAL-SENSITIVE (see it on DMAS)"
+        else:
+            return obj.status_summary or None
 
     def get_sectors(self, obj):
         if obj.sectors_affected:
