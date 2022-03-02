@@ -1137,6 +1137,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
     category = django_filters.BaseInFilter("categories", distinct=True)
+    top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
     search = django_filters.Filter(method="text_search")
