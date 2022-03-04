@@ -1136,6 +1136,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     ignore_all_sectors = django_filters.Filter(method="ignore_all_sectors_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
+    status_date = django_filters.Filter(method="resolved_date_filter")
     category = django_filters.BaseInFilter("categories", distinct=True)
     priority = django_filters.BaseInFilter(method="priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
@@ -1175,6 +1176,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             "sector",
             "reported_on",
             "status",
+            "status_date",
             "priority",
             "archived",
         ]
@@ -1398,6 +1400,13 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def tags_filter(self, queryset, name, value):
         return queryset.filter(tags__in=value).distinct()
+
+    def resolved_date_filter(self, queryset, name, value):
+        dates_list = value.split(",")
+        start_date = dates_list[0]
+        end_date = dates_list[1]
+
+        return queryset.filter(status_date__range=(start_date, end_date))
 
     def wto_filter(self, queryset, name, value):
         wto_queryset = queryset.none()
