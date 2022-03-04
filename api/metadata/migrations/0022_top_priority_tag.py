@@ -30,9 +30,11 @@ def delete_top_priority_tag(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("metadata", "0020_add_more_organisations"),
+        ("metadata", "0021_add_import_controls_category"),
     ]
 
     operations = [
-        migrations.RunPython(create_top_priority_tag, reverse_code=delete_top_priority_tag),
+        migrations.RunPython(
+            create_top_priority_tag, reverse_code=delete_top_priority_tag
+        ),
     ]
