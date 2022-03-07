@@ -148,12 +148,12 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return None
 
     def get_resolved_date(self, obj):
-        # if obj.status == "Resolved: In full":
-        #    return obj.status_date.strftime("%m/%Y")
-        # else:
-        #    return None
-        if obj.status_date:
+        if obj.status_date and obj.status == 4:
             return obj.status_date.strftime("%m/%Y")
+        else:
+            return None
+        # if obj.status_date:
+        #    return obj.status_date.strftime("%m/%Y")
 
     def get_summary(self, obj):
         if obj.is_summary_sensitive:
