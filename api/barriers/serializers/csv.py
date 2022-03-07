@@ -152,7 +152,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         #    return obj.status_date.strftime("%m/%Y")
         # else:
         #    return None
-        return obj.status_date.strftime("%m/%Y")
+        if obj.status_date:
+            return obj.status_date.strftime("%m/%Y")
 
     def get_summary(self, obj):
         if obj.is_summary_sensitive:
