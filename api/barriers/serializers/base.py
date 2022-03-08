@@ -1,3 +1,4 @@
+from django.forms import CharField, ChoiceField
 from rest_framework import serializers
 
 from api.assessment.serializers import (
@@ -26,6 +27,7 @@ from api.barriers.fields import (
 )
 from api.barriers.models import Barrier, BarrierUserHit
 from api.core.serializers.mixins import CustomUpdateMixin
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
 from .mixins import LocationFieldMixin
@@ -67,6 +69,10 @@ class BarrierSerializerBase(
     wto_profile = WTOProfileField(required=False)
     government_organisations = OrganisationsField(required=False)
 
+    progress_status = ChoiceField(choices=PROGRESS_UPDATE_CHOICES, required=False)
+    progress_update = CharField(required=False)
+    next_steps = CharField(required=False)
+
     class Meta:
         model = Barrier
         read_only_fields = (
@@ -86,6 +92,9 @@ class BarrierSerializerBase(
             "strategic_assessments",
             "unarchived_by",
             "unarchived_on",
+            "progress_status",
+            "progress_update",
+            "next_steps",
         )
 
     def get_last_seen_on(self, obj):

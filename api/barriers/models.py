@@ -36,6 +36,7 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_TERMS,
     GOVERNMENT_ORGANISATION_TYPES,
+    PROGRESS_UPDATE_CHOICES,
     STAGE_STATUS,
     TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
@@ -277,6 +278,18 @@ class Barrier(FullyArchivableMixin, BaseModel):
         blank=True,
         null=True,
     )
+    progress_status = models.CharField(
+        choices=PROGRESS_UPDATE_CHOICES, max_length=100, null=True
+    )
+    progress_update = models.TextField(
+        help_text="What has been done to address the barrier?", blank=True, null=True
+    )
+    next_steps = models.TextField(
+        help_text="What next steps are required to address the barrier?",
+        blank=True,
+        null=True,
+    )
+
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(blank=True)

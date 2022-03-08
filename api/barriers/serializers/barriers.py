@@ -61,6 +61,9 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "unarchived_reason",
             "wto_profile",
             "government_organisations",
+            "progress_status",
+            "progress_update",
+            "next_steps",
         )
 
 
@@ -94,4 +97,7 @@ class BarrierListSerializer(BarrierSerializerBase):
             "title",
             "trade_direction",
             "trading_bloc",
+            "progress_status",
+            "progress_update",
+            "next_steps",
         )
