@@ -35,6 +35,7 @@ from api.interactions.models import (
 from api.metadata.models import BarrierTag
 from api.user.models import MyBarriersSavedSearch, SavedSearch, TeamBarriersSavedSearch
 from api.user_event_log.models import UserEvent
+from tests.metadata.factories import BarrierTagFactory
 
 base_models: List[models.Model] = [
     Barrier,
@@ -120,7 +121,7 @@ class DbFixTestBase(TestCase):
             barrier=data_row["Barrier"],
             stage=stage,
         )
-        data_row["BarrierTag"] = BarrierTag.objects.create(
+        data_row["BarrierTag"] = BarrierTagFactory(
             created_by=test_user, modified_by=test_user, title=rand_str
         )
         data_row["Document"] = Document.objects.create(
