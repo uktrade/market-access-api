@@ -92,9 +92,6 @@ class BarrierSerializerBase(
             "strategic_assessments",
             "unarchived_by",
             "unarchived_on",
-            "progress_status",
-            "progress_update",
-            "next_steps",
         )
 
     def get_last_seen_on(self, obj):
