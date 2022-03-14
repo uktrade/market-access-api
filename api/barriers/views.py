@@ -388,6 +388,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "commercial_value": "Commercial value estimate",
         "reported_on": "Reported Date",
         "status_date": "Status Date",
+        "resolved_date": "Resolved Date",
         "status_summary": "Status summary",
         "modified_on": "Last updated",
         "tags": "Tags",

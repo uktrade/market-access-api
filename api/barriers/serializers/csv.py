@@ -31,6 +31,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     term = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     status_date = serializers.SerializerMethodField()
+    resolved_date = serializers.SerializerMethodField()
     summary = serializers.SerializerMethodField()
     status_summary = serializers.SerializerMethodField()
     title = serializers.CharField()
@@ -145,6 +146,14 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return obj.status_date.strftime("%Y-%m-%d")
         else:
             return None
+
+    def get_resolved_date(self, obj):
+        if obj.status_date and obj.status == 4:
+            return obj.status_date.strftime("%m/%Y")
+        else:
+            return None
+        # if obj.status_date:
+        #    return obj.status_date.strftime("%m/%Y")
 
     def get_summary(self, obj):
         if obj.is_summary_sensitive:

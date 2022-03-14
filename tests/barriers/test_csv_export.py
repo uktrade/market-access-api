@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from rest_framework.test import APITestCase
 
@@ -63,6 +65,16 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert expected_status_date == serializer.data["status_date"]
+
+    def test_resolved_date(self):
+        expected_resolved_date = "02/2022"
+        barrier = BarrierFactory()
+        barrier.status_date = datetime.datetime(2022, 2, 17)
+        barrier.status = 4
+        barrier.save()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert expected_resolved_date == serializer.data["resolved_date"]
 
     def test_eu_overseas_region(self):
         barrier = BarrierFactory(trading_bloc="TB00016", country=None)
