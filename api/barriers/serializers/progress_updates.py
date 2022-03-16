@@ -9,7 +9,9 @@ class ProgressUpdateSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     barrier = serializers.CharField(source="barrier.id")
     created_on = serializers.DateTimeField(read_only=True)
+    created_by = serializers.StringRelatedField()
     modified_on = serializers.DateTimeField(read_only=True)
+    modified_by = serializers.StringRelatedField()
     status = serializers.ChoiceField(choices=PROGRESS_UPDATE_CHOICES)
     status_display = serializers.SerializerMethodField()
     message = serializers.CharField(source="update", required=False)
@@ -39,8 +41,11 @@ class ProgressUpdateSerializer(serializers.Serializer):
             "id",
             "barrier",
             "created_on",
+            "created_by",
             "modified_on",
+            "modified_by",
             "status",
-            "status_display" "message",
+            "status_display",
+            "message",
             "next_steps",
         )
