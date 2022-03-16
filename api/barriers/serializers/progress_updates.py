@@ -9,9 +9,9 @@ class ProgressUpdateSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     barrier = serializers.CharField(source="barrier.id")
     created_on = serializers.DateTimeField(read_only=True)
-    created_by = serializers.StringRelatedField()
+    created_by = serializers.SerializerMethodField()
     modified_on = serializers.DateTimeField(read_only=True)
-    modified_by = serializers.StringRelatedField()
+    modified_by = serializers.SerializerMethodField()
     status = serializers.ChoiceField(choices=PROGRESS_UPDATE_CHOICES)
     status_display = serializers.SerializerMethodField()
     message = serializers.CharField(source="update", required=False)
@@ -24,6 +24,16 @@ class ProgressUpdateSerializer(serializers.Serializer):
             "barrier": barrier,
         }
         return BarrierProgressUpdate.objects.create(**params)
+
+    def get_created_by(self, obj):
+        if obj.created_by:
+            return f"{obj.created_by.first_name} {obj.created_by.last_name}"
+        return None
+
+    def get_modified_by(self, obj):
+        if obj.modified_by:
+            return f"{obj.modified_by.first_name} {obj.modified_by.last_name}"
+        return None
 
     def update(self, instance, validated_data):
         instance.status = validated_data["status"]
