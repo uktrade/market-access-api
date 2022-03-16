@@ -1136,6 +1136,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     ignore_all_sectors = django_filters.Filter(method="ignore_all_sectors_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
+    delivery_confidence = django_filters.BaseInFilter("progress_status")
     category = django_filters.BaseInFilter("categories", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
@@ -1177,6 +1178,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             "reported_on",
             "status",
             "priority",
+            "progress_status",
             "archived",
         ]
 

@@ -369,6 +369,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "code": "code",
         "title": "Title",
         "status": "Status",
+        "progress_status": "Delivery Confidence",
         "priority": "Priority",
         "overseas_region": "Overseas Region",
         "location": "Location",

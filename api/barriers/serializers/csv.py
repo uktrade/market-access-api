@@ -30,6 +30,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     code = serializers.CharField()
     term = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    progress_status = serializers.SerializerMethodField()
     status_date = serializers.SerializerMethodField()
     summary = serializers.SerializerMethodField()
     status_summary = serializers.SerializerMethodField()
@@ -125,6 +126,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "commercial_value",
             "end_date",
             "link",
+            "progress_status",
         )
 
     def get_term(self, obj):
