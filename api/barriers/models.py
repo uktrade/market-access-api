@@ -213,6 +213,30 @@ class BarrierHistoricalModel(models.Model):
         abstract = True
 
 
+class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    barrier = models.ForeignKey(
+        "Barrier", on_delete=models.CASCADE, related_name="progress_updates"
+    )
+    status = models.CharField(
+        choices=PROGRESS_UPDATE_CHOICES, max_length=100, null=True
+    )
+    update = models.TextField(
+        help_text="What has been done to address the barrier?", blank=True, null=True
+    )
+    next_steps = models.TextField(
+        help_text="What next steps are required to address the barrier?",
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        # order by date descending
+        ordering = ("-created_on",)
+        verbose_name = "Barrier Progress Update"
+        verbose_name_plural = "Barrier Progress Updates"
+
+
 class Barrier(FullyArchivableMixin, BaseModel):
     """Barrier Instance, converted from a completed and accepted Report"""
 

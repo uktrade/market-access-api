@@ -15,7 +15,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.exceptions import PublicBarrierPublishException
@@ -34,6 +34,7 @@ from api.barriers.serializers import (
     PublicBarrierSerializer,
 )
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
+from api.barriers.serializers.progress_updates import ProgressUpdateSerializer
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
 from api.history.manager import HistoryManager
@@ -48,7 +49,7 @@ from api.user.models import (
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
 
-from .models import BarrierFilterSet, PublicBarrierFilterSet
+from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
 
@@ -875,3 +876,17 @@ class LightTouchApprovalSerializer(serializers.Serializer):
 
 class LightTouchReviewsEnableHMTradeCommissionerSerializer(serializers.Serializer):
     enabled = serializers.BooleanField()
+
+
+class BarrierProgressUpdateViewSet(ModelViewSet):
+    queryset = BarrierProgressUpdate.objects.all()
+    serializer_class = ProgressUpdateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
