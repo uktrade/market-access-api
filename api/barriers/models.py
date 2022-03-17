@@ -302,17 +302,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         blank=True,
         null=True,
     )
-    progress_status = models.CharField(
-        choices=PROGRESS_UPDATE_CHOICES, max_length=100, null=True
-    )
-    progress_update = models.TextField(
-        help_text="What has been done to address the barrier?", blank=True, null=True
-    )
-    next_steps = models.TextField(
-        help_text="What next steps are required to address the barrier?",
-        blank=True,
-        null=True,
-    )
 
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
@@ -422,6 +411,12 @@ class Barrier(FullyArchivableMixin, BaseModel):
             ),
             ("download_barriers", "Can download barriers"),
         ]
+
+    @property
+    def latest_progress_update(self):
+        if self.progress_updates.all().exists():
+            return self.progress_updates.all().latest("created_on")
+        return None
 
     @property
     def country_name(self):
