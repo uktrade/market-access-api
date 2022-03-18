@@ -51,8 +51,6 @@ def import_api_results(endpoint):
     if response.ok:
         return response.json()
 
-    # TODO: log failed request to DH metadata as it fails silently
-
     return None
 
 
