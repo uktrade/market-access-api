@@ -215,6 +215,8 @@ class BarrierHistoricalModel(models.Model):
 
 class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
+    created_on = models.DateTimeField(db_index=True, null=True, blank=True)
+    modified_on = models.DateTimeField(null=True, blank=True)
     barrier = models.ForeignKey(
         "Barrier", on_delete=models.CASCADE, related_name="progress_updates"
     )
@@ -229,6 +231,15 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
         blank=True,
         null=True,
     )
+
+    def save(self, *args, **kwargs):
+        # timestamp needs to be identical for both created and modified
+        # auto_now and auto_now_add create different datetime values
+        now = timezone.now()
+        if not self.pk:
+            kwargs["created_on"] = now
+        kwargs["modified_on"] = now
+        super().save(*args, **kwargs)
 
     class Meta:
         # order by date descending
