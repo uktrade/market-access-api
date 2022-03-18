@@ -1,5 +1,6 @@
 import csv
 from collections import defaultdict
+from datetime import datetime
 from itertools import chain
 
 from dateutil.parser import parse
@@ -884,9 +885,12 @@ class BarrierProgressUpdateViewSet(ModelViewSet):
 
     def perform_create(self, serializer, user):
         # share the exact same date within both created_on and modified_on
+        now = datetime.now()
         instance = serializer.save()
         instance.created_by = user
+        instance.created_on = now
         instance.modified_by = user
+        instance.modified_on = now
         return instance.save()
 
     def create(self, request, *args, **kwargs):
@@ -899,8 +903,10 @@ class BarrierProgressUpdateViewSet(ModelViewSet):
         )
 
     def perform_update(self, serializer, user):
+        now = datetime.now()
         instance = serializer.save()
         instance.modified_by = user
+        instance.modified_on = now
         return instance.save()
 
     def update(self, request, *args, **kwargs):
