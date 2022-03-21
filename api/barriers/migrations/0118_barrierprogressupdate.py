@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('barriers', '0117_auto_20220307_0849'),
+        ('barriers', '0115_alter_barriersearchcsvdownloadevent_barrier_ids'),
     ]
 
     operations = [
