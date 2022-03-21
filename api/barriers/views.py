@@ -1,5 +1,6 @@
 import csv
 from collections import defaultdict
+from datetime import datetime
 from itertools import chain
 
 from dateutil.parser import parse
@@ -15,7 +16,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.exceptions import PublicBarrierPublishException
@@ -34,6 +35,7 @@ from api.barriers.serializers import (
     PublicBarrierSerializer,
 )
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
+from api.barriers.serializers.progress_updates import ProgressUpdateSerializer
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
 from api.history.manager import HistoryManager
@@ -48,7 +50,7 @@ from api.user.models import (
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
 
-from .models import BarrierFilterSet, PublicBarrierFilterSet
+from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
 
@@ -876,3 +878,48 @@ class LightTouchApprovalSerializer(serializers.Serializer):
 
 class LightTouchReviewsEnableHMTradeCommissionerSerializer(serializers.Serializer):
     enabled = serializers.BooleanField()
+
+
+class BarrierProgressUpdateViewSet(ModelViewSet):
+    queryset = BarrierProgressUpdate.objects.all()
+    serializer_class = ProgressUpdateSerializer
+
+    def perform_create(self, serializer, user):
+        # share the exact same date within both created_on and modified_on
+        now = datetime.now()
+        instance = serializer.save()
+        instance.created_by = user
+        instance.created_on = now
+        instance.modified_by = user
+        instance.modified_on = now
+        return instance.save()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer, request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_update(self, serializer, user):
+        now = datetime.now()
+        instance = serializer.save()
+        instance.modified_by = user
+        instance.modified_on = now
+        return instance.save()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer, request.user)
+
+        if getattr(instance, "_prefetched_objects_cache", None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)

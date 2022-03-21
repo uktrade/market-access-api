@@ -2,19 +2,25 @@
 
 from django.db import migrations
 
+
 # add permissions "view_action_plans" and "download_barriers" to "Administrator" group
 def add_permissions(app, schema_editor):
     Group = app.get_model("auth", "Group")
     Permission = app.get_model("auth", "Permission")
     group = Group.objects.get(name="Administrator")
-    permission_view_action_plans = Permission.objects.get(codename="view_action_plans")
-    permission_download_barriers = Permission.objects.get(codename="download_barriers")
+    permission_view_action_plans, _ = Permission.objects.get_or_create(
+        codename="view_action_plans"
+    )
+    permission_download_barriers, _ = Permission.objects.get_or_create(
+        codename="download_barriers"
+    )
     group.permissions.add(permission_view_action_plans, permission_download_barriers)
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('user', '0024_create_action_plans_group'),
+        ("user", "0024_create_action_plans_group"),
     ]
 
     operations = [

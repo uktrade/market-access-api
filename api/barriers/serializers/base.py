@@ -25,6 +25,7 @@ from api.barriers.fields import (
     WTOProfileField,
 )
 from api.barriers.models import Barrier, BarrierUserHit
+from api.barriers.serializers.progress_updates import ProgressUpdateSerializer
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
@@ -66,6 +67,7 @@ class BarrierSerializerBase(
     unarchived_by = UserField(required=False)
     wto_profile = WTOProfileField(required=False)
     government_organisations = OrganisationsField(required=False)
+    progress_updates = ProgressUpdateSerializer(required=False, many=True)
 
     class Meta:
         model = Barrier
@@ -86,6 +88,7 @@ class BarrierSerializerBase(
             "strategic_assessments",
             "unarchived_by",
             "unarchived_on",
+            "progress_updates",
         )
 
     def get_last_seen_on(self, obj):

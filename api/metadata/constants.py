@@ -139,6 +139,12 @@ ECONOMIC_ASSESSMENT_RATING = Choices(
     ("LOW", "Low"),
 )
 
+PROGRESS_UPDATE_CHOICES = Choices(
+    ("ON_TRACK", "On track"),
+    ("RISK_OF_DELAY", "Risk of delay"),
+    ("DELAYED", "Delayed"),
+)
+
 ECONOMIC_ASSESSMENT_IMPACT = Choices(
     (1, "1: £ less than a thousand"),
     (2, "2: £ tens of thousands"),

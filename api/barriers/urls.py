@@ -10,6 +10,7 @@ from api.barriers.views import (
     BarrierListS3EmailFile,
     BarrierOpenActionRequired,
     BarrierOpenInProgress,
+    BarrierProgressUpdateViewSet,
     BarrierReportDetail,
     BarrierReportList,
     BarrierReportSubmit,
@@ -61,6 +62,28 @@ urlpatterns = router.urls + [
         "barriers/<uuid:pk>/open-action_required",
         BarrierOpenActionRequired.as_view(),
         name="open-action",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/progress_updates",
+        BarrierProgressUpdateViewSet.as_view(
+            {
+                "get": "list",
+                "post": "create",
+            }
+        ),
+        name="progress_updates",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/progress_updates/<uuid:pk>",
+        BarrierProgressUpdateViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="progress_updates_detail",
     ),
     path(
         "barriers/<uuid:pk>/open-in-progress",

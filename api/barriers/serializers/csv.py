@@ -96,6 +96,13 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     strategic_assessment_scale = serializers.SerializerMethodField()
     government_organisations = serializers.SerializerMethodField()
 
+    # progress update fields
+    progress_update_status = serializers.SerializerMethodField()
+    progress_update_message = serializers.SerializerMethodField()
+    progress_update_date = serializers.SerializerMethodField()
+    progress_update_author = serializers.SerializerMethodField()
+    progress_update_next_steps = serializers.SerializerMethodField()
+
     class Meta:
         model = Barrier
         fields = (
@@ -126,6 +133,11 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "commercial_value",
             "end_date",
             "link",
+            "progress_update_status",
+            "progress_update_message",
+            "progress_update_date",
+            "progress_update_author",
+            "progress_update_next_steps",
         )
 
     def get_term(self, obj):
@@ -347,6 +359,34 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             for org in obj.organisations.all()
             if org.organisation_type in GOVERNMENT_ORGANISATION_TYPES
         ]
+
+    def get_progress_update_status(self, obj):
+        if obj.latest_progress_update:
+            return obj.latest_progress_update.get_status_display()
+        return None
+
+    def get_progress_update_message(self, obj):
+        if obj.latest_progress_update:
+            return obj.latest_progress_update.message
+
+    def get_progress_update_date(self, obj):
+        if obj.latest_progress_update:
+            return obj.latest_progress_update.created_on
+        return None
+
+    def get_progress_update_author(self, obj):
+        if obj.latest_progress_update:
+            return (
+                f"{obj.latest_progress_update.user.first_name} "
+                + obj.latest_progress_update.user.last_name
+            )
+
+        return None
+
+    def get_progress_update_next_steps(self, obj):
+        if obj.latest_progress_update:
+            return obj.latest_progress_update.next_steps
+        return None
 
 
 class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):
