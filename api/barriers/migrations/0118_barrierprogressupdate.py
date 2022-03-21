@@ -6,6 +6,7 @@ import django.db.models.deletion
 import uuid
 
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
