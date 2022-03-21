@@ -22,7 +22,7 @@ def reverse_rename_top_priority_barrier(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("metadata", "0021_add_import_controls_category"),
+        ("metadata", "0022_top_priority_tag"),
     ]
 
     operations = [
