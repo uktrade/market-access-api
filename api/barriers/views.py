@@ -424,6 +424,11 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "resolvability_assessment_time": "Resolvability assessment time",
         "resolvability_assessment_effort": "Resolvability assessment effort",
         "strategic_assessment_scale": "Strategic assessment scale",
+        "progress_update_status": "Progress update status",
+        "progress_update_message": "Progress update message",
+        "progress_update_date": "Progress update date",
+        "progress_update_author": "Progress update author",
+        "progress_update_next_steps": "Progress update next steps",
     }
 
     def _get_base_filename(self):
