@@ -367,7 +367,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
 
     def get_progress_update_message(self, obj):
         if obj.latest_progress_update:
-            return obj.latest_progress_update.message
+            return obj.latest_progress_update.update
 
     def get_progress_update_date(self, obj):
         if obj.latest_progress_update:
@@ -377,8 +377,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     def get_progress_update_author(self, obj):
         if obj.latest_progress_update:
             return (
-                f"{obj.latest_progress_update.user.first_name} "
-                + obj.latest_progress_update.user.last_name
+                f"{obj.latest_progress_update.created_by.first_name} "
+                + obj.latest_progress_update.created_by.last_name
             )
 
         return None

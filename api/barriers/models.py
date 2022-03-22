@@ -1173,6 +1173,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
     status_date = django_filters.Filter(method="resolved_date_filter")
+    delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
     category = django_filters.BaseInFilter("categories", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
@@ -1259,6 +1260,17 @@ class BarrierFilterSet(django_filters.FilterSet):
             )
         else:
             return queryset.filter(priority__in=priorities)
+
+    def progress_status_filter(self, queryset, name, value):
+        # First query to run will will filter out each unique Barriers historical updates, leaving the latest entries
+        # the query wrapping it will cut out all the progress_status's that don't match the search query
+        delivery_confidences = BarrierProgressUpdate.objects.filter(
+            id__in=BarrierProgressUpdate.objects.distinct("barrier_id")
+            .order_by("-barrier_id", "-created_on")
+            .values("id")
+        ).filter(status__in=value)
+
+        return queryset.filter(progress_updates__in=delivery_confidences)
 
     def has_action_plan_filter(self, queryset, name, value):
         if not value:
