@@ -87,7 +87,7 @@ class EconomicAssessmentEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
 
 
 class EndDateHistoryItem(BaseBarrierHistoryItem):
-    field = "end_date"
+    field = "estimated_resolution_date"
 
 
 class IsSummarySensitiveHistoryItem(BaseBarrierHistoryItem):

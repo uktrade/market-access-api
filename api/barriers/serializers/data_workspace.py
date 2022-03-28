@@ -134,7 +134,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "economic_assessment_explanation",
             "economic_assessment_rating",
             "economic_assessments",
-            "end_date",
+            "estimated_resolution_date",
             "government_organisations",
             "id",
             "import_market_size",
