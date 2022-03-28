@@ -63,8 +63,8 @@ def migrate_old_to_new_impact_values(apps, schema_editor):
     EconomicImpactAssessment = apps.get_model("assessment", "EconomicImpactAssessment")
     # for each mapping, find the old value and update the new value
     for old_value, new_value in OLD_TO_NEW_ECONOMIC_ASSESSMENT_IMPACT_MAPPING.items():
-        EconomicImpactAssessment.objects.filter(impact_assessment=old_value).update(
-            impact_assessment=new_value,
+        EconomicImpactAssessment.objects.filter(impact=old_value).update(
+            impact=new_value,
         )
 
 
@@ -75,8 +75,8 @@ def reverse_migrate_old_to_new_impact_values(apps, schema_editor):
     EconomicImpactAssessment = apps.get_model("assessment", "EconomicImpactAssessment")
     # for each mapping, find the new value and update the old value
     for old_value, new_value in OLD_TO_NEW_ECONOMIC_ASSESSMENT_IMPACT_MAPPING.items():
-        EconomicImpactAssessment.objects.filter(impact_assessment=new_value).update(
-            impact_assessment=old_value,
+        EconomicImpactAssessment.objects.filter(impact=new_value).update(
+            impact=old_value,
         )
 
 
