@@ -17,7 +17,6 @@ from django.db import migrations
 # )
 # New values
 # NEW_ECONOMIC_ASSESSMENT_IMPACT = (
-#     (0, "0: £ less than a thousand"),
 #     (1, "1: £ thousands"),
 #     (2, "2: £ tens of thousands"),
 #     (3, "3: £ hundreds of thousands (£100k - £999k)"),
@@ -46,7 +45,7 @@ from django.db import migrations
 # )
 
 OLD_TO_NEW_ECONOMIC_ASSESSMENT_IMPACT_MAPPING = {
-    1: 0,
+    1: 1,
     2: 2,
     3: 3,
     4: 7,
