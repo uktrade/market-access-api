@@ -788,3 +788,146 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
+
+    def test_barrier_status_date_filter_no_results(self):
+        barrier = BarrierFactory(status=1)
+        barrier.estimated_resolution_date = "2025-02-02"
+        barrier.save()
+
+        base_url = reverse("list-barriers")
+        url = (
+            f"{base_url}?"
+            "status=1&"
+            "resolved_date_from_month_open_pending_action=1&"
+            "resolved_date_from_year_open_pending_action=2020&"
+            "resolved_date_to_month_open_pending_action=12&"
+            "resolved_date_to_year_open_pending_action=2022"
+        )
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 0
+
+    def test_barrier_status_date_filter_open_pending_action(self):
+        barrier = BarrierFactory(status=1)
+        barrier.estimated_resolution_date = "2020-02-02"
+        barrier.save()
+
+        base_url = reverse("list-barriers")
+        url = (
+            f"{base_url}?"
+            "status=1&"
+            "resolved_date_from_month_open_pending_action=1&"
+            "resolved_date_from_year_open_pending_action=2020&"
+            "resolved_date_to_month_open_pending_action=12&"
+            "resolved_date_to_year_open_pending_action=2022"
+        )
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+
+    def test_barrier_status_date_filter_open_in_progress(self):
+        base_url = reverse("list-barriers")
+
+        barrier = BarrierFactory(status=2)
+        barrier.estimated_resolution_date = "2020-02-02"
+        barrier.save()
+
+        base_url = reverse("list-barriers")
+        url = (
+            f"{base_url}?"
+            "status=2&"
+            "resolved_date_from_month_open_in_progress=1&"
+            "resolved_date_from_year_open_in_progress=2020&"
+            "resolved_date_to_month_open_in_progress=12&"
+            "resolved_date_to_year_open_in_progress=2022"
+        )
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+
+    def test_barrier_status_date_filter_resolved_in_part(self):
+        base_url = reverse("list-barriers")
+
+        barrier = BarrierFactory(status=3, status_date="2020-02-02")
+
+        base_url = reverse("list-barriers")
+        url = (
+            f"{base_url}?"
+            "status=3&"
+            "resolved_date_from_month_resolved_in_part=1&"
+            "resolved_date_from_year_resolved_in_part=2020&"
+            "resolved_date_to_month_resolved_in_part=12&"
+            "resolved_date_to_year_resolved_in_part=2022"
+        )
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+
+    def test_barrier_status_date_filter_resolved_in_full(self):
+        base_url = reverse("list-barriers")
+
+        barrier = BarrierFactory(status=4, status_date="2020-02-02")
+
+        base_url = reverse("list-barriers")
+        url = (
+            f"{base_url}?"
+            "status=4&"
+            "resolved_date_from_month_resolved_in_full=1&"
+            "resolved_date_from_year_resolved_in_full=2020&"
+            "resolved_date_to_month_resolved_in_full=12&"
+            "resolved_date_to_year_resolved_in_full=2022"
+        )
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+
+    def test_barrier_status_date_filter_multiple_status(self):
+        base_url = reverse("list-barriers")
+
+        barrier_open_pending = BarrierFactory(status=1)
+        barrier_open_pending.estimated_resolution_date = "2020-02-02"
+        barrier_open_pending.save()
+        barrier_open_in_progress = BarrierFactory(status=2)
+        barrier_open_in_progress.estimated_resolution_date = "2020-02-02"
+        barrier_open_in_progress.save()
+        barrier_resolved_in_part = BarrierFactory(status=3, status_date="2020-02-02")
+        barrier_resolved_in_full = BarrierFactory(status=4, status_date="2020-02-02")
+
+        base_url = reverse("list-barriers")
+        url = (
+            f"{base_url}?"
+            "status=1&"
+            "resolved_date_from_month_open_pending_action=1&"
+            "resolved_date_from_year_open_pending_action=2020&"
+            "resolved_date_to_month_open_pending_action=12&"
+            "resolved_date_to_year_open_pending_action=2022&"
+            "status=2&"
+            "resolved_date_from_month_open_in_progress=1&"
+            "resolved_date_from_year_open_in_progress=2020&"
+            "resolved_date_to_month_open_in_progress=12&"
+            "resolved_date_to_year_open_in_progress=2022&"
+            "status=3&"
+            "resolved_date_from_month_resolved_in_part=1&"
+            "resolved_date_from_year_resolved_in_part=2020&"
+            "resolved_date_to_month_resolved_in_part=12&"
+            "resolved_date_to_year_resolved_in_part=2022&"
+            "status=4&"
+            "resolved_date_from_month_resolved_in_full=1&"
+            "resolved_date_from_year_resolved_in_full=2020&"
+            "resolved_date_to_month_resolved_in_full=12&"
+            "resolved_date_to_year_resolved_in_full=2022"
+        )
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 4
