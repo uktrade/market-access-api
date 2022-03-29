@@ -396,7 +396,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "modified_on": "Last updated",
         "tags": "Tags",
         "trade_direction": "Trade direction",
-        "end_date": "End date",
+        "estimated_resolution_date": "Estimated resolution date",
         "summary": "Summary",
         "link": "Link",
         "wto_has_been_notified": "WTO Notified",

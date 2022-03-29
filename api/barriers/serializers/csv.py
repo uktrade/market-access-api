@@ -49,7 +49,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
-    end_date = serializers.DateField(format="%Y-%m-%d")
+    estimated_resolution_date = serializers.DateField(format="%Y-%m")
     link = serializers.SerializerMethodField()
     wto_has_been_notified = serializers.SerializerMethodField()
     wto_should_be_notified = serializers.SerializerMethodField()
@@ -131,7 +131,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "valuation_assessment_rating",
             "valuation_assessment_explanation",
             "commercial_value",
-            "end_date",
+            "estimated_resolution_date",
             "link",
             "progress_update_status",
             "progress_update_message",
@@ -164,8 +164,6 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return obj.status_date.strftime("%m/%Y")
         else:
             return None
-        # if obj.status_date:
-        #    return obj.status_date.strftime("%m/%Y")
 
     def get_summary(self, obj):
         if obj.is_summary_sensitive:

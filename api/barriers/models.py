@@ -1,4 +1,5 @@
 import datetime
+import logging
 import urllib.parse
 from typing import List
 from uuid import uuid4
@@ -49,6 +50,8 @@ from api.metadata.constants import (
 from . import validators
 from .report_stages import REPORT_CONDITIONS, report_stage_status
 from .utils import random_barrier_reference
+
+logger = logging.getLogger(__name__)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -259,7 +262,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         null=True,
         help_text="Is this a short-term procedural or long-term strategic barrier?",
     )
-    end_date = models.DateField(
+    estimated_resolution_date = models.DateField(
         blank=True, null=True, help_text="Date the barrier ends"
     )
     country = models.UUIDField(blank=True, null=True)
@@ -1172,7 +1175,12 @@ class BarrierFilterSet(django_filters.FilterSet):
     ignore_all_sectors = django_filters.Filter(method="ignore_all_sectors_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     status = django_filters.BaseInFilter("status")
-    status_date = django_filters.Filter(method="resolved_date_filter")
+    status_date_open_pending_action = django_filters.Filter(
+        method="resolved_date_filter"
+    )
+    status_date_open_in_progress = django_filters.Filter(method="resolved_date_filter")
+    status_date_resolved_in_part = django_filters.Filter(method="resolved_date_filter")
+    status_date_resolved_in_full = django_filters.Filter(method="resolved_date_filter")
     delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
     category = django_filters.BaseInFilter("categories", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
@@ -1455,7 +1463,27 @@ class BarrierFilterSet(django_filters.FilterSet):
         start_date = dates_list[0]
         end_date = dates_list[1]
 
-        return queryset.filter(status_date__range=(start_date, end_date))
+        # Exlude any barrier from the result which has the corresponding status but sits outside
+        # the given range.
+        if name == "status_date_resolved_in_full":
+            return queryset.exclude(
+                Q(status__in="4"), ~Q(status_date__range=(start_date, end_date))
+            )
+        elif name == "status_date_resolved_in_part":
+            return queryset.exclude(
+                Q(status__in="3"),
+                ~Q(status_date__range=(start_date, end_date)),
+            )
+        elif name == "status_date_open_in_progress":
+            return queryset.exclude(
+                Q(status__in="2"),
+                ~Q(estimated_resolution_date__range=(start_date, end_date)),
+            )
+        elif name == "status_date_open_pending_action":
+            return queryset.exclude(
+                Q(status__in="1"),
+                ~Q(estimated_resolution_date__range=(start_date, end_date)),
+            )
 
     def wto_filter(self, queryset, name, value):
         wto_queryset = queryset.none()

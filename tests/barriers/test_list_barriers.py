@@ -685,6 +685,117 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.data["next"] is None
         assert response.data["previous"] is None
 
+    def test_barrier_status_date_filter_no_results(self):
+        BarrierFactory(status=4, status_date="2025-02-02")
+
+        url = f'{reverse("list-barriers")}?status=4&status_date_resolved_in_full=2021-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == []
+
+    def test_barrier_status_date_filter_open_pending_action(self):
+        barrier = BarrierFactory(status=1, estimated_resolution_date="2020-06-06")
+
+        url = f'{reverse("list-barriers")}?status=1&status_date_open_pending_action=2020-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == [str(barrier.id)]
+
+    def test_barrier_status_date_filter_open_in_progress(self):
+        barrier = BarrierFactory(status=2, estimated_resolution_date="2020-06-06")
+
+        url = f'{reverse("list-barriers")}?status=2&status_date_open_in_progress=2020-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == [str(barrier.id)]
+
+    def test_barrier_status_date_filter_resolved_in_part(self):
+        barrier = BarrierFactory(status=3, status_date="2020-02-02")
+
+        url = f'{reverse("list-barriers")}?status=3&status_date_resolved_in_part=2020-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == [str(barrier.id)]
+
+    def test_barrier_status_date_filter_resolved_in_full(self):
+        barrier = BarrierFactory(status=4, status_date="2020-02-02")
+
+        url = f'{reverse("list-barriers")}?status=4&status_date_resolved_in_full=2020-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == [str(barrier.id)]
+
+    def test_barrier_status_date_filter_multiple_status(self):
+        barrier_open_pending = BarrierFactory(
+            status=1, estimated_resolution_date="2020-06-06"
+        )
+        barrier_open_in_progress = BarrierFactory(
+            status=2, estimated_resolution_date="2020-06-06"
+        )
+        barrier_resolved_in_part = BarrierFactory(status=3, status_date="2020-02-02")
+        barrier_resolved_in_full = BarrierFactory(status=4, status_date="2020-02-02")
+
+        saved_barrier_list = [
+            str(barrier_open_pending.id),
+            str(barrier_open_in_progress.id),
+            str(barrier_resolved_in_part.id),
+            str(barrier_resolved_in_full.id),
+        ]
+
+        url = (
+            f'{reverse("list-barriers")}?'
+            "status=1,2,3,4&"
+            "status_date_open_pending_action=2020-01-01,2021-06-30&"
+            "status_date_open_in_progress=2020-01-01,2021-06-30&"
+            "status_date_resolved_in_part=2020-01-01,2021-06-30&"
+            "status_date_resolved_in_full=2020-01-01,2021-06-30&"
+        )
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == saved_barrier_list
+
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
     def test_changed_filter(self):
