@@ -145,17 +145,6 @@ PROGRESS_UPDATE_CHOICES = Choices(
     ("DELAYED", "Delayed"),
 )
 
-# ECONOMIC_ASSESSMENT_IMPACT = Choices(
-#     (1, "1: £ less than a thousand"),
-#     (2, "2: £ tens of thousands"),
-#     (3, "3: £ hundreds of thousands"),
-#     (4, "4: £ millions"),
-#     (5, "5: £ tens of millions"),
-#     (6, "6: £ hundreds of millions"),
-#     (7, "7: £ billions"),
-#     (8, "8: £ tens of billions"),
-# )
-
 ECONOMIC_ASSESSMENT_IMPACT = Choices(
     (1, "1: £ thousands"),
     (2, "2: £ tens of thousands"),
