@@ -1472,7 +1472,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         elif name == "status_date_resolved_in_part":
             return queryset.exclude(
                 Q(status__in="3"),
-                ~Q(estimated_resolution_date__range=(start_date, end_date)),
+                ~Q(status_date__range=(start_date, end_date)),
             )
         elif name == "status_date_open_in_progress":
             return queryset.exclude(
