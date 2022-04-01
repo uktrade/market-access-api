@@ -46,7 +46,7 @@ class TestEconomicImpactAssessments(APITestMixin):
         url = reverse("economic-impact-assessment-list")
         response = self.api_client.post(url, format="json", data={})
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data["economic_assessment_id"] == ["This field is required."]
+        assert response.data["barrier_id"] == ["This field is required."]
         assert response.data["impact"] == ["This field is required."]
         assert "explanation" not in response.data
 
