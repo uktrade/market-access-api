@@ -142,6 +142,7 @@ class DbFixTestBase(TestCase):
             modified_by=test_user,
             archived_by=test_user,
             economic_assessment=data_row["EconomicAssessment"],
+            barrier=data_row["Barrier"],
             impact=4,
         )
         data_row["ExcludeFromNotification"] = ExcludeFromNotification.objects.create(

@@ -28,7 +28,8 @@ class EconomicImpactAssessmentSerializer(
 ):
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
-    economic_assessment_id = serializers.IntegerField()
+    economic_assessment_id = serializers.IntegerField(required=False)
+    barrier_id = serializers.UUIDField()
     impact = ImpactField()
     created_by = UserField(required=False)
     modified_by = UserField(required=False)
@@ -45,6 +46,7 @@ class EconomicImpactAssessmentSerializer(
             "modified_on",
             "modified_by",
             "economic_assessment_id",
+            "barrier_id",
             "impact",
             "explanation",
         )

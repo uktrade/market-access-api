@@ -117,6 +117,11 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     """
     Analysts requested the name to be changed to Valuation Assessment
      - it reflects more what the numbers mean
+
+    When created an Impact Assessment will belong to a barriers current economic assessment,
+    otherwise it'll belong to the barrier alone.
+    This is to preserve previous data and also old behaviour while removing strict dependence
+    on the economic assessment.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -124,15 +129,19 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         "assessment.EconomicAssessment",
         related_name="economic_impact_assessments",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    barrier = models.ForeignKey(
+        "barriers.Barrier",
+        related_name="valuation_assessments",
+        on_delete=models.CASCADE,
+        null=True,
     )
     impact = models.PositiveIntegerField(choices=ECONOMIC_ASSESSMENT_IMPACT)
     explanation = models.TextField(blank=True)
 
     history = HistoricalRecords()
-
-    @property
-    def barrier(self):
-        return self.economic_assessment.barrier
 
     @property
     def rating(self):
@@ -152,15 +161,16 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         if self._state.adding:
-            for (
-                economic_assessment
-            ) in self.economic_assessment.barrier.economic_assessments.all():
+            if self.economic_assessment:
                 for (
-                    economic_impact_assessment
-                ) in economic_assessment.economic_impact_assessments.filter(
-                    archived=False
-                ):
-                    economic_impact_assessment.archive(user=self.created_by)
+                    economic_assessment
+                ) in self.economic_assessment.barrier.economic_assessments.all():
+                    for (
+                        economic_impact_assessment
+                    ) in economic_assessment.economic_impact_assessments.filter(
+                        archived=False
+                    ):
+                        economic_impact_assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
 
 

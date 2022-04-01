@@ -688,6 +688,7 @@ class TestHistoryView(APITestMixin, TestCase):
         )
         EconomicImpactAssessmentFactory(
             economic_assessment=economic_assessment,
+            barrier=economic_assessment.barrier,
             impact=4,
         )
         ResolvabilityAssessmentFactory(
@@ -1024,6 +1025,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         )
         EconomicImpactAssessmentFactory(
             economic_assessment=economic_assessment,
+            barrier=economic_assessment.barrier,
             impact=4,
         )
         ResolvabilityAssessmentFactory(
