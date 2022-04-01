@@ -24,6 +24,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "economic_assessment_eligibility",
             "economic_assessment_eligibility_summary",
             "economic_assessments",
+            "valuation_assessments",
             "estimated_resolution_date",
             "id",
             "is_summary_sensitive",

@@ -478,6 +478,7 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
             "barrier_commodities",
             "categories",
             "economic_assessments",
+            "valuation_assessments",
             "organisations",
             "tags",
         )

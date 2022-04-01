@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from api.assessment.serializers import (
     EconomicAssessmentSerializer,
+    EconomicImpactAssessmentSerializer,
     ResolvabilityAssessmentSerializer,
     StrategicAssessmentSerializer,
 )
@@ -41,6 +42,9 @@ class BarrierSerializerBase(
     archived_by = UserField(required=False)
     archived_reason = ArchivedReasonField(required=False)
     economic_assessments = EconomicAssessmentSerializer(required=False, many=True)
+    valuation_assessments = EconomicImpactAssessmentSerializer(
+        required=False, many=True
+    )
     resolvability_assessments = ResolvabilityAssessmentSerializer(
         required=False, many=True
     )
@@ -84,6 +88,7 @@ class BarrierSerializerBase(
             "modified_on",
             "priority_date",
             "economic_assessments",
+            "valuation_assessments",
             "resolvability_assessments",
             "strategic_assessments",
             "unarchived_by",
