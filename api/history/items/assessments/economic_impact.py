@@ -5,7 +5,7 @@ class BaseEconomicImpactAssessmentHistoryItem(BaseHistoryItem):
     model = "economic_impact_assessment"
 
     def get_barrier_id(self):
-        return self.barrier.id
+        return self.new_record.instance.barrier_id
 
 
 class ArchivedHistoryItem(BaseEconomicImpactAssessmentHistoryItem):
