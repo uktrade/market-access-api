@@ -28,6 +28,7 @@ class TestEconomicImpactAssessments(APITestMixin):
             format="json",
             data={
                 "economic_assessment_id": economic_assessment.id,
+                "barrier_id": economic_assessment.barrier.id,
                 "impact": "1",
                 "explanation": "Explanation!!!",
             },
@@ -52,6 +53,7 @@ class TestEconomicImpactAssessments(APITestMixin):
     def test_update_economic_impact_assessment(self, economic_assessment):
         economic_impact_assessment = EconomicImpactAssessmentFactory(
             economic_assessment=economic_assessment,
+            barrier=economic_assessment.barrier,
             impact=4,
         )
         url = reverse(
@@ -71,6 +73,7 @@ class TestEconomicImpactAssessments(APITestMixin):
     def test_archive_economic_impact_assessment(self, economic_assessment):
         economic_impact_assessment = EconomicImpactAssessmentFactory(
             economic_assessment=economic_assessment,
+            barrier=economic_assessment.barrier,
             impact=4,
         )
         url = reverse(
@@ -90,6 +93,7 @@ class TestEconomicImpactAssessments(APITestMixin):
         """
         economic_impact_assessment1 = EconomicImpactAssessmentFactory(
             economic_assessment=economic_assessment,
+            barrier=economic_assessment.barrier,
             impact=4,
         )
         economic_assessment2 = EconomicAssessmentFactory(
@@ -98,6 +102,7 @@ class TestEconomicImpactAssessments(APITestMixin):
         )
         economic_impact_assessment2 = EconomicImpactAssessmentFactory(
             economic_assessment=economic_assessment2,
+            barrier=economic_assessment2.barrier,
             impact=5,
         )
         assert economic_impact_assessment1.archived is False
@@ -109,6 +114,7 @@ class TestEconomicImpactAssessments(APITestMixin):
             format="json",
             data={
                 "economic_assessment_id": economic_assessment2.id,
+                "barrier_id": economic_assessment2.barrier.id,
                 "impact": "1",
                 "explanation": "Explanation!!!",
             },
@@ -122,6 +128,7 @@ class TestEconomicImpactAssessments(APITestMixin):
     def test_economic_impact_assessment_detail(self, economic_assessment):
         economic_impact_assessment = EconomicImpactAssessmentFactory(
             economic_assessment=economic_assessment,
+            barrier=economic_assessment.barrier,
             impact=7,
             explanation="Here's an explanation",
         )
