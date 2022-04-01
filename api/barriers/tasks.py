@@ -1,10 +1,12 @@
 import csv
 from csv import DictWriter
+from datetime import datetime, timedelta
 from tempfile import NamedTemporaryFile
 from typing import Dict, List
 
 from celery import shared_task
 from django.conf import settings
+from django.db.models import Q
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.csv import _transform_csv_row
@@ -75,3 +77,46 @@ def generate_s3_and_send_email(
             "file_url": presigned_url,
         },
     )
+
+
+@shared_task
+def send_barrier_inactivity_reminders():
+    """
+    Get list of all barriers with modified_on and activity_reminder_sent dates older than 6 months
+
+    For each barrier sent a reminder notification to the barrier owner
+    """
+
+    # datetime 6 months ago
+    inactivity_theshold_date = datetime.now() - timedelta(
+        days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
+    )
+    repeat_reminder_theshold_date = datetime.now() - timedelta(
+        days=settings.BARRIER_REPEAT_REMINDER_THESHOLD_DAYS
+    )
+
+    barriers_needing_reminder = Barrier.objects.filter(
+        modified_on__lt=inactivity_theshold_date
+    ).filter(
+        Q(activity_reminder_sent__isnull=True)
+        | Q(activity_reminder_sent__lt=repeat_reminder_theshold_date)
+    )
+
+    for barrier in barriers_needing_reminder:
+        barrier_owner = barrier.barrier_team.get(role="Owner").user
+        full_name = f"{barrier_owner.first_name} {barrier_owner.last_name}"
+
+        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+
+        client.send_email_notification(
+            email_address=barrier_owner.email,
+            template_id=settings.BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID,
+            personalisation={
+                "barrier_title": barrier.title,
+                "barrier_url": f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/",
+                "full_name": full_name,
+                "barrier_created_date": barrier.created_on.strftime("%d %B %Y"),
+            },
+        )
+        barrier.activity_reminder_sent = datetime.now()
+        barrier.save()

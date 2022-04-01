@@ -256,6 +256,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Readable reference code e.g. B-20-NTZ",
         db_index=True,
     )
+    activity_reminder_sent = models.DateTimeField(null=True, blank=True)
     term = models.PositiveIntegerField(
         choices=BARRIER_TERMS,
         blank=True,
