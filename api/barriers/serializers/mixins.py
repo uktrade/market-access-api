@@ -58,7 +58,7 @@ class ValuationAssessmentRatingFieldMixin(metaclass=serializers.SerializerMetacl
     valuation_assessment_rating = serializers.SerializerMethodField()
 
     def get_valuation_assessment_rating(self, obj):
-        latest_valuation_assessment = obj.current_economic_assessment
+        latest_valuation_assessment = obj.current_valuation_assessment
         if latest_valuation_assessment:
             return latest_valuation_assessment.rating
 
