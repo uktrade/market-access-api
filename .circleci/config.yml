@@ -56,7 +56,7 @@ jobs:
       AWS_DEFAULT_REGION: 'eu-west-2'
       REDIS_BASE_URL: 'redis://localhost'
       DMAS_BASE_URL: 'https://dummy.market-access.net'
-      NOTIFY_API_KEY: ''
+      NOTIFY_API_KEY: 'notify-api-key' # pragma: allowlist secret
       NOTIFY_SAVED_SEARCHES_TEMPLATE_ID: ''
       NOTIFY_BARRIER_NOTIFCATION_ID: ''
       NOTIFY_GENERATED_FILE_ID: ''
@@ -74,6 +74,7 @@ jobs:
       SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID: 'change-me'
       SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS: john.doe@example.org
       APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS: ''
+      BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID: 'test-123' # pragma: allowlist secret
 
     working_directory: ~/market-access-api
 
