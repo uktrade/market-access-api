@@ -161,15 +161,16 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         if self._state.adding:
-            for (
-                economic_assessment
-            ) in self.economic_assessment.barrier.economic_assessments.all():
+            if self.economic_assessment:
                 for (
-                    economic_impact_assessment
-                ) in economic_assessment.economic_impact_assessments.filter(
-                    archived=False
-                ):
-                    economic_impact_assessment.archive(user=self.created_by)
+                    economic_assessment
+                ) in self.economic_assessment.barrier.economic_assessments.all():
+                    for (
+                        economic_impact_assessment
+                    ) in economic_assessment.economic_impact_assessments.filter(
+                        archived=False
+                    ):
+                        economic_impact_assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
 
 
