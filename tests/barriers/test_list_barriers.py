@@ -449,6 +449,10 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == Barrier.objects.count()
 
+        from logging import getLogger
+
+        logger = getLogger(__name__)
+
         search_queryset = Barrier.objects.annotate(
             search=SearchVector("summary"),
         ).filter(
@@ -458,12 +462,31 @@ class TestListBarriers(APITestMixin, APITestCase):
             | Q(public_barrier__id__iexact=public_id.lstrip("PID-").upper())
         )
 
-        assert 1 == search_queryset.count()
+        # assert 1 == search_queryset.count()
+        search_queryset_count = search_queryset.count()
+        logger.info(f"search_queryset_count: {search_queryset_count}")
+        search_queryset_public_ids = [
+            f"search_queryset: {barrier.title}: {barrier.public_barrier.id}"
+            for barrier in search_queryset
+        ]
+        for public_id_string in search_queryset_public_ids:
+            logger.info(public_id_string)
+
+        public_ids = [
+            f"Barrier.objects.all: {barrier.title}: {barrier.public_barrier.id}"
+            for barrier in Barrier.objects.all()
+        ]
+        for public_id_string in public_ids:
+            logger.info(public_id_string)
 
         url = f'{reverse("list-barriers")}?text={public_id}'
+        logger.info(f"URL: {url}")
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
+        for name, value in response.data.items():
+            logger.info(f"response.data {name}: {value}")
+
         assert 1 == response.data["count"]
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier2.id)} == set(barrier_ids)
