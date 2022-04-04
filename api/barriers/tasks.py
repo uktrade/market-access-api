@@ -109,7 +109,7 @@ def send_barrier_inactivity_reminders():
     for barrier in barriers_needing_reminder:
         recipient = barrier.barrier_team.filter(role="Owner").first()
         if not recipient:
-            recipient = barrier.barrier_team.filter(role="Reporter")
+            recipient = barrier.barrier_team.filter(role="Reporter").first()
         if not recipient:
             logger.warn(f"No recipient found for barrier {barrier.id}")
             continue
