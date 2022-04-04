@@ -30,6 +30,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "is_summary_sensitive",
             "last_seen_on",
             "location",
+            "completion_percent",
             "modified_by",
             "modified_on",
             "other_source",
