@@ -1374,7 +1374,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             Q(code=value)
             | Q(search=value)
             | Q(title__icontains=value)
-            | Q(public_barrier__id=value.lstrip("PID-").upper())
+            | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
         )
 
     def my_barriers(self, queryset, name, value):
