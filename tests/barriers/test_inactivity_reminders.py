@@ -61,9 +61,6 @@ class TestBarrierInactivityReminders(TestCase):
         inactivity_theshold_date = datetime.now() - timedelta(
             days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
         )
-        repeat_reminder_theshold_date = datetime.now() - timedelta(
-            days=settings.BARRIER_REPEAT_REMINDER_THESHOLD_DAYS
-        )
         #  test individual call params
         test_barrier = BarrierFactory()
         TeamMemberFactory(
@@ -75,22 +72,19 @@ class TestBarrierInactivityReminders(TestCase):
         )
 
         with patch.object(NotificationsAPIClient, "send_email_notification") as mock:
-            owner = test_barrier.barrier_team.get(role="Owner").user
-
-            assert owner.email == test_user.email
 
             send_barrier_inactivity_reminders()
 
             email_personalisation = {
                 "barrier_title": test_barrier.title,
                 "barrier_url": f"{settings.DMAS_BASE_URL}/barriers/{test_barrier.id}/",
-                "full_name": f"{owner.first_name} {owner.last_name}",
+                "full_name": f"{test_user.first_name} {test_user.last_name}",
                 "barrier_created_date": test_barrier.created_on.strftime("%d %B %Y"),
             }
 
             assert mock.call_count == 1
             mock.assert_called_once_with(
-                email_address=owner.email,
+                email_address=test_user.email,
                 template_id=settings.BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID,
                 personalisation=email_personalisation,
             )
