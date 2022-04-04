@@ -12,6 +12,7 @@ from notifications_python_client.notifications import NotificationsAPIClient
 from api.barriers.csv import _transform_csv_row
 from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
+from api.collaboration.models import TeamMember
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 
 
@@ -103,13 +104,21 @@ def send_barrier_inactivity_reminders():
     )
 
     for barrier in barriers_needing_reminder:
-        barrier_owner = barrier.barrier_team.get(role="Owner").user
-        full_name = f"{barrier_owner.first_name} {barrier_owner.last_name}"
+        try:
+            recipient = barrier.barrier_team.get(role="Owner").user
+        except TeamMember.DoesNotExist:
+            # Use reporter if no owner
+            try:
+                recipient = barrier.barrier_team.get(role="Reporter").user
+            except TeamMember.DoesNotExist:
+                # barrier has no reporter or owner to notify
+                continue
+        full_name = f"{recipient.first_name} {recipient.last_name}"
 
         client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
 
         client.send_email_notification(
-            email_address=barrier_owner.email,
+            email_address=recipient.email,
             template_id=settings.BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID,
             personalisation={
                 "barrier_title": barrier.title,
