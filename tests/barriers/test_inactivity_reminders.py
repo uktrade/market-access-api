@@ -58,7 +58,6 @@ class TestBarrierInactivityReminders(TestCase):
             )
             mock.stop()
 
-    def test_individual_notification(self):
         test_user = create_test_user()
         inactivity_theshold_date = datetime.now() - timedelta(
             days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
