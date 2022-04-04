@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from django.contrib.postgres.search import SearchVector
+from django.db.models import Q
 from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -446,6 +448,17 @@ class TestListBarriers(APITestMixin, APITestCase):
         public_id = f"PID-{barrier2.public_barrier.id}"
 
         assert 3 == Barrier.objects.count()
+
+        search_queryset = Barrier.objects.annotate(
+            search=SearchVector("summary"),
+        ).filter(
+            Q(code=public_id)
+            | Q(search=public_id)
+            | Q(title__icontains=public_id)
+            | Q(public_barrier__id__iexact=public_id.lstrip("PID-").upper())
+        )
+
+        assert 1 == search_queryset.count()
 
         url = f'{reverse("list-barriers")}?text={public_id}'
         response = self.api_client.get(url)
