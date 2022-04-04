@@ -113,6 +113,11 @@ def send_barrier_inactivity_reminders():
         if not recipient:
             logger.warn(f"No recipient found for barrier {barrier.id}")
             continue
+        if not recipient.user:
+            logger.warn(
+                f"No user found for recipient {recipient.id} and barrier {barrier.id}"
+            )
+            continue
 
         recipient = recipient.user
 
