@@ -1,4 +1,5 @@
 import csv
+import logging
 from csv import DictWriter
 from datetime import datetime, timedelta
 from tempfile import NamedTemporaryFile
@@ -14,6 +15,8 @@ from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.collaboration.models import TeamMember
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
+
+logger = logging.getLogger(__name__)
 
 
 def upload_to_s3(filename: str, key: str) -> str:
@@ -112,7 +115,13 @@ def send_barrier_inactivity_reminders():
                 recipient = barrier.barrier_team.get(role="Reporter").user
             except TeamMember.DoesNotExist:
                 # barrier has no reporter or owner to notify
+                logger.warn(f"No recipient found for barrier {barrier.id}")
                 continue
+
+        if not recipient:
+            logger.warn(f"No recipient found for barrier {barrier.id}")
+            continue
+
         full_name = f"{recipient.first_name} {recipient.last_name}"
 
         client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
