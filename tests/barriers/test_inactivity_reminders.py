@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.conf import settings
-from django.db.models import Q
 from django.test import TestCase
 from notifications_python_client.notifications import NotificationsAPIClient
 
@@ -20,10 +19,6 @@ class TestBarrierInactivityReminders(TestCase):
         inactivity_theshold_date = datetime.now() - timedelta(
             days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
         )
-        repeat_reminder_theshold_date = datetime.now() - timedelta(
-            days=settings.BARRIER_REPEAT_REMINDER_THESHOLD_DAYS
-        )
-
         BarrierFactory.create_batch(size=10)
         for barrier in Barrier.objects.all():
             TeamMemberFactory(
@@ -32,16 +27,6 @@ class TestBarrierInactivityReminders(TestCase):
         # modified_on can't be updated directly, so we need to update the barrier queryset
         Barrier.objects.all().update(
             modified_on=inactivity_theshold_date - timedelta(days=1)
-        )
-
-        assert (
-            Barrier.objects.filter(modified_on__lt=inactivity_theshold_date)
-            .filter(
-                Q(activity_reminder_sent__isnull=True)
-                | Q(activity_reminder_sent__lt=repeat_reminder_theshold_date)
-            )
-            .count()
-            == 10
         )
 
         # create recent barries that should not be sent a reminder

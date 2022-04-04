@@ -74,8 +74,8 @@ WORKDIR /usr/src/app
 
 # Poetry commands reference https://python-poetry.org/docs/cli/#run
 COPY pyproject.toml poetry.lock ./
-RUN pip install --upgrade pip \
-    && pip install poetry==$POETRY_VERSION \
+RUN pip3.7 install --upgrade pip \
+    && pip3.7 install poetry==$POETRY_VERSION \
     && poetry export --without-hashes -f requirements.txt -o requirements.txt \
     && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
-    && pip install -r requirements-dev.txt
+    && pip3.7 install -r requirements-dev.txt
