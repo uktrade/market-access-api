@@ -1,19 +1,19 @@
 import csv
 import logging
 from csv import DictWriter
-from datetime import datetime, timedelta
+from datetime import timedelta
 from tempfile import NamedTemporaryFile
 from typing import Dict, List
 
 from celery import shared_task
 from django.conf import settings
 from django.db.models import Q
+from django.utils import timezone
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.csv import _transform_csv_row
 from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
-from api.collaboration.models import TeamMember
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 
 logger = logging.getLogger(__name__)
@@ -92,10 +92,10 @@ def send_barrier_inactivity_reminders():
     """
 
     # datetime 6 months ago
-    inactivity_theshold_date = datetime.now() - timedelta(
+    inactivity_theshold_date = timezone.now() - timedelta(
         days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
     )
-    repeat_reminder_theshold_date = datetime.now() - timedelta(
+    repeat_reminder_theshold_date = timezone.now() - timedelta(
         days=settings.BARRIER_REPEAT_REMINDER_THESHOLD_DAYS
     )
 
@@ -107,20 +107,14 @@ def send_barrier_inactivity_reminders():
     )
 
     for barrier in barriers_needing_reminder:
-        try:
-            recipient = barrier.barrier_team.get(role="Owner").user
-        except TeamMember.DoesNotExist:
-            # Use reporter if no owner
-            try:
-                recipient = barrier.barrier_team.get(role="Reporter").user
-            except TeamMember.DoesNotExist:
-                # barrier has no reporter or owner to notify
-                logger.warn(f"No recipient found for barrier {barrier.id}")
-                continue
-
+        recipient = barrier.barrier_team.filter(role="Owner").first()
+        if not recipient:
+            recipient = barrier.barrier_team.filter(role="Reporter")
         if not recipient:
             logger.warn(f"No recipient found for barrier {barrier.id}")
             continue
+
+        recipient = recipient.user
 
         full_name = f"{recipient.first_name} {recipient.last_name}"
 
@@ -136,5 +130,5 @@ def send_barrier_inactivity_reminders():
                 "barrier_created_date": barrier.created_on.strftime("%d %B %Y"),
             },
         )
-        barrier.activity_reminder_sent = datetime.now()
+        barrier.activity_reminder_sent = timezone.now()
         barrier.save()

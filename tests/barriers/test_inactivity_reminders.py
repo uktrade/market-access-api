@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from unittest.mock import patch
 
 from django.conf import settings
 from django.test import TestCase
+from django.utils import timezone
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.models import Barrier
@@ -16,7 +17,7 @@ class TestBarrierInactivityReminders(TestCase):
     def test_inactive_barrier_reminder_email(self):
         test_user = create_test_user()
 
-        inactivity_theshold_date = datetime.now() - timedelta(
+        inactivity_theshold_date = timezone.now() - timedelta(
             days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
         )
         BarrierFactory.create_batch(size=10)
@@ -60,7 +61,7 @@ class TestBarrierInactivityReminders(TestCase):
 
     def test_individual_barrier_reminder_email(self):
         test_user = create_test_user()
-        inactivity_theshold_date = datetime.now() - timedelta(
+        inactivity_theshold_date = timezone.now() - timedelta(
             days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
         )
         #  test individual call params
