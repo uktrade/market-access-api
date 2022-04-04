@@ -15,7 +15,9 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       - image: postgres:13
         environment:
-          POSTGRES_DB=market_access
+          POSTGRES_DB: market_access
+          POSTGRES_USER: postgres # pragma: allowlist secret
+          POSTGRES_PASSWORD: postgres # pragma: allowlist secret
       - image: ukti/mock-sso
         environment:
           MOCK_SSO_PORT: '5000'
