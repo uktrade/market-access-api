@@ -89,27 +89,6 @@ class TestBarrierInactivityReminders(TestCase):
             activity_reminder_sent=None,
         )
 
-        assert (
-            test_barrier.id
-            == Barrier.objects.filter(modified_on__lt=inactivity_theshold_date)
-            .filter(
-                Q(activity_reminder_sent__isnull=True)
-                | Q(activity_reminder_sent__lt=repeat_reminder_theshold_date)
-            )
-            .first()
-            .id
-        )
-
-        assert (
-            Barrier.objects.filter(modified_on__lt=inactivity_theshold_date)
-            .filter(
-                Q(activity_reminder_sent__isnull=True)
-                | Q(activity_reminder_sent__lt=repeat_reminder_theshold_date)
-            )
-            .count()
-            == 1
-        )
-
         with patch.object(NotificationsAPIClient, "send_email_notification") as mock:
             owner = test_barrier.barrier_team.get(role="Owner").user
 
