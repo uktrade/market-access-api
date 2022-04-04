@@ -42,6 +42,7 @@ class TestBarrierInactivityReminders(TestCase):
                 Barrier.objects.filter(activity_reminder_sent__isnull=False).count()
                 == 10
             )
+            mock.stop()
 
         #  when called a second time, no new reminders should be sent
 
@@ -55,6 +56,7 @@ class TestBarrierInactivityReminders(TestCase):
                 Barrier.objects.filter(activity_reminder_sent__isnull=False).count()
                 == 10
             )
+            mock.stop()
 
     def test_individual_notification(self):
         test_user = create_test_user()
@@ -88,3 +90,4 @@ class TestBarrierInactivityReminders(TestCase):
                 template_id=settings.BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID,
                 personalisation=email_personalisation,
             )
+            mock.stop()
