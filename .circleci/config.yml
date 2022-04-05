@@ -13,9 +13,11 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      - image: postgres:9.6.16
+      - image: postgres:13
         environment:
-          POSTGRES_DB=market_access
+          POSTGRES_DB: market_access
+          POSTGRES_USER: postgres # pragma: allowlist secret
+          POSTGRES_PASSWORD: postgres # pragma: allowlist secret
       - image: ukti/mock-sso
         environment:
           MOCK_SSO_PORT: '5000'
@@ -56,7 +58,7 @@ jobs:
       AWS_DEFAULT_REGION: 'eu-west-2'
       REDIS_BASE_URL: 'redis://localhost'
       DMAS_BASE_URL: 'https://dummy.market-access.net'
-      NOTIFY_API_KEY: ''
+      NOTIFY_API_KEY: 'xxx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' # pragma: allowlist secret
       NOTIFY_SAVED_SEARCHES_TEMPLATE_ID: ''
       NOTIFY_BARRIER_NOTIFCATION_ID: ''
       NOTIFY_GENERATED_FILE_ID: ''
@@ -74,6 +76,7 @@ jobs:
       SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID: 'change-me'
       SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS: john.doe@example.org
       APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS: ''
+      BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID: 'test-123' # pragma: allowlist secret
 
     working_directory: ~/market-access-api
 
@@ -86,7 +89,7 @@ jobs:
             - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
       - run:
-          command: sudo pip install poetry==1.0.10
+          command: sudo pip install poetry
 
       - run:
           name: Install dependencies

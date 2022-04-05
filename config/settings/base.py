@@ -389,6 +389,10 @@ if not DEBUG:
         "task": "api.user.tasks.send_notification_emails",
         "schedule": crontab(minute=0, hour=6),
     }
+    CELERY_BEAT_SCHEDULE["send_barrier_inactivity_reminders"] = {
+        "task": "api.barrier.tasks.send_barrier_inactivity_reminders",
+        "schedule": crontab(minute=0, hour=6),
+    }
 
 
 # Public Data for Barriers
@@ -441,3 +445,16 @@ SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID = env(
     "SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID", default=[]
 )
 APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME = "Download approved user"
+
+# Barrier inactivity reminder emails
+
+# After how many days should the user be reminded to update their barrier
+BARRIER_INACTIVITY_THESHOLD_DAYS = 30 * 6
+
+# If barrier stays inactive despite reminder being sent,
+# how many days from reminder date should we send the reminder again
+BARRIER_REPEAT_REMINDER_THESHOLD_DAYS = 30 * 6
+
+BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID = env(
+    "BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID", default=""
+)

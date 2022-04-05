@@ -1,16 +1,22 @@
 import csv
+import logging
 from csv import DictWriter
+from datetime import timedelta
 from tempfile import NamedTemporaryFile
 from typing import Dict, List
 
 from celery import shared_task
 from django.conf import settings
+from django.db.models import Q
+from django.utils import timezone
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.csv import _transform_csv_row
 from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
+
+logger = logging.getLogger(__name__)
 
 
 def upload_to_s3(filename: str, key: str) -> str:
@@ -75,3 +81,59 @@ def generate_s3_and_send_email(
             "file_url": presigned_url,
         },
     )
+
+
+@shared_task
+def send_barrier_inactivity_reminders():
+    """
+    Get list of all barriers with modified_on and activity_reminder_sent dates older than 6 months
+
+    For each barrier sent a reminder notification to the barrier owner
+    """
+
+    # datetime 6 months ago
+    inactivity_theshold_date = timezone.now() - timedelta(
+        days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
+    )
+    repeat_reminder_theshold_date = timezone.now() - timedelta(
+        days=settings.BARRIER_REPEAT_REMINDER_THESHOLD_DAYS
+    )
+
+    barriers_needing_reminder = Barrier.objects.filter(
+        modified_on__lt=inactivity_theshold_date
+    ).filter(
+        Q(activity_reminder_sent__isnull=True)
+        | Q(activity_reminder_sent__lt=repeat_reminder_theshold_date)
+    )
+
+    for barrier in barriers_needing_reminder:
+        recipient = barrier.barrier_team.filter(role="Owner").first()
+        if not recipient:
+            recipient = barrier.barrier_team.filter(role="Reporter").first()
+        if not recipient:
+            logger.warn(f"No recipient found for barrier {barrier.id}")
+            continue
+        if not recipient.user:
+            logger.warn(
+                f"No user found for recipient {recipient.id} and barrier {barrier.id}"
+            )
+            continue
+
+        recipient = recipient.user
+
+        full_name = f"{recipient.first_name} {recipient.last_name}"
+
+        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+
+        client.send_email_notification(
+            email_address=recipient.email,
+            template_id=settings.BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID,
+            personalisation={
+                "barrier_title": barrier.title,
+                "barrier_url": f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/",
+                "full_name": full_name,
+                "barrier_created_date": barrier.created_on.strftime("%d %B %Y"),
+            },
+        )
+        barrier.activity_reminder_sent = timezone.now()
+        barrier.save()

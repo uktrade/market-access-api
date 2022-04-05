@@ -25,7 +25,7 @@ RUN dnf -y update \
     && dnf -y clean all \
     && rm -rf /var/cache/dnf
 
-ENV PYTHON_VERSION 3.9.2
+ENV PYTHON_VERSION 3.7.12
 RUN wget --no-verbose https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz \
     && tar -C /usr/local/bin -xzvf Python-$PYTHON_VERSION.tgz \
     && rm Python-$PYTHON_VERSION.tgz \
@@ -74,8 +74,8 @@ WORKDIR /usr/src/app
 
 # Poetry commands reference https://python-poetry.org/docs/cli/#run
 COPY pyproject.toml poetry.lock ./
-RUN pip install --upgrade pip \
-    && pip install poetry==$POETRY_VERSION \
+RUN pip3.7 install --upgrade pip \
+    && pip3.7 install poetry==$POETRY_VERSION \
     && poetry export --without-hashes -f requirements.txt -o requirements.txt \
     && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
-    && pip install -r requirements-dev.txt
+    && pip3.7 install -r requirements-dev.txt

@@ -256,6 +256,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Readable reference code e.g. B-20-NTZ",
         db_index=True,
     )
+    activity_reminder_sent = models.DateTimeField(null=True, blank=True)
     term = models.PositiveIntegerField(
         choices=BARRIER_TERMS,
         blank=True,
@@ -1384,7 +1385,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             Q(code=value)
             | Q(search=value)
             | Q(title__icontains=value)
-            | Q(public_barrier__id=value.lstrip("PID-").upper())
+            | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
         )
 
     def my_barriers(self, queryset, name, value):
