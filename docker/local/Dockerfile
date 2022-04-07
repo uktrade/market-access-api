@@ -33,8 +33,8 @@ RUN wget --no-verbose https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$
     && ./configure --enable-optimizations \
     && make altinstall
 
-RUN ln -s /usr/local/bin/python3.9 /usr/bin/python \
-    && ln -s /usr/local/bin/pip3.9 /usr/bin/pip
+RUN ln -s /usr/local/bin/python3.7 /usr/bin/python \
+    && ln -s /usr/local/bin/pip3.7 /usr/bin/pip
 
 # SSH
 RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
@@ -74,8 +74,8 @@ WORKDIR /usr/src/app
 
 # Poetry commands reference https://python-poetry.org/docs/cli/#run
 COPY pyproject.toml poetry.lock ./
-RUN pip3.7 install --upgrade pip \
-    && pip3.7 install poetry==$POETRY_VERSION \
+RUN pip install --upgrade pip \
+    && pip install poetry==$POETRY_VERSION \
     && poetry export --without-hashes -f requirements.txt -o requirements.txt \
     && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
-    && pip3.7 install -r requirements-dev.txt
+    && pip install -r requirements-dev.txt

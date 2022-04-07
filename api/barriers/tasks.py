@@ -35,7 +35,7 @@ def generate_and_upload_to_s3(
     field_titles: Dict[str, str],
     serializer: BarrierCsvExportSerializer,
 ) -> str:
-    with NamedTemporaryFile(mode="w+t") as tf:
+    with NamedTemporaryFile(mode="w+t", encoding="utf-8-sig") as tf:
         writer = DictWriter(
             tf,
             extrasaction="ignore",
