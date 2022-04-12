@@ -67,6 +67,10 @@ class BarrierTag(OrderedModel, BaseModel):
         default=False,
         help_text="When set to True the tag is shown as an option during barrier reporting flow.",
     )
+    is_top_priority_tag = models.BooleanField(
+        default=False,
+        help_text="Denotes that this tag labels a barrier as Top Priority",
+    )
 
     def __str__(self):
         return self.title

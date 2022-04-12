@@ -34,6 +34,7 @@ class BarrierTagSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "is_top_priority_tag",
             "show_at_reporting",
             "order",
         )
