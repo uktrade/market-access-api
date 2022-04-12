@@ -43,7 +43,7 @@ def set_current_barrier_completion_percentages(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("barriers", "0121_auto_20220325_1343"),
+        ("barriers", "0122_auto_20220401_1101"),
     ]
 
     operations = [
