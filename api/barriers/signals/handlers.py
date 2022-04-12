@@ -1,5 +1,3 @@
-import logging
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from simple_history.signals import post_create_historical_record
@@ -14,8 +12,6 @@ from api.barriers.models import (
 )
 from api.history.factories import HistoryItemFactory
 from api.history.models import CachedHistoryItem
-
-logger = logging.getLogger(__name__)
 
 
 def barrier_categories_changed(sender, instance, action, **kwargs):
@@ -157,7 +153,6 @@ def barrier_completion_percentage_changed(sender, instance: Barrier, **kwargs):
 
     # IMPORTANT - Use Update here instead of save or we'll get stuck in
     # an endless loop where post_save keeps getting called!!!
-    # edited_barrier.update(completion_percent=new_percentage)
     Barrier.objects.filter(id=instance.id).update(completion_percent=new_percentage)
 
 
