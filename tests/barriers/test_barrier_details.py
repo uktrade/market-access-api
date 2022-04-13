@@ -9,7 +9,7 @@ from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin
 from api.metadata.models import BarrierPriority, Category, Organisation
 from tests.barriers.factories import BarrierFactory
-from tests.metadata.factories import OrganisationFactory
+from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 
 
 class TestBarrierDetails(APITestMixin, APITestCase):
@@ -301,6 +301,46 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert 0 == self.barrier.government_organisations.count()
         assert 1 == self.barrier.organisations.count()
         assert org1 == self.barrier.organisations.first()
+
+    def test_has_value_for_is_top_priority(self):
+        response = self.api_client.get(self.url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert "is_top_priority" in serialised_data.keys()
+
+    def test_value_for_is_top_priority_is_bool(self):
+        response = self.api_client.get(self.url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert "is_top_priority" in serialised_data.keys() and isinstance(
+            serialised_data["is_top_priority"], bool
+        )
+
+    def test_is_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=True)
+        barrier = BarrierFactory(tags=(tag,))
+        url = reverse("get-barrier", kwargs={"pk": barrier.id})
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert (
+            "is_top_priority" in serialised_data.keys()
+            and serialised_data["is_top_priority"] is True
+        )
+
+    def test_is_not_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=False)
+        barrier = BarrierFactory(tags=(tag,))
+        url = reverse("get-barrier", kwargs={"pk": barrier.id})
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert (
+            "is_top_priority" in serialised_data.keys()
+            and serialised_data["is_top_priority"] is False
+        )
 
 
 class TestHibernateEndpoint(APITestMixin, TestCase):

@@ -8,7 +8,7 @@ from api.core.test_utils import APITestMixin
 from api.metadata.models import Organisation
 from tests.assessment.factories import EconomicAssessmentFactory
 from tests.barriers.factories import BarrierFactory
-from tests.metadata.factories import OrganisationFactory
+from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 
 
 class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
@@ -93,3 +93,35 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         serializer = BarrierCsvExportSerializer(barrier)
         assert 1 == len(serializer.data["government_organisations"])
         assert [org1.name] == serializer.data["government_organisations"]
+
+    def test_has_value_for_is_top_priority(self):
+        barrier = BarrierFactory()
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert "is_top_priority" in serialised_data.keys()
+
+    def test_value_for_is_top_priority_is_bool(self):
+        barrier = BarrierFactory()
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert "is_top_priority" in serialised_data.keys() and isinstance(
+            serialised_data["is_top_priority"], bool
+        )
+
+    def test_is_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=True)
+        barrier = BarrierFactory(tags=(tag,), status_date=datetime.date.today())
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert (
+            "is_top_priority" in serialised_data.keys()
+            and serialised_data["is_top_priority"] is True
+        )
+
+    def test_is_not_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=False)
+        barrier = BarrierFactory(tags=(tag,), status_date=datetime.date.today())
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert (
+            "is_top_priority" in serialised_data.keys()
+            and serialised_data["is_top_priority"] is False
+        )

@@ -15,7 +15,11 @@ from api.metadata.constants import PublicBarrierStatus
 from api.metadata.models import BarrierPriority, Organisation
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
-from tests.metadata.factories import BarrierPriorityFactory, CategoryFactory
+from tests.metadata.factories import (
+    BarrierPriorityFactory,
+    BarrierTagFactory,
+    CategoryFactory,
+)
 
 
 # TODO: consider removing this test case.
@@ -833,6 +837,46 @@ class TestListBarriers(APITestMixin, APITestCase):
             barrier_ids.append(result["id"])
 
         assert barrier_ids == saved_barrier_list
+
+    def test_has_value_for_is_top_priority(self):
+        BarrierFactory()
+        response = self.api_client.get(self.url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert "is_top_priority" in serialised_data["results"][0].keys()
+
+    def test_value_for_is_top_priority_is_bool(self):
+        BarrierFactory()
+        response = self.api_client.get(self.url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert "is_top_priority" in serialised_data["results"][0].keys() and isinstance(
+            serialised_data["results"][0]["is_top_priority"], bool
+        )
+
+    def test_is_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=True)
+        BarrierFactory(tags=(tag,))
+        response = self.api_client.get(self.url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert (
+            "is_top_priority" in serialised_data["results"][0].keys()
+            and serialised_data["results"][0]["is_top_priority"] is True
+        )
+
+    def test_is_not_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=False)
+        BarrierFactory(tags=(tag,))
+        response = self.api_client.get(self.url)
+        assert status.HTTP_200_OK == response.status_code
+        serialised_data = response.data
+        assert (
+            "is_top_priority" in serialised_data["results"][0].keys()
+            and serialised_data["results"][0]["is_top_priority"] is False
+        )
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
