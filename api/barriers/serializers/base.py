@@ -72,6 +72,7 @@ class BarrierSerializerBase(
     wto_profile = WTOProfileField(required=False)
     government_organisations = OrganisationsField(required=False)
     progress_updates = ProgressUpdateSerializer(required=False, many=True)
+    is_top_priority = serializers.BooleanField(required=False)
 
     class Meta:
         model = Barrier
@@ -82,6 +83,7 @@ class BarrierSerializerBase(
             "created_by",
             "created_on",
             "id",
+            "is_top_priority",
             "last_seen_on",
             "location",
             "modified_by",

@@ -28,6 +28,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "estimated_resolution_date",
             "id",
             "is_summary_sensitive",
+            "is_top_priority",
             "last_seen_on",
             "location",
             "modified_by",
@@ -98,4 +99,5 @@ class BarrierListSerializer(BarrierSerializerBase):
             "trade_direction",
             "trading_bloc",
             "progress_updates",
+            "is_top_priority",
         )
