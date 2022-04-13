@@ -561,6 +561,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
     def is_resolved(self):
         return self.status == BarrierStatus.RESOLVED_IN_FULL
 
+    @property
+    def is_top_priority(self):
+        return self.tags.filter(is_top_priority_tag=True).exists()
+
     def last_seen_by(self, user_id):
         try:
             hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
