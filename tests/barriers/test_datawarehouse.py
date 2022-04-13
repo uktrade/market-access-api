@@ -11,6 +11,7 @@ from tests.action_plans.factories import (
     ActionPlanTaskFactory,
 )
 from tests.barriers.factories import BarrierFactory
+from tests.metadata.factories import BarrierTagFactory
 
 pytestmark = [pytest.mark.django_db]
 
@@ -156,4 +157,36 @@ class TestDataWarehouseExport(TestCase):
         assert (
             data_with_action_plan["action_plan"]["action_plan_percent_complete"]
             == "100.0%"
+        )
+
+    def test_has_value_for_is_top_priority(self):
+        barrier = BarrierFactory(status_date=date.today())
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert "is_top_priority" in serialised_data.keys()
+
+    def test_value_for_is_top_priority_is_bool(self):
+        barrier = BarrierFactory(status_date=date.today())
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert "is_top_priority" in serialised_data.keys() and isinstance(
+            serialised_data["is_top_priority"], bool
+        )
+
+    def test_data_warehouse_is_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=True)
+        barrier = BarrierFactory(tags=(tag,), status_date=date.today())
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert (
+            "is_top_priority" in serialised_data.keys()
+            and serialised_data["is_top_priority"] is True
+        )
+
+    def test_data_warehouse_is_not_top_priority_barrier(self):
+        tag_title = "Very Important Thing"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=False)
+        barrier = BarrierFactory(tags=(tag,), status_date=date.today())
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert (
+            "is_top_priority" in serialised_data.keys()
+            and serialised_data["is_top_priority"] is False
         )

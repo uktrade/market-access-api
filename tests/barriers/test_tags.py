@@ -144,6 +144,32 @@ class TestBarrierTags(APITestMixin, TestCase):
                 barrier.refresh_from_db()
                 assert not barrier.tags.exists(), "Expected no tags to be added."
 
+    def test_get_barrier_with_top_priority_tag(self):
+        tag_title = "wobble"
+        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=True)
+        barrier = BarrierFactory(tags=(tag,))
+
+        url = reverse("get-barrier", kwargs={"pk": barrier.id})
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == len(response.data["tags"])
+        assert tag_title == response.data["tags"][0]["title"]
+        assert response.data["tags"][0]["is_top_priority_tag"]
+
+    def test_get_barrier_with_non_top_priority_tag(self):
+        tag_title = "wobble"
+        tag = BarrierTagFactory(title=tag_title)
+        barrier = BarrierFactory(tags=(tag,))
+
+        url = reverse("get-barrier", kwargs={"pk": barrier.id})
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == len(response.data["tags"])
+        assert tag_title == response.data["tags"][0]["title"]
+        assert not response.data["tags"][0]["is_top_priority_tag"]
+
 
 class TestBarrierTagsFilter(APITestMixin, TestCase):
     def test_filter_barrier_tags__single_tag(self):
