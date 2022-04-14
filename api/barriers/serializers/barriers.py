@@ -31,6 +31,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "is_top_priority",
             "last_seen_on",
             "location",
+            "completion_percent",
             "modified_by",
             "modified_on",
             "other_source",

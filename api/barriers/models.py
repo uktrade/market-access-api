@@ -401,6 +401,13 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     tags = models.ManyToManyField(metadata_models.BarrierTag)
 
+    completion_percent = models.PositiveIntegerField(
+        max_length=3,
+        blank=True,
+        null=True,
+        help_text="Percentage value representing how much information regarding a barrier has been provided",
+    )
+
     def __str__(self):
         if self.title is None:
             return self.code

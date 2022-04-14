@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from simple_history.signals import post_create_historical_record
 
 from api.barriers.models import (
+    Barrier,
     BarrierRequestDownloadApproval,
     HistoricalBarrier,
     HistoricalPublicBarrier,
@@ -127,6 +128,32 @@ def public_barrier_content_update(
     light_touch_reviews.content_team_approval = False
     light_touch_reviews.has_content_changed_since_approval = True
     light_touch_reviews.save()
+
+
+def barrier_completion_percentage_changed(sender, instance: Barrier, **kwargs):
+    """
+    After a barrier is updated, re-calculate its completion percentage.
+    """
+    edited_barrier = Barrier.objects.get(id=instance.id)
+
+    new_percentage = 0
+
+    if edited_barrier.location:
+        new_percentage += 18
+    if edited_barrier.summary:
+        new_percentage += 18
+    if edited_barrier.source:
+        new_percentage += 16
+    if edited_barrier.sectors:
+        new_percentage += 16
+    if edited_barrier.categories.all().count() > 0:
+        new_percentage += 16
+    if edited_barrier.commodities.all().count() > 0:
+        new_percentage += 16
+
+    # IMPORTANT - Use Update here instead of save or we'll get stuck in
+    # an endless loop where post_save keeps getting called!!!
+    Barrier.objects.filter(id=instance.id).update(completion_percent=new_percentage)
 
 
 @receiver(post_create_historical_record)
