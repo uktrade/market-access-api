@@ -181,6 +181,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             # action plans
             "action_plan_added",
             "action_plan",
+            "completion_percent",
         )
 
     def get_status_history(self, obj):
