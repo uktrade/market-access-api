@@ -1,4 +1,5 @@
 import datetime
+import logging
 from unittest import skip
 
 from django.test import TestCase
@@ -8,11 +9,12 @@ from rest_framework.reverse import reverse
 
 from api.assessment.models import EconomicAssessment
 from api.barriers.helpers import get_or_create_public_barrier
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.history.factories import (
     BarrierHistoryFactory,
+    DeliveryConfidenceHistoryFactory,
     EconomicAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
@@ -30,6 +32,8 @@ from tests.assessment.factories import (
 )
 from tests.interactions.factories import InteractionFactory
 from tests.metadata.factories import OrganisationFactory
+
+logger = logging.getLogger(__name__)
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
@@ -614,6 +618,102 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
             "user": {"id": 5, "name": "Testo Useri"},
             "role": "Contributor",
         }
+
+
+class TestProgressUpdateHistory(APITestMixin, TestCase):
+
+    # make django-test path=barriers/test_history.py::TestProgressUpdateHistory
+
+    def setUp(self):
+        super().setUp()
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
+        self.barrier.save()
+
+    def test_history_created_progress_updates(self):
+        # Ensure history returns sequence of "created" progress updates
+
+        BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status="ON_TRACK",
+            update="Nothing Specific",
+            next_steps="Finish writing these tests.",
+        )
+
+        BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status="DELAYED",
+            update="Nothing Specific",
+            next_steps="Get coffee.",
+        )
+
+        items = DeliveryConfidenceHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+
+        # Expect (from earliest to latest):
+        # ON_TRACK set, no previous
+        # ON_TRACK changes to DELAYED
+        data = items[-1].data
+        logger.critical(str(data))
+
+        assert data == "hmm"
+
+    def test_history_edited_progress_updates(self):
+        # Ensure history returns a "created" progress update and a subsequent edit
+        self.progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status="ON_TRACK",
+            update="Nothing Specific",
+            next_steps="Finish writing these tests.",
+        )
+
+        self.progress_update.status = "DELAYED"
+        self.progress_update.save()
+
+        items = DeliveryConfidenceHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+
+        # Expect (from earliest to latest):
+        # ON_TRACK set, no previous
+        # ON_TRACK changes to DELAYED
+        data = items[-1].data
+        logger.critical(str(data))
+
+        assert data == "hmm"
+
+    def test_history_non_linear_updates(self):
+        # Ensure history returns a sequence of "created" progress updates, and an edit to
+        # a progress update created early in the sequence
+        self.progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status="ON_TRACK",
+            update="Nothing Specific",
+            next_steps="Finish writing these tests.",
+        )
+
+        BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status="DELAYED",
+            update="Nothing Specific",
+            next_steps="Get coffee.",
+        )
+
+        self.progress_update.status = "RISK_OF_DELAY"
+        self.progress_update.save()
+
+        items = DeliveryConfidenceHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+
+        # Expect (from earliest to latest):
+        # ON_TRACK set, no previous
+        # ON_TRACK changes to DELAYED
+        # ON_TRACK changes to RISK_OF_DELAY
+        data = items[-1].data
+        logger.critical(str(data))
+
+        assert data == "hmm"
 
 
 class TestHistoryView(APITestMixin, TestCase):
