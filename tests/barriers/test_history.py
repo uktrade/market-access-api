@@ -621,7 +621,7 @@ class TestTeamMemberHistory(APITestMixin, TestCase):
 
 
 class TestProgressUpdateHistory(APITestMixin, TestCase):
-
+    fixtures = ["users", "barriers"]
     # make django-test path=barriers/test_history.py::TestProgressUpdateHistory
 
     def setUp(self):
@@ -653,10 +653,10 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        data = items[-1].data
-        logger.critical(str(data))
-
-        assert data == "hmm"
+        assert items[0].data["old_value"] == ""
+        assert items[0].data["new_value"] == "ON_TRACK"
+        assert items[1].data["old_value"] == "ON_TRACK"
+        assert items[1].data["new_value"] == "DELAYED"
 
     def test_history_edited_progress_updates(self):
         # Ensure history returns a "created" progress update and a subsequent edit
@@ -677,10 +677,10 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        data = items[-1].data
-        logger.critical(str(data))
-
-        assert data == "hmm"
+        assert items[0].data["old_value"] == ""
+        assert items[0].data["new_value"] == "ON_TRACK"
+        assert items[1].data["old_value"] == "ON_TRACK"
+        assert items[1].data["new_value"] == "DELAYED"
 
     def test_history_non_linear_updates(self):
         # Ensure history returns a sequence of "created" progress updates, and an edit to
@@ -710,10 +710,12 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
         # ON_TRACK changes to RISK_OF_DELAY
-        data = items[-1].data
-        logger.critical(str(data))
-
-        assert data == "hmm"
+        assert items[0].data["old_value"] == ""
+        assert items[0].data["new_value"] == "ON_TRACK"
+        assert items[1].data["old_value"] == "ON_TRACK"
+        assert items[1].data["new_value"] == "DELAYED"
+        assert items[2].data["old_value"] == "ON_TRACK"
+        assert items[2].data["new_value"] == "RISK_OF_DELAY"
 
 
 class TestHistoryView(APITestMixin, TestCase):

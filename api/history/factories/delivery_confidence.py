@@ -90,11 +90,6 @@ class DeliveryConfidenceHistoryFactory(HistoryItemFactoryBase):
 
             old_record = cls.get_old_record_for_progress_update(new_record, history)
 
-            if old_record:
-                logger.critical(
-                    "going from " + old_record.status + " to " + new_record.status
-                )
-
             if start_date is None or new_record.history_date > start_date:
                 history_items += cls.create_history_items(
                     new_record, old_record, fields
