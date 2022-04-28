@@ -36,8 +36,7 @@ def set_current_barrier_completion_percentages(apps, schema_editor):
             total += 16
 
         # Set its completed % value
-        barrier.completion_percent = total
-        barrier.save()
+        Barrier.objects.filter(pk=barrier.pk).update(completion_percent=total)
 
 
 class Migration(migrations.Migration):
