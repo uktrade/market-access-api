@@ -14,8 +14,9 @@ def populate_commercial_value(apps, schema_editor):
     # Reconstruct commercial value history on Barrier model
     for assessment in EconomicAssessment.objects.filter(commercial_value__isnull=False):
         barrier = assessment.barrier
-        barrier.commercial_value = assessment.commercial_value
-        barrier.save()
+        Barrier.objects.filter(pk=barrier.pk).update(
+            commercial_value=assessment.commercial_value
+        )
 
         for history_item in barrier.cached_history_items.filter(
             field="commercial_value"
@@ -55,8 +56,9 @@ def populate_commercial_value_explanation(apps, schema_editor):
         commercial_value_explanation=""
     ):
         barrier = assessment.barrier
-        barrier.commercial_value_explanation = assessment.commercial_value_explanation
-        barrier.save()
+        Barrier.objects.filter(pk=barrier.pk).update(
+            commercial_value_explanation=assessment.commercial_value_explanation
+        )
 
         for history_item in barrier.cached_history_items.filter(
             field="commercial_value_explanation"
