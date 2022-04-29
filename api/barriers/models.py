@@ -237,6 +237,8 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
         null=True,
     )
 
+    history = HistoricalRecords()
+
     class Meta:
         # order by date descending
         ordering = ("-created_on",)

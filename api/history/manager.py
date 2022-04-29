@@ -9,6 +9,7 @@ from api.history.models import CachedHistoryItem
 
 from .factories import (
     BarrierHistoryFactory,
+    DeliveryConfidenceHistoryFactory,
     EconomicAssessmentHistoryFactory,
     EconomicImpactAssessmentHistoryFactory,
     NoteHistoryFactory,
@@ -79,6 +80,9 @@ class HistoryManager:
         history = cls.get_barrier_history(barrier.pk, start_date=start_date)
         history = cls.get_action_plans_history(barrier.pk, start_date=start_date)
         history += cls.get_notes_history(barrier.pk, start_date=start_date)
+        history += cls.get_delivery_confidence_history(
+            barrier.pk, start_date=start_date
+        )
         history += cls.get_economic_assessment_history(
             barrier.pk, start_date=start_date
         )
@@ -235,6 +239,17 @@ class HistoryManager:
             )
 
         return NoteHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
+
+    @classmethod
+    def get_delivery_confidence_history(
+        cls, barrier_id, fields=(), start_date=None, use_cache=False
+    ):
+
+        return DeliveryConfidenceHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,
