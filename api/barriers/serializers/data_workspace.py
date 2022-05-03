@@ -5,7 +5,7 @@ from rest_framework import serializers
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
-from api.metadata.constants import BarrierStatus
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES, BarrierStatus
 
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
@@ -109,6 +109,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     team_count = serializers.SerializerMethodField()
     action_plan_added = serializers.SerializerMethodField()
     action_plan = DataworkspaceActionPlanSerializer()
+    latest_progress_update = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -140,6 +141,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "import_market_size",
             "is_summary_sensitive",
             "is_top_priority",
+            "latest_progress_update",
             "location",
             "modified_by",
             "modified_on",
@@ -209,3 +211,17 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         if not obj.action_plan:
             return False
         return obj.action_plan.milestones.count() > 0
+
+    def get_latest_progress_update(self, obj):
+        if not obj.latest_progress_update:
+            return None
+        return {
+            "id": obj.latest_progress_update.id,
+            "status": PROGRESS_UPDATE_CHOICES[obj.latest_progress_update.status],
+            "created_on": obj.latest_progress_update.created_on,
+            "created_by": obj.latest_progress_update.created_by,
+            "modified_on": obj.latest_progress_update.modified_on,
+            "modified_by": obj.latest_progress_update.modified_by,
+            "update": obj.latest_progress_update.update,
+            "next_steps": obj.latest_progress_update.next_steps,
+        }

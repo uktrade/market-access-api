@@ -1,10 +1,13 @@
 import datetime
+from unittest import skip
 
 from django.conf import settings
 from rest_framework.test import APITestCase
 
+from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.barriers.serializers import BarrierCsvExportSerializer
-from api.core.test_utils import APITestMixin
+from api.core.test_utils import APITestMixin, create_test_user
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES
 from api.metadata.models import Organisation
 from tests.assessment.factories import EconomicAssessmentFactory
 from tests.barriers.factories import BarrierFactory
@@ -124,4 +127,33 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert (
             "is_top_priority" in serialised_data.keys()
             and serialised_data["is_top_priority"] is False
+        )
+
+
+@skip(
+    "These will come in handy should they decide they want the 'Delivery Confidence' column to contain some data"
+)
+class TestBarrierCsvExportDeliveryConfidenceSerializer(APITestMixin, APITestCase):
+    def test_delivery_confidence_in_response(self):
+        user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+        barrier: Barrier = BarrierFactory()
+        barrier_progress_update_on_track = BarrierProgressUpdate.objects.create(
+            barrier=barrier, status=PROGRESS_UPDATE_CHOICES.ON_TRACK, created_by=user
+        )
+        barrier.progress_updates.add(barrier_progress_update_on_track)
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert "delivery_confidence" in serialised_data.keys()
+
+    def test_delivery_confidence_is_on_track(self):
+        user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+        barrier: Barrier = BarrierFactory()
+        barrier_progress_update_on_track = BarrierProgressUpdate.objects.create(
+            barrier=barrier, status=PROGRESS_UPDATE_CHOICES.ON_TRACK, created_by=user
+        )
+        barrier.progress_updates.add(barrier_progress_update_on_track)
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert (
+            "delivery_confidence" in serialised_data.keys()
+            and serialised_data["delivery_confidence"]
+            == PROGRESS_UPDATE_CHOICES["ON_TRACK"]
         )

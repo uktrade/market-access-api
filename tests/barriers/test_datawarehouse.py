@@ -2,10 +2,13 @@ from datetime import date
 
 import pytest
 from django.test import TestCase
+from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
+from api.barriers.models import BarrierProgressUpdate
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
-from api.core.test_utils import create_test_user
+from api.core.test_utils import APITestMixin, create_test_user
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
@@ -189,4 +192,80 @@ class TestDataWarehouseExport(TestCase):
         assert (
             "is_top_priority" in serialised_data.keys()
             and serialised_data["is_top_priority"] is False
+        )
+
+
+class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        # self.user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+        self.barrier = BarrierFactory(status_date=date.today())
+
+    def test_latest_progress_update_in_data(self):
+        progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status=PROGRESS_UPDATE_CHOICES.ON_TRACK,
+            created_by=self.user,
+        )
+        self.barrier.progress_updates.add(progress_update)
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert "latest_progress_update" in serialised_data
+
+    def test_latest_progress_update_status_in_data(self):
+        progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status=PROGRESS_UPDATE_CHOICES.ON_TRACK,
+            created_by=self.user,
+        )
+        self.barrier.progress_updates.add(progress_update)
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert "status" in serialised_data["latest_progress_update"]
+
+    def test_latest_progress_update_status_is_null_when_no_progress_updates(self):
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert (
+            "latest_progress_update" in serialised_data
+            and serialised_data["latest_progress_update"] is None
+        )
+
+    def test_latest_progress_update_status_on_track_is_readable(self):
+        progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status=PROGRESS_UPDATE_CHOICES.ON_TRACK,
+            created_by=self.user,
+        )
+        self.barrier.progress_updates.add(progress_update)
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert (
+            "status" in serialised_data["latest_progress_update"]
+            and serialised_data["latest_progress_update"]["status"]
+            == PROGRESS_UPDATE_CHOICES["ON_TRACK"]
+        )
+
+    def test_latest_progress_update_status_risk_of_delay_is_readable(self):
+        progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status=PROGRESS_UPDATE_CHOICES.RISK_OF_DELAY,
+            created_by=self.user,
+        )
+        self.barrier.progress_updates.add(progress_update)
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert (
+            "status" in serialised_data["latest_progress_update"]
+            and serialised_data["latest_progress_update"]["status"]
+            == PROGRESS_UPDATE_CHOICES["RISK_OF_DELAY"]
+        )
+
+    def test_latest_progress_update_status_delayed_is_readable(self):
+        progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status=PROGRESS_UPDATE_CHOICES.DELAYED,
+            created_by=self.user,
+        )
+        self.barrier.progress_updates.add(progress_update)
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert (
+            "status" in serialised_data["latest_progress_update"]
+            and serialised_data["latest_progress_update"]["status"]
+            == PROGRESS_UPDATE_CHOICES["DELAYED"]
         )
