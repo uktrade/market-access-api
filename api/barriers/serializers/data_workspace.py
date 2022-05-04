@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db.models import Count, Q
 from rest_framework import serializers
 
@@ -7,6 +8,7 @@ from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import PROGRESS_UPDATE_CHOICES, BarrierStatus
 
+from ..models import BarrierProgressUpdate
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
 
@@ -104,12 +106,51 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
         return f"{completion_percentage}%"
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "first_name", "last_name")
+
+
+class ProgressUpdateSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer()
+    modified_by = UserSerializer()
+    archived_by = UserSerializer()
+    unarchived_by = UserSerializer()
+    status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BarrierProgressUpdate
+        fields = (
+            "created_on",
+            "created_by",
+            "modified_on",
+            "modified_by",
+            "archived",
+            "archived_by",
+            "archived_on",
+            "archived_reason",
+            "unarchived_reason",
+            "unarchived_on",
+            "unarchived_by",
+            "id",
+            "status",
+            "update",
+            "next_steps",
+        )
+
+    def get_status(self, obj):
+        if obj.status is not None:
+            return PROGRESS_UPDATE_CHOICES[obj.status]
+        return None
+
+
 class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     status_history = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     action_plan_added = serializers.SerializerMethodField()
     action_plan = DataworkspaceActionPlanSerializer()
-    latest_progress_update = serializers.SerializerMethodField()
+    latest_progress_update = ProgressUpdateSerializer()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -211,17 +252,3 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         if not obj.action_plan:
             return False
         return obj.action_plan.milestones.count() > 0
-
-    def get_latest_progress_update(self, obj):
-        if not obj.latest_progress_update:
-            return None
-        return {
-            "id": obj.latest_progress_update.id,
-            "status": PROGRESS_UPDATE_CHOICES[obj.latest_progress_update.status],
-            "created_on": obj.latest_progress_update.created_on,
-            "created_by": obj.latest_progress_update.created_by,
-            "modified_on": obj.latest_progress_update.modified_on,
-            "modified_by": obj.latest_progress_update.modified_by,
-            "update": obj.latest_progress_update.update,
-            "next_steps": obj.latest_progress_update.next_steps,
-        }
