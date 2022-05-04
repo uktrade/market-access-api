@@ -107,9 +107,14 @@ class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ("id", "first_name", "last_name")
+        fields = ("id", "name")
+
+    def get_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
 
 
 class ProgressUpdateSerializer(serializers.ModelSerializer):
