@@ -179,7 +179,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         if validated_data.pop("groups") is not None:
             group_ids = self.get_validated_group_ids()
             instance.groups.set(group_ids)
-        if validated_data.pop("is_active") is not None:
+        if validated_data.pop("is_active", None) is not None:
             instance.is_active = False
         return super().update(instance, validated_data)
 
