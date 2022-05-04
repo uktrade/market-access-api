@@ -1,5 +1,7 @@
+import datetime
 from datetime import date
 
+import django.db.models
 import pytest
 from django.test import TestCase
 from rest_framework.test import APITestCase
@@ -268,4 +270,33 @@ class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITest
             "status" in serialised_data["latest_progress_update"]
             and serialised_data["latest_progress_update"]["status"]
             == PROGRESS_UPDATE_CHOICES["DELAYED"]
+        )
+
+    def test_user_fields_are_serialised(self):
+        progress_update = BarrierProgressUpdate.objects.create(
+            barrier=self.barrier,
+            status=PROGRESS_UPDATE_CHOICES.ON_TRACK,
+            created_by=self.user,
+            created_on=datetime.datetime.now(),
+            modified_by=self.user,
+            modified_on=datetime.datetime.now(),
+            archived_by=self.user,
+            archived_on=datetime.datetime.now(),
+            unarchived_by=self.user,
+            unarchived_on=datetime.datetime.now(),
+        )
+        self.barrier.progress_updates.add(progress_update)
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        latest_progress_update = serialised_data["latest_progress_update"]
+        assert not isinstance(
+            latest_progress_update["created_by"], django.db.models.Model
+        )
+        assert not isinstance(
+            latest_progress_update["modified_by"], django.db.models.Model
+        )
+        assert not isinstance(
+            latest_progress_update["archived_by"], django.db.models.Model
+        )
+        assert not isinstance(
+            latest_progress_update["unarchived_by"], django.db.models.Model
         )
