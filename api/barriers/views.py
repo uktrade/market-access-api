@@ -262,6 +262,7 @@ class BarrierList(generics.ListAPIView):
         .prefetch_related(
             "tags",
             "organisations",
+            "progress_updates",
         )
     )
     serializer_class = BarrierListSerializer
