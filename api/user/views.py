@@ -106,10 +106,13 @@ class GroupDetail(generics.RetrieveAPIView):
 class UserList(generics.ListAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserListSerializer
-    filter_backends = [OrderingFilter, SearchFilter]
+    filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
     ordering_fields = ("last_name", "first_name", "email", "role")
     ordering = ("first_name", "last_name", "email", "role")
     search_fields = ("first_name", "last_name", "email")
+    filterset_fields = [
+        "groups__id",
+    ]
 
     def list(self, request, *args, **kwargs):
         self.paginator.default_limit = 10
