@@ -107,7 +107,7 @@ class UserList(generics.ListAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserListSerializer
     filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
-    ordering_fields = ("last_name", "first_name", "email", "role")
+    ordering_fields = ("last_name", "first_name", "email")
     ordering = ("first_name", "last_name", "email", "role")
     search_fields = ("first_name", "last_name", "email")
     filterset_fields = [
@@ -119,4 +119,11 @@ class UserList(generics.ListAPIView):
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return super().get_queryset().annotate(role=F("groups__name"))
+        return (
+            super()
+            .get_queryset()
+            .annotate(role=F("groups__name"))
+            .distinct("last_name", "first_name", "email")
+            # distinct needs to match ordering values
+            # because Postgres says so 🤪
+        )
