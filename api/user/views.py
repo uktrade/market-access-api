@@ -2,11 +2,12 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.db.models import F
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
 from api.user.helpers import get_django_user_by_sso_user_id
@@ -33,6 +34,7 @@ def who_am_i(request):
     try:
         token = request.auth.token
     except AttributeError:
+        print(request.auth)
         return HttpResponse("Unauthorized", status=HTTPStatus.UNAUTHORIZED)
 
     context = {"token": token}
@@ -104,10 +106,24 @@ class GroupDetail(generics.RetrieveAPIView):
 class UserList(generics.ListAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserListSerializer
-    filter_backends = [OrderingFilter]
+    filter_backends = [OrderingFilter, SearchFilter, DjangoFilterBackend]
     ordering_fields = ("last_name", "first_name", "email")
-    ordering = ("last_name", "first_name", "email")
+    ordering = ("first_name", "last_name", "email", "role")
+    search_fields = ("first_name", "last_name", "email")
+    filterset_fields = [
+        "groups__id",
+    ]
 
     def list(self, request, *args, **kwargs):
-        self.paginator.default_limit = 5000
+        self.paginator.default_limit = 10
         return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(role=F("groups__name"))
+            .distinct("last_name", "first_name", "email")
+            # distinct needs to match ordering values
+            # because Postgres says so 🤪
+        )
