@@ -408,7 +408,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
-    tags = models.ManyToManyField(metadata_models.BarrierTag)
+    tags = models.ManyToManyField(metadata_models.BarrierTag, blank=True)
 
     completion_percent = models.PositiveIntegerField(
         max_length=3,
