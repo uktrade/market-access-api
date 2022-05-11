@@ -39,6 +39,7 @@ from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     PROGRESS_UPDATE_CHOICES,
     STAGE_STATUS,
+    TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
@@ -366,6 +367,12 @@ class Barrier(FullyArchivableMixin, BaseModel):
     public_eligibility_summary = models.TextField(
         blank=True,
         help_text="Public eligibility summary if provided by user.",
+    )
+    top_priority_status = models.CharField(
+        blank=True,
+        default=TOP_PRIORITY_BARRIER_STATUS.NONE,
+        max_length=50,
+        choices=TOP_PRIORITY_BARRIER_STATUS,
     )
 
     # Barrier priority
