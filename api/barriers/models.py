@@ -374,6 +374,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
         max_length=50,
         choices=TOP_PRIORITY_BARRIER_STATUS,
     )
+    top_priority_rejection_summary = models.TextField(
+        blank=True,
+        null=True,
+        help_text=(
+            "If an admin rejects a request for top priority,"
+            " this is the message that will be displayed to the user."
+        ),
+    )
 
     # Barrier priority
     priority = models.ForeignKey(

@@ -66,6 +66,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "government_organisations",
             "progress_updates",
             "top_priority_status",
+            "top_priority_rejection_summary",
         )
 
 
@@ -103,4 +104,5 @@ class BarrierListSerializer(BarrierSerializerBase):
             "progress_updates",
             "is_top_priority",
             "top_priority_status",
+            "top_priority_rejection_summary",
         )
