@@ -1299,7 +1299,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     def top_priority_status_filter(self, queryset, name, value):
         values_to_filter = []
         if "PENDING" in value:
-            values_to_filter.append(
+            values_to_filter.extend(
                 [
                     TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
                     TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
