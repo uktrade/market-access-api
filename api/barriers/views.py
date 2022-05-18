@@ -388,6 +388,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "value_to_economy": "Value to economy",
         "import_market_size": "Import market size",
         "valuation_assessment_rating": "Valuation assessment rating",
+        "valuation_assessment_midpoint": "Midpoint value",
         "valuation_assessment_explanation": "Valuation assessment explanation",
         "commercial_value": "Commercial value estimate",
         "reported_on": "Reported Date",
