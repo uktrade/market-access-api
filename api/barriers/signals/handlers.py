@@ -1,5 +1,9 @@
+import logging
+
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.signals import post_create_historical_record
 
 from api.barriers.models import (
@@ -12,6 +16,8 @@ from api.barriers.models import (
 )
 from api.history.factories import HistoryItemFactory
 from api.history.models import CachedHistoryItem
+
+logger = logging.getLogger(__name__)
 
 
 def barrier_categories_changed(sender, instance, action, **kwargs):
@@ -154,6 +160,82 @@ def barrier_completion_percentage_changed(sender, instance: Barrier, **kwargs):
     # IMPORTANT - Use Update here instead of save or we'll get stuck in
     # an endless loop where post_save keeps getting called!!!
     Barrier.objects.filter(id=instance.id).update(completion_percent=new_percentage)
+
+
+def barrier_priority_approval_email_notification(sender, instance: Barrier, **kwargs):
+    """
+    If a barrier's top_priority_status has changed, check if a
+    notification email needs to be sent, then call the function to send it.
+    """
+
+    # The operation is post-save to ensure operation completed successfully before
+    # notification so we need the second latest historical barrier object,
+    # or we would be comparing the new instance to itself.
+    previous_instances = HistoricalBarrier.objects.filter(id=instance.pk)
+
+    if previous_instances.count() > 1:
+        last_instance = previous_instances[1]
+
+        old_top_priority_status = last_instance.top_priority_status
+        new_top_priority_status = instance.top_priority_status
+
+        if new_top_priority_status is not old_top_priority_status:
+            if new_top_priority_status == "APPROVED":
+                # If status has changed to APPROVED, no matter what it was, it has now been approved
+                send_top_priority_notification("APPROVAL", instance)
+            elif (
+                new_top_priority_status == "NONE"
+                and old_top_priority_status == "APPROVAL_PENDING"
+            ):
+                # If status has changed from Pending to None, we know it has been rejected
+                send_top_priority_notification("REJECTION", instance)
+            else:
+                # Status change indicates barrier has neither been rejected or accepted in this save operation
+                return
+        else:
+            # Return if there has been no change in top_priority_status
+            return
+
+
+def send_top_priority_notification(email_type, barrier):
+    """
+    Create the email client and send the top_priority notification email
+    """
+
+    # Choose accepted or rejceted template
+    template_id = ""
+    if email_type == "APPROVAL":
+        template_id = settings.BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID
+    elif email_type == "REJECTION":
+        template_id = settings.BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID
+
+    personalisation_items = {}
+
+    # Get barrier owner
+    recipient = barrier.barrier_team.filter(role="Owner").first()
+    recipient = recipient.user
+    personalisation_items["first_name"] = recipient.first_name
+
+    # Seperate the barrier ID
+    personalisation_items["barrier_id"] = barrier.id
+
+    # Build URL to the barrier
+    personalisation_items[
+        "barrier_url"
+    ] = f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/"
+
+    # If its a rejection, we need to also get the reason for rejection
+    if email_type == "REJECTION":
+        personalisation_items[
+            "decision_reason"
+        ] = barrier.top_priority_rejection_summary
+
+    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+    client.send_email_notification(
+        email_address=recipient.email,
+        template_id=template_id,
+        personalisation=personalisation_items,
+    )
 
 
 @receiver(post_create_historical_record)

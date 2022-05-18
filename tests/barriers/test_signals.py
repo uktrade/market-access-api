@@ -1,7 +1,9 @@
 from django.test import TestCase
 
 from api.barriers.models import Barrier
-from api.barriers.signals.handlers import barrier_completion_percentage_changed
+from api.barriers.signals.handlers import (  # barrier_priority_approval_email_notification,
+    barrier_completion_percentage_changed,
+)
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 from tests.metadata.factories import CategoryFactory
@@ -106,3 +108,18 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.refresh_from_db()
 
         assert barrier.completion_percent == 16
+
+    def test_barrier_priority_email_notification_accepted(self):
+        barrier = BarrierFactory(top_priority_status="APPROVAL_PENDING")
+        barrier.top_priority_status = "ACCEPTED"
+        barrier.save()
+
+    def test_barrier_priority_email_notification_rejected(self):
+        barrier = BarrierFactory(top_priority_status="APPROVAL_PENDING")
+        barrier.top_priority_status = "REJECTED"
+        barrier.save()
+
+    def test_barrier_priority_email_notification_skipped(self):
+        barrier = BarrierFactory(top_priority_status="APPROVAL_PENDING")
+        barrier.source = "Ketchup"
+        barrier.save()

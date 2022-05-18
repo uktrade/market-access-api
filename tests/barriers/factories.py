@@ -83,6 +83,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
+    top_priority_status = "NONE"
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
