@@ -7,9 +7,15 @@ from rest_framework.test import APITestCase
 from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.core.test_utils import APITestMixin, create_test_user
-from api.metadata.constants import PROGRESS_UPDATE_CHOICES
+from api.metadata.constants import (
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
+    PROGRESS_UPDATE_CHOICES,
+)
 from api.metadata.models import Organisation
-from tests.assessment.factories import EconomicAssessmentFactory
+from tests.assessment.factories import (
+    EconomicAssessmentFactory,
+    EconomicImpactAssessmentFactory,
+)
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 
@@ -127,6 +133,21 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert (
             "is_top_priority" in serialised_data.keys()
             and serialised_data["is_top_priority"] is False
+        )
+
+    def test_valuation_assessment_midpoint(self):
+        impact_level = 6
+        barrier = BarrierFactory()
+        economic_impact_assessment = EconomicImpactAssessmentFactory(
+            barrier=barrier, impact=impact_level
+        )
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        assert (
+            "valuation_assessment_midpoint" in serialised_data.keys()
+            and serialised_data["valuation_assessment_midpoint"]
+            == expected_midpoint_value
         )
 
 
