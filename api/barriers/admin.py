@@ -18,12 +18,35 @@ class BarrierAdmin(admin.ModelAdmin):
         """No Delete permission"""
         return False
 
-    list_display = ("id", "code", "reported_on", "archived")
-    search_fields = ("id", "code")
-    list_filter = ("reported_on",)
+    list_display = (
+        "title",
+        "id",
+        "code",
+        "reported_on",
+        "archived",
+        "top_priority_status",
+    )
+    search_fields = (
+        "id",
+        "code",
+        "tags",
+        "top_priority_status",
+    )
+    list_filter = (
+        "reported_on",
+        "tags",
+        "top_priority_status",
+    )
     date_hierarchy = "reported_on"
     ordering = ("-reported_on",)
-    fields = ("archived", "archived_on", "archived_reason", "archived_by")
+    fields = (
+        "archived",
+        "archived_on",
+        "archived_reason",
+        "archived_by",
+        "top_priority_status",
+        "tags",
+    )
 
 
 admin.site.register(Barrier, BarrierAdmin)
