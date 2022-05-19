@@ -179,7 +179,7 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
         old_top_priority_status = last_instance.top_priority_status
         new_top_priority_status = instance.top_priority_status
 
-        if new_top_priority_status is not old_top_priority_status:
+        if new_top_priority_status != old_top_priority_status:
             if new_top_priority_status == "APPROVED":
                 # If status has changed to APPROVED, no matter what it was, it has now been approved
                 send_top_priority_notification("APPROVAL", instance)

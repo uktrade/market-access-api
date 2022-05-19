@@ -1,12 +1,20 @@
+import logging
+from unittest.mock import patch
+
 from django.test import TestCase
+from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.models import Barrier
-from api.barriers.signals.handlers import (  # barrier_priority_approval_email_notification,
+from api.barriers.signals.handlers import (
     barrier_completion_percentage_changed,
+    barrier_priority_approval_email_notification,
 )
-from api.core.test_utils import APITestMixin
+from api.core.test_utils import APITestMixin, create_test_user
 from tests.barriers.factories import BarrierFactory, CommodityFactory
+from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory
+
+logger = logging.getLogger(__name__)
 
 
 class TestSignalFunctions(APITestMixin, TestCase):
@@ -111,15 +119,84 @@ class TestSignalFunctions(APITestMixin, TestCase):
 
     def test_barrier_priority_email_notification_accepted(self):
         barrier = BarrierFactory(top_priority_status="APPROVAL_PENDING")
-        barrier.top_priority_status = "ACCEPTED"
-        barrier.save()
+        test_user = create_test_user()
+        TeamMemberFactory(barrier=barrier, user=test_user, role="Owner", default=True)
+
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+
+            barrier.top_priority_status = "APPROVED"
+            barrier.save()
+
+            barrier_priority_approval_email_notification(
+                sender=Barrier, instance=barrier
+            )
+
+            expected_personalisation = {
+                "first_name": test_user.first_name,
+                "barrier_id": barrier.id,
+                "barrier_url": f"https://dummy.market-access.net/barriers/{barrier.id}/",
+            }
+
+            mock.assert_called_with(
+                email_address=test_user.email,
+                template_id="<<CHECK_VAULT>>",
+                personalisation=expected_personalisation,
+            )
+
+            mock.stop()
 
     def test_barrier_priority_email_notification_rejected(self):
         barrier = BarrierFactory(top_priority_status="APPROVAL_PENDING")
-        barrier.top_priority_status = "REJECTED"
-        barrier.save()
+        test_user = create_test_user()
+        TeamMemberFactory(barrier=barrier, user=test_user, role="Owner", default=True)
+
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+
+            barrier.top_priority_status = "NONE"
+            barrier.top_priority_rejection_summary = (
+                "Because you didn't offer me coffee earlier. Rude."
+            )
+            barrier.save()
+
+            barrier_priority_approval_email_notification(
+                sender=Barrier, instance=barrier
+            )
+
+            expected_personalisation = {
+                "first_name": test_user.first_name,
+                "barrier_id": barrier.id,
+                "barrier_url": f"https://dummy.market-access.net/barriers/{barrier.id}/",
+                "decision_reason": barrier.top_priority_rejection_summary,
+            }
+
+            mock.assert_called_with(
+                email_address=test_user.email,
+                template_id="<<CHECK_VAULT>>",
+                personalisation=expected_personalisation,
+            )
+
+            mock.stop()
 
     def test_barrier_priority_email_notification_skipped(self):
         barrier = BarrierFactory(top_priority_status="APPROVAL_PENDING")
-        barrier.source = "Ketchup"
-        barrier.save()
+        test_user = create_test_user()
+        TeamMemberFactory(barrier=barrier, user=test_user, role="Owner", default=True)
+
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+
+            barrier.source = "Ketchup"
+            barrier.save()
+
+            barrier_priority_approval_email_notification(
+                sender=Barrier, instance=barrier
+            )
+
+            mock.assert_not_called()
+
+            mock.stop()
