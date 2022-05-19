@@ -208,6 +208,20 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         preceding_column_key = keys_list[index_of_midpoint_value_column - 1]
         assert preceding_column_key == "Valuation assessment rating"
 
+    def test_csv_midpoint_column_is_empty_string_for_no_valuation_assessment(self):
+        barrier = BarrierFactory()
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+
+        written = self.get_content_written_to_csv(queryset)
+
+        expected_midpoint_value = ""
+        io = StringIO(written)
+        reader = csv.DictReader(io, delimiter=",")
+        for row in reader:
+            break
+        assert "Midpoint value" in row.keys()
+        assert row["Midpoint value"] == expected_midpoint_value
+
 
 @skip(
     "These will come in handy should they decide they want the 'Delivery Confidence' column to contain some data"
