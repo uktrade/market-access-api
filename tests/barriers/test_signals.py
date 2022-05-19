@@ -1,6 +1,7 @@
 import logging
 from unittest.mock import patch
 
+from django.conf import settings
 from django.test import TestCase
 from notifications_python_client.notifications import NotificationsAPIClient
 
@@ -141,7 +142,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
 
             mock.assert_called_with(
                 email_address=test_user.email,
-                template_id="<<CHECK_VAULT>>",
+                template_id=settings.BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID,
                 personalisation=expected_personalisation,
             )
 
@@ -175,7 +176,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
 
             mock.assert_called_with(
                 email_address=test_user.email,
-                template_id="<<CHECK_VAULT>>",
+                template_id=settings.BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID,
                 personalisation=expected_personalisation,
             )
 
