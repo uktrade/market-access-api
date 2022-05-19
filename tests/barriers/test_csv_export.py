@@ -155,6 +155,17 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
 
 class TestBarrierCsvExport(APITestMixin, APITestCase):
+    def get_content_written_to_csv(self, queryset):
+        field_titles = BarrierListS3EmailFile.field_titles
+        serializer = BarrierCsvExportSerializer(queryset, many=True)
+        mocked_open = mock_open()
+        with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
+            with create_named_temporary_file() as temporary_file:
+                write_to_temporary_file(temporary_file, field_titles, serializer)
+        mock_handle = mocked_open()
+        written = "".join([str(call.args[0]) for call in mock_handle.write.mock_calls])
+        return written
+
     def test_csv_output_uses_encoding_that_works_with_excel(self):
         mocked_open = mock_open()
         with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
@@ -168,17 +179,10 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         barrier = BarrierFactory()
         EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
         queryset = Barrier.objects.filter(id__in=[barrier.id])
-        serializer = BarrierCsvExportSerializer(queryset, many=True)
-        field_titles = BarrierListS3EmailFile.field_titles
 
-        mocked_open = mock_open()
-        with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
-            with create_named_temporary_file() as temporary_file:
-                write_to_temporary_file(temporary_file, field_titles, serializer)
+        written = self.get_content_written_to_csv(queryset)
 
         expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
-        mock_handle = mocked_open()
-        written = "".join([str(call.args[0]) for call in mock_handle.write.mock_calls])
         io = StringIO(written)
         reader = csv.DictReader(io, delimiter=",")
         for row in reader:
@@ -191,17 +195,9 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         barrier = BarrierFactory()
         EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
         queryset = Barrier.objects.filter(id__in=[barrier.id])
-        serializer = BarrierCsvExportSerializer(queryset, many=True)
-        field_titles = BarrierListS3EmailFile.field_titles
 
-        mocked_open = mock_open()
-        with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
-            with create_named_temporary_file() as temporary_file:
-                write_to_temporary_file(temporary_file, field_titles, serializer)
+        written = self.get_content_written_to_csv(queryset)
 
-        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
-        mock_handle = mocked_open()
-        written = "".join([str(call.args[0]) for call in mock_handle.write.mock_calls])
         io = StringIO(written)
         reader = csv.DictReader(io, delimiter=",")
         for row in reader:
