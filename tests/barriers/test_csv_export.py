@@ -1,11 +1,16 @@
+import csv
 import datetime
+from io import StringIO
 from unittest import skip
 
 from django.conf import settings
+from mock.mock import mock_open, patch
 from rest_framework.test import APITestCase
 
 from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.barriers.serializers import BarrierCsvExportSerializer
+from api.barriers.tasks import create_named_temporary_file, write_to_temporary_file
+from api.barriers.views import BarrierListS3EmailFile
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
@@ -138,9 +143,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
     def test_valuation_assessment_midpoint(self):
         impact_level = 6
         barrier = BarrierFactory()
-        economic_impact_assessment = EconomicImpactAssessmentFactory(
-            barrier=barrier, impact=impact_level
-        )
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
         serialised_data = BarrierCsvExportSerializer(barrier).data
 
         expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
@@ -149,6 +152,65 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             and serialised_data["valuation_assessment_midpoint"]
             == expected_midpoint_value
         )
+
+
+class TestBarrierCsvExport(APITestMixin, APITestCase):
+    def test_csv_output_uses_encoding_that_works_with_excel(self):
+        mocked_open = mock_open()
+        with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
+            with create_named_temporary_file():
+                pass
+
+        mocked_open.assert_called_with(mode="w+t", encoding="utf-8-sig")
+
+    def test_csv_has_midpoint_column(self):
+        impact_level = 6
+        barrier = BarrierFactory()
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+        serializer = BarrierCsvExportSerializer(queryset, many=True)
+        field_titles = BarrierListS3EmailFile.field_titles
+
+        mocked_open = mock_open()
+        with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
+            with create_named_temporary_file() as temporary_file:
+                write_to_temporary_file(temporary_file, field_titles, serializer)
+
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        mock_handle = mocked_open()
+        written = "".join([str(call.args[0]) for call in mock_handle.write.mock_calls])
+        io = StringIO(written)
+        reader = csv.DictReader(io, delimiter=",")
+        for row in reader:
+            break
+        assert "Midpoint value" in row.keys()
+        assert row["Midpoint value"] == expected_midpoint_value
+
+    def test_csv_has_midpoint_column_after_valuation_assessment_column(self):
+        impact_level = 6
+        barrier = BarrierFactory()
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+        serializer = BarrierCsvExportSerializer(queryset, many=True)
+        field_titles = BarrierListS3EmailFile.field_titles
+
+        mocked_open = mock_open()
+        with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
+            with create_named_temporary_file() as temporary_file:
+                write_to_temporary_file(temporary_file, field_titles, serializer)
+
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        mock_handle = mocked_open()
+        written = "".join([str(call.args[0]) for call in mock_handle.write.mock_calls])
+        io = StringIO(written)
+        reader = csv.DictReader(io, delimiter=",")
+        for row in reader:
+            break
+        # indexing the result of a dict's keys() method isn't supported in Python 3
+        keys_list = list(row.keys())
+        index_of_midpoint_value_column = keys_list.index("Midpoint value")
+        preceding_column_key = keys_list[index_of_midpoint_value_column - 1]
+        assert preceding_column_key == "Valuation assessment rating"
 
 
 @skip(
