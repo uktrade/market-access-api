@@ -30,24 +30,35 @@ def upload_to_s3(filename: str, key: str) -> str:
     )
 
 
+def write_to_temporary_file(
+    temporary_file: NamedTemporaryFile,
+    field_titles: Dict[str, str],
+    serializer: BarrierCsvExportSerializer,
+):
+    writer = DictWriter(
+        temporary_file,
+        extrasaction="ignore",
+        fieldnames=field_titles.keys(),
+        quoting=csv.QUOTE_MINIMAL,
+    )
+
+    writer.writerow(field_titles)
+    for row in serializer.data:
+        writer.writerow(_transform_csv_row(row))
+    temporary_file.flush()
+
+
+def create_named_temporary_file():
+    return NamedTemporaryFile(mode="w+t", encoding="utf-8-sig")
+
+
 def generate_and_upload_to_s3(
     s3_filename: str,
     field_titles: Dict[str, str],
     serializer: BarrierCsvExportSerializer,
 ) -> str:
-    with NamedTemporaryFile(mode="w+t", encoding="utf-8-sig") as tf:
-        writer = DictWriter(
-            tf,
-            extrasaction="ignore",
-            fieldnames=field_titles.keys(),
-            quoting=csv.QUOTE_MINIMAL,
-        )
-
-        writer.writerow(field_titles)
-        for row in serializer.data:
-            writer.writerow(_transform_csv_row(row))
-        tf.flush()
-
+    with create_named_temporary_file() as tf:
+        write_to_temporary_file(tf, field_titles, serializer)
         presigned_url = upload_to_s3(tf.name, s3_filename)
 
     return presigned_url
