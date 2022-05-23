@@ -10,7 +10,7 @@ from api.action_plans.models import ActionPlan
 from api.barriers.models import BarrierProgressUpdate
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
-from api.metadata.constants import PROGRESS_UPDATE_CHOICES
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER_STATUS
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
@@ -163,6 +163,16 @@ class TestDataWarehouseExport(TestCase):
             data_with_action_plan["action_plan"]["action_plan_percent_complete"]
             == "100.0%"
         )
+
+        # Adding top priority barrier APPROVED status
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        barrier.save()
+
+        barrier_data = DataWorkspaceSerializer(barrier).data
+        assert (
+            barrier_data["top_priority_status"] == TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        )
+        assert barrier_data["is_top_priority_barrier"] is True
 
     def test_has_value_for_is_top_priority(self):
         barrier = BarrierFactory(status_date=date.today())
