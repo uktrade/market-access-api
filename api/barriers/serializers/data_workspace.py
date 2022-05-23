@@ -186,6 +186,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "id",
             "import_market_size",
             "is_summary_sensitive",
+            "top_priority_status",
             "is_top_priority",
             "latest_progress_update",
             "location",

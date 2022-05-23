@@ -96,6 +96,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     strategic_assessment_scale = serializers.SerializerMethodField()
     government_organisations = serializers.SerializerMethodField()
     is_top_priority = serializers.BooleanField()
+    top_priority_status = serializers.CharField()
 
     # progress update fields
     progress_update_status = serializers.SerializerMethodField()
@@ -141,6 +142,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "progress_update_author",
             "progress_update_next_steps",
             "is_top_priority",
+            "top_priority_status",
         )
 
     def get_term(self, obj):
