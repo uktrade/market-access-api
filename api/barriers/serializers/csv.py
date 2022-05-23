@@ -1,7 +1,13 @@
+import logging
+
 from django.conf import settings
 from rest_framework import serializers
 
-from api.barriers.models import Barrier, BarrierRequestDownloadApproval
+from api.barriers.models import (
+    Barrier,
+    BarrierRequestDownloadApproval,
+    HistoricalBarrier,
+)
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
 from api.collaboration.models import TeamMember
 from api.history.factories.public_barriers import PublicBarrierHistoryFactory
@@ -21,6 +27,8 @@ from api.metadata.utils import (
     get_trading_bloc,
     get_trading_bloc_overseas_regions,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
@@ -50,6 +58,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
     estimated_resolution_date = serializers.DateField(format="%Y-%m")
+    previous_estimated_resolution_date = serializers.SerializerMethodField()
+    estimated_resolution_updated_date = serializers.SerializerMethodField()
     link = serializers.SerializerMethodField()
     wto_has_been_notified = serializers.SerializerMethodField()
     wto_should_be_notified = serializers.SerializerMethodField()
@@ -135,6 +145,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "valuation_assessment_explanation",
             "commercial_value",
             "estimated_resolution_date",
+            "previous_estimated_resolution_date",
+            "estimated_resolution_updated_date",
             "link",
             "progress_update_status",
             "progress_update_message",
@@ -390,6 +402,38 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         if obj.latest_progress_update:
             return obj.latest_progress_update.next_steps
         return None
+
+    def get_previous_estimated_resolution_date(self, obj):
+        try:
+            history = (
+                Barrier.history.filter(id=obj.id)
+                .exclude(estimated_resolution_date=obj.estimated_resolution_date)
+                .latest("history_date")
+            )
+        except HistoricalBarrier.DoesNotExist:
+            # Error case if barriers are missing history
+            return None
+
+        if history.estimated_resolution_date:
+            return history.estimated_resolution_date.strftime("%Y-%m")
+        else:
+            return None
+
+    def get_estimated_resolution_updated_date(self, obj):
+        try:
+            history = (
+                Barrier.history.filter(id=obj.id)
+                .exclude(estimated_resolution_date=obj.estimated_resolution_date)
+                .latest("history_date")
+            )
+        except HistoricalBarrier.DoesNotExist:
+            # Error case if barriers are missing history
+            return None
+
+        if history.estimated_resolution_date:
+            return history.history_date.strftime("%Y-%m-%d")
+        else:
+            return None
 
 
 class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):
