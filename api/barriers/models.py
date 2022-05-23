@@ -587,7 +587,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def is_top_priority(self):
-        return self.tags.filter(is_top_priority_tag=True).exists()
+        return self.top_priority_status in [
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+        ]
 
     def last_seen_by(self, user_id):
         try:

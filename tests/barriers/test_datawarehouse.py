@@ -10,13 +10,12 @@ from api.action_plans.models import ActionPlan
 from api.barriers.models import BarrierProgressUpdate
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
-from api.metadata.constants import PROGRESS_UPDATE_CHOICES
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER_STATUS
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
 )
 from tests.barriers.factories import BarrierFactory
-from tests.metadata.factories import BarrierTagFactory
 
 pytestmark = [pytest.mark.django_db]
 
@@ -177,24 +176,28 @@ class TestDataWarehouseExport(TestCase):
         )
 
     def test_data_warehouse_is_top_priority_barrier(self):
-        tag_title = "Very Important Thing"
-        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=True)
-        barrier = BarrierFactory(tags=(tag,), status_date=date.today())
-        serialised_data = DataWorkspaceSerializer(barrier).data
-        assert (
-            "is_top_priority" in serialised_data.keys()
-            and serialised_data["is_top_priority"] is True
-        )
 
-    def test_data_warehouse_is_not_top_priority_barrier(self):
-        tag_title = "Very Important Thing"
-        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=False)
-        barrier = BarrierFactory(tags=(tag,), status_date=date.today())
-        serialised_data = DataWorkspaceSerializer(barrier).data
-        assert (
-            "is_top_priority" in serialised_data.keys()
-            and serialised_data["is_top_priority"] is False
-        )
+        # Left: top_priority_status - Right: expected is_top_priority value
+        top_priority_status_to_is_top_priority_map = {
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED: True,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING: True,
+            TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING: False,
+            TOP_PRIORITY_BARRIER_STATUS.NONE: False,
+        }
+
+        barrier = BarrierFactory(status_date=date.today())
+
+        for (
+            top_priority_status,
+            is_top_priority,
+        ) in top_priority_status_to_is_top_priority_map.items():
+            barrier.top_priority_status = top_priority_status
+            serialised_data = DataWorkspaceSerializer(barrier).data
+            assert serialised_data["top_priority_status"] == top_priority_status
+            assert (
+                "is_top_priority" in serialised_data.keys()
+                and serialised_data["is_top_priority"] is is_top_priority
+            )
 
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):

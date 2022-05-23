@@ -15,6 +15,7 @@ from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
     PROGRESS_UPDATE_CHOICES,
+    TOP_PRIORITY_BARRIER_STATUS,
 )
 from api.metadata.models import Organisation
 from tests.assessment.factories import (
@@ -22,7 +23,7 @@ from tests.assessment.factories import (
     EconomicImpactAssessmentFactory,
 )
 from tests.barriers.factories import BarrierFactory
-from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
+from tests.metadata.factories import OrganisationFactory
 
 
 class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
@@ -121,24 +122,26 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         )
 
     def test_is_top_priority_barrier(self):
-        tag_title = "Very Important Thing"
-        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=True)
-        barrier = BarrierFactory(tags=(tag,), status_date=datetime.date.today())
-        serialised_data = BarrierCsvExportSerializer(barrier).data
-        assert (
-            "is_top_priority" in serialised_data.keys()
-            and serialised_data["is_top_priority"] is True
-        )
 
-    def test_is_not_top_priority_barrier(self):
-        tag_title = "Very Important Thing"
-        tag = BarrierTagFactory(title=tag_title, is_top_priority_tag=False)
-        barrier = BarrierFactory(tags=(tag,), status_date=datetime.date.today())
-        serialised_data = BarrierCsvExportSerializer(barrier).data
-        assert (
-            "is_top_priority" in serialised_data.keys()
-            and serialised_data["is_top_priority"] is False
-        )
+        # Left: top_priority_status - Right: expected is_top_priority value
+        top_priority_status_to_is_top_priority_map = {
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED: True,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING: True,
+            TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING: False,
+            TOP_PRIORITY_BARRIER_STATUS.NONE: False,
+        }
+
+        for (
+            top_priority_status,
+            is_top_priority,
+        ) in top_priority_status_to_is_top_priority_map.items():
+            barrier = BarrierFactory(
+                top_priority_status=top_priority_status,
+                status_date=datetime.date.today(),
+            )
+            serialised_data = BarrierCsvExportSerializer(barrier).data
+            assert serialised_data["top_priority_status"] == top_priority_status
+            assert is_top_priority == serialised_data["is_top_priority"]
 
     def test_valuation_assessment_midpoint(self):
         impact_level = 6
