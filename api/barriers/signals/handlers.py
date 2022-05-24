@@ -217,7 +217,7 @@ def send_top_priority_notification(email_type, barrier):
     personalisation_items["first_name"] = recipient.first_name
 
     # Seperate the barrier ID
-    personalisation_items["barrier_id"] = str(barrier.id)
+    personalisation_items["barrier_id"] = str(barrier.code)
 
     # Build URL to the barrier
     personalisation_items[

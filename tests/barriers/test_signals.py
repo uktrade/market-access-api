@@ -136,7 +136,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
 
             expected_personalisation = {
                 "first_name": test_user.first_name,
-                "barrier_id": str(barrier.id),
+                "barrier_id": str(barrier.code),
                 "barrier_url": f"https://dummy.market-access.net/barriers/{barrier.id}/",
             }
 
@@ -169,7 +169,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
 
             expected_personalisation = {
                 "first_name": test_user.first_name,
-                "barrier_id": str(barrier.id),
+                "barrier_id": str(barrier.code),
                 "barrier_url": f"https://dummy.market-access.net/barriers/{barrier.id}/",
                 "decision_reason": barrier.top_priority_rejection_summary,
             }
