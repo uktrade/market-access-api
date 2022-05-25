@@ -1,8 +1,10 @@
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Q
+from notifications_python_client.notifications import NotificationsAPIClient
 from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -861,13 +863,20 @@ class TestListBarriers(APITestMixin, APITestCase):
         }
 
         barrier = BarrierFactory()
+        test_user = create_test_user()
+        TeamMemberFactory(barrier=barrier, user=test_user, role="Owner", default=True)
 
         for (
             top_priority_status,
             is_top_priority,
         ) in top_priority_status_to_is_top_priority_map.items():
-            barrier.top_priority_status = top_priority_status
-            barrier.save()
+
+            with patch.object(
+                NotificationsAPIClient, "send_email_notification", return_value=None
+            ) as mock:
+                barrier.top_priority_status = top_priority_status
+                barrier.save()
+
             response = self.api_client.get(self.url)
             assert status.HTTP_200_OK == response.status_code
             serialised_data = response.data
