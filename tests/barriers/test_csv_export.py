@@ -156,6 +156,24 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             == expected_midpoint_value
         )
 
+    def test_previous_estimated_resolution_date(self):
+        barrier = BarrierFactory(estimated_resolution_date="2022-10-01")
+        barrier.estimated_resolution_date = "2022-12-01"
+        barrier.save()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert serializer.data["previous_estimated_resolution_date"] == "2022-10"
+        assert serializer.data[
+            "estimated_resolution_updated_date"
+        ] == datetime.date.today().strftime("%Y-%m-%d")
+
+    def test_previous_estimated_resolution_date_empty(self):
+        barrier = BarrierFactory()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert serializer.data["previous_estimated_resolution_date"] is None
+        assert serializer.data["estimated_resolution_updated_date"] is None
+
 
 class TestBarrierCsvExport(APITestMixin, APITestCase):
     def get_content_written_to_csv(self, queryset):
