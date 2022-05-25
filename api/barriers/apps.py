@@ -12,6 +12,7 @@ class BarriersConfig(AppConfig):
             barrier_categories_changed,
             barrier_completion_percentage_changed,
             barrier_organisations_changed,
+            barrier_priority_approval_email_notification,
             barrier_tags_changed,
             public_barrier_categories_changed,
             public_barrier_content_update,
@@ -32,6 +33,8 @@ class BarriersConfig(AppConfig):
         pre_save.connect(public_barrier_content_update, sender=PublicBarrier)
 
         post_save.connect(barrier_completion_percentage_changed, sender=Barrier)
+
+        post_save.connect(barrier_priority_approval_email_notification, sender=Barrier)
 
         post_save.connect(
             public_barrier_light_touch_reviews_changed,

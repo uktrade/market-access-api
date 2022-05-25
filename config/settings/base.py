@@ -459,3 +459,13 @@ BARRIER_REPEAT_REMINDER_THESHOLD_DAYS = 30 * 6
 BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID = env(
     "BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID", default=""
 )
+
+# IDs for the email templates in Notify
+# which will be used to inform users that a barriers status as
+# a PB100 (priority-barrier-100) has been accepted or rejected
+BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID = env(
+    "BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID", default=""
+)
+BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID = env(
+    "BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID", default=""
+)
