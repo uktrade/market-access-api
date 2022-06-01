@@ -428,6 +428,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "resolvability_assessment_time": "Resolvability assessment time",
         "resolvability_assessment_effort": "Resolvability assessment effort",
         "strategic_assessment_scale": "Strategic assessment scale",
+        "government_organisations": "Related Organisations",
         "progress_update_status": "Progress update status",
         "progress_update_message": "Progress update message",
         "progress_update_date": "Progress update date",

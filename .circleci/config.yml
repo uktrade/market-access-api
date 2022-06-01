@@ -117,6 +117,7 @@ jobs:
       - run:
           name: Initialise comtrade data
           command: |
+            sudo apt update
             sudo apt install -y postgresql-client
             psql -h localhost -U postgres -d market_access -f docker/local/comtrade_test_db/10_create_goods_table.sql
             psql -h localhost -U postgres -d market_access -f docker/local/comtrade_test_db/20_insert_test_data.sql
