@@ -21,6 +21,7 @@ from .constants import (
     STAGE_STATUS,
     STRATEGIC_ASSESSMENT_SCALE,
     SUPPORT_TYPE,
+    TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOCS,
@@ -67,6 +68,7 @@ class MetadataView(generics.GenericAPIView):
         assessment_effort_to_resolve = dict(RESOLVABILITY_ASSESSMENT_EFFORT)
         assessment_time_to_resolve = dict(RESOLVABILITY_ASSESSMENT_TIME)
         strategic_assessment_scale = dict(STRATEGIC_ASSESSMENT_SCALE)
+        top_priority_barrier_status = dict(TOP_PRIORITY_BARRIER_STATUS)
 
         dh_os_regions, dh_countries = get_os_regions_and_countries()
         dh_admin_areas = get_admin_areas()
@@ -111,6 +113,7 @@ class MetadataView(generics.GenericAPIView):
             "resolvability_assessment_effort": assessment_effort_to_resolve,
             "resolvability_assessment_time": assessment_time_to_resolve,
             "strategic_assessment_scale": strategic_assessment_scale,
+            "top_priority_status": top_priority_barrier_status,
             "trade_categories": trade_categories,
             "trade_direction": trade_direction,
             "trading_blocs": TRADING_BLOCS.values(),
