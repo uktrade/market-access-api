@@ -107,6 +107,7 @@ class MetadataView(generics.GenericAPIView):
             "barrier_priorities": barrier_priorities,
             "economic_assessment_impact": economic_assessment_impact,
             "economic_assessment_rating": economic_assessment_rating,
+            "government_organisations": government_organisations,
             "resolvability_assessment_effort": assessment_effort_to_resolve,
             "resolvability_assessment_time": assessment_time_to_resolve,
             "strategic_assessment_scale": strategic_assessment_scale,
@@ -114,7 +115,6 @@ class MetadataView(generics.GenericAPIView):
             "trade_direction": trade_direction,
             "trading_blocs": TRADING_BLOCS.values(),
             "wto_committee_groups": wto_committee_groups,
-            "government_organisations": government_organisations,
         }
 
         return Response(results, status=status.HTTP_200_OK)
