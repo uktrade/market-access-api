@@ -145,3 +145,18 @@ class TestCategories(APITestMixin):
         assert "id" in org.keys()
         assert "name" in org.keys()
         assert "organisation_type" in org.keys()
+
+    def test_top_priority_status(self):
+        key = "top_priority_status"
+        expected = {
+            "NONE": "",
+            "APPROVAL_PENDING": "Top 100 Priority Barrier - Approval Pending",
+            "REMOVAL_PENDING": "Top 100 Priority Barrier - Removal Pending",
+            "APPROVED": "Top 100 Priority Barrier",
+        }
+
+        url = reverse("metadata")
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data[key] is not None
+        assert expected == response.data[key]
