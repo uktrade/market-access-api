@@ -91,8 +91,10 @@ class TestBarriersDataset(APITestMixin):
 
     def test_government_organisations(self):
         org1 = Organisation.objects.get(id=1)
+        org2 = Organisation.objects.get(id=2)
         barrier = BarrierFactory()
         barrier.organisations.add(org1)
+        barrier.organisations.add(org2)
 
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
@@ -100,4 +102,6 @@ class TestBarriersDataset(APITestMixin):
         assert status.HTTP_200_OK == response.status_code
         data_item = response.data["results"][0]
         assert "government_organisations" in data_item.keys()
-        assert org1.id == data_item["government_organisations"][0]["id"]
+
+        assert org1.name == data_item["government_organisations"][0]
+        assert org2.name == data_item["government_organisations"][1]

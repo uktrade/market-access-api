@@ -6,7 +6,11 @@ from rest_framework import serializers
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
-from api.metadata.constants import PROGRESS_UPDATE_CHOICES, BarrierStatus
+from api.metadata.constants import (
+    GOVERNMENT_ORGANISATION_TYPES,
+    PROGRESS_UPDATE_CHOICES,
+    BarrierStatus,
+)
 
 from ..models import BarrierProgressUpdate
 from .base import BarrierSerializerBase
@@ -156,6 +160,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     action_plan_added = serializers.SerializerMethodField()
     action_plan = DataworkspaceActionPlanSerializer()
     latest_progress_update = ProgressUpdateSerializer()
+    government_organisations = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -258,3 +263,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         if not obj.action_plan:
             return False
         return obj.action_plan.milestones.count() > 0
+
+    def get_government_organisations(self, obj):
+        return [
+            org.name
+            for org in obj.organisations.all()
+            if org.organisation_type in GOVERNMENT_ORGANISATION_TYPES
+        ]

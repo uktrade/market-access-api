@@ -155,6 +155,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "progress_update_next_steps",
             "is_top_priority",
             "top_priority_status",
+            "government_organisations",
         )
 
     def get_term(self, obj):
