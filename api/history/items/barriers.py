@@ -204,3 +204,10 @@ class OrganisationsHistoryItem(BaseBarrierHistoryItem):
 
     def get_value(self, record):
         return record.organisations_cache or []
+
+
+class TopPriorityHistoryItem(BaseBarrierHistoryItem):
+    field = "top_priority_status"
+
+    def get_value(self, record):
+        return record.get_top_priority_status_display()
