@@ -428,6 +428,34 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier1.id), str(barrier3.id)} == set(barrier_ids)
 
+    def test_list_barriers_text_filter_based_on_code(self):
+        barrier1 = BarrierFactory(code="B-22-B30")
+        barrier2 = BarrierFactory(code="B-22-SGM")
+
+        assert 2 == Barrier.objects.count()
+
+        url = f'{reverse("list-barriers")}?text=B-22-B30'
+
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        barrier_ids = [b["id"] for b in response.data["results"]]
+        assert {str(barrier1.id)} == set(barrier_ids)
+
+    def test_list_barriers_text_filter_based_on_code_case_insensitive(self):
+        barrier1 = BarrierFactory(code="B-22-B30")
+        barrier2 = BarrierFactory(code="B-22-SGM")
+
+        assert 2 == Barrier.objects.count()
+
+        url = f'{reverse("list-barriers")}?text=b-22-b30'
+
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        barrier_ids = [b["id"] for b in response.data["results"]]
+        assert {str(barrier1.id)} == set(barrier_ids)
+
     def test_list_barriers_text_filter_based_on_summary(self):
         _barrier1 = BarrierFactory(summary="Wibble summary about the blockade.")
         barrier2 = BarrierFactory(summary="Wobble blockade")
