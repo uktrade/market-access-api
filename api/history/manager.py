@@ -78,7 +78,7 @@ class HistoryManager:
             start_date = None
 
         history = cls.get_barrier_history(barrier.pk, start_date=start_date)
-        history = cls.get_action_plans_history(barrier.pk, start_date=start_date)
+        history += cls.get_action_plans_history(barrier.pk, start_date=start_date)
         history += cls.get_notes_history(barrier.pk, start_date=start_date)
         history += cls.get_delivery_confidence_history(
             barrier.pk, start_date=start_date
