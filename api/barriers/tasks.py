@@ -15,6 +15,7 @@ from api.barriers.csv import _transform_csv_row
 from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
+from api.metadata.constants import BarrierStatus
 
 logger = logging.getLogger(__name__)
 
@@ -95,26 +96,63 @@ def generate_s3_and_send_email(
 
 
 @shared_task
+def auto_update_inactive_barrier_status():
+    """
+    Take a list of barriers with modifed_on dates older than X months and X months
+    for each barrier, update their status to "Dormant" and "Archived" respectively
+    """
+
+    archive_inactivity_threshold_date = timezone.now() - timedelta(
+        days=settings.BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS
+    )
+    # We only want to automatically archive barriers which are dormant
+    barriers_to_be_archived = Barrier.objects.filter(
+        modified_on__lt=archive_inactivity_threshold_date,
+        status__exact=5,
+    )
+    for barrier in barriers_to_be_archived:
+        # Can't use the barrier archive function, as there is no User performing the action
+        Barrier.objects.filter(id=barrier.id).update(
+            status=BarrierStatus.ARCHIVED,
+            archived=True,
+            archived_reason="Other",
+            archived_explanation="Barrier has been inactive longer than the threshold for archival.",
+        )
+
+    dormant_inactivity_threshold_date = timezone.now() - timedelta(
+        days=settings.BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS
+    )
+    # We don't want to change resolved or already archived/dormant barriers
+    barriers_to_be_dormant = Barrier.objects.filter(
+        modified_on__lt=dormant_inactivity_threshold_date,
+        status__in=[0, 1, 2, 7],
+    )
+    for barrier in barriers_to_be_dormant:
+        # Use save function rather than update so countdown to auto-archival starts now
+        barrier.status = BarrierStatus.DORMANT
+        barrier.save()
+
+
+@shared_task
 def send_barrier_inactivity_reminders():
     """
     Get list of all barriers with modified_on and activity_reminder_sent dates older than 6 months
-
     For each barrier sent a reminder notification to the barrier owner
     """
 
     # datetime 6 months ago
-    inactivity_theshold_date = timezone.now() - timedelta(
-        days=settings.BARRIER_INACTIVITY_THESHOLD_DAYS
+    inactivity_threshold_date = timezone.now() - timedelta(
+        days=settings.BARRIER_INACTIVITY_THRESHOLD_DAYS
     )
-    repeat_reminder_theshold_date = timezone.now() - timedelta(
-        days=settings.BARRIER_REPEAT_REMINDER_THESHOLD_DAYS
+    repeat_reminder_threshold_date = timezone.now() - timedelta(
+        days=settings.BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS
     )
 
     barriers_needing_reminder = Barrier.objects.filter(
-        modified_on__lt=inactivity_theshold_date
+        modified_on__lt=inactivity_threshold_date
     ).filter(
         Q(activity_reminder_sent__isnull=True)
-        | Q(activity_reminder_sent__lt=repeat_reminder_theshold_date)
+        | Q(activity_reminder_sent__lt=repeat_reminder_threshold_date)
     )
 
     for barrier in barriers_needing_reminder:

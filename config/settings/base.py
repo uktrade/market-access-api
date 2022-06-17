@@ -394,6 +394,10 @@ if not DEBUG:
         "task": "api.barrier.tasks.send_barrier_inactivity_reminders",
         "schedule": crontab(minute=0, hour=6),
     }
+    CELERY_BEAT_SCHEDULE["auto_update_inactive_barrier_status"] = {
+        "task": "api.barrier.tasks.auto_update_inactive_barrier_status",
+        "schedule": crontab(minute=0, hour=6),
+    }
 
 
 # Public Data for Barriers
@@ -450,11 +454,17 @@ APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME = "Download approved user"
 # Barrier inactivity reminder emails
 
 # After how many days should the user be reminded to update their barrier
-BARRIER_INACTIVITY_THESHOLD_DAYS = 30 * 6
+BARRIER_INACTIVITY_THRESHOLD_DAYS = 30 * 6
 
 # If barrier stays inactive despite reminder being sent,
 # how many days from reminder date should we send the reminder again
-BARRIER_REPEAT_REMINDER_THESHOLD_DAYS = 30 * 6
+BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS = 30 * 6
+
+# After how many days should a barrier be automatically updated to "Dormant" status
+BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS = 30 * 12
+
+# After how many days should a barrier be automatically updated to "Archived" status
+BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS = 30 * 12
 
 BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID = env(
     "BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID", default=""
