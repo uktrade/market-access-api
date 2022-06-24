@@ -377,3 +377,30 @@ TOP_PRIORITY_BARRIER_STATUS = Choices(
     ("REMOVAL_PENDING", "Top 100 Priority Barrier - Removal Pending"),
     ("APPROVED", "Top 100 Priority Barrier"),
 )
+
+REGIONS_WITH_LEADS = {
+    "Latin America": "Regional Lead - LATAC",
+    "Asia-Pacific": "Regional Lead - APAC",
+    "China": "Regional Lead - China/Hong Kong",
+    "South Asia": "Regional Lead - South Asia",
+    "Eastern Europe and Central Asia": "Regional Lead - EECAN",
+    "Middle East": "Regional Lead - MEAP",
+    "Africa": "Regional Lead - Africa",
+    "North America": "Regional Lead - North America",
+    "Europe": "Regional Lead - Europe",
+    "Wider Europe": "Regional Lead - Wider Europe",
+}
+
+WIDER_EUROPE_REGIONS = {
+    "Switzerland",
+    "Iceland",
+    "Norway",
+    "Liechtenstein",
+    "Israel",
+    "Albania",
+    "Montenegro",
+    "North Macedonia",
+    "Serbia",
+    "Bosnia and Herzegovina",
+    "Kosovo",
+}

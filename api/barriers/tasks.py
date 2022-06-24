@@ -1,13 +1,16 @@
+import calendar
 import csv
 import logging
 from csv import DictWriter
-from datetime import timedelta
+from datetime import datetime, timedelta
 from tempfile import NamedTemporaryFile
 from typing import Dict, List
 
 from celery import shared_task
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db.models import Q
+from django.template.defaultfilters import pluralize
 from django.utils import timezone
 from notifications_python_client.notifications import NotificationsAPIClient
 
@@ -15,7 +18,12 @@ from api.barriers.csv import _transform_csv_row
 from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
-from api.metadata.constants import BarrierStatus
+from api.metadata.constants import (
+    REGIONS_WITH_LEADS,
+    WIDER_EUROPE_REGIONS,
+    BarrierStatus,
+)
+from api.metadata.utils import get_country
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +103,97 @@ def generate_s3_and_send_email(
     )
 
 
+def get_inactivty_threshold_dates():
+
+    inactivity_threshold_dates = {}
+
+    current_date = timezone.now()
+    last_day_of_month = calendar.monthrange(current_date.year, current_date.month)[1]
+    target_date = current_date.replace(day=last_day_of_month)
+
+    inactivity_threshold_dates[
+        "archive_inactivity_threshold_date"
+    ] = target_date - timedelta(days=settings.BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS)
+    inactivity_threshold_dates[
+        "dormant_inactivity_threshold_date"
+    ] = target_date - timedelta(days=settings.BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS)
+    inactivity_threshold_dates["inactivity_threshold_date"] = current_date - timedelta(
+        days=settings.BARRIER_INACTIVITY_THRESHOLD_DAYS
+    )
+    inactivity_threshold_dates[
+        "repeat_reminder_threshold_date"
+    ] = current_date - timedelta(days=settings.BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS)
+
+    return inactivity_threshold_dates
+
+
+def get_barriers_to_update_this_month():
+
+    barriers_to_update = {}
+
+    threshold_dates = get_inactivty_threshold_dates()
+
+    # We only want to automatically archive barriers which are dormant
+    barriers_to_update["barriers_to_be_archived"] = Barrier.objects.filter(
+        modified_on__lt=threshold_dates["archive_inactivity_threshold_date"],
+        status__exact=5,
+    )
+
+    # We don't want to change resolved or already archived/dormant barriers
+    barriers_to_update["barriers_to_be_dormant"] = Barrier.objects.filter(
+        modified_on__lt=threshold_dates["dormant_inactivity_threshold_date"],
+        status__in=[0, 1, 2, 7],
+    )
+
+    return barriers_to_update
+
+
+def get_barriers_overseas_region(country_id):
+    # Get the overseas region of the barrier - this is stored in country metadata, not the barrier itself
+    country_details = get_country(str(country_id))
+
+    # Special case for empty "overseas_region" - internal barriers for the UK go to the Europe regional lead
+    if not country_details["overseas_region"]:
+        overseas_region = "Europe"
+    # Special case for wider europe countries - metadata has them in with the rest of europe
+    elif country_details["name"] in WIDER_EUROPE_REGIONS:
+        overseas_region = "Wider Europe"
+    # All other countries map to their API given region
+    else:
+        overseas_region = country_details["overseas_region"]["name"]
+
+    return overseas_region
+
+
+def get_auto_update_barrier_status_markdown(barriers, status_to_update):
+    """
+    Generate gov notify style markdown for the barriers which will be automatically updated.
+    The template syntax does not allow loops, so we have to generate the markdown here.
+    """
+    # Heading - "Archived" or "Dormant"
+    markdown = ""
+    markdown += status_to_update
+
+    # Sub-heading - Indicates how many barriers will be actioned
+    barrier_count = len(barriers)
+    action_suffix = "archived"
+    if status_to_update == "Dormant":
+        action_suffix = "made dormant"
+
+    if barrier_count:
+        markdown += f"\n{barrier_count} barrier{pluralize(barrier_count)} will be {action_suffix}\n"
+    else:
+        markdown += f"\nNo barriers will be {action_suffix} in your region this month\n"
+
+    # List - bullet point list of barriers to be actioned
+    for barrier in barriers:
+        markdown += f"\n* {barrier.title}\n"
+        markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}?en=n\n"
+        markdown += "\n---\n"
+
+    return markdown
+
+
 @shared_task
 def auto_update_inactive_barrier_status():
     """
@@ -102,15 +201,9 @@ def auto_update_inactive_barrier_status():
     for each barrier, update their status to "Dormant" and "Archived" respectively
     """
 
-    archive_inactivity_threshold_date = timezone.now() - timedelta(
-        days=settings.BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS
-    )
-    # We only want to automatically archive barriers which are dormant
-    barriers_to_be_archived = Barrier.objects.filter(
-        modified_on__lt=archive_inactivity_threshold_date,
-        status__exact=5,
-    )
-    for barrier in barriers_to_be_archived:
+    barriers_to_update = get_barriers_to_update_this_month()
+
+    for barrier in barriers_to_update["barriers_to_be_archived"]:
         # Can't use the barrier archive function, as there is no User performing the action
         Barrier.objects.filter(id=barrier.id).update(
             status=BarrierStatus.ARCHIVED,
@@ -119,18 +212,79 @@ def auto_update_inactive_barrier_status():
             archived_explanation="Barrier has been inactive longer than the threshold for archival.",
         )
 
-    dormant_inactivity_threshold_date = timezone.now() - timedelta(
-        days=settings.BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS
-    )
-    # We don't want to change resolved or already archived/dormant barriers
-    barriers_to_be_dormant = Barrier.objects.filter(
-        modified_on__lt=dormant_inactivity_threshold_date,
-        status__in=[0, 1, 2, 7],
-    )
-    for barrier in barriers_to_be_dormant:
+    for barrier in barriers_to_update["barriers_to_be_dormant"]:
         # Use save function rather than update so countdown to auto-archival starts now
         barrier.status = BarrierStatus.DORMANT
         barrier.save()
+
+
+@shared_task
+def send_auto_update_inactive_barrier_notification():
+    """
+    Get a list of barriers that will, in the next month, pass the threshold for automatic
+    status change to dormancy and archival. Send an email to relevant regional leads.
+    """
+
+    # Get the barriers that are scheduled for auto-updating this month
+    barriers_to_update = get_barriers_to_update_this_month()
+
+    # To be used in the email template - the date the barriers will be updated
+    # This will be 15 days into the month.
+    today = datetime.today()
+    date_of_update = datetime(today.year, today.month, 15)
+    date_of_update = date_of_update.strftime("%d-%m-%Y")
+
+    # Get region constants
+    regions = REGIONS_WITH_LEADS
+
+    # Create dictionary lists for each region
+    archive_notification_data = {}
+    dormancy_notification_data = {}
+    for region in regions:
+        archive_notification_data[f"{region}"] = []
+        dormancy_notification_data[f"{region}"] = []
+
+    # Go through barrier lists, check the region for the barrier, then add to the specific
+    # region's dictionary list
+    for barrier in barriers_to_update["barriers_to_be_archived"]:
+        overseas_region = get_barriers_overseas_region(barrier.country)
+        archive_notification_data[f"{overseas_region}"].append(barrier)
+
+    for barrier in barriers_to_update["barriers_to_be_dormant"]:
+        overseas_region = get_barriers_overseas_region(barrier.country)
+        dormancy_notification_data[f"{overseas_region}"].append(barrier)
+
+    # Go through each region, get the list of users marked as that regions lead
+    # use Notify API to send them the email notification, sending along the barriers
+    # from both archive and dormant lists as content
+    for region in regions:
+        region_lead_user_group_name = regions[f"{region}"]
+        mail_list = User.objects.filter(groups__name=region_lead_user_group_name)
+
+        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+
+        for region_lead_user in mail_list:
+
+            full_name = f"{region_lead_user.first_name} {region_lead_user.last_name}"
+
+            # Barriers must be formatted correctly for the GOV markdown in the email template
+            barriers_to_be_archived_formatted = get_auto_update_barrier_status_markdown(
+                archive_notification_data[f"{region}"], "Archived"
+            )
+            barriers_to_be_dormant_formatted = get_auto_update_barrier_status_markdown(
+                dormancy_notification_data[f"{region}"], "Dormant"
+            )
+
+            client.send_email_notification(
+                email_address=region_lead_user.email,
+                template_id=settings.AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID,
+                personalisation={
+                    "full_name": full_name,
+                    "date_for_update": date_of_update,
+                    "barriers_to_be_archived": barriers_to_be_archived_formatted,
+                    "barriers_to_be_dormant": barriers_to_be_dormant_formatted,
+                },
+            )
 
 
 @shared_task
@@ -140,19 +294,15 @@ def send_barrier_inactivity_reminders():
     For each barrier sent a reminder notification to the barrier owner
     """
 
-    # datetime 6 months ago
-    inactivity_threshold_date = timezone.now() - timedelta(
-        days=settings.BARRIER_INACTIVITY_THRESHOLD_DAYS
-    )
-    repeat_reminder_threshold_date = timezone.now() - timedelta(
-        days=settings.BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS
-    )
+    threshold_dates = get_inactivty_threshold_dates()
 
     barriers_needing_reminder = Barrier.objects.filter(
-        modified_on__lt=inactivity_threshold_date
+        modified_on__lt=threshold_dates["inactivity_threshold_date"]
     ).filter(
         Q(activity_reminder_sent__isnull=True)
-        | Q(activity_reminder_sent__lt=repeat_reminder_threshold_date)
+        | Q(
+            activity_reminder_sent__lt=threshold_dates["repeat_reminder_threshold_date"]
+        )
     )
 
     for barrier in barriers_needing_reminder:

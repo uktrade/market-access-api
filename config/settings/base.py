@@ -386,17 +386,25 @@ LOGGING = {
 CELERY_BEAT_SCHEDULE = {}
 
 if not DEBUG:
+    # Runs daily at 6am
     CELERY_BEAT_SCHEDULE["send_notification_emails"] = {
         "task": "api.user.tasks.send_notification_emails",
         "schedule": crontab(minute=0, hour=6),
     }
+    # Runs daily at 6am
     CELERY_BEAT_SCHEDULE["send_barrier_inactivity_reminders"] = {
         "task": "api.barrier.tasks.send_barrier_inactivity_reminders",
         "schedule": crontab(minute=0, hour=6),
     }
+    # Runs monthly at midnight between the 15th and 16th days of the month
     CELERY_BEAT_SCHEDULE["auto_update_inactive_barrier_status"] = {
         "task": "api.barrier.tasks.auto_update_inactive_barrier_status",
-        "schedule": crontab(minute=0, hour=6),
+        "schedule": crontab(minute=0, hour=0, day_of_month="16"),
+    }
+    # Runs monthly at midnight on the 1st day of the month
+    CELERY_BEAT_SCHEDULE["send_auto_update_inactive_barrier_notification"] = {
+        "task": "api.barrier.tasks.send_auto_update_inactive_barrier_notification",
+        "schedule": crontab(minute=0, hour=0, day_of_month="1"),
     }
 
 
@@ -478,4 +486,12 @@ BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID = env(
 )
 BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID = env(
     "BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID", default=""
+)
+
+# IDs for the email templates in Notify
+# which will be used to inform regional lead users of barriers
+# that will be automatically updated to either "archived" or
+# "dormant" within the next month
+AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID = env(
+    "AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID", default=""
 )
