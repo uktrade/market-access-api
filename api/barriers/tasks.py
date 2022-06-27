@@ -210,6 +210,7 @@ def auto_update_inactive_barrier_status():
             archived=True,
             archived_reason="Other",
             archived_explanation="Barrier has been inactive longer than the threshold for archival.",
+            archived_on=datetime.today(),
         )
 
     for barrier in barriers_to_update["barriers_to_be_dormant"]:
