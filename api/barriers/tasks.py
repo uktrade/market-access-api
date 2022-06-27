@@ -172,7 +172,7 @@ def get_auto_update_barrier_status_markdown(barriers, status_to_update):
     """
     # Heading - "Archived" or "Dormant"
     markdown = ""
-    markdown += status_to_update
+    markdown += f"#{status_to_update}"
 
     # Sub-heading - Indicates how many barriers will be actioned
     barrier_count = len(barriers)
