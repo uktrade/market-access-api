@@ -57,7 +57,7 @@ class BarrierTag(OrderedModel, BaseModel):
     Model representing tags that can be applied to barriers.
     """
 
-    title = models.CharField(max_length=25, unique=True)
+    title = models.CharField(max_length=50, unique=True)
     description = models.CharField(
         blank=True,
         max_length=250,

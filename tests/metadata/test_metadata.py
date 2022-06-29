@@ -160,3 +160,18 @@ class TestCategories(APITestMixin):
         assert status.HTTP_200_OK == response.status_code
         assert response.data[key] is not None
         assert expected == response.data[key]
+
+    def test_barrier_tags(self):
+        expected = [
+            "COVID-19",
+            "Brexit",
+            "NI Protocol",
+            "Asia Pacific Cross-Government Pilot",
+        ]
+        url = reverse("metadata")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["barrier_tags"] is not None
+
+        tag_titles = [tag["title"] for tag in response.data["barrier_tags"]]
+        assert json.dumps(tag_titles) == json.dumps(expected)
