@@ -77,6 +77,7 @@ jobs:
       SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS: john.doe@example.org
       APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS: ''
       BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID: 'test-123' # pragma: allowlist secret
+      AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID: 'test-1234' # pragma: allowlist secret
 
     working_directory: ~/market-access-api
 

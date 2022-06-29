@@ -386,13 +386,25 @@ LOGGING = {
 CELERY_BEAT_SCHEDULE = {}
 
 if not DEBUG:
+    # Runs daily at 6am
     CELERY_BEAT_SCHEDULE["send_notification_emails"] = {
         "task": "api.user.tasks.send_notification_emails",
         "schedule": crontab(minute=0, hour=6),
     }
+    # Runs daily at 6am
     CELERY_BEAT_SCHEDULE["send_barrier_inactivity_reminders"] = {
         "task": "api.barrier.tasks.send_barrier_inactivity_reminders",
         "schedule": crontab(minute=0, hour=6),
+    }
+    # Runs monthly at midnight between the 15th and 16th days of the month
+    CELERY_BEAT_SCHEDULE["auto_update_inactive_barrier_status"] = {
+        "task": "api.barrier.tasks.auto_update_inactive_barrier_status",
+        "schedule": crontab(minute=0, hour=0, day_of_month="16"),
+    }
+    # Runs monthly at midnight on the 1st day of the month
+    CELERY_BEAT_SCHEDULE["send_auto_update_inactive_barrier_notification"] = {
+        "task": "api.barrier.tasks.send_auto_update_inactive_barrier_notification",
+        "schedule": crontab(minute=0, hour=0, day_of_month="1"),
     }
 
 
@@ -450,11 +462,17 @@ APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME = "Download approved user"
 # Barrier inactivity reminder emails
 
 # After how many days should the user be reminded to update their barrier
-BARRIER_INACTIVITY_THESHOLD_DAYS = 30 * 6
+BARRIER_INACTIVITY_THRESHOLD_DAYS = 30 * 6
 
 # If barrier stays inactive despite reminder being sent,
 # how many days from reminder date should we send the reminder again
-BARRIER_REPEAT_REMINDER_THESHOLD_DAYS = 30 * 6
+BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS = 30 * 6
+
+# After how many days should a barrier be automatically updated to "Dormant" status
+BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS = 30 * 12
+
+# After how many days should a barrier be automatically updated to "Archived" status
+BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS = 30 * 12
 
 BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID = env(
     "BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID", default=""
@@ -468,4 +486,12 @@ BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID = env(
 )
 BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID = env(
     "BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID", default=""
+)
+
+# IDs for the email templates in Notify
+# which will be used to inform regional lead users of barriers
+# that will be automatically updated to either "archived" or
+# "dormant" within the next month
+AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID = env(
+    "AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID", default=""
 )
