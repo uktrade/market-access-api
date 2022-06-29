@@ -229,6 +229,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "unarchived_reason",
             "valuation_assessment_explanation",
             "valuation_assessment_rating",
+            "valuation_assessment_midpoint",
             "value_to_economy",
             "wto_profile",
             "government_organisations",
