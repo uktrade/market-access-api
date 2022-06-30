@@ -396,16 +396,21 @@ if not DEBUG:
         "task": "api.barrier.tasks.send_barrier_inactivity_reminders",
         "schedule": crontab(minute=0, hour=6),
     }
-    # Runs monthly at midnight between the 15th and 16th days of the month
-    CELERY_BEAT_SCHEDULE["auto_update_inactive_barrier_status"] = {
-        "task": "api.barrier.tasks.auto_update_inactive_barrier_status",
-        "schedule": crontab(minute=0, hour=0, day_of_month="16"),
-    }
-    # Runs monthly at midnight on the 1st day of the month
-    CELERY_BEAT_SCHEDULE["send_auto_update_inactive_barrier_notification"] = {
-        "task": "api.barrier.tasks.send_auto_update_inactive_barrier_notification",
-        "schedule": crontab(minute=0, hour=0, day_of_month="1"),
-    }
+
+    AUTO_ARCHIVE_DORMANT_FUNCTIONALITY_SWITCH = env(
+        "AUTO_ARCHIVE_DORMANT_FUNCTIONALITY_SWITCH", default=False
+    )
+    if AUTO_ARCHIVE_DORMANT_FUNCTIONALITY_SWITCH:
+        # Runs monthly at midnight between the 15th and 16th days of the month
+        CELERY_BEAT_SCHEDULE["auto_update_inactive_barrier_status"] = {
+            "task": "api.barrier.tasks.auto_update_inactive_barrier_status",
+            "schedule": crontab(minute=0, hour=0, day_of_month="16"),
+        }
+        # Runs monthly at midnight on the 1st day of the month
+        CELERY_BEAT_SCHEDULE["send_auto_update_inactive_barrier_notification"] = {
+            "task": "api.barrier.tasks.send_auto_update_inactive_barrier_notification",
+            "schedule": crontab(minute=0, hour=0, day_of_month="1"),
+        }
 
 
 # Public Data for Barriers
