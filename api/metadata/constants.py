@@ -257,6 +257,7 @@ TRADING_BLOCS = {
         "code": "TB00016",
         "name": "European Union (EU)",
         "short_name": "the EU",
+        "regional_name": "Europe",
         "country_ids": [
             "a05f66a0-5d95-e211-a939-e4115bead28a",  # Austria
             "a75f66a0-5d95-e211-a939-e4115bead28a",  # Belgium
@@ -295,6 +296,7 @@ TRADING_BLOCS = {
         "code": "TB00017",
         "name": "Gulf Cooperation Council (GCC)",
         "short_name": "the GCC",
+        "regional_name": "Middle East",
         "country_ids": [
             "a35f66a0-5d95-e211-a939-e4115bead28a",
             "7d6a9ab2-5d95-e211-a939-e4115bead28a",
@@ -311,6 +313,7 @@ TRADING_BLOCS = {
         "code": "TB00013",
         "name": "Eurasian Economic Union (EAEU)",
         "short_name": "the EAEU",
+        "regional_name": "Eastern Europe and Central Asia",
         "country_ids": [
             "9d5f66a0-5d95-e211-a939-e4115bead28a",
             "a65f66a0-5d95-e211-a939-e4115bead28a",
@@ -324,6 +327,7 @@ TRADING_BLOCS = {
         "code": "TB00026",
         "name": "Southern Common Market (Mercosur)",
         "short_name": "the Mercosur",
+        "regional_name": "Latin America",
         "country_ids": [
             "b66ee1ca-5d95-e211-a939-e4115bead28a",
             "b05f66a0-5d95-e211-a939-e4115bead28a",

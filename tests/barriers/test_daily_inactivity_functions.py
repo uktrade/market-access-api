@@ -490,6 +490,102 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
                     in dormant_email_markup
                 )
 
+    def test_auto_status_change_notifications_eu_bloc(self):
+        europe_lead = self.create_standard_user(role="Regional Lead - Europe")
+        europe_barrier = BarrierFactory(trading_bloc="TB00016", country=None)  # The EU
+        Barrier.objects.filter(id=europe_barrier.id).update(
+            modified_on=self.archival_threshold_date - timedelta(days=1), status=5
+        )
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+            send_auto_update_inactive_barrier_notification()
+
+        for call in mock.call_args_list:
+            email_recipient = call[1]["personalisation"]["full_name"]
+            dormant_email_markup = call[1]["personalisation"]["barriers_to_be_dormant"]
+            archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
+            if europe_lead.first_name and europe_lead.last_name in email_recipient:
+                assert str(europe_barrier) in archive_email_markup
+                assert "1 barrier will be archived" in archive_email_markup
+                assert (
+                    "No barriers will be made dormant in your region this month"
+                    in dormant_email_markup
+                )
+
+    def test_auto_status_change_notifications_gcc_bloc(self):
+        europe_lead = self.create_standard_user(role="Regional Lead - MEAP")
+        europe_barrier = BarrierFactory(trading_bloc="TB00017", country=None)  # The GCC
+        Barrier.objects.filter(id=europe_barrier.id).update(
+            modified_on=self.archival_threshold_date - timedelta(days=1), status=5
+        )
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+            send_auto_update_inactive_barrier_notification()
+
+        for call in mock.call_args_list:
+            email_recipient = call[1]["personalisation"]["full_name"]
+            dormant_email_markup = call[1]["personalisation"]["barriers_to_be_dormant"]
+            archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
+            if europe_lead.first_name and europe_lead.last_name in email_recipient:
+                assert str(europe_barrier) in archive_email_markup
+                assert "1 barrier will be archived" in archive_email_markup
+                assert (
+                    "No barriers will be made dormant in your region this month"
+                    in dormant_email_markup
+                )
+
+    def test_auto_status_change_notifications_eaeu_bloc(self):
+        europe_lead = self.create_standard_user(role="Regional Lead - EECAN")
+        europe_barrier = BarrierFactory(
+            trading_bloc="TB00013", country=None
+        )  # The EAEU
+        Barrier.objects.filter(id=europe_barrier.id).update(
+            modified_on=self.archival_threshold_date - timedelta(days=1), status=5
+        )
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+            send_auto_update_inactive_barrier_notification()
+
+        for call in mock.call_args_list:
+            email_recipient = call[1]["personalisation"]["full_name"]
+            dormant_email_markup = call[1]["personalisation"]["barriers_to_be_dormant"]
+            archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
+            if europe_lead.first_name and europe_lead.last_name in email_recipient:
+                assert str(europe_barrier) in archive_email_markup
+                assert "1 barrier will be archived" in archive_email_markup
+                assert (
+                    "No barriers will be made dormant in your region this month"
+                    in dormant_email_markup
+                )
+
+    def test_auto_status_change_notifications_mercosur_bloc(self):
+        europe_lead = self.create_standard_user(role="Regional Lead - LATAC")
+        europe_barrier = BarrierFactory(
+            trading_bloc="TB00026", country=None
+        )  # Mercosur
+        Barrier.objects.filter(id=europe_barrier.id).update(
+            modified_on=self.archival_threshold_date - timedelta(days=1), status=5
+        )
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+            send_auto_update_inactive_barrier_notification()
+
+        for call in mock.call_args_list:
+            email_recipient = call[1]["personalisation"]["full_name"]
+            dormant_email_markup = call[1]["personalisation"]["barriers_to_be_dormant"]
+            archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
+            if europe_lead.first_name and europe_lead.last_name in email_recipient:
+                assert str(europe_barrier) in archive_email_markup
+                assert "1 barrier will be archived" in archive_email_markup
+                assert (
+                    "No barriers will be made dormant in your region this month"
+                    in dormant_email_markup
+                )
+
     def test_auto_status_change_notifications_uk(self):
         europe_lead = self.create_standard_user(role="Regional Lead - Europe")
         uk_barrier = BarrierFactory(country="80756b9a-5d95-e211-a939-e4115bead28a")

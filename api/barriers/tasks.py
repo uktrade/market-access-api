@@ -20,6 +20,7 @@ from api.barriers.serializers import BarrierCsvExportSerializer
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.metadata.constants import (
     REGIONS_WITH_LEADS,
+    TRADING_BLOCS,
     WIDER_EUROPE_REGIONS,
     BarrierStatus,
 )
@@ -148,19 +149,27 @@ def get_barriers_to_update_this_month():
     return barriers_to_update
 
 
-def get_barriers_overseas_region(country_id):
-    # Get the overseas region of the barrier - this is stored in country metadata, not the barrier itself
-    country_details = get_country(str(country_id))
+def get_barriers_overseas_region(country_id, trading_bloc):
 
-    # Special case for empty "overseas_region" - internal barriers for the UK go to the Europe regional lead
-    if not country_details["overseas_region"]:
-        overseas_region = "Europe"
-    # Special case for wider europe countries - metadata has them in with the rest of europe
-    elif country_details["name"] in WIDER_EUROPE_REGIONS:
-        overseas_region = "Wider Europe"
-    # All other countries map to their API given region
+    # Get the overseas region of the barrier
+    if country_id:
+        # Details stored in country metadata, not the barrier itself
+        country_details = get_country(str(country_id))
+
+        # Special case for empty "overseas_region" - internal barriers for the UK go to the Europe regional lead
+        if not country_details["overseas_region"]:
+            overseas_region = "Europe"
+        # Special case for wider europe countries - metadata has them in with the rest of europe
+        elif country_details["name"] in WIDER_EUROPE_REGIONS:
+            overseas_region = "Wider Europe"
+        # All other countries map to their API given region
+        else:
+            overseas_region = country_details["overseas_region"]["name"]
+
     else:
-        overseas_region = country_details["overseas_region"]["name"]
+        # Details stored in trading bloc constant, not the barrier itself
+        trading_bloc_details = TRADING_BLOCS.get(trading_bloc)
+        overseas_region = trading_bloc_details["regional_name"]
 
     return overseas_region
 
@@ -248,11 +257,15 @@ def send_auto_update_inactive_barrier_notification():
     # Go through barrier lists, check the region for the barrier, then add to the specific
     # region's dictionary list
     for barrier in barriers_to_update["barriers_to_be_archived"]:
-        overseas_region = get_barriers_overseas_region(barrier.country)
+        overseas_region = get_barriers_overseas_region(
+            barrier.country, barrier.trading_bloc
+        )
         archive_notification_data[f"{overseas_region}"].append(barrier)
 
     for barrier in barriers_to_update["barriers_to_be_dormant"]:
-        overseas_region = get_barriers_overseas_region(barrier.country)
+        overseas_region = get_barriers_overseas_region(
+            barrier.country, barrier.trading_bloc
+        )
         dormancy_notification_data[f"{overseas_region}"].append(barrier)
 
     # Go through each region, get the list of users marked as that regions lead
