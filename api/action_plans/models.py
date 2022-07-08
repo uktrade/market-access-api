@@ -12,6 +12,7 @@ from .constants import (
     ACTION_PLAN_RAG_STATUS_CHOICES,
     ACTION_PLAN_TASK_CHOICES,
     ACTION_PLAN_TASK_TYPE_CHOICES,
+    ActionPlanStakeholderStatus,
 )
 
 User = get_user_model()
@@ -116,3 +117,22 @@ class ActionPlanTask(models.Model):
 
     class Meta:
         ordering = ("start_date", "completion_date")
+
+
+class Stakeholder(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    action_plan = models.ForeignKey(
+        to=ActionPlan, related_name="stakeholders", on_delete=models.CASCADE
+    )
+    name = models.TextField(default="", blank=True)
+    status = models.CharField(
+        max_length=7,
+        choices=ActionPlanStakeholderStatus.choices,
+        default=ActionPlanStakeholderStatus.NEUTRAL,
+    )
+    organisation = models.TextField(default="", blank=True)
+    job_title = models.TextField(default="", blank=True)
+    is_organisation = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ("name",)
