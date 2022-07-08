@@ -9,13 +9,14 @@ from rest_framework.response import Response
 from api.action_plans.serializers import (
     ActionPlanMilestoneSerializer,
     ActionPlanSerializer,
+    ActionPlanStakeholderSerializer,
     ActionPlanTaskSerializer,
 )
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.user.helpers import get_django_user_by_sso_user_id
 
-from .models import ActionPlan, ActionPlanMilestone, ActionPlanTask
+from .models import ActionPlan, ActionPlanMilestone, ActionPlanTask, Stakeholder
 
 
 class ActionPlanViewSet(viewsets.ModelViewSet):
@@ -178,3 +179,25 @@ class ActionPlanTaskViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class ActionPlanStakeholderViewSet(viewsets.ModelViewSet):
+    queryset = Stakeholder.objects.all()
+    serializer_class = ActionPlanStakeholderSerializer
+
+    lookup_field = "id"
+
+    def action_plan_from_barrier_kwarg(self, kwargs):
+        barrier_id = kwargs.pop("barrier")
+        action_plan = ActionPlan.objects.get(barrier_id=str(barrier_id))
+        return action_plan
+
+    def create(self, request, *args, **kwargs):
+        action_plan = self.action_plan_from_barrier_kwarg(kwargs)
+        request.data["action_plan"] = action_plan.pk
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        action_plan = self.action_plan_from_barrier_kwarg(kwargs)
+        request.data["action_plan"] = action_plan.pk
+        return super().update(request, *args, **kwargs)

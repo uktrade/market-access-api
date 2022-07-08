@@ -1,6 +1,11 @@
 from rest_framework import serializers
 
-from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
+from api.action_plans.models import (
+    ActionPlan,
+    ActionPlanMilestone,
+    ActionPlanTask,
+    Stakeholder,
+)
 
 
 class ActionPlanTaskSerializer(serializers.ModelSerializer):
@@ -44,16 +49,49 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
 class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
 
     tasks = ActionPlanTaskSerializer(many=True, required=False, read_only=True)
+    # action_plan = serializers.SerializerMethodField()
+
+    # def get_action_plan(self, action_plan_milestone: ActionPlanMilestone):
+    #     return ActionPlanSerializer(action_plan_milestone.action_plan).data
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        return super().to_representation(instance)
 
     class Meta:
         model = ActionPlanMilestone
         fields = ("id", "action_plan", "objective", "completion_date", "tasks")
 
 
+class ActionPlanStakeholderSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, stakeholder):
+        return stakeholder.get_status_display()
+
+    def is_valid(self, raise_exception=False):
+        return super().is_valid(raise_exception)
+
+    class Meta:
+        model = Stakeholder
+        fields = (
+            "id",
+            "action_plan",
+            "name",
+            "status",
+            "organisation",
+            "job_title",
+            "is_organisation",
+        )
+
+
 class ActionPlanSerializer(serializers.ModelSerializer):
 
     milestones = ActionPlanMilestoneSerializer(many=True)
     owner_email = serializers.SerializerMethodField()
+    stakeholders = ActionPlanStakeholderSerializer(many=True, read_only=True)
 
     class Meta:
         model = ActionPlan
@@ -68,6 +106,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "status",
             "strategic_context",
             "strategic_context_last_updated",
+            "stakeholders",
         )
         lookup_field = "barrier"
 
