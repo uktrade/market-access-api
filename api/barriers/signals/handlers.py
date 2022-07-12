@@ -213,6 +213,10 @@ def send_top_priority_notification(email_type, barrier):
 
     # Get barrier owner
     recipient = barrier.barrier_team.filter(role="Owner").first()
+    if not recipient:
+        logger.warning(f"Barrier {barrier.id} has no owner")
+        return
+
     recipient = recipient.user
     personalisation_items["first_name"] = recipient.first_name
 
