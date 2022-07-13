@@ -4,6 +4,7 @@ from .base import BarrierSerializerBase
 class BarrierDetailSerializer(BarrierSerializerBase):
     class Meta(BarrierSerializerBase.Meta):
         fields = (
+            "action_plan",
             "admin_areas",
             "all_sectors",
             "archived",
