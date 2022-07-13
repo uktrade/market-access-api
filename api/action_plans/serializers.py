@@ -8,23 +8,44 @@ from api.action_plans.models import (
 )
 
 
+class ActionPlanStakeholderSerializer(serializers.ModelSerializer):
+    from rest_framework.fields import empty
+
+    def run_validation(self, data=empty):
+        return super().run_validation(data)
+
+    class Meta:
+        model = Stakeholder
+        fields = (
+            "id",
+            "action_plan",
+            "name",
+            "status",
+            "organisation",
+            "job_title",
+            "is_organisation",
+        )
+
+
 class ActionPlanTaskSerializer(serializers.ModelSerializer):
 
     assigned_to_email = serializers.SerializerMethodField()
     action_type_display = serializers.SerializerMethodField()
+    # assigned_stakeholders = ActionPlanStakeholderSerializer(many=True)
 
     class Meta:
         model = ActionPlanTask
         fields = (
             "id",
             "milestone",
+            "action_text",
             "status",
             "start_date",
             "completion_date",
             "action_text",
             "action_type",
             "action_type_category",
-            "stakeholders",
+            "assigned_stakeholders",
             "action_type_display",
             "assigned_to",
             "assigned_to_email",
@@ -63,28 +84,6 @@ class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActionPlanMilestone
         fields = ("id", "action_plan", "objective", "completion_date", "tasks")
-
-
-class ActionPlanStakeholderSerializer(serializers.ModelSerializer):
-    status = serializers.SerializerMethodField()
-
-    def get_status(self, stakeholder):
-        return stakeholder.get_status_display()
-
-    def is_valid(self, raise_exception=False):
-        return super().is_valid(raise_exception)
-
-    class Meta:
-        model = Stakeholder
-        fields = (
-            "id",
-            "action_plan",
-            "name",
-            "status",
-            "organisation",
-            "job_title",
-            "is_organisation",
-        )
 
 
 class ActionPlanSerializer(serializers.ModelSerializer):
