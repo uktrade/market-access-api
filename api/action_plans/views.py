@@ -201,3 +201,8 @@ class ActionPlanStakeholderViewSet(viewsets.ModelViewSet):
         action_plan = self.action_plan_from_barrier_kwarg(kwargs)
         request.data["action_plan"] = action_plan.pk
         return super().update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        action_plan = self.action_plan_from_barrier_kwarg(kwargs)
+        request.data["action_plan"] = action_plan.pk
+        return super().destroy(request, *args, **kwargs)
