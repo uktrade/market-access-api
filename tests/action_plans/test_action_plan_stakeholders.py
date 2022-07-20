@@ -50,7 +50,9 @@ class TestActionPlanStakeholders(APITestMixin):
 
     def test_add_action_plan_individual_stakeholder_details(self, barrier):
         stakeholder = ActionPlanStakeholderFactory(
-            action_plan=barrier.action_plan, is_organisation=False
+            action_plan=barrier.action_plan,
+            is_organisation=False,
+            status=ActionPlanStakeholderStatus.NEUTRAL,
         )
         url = reverse(
             "action-plans-stakeholders-detail",
