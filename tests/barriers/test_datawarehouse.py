@@ -199,6 +199,35 @@ class TestDataWarehouseExport(TestCase):
                 and serialised_data["is_top_priority"] is is_top_priority
             )
 
+    def test_resolved_date_empty_for_non_resolved_barriers(self):
+        barrier_open_pending = BarrierFactory(status_date=date.today(), status=1)
+        barrier_open_in_progress = BarrierFactory(status_date=date.today(), status=2)
+        barrier_dormant = BarrierFactory(status_date=date.today(), status=5)
+        barrier_archived = BarrierFactory(status_date=date.today(), status=6)
+        barrier_unknown = BarrierFactory(status_date=date.today(), status=7)
+
+        test_barriers = [
+            barrier_open_pending,
+            barrier_open_in_progress,
+            barrier_dormant,
+            barrier_archived,
+            barrier_unknown,
+        ]
+
+        for barrier in test_barriers:
+            serialised_data = DataWorkspaceSerializer(barrier).data
+            assert "resolved_date" in serialised_data.keys()
+            assert serialised_data["resolved_date"] is None
+
+    def test_resolved_date_populated_for_resolved_barriers(self):
+        today_formatted = date.today().strftime("%m/%Y")
+        barrier_resolved_part = BarrierFactory(status_date=date.today(), status=3)
+        barrier_resolved_full = BarrierFactory(status_date=date.today(), status=4)
+        for barrier in [barrier_resolved_part, barrier_resolved_full]:
+            serialised_data = DataWorkspaceSerializer(barrier).data
+            assert "resolved_date" in serialised_data.keys()
+            assert serialised_data["resolved_date"] == today_formatted
+
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):
     def setUp(self):
