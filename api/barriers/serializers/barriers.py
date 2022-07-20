@@ -1,7 +1,10 @@
+from ...action_plans.serializers import ActionPlanSerializer
 from .base import BarrierSerializerBase
 
 
 class BarrierDetailSerializer(BarrierSerializerBase):
+    action_plan = ActionPlanSerializer(required=False, many=False, allow_null=False)
+
     class Meta(BarrierSerializerBase.Meta):
         fields = (
             "action_plan",
