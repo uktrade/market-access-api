@@ -24,3 +24,9 @@ ACTION_PLAN_RAG_STATUS_CHOICES = Choices(
     ("RISK_OF_DELAY", "Risk of delay"),
     ("DELAYED", "Delayed"),
 )
+
+ACTION_PLAN_RISK_LEVEL_CHOICES = Choices(
+    ("LOW", "Low"),
+    ("MEDIUM", "Medium"),
+    ("HIGH", "High"),
+)

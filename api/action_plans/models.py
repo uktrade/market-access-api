@@ -47,7 +47,7 @@ class ActionPlan(models.Model):
     risk_level = models.CharField(
         choices=ACTION_PLAN_RISK_LEVEL_CHOICES, max_length=20, null=True
     )
-    risk_mitigation = models.TextField(blank=True, null=True)
+    risk_mitigation_measures = models.TextField(blank=True, null=True)
 
     history = HistoricalRecords()
 
