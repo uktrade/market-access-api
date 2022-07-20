@@ -28,10 +28,8 @@ class ActionPlanStakeholderSerializer(serializers.ModelSerializer):
 
 
 class ActionPlanTaskSerializer(serializers.ModelSerializer):
-
     assigned_to_email = serializers.SerializerMethodField()
     action_type_display = serializers.SerializerMethodField()
-    # assigned_stakeholders = ActionPlanStakeholderSerializer(many=True)
 
     class Meta:
         model = ActionPlanTask
@@ -70,10 +68,6 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
 class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
 
     tasks = ActionPlanTaskSerializer(many=True, required=False, read_only=True)
-    # action_plan = serializers.SerializerMethodField()
-
-    # def get_action_plan(self, action_plan_milestone: ActionPlanMilestone):
-    #     return ActionPlanSerializer(action_plan_milestone.action_plan).data
 
     def create(self, validated_data):
         return super().create(validated_data)
