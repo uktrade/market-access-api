@@ -10,6 +10,7 @@ from api.barriers.models import Barrier
 
 from .constants import (
     ACTION_PLAN_RAG_STATUS_CHOICES,
+    ACTION_PLAN_RISK_LEVEL_CHOICES,
     ACTION_PLAN_TASK_CHOICES,
     ACTION_PLAN_TASK_TYPE_CHOICES,
 )
@@ -39,6 +40,14 @@ class ActionPlan(models.Model):
     )
     strategic_context = models.TextField(default="", blank=True)
     strategic_context_last_updated = models.DateTimeField(null=True, blank=True)
+
+    # Risks and Mitigations values
+    potential_unwanted_outcomes = models.TextField(blank=True, null=True)
+    potential_risks = models.TextField(blank=True, null=True)
+    risk_level = models.CharField(
+        choices=ACTION_PLAN_RISK_LEVEL_CHOICES, max_length=20, null=True
+    )
+    risk_mitigation = models.TextField(blank=True, null=True)
 
     history = HistoricalRecords()
 
