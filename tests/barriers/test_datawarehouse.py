@@ -220,13 +220,13 @@ class TestDataWarehouseExport(TestCase):
             assert serialised_data["resolved_date"] is None
 
     def test_resolved_date_populated_for_resolved_barriers(self):
-        today_formatted = date.today().strftime("%m/%Y")
-        barrier_resolved_part = BarrierFactory(status_date=date.today(), status=3)
-        barrier_resolved_full = BarrierFactory(status_date=date.today(), status=4)
+        date_today = date.today()
+        barrier_resolved_part = BarrierFactory(status_date=date_today, status=3)
+        barrier_resolved_full = BarrierFactory(status_date=date_today, status=4)
         for barrier in [barrier_resolved_part, barrier_resolved_full]:
             serialised_data = DataWorkspaceSerializer(barrier).data
             assert "resolved_date" in serialised_data.keys()
-            assert serialised_data["resolved_date"] == today_formatted
+            assert serialised_data["resolved_date"] == date_today
 
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):
