@@ -1,3 +1,4 @@
+from django.forms import BooleanField
 from rest_framework import serializers
 
 from api.assessment.serializers import (
@@ -38,6 +39,7 @@ class BarrierSerializerBase(
     LocationFieldMixin, CustomUpdateMixin, serializers.ModelSerializer
 ):
     admin_areas = AdminAreasField(required=False)
+    caused_by_admin_areas = BooleanField(required=False)
     archived = ArchivedField(required=False)
     archived_by = UserField(required=False)
     archived_reason = ArchivedReasonField(required=False)
