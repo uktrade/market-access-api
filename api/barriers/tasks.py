@@ -138,12 +138,14 @@ def get_barriers_to_update_this_month():
     barriers_to_update["barriers_to_be_archived"] = Barrier.objects.filter(
         modified_on__lt=threshold_dates["archive_inactivity_threshold_date"],
         status__exact=5,
+        archived=False,
     )
 
     # We don't want to change resolved or already archived/dormant barriers
     barriers_to_update["barriers_to_be_dormant"] = Barrier.objects.filter(
         modified_on__lt=threshold_dates["dormant_inactivity_threshold_date"],
-        status__in=[0, 1, 2, 7],
+        status__in=[1, 2, 7],
+        archived=False,
     )
 
     return barriers_to_update

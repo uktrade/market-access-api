@@ -161,6 +161,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     action_plan = DataworkspaceActionPlanSerializer()
     latest_progress_update = ProgressUpdateSerializer()
     government_organisations = serializers.SerializerMethodField()
+    resolved_date = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -237,6 +238,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "action_plan_added",
             "action_plan",
             "completion_percent",
+            "resolved_date",
         )
 
     def get_status_history(self, obj):
@@ -271,3 +273,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             for org in obj.organisations.all()
             if org.organisation_type in GOVERNMENT_ORGANISATION_TYPES
         ]
+
+    def get_resolved_date(self, obj):
+        if obj.status_date and (obj.status == 4 or obj.status == 3):
+            return obj.status_date
+        else:
+            return None

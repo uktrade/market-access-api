@@ -99,6 +99,12 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "status",
             "strategic_context",
             "strategic_context_last_updated",
+            # risks and mitigations fields
+            "potential_unwanted_outcomes",
+            "potential_risks",
+            "risk_level",
+            "risk_mitigation_measures",
+            # stakeholders fields
             "stakeholders",
         )
         lookup_field = "barrier"

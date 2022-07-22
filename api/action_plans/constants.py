@@ -26,6 +26,11 @@ ACTION_PLAN_RAG_STATUS_CHOICES = Choices(
     ("DELAYED", "Delayed"),
 )
 
+ACTION_PLAN_RISK_LEVEL_CHOICES = Choices(
+    ("LOW", "Low"),
+    ("MEDIUM", "Medium"),
+    ("HIGH", "High"),
+)
 
 class ActionPlanStakeholderStatus(models.TextChoices):
     FRIEND = ("FRIEND", "Friend")
