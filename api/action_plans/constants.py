@@ -32,6 +32,7 @@ ACTION_PLAN_RISK_LEVEL_CHOICES = Choices(
     ("HIGH", "High"),
 )
 
+
 class ActionPlanStakeholderStatus(models.TextChoices):
     FRIEND = ("FRIEND", "Friend")
     NEUTRAL = ("NEUTRAL", "Neutral")
