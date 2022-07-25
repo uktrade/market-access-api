@@ -3,7 +3,6 @@ from rest_framework.routers import DefaultRouter
 
 from api.action_plans.views import (
     ActionPlanMilestoneViewSet,
-    ActionPlanStakeholderViewSet,
     ActionPlanTaskViewSet,
     ActionPlanViewSet,
 )
@@ -57,22 +56,5 @@ urlpatterns = router.urls + [
             }
         ),
         name="action-plans-tasks-detail",
-    ),
-    path(
-        "barriers/<uuid:barrier>/action_plan/stakeholders/",
-        ActionPlanStakeholderViewSet.as_view({"post": "create"}),
-        name="action-plans-stakeholders",
-    ),
-    path(
-        "barriers/<uuid:barrier>/action_plan/stakeholders/<uuid:id>/",
-        ActionPlanStakeholderViewSet.as_view(
-            {
-                "put": "update",
-                "get": "retrieve",
-                "patch": "partial_update",
-                "delete": "destroy",
-            }
-        ),
-        name="action-plans-stakeholders-detail",
     ),
 ]

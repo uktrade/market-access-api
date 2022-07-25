@@ -1,7 +1,6 @@
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models.signals import post_save
 from django.utils import timezone
@@ -11,10 +10,8 @@ from api.barriers.models import Barrier
 
 from .constants import (
     ACTION_PLAN_RAG_STATUS_CHOICES,
-    ACTION_PLAN_RISK_LEVEL_CHOICES,
     ACTION_PLAN_TASK_CHOICES,
     ACTION_PLAN_TASK_TYPE_CHOICES,
-    ActionPlanStakeholderStatus,
 )
 
 User = get_user_model()
@@ -42,14 +39,6 @@ class ActionPlan(models.Model):
     )
     strategic_context = models.TextField(default="", blank=True)
     strategic_context_last_updated = models.DateTimeField(null=True, blank=True)
-
-    # Risks and Mitigations values
-    potential_unwanted_outcomes = models.TextField(blank=True, null=True)
-    potential_risks = models.TextField(blank=True, null=True)
-    risk_level = models.CharField(
-        choices=ACTION_PLAN_RISK_LEVEL_CHOICES, max_length=20, null=True
-    )
-    risk_mitigation_measures = models.TextField(blank=True, null=True)
 
     history = HistoricalRecords()
 
@@ -119,11 +108,7 @@ class ActionPlanTask(models.Model):
         User, null=True, blank=True, on_delete=models.SET_NULL
     )
 
-    assigned_stakeholders = ArrayField(
-        models.UUIDField(),
-        blank=True,
-        default=list,
-    )
+    stakeholders = models.TextField(default="", blank=True)
     outcome = models.TextField(default="", blank=True)
     progress = models.TextField(default="", blank=True)
 
@@ -131,22 +116,3 @@ class ActionPlanTask(models.Model):
 
     class Meta:
         ordering = ("start_date", "completion_date")
-
-
-class Stakeholder(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4)
-    action_plan = models.ForeignKey(
-        to=ActionPlan, related_name="stakeholders", on_delete=models.CASCADE
-    )
-    name = models.TextField(default="", blank=True)
-    status = models.CharField(
-        max_length=7,
-        choices=ActionPlanStakeholderStatus.choices,
-        default=ActionPlanStakeholderStatus.NEUTRAL,
-    )
-    organisation = models.TextField(default="", blank=True)
-    job_title = models.TextField(default="", blank=True)
-    is_organisation = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ("name",)

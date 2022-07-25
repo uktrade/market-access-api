@@ -1,33 +1,10 @@
 from rest_framework import serializers
 
-from api.action_plans.models import (
-    ActionPlan,
-    ActionPlanMilestone,
-    ActionPlanTask,
-    Stakeholder,
-)
-
-
-class ActionPlanStakeholderSerializer(serializers.ModelSerializer):
-    from rest_framework.fields import empty
-
-    def run_validation(self, data=empty):
-        return super().run_validation(data)
-
-    class Meta:
-        model = Stakeholder
-        fields = (
-            "id",
-            "action_plan",
-            "name",
-            "status",
-            "organisation",
-            "job_title",
-            "is_organisation",
-        )
+from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 
 
 class ActionPlanTaskSerializer(serializers.ModelSerializer):
+
     assigned_to_email = serializers.SerializerMethodField()
     action_type_display = serializers.SerializerMethodField()
 
@@ -36,14 +13,13 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "milestone",
-            "action_text",
             "status",
             "start_date",
             "completion_date",
             "action_text",
             "action_type",
             "action_type_category",
-            "assigned_stakeholders",
+            "stakeholders",
             "action_type_display",
             "assigned_to",
             "assigned_to_email",
@@ -69,12 +45,6 @@ class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
 
     tasks = ActionPlanTaskSerializer(many=True, required=False, read_only=True)
 
-    def create(self, validated_data):
-        return super().create(validated_data)
-
-    def to_representation(self, instance):
-        return super().to_representation(instance)
-
     class Meta:
         model = ActionPlanMilestone
         fields = ("id", "action_plan", "objective", "completion_date", "tasks")
@@ -84,7 +54,6 @@ class ActionPlanSerializer(serializers.ModelSerializer):
 
     milestones = ActionPlanMilestoneSerializer(many=True)
     owner_email = serializers.SerializerMethodField()
-    stakeholders = ActionPlanStakeholderSerializer(many=True, read_only=True)
 
     class Meta:
         model = ActionPlan
@@ -99,13 +68,6 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "status",
             "strategic_context",
             "strategic_context_last_updated",
-            # risks and mitigations fields
-            "potential_unwanted_outcomes",
-            "potential_risks",
-            "risk_level",
-            "risk_mitigation_measures",
-            # stakeholders fields
-            "stakeholders",
         )
         lookup_field = "barrier"
 
