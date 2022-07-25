@@ -270,7 +270,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         blank=True, null=True, help_text="Date the barrier ends"
     )
     country = models.UUIDField(blank=True, null=True)
-    caused_by_admin_areas = models.BooleanField(null=True, blank=True)
     admin_areas = ArrayField(
         models.UUIDField(),
         blank=True,
