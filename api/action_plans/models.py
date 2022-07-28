@@ -104,6 +104,7 @@ class ActionPlanTask(models.Model):
     )
     start_date = models.DateField(blank=True, null=True)
     completion_date = models.DateField(blank=True, null=True)
+    reason_for_completion_date_change = models.TextField(default="", blank=True)
 
     action_text = models.TextField()
 

@@ -40,6 +40,7 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
             "status",
             "start_date",
             "completion_date",
+            "reason_for_completion_date_change",
             "action_text",
             "action_type",
             "action_type_category",
