@@ -1,3 +1,7 @@
+from rest_framework import serializers
+
+from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
+
 from .base import BarrierSerializerBase
 
 
@@ -76,6 +80,11 @@ class BarrierMinimumDetailSerializer(BarrierSerializerBase):
 
 
 class BarrierListSerializer(BarrierSerializerBase):
+    # List Serializer provides list of fields returned to frontend
+    # when loading/submitting on the search page
+
+    current_valuation_assessment = serializers.SerializerMethodField()
+
     class Meta(BarrierSerializerBase.Meta):
         fields = (
             "admin_areas",
@@ -105,4 +114,12 @@ class BarrierListSerializer(BarrierSerializerBase):
             "is_top_priority",
             "top_priority_status",
             "top_priority_rejection_summary",
+            "current_valuation_assessment",
         )
+
+    def get_current_valuation_assessment(self, obj):
+        if obj.current_valuation_assessment:
+            rating = ECONOMIC_ASSESSMENT_IMPACT[obj.current_valuation_assessment.impact]
+            return f"{rating}"
+        else:
+            return None
