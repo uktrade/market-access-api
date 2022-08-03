@@ -40,6 +40,7 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
             "status",
             "start_date",
             "completion_date",
+            "reason_for_completion_date_change",
             "action_text",
             "action_type",
             "action_type_category",
@@ -68,12 +69,6 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
 class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
 
     tasks = ActionPlanTaskSerializer(many=True, required=False, read_only=True)
-
-    def create(self, validated_data):
-        return super().create(validated_data)
-
-    def to_representation(self, instance):
-        return super().to_representation(instance)
 
     class Meta:
         model = ActionPlanMilestone
