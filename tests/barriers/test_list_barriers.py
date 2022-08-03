@@ -294,59 +294,6 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert 1 == response.data["count"]
         assert str(barrier.id) == response.data["results"][0]["id"]
 
-    def test_list_barriers_order_by(self):
-        test_parameters = [
-            "reported_on",
-            "-reported_on",
-            "modified_on",
-            "-modified_on",
-            "status",
-            "-status",
-            "priority",
-            "-priority",
-            "country",
-            "-country",
-        ]
-        priorities = BarrierPriorityFactory.create_batch(3)
-        bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
-        barrier1 = BarrierFactory(
-            reported_on=datetime(2020, 1, 1, tzinfo=UTC),
-            modified_on=datetime(2020, 1, 2, tzinfo=UTC),
-            status=1,
-            priority=priorities[0],
-            country=bahamas,
-        )
-        bhutan = "ab5f66a0-5d95-e211-a939-e4115bead28a"
-        barrier2 = BarrierFactory(
-            reported_on=datetime(2020, 2, 2, tzinfo=UTC),
-            modified_on=datetime(2020, 2, 3, tzinfo=UTC),
-            status=2,
-            priority=priorities[1],
-            country=bhutan,
-        )
-        spain = "86756b9a-5d95-e211-a939-e4115bead28a"
-        barrier3 = BarrierFactory(
-            reported_on=datetime(2020, 3, 3, tzinfo=UTC),
-            modified_on=datetime(2020, 3, 4, tzinfo=UTC),
-            status=7,
-            priority=priorities[2],
-            country=spain,
-        )
-
-        assert 3 == Barrier.objects.count()
-
-        for order_by in test_parameters:
-            with self.subTest(order_by=order_by):
-                url = f'{reverse("list-barriers")}?ordering={order_by}'
-                response = self.api_client.get(url)
-
-                assert response.status_code == status.HTTP_200_OK
-                barriers = Barrier.objects.all().order_by(order_by)
-                assert barriers.count() == response.data["count"]
-                response_list = [b["id"] for b in response.data["results"]]
-                db_list = [str(b.id) for b in barriers]
-                assert db_list == response_list
-
     def test_list_barriers_filter_location_europe(self):
         """
         Filter by overseas region - Europe
@@ -1021,3 +968,62 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
+
+
+class TestListBarriersOrdering(APITestMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse("list-barriers")
+
+    def test_list_barriers_order_by(self):
+        test_parameters = [
+            "reported_on",
+            "-reported_on",
+            "modified_on",
+            "-modified_on",
+            "status",
+            "-status",
+            "priority",
+            "-priority",
+            "country",
+            "-country",
+        ]
+        priorities = BarrierPriorityFactory.create_batch(3)
+        bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
+        barrier1 = BarrierFactory(
+            reported_on=datetime(2020, 1, 1, tzinfo=UTC),
+            modified_on=datetime(2020, 1, 2, tzinfo=UTC),
+            status=1,
+            priority=priorities[0],
+            country=bahamas,
+        )
+        bhutan = "ab5f66a0-5d95-e211-a939-e4115bead28a"
+        barrier2 = BarrierFactory(
+            reported_on=datetime(2020, 2, 2, tzinfo=UTC),
+            modified_on=datetime(2020, 2, 3, tzinfo=UTC),
+            status=2,
+            priority=priorities[1],
+            country=bhutan,
+        )
+        spain = "86756b9a-5d95-e211-a939-e4115bead28a"
+        barrier3 = BarrierFactory(
+            reported_on=datetime(2020, 3, 3, tzinfo=UTC),
+            modified_on=datetime(2020, 3, 4, tzinfo=UTC),
+            status=7,
+            priority=priorities[2],
+            country=spain,
+        )
+
+        assert 3 == Barrier.objects.count()
+
+        for order_by in test_parameters:
+            with self.subTest(order_by=order_by):
+                url = f'{reverse("list-barriers")}?ordering={order_by}'
+                response = self.api_client.get(url)
+
+                assert response.status_code == status.HTTP_200_OK
+                barriers = Barrier.objects.all().order_by(order_by)
+                assert barriers.count() == response.data["count"]
+                response_list = [b["id"] for b in response.data["results"]]
+                db_list = [str(b.id) for b in barriers]
+                assert db_list == response_list
