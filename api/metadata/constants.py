@@ -408,3 +408,16 @@ WIDER_EUROPE_REGIONS = {
     "Bosnia and Herzegovina",
     "Kosovo",
 }
+
+SEARCH_ORDERING_CHOICES = {
+    "-reported_on": "Date reported (newest)",
+    "reported_on": "Date reported (oldest)",
+    "-modified_on": "Last updated (most recent)",
+    "modified_on": "Last updated (least recent)",
+    "-value": "Value (highest)",
+    "value": "Value (lowest)",
+    "-resolution": "Estimated resolution date (most recent)",
+    "resolution": "Estimated resolution date (least recent)",
+    "-resolved": "Date resolved (most recent)",
+    "resolved": "Date resolved (most recent)",
+}
