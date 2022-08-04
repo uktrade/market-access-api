@@ -79,6 +79,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
 
     milestones = ActionPlanMilestoneSerializer(many=True)
     owner_email = serializers.SerializerMethodField()
+    owner_full_name = serializers.SerializerMethodField()
     stakeholders = ActionPlanStakeholderSerializer(many=True, read_only=True)
 
     class Meta:
@@ -91,6 +92,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "current_status",
             "current_status_last_updated",
             "owner_email",
+            "owner_full_name",
             "status",
             "strategic_context",
             "strategic_context_last_updated",
@@ -107,3 +109,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
     def get_owner_email(self, obj):
         if obj.owner:
             return obj.owner.email
+
+    def get_owner_full_name(self, obj):
+        if obj.owner:
+            return f"{obj.owner.first_name} {obj.owner.last_name}"
