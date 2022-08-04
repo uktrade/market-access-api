@@ -410,14 +410,46 @@ WIDER_EUROPE_REGIONS = {
 }
 
 SEARCH_ORDERING_CHOICES = {
-    "-reported_on": "Date reported (newest)",
-    "reported_on": "Date reported (oldest)",
-    "-modified_on": "Last updated (most recent)",
-    "modified_on": "Last updated (least recent)",
-    "-value": "Value (highest)",
-    "value": "Value (lowest)",
-    "-resolution": "Estimated resolution date (most recent)",
-    "resolution": "Estimated resolution date (least recent)",
-    "-resolved": "Date resolved (most recent)",
-    "resolved": "Date resolved (most recent)",
+    "Date reported (newest)": {
+        "querystring_param": "-reported",
+        "ordering": "-reported_on",
+    },
+    "Date reported (oldest)": {
+        "querystring_param": "reported",
+        "ordering": "reported_on",
+    },
+    "Last updated (most recent)": {
+        "querystring_param": "-updated",
+        "ordering": "-modified_on",
+    },
+    "Last updated (least recent)": {
+        "querystring_param": "updated",
+        "ordering": "modified_on",
+    },
+    "Value (highest)": {
+        "querystring_param": "-value",
+        "ordering": "-valuation_assessments__impact",
+    },
+    "Value (lowest)": {
+        "querystring_param": "value",
+        "ordering": "valuation_assessments__impact",
+    },
+    "Estimated resolution date (most recent)": {
+        "querystring_param": "-resolution",
+        "ordering": "-estimated_resolution_date",
+    },
+    "Estimated resolution date (least recent)": {
+        "querystring_param": "resolution",
+        "ordering": "estimated_resolution_date",
+    },
+    "Date resolved (most recent)": {
+        "querystring_param": "-resolved",
+        "ordering": "-estimated_resolution_date",
+        "ordering-filter": f"status:{BarrierStatus.RESOLVED_IN_FULL}",
+    },
+    "Date resolved (least recent)": {
+        "querystring_param": "resolved",
+        "ordering": "estimated_resolution_date",
+        "ordering-filter": f"status:{BarrierStatus.RESOLVED_IN_FULL}",
+    },
 }
