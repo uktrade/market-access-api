@@ -409,47 +409,55 @@ WIDER_EUROPE_REGIONS = {
     "Kosovo",
 }
 
-SEARCH_ORDERING_CHOICES = {
-    "Date reported (newest)": {
-        "querystring_param": "-reported",
+BARRIER_SEARCH_ORDERING_CHOICES = {
+    "-reported": {
         "ordering": "-reported_on",
+        "ordering-filter": None,
+        "label": "Date reported (newest)",
     },
-    "Date reported (oldest)": {
-        "querystring_param": "reported",
+    "reported": {
         "ordering": "reported_on",
+        "ordering-filter": None,
+        "label": "Date reported (oldest)",
     },
-    "Last updated (most recent)": {
-        "querystring_param": "-updated",
+    "-updated": {
         "ordering": "-modified_on",
+        "ordering-filter": None,
+        "label": "Last updated (most recent)",
     },
-    "Last updated (least recent)": {
-        "querystring_param": "updated",
+    "updated": {
         "ordering": "modified_on",
+        "ordering-filter": None,
+        "label": "Last updated (least recent)",
     },
-    "Value (highest)": {
-        "querystring_param": "-value",
+    "-value": {
         "ordering": "-valuation_assessments__impact",
+        "ordering-filter": {"valuation_assessments__isnull": False},
+        "label": "Value (highest)",
     },
-    "Value (lowest)": {
-        "querystring_param": "value",
+    "value": {
         "ordering": "valuation_assessments__impact",
+        "ordering-filter": {"valuation_assessments__isnull": False},
+        "label": "Value (lowest)",
     },
-    "Estimated resolution date (most recent)": {
-        "querystring_param": "-resolution",
+    "-resolution": {
         "ordering": "-estimated_resolution_date",
+        "ordering-filter": {"estimated_resolution_date__isnull": False},
+        "label": "Estimated resolution date (most recent)",
     },
-    "Estimated resolution date (least recent)": {
-        "querystring_param": "resolution",
+    "resolution": {
         "ordering": "estimated_resolution_date",
+        "ordering-filter": {"estimated_resolution_date__isnull": False},
+        "label": "Estimated resolution date (least recent)",
     },
-    "Date resolved (most recent)": {
-        "querystring_param": "-resolved",
+    "-resolved": {
         "ordering": "-estimated_resolution_date",
-        "ordering-filter": f"status:{BarrierStatus.RESOLVED_IN_FULL}",
+        "ordering-filter": {"status": 4},
+        "label": "Date resolved (most recent)",
     },
-    "Date resolved (least recent)": {
-        "querystring_param": "resolved",
+    "resolved": {
         "ordering": "estimated_resolution_date",
-        "ordering-filter": f"status:{BarrierStatus.RESOLVED_IN_FULL}",
+        "ordering-filter": {"status": 4},
+        "label": "Date resolved (least recent)",
     },
 }
