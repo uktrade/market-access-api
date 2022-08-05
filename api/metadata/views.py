@@ -18,7 +18,6 @@ from .constants import (
     REPORT_STATUS,
     RESOLVABILITY_ASSESSMENT_EFFORT,
     RESOLVABILITY_ASSESSMENT_TIME,
-    SEARCH_ORDERING_CHOICES,
     STAGE_STATUS,
     STRATEGIC_ASSESSMENT_SCALE,
     SUPPORT_TYPE,
@@ -31,6 +30,7 @@ from .constants import (
 from .utils import (
     get_admin_areas,
     get_barrier_priorities,
+    get_barrier_search_ordering_choices,
     get_barrier_tags,
     get_barrier_type_categories,
     get_categories,
@@ -119,7 +119,7 @@ class MetadataView(generics.GenericAPIView):
             "trade_direction": trade_direction,
             "trading_blocs": TRADING_BLOCS.values(),
             "wto_committee_groups": wto_committee_groups,
-            "search_ordering_choices": SEARCH_ORDERING_CHOICES,
+            "search_ordering_choices": get_barrier_search_ordering_choices(),
         }
 
         return Response(results, status=status.HTTP_200_OK)
