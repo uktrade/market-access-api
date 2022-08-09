@@ -120,6 +120,7 @@ class BarrierListSerializer(BarrierSerializerBase):
     def get_current_valuation_assessment(self, obj):
         if obj.current_valuation_assessment:
             rating = ECONOMIC_ASSESSMENT_IMPACT[obj.current_valuation_assessment.impact]
+            rating = rating.split(":")[1]
             return f"{rating}"
         else:
             return None
