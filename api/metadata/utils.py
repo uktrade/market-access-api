@@ -10,6 +10,7 @@ from urlobject import URLObject
 from api.wto import models as wto_models
 
 from .constants import (
+    BARRIER_SEARCH_ORDERING_CHOICES,
     BARRIER_TYPE_CATEGORIES,
     GOVERNMENT_ORGANISATION_TYPES,
     TRADING_BLOCS,
@@ -271,3 +272,10 @@ def get_government_organisations():
             organisation_type__in=GOVERNMENT_ORGANISATION_TYPES
         ).values("id", "name", "organisation_type")
     )
+
+
+def get_barrier_search_ordering_choices():
+    return [
+        (ordering, config["label"])
+        for ordering, config in BARRIER_SEARCH_ORDERING_CHOICES.items()
+    ]
