@@ -131,7 +131,6 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "sectors",
             "product",
             "source",
-            "priority",
             "team_count",
             "term",
             "reported_on",
