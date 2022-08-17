@@ -153,6 +153,7 @@ class TestCategories(APITestMixin):
             "APPROVAL_PENDING": "Top 100 Priority Barrier - Approval Pending",
             "REMOVAL_PENDING": "Top 100 Priority Barrier - Removal Pending",
             "APPROVED": "Top 100 Priority Barrier",
+            "RESOLVED": "Top 100 Priority Barrier - Resolved",
         }
 
         url = reverse("metadata")
@@ -167,6 +168,7 @@ class TestCategories(APITestMixin):
             "Brexit",
             "NI Protocol",
             "Asia Pacific Cross-Government Pilot",
+            "Programme Fund",
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)
