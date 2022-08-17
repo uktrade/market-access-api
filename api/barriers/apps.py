@@ -11,6 +11,7 @@ class BarriersConfig(AppConfig):
         from .signals.handlers import (
             barrier_categories_changed,
             barrier_completion_percentage_changed,
+            barrier_completion_top_priority_barrier_resolved,
             barrier_organisations_changed,
             barrier_priority_approval_email_notification,
             barrier_tags_changed,
@@ -33,6 +34,10 @@ class BarriersConfig(AppConfig):
         pre_save.connect(public_barrier_content_update, sender=PublicBarrier)
 
         post_save.connect(barrier_completion_percentage_changed, sender=Barrier)
+
+        post_save.connect(
+            barrier_completion_top_priority_barrier_resolved, sender=Barrier
+        )
 
         post_save.connect(barrier_priority_approval_email_notification, sender=Barrier)
 

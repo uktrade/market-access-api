@@ -16,6 +16,7 @@ from api.barriers.models import (
 )
 from api.history.factories import HistoryItemFactory
 from api.history.models import CachedHistoryItem
+from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 logger = logging.getLogger(__name__)
 
@@ -258,3 +259,23 @@ def post_create_historical_record(sender, history_instance, **kwargs):
 def send_barrier_download_request_notification(sender, instance, created, **kwargs):
     if created:
         instance.send_notification()
+
+
+def barrier_completion_top_priority_barrier_resolved(
+    sender, instance: Barrier, **kwargs
+):
+    """
+    After a barrier is updated, check if it has a status of 'Resolved: In Full' and has an
+    APPROVED top_pritority status. If it does, change top_priority_status to RESOLVED.
+    """
+    edited_barrier = Barrier.objects.get(id=instance.id)
+
+    if (
+        edited_barrier.status == 4
+        and edited_barrier.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.APPROVED
+    ):
+        # IMPORTANT - Use Update here instead of save or we'll get stuck in
+        # an endless loop where post_save keeps getting called!!!
+        Barrier.objects.filter(id=instance.id).update(
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+        )
