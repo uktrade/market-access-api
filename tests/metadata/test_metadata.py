@@ -153,6 +153,7 @@ class TestCategories(APITestMixin):
             "APPROVAL_PENDING": "Top 100 Priority Barrier - Approval Pending",
             "REMOVAL_PENDING": "Top 100 Priority Barrier - Removal Pending",
             "APPROVED": "Top 100 Priority Barrier",
+            "RESOLVED": "Top 100 Priority Barrier - Resolved",
         }
 
         url = reverse("metadata")
@@ -167,6 +168,7 @@ class TestCategories(APITestMixin):
             "Brexit",
             "NI Protocol",
             "Asia Pacific Cross-Government Pilot",
+            "Programme Fund",
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)
@@ -175,3 +177,24 @@ class TestCategories(APITestMixin):
 
         tag_titles = [tag["title"] for tag in response.data["barrier_tags"]]
         assert json.dumps(tag_titles) == json.dumps(expected)
+
+    def test_search_ordering_choices(self):
+        expected = [
+            ("-reported", "Date reported (newest)"),
+            ("reported", "Date reported (oldest)"),
+            ("-updated", "Last updated (most recent)"),
+            ("updated", "Last updated (least recent)"),
+            ("-value", "Value (highest)"),
+            ("value", "Value (lowest)"),
+            ("-resolution", "Estimated resolution date (most recent)"),
+            ("resolution", "Estimated resolution date (least recent)"),
+            ("-resolved", "Date resolved (most recent)"),
+            ("resolved", "Date resolved (least recent)"),
+        ]
+        url = reverse("metadata")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["search_ordering_choices"] is not None
+        assert json.dumps(response.data["search_ordering_choices"]) == json.dumps(
+            expected
+        )

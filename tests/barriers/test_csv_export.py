@@ -148,6 +148,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING: True,
             TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING: False,
             TOP_PRIORITY_BARRIER_STATUS.NONE: False,
+            TOP_PRIORITY_BARRIER_STATUS.RESOLVED: False,
         }
 
         for (
@@ -161,6 +162,15 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             serialised_data = BarrierCsvExportSerializer(barrier).data
             assert serialised_data["top_priority_status"] == top_priority_status
             assert is_top_priority == serialised_data["is_top_priority"]
+
+    def test_top_priority_status(self):
+        for status in TOP_PRIORITY_BARRIER_STATUS:
+            barrier = BarrierFactory(
+                top_priority_status=status[0],
+                status_date=datetime.date.today(),
+            )
+            serialised_data = BarrierCsvExportSerializer(barrier).data
+            assert serialised_data["top_priority_status"] == status[0]
 
     def test_valuation_assessment_midpoint(self):
         impact_level = 6
