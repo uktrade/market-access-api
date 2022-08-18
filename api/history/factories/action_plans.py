@@ -11,6 +11,7 @@ from api.history.items.action_plans import (
     ActionPlanTaskActionTypeCategoryHistoryItem,
     ActionPlanTaskActionTypeHistoryItem,
     ActionPlanTaskAssignedToHistoryItem,
+    ActionPlanTaskCompletionDateHistoryItem,
     ActionPlanTaskOutcomeHistoryItem,
     ActionPlanTaskProgressHistoryItem,
     ActionPlanTaskStakeholdersHistoryItem,
@@ -62,6 +63,7 @@ class ActionPlanTaskHistoryFactory(HistoryItemFactoryBase):
         ActionPlanTaskStakeholdersHistoryItem,
         ActionPlanTaskOutcomeHistoryItem,
         ActionPlanTaskProgressHistoryItem,
+        ActionPlanTaskCompletionDateHistoryItem,
     )
     history_types = ("+", "~")
 
