@@ -1,11 +1,9 @@
-from datetime import datetime
 from unittest.mock import patch
 
 import pytest
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Q
 from notifications_python_client.notifications import NotificationsAPIClient
-from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
@@ -17,7 +15,7 @@ from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, PublicBarrierSta
 from api.metadata.models import BarrierPriority, Organisation
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
-from tests.metadata.factories import BarrierPriorityFactory, CategoryFactory
+from tests.metadata.factories import CategoryFactory
 
 
 # TODO: consider removing this test case.
@@ -293,59 +291,6 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert status.HTTP_200_OK == response.status_code
         assert 1 == response.data["count"]
         assert str(barrier.id) == response.data["results"][0]["id"]
-
-    def test_list_barriers_order_by(self):
-        test_parameters = [
-            "reported_on",
-            "-reported_on",
-            "modified_on",
-            "-modified_on",
-            "status",
-            "-status",
-            "priority",
-            "-priority",
-            "country",
-            "-country",
-        ]
-        priorities = BarrierPriorityFactory.create_batch(3)
-        bahamas = "a25f66a0-5d95-e211-a939-e4115bead28a"
-        barrier1 = BarrierFactory(
-            reported_on=datetime(2020, 1, 1, tzinfo=UTC),
-            modified_on=datetime(2020, 1, 2, tzinfo=UTC),
-            status=1,
-            priority=priorities[0],
-            country=bahamas,
-        )
-        bhutan = "ab5f66a0-5d95-e211-a939-e4115bead28a"
-        barrier2 = BarrierFactory(
-            reported_on=datetime(2020, 2, 2, tzinfo=UTC),
-            modified_on=datetime(2020, 2, 3, tzinfo=UTC),
-            status=2,
-            priority=priorities[1],
-            country=bhutan,
-        )
-        spain = "86756b9a-5d95-e211-a939-e4115bead28a"
-        barrier3 = BarrierFactory(
-            reported_on=datetime(2020, 3, 3, tzinfo=UTC),
-            modified_on=datetime(2020, 3, 4, tzinfo=UTC),
-            status=7,
-            priority=priorities[2],
-            country=spain,
-        )
-
-        assert 3 == Barrier.objects.count()
-
-        for order_by in test_parameters:
-            with self.subTest(order_by=order_by):
-                url = f'{reverse("list-barriers")}?ordering={order_by}'
-                response = self.api_client.get(url)
-
-                assert response.status_code == status.HTTP_200_OK
-                barriers = Barrier.objects.all().order_by(order_by)
-                assert barriers.count() == response.data["count"]
-                response_list = [b["id"] for b in response.data["results"]]
-                db_list = [str(b.id) for b in barriers]
-                assert db_list == response_list
 
     def test_list_barriers_filter_location_europe(self):
         """

@@ -210,4 +210,24 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
     field = "top_priority_status"
 
     def get_value(self, record):
-        return record.get_top_priority_status_display()
+        top_priority_status = record.top_priority_status
+
+        if (
+            top_priority_status == "APPROVED"
+            or top_priority_status == "APPROVAL_PENDING"
+            or top_priority_status == "REMOVAL_PENDING"
+        ):
+            # Its an accepted Top Priority Request, or pending review
+            top_priority_reason = record.priority_summary
+        else:
+            # The top_priority_status is NONE
+            if record.top_priority_rejection_summary:
+                # Its a rejected Top Priority Request
+                top_priority_status = "REJECTED"
+                top_priority_reason = record.top_priority_rejection_summary
+            else:
+                # The barrier has had its top-priority status removed
+                top_priority_status = "REMOVED"
+                top_priority_reason = record.priority_summary
+
+        return {"value": top_priority_status, "reason": top_priority_reason}
