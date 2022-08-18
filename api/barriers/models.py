@@ -1350,8 +1350,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         from api.action_plans.models import ActionPlanMilestone
 
         milestones = ActionPlanMilestone.objects.all()
-
-        return queryset.filter(action_plan__milestones__in=milestones).distinct()
+        return queryset.filter(action_plan__milestones__in=milestones)
 
     def clean_location_value(self, value):
         """
