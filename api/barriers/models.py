@@ -1310,6 +1310,8 @@ class BarrierFilterSet(django_filters.FilterSet):
             )
         if "APPROVED" in value:
             values_to_filter.append(TOP_PRIORITY_BARRIER_STATUS.APPROVED)
+        if "RESOLVED" in value:
+            values_to_filter.append(TOP_PRIORITY_BARRIER_STATUS.RESOLVED)
         if values_to_filter:
             return queryset.filter(top_priority_status__in=values_to_filter)
         return queryset
