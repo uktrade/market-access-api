@@ -1,4 +1,3 @@
-from django.db import models
 from model_utils.choices import Choices
 
 ACTION_PLAN_TASK_CHOICES = Choices(
@@ -25,16 +24,3 @@ ACTION_PLAN_RAG_STATUS_CHOICES = Choices(
     ("RISK_OF_DELAY", "Risk of delay"),
     ("DELAYED", "Delayed"),
 )
-
-ACTION_PLAN_RISK_LEVEL_CHOICES = Choices(
-    ("LOW", "Low"),
-    ("MEDIUM", "Medium"),
-    ("HIGH", "High"),
-)
-
-
-class ActionPlanStakeholderStatus(models.TextChoices):
-    FRIEND = ("FRIEND", "Friend")
-    NEUTRAL = ("NEUTRAL", "Neutral")
-    TARGET = ("TARGET", "Target")
-    BLOCKER = ("BLOCKER", "Blocker")

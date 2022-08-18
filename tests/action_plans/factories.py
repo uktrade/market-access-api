@@ -1,11 +1,6 @@
 import factory
 
-from api.action_plans.models import (
-    ActionPlan,
-    ActionPlanMilestone,
-    ActionPlanTask,
-    Stakeholder,
-)
+from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 
 
 class ActionPlanFactory(factory.django.DjangoModelFactory):
@@ -21,8 +16,3 @@ class ActionPlanMilestoneFactory(factory.django.DjangoModelFactory):
 class ActionPlanTaskFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ActionPlanTask
-
-
-class ActionPlanStakeholderFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Stakeholder
