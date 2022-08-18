@@ -32,6 +32,11 @@ ACTION_PLAN_RISK_LEVEL_CHOICES = Choices(
     ("HIGH", "High"),
 )
 
+ACTION_PLAN_HAS_RISKS = Choices(
+    ("YES", "Yes"),
+    ("NO", "No"),
+)
+
 
 class ActionPlanStakeholderStatus(models.TextChoices):
     FRIEND = ("FRIEND", "Friend")

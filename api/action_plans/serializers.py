@@ -97,6 +97,7 @@ class ActionPlanSerializer(serializers.ModelSerializer):
             "strategic_context",
             "strategic_context_last_updated",
             # risks and mitigations fields
+            "has_risks",
             "potential_unwanted_outcomes",
             "potential_risks",
             "risk_level",

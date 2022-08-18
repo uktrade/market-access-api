@@ -9,6 +9,7 @@ from simple_history.models import HistoricalRecords
 from api.barriers.models import Barrier
 
 from .constants import (
+    ACTION_PLAN_HAS_RISKS,
     ACTION_PLAN_RAG_STATUS_CHOICES,
     ACTION_PLAN_RISK_LEVEL_CHOICES,
     ACTION_PLAN_TASK_CHOICES,
@@ -43,6 +44,9 @@ class ActionPlan(models.Model):
     strategic_context_last_updated = models.DateTimeField(null=True, blank=True)
 
     # Risks and Mitigations values
+    has_risks = models.CharField(
+        max_length=100, null=True, blank=True, choices=ACTION_PLAN_HAS_RISKS
+    )
     potential_unwanted_outcomes = models.TextField(blank=True, null=True)
     potential_risks = models.TextField(blank=True, null=True)
     risk_level = models.CharField(
