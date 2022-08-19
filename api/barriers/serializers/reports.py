@@ -39,4 +39,8 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "title",
             "trade_direction",
             "trading_bloc",
+            "categories",
+            "commodities",
+            "draft",
+            "caused_by_admin_areas",
         )
