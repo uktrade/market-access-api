@@ -135,18 +135,20 @@ def get_barriers_to_update_this_month():
     threshold_dates = get_inactivty_threshold_dates()
 
     # We only want to automatically archive barriers which are dormant
+    # We want the oldest 20 that fit the given criteria to not overwhelm users
     barriers_to_update["barriers_to_be_archived"] = Barrier.objects.filter(
         modified_on__lt=threshold_dates["archive_inactivity_threshold_date"],
         status__exact=5,
         archived=False,
-    )
+    ).order_by("modified_on")[:21]
 
     # We don't want to change resolved or already archived/dormant barriers
+    # We want the oldest 20 that fit the given criteria to not overwhelm users
     barriers_to_update["barriers_to_be_dormant"] = Barrier.objects.filter(
         modified_on__lt=threshold_dates["dormant_inactivity_threshold_date"],
         status__in=[1, 2, 7],
         archived=False,
-    )
+    ).order_by("modified_on")[:21]
 
     return barriers_to_update
 
@@ -198,7 +200,11 @@ def get_auto_update_barrier_status_markdown(barriers, status_to_update):
 
     # List - bullet point list of barriers to be actioned
     for barrier in barriers:
-        markdown += f"\n* {barrier.title}\n"
+        markdown += f"\n* {barrier.code} - {barrier.title}\n"
+        if barrier.country_name:
+            markdown += f"{barrier.country_name}\n"
+        else:
+            markdown += "Trading Bloc\n"
         markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}?en=n\n"
         markdown += "\n---\n"
 
@@ -241,9 +247,9 @@ def send_auto_update_inactive_barrier_notification():
     barriers_to_update = get_barriers_to_update_this_month()
 
     # To be used in the email template - the date the barriers will be updated
-    # This will be 15 days into the month.
+    # This will be 28 days into the month.
     today = datetime.today()
-    date_of_update = datetime(today.year, today.month, 15)
+    date_of_update = datetime(today.year, today.month, 28)
     date_of_update = date_of_update.strftime("%d-%m-%Y")
 
     # Get region constants

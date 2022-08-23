@@ -4,7 +4,7 @@
         "name": "Afghanistan",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "AF"
@@ -82,7 +82,7 @@
         "name": "Australia",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "AU"
@@ -109,7 +109,7 @@
         "name": "Bahrain",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "BH"
@@ -232,7 +232,7 @@
         "name": "Brunei",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "BN"
@@ -268,7 +268,7 @@
         "name": "Cambodia",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "KH"
@@ -337,7 +337,7 @@
         "name": "China",
         "disabled_on": null,
         "overseas_region": {
-            "name": "China",
+            "name": "China and Hong Kong",
             "id": "b97749fb-2273-4447-a239-62dd8fb29e01"
         },
         "iso_alpha2_code": "CN"
@@ -463,7 +463,7 @@
         "name": "East Timor",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "TL"
@@ -556,7 +556,7 @@
         "name": "Fiji",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "FJ"
@@ -715,7 +715,7 @@
         "name": "Hong Kong",
         "disabled_on": null,
         "overseas_region": {
-            "name": "China",
+            "name": "China and Hong Kong",
             "id": "b97749fb-2273-4447-a239-62dd8fb29e01"
         },
         "iso_alpha2_code": "HK"
@@ -751,7 +751,7 @@
         "name": "Indonesia",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "ID"
@@ -760,7 +760,7 @@
         "name": "Iran",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "IR"
@@ -769,7 +769,7 @@
         "name": "Iraq",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "IQ"
@@ -829,7 +829,7 @@
         "name": "Japan",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "JP"
@@ -844,7 +844,7 @@
         "name": "Jordan",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "JO"
@@ -871,7 +871,7 @@
         "name": "Kiribati",
         "disabled_on": "2018-11-05T17:00:00Z",
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "KI"
@@ -889,7 +889,7 @@
         "name": "Kuwait",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "KW"
@@ -907,7 +907,7 @@
         "name": "Laos",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "LA"
@@ -925,7 +925,7 @@
         "name": "Lebanon",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "LB"
@@ -988,7 +988,7 @@
         "name": "Macao",
         "disabled_on": null,
         "overseas_region": {
-            "name": "China",
+            "name": "China and Hong Kong",
             "id": "b97749fb-2273-4447-a239-62dd8fb29e01"
         },
         "iso_alpha2_code": "MO"
@@ -1015,7 +1015,7 @@
         "name": "Malaysia",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "MY"
@@ -1087,7 +1087,7 @@
         "name": "Micronesia",
         "disabled_on": "2018-11-05T17:00:00Z",
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "FM"
@@ -1156,7 +1156,7 @@
         "name": "Myanmar (Burma)",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "MM"
@@ -1174,7 +1174,7 @@
         "name": "Nauru",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "NR"
@@ -1210,7 +1210,7 @@
         "name": "New Zealand",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "NZ"
@@ -1246,7 +1246,7 @@
         "name": "North Korea",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "KP"
@@ -1273,7 +1273,7 @@
         "name": "Occupied Palestinian Territories",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "PS"
@@ -1282,7 +1282,7 @@
         "name": "Oman",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "OM"
@@ -1291,7 +1291,7 @@
         "name": "Pakistan",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "PK"
@@ -1300,7 +1300,7 @@
         "name": "Palau",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "PW"
@@ -1318,7 +1318,7 @@
         "name": "Papua New Guinea",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "PG"
@@ -1345,7 +1345,7 @@
         "name": "Philippines",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "PH"
@@ -1381,7 +1381,7 @@
         "name": "Qatar",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "QA"
@@ -1426,7 +1426,7 @@
         "name": "Samoa",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "WS"
@@ -1453,7 +1453,7 @@
         "name": "Saudi Arabia",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "SA"
@@ -1498,7 +1498,7 @@
         "name": "Singapore",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "SG"
@@ -1525,7 +1525,7 @@
         "name": "Solomon Islands",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "SB"
@@ -1552,7 +1552,7 @@
         "name": "South Korea",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "KR"
@@ -1660,7 +1660,7 @@
         "name": "Syria",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "SY"
@@ -1669,7 +1669,7 @@
         "name": "Taiwan",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "TW"
@@ -1696,7 +1696,7 @@
         "name": "Thailand",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "TH"
@@ -1732,7 +1732,7 @@
         "name": "Tonga",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "TO"
@@ -1783,7 +1783,7 @@
         "name": "Tuvalu",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "TV"
@@ -1810,7 +1810,7 @@
         "name": "United Arab Emirates",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "AE"
@@ -1861,7 +1861,7 @@
         "name": "Vanuatu",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "VU"
@@ -1888,7 +1888,7 @@
         "name": "Vietnam",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Asia-Pacific",
+            "name": "Asia Pacific",
             "id": "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
         },
         "iso_alpha2_code": "VN"
@@ -1906,7 +1906,7 @@
         "name": "Yemen",
         "disabled_on": null,
         "overseas_region": {
-            "name": "Middle East",
+            "name": "Middle East, Afghanistan and Pakistan",
             "id": "c4679b44-079e-4394-8bf7-bb0881a5031d"
         },
         "iso_alpha2_code": "YE"
