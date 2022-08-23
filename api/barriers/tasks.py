@@ -198,7 +198,8 @@ def get_auto_update_barrier_status_markdown(barriers, status_to_update):
 
     # List - bullet point list of barriers to be actioned
     for barrier in barriers:
-        markdown += f"\n* {barrier.title}\n"
+        markdown += f"\n* {barrier.code} - {barrier.title}\n"
+        markdown += f"{barrier.country_name}\n"
         markdown += f"{settings.DMAS_BASE_URL}/barriers/{barrier.code}?en=n\n"
         markdown += "\n---\n"
 
