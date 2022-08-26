@@ -462,3 +462,12 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
         "label": "Date resolved (least recent)",
     },
 }
+
+FEEDBACK_FORM_SATISFACTION_ANSWERS = Choices(
+    ("NONE", ""),
+    ("VERY_SATISFIED", "Very satisfied"),
+    ("SATISFIED", "Satisfied"),
+    ("NEITHER", "Neither satisfied nor dissatisfied"),
+    ("DISSATISFIED", "Dissatisfied"),
+    ("VERY_DISSATISFIED", "Very dissatisfied"),
+)
