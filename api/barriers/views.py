@@ -332,7 +332,7 @@ class BarrierList(generics.ListAPIView):
         "priority",
         "country",
     )
-    ordering = ("reported_on", "modified_on")
+    ordering = ("-reported_on",)
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
