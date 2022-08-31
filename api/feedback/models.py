@@ -14,8 +14,7 @@ class Feedback(models.Model):
     Object model to store user-feedback
     """
 
-    created = models.DateTimeField(default=datetime.now, blank=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_on = models.DateTimeField(default=datetime.now, blank=True)
 
     satisfaction = models.CharField(
         blank=True,
