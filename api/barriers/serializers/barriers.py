@@ -50,6 +50,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "public_eligibility",
             "public_eligibility_summary",
             "public_eligibility_postponed",
+            "reported_on",
             "resolvability_assessments",
             "sectors",
             "sectors_affected",
