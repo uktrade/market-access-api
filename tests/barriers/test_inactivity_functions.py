@@ -214,6 +214,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if america_lead.first_name and america_lead.last_name in email_recipient:
                 assert str(america_barrier) in archive_email_markup
+                assert "Canada" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -239,6 +240,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if europe_lead.first_name and europe_lead.last_name in email_recipient:
                 assert str(europe_barrier) in archive_email_markup
+                assert "Italy" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -264,6 +266,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if china_lead.first_name and china_lead.last_name in email_recipient:
                 assert str(china_barrier) in archive_email_markup
+                assert "China" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -289,6 +292,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if latac_lead.first_name and latac_lead.last_name in email_recipient:
                 assert str(latac_barrier) in archive_email_markup
+                assert "Mexico" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -314,6 +318,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if apac_lead.first_name and apac_lead.last_name in email_recipient:
                 assert str(apac_barrier) in archive_email_markup
+                assert "Japan" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -342,6 +347,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
                 and south_asia_lead.last_name in email_recipient
             ):
                 assert str(south_asia_barrier) in archive_email_markup
+                assert "India" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -367,6 +373,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if eecan_lead.first_name and eecan_lead.last_name in email_recipient:
                 assert str(eecan_barrier) in archive_email_markup
+                assert "Ukraine" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -392,6 +399,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if meap_lead.first_name and meap_lead.last_name in email_recipient:
                 assert str(meap_barrier) in archive_email_markup
+                assert "Afghanistan" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -417,6 +425,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if africa_lead.first_name and africa_lead.last_name in email_recipient:
                 assert str(africa_barrier) in archive_email_markup
+                assert "Nigeria" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -507,6 +516,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if europe_lead.first_name and europe_lead.last_name in email_recipient:
                 assert str(europe_barrier) in archive_email_markup
+                assert "Trading Bloc" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -530,6 +540,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if europe_lead.first_name and europe_lead.last_name in email_recipient:
                 assert str(europe_barrier) in archive_email_markup
+                assert "Trading Bloc" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -555,6 +566,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if europe_lead.first_name and europe_lead.last_name in email_recipient:
                 assert str(europe_barrier) in archive_email_markup
+                assert "Trading Bloc" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -580,6 +592,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if europe_lead.first_name and europe_lead.last_name in email_recipient:
                 assert str(europe_barrier) in archive_email_markup
+                assert "Trading Bloc" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -605,6 +618,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if europe_lead.first_name and europe_lead.last_name in email_recipient:
                 assert str(uk_barrier) in archive_email_markup
+                assert "United Kingdom" in archive_email_markup
                 assert "1 barrier will be archived" in archive_email_markup
                 assert (
                     "No barriers will be made dormant in your region this month"
@@ -701,6 +715,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             archive_email_markup = call[1]["personalisation"]["barriers_to_be_archived"]
             if america_lead.first_name and america_lead.last_name in email_recipient:
                 assert str(america_barrier) in dormant_email_markup
+                assert "Canada" in dormant_email_markup
                 assert (
                     "No barriers will be archived in your region this month"
                     in archive_email_markup
@@ -783,14 +798,40 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
             time_frozen_barrier.refresh_from_db()
             assert time_frozen_barrier.status == 1
 
-        # Barrier has passed the 12 month mark for auto dormancy
-        with freeze_time("2021-02-01"):
+        # Barrier has passed the 18 month mark for auto dormancy
+        with freeze_time("2021-07-01"):
             auto_update_inactive_barrier_status()
             time_frozen_barrier.refresh_from_db()
             assert time_frozen_barrier.status == 5
 
-        # Barrier has passed the 18 month mark for auto archival
-        with freeze_time("2022-02-01"):
+        # Barrier has passed the (further) 18 month mark for auto archival
+        with freeze_time("2023-01-02"):
             auto_update_inactive_barrier_status()
             time_frozen_barrier.refresh_from_db()
             assert time_frozen_barrier.status == 6
+
+    def test_auto_status_change_twenty_limit(self):
+        europe_lead = self.create_standard_user(role="Regional Lead - Europe")
+
+        # Create 25 barriers in the DB
+        i = 1
+        while i < 25:
+            BarrierFactory(
+                title="barry_the_barrier",
+                country="80756b9a-5d95-e211-a939-e4115bead28a",
+            )
+            i += 1
+
+        # Update all barriers to be past threshold
+        Barrier.objects.all().update(
+            modified_on=self.archival_threshold_date - timedelta(days=1), status=5
+        )
+
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+            send_auto_update_inactive_barrier_notification()
+
+        for call in mock.call_args_list:
+            barrier_count = str(call).count("barry_the_barrier")
+            assert barrier_count == 20

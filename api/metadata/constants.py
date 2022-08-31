@@ -296,7 +296,7 @@ TRADING_BLOCS = {
         "code": "TB00017",
         "name": "Gulf Cooperation Council (GCC)",
         "short_name": "the GCC",
-        "regional_name": "Middle East",
+        "regional_name": "Middle East, Afghanistan and Pakistan",
         "country_ids": [
             "a35f66a0-5d95-e211-a939-e4115bead28a",
             "7d6a9ab2-5d95-e211-a939-e4115bead28a",
@@ -385,11 +385,11 @@ TOP_PRIORITY_BARRIER_STATUS = Choices(
 
 REGIONS_WITH_LEADS = {
     "Latin America": "Regional Lead - LATAC",
-    "Asia-Pacific": "Regional Lead - APAC",
-    "China": "Regional Lead - China/Hong Kong",
+    "Asia Pacific": "Regional Lead - APAC",
+    "China and Hong Kong": "Regional Lead - China/Hong Kong",
     "South Asia": "Regional Lead - South Asia",
     "Eastern Europe and Central Asia": "Regional Lead - EECAN",
-    "Middle East": "Regional Lead - MEAP",
+    "Middle East, Afghanistan and Pakistan": "Regional Lead - MEAP",
     "Africa": "Regional Lead - Africa",
     "North America": "Regional Lead - North America",
     "Europe": "Regional Lead - Europe",

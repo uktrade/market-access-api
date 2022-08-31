@@ -405,7 +405,7 @@ if not DEBUG:
         # Runs monthly at midnight between the 15th and 16th days of the month
         CELERY_BEAT_SCHEDULE["auto_update_inactive_barrier_status"] = {
             "task": "api.barrier.tasks.auto_update_inactive_barrier_status",
-            "schedule": crontab(minute=0, hour=0, day_of_month="16"),
+            "schedule": crontab(minute=0, hour=0, day_of_month="28"),
         }
         # Runs monthly at midnight on the 1st day of the month
         CELERY_BEAT_SCHEDULE["send_auto_update_inactive_barrier_notification"] = {
@@ -475,10 +475,10 @@ BARRIER_INACTIVITY_THRESHOLD_DAYS = 30 * 6
 BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS = 30 * 6
 
 # After how many days should a barrier be automatically updated to "Dormant" status
-BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS = 30 * 12
+BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS = 30 * 18
 
 # After how many days should a barrier be automatically updated to "Archived" status
-BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS = 30 * 12
+BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS = 30 * 18
 
 BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID = env(
     "BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID", default=""
