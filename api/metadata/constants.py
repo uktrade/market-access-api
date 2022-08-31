@@ -433,12 +433,18 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
     },
     "-value": {
         "ordering": "-valuation_assessments__impact",
-        "ordering-filter": {"valuation_assessments__isnull": False},
+        "ordering-filter": {
+            "valuation_assessments__archived": False,
+            "valuation_assessments__isnull": False,
+        },
         "label": "Value (highest)",
     },
     "value": {
         "ordering": "valuation_assessments__impact",
-        "ordering-filter": {"valuation_assessments__isnull": False},
+        "ordering-filter": {
+            "valuation_assessments__archived": False,
+            "valuation_assessments__isnull": False,
+        },
         "label": "Value (lowest)",
     },
     "-resolution": {
