@@ -8,10 +8,14 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
+from api.assessment.models import EconomicImpactAssessment
 from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import BarrierStatus
-from tests.assessment.factories import EconomicImpactAssessmentFactory
+from tests.assessment.factories import (
+    EconomicAssessmentFactory,
+    EconomicImpactAssessmentFactory,
+)
 from tests.barriers.factories import BarrierFactory
 
 
@@ -105,17 +109,33 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def make_economic_impact_assessment_aka_valuation_assessment_barriers(
         self,
-    ) -> QuerySet:
+    ) -> (QuerySet, QuerySet):
         barriers = self.make_reported_on_barriers()
         for impact, barrier in zip(self.impacts, barriers):
-            EconomicImpactAssessmentFactory(barrier=barrier, impact=impact)
+            EconomicImpactAssessmentFactory(
+                barrier=barrier,
+                impact=impact,
+                economic_assessment=EconomicAssessmentFactory(barrier=barrier),
+                archived=False,
+            )
         barriers_with_value = Barrier.objects.filter(
-            valuation_assessments__isnull=False
+            valuation_assessments__archived=False, valuation_assessments__isnull=False
         )
         barriers_without_value = Barrier.objects.filter(
             valuation_assessments__isnull=True
         )
         return barriers_with_value, barriers_without_value
+
+    def test_list_barriers_order_by_default_should_be_reported_on_descending(self):
+        barriers = self.make_reported_on_barriers().order_by("-reported_on")
+
+        url = f'{reverse("list-barriers")}'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        response_list = [b["id"] for b in response.data["results"]]
+        db_list = [str(b.id) for b in barriers]
+        assert db_list == response_list
 
     def test_list_barriers_order_by_reported_on_descending(self):
         barriers = self.make_reported_on_barriers().order_by("-reported_on")
@@ -272,6 +292,79 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
         assert response.status_code == status.HTTP_200_OK
         response_list = [b["id"] for b in response.data["results"]]
+        valued_barrier_list = [str(b.id) for b in barriers_with_value]
+        unvalued_barrier_list = [str(b.id) for b in barriers_without_value]
+        db_list = valued_barrier_list + unvalued_barrier_list
+        assert db_list == response_list
+
+    def test_list_barriers_with_archived_valuation_assessment_order_by_value_descending(
+        self,
+    ):
+        (
+            barriers_with_value,
+            barriers_without_value,
+        ) = self.make_economic_impact_assessment_aka_valuation_assessment_barriers()
+        barriers_with_value = barriers_with_value.order_by(
+            "-valuation_assessments__impact"
+        )
+        barriers_without_value = barriers_without_value.order_by("-reported_on")
+
+        # Give one barrier two assessments, one archived,
+        # to ensure only the unarchived one is used for ordering
+        barrier_with_archived_assessment = barriers_with_value.first()
+        assessment_to_archive: EconomicImpactAssessment = (
+            barrier_with_archived_assessment.valuation_assessments.first()
+        )
+        assessment_to_archive.archive(self.user, "Test archived barrier")
+        EconomicImpactAssessmentFactory(
+            barrier=barrier_with_archived_assessment,
+            impact=min(self.impacts) - 1,
+            economic_assessment=assessment_to_archive.economic_assessment,
+            archived=False,
+        )
+        url = f'{reverse("list-barriers")}?ordering=-value'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        response_list = [b["id"] for b in response.data["results"]]
+        # assert len(response_list) == barriers_with_value.count() + barriers_without_value.count()
+        valued_barrier_list = [str(b.id) for b in barriers_with_value]
+        unvalued_barrier_list = [str(b.id) for b in barriers_without_value]
+        db_list = valued_barrier_list + unvalued_barrier_list
+        assert db_list == response_list
+
+    def test_list_barriers_with_archived_valuation_assessment_order_by_value_ascending(
+        self,
+    ):
+        (
+            barriers_with_value,
+            barriers_without_value,
+        ) = self.make_economic_impact_assessment_aka_valuation_assessment_barriers()
+        barriers_with_value = barriers_with_value.order_by(
+            "valuation_assessments__impact"
+        )
+        barriers_without_value = barriers_without_value.order_by("-reported_on")
+
+        # Give one barrier two assessments, one archived,
+        # to ensure only the unarchived one is used for ordering
+        barrier_with_archived_assessment = barriers_with_value.last()
+        assessment_to_archive: EconomicImpactAssessment = (
+            barrier_with_archived_assessment.valuation_assessments.first()
+        )
+        assessment_to_archive.archive(self.user, "Test archived barrier")
+        EconomicImpactAssessmentFactory(
+            barrier=barrier_with_archived_assessment,
+            impact=max(self.impacts) + 1,
+            economic_assessment=assessment_to_archive.economic_assessment,
+            archived=False,
+        )
+
+        url = f'{reverse("list-barriers")}?ordering=value'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        response_list = [b["id"] for b in response.data["results"]]
+        # assert len(response_list) == barriers_with_value.count() + barriers_without_value.count()
         valued_barrier_list = [str(b.id) for b in barriers_with_value]
         unvalued_barrier_list = [str(b.id) for b in barriers_without_value]
         db_list = valued_barrier_list + unvalued_barrier_list
