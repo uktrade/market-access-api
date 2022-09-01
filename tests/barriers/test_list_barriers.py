@@ -784,10 +784,10 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier_resolved_in_full = BarrierFactory(status=4, status_date="2020-02-02")
 
         saved_barrier_list = [
-            str(barrier_open_pending.id),
-            str(barrier_open_in_progress.id),
-            str(barrier_resolved_in_part.id),
             str(barrier_resolved_in_full.id),
+            str(barrier_resolved_in_part.id),
+            str(barrier_open_in_progress.id),
+            str(barrier_open_pending.id),
         ]
 
         url = (
