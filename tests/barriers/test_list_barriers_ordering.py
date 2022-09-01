@@ -100,16 +100,13 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def make_resolved_barriers(self) -> (QuerySet, QuerySet):
         barriers, _ = self.make_estimated_resolution_date_barriers()
-        resolved_barrier_ids = [
-            barrier.pk
-            for barrier in barriers.order_by("estimated_resolution_date")[0:2]
-        ]
+        resolved_barrier_ids = [barrier.pk for barrier in barriers]
         Barrier.objects.update(status=BarrierStatus.UNKNOWN)
         Barrier.objects.filter(pk__in=resolved_barrier_ids).update(
             status=BarrierStatus.RESOLVED_IN_FULL
         )
         for index, resolved_barrier_id in enumerate(resolved_barrier_ids):
-            Barrier.objects.filter(pk__in=resolved_barrier_ids).update(
+            Barrier.objects.filter(pk=resolved_barrier_id).update(
                 status_date=self.resolved_dates[index]
             )
         resolved_barriers = Barrier.objects.filter(
