@@ -458,13 +458,13 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
         "label": "Estimated resolution date (least recent)",
     },
     "-resolved": {
-        "ordering": "-estimated_resolution_date",
-        "ordering-filter": {"status": 4},
+        "ordering": "-status_date",
+        "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (most recent)",
     },
     "resolved": {
-        "ordering": "estimated_resolution_date",
-        "ordering-filter": {"status": 4},
+        "ordering": "status_date",
+        "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (least recent)",
     },
 }

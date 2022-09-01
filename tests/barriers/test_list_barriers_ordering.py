@@ -51,6 +51,13 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
         datetime(2021, 6, 22, tzinfo=UTC),
     )
 
+    resolved_dates = (
+        datetime(2021, 2, 22, tzinfo=UTC),
+        datetime(2022, 3, 22, tzinfo=UTC),
+        datetime(2021, 4, 22, tzinfo=UTC),
+        datetime(2022, 5, 22, tzinfo=UTC),
+    )
+
     impacts = (7, 11, 19)
 
     def setUp(self):
@@ -78,7 +85,7 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
     def make_estimated_resolution_date_barriers(self) -> (QuerySet, QuerySet):
         barriers = self.make_reported_on_barriers()
         estimated_resolution_date_barrier_ids = []
-        for index, date in enumerate(self.estimated_resolution_dates[0:4]):
+        for index, date in enumerate(self.estimated_resolution_dates):
             barrier_pk = barriers[index].pk
             estimated_resolution_date_barrier_ids.append(barrier_pk)
             Barrier.objects.filter(pk=barrier_pk).update(estimated_resolution_date=date)
@@ -101,6 +108,10 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
         Barrier.objects.filter(pk__in=resolved_barrier_ids).update(
             status=BarrierStatus.RESOLVED_IN_FULL
         )
+        for index, resolved_barrier_id in enumerate(resolved_barrier_ids):
+            Barrier.objects.filter(pk__in=resolved_barrier_ids).update(
+                status_date=self.resolved_dates[index]
+            )
         resolved_barriers = Barrier.objects.filter(
             status=BarrierStatus.RESOLVED_IN_FULL
         )
@@ -229,7 +240,7 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def test_list_barriers_order_by_resolved_descending(self):
         resolved_barriers, unresolved_barriers = self.make_resolved_barriers()
-        resolved_barriers = resolved_barriers.order_by("-estimated_resolution_date")
+        resolved_barriers = resolved_barriers.order_by("-status_date")
         unresolved_barriers = unresolved_barriers.order_by("-reported_on")
 
         url = f'{reverse("list-barriers")}?ordering=-resolved'
@@ -244,7 +255,7 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def test_list_barriers_order_by_resolved_ascending(self):
         resolved_barriers, unresolved_barriers = self.make_resolved_barriers()
-        resolved_barriers = resolved_barriers.order_by("estimated_resolution_date")
+        resolved_barriers = resolved_barriers.order_by("status_date")
         unresolved_barriers = unresolved_barriers.order_by("-reported_on")
 
         url = f'{reverse("list-barriers")}?ordering=resolved'
