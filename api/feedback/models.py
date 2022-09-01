@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -14,7 +12,7 @@ class Feedback(models.Model):
     Object model to store user-feedback
     """
 
-    created_on = models.DateTimeField(default=datetime.now, blank=True)
+    created_on = models.DateTimeField(auto_now_add=True, blank=True)
 
     satisfaction = models.CharField(
         blank=True,

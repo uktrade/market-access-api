@@ -7,7 +7,7 @@ app_name = "dataset"
 urlpatterns = [
     path("dataset/v1/barriers", BarrierList.as_view(), name="barrier-list"),
     path(
-        "ataset/v1/feedback",
+        "dataset/v1/feedback",
         FeedbackDataWorkspaceListView.as_view(),
         name="feedback-list",
     ),
