@@ -477,3 +477,12 @@ FEEDBACK_FORM_SATISFACTION_ANSWERS = Choices(
     ("DISSATISFIED", "Dissatisfied"),
     ("VERY_DISSATISFIED", "Very dissatisfied"),
 )
+
+FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS = Choices(
+    ("REPORT_BARRIER", "Report a barrier"),
+    ("PROGRESS_UPDATE", "Set a progress update"),
+    ("EXPORT_BARRIER_CSV", "Export a barrier CSV report"),
+    ("ACTION_PLAN", "Create or edit an action plan"),
+    ("OTHER", "Other"),
+    ("DONT_KNOW", "Don't know"),
+)
