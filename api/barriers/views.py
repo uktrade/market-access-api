@@ -332,7 +332,7 @@ class BarrierList(generics.ListAPIView):
         "priority",
         "country",
     )
-    ordering = ("reported_on", "modified_on")
+    ordering = ("-reported_on",)
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
@@ -423,7 +423,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
     )
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
-    filter_backends = (DjangoFilterBackend, OrderingFilter)
+    filter_backends = (DjangoFilterBackend, BarrierListOrderingFilter)
     field_titles = {
         "id": "id",
         "code": "code",
