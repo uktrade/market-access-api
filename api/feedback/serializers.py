@@ -19,7 +19,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
             "required": 'You must specify what you were trying to do, or select "Don\'t Know"'
         },
     )
-    feedback_text = serializers.CharField(required=False)
+    feedback_text = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Feedback
