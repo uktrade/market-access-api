@@ -812,11 +812,15 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
 
     def test_auto_status_change_twenty_limit(self):
         europe_lead = self.create_standard_user(role="Regional Lead - Europe")
+        test_user = create_test_user()
 
+        # # Make sure we start with no unarchived barriers
+        for barrier in Barrier.objects.all():
+            barrier.archive(test_user, "Don't want this")
         # Create 25 barriers in the DB
-        for _ in range(0, 25):
+        for i in range(0, 25):
             BarrierFactory(
-                title="barry_the_barrier",
+                title=f"barry_the_barrier {i}",
                 country="80756b9a-5d95-e211-a939-e4115bead28a",
             )
 
