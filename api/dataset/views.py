@@ -48,4 +48,3 @@ class FeedbackDataWorkspaceListView(generics.ListAPIView):
 
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    permission_classes = [IsAuthenticated]
