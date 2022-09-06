@@ -1,13 +1,18 @@
+from django.contrib.auth import get_user_model
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from api.metadata.constants import FEEDBACK_FORM_SATISFACTION_ANSWERS
+
+User = get_user_model()
 
 
 class Feedback(models.Model):
     """
     Object model to store user-feedback
     """
+
+    created_on = models.DateTimeField(auto_now_add=True, blank=True)
 
     satisfaction = models.CharField(
         blank=True,
