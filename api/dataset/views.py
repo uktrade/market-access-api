@@ -39,6 +39,13 @@ class BarrierList(generics.ListAPIView):
 
 
 class FeedbackDataWorkspaceListView(generics.ListAPIView):
+    if settings.HAWK_ENABLED:
+        authentication_classes = (HawkAuthentication,)
+        permission_classes = (IsAuthenticated,)
+    else:
+        authentication_classes = ()
+        permission_classes = ()
+
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
     permission_classes = [IsAuthenticated]
