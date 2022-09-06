@@ -9,7 +9,10 @@ from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin, create_test_user
 from api.feedback.models import Feedback
-from api.metadata.constants import FEEDBACK_FORM_SATISFACTION_ANSWERS
+from api.metadata.constants import (
+    FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
+    FEEDBACK_FORM_SATISFACTION_ANSWERS,
+)
 from api.metadata.models import Organisation
 from tests.barriers.factories import BarrierFactory
 
@@ -119,12 +122,12 @@ class TestFeedbackDataset(APITestMixin):
     def test_feedback(self):
         feedback1 = Feedback.objects.create(
             satisfaction=FEEDBACK_FORM_SATISFACTION_ANSWERS.VERY_SATISFIED,
-            attempted_actions="Set a progress update",
+            attempted_actions=[FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS.PROGRESS_UPDATE],
             feedback_text="This feedback is very good",
         )
         feedback2 = Feedback.objects.create(
             satisfaction=FEEDBACK_FORM_SATISFACTION_ANSWERS.DISSATISFIED,
-            attempted_actions="Set a progress update",
+            attempted_actions=[FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS.PROGRESS_UPDATE],
             feedback_text="This feedback is ",
         )
         url = reverse("dataset:feedback-list")
