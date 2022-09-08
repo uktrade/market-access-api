@@ -169,6 +169,7 @@ class TestCategories(APITestMixin):
             "NI Protocol",
             "Asia Pacific Cross-Government Pilot",
             "Programme Fund",
+            "International Standards",
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)
