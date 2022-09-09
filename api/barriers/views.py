@@ -497,6 +497,10 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "progress_update_date": "Progress update date",
         "progress_update_author": "Progress update author",
         "progress_update_next_steps": "Progress update next steps",
+        "programme_fund_progress_update_milestones": "Programme fund milestones",
+        "programme_fund_progress_update_expenditure": "Programme fund expenditure",
+        "programme_fund_progress_update_date": "Programme fund date",
+        "programme_fund_progress_update_author": "Programme fund author",
     }
 
     def _get_base_filename(self):
