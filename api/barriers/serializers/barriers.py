@@ -74,6 +74,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "wto_profile",
             "government_organisations",
             "progress_updates",
+            "programme_fund_progress_updates",
             "top_priority_status",
             "top_priority_rejection_summary",
         )

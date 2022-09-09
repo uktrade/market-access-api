@@ -27,7 +27,10 @@ from api.barriers.fields import (
     WTOProfileField,
 )
 from api.barriers.models import Barrier, BarrierUserHit
-from api.barriers.serializers.progress_updates import ProgressUpdateSerializer
+from api.barriers.serializers.progress_updates import (
+    ProgrammeFundProgressUpdateSerializer,
+    ProgressUpdateSerializer,
+)
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
@@ -74,6 +77,9 @@ class BarrierSerializerBase(
     wto_profile = WTOProfileField(required=False)
     government_organisations = OrganisationsField(required=False)
     progress_updates = ProgressUpdateSerializer(required=False, many=True)
+    programme_fund_progress_updates = ProgrammeFundProgressUpdateSerializer(
+        required=False, many=True
+    )
     is_top_priority = serializers.BooleanField(required=False)
 
     class Meta:
