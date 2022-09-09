@@ -26,6 +26,7 @@ from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import (
     Barrier,
     BarrierReportStage,
+    ProgrammeFundProgressUpdate,
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
@@ -37,7 +38,10 @@ from api.barriers.serializers import (
     PublicBarrierSerializer,
 )
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
-from api.barriers.serializers.progress_updates import ProgressUpdateSerializer
+from api.barriers.serializers.progress_updates import (
+    ProgrammeFundProgressUpdateSerializer,
+    ProgressUpdateSerializer,
+)
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
 from api.history.manager import HistoryManager
@@ -994,3 +998,8 @@ class BarrierProgressUpdateViewSet(ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
+class ProgrammeFundProgressUpdateViewSet(ModelViewSet):
+    queryset = ProgrammeFundProgressUpdate.objects.all()
+    serializer_class = ProgrammeFundProgressUpdateSerializer

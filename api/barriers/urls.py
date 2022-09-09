@@ -18,6 +18,7 @@ from api.barriers.views import (
     BarrierResolveInFull,
     BarrierResolveInPart,
     BarrierStatusChangeUnknown,
+    ProgrammeFundProgressUpdateViewSet,
     PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count,
@@ -64,17 +65,17 @@ urlpatterns = router.urls + [
         name="open-action",
     ),
     path(
-        "barriers/<uuid:barrier_pk>/progress_updates",
+        "barriers/<uuid:barrier_pk>/top_100_progress_updates",
         BarrierProgressUpdateViewSet.as_view(
             {
                 "get": "list",
                 "post": "create",
             }
         ),
-        name="progress_updates",
+        name="top_100_progress_updates",
     ),
     path(
-        "barriers/<uuid:barrier_pk>/progress_updates/<uuid:pk>",
+        "barriers/<uuid:barrier_pk>/top_100_progress_updates/<uuid:pk>",
         BarrierProgressUpdateViewSet.as_view(
             {
                 "get": "retrieve",
@@ -83,7 +84,29 @@ urlpatterns = router.urls + [
                 "delete": "destroy",
             }
         ),
-        name="progress_updates_detail",
+        name="top_100_progress_updates_detail",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/programme_fund_progress_updates",
+        ProgrammeFundProgressUpdateViewSet.as_view(
+            {
+                "get": "list",
+                "post": "create",
+            }
+        ),
+        name="programme_fund_progress_updates",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/programme_fund_progress_updates/<uuid:pk>",
+        ProgrammeFundProgressUpdateViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="programme_fund_progress_updates_detail",
     ),
     path(
         "barriers/<uuid:pk>/open-in-progress",

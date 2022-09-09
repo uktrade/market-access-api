@@ -218,6 +218,10 @@ class BarrierHistoricalModel(models.Model):
 
 
 class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
+    """
+    This is now specifically an update relating to a PB100 barrier.
+    """
+
     id = models.UUIDField(primary_key=True, default=uuid4)
     created_on = models.DateTimeField(
         db_index=True, null=True, blank=True, auto_now_add=False
@@ -243,8 +247,37 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
     class Meta:
         # order by date descending
         ordering = ("-created_on",)
-        verbose_name = "Barrier Progress Update"
-        verbose_name_plural = "Barrier Progress Updates"
+        verbose_name = "Top 100 Barrier Progress Update"
+        verbose_name_plural = "Top 100 Barrier Progress Updates"
+
+
+class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    created_on = models.DateTimeField(
+        db_index=True, null=True, blank=True, auto_now_add=False
+    )
+    modified_on = models.DateTimeField(null=True, blank=True, auto_now=False)
+    barrier = models.ForeignKey(
+        "Barrier",
+        on_delete=models.CASCADE,
+        related_name="programme_fund_progress_updates",
+    )
+    milestones_and_deliverables = models.TextField(
+        help_text="What has been done to address the barrier?", blank=True, null=True
+    )
+    expenditure = models.TextField(
+        help_text="What next steps are required to address the barrier?",
+        blank=True,
+        null=True,
+    )
+
+    history = HistoricalRecords()
+
+    class Meta:
+        # order by date descending
+        ordering = ("-created_on",)
+        verbose_name = "Programme Fund Barrier Progress Update"
+        verbose_name_plural = "Programme Fund Barrier Progress Updates"
 
 
 class Barrier(FullyArchivableMixin, BaseModel):
