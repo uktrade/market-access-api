@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
@@ -18,6 +19,30 @@ from .constants import (
 )
 
 User = get_user_model()
+
+
+class ActionPlanManager(models.Manager):
+    def get_active_action_plans(self):
+        """
+        Return action plans that have at least one non null fields
+
+        """
+        return (
+            self.get_queryset()
+            .annotate(num_milestones=Count("milestones"))
+            .filter(
+                Q(current_status_last_updated__isnull=False)
+                | Q(current_status__isnull=False)
+                | Q(strategic_context__isnull=False)
+                | Q(has_risks__isnull=False)
+                | Q(potential_unwanted_outcomes__isnull=False)
+                | Q(risk_level__isnull=False)
+                | Q(potential_risks__isnull=False)
+                | Q(risk_mitigation_measures__isnull=False)
+                | Q(risk_mitigation_measures__gt="")
+                | Q(num_milestones__gt=0)
+            )
+        )
 
 
 class ActionPlan(models.Model):
@@ -55,6 +80,7 @@ class ActionPlan(models.Model):
     risk_mitigation_measures = models.TextField(blank=True, null=True)
 
     history = HistoricalRecords()
+    objects = ActionPlanManager()
 
     def save(self, *args, **kwargs):
         if self.strategic_context:
