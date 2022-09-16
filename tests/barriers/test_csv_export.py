@@ -5,9 +5,14 @@ from unittest import skip
 
 from django.conf import settings
 from mock.mock import mock_open, patch
+from pytz import UTC
 from rest_framework.test import APITestCase
 
-from api.barriers.models import Barrier, BarrierProgressUpdate
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    ProgrammeFundProgressUpdate,
+)
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.barriers.tasks import create_named_temporary_file, write_to_temporary_file
 from api.barriers.views import BarrierListS3EmailFile
@@ -202,6 +207,34 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         serializer = BarrierCsvExportSerializer(barrier)
         assert serializer.data["previous_estimated_resolution_date"] is None
         assert serializer.data["estimated_resolution_updated_date"] is None
+
+    def test_programme_fund_progress_update_fields_present(self):
+        barrier = BarrierFactory()
+        data = {
+            "barrier": barrier,
+            "milestones_and_deliverables": "Test milestones and deliverables",
+            "expenditure": "Test expenditure",
+            "created_on": datetime.datetime.now(tz=UTC),
+            "created_by": self.user,
+        }
+        programme_fund_update = ProgrammeFundProgressUpdate.objects.create(**data)
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert (
+            serializer.data["programme_fund_progress_update_milestones"]
+            == data["milestones_and_deliverables"]
+        )
+        assert (
+            serializer.data["programme_fund_progress_update_expenditure"]
+            == data["expenditure"]
+        )
+        assert (
+            serializer.data["programme_fund_progress_update_date"] == data["created_on"]
+        )
+        assert (
+            serializer.data["programme_fund_progress_update_author"]
+            == f"{self.user.first_name} {self.user.last_name}"
+        )
 
 
 class TestBarrierCsvExport(APITestMixin, APITestCase):

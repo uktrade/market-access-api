@@ -140,7 +140,7 @@ def get_barriers_to_update_this_month():
         modified_on__lt=threshold_dates["archive_inactivity_threshold_date"],
         status__exact=5,
         archived=False,
-    ).order_by("modified_on")[:21]
+    ).order_by("modified_on")[:20]
 
     # We don't want to change resolved or already archived/dormant barriers
     # We want the oldest 20 that fit the given criteria to not overwhelm users
@@ -148,7 +148,7 @@ def get_barriers_to_update_this_month():
         modified_on__lt=threshold_dates["dormant_inactivity_threshold_date"],
         status__in=[1, 2, 7],
         archived=False,
-    ).order_by("modified_on")[:21]
+    ).order_by("modified_on")[:20]
 
     return barriers_to_update
 

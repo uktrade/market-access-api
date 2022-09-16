@@ -8,10 +8,14 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
+from api.assessment.models import EconomicImpactAssessment
 from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import BarrierStatus
-from tests.assessment.factories import EconomicImpactAssessmentFactory
+from tests.assessment.factories import (
+    EconomicAssessmentFactory,
+    EconomicImpactAssessmentFactory,
+)
 from tests.barriers.factories import BarrierFactory
 
 
@@ -47,6 +51,13 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
         datetime(2021, 6, 22, tzinfo=UTC),
     )
 
+    resolved_dates = (
+        datetime(2021, 2, 22, tzinfo=UTC),
+        datetime(2022, 3, 22, tzinfo=UTC),
+        datetime(2021, 4, 22, tzinfo=UTC),
+        datetime(2022, 5, 22, tzinfo=UTC),
+    )
+
     impacts = (7, 11, 19)
 
     def setUp(self):
@@ -74,7 +85,7 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
     def make_estimated_resolution_date_barriers(self) -> (QuerySet, QuerySet):
         barriers = self.make_reported_on_barriers()
         estimated_resolution_date_barrier_ids = []
-        for index, date in enumerate(self.estimated_resolution_dates[0:4]):
+        for index, date in enumerate(self.estimated_resolution_dates):
             barrier_pk = barriers[index].pk
             estimated_resolution_date_barrier_ids.append(barrier_pk)
             Barrier.objects.filter(pk=barrier_pk).update(estimated_resolution_date=date)
@@ -89,14 +100,15 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def make_resolved_barriers(self) -> (QuerySet, QuerySet):
         barriers, _ = self.make_estimated_resolution_date_barriers()
-        resolved_barrier_ids = [
-            barrier.pk
-            for barrier in barriers.order_by("estimated_resolution_date")[0:2]
-        ]
+        resolved_barrier_ids = [barrier.pk for barrier in barriers]
         Barrier.objects.update(status=BarrierStatus.UNKNOWN)
         Barrier.objects.filter(pk__in=resolved_barrier_ids).update(
             status=BarrierStatus.RESOLVED_IN_FULL
         )
+        for index, resolved_barrier_id in enumerate(resolved_barrier_ids):
+            Barrier.objects.filter(pk=resolved_barrier_id).update(
+                status_date=self.resolved_dates[index]
+            )
         resolved_barriers = Barrier.objects.filter(
             status=BarrierStatus.RESOLVED_IN_FULL
         )
@@ -105,17 +117,33 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def make_economic_impact_assessment_aka_valuation_assessment_barriers(
         self,
-    ) -> QuerySet:
+    ) -> (QuerySet, QuerySet):
         barriers = self.make_reported_on_barriers()
         for impact, barrier in zip(self.impacts, barriers):
-            EconomicImpactAssessmentFactory(barrier=barrier, impact=impact)
+            EconomicImpactAssessmentFactory(
+                barrier=barrier,
+                impact=impact,
+                economic_assessment=EconomicAssessmentFactory(barrier=barrier),
+                archived=False,
+            )
         barriers_with_value = Barrier.objects.filter(
-            valuation_assessments__isnull=False
+            valuation_assessments__archived=False, valuation_assessments__isnull=False
         )
         barriers_without_value = Barrier.objects.filter(
             valuation_assessments__isnull=True
         )
         return barriers_with_value, barriers_without_value
+
+    def test_list_barriers_order_by_default_should_be_reported_on_descending(self):
+        barriers = self.make_reported_on_barriers().order_by("-reported_on")
+
+        url = f'{reverse("list-barriers")}'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        response_list = [b["id"] for b in response.data["results"]]
+        db_list = [str(b.id) for b in barriers]
+        assert db_list == response_list
 
     def test_list_barriers_order_by_reported_on_descending(self):
         barriers = self.make_reported_on_barriers().order_by("-reported_on")
@@ -209,7 +237,7 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def test_list_barriers_order_by_resolved_descending(self):
         resolved_barriers, unresolved_barriers = self.make_resolved_barriers()
-        resolved_barriers = resolved_barriers.order_by("-estimated_resolution_date")
+        resolved_barriers = resolved_barriers.order_by("-status_date")
         unresolved_barriers = unresolved_barriers.order_by("-reported_on")
 
         url = f'{reverse("list-barriers")}?ordering=-resolved'
@@ -224,7 +252,7 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
     def test_list_barriers_order_by_resolved_ascending(self):
         resolved_barriers, unresolved_barriers = self.make_resolved_barriers()
-        resolved_barriers = resolved_barriers.order_by("estimated_resolution_date")
+        resolved_barriers = resolved_barriers.order_by("status_date")
         unresolved_barriers = unresolved_barriers.order_by("-reported_on")
 
         url = f'{reverse("list-barriers")}?ordering=resolved'
@@ -272,6 +300,79 @@ class TestListBarriersOrdering(APITestMixin, APITestCase):
 
         assert response.status_code == status.HTTP_200_OK
         response_list = [b["id"] for b in response.data["results"]]
+        valued_barrier_list = [str(b.id) for b in barriers_with_value]
+        unvalued_barrier_list = [str(b.id) for b in barriers_without_value]
+        db_list = valued_barrier_list + unvalued_barrier_list
+        assert db_list == response_list
+
+    def test_list_barriers_with_archived_valuation_assessment_order_by_value_descending(
+        self,
+    ):
+        (
+            barriers_with_value,
+            barriers_without_value,
+        ) = self.make_economic_impact_assessment_aka_valuation_assessment_barriers()
+        barriers_with_value = barriers_with_value.order_by(
+            "-valuation_assessments__impact"
+        )
+        barriers_without_value = barriers_without_value.order_by("-reported_on")
+
+        # Give one barrier two assessments, one archived,
+        # to ensure only the unarchived one is used for ordering
+        barrier_with_archived_assessment = barriers_with_value.first()
+        assessment_to_archive: EconomicImpactAssessment = (
+            barrier_with_archived_assessment.valuation_assessments.first()
+        )
+        assessment_to_archive.archive(self.user, "Test archived barrier")
+        EconomicImpactAssessmentFactory(
+            barrier=barrier_with_archived_assessment,
+            impact=min(self.impacts) - 1,
+            economic_assessment=assessment_to_archive.economic_assessment,
+            archived=False,
+        )
+        url = f'{reverse("list-barriers")}?ordering=-value'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        response_list = [b["id"] for b in response.data["results"]]
+        # assert len(response_list) == barriers_with_value.count() + barriers_without_value.count()
+        valued_barrier_list = [str(b.id) for b in barriers_with_value]
+        unvalued_barrier_list = [str(b.id) for b in barriers_without_value]
+        db_list = valued_barrier_list + unvalued_barrier_list
+        assert db_list == response_list
+
+    def test_list_barriers_with_archived_valuation_assessment_order_by_value_ascending(
+        self,
+    ):
+        (
+            barriers_with_value,
+            barriers_without_value,
+        ) = self.make_economic_impact_assessment_aka_valuation_assessment_barriers()
+        barriers_with_value = barriers_with_value.order_by(
+            "valuation_assessments__impact"
+        )
+        barriers_without_value = barriers_without_value.order_by("-reported_on")
+
+        # Give one barrier two assessments, one archived,
+        # to ensure only the unarchived one is used for ordering
+        barrier_with_archived_assessment = barriers_with_value.last()
+        assessment_to_archive: EconomicImpactAssessment = (
+            barrier_with_archived_assessment.valuation_assessments.first()
+        )
+        assessment_to_archive.archive(self.user, "Test archived barrier")
+        EconomicImpactAssessmentFactory(
+            barrier=barrier_with_archived_assessment,
+            impact=max(self.impacts) + 1,
+            economic_assessment=assessment_to_archive.economic_assessment,
+            archived=False,
+        )
+
+        url = f'{reverse("list-barriers")}?ordering=value'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        response_list = [b["id"] for b in response.data["results"]]
+        # assert len(response_list) == barriers_with_value.count() + barriers_without_value.count()
         valued_barrier_list = [str(b.id) for b in barriers_with_value]
         unvalued_barrier_list = [str(b.id) for b in barriers_without_value]
         db_list = valued_barrier_list + unvalued_barrier_list

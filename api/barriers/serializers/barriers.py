@@ -50,6 +50,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "public_eligibility",
             "public_eligibility_summary",
             "public_eligibility_postponed",
+            "reported_on",
             "resolvability_assessments",
             "sectors",
             "sectors_affected",
@@ -73,6 +74,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "wto_profile",
             "government_organisations",
             "progress_updates",
+            "programme_fund_progress_updates",
             "top_priority_status",
             "top_priority_rejection_summary",
         )

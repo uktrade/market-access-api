@@ -8,6 +8,11 @@ from rest_framework.reverse import reverse
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin, create_test_user
+from api.feedback.models import Feedback
+from api.metadata.constants import (
+    FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
+    FEEDBACK_FORM_SATISFACTION_ANSWERS,
+)
 from api.metadata.models import Organisation
 from tests.barriers.factories import BarrierFactory
 
@@ -105,3 +110,39 @@ class TestBarriersDataset(APITestMixin):
 
         assert org1.name == data_item["government_organisations"][0]
         assert org2.name == data_item["government_organisations"][1]
+
+
+class TestFeedbackDataset(APITestMixin):
+    def test_no_feedback(self):
+        url = reverse("dataset:feedback-list")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 0
+
+    def test_feedback(self):
+        feedback1 = Feedback.objects.create(
+            satisfaction=FEEDBACK_FORM_SATISFACTION_ANSWERS.VERY_SATISFIED,
+            attempted_actions=[FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS.PROGRESS_UPDATE],
+            feedback_text="This feedback is very good",
+        )
+        feedback2 = Feedback.objects.create(
+            satisfaction=FEEDBACK_FORM_SATISFACTION_ANSWERS.DISSATISFIED,
+            attempted_actions=[FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS.PROGRESS_UPDATE],
+            feedback_text="This feedback is ",
+        )
+        url = reverse("dataset:feedback-list")
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == len(response.data["results"])
+        assert feedback1.satisfaction == response.data["results"][0]["satisfaction"]
+        assert feedback2.satisfaction == response.data["results"][1]["satisfaction"]
+        assert (
+            feedback1.attempted_actions
+            == response.data["results"][0]["attempted_actions"]
+        )
+        assert (
+            feedback2.attempted_actions
+            == response.data["results"][1]["attempted_actions"]
+        )
+        assert feedback1.feedback_text == response.data["results"][0]["feedback_text"]
+        assert feedback2.feedback_text == response.data["results"][1]["feedback_text"]
