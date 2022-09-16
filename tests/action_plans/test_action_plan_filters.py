@@ -3,7 +3,10 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from api.action_plans.models import ActionPlan
-from tests.action_plans.factories import ActionPlanMilestoneFactory
+from tests.action_plans.factories import (
+    ActionPlanMilestoneFactory,
+    ActionPlanStakeholderFactory,
+)
 from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
@@ -46,6 +49,11 @@ class TestActionPlanFilters(TestCase):
         self.assertEqual(self._active_count(), 1)
 
         milestone.delete()
+        self.assertEqual(self._active_count(), 0)
+
+        stakeholder = ActionPlanStakeholderFactory(action_plan=action_plan)
+        self.assertEqual(self._active_count(), 1)
+        stakeholder.delete()
         self.assertEqual(self._active_count(), 0)
 
         # test for:

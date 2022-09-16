@@ -15,6 +15,7 @@ from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, PublicBarrierSta
 from api.metadata.models import BarrierPriority, Organisation
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
+    ActionPlanStakeholderFactory,
     ActionPlanTaskFactory,
 )
 from tests.barriers.factories import BarrierFactory, ReportFactory
@@ -1000,6 +1001,13 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
             3, action_plan=action_plan2
         )
 
+        response = self.api_client.get(f"{base_url}?has_action_plan=1")
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+
+        stakeholders = ActionPlanStakeholderFactory.create_batch(
+            3, action_plan=action_plan
+        )
         response = self.api_client.get(f"{base_url}?has_action_plan=1")
         assert status.HTTP_200_OK == response.status_code
         assert 2 == response.data["count"]

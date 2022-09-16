@@ -30,6 +30,7 @@ class ActionPlanManager(models.Manager):
         return (
             self.get_queryset()
             .annotate(num_milestones=Count("milestones"))
+            .annotate(num_stakeholders=Count("stakeholders"))
             .filter(
                 Q(current_status__gt="")
                 | Q(status__gt="")
@@ -41,6 +42,7 @@ class ActionPlanManager(models.Manager):
                 | Q(risk_mitigation_measures__gt="")
                 | Q(num_milestones__gt=0)
                 | Q(owner__isnull=False)
+                | Q(num_stakeholders__gt=0)
             )
         )
 
