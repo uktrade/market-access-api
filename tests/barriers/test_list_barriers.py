@@ -13,6 +13,10 @@ from api.core.test_utils import APITestMixin, create_test_user
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, PublicBarrierStatus
 from api.metadata.models import BarrierPriority, Organisation
+from tests.action_plans.factories import (
+    ActionPlanMilestoneFactory,
+    ActionPlanTaskFactory,
+)
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory
@@ -966,3 +970,36 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
+
+    def test_action_plan_filter(self):
+        base_url = reverse("list-barriers")
+        barriers = BarrierFactory.create_batch(3)
+
+        action_plan = barriers[0].action_plan
+        action_plan.current_status = "NOT_STARTED"
+        action_plan.save()
+        response = self.api_client.get(f"{base_url}?has_action_plan=1")
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+
+        milestones = ActionPlanMilestoneFactory.create_batch(3, action_plan=action_plan)
+
+        response = self.api_client.get(f"{base_url}?has_action_plan=1")
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+
+        tasks = ActionPlanTaskFactory.create_batch(3, milestone=milestones[0])
+        tasks2 = ActionPlanTaskFactory.create_batch(3, milestone=milestones[1])
+
+        response = self.api_client.get(f"{base_url}?has_action_plan=1")
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+
+        action_plan2 = barriers[1].action_plan
+        milestones2 = ActionPlanMilestoneFactory.create_batch(
+            3, action_plan=action_plan2
+        )
+
+        response = self.api_client.get(f"{base_url}?has_action_plan=1")
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]

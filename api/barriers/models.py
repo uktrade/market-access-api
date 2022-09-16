@@ -1350,7 +1350,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         from api.action_plans.models import ActionPlan
 
-        active_action_plans = ActionPlan.objects.get_active_action_plans()
+        active_action_plans = ActionPlan.objects.get_active_action_plans().all()
 
         return queryset.filter(action_plan__in=active_action_plans).distinct()
 
