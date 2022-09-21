@@ -10,11 +10,18 @@ from api.action_plans.models import ActionPlan
 from api.barriers.models import BarrierProgressUpdate
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
-from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER_STATUS
+from api.metadata.constants import (
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC,
+    PROGRESS_UPDATE_CHOICES,
+    TOP_PRIORITY_BARRIER_STATUS,
+    BarrierStatus,
+)
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
 )
+from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
@@ -227,6 +234,40 @@ class TestDataWarehouseExport(TestCase):
             serialised_data = DataWorkspaceSerializer(barrier).data
             assert "resolved_date" in serialised_data.keys()
             assert serialised_data["resolved_date"] == date_today
+
+    def test_valuation_assessment_midpoint(self):
+        date_today = date.today()
+        barrier = BarrierFactory(
+            status_date=date_today, status=BarrierStatus.OPEN_IN_PROGRESS
+        )
+        impact_level = 6
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        assert "valuation_assessment_midpoint" in serialised_data.keys()
+        assert (
+            serialised_data["valuation_assessment_midpoint"] == expected_midpoint_value
+        )
+
+    def test_valuation_assessment_midpoint_value(self):
+        date_today = date.today()
+        barrier = BarrierFactory(
+            status_date=date_today, status=BarrierStatus.OPEN_IN_PROGRESS
+        )
+        impact_level = 6
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        expected_midpoint = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC[
+            expected_midpoint
+        ]
+        assert "valuation_assessment_midpoint_value" in serialised_data
+        assert (
+            serialised_data["valuation_assessment_midpoint_value"]
+            == expected_midpoint_value
+        )
 
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):

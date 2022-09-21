@@ -19,6 +19,7 @@ from api.barriers.views import BarrierListS3EmailFile
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
 )
@@ -184,9 +185,24 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         serialised_data = BarrierCsvExportSerializer(barrier).data
 
         expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        assert "valuation_assessment_midpoint" in serialised_data.keys()
         assert (
-            "valuation_assessment_midpoint" in serialised_data.keys()
-            and serialised_data["valuation_assessment_midpoint"]
+            serialised_data["valuation_assessment_midpoint"] == expected_midpoint_value
+        )
+
+    def test_valuation_assessment_midpoint_value(self):
+        impact_level = 6
+        barrier = BarrierFactory()
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+
+        expected_midpoint = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC[
+            expected_midpoint
+        ]
+        assert "valuation_assessment_midpoint_value" in serialised_data.keys()
+        assert (
+            serialised_data["valuation_assessment_midpoint_value"]
             == expected_midpoint_value
         )
 
