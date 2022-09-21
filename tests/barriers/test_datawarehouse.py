@@ -38,7 +38,7 @@ class TestDataWarehouseExport(TestCase):
         barrier.refresh_from_db()
 
         data_with_empty_action_plan = DataWorkspaceSerializer(barrier).data
-        assert data_with_empty_action_plan["action_plan_added"] is False
+        assert data_with_empty_action_plan["action_plan_added"] is True
         assert (
             data_with_empty_action_plan["action_plan"]["progress_update"]
             == "Progress update here"

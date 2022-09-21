@@ -265,7 +265,11 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     def get_action_plan_added(self, obj):
         if not obj.action_plan:
             return False
-        return obj.action_plan.milestones.count() > 0
+        return (
+            ActionPlan.objects.get_active_action_plans()
+            .filter(id=obj.action_plan.id)
+            .exists()
+        )
 
     def get_government_organisations(self, obj):
         return [
