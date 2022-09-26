@@ -107,14 +107,26 @@ class TestBarrierInactivityReminders(TestCase):
         inactivity_threshold_date = timezone.now() - timedelta(
             days=settings.BARRIER_INACTIVITY_THRESHOLD_DAYS
         )
-        #  test individual call params
+
         test_barrier_in_full = BarrierFactory(
             status=4, status_date=inactivity_threshold_date
         )
         test_barrier_in_part = BarrierFactory(
             status=3, status_date=inactivity_threshold_date
         )
-        for test_barrier in [test_barrier_in_full, test_barrier_in_part]:
+        test_barrier_dormant = BarrierFactory(
+            status=5,
+        )
+        test_barrier_archive = BarrierFactory(
+            status=6,
+        )
+
+        for test_barrier in [
+            test_barrier_in_full,
+            test_barrier_in_part,
+            test_barrier_dormant,
+            test_barrier_archive,
+        ]:
             TeamMemberFactory(
                 barrier=test_barrier, user=test_user, role="Owner", default=True
             )
