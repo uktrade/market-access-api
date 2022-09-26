@@ -65,11 +65,17 @@ class ValuationAssessmentRatingFieldMixin(metaclass=serializers.SerializerMetacl
 
 class ValuationAssessmentMidpointFieldMixin(metaclass=serializers.SerializerMetaclass):
     valuation_assessment_midpoint = serializers.SerializerMethodField()
+    valuation_assessment_midpoint_value = serializers.SerializerMethodField()
 
     def get_valuation_assessment_midpoint(self, obj):
         latest_valuation_assessment = obj.current_valuation_assessment
         if latest_valuation_assessment:
             return latest_valuation_assessment.midpoint
+
+    def get_valuation_assessment_midpoint_value(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.midpoint_value
 
 
 class ValuationAssessmentExplanationFieldMixin(

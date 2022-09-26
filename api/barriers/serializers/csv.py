@@ -145,6 +145,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "import_market_size",
             "valuation_assessment_rating",
             "valuation_assessment_midpoint",
+            "valuation_assessment_midpoint_value",
             "valuation_assessment_explanation",
             "commercial_value",
             "estimated_resolution_date",
