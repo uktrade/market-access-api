@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.test import TestCase
 from freezegun import freeze_time
 from rest_framework import status
@@ -5,9 +7,13 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from api.barriers.helpers import get_team_members
-from api.barriers.models import Barrier
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    ProgrammeFundProgressUpdate,
+)
 from api.core.test_utils import APITestMixin
-from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER_STATUS
 from api.metadata.models import BarrierPriority, Category, Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
@@ -341,6 +347,44 @@ class TestBarrierDetails(APITestMixin, APITestCase):
                 "is_top_priority" in serialised_data.keys()
                 and serialised_data["is_top_priority"] is is_top_priority
             )
+
+    def test_top_100_progress_updates(self):
+        update_count = 3
+        for i in range(0, update_count):
+            BarrierProgressUpdate.objects.create(
+                barrier=self.barrier,
+                status=PROGRESS_UPDATE_CHOICES.ON_TRACK,
+                update=f"Update value {i}",
+                next_steps=f"Next steps value {i}",
+                created_on=datetime.now() + timedelta(hours=i),
+            )
+        response = self.api_client.get(self.url)
+        assert response.status_code == status.HTTP_200_OK
+        response_data = response.data
+        assert "progress_updates" in response_data
+        assert len(response_data["progress_updates"]) == update_count
+        assert response_data["progress_updates"][0]["message"] == "Update value 2"
+
+    def test_programme_fund_progress_updates(self):
+        update_count = 3
+        for i in range(0, update_count):
+            ProgrammeFundProgressUpdate.objects.create(
+                barrier=self.barrier,
+                milestones_and_deliverables=f"Milestones_and_deliverables value {i}",
+                expenditure=f"Expenditure value {i}",
+                created_on=datetime.now() + timedelta(hours=i),
+            )
+        response = self.api_client.get(self.url)
+        assert response.status_code == status.HTTP_200_OK
+        response_data = response.data
+        assert "programme_fund_progress_updates" in response_data
+        assert len(response_data["programme_fund_progress_updates"]) == update_count
+        assert (
+            response_data["programme_fund_progress_updates"][0][
+                "milestones_and_deliverables"
+            ]
+            == "Milestones_and_deliverables value 2"
+        )
 
 
 class TestHibernateEndpoint(APITestMixin, TestCase):

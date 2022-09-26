@@ -25,6 +25,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
         model = Feedback
         fields = (
             "id",
+            "created_on",
             "satisfaction",
             "attempted_actions",
             "feedback_text",

@@ -12,6 +12,7 @@ from api.interactions.models import Document
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC,
     ECONOMIC_ASSESSMENT_RATING,
     RESOLVABILITY_ASSESSMENT_EFFORT,
     RESOLVABILITY_ASSESSMENT_TIME,
@@ -157,6 +158,13 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         if self.impact:
             midpoint = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[self.impact]
         return midpoint
+
+    @property
+    def midpoint_value(self):
+        value = ""
+        if self.midpoint:
+            value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC[self.midpoint]
+        return value
 
     class Meta:
         ordering = ("-created_on",)

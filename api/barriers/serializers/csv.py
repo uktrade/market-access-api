@@ -114,6 +114,10 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     progress_update_date = serializers.SerializerMethodField()
     progress_update_author = serializers.SerializerMethodField()
     progress_update_next_steps = serializers.SerializerMethodField()
+    programme_fund_progress_update_milestones = serializers.SerializerMethodField()
+    programme_fund_progress_update_expenditure = serializers.SerializerMethodField()
+    programme_fund_progress_update_date = serializers.SerializerMethodField()
+    programme_fund_progress_update_author = serializers.SerializerMethodField()
 
     class Meta:
         model = Barrier
@@ -141,6 +145,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "import_market_size",
             "valuation_assessment_rating",
             "valuation_assessment_midpoint",
+            "valuation_assessment_midpoint_value",
             "valuation_assessment_explanation",
             "commercial_value",
             "estimated_resolution_date",
@@ -152,6 +157,10 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "progress_update_date",
             "progress_update_author",
             "progress_update_next_steps",
+            "programme_fund_progress_update_milestones",
+            "programme_fund_progress_update_expenditure",
+            "programme_fund_progress_update_date",
+            "programme_fund_progress_update_author",
             "is_top_priority",
             "top_priority_status",
             "government_organisations",
@@ -401,6 +410,29 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     def get_progress_update_next_steps(self, obj):
         if obj.latest_progress_update:
             return obj.latest_progress_update.next_steps
+        return None
+
+    def get_programme_fund_progress_update_milestones(self, obj):
+        if obj.latest_programme_fund_progress_update:
+            return obj.latest_programme_fund_progress_update.milestones_and_deliverables
+        return None
+
+    def get_programme_fund_progress_update_expenditure(self, obj):
+        if obj.latest_programme_fund_progress_update:
+            return obj.latest_programme_fund_progress_update.expenditure
+
+    def get_programme_fund_progress_update_date(self, obj):
+        if obj.latest_programme_fund_progress_update:
+            return obj.latest_programme_fund_progress_update.created_on
+        return None
+
+    def get_programme_fund_progress_update_author(self, obj):
+        if obj.latest_programme_fund_progress_update:
+            return (
+                f"{obj.latest_programme_fund_progress_update.created_by.first_name} "
+                + obj.latest_programme_fund_progress_update.created_by.last_name
+            )
+
         return None
 
     def get_previous_estimated_resolution_date(self, obj):

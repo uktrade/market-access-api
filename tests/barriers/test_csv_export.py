@@ -5,15 +5,21 @@ from unittest import skip
 
 from django.conf import settings
 from mock.mock import mock_open, patch
+from pytz import UTC
 from rest_framework.test import APITestCase
 
-from api.barriers.models import Barrier, BarrierProgressUpdate
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    ProgrammeFundProgressUpdate,
+)
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.barriers.tasks import create_named_temporary_file, write_to_temporary_file
 from api.barriers.views import BarrierListS3EmailFile
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
 )
@@ -179,9 +185,24 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         serialised_data = BarrierCsvExportSerializer(barrier).data
 
         expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        assert "valuation_assessment_midpoint" in serialised_data.keys()
         assert (
-            "valuation_assessment_midpoint" in serialised_data.keys()
-            and serialised_data["valuation_assessment_midpoint"]
+            serialised_data["valuation_assessment_midpoint"] == expected_midpoint_value
+        )
+
+    def test_valuation_assessment_midpoint_value(self):
+        impact_level = 6
+        barrier = BarrierFactory()
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+
+        expected_midpoint = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC[
+            expected_midpoint
+        ]
+        assert "valuation_assessment_midpoint_value" in serialised_data.keys()
+        assert (
+            serialised_data["valuation_assessment_midpoint_value"]
             == expected_midpoint_value
         )
 
@@ -202,6 +223,34 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         serializer = BarrierCsvExportSerializer(barrier)
         assert serializer.data["previous_estimated_resolution_date"] is None
         assert serializer.data["estimated_resolution_updated_date"] is None
+
+    def test_programme_fund_progress_update_fields_present(self):
+        barrier = BarrierFactory()
+        data = {
+            "barrier": barrier,
+            "milestones_and_deliverables": "Test milestones and deliverables",
+            "expenditure": "Test expenditure",
+            "created_on": datetime.datetime.now(tz=UTC),
+            "created_by": self.user,
+        }
+        programme_fund_update = ProgrammeFundProgressUpdate.objects.create(**data)
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert (
+            serializer.data["programme_fund_progress_update_milestones"]
+            == data["milestones_and_deliverables"]
+        )
+        assert (
+            serializer.data["programme_fund_progress_update_expenditure"]
+            == data["expenditure"]
+        )
+        assert (
+            serializer.data["programme_fund_progress_update_date"] == data["created_on"]
+        )
+        assert (
+            serializer.data["programme_fund_progress_update_author"]
+            == f"{self.user.first_name} {self.user.last_name}"
+        )
 
 
 class TestBarrierCsvExport(APITestMixin, APITestCase):
