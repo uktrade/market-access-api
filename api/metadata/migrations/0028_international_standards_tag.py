@@ -34,6 +34,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            create_international_standards_tag, reverse_code=destroy_international_standards_tag
+            create_international_standards_tag,
+            reverse_code=destroy_international_standards_tag,
         ),
     ]
