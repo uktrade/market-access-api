@@ -136,19 +136,27 @@ def get_barriers_to_update_this_month():
 
     # We only want to automatically archive barriers which are dormant
     # We want the oldest 20 that fit the given criteria to not overwhelm users
-    barriers_to_update["barriers_to_be_archived"] = Barrier.objects.filter(
-        modified_on__lt=threshold_dates["archive_inactivity_threshold_date"],
-        status__exact=5,
-        archived=False,
-    ).order_by("modified_on")[:20]
+    barriers_to_update["barriers_to_be_archived"] = (
+        Barrier.objects.filter(
+            modified_on__lt=threshold_dates["archive_inactivity_threshold_date"],
+            status__exact=5,
+            archived=False,
+        )
+        .exclude(draft=True)
+        .order_by("modified_on")[:20]
+    )
 
     # We don't want to change resolved or already archived/dormant barriers
     # We want the oldest 20 that fit the given criteria to not overwhelm users
-    barriers_to_update["barriers_to_be_dormant"] = Barrier.objects.filter(
-        modified_on__lt=threshold_dates["dormant_inactivity_threshold_date"],
-        status__in=[1, 2, 7],
-        archived=False,
-    ).order_by("modified_on")[:20]
+    barriers_to_update["barriers_to_be_dormant"] = (
+        Barrier.objects.filter(
+            modified_on__lt=threshold_dates["dormant_inactivity_threshold_date"],
+            status__in=[1, 2, 7],
+            archived=False,
+        )
+        .exclude(draft=True)
+        .order_by("modified_on")[:20]
+    )
 
     return barriers_to_update
 
@@ -318,14 +326,20 @@ def send_barrier_inactivity_reminders():
 
     threshold_dates = get_inactivty_threshold_dates()
 
-    barriers_needing_reminder = Barrier.objects.filter(
-        modified_on__lt=threshold_dates["inactivity_threshold_date"],
-        status__in=[1, 2, 7],
-    ).filter(
-        Q(activity_reminder_sent__isnull=True)
-        | Q(
-            activity_reminder_sent__lt=threshold_dates["repeat_reminder_threshold_date"]
+    barriers_needing_reminder = (
+        Barrier.objects.filter(
+            modified_on__lt=threshold_dates["inactivity_threshold_date"],
+            status__in=[1, 2, 7],
         )
+        .filter(
+            Q(activity_reminder_sent__isnull=True)
+            | Q(
+                activity_reminder_sent__lt=threshold_dates[
+                    "repeat_reminder_threshold_date"
+                ]
+            )
+        )
+        .exclude(draft=True)
     )
 
     for barrier in barriers_needing_reminder:
