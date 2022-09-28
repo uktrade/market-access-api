@@ -119,6 +119,9 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     programme_fund_progress_update_date = serializers.SerializerMethodField()
     programme_fund_progress_update_author = serializers.SerializerMethodField()
 
+    # regional trade plan fields
+    is_regional_trade_plan = serializers.SerializerMethodField()
+
     class Meta:
         model = Barrier
         fields = (
@@ -164,6 +167,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "is_top_priority",
             "top_priority_status",
             "government_organisations",
+            "is_regional_trade_plan",
         )
 
     def get_term(self, obj):
@@ -466,6 +470,9 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return history.history_date.strftime("%Y-%m-%d")
         else:
             return None
+
+    def get_is_regional_trade_plan(self, obj):
+        return obj.is_regional_trade_plan
 
 
 class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):
