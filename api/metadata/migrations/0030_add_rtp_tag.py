@@ -5,7 +5,7 @@ from django.db import migrations
 REGIONAL_TRADE_PLAN = {
     "Regional Trade Plan": {
         "description": "",
-        "order": 6,
+        "order": 8,
         "show_at_reporting": True,
     },
 }
