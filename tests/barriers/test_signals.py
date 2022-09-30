@@ -9,6 +9,7 @@ from api.barriers.models import Barrier
 from api.barriers.signals.handlers import (
     barrier_completion_percentage_changed,
     barrier_completion_top_priority_barrier_resolved,
+    barrier_new_valuation_email_notification,
     barrier_priority_approval_email_notification,
 )
 from api.core.test_utils import APITestMixin, create_test_user
@@ -258,3 +259,34 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.refresh_from_db()
 
         assert barrier.top_priority_status == "RESOLVED"
+
+    def test_new_valuation_commercial_value(self):
+        barrier = Barrier()
+        test_user = create_test_user()
+        TeamMemberFactory(barrier=barrier, user=test_user, role="Owner", default=True)
+
+        # personalisation_items["first_name"] = recipient.first_name
+        # personalisation_items["barrier_id"] = str(barrier.code)
+        # personalisation_items["barrier_code"] = str(barrier.code)
+
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+
+            barrier_new_valuation_email_notification(
+                sender=Barrier, instance=barrier, created=False
+            )
+
+            expected_personalisation = {
+                "first_name": test_user.first_name,
+                "barrier_code": str(barrier.code),
+                "barrier_id": str(barrier.id),
+            }
+
+            mock.assert_called_with(
+                email_address=test_user.email,
+                template_id=settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID,
+                personalisation=expected_personalisation,
+            )
+
+            mock.stop()
