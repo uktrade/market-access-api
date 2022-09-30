@@ -319,7 +319,8 @@ def send_barrier_inactivity_reminders():
     threshold_dates = get_inactivty_threshold_dates()
 
     barriers_needing_reminder = Barrier.objects.filter(
-        modified_on__lt=threshold_dates["inactivity_threshold_date"]
+        modified_on__lt=threshold_dates["inactivity_threshold_date"],
+        status__in=[1, 2, 7],
     ).filter(
         Q(activity_reminder_sent__isnull=True)
         | Q(
