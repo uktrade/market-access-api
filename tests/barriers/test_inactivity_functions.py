@@ -102,6 +102,46 @@ class TestBarrierInactivityReminders(TestCase):
             )
             mock.stop()
 
+    def test_resolved_barriers_reminder_email_not_sent(self):
+        test_user = create_test_user()
+        inactivity_threshold_date = timezone.now() - timedelta(
+            days=settings.BARRIER_INACTIVITY_THRESHOLD_DAYS
+        )
+
+        test_barrier_in_full = BarrierFactory(
+            status=4, status_date=inactivity_threshold_date
+        )
+        test_barrier_in_part = BarrierFactory(
+            status=3, status_date=inactivity_threshold_date
+        )
+        test_barrier_dormant = BarrierFactory(
+            status=5,
+        )
+        test_barrier_archive = BarrierFactory(
+            status=6,
+        )
+
+        for test_barrier in [
+            test_barrier_in_full,
+            test_barrier_in_part,
+            test_barrier_dormant,
+            test_barrier_archive,
+        ]:
+            TeamMemberFactory(
+                barrier=test_barrier, user=test_user, role="Owner", default=True
+            )
+            Barrier.objects.filter(id=test_barrier.id).update(
+                modified_on=inactivity_threshold_date - timedelta(days=1),
+                activity_reminder_sent=None,
+            )
+
+        with patch.object(NotificationsAPIClient, "send_email_notification") as mock:
+
+            send_barrier_inactivity_reminders()
+
+            assert mock.call_count == 0
+            mock.stop()
+
 
 class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
     def setUp(self):
