@@ -198,7 +198,7 @@ def barrier_new_valuation_email_notification(sender, instance, created, **kwargs
     else:
         if created:
             # Get the barrier and pass to the notification function
-            barrier = Barrier.objects.fliter(id=instance.barrier_id)
+            barrier = Barrier.objects.filter(id=instance.barrier_id).first()
             send_new_valuation_notification(barrier)
 
 
@@ -208,23 +208,22 @@ def send_new_valuation_notification(barrier):
     """
     template_id = settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID
 
-    personalisation_items = {}
-
     barrier_team_list = barrier.barrier_team.all()
     for team_recipient in barrier_team_list:
         if team_recipient.role in ["Owner", "Contributor"]:
             recipient = team_recipient.user
 
-        personalisation_items["first_name"] = recipient.first_name
-        personalisation_items["barrier_id"] = str(barrier.code)
-        personalisation_items["barrier_code"] = str(barrier.code)
+            personalisation_items = {}
+            personalisation_items["first_name"] = recipient.first_name
+            personalisation_items["barrier_id"] = str(barrier.id)
+            personalisation_items["barrier_code"] = str(barrier.code)
 
-        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-        client.send_email_notification(
-            email_address=recipient.email,
-            template_id=template_id,
-            personalisation=personalisation_items,
-        )
+            client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+            client.send_email_notification(
+                email_address=recipient.email,
+                template_id=template_id,
+                personalisation=personalisation_items,
+            )
 
 
 def barrier_priority_approval_email_notification(sender, instance: Barrier, **kwargs):
