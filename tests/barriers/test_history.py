@@ -1,8 +1,10 @@
 import datetime
 import logging
+from unittest.mock import patch
 
 from django.test import TestCase
 from freezegun import freeze_time
+from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.assessment.models import EconomicAssessment
 from api.barriers.helpers import get_or_create_public_barrier
@@ -772,26 +774,29 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
             barrier=self.barrier, user=self.user, role="Contributor"
         )
 
-        # Assessment changes
-        economic_assessment = EconomicAssessmentFactory(
-            barrier=self.barrier,
-            rating="LOW",
-        )
-        EconomicImpactAssessmentFactory(
-            economic_assessment=economic_assessment,
-            barrier=economic_assessment.barrier,
-            impact=4,
-        )
-        ResolvabilityAssessmentFactory(
-            barrier=self.barrier,
-            time_to_resolve=4,
-            effort_to_resolve=1,
-        )
-        StrategicAssessmentFactory(
-            barrier=self.barrier,
-            scale=3,
-            uk_grants="Testing",
-        )
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+            # Assessment changes
+            economic_assessment = EconomicAssessmentFactory(
+                barrier=self.barrier,
+                rating="LOW",
+            )
+            EconomicImpactAssessmentFactory(
+                economic_assessment=economic_assessment,
+                barrier=economic_assessment.barrier,
+                impact=4,
+            )
+            ResolvabilityAssessmentFactory(
+                barrier=self.barrier,
+                time_to_resolve=4,
+                effort_to_resolve=1,
+            )
+            StrategicAssessmentFactory(
+                barrier=self.barrier,
+                scale=3,
+                uk_grants="Testing",
+            )
 
         # Public barrier changes
         self.public_barrier.categories.add("109", "115")
