@@ -162,6 +162,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     latest_progress_update = ProgressUpdateSerializer()
     government_organisations = serializers.SerializerMethodField()
     resolved_date = serializers.SerializerMethodField()
+    is_regional_trade_plan = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -240,6 +241,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "action_plan",
             "completion_percent",
             "resolved_date",
+            "is_regional_trade_plan",
         )
 
     def get_status_history(self, obj):
@@ -284,3 +286,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return obj.status_date
         else:
             return None
+
+    def get_is_regional_trade_plan(self, obj):
+        return obj.is_regional_trade_plan

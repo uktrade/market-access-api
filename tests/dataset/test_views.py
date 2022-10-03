@@ -13,7 +13,7 @@ from api.metadata.constants import (
     FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
     FEEDBACK_FORM_SATISFACTION_ANSWERS,
 )
-from api.metadata.models import Organisation
+from api.metadata.models import BarrierTag, Organisation
 from tests.barriers.factories import BarrierFactory
 
 
@@ -110,6 +110,27 @@ class TestBarriersDataset(APITestMixin):
 
         assert org1.name == data_item["government_organisations"][0]
         assert org2.name == data_item["government_organisations"][1]
+
+    def test_is_regional_trade_plan_field(self):
+        barrier = BarrierFactory(archived=False)
+
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+        assert len(response.data["results"]) == 1
+        assert data_item["is_regional_trade_plan"] is False
+
+        tag = BarrierTag.objects.get(title="Regional Trade Plan")
+        barrier.tags.add(tag)
+
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+        assert len(response.data["results"]) == 1
+        assert data_item["is_regional_trade_plan"] is True
 
 
 class TestFeedbackDataset(APITestMixin):

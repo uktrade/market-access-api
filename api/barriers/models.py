@@ -632,6 +632,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
             TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
         ]
 
+    @property
+    def is_regional_trade_plan(self):
+        # has "Regional Trade Plan" in the tags
+        return self.tags.filter(title="Regional Trade Plan").exists()
+
     def last_seen_by(self, user_id):
         try:
             hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
