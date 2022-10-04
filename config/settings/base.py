@@ -494,12 +494,18 @@ BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID = env(
     "BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID", default=""
 )
 
-# IDs for the email templates in Notify
+# ID for the email templates in Notify
 # which will be used to inform regional lead users of barriers
 # that will be automatically updated to either "archived" or
 # "dormant" within the next month
 AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID = env(
     "AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID", default=""
+)
+
+# ID for the email templates in Notify
+# which will be used when a barrier has a new value assessment added
+ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID = env(
+    "ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID", default=""
 )
 
 BARRIER_LIST_DEFAULT_SORT = env.str("BARRIER_LIST_DEFAULT_SORT", default="-reported_on")
