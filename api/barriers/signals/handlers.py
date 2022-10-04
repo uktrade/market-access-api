@@ -6,6 +6,12 @@ from django.dispatch import receiver
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.signals import post_create_historical_record
 
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.barriers.models import (
     Barrier,
     BarrierRequestDownloadApproval,
@@ -163,6 +169,63 @@ def barrier_completion_percentage_changed(sender, instance: Barrier, **kwargs):
     Barrier.objects.filter(id=instance.id).update(completion_percent=new_percentage)
 
 
+@receiver(post_save, sender=Barrier)
+@receiver(post_save, sender=EconomicAssessment)
+@receiver(post_save, sender=EconomicImpactAssessment)
+@receiver(post_save, sender=ResolvabilityAssessment)
+@receiver(post_save, sender=StrategicAssessment)
+def barrier_new_valuation_email_notification(sender, instance, created, **kwargs):
+    """
+    When a new assessment has been added, send an email notification to owner & contributors
+    Assessments are their own objects, so can listen for new ones created except Commercial
+    Value Assessment, which is recorded on the barrier iteslf.
+    """
+    if isinstance(instance, Barrier):
+        # Check if Commercial Value columns have changed value
+        previous_instances = HistoricalBarrier.objects.filter(id=instance.pk)
+        if previous_instances.count() > 1:
+            last_instance = previous_instances[1]
+            old_commercial_value = last_instance.commercial_value
+            new_commercial_value = instance.commercial_value
+            old_commercial_value_explanation = (
+                last_instance.commercial_value_explanation
+            )
+            new_commercial_value_explanation = instance.commercial_value_explanation
+            if (old_commercial_value != new_commercial_value) | (
+                old_commercial_value_explanation != new_commercial_value_explanation
+            ):
+                send_new_valuation_notification(instance)
+    else:
+        if created:
+            # Get the barrier and pass to the notification function
+            barrier = Barrier.objects.filter(id=instance.barrier_id).first()
+            send_new_valuation_notification(barrier)
+
+
+def send_new_valuation_notification(barrier):
+    """
+    Create the email client and send the new valuation notification email
+    """
+    template_id = settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID
+
+    barrier_team_list = barrier.barrier_team.all()
+    for team_recipient in barrier_team_list:
+        if team_recipient.role in ["Owner", "Contributor"]:
+            recipient = team_recipient.user
+
+            personalisation_items = {}
+            personalisation_items["first_name"] = recipient.first_name
+            personalisation_items["barrier_id"] = str(barrier.id)
+            personalisation_items["barrier_code"] = str(barrier.code)
+
+            client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+            client.send_email_notification(
+                email_address=recipient.email,
+                template_id=template_id,
+                personalisation=personalisation_items,
+            )
+
+
 def barrier_priority_approval_email_notification(sender, instance: Barrier, **kwargs):
     """
     If a barrier's top_priority_status has changed, check if a
@@ -203,7 +266,7 @@ def send_top_priority_notification(email_type, barrier):
     Create the email client and send the top_priority notification email
     """
 
-    # Choose accepted or rejceted template
+    # Choose accepted or rejected template
     template_id = ""
     if email_type == "APPROVAL":
         template_id = settings.BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID

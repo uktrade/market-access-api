@@ -1,5 +1,8 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from freezegun import freeze_time
+from notifications_python_client.notifications import NotificationsAPIClient
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -73,25 +76,28 @@ class TestActivityView(APITestMixin, TestCase):
             barrier=self.barrier, user=self.user, role="Contributor"
         )
 
-        # Assessment changes
-        economic_assessment = EconomicAssessmentFactory(
-            barrier=self.barrier,
-            rating="LOW",
-        )
-        EconomicImpactAssessmentFactory(
-            economic_assessment=economic_assessment,
-            barrier=economic_assessment.barrier,
-            impact=4,
-        )
-        ResolvabilityAssessmentFactory(
-            barrier=self.barrier,
-            time_to_resolve=4,
-            effort_to_resolve=1,
-        )
-        StrategicAssessmentFactory(
-            barrier=self.barrier,
-            scale=5,
-        )
+        with patch.object(
+            NotificationsAPIClient, "send_email_notification", return_value=None
+        ) as mock:
+            # Assessment changes
+            economic_assessment = EconomicAssessmentFactory(
+                barrier=self.barrier,
+                rating="LOW",
+            )
+            EconomicImpactAssessmentFactory(
+                economic_assessment=economic_assessment,
+                barrier=economic_assessment.barrier,
+                impact=4,
+            )
+            ResolvabilityAssessmentFactory(
+                barrier=self.barrier,
+                time_to_resolve=4,
+                effort_to_resolve=1,
+            )
+            StrategicAssessmentFactory(
+                barrier=self.barrier,
+                scale=5,
+            )
 
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
