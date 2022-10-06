@@ -223,7 +223,7 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
         else:
             # The top_priority_status is NONE
             if record.top_priority_rejection_summary:
-                # Its a rejected Top Priority Request
+                # It's a rejected Top Priority Request
                 top_priority_status = "REJECTED"
                 top_priority_reason = record.top_priority_rejection_summary
             else:
