@@ -216,13 +216,14 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
             top_priority_status == "APPROVED"
             or top_priority_status == "APPROVAL_PENDING"
             or top_priority_status == "REMOVAL_PENDING"
+            or top_priority_status == "RESOLVED"
         ):
-            # Its an accepted Top Priority Request, or pending review
+            # It's an accepted Top Priority Request, or pending review
             top_priority_reason = record.priority_summary
         else:
             # The top_priority_status is NONE
             if record.top_priority_rejection_summary:
-                # Its a rejected Top Priority Request
+                # It's a rejected Top Priority Request
                 top_priority_status = "REJECTED"
                 top_priority_reason = record.top_priority_rejection_summary
             else:
