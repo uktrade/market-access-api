@@ -8,6 +8,8 @@ from api.barriers.serializers import DataWorkspaceSerializer
 from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 from api.feedback.models import Feedback
 from api.feedback.serializers import FeedbackSerializer
+from api.user.models import UserActvitiyLog
+from api.user.serializers import UserActvitiyLogSerializer
 
 
 class BarrierList(generics.ListAPIView):
@@ -48,3 +50,15 @@ class FeedbackDataWorkspaceListView(generics.ListAPIView):
 
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+
+
+class UserActivityLogView(generics.ListAPIView):
+    if settings.HAWK_ENABLED:
+        authentication_classes = (HawkAuthentication,)
+        permission_classes = (IsAuthenticated,)
+    else:
+        authentication_classes = ()
+        permission_classes = ()
+
+    queryset = UserActvitiyLog.objects.all()
+    serializer_class = UserActvitiyLogSerializer

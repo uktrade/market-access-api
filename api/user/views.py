@@ -13,12 +13,14 @@ from rest_framework.response import Response
 from api.user.helpers import get_django_user_by_sso_user_id
 from api.user.models import (
     Profile,
+    UserActvitiyLog,
     get_my_barriers_saved_search,
     get_team_barriers_saved_search,
 )
 from api.user.serializers import (
     GroupSerializer,
     SavedSearchSerializer,
+    UserActvitiyLogSerializer,
     UserDetailSerializer,
     UserListSerializer,
     WhoAmISerializer,
@@ -127,3 +129,10 @@ class UserList(generics.ListAPIView):
             # distinct needs to match ordering values
             # because Postgres says so 🤪
         )
+
+
+class UserActivityLogList(generics.ListAPIView):
+    serializer_class = UserActvitiyLogSerializer
+
+    def get_queryset(self):
+        return UserActvitiyLog.objects.order_by("-event_time").all()

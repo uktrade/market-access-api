@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import time_machine
+from django.contrib.auth.models import Permission
 from freezegun import freeze_time
 from pytz import UTC
 from rest_framework import status
@@ -167,3 +169,57 @@ class TestFeedbackDataset(APITestMixin):
         )
         assert feedback1.feedback_text == response.data["results"][0]["feedback_text"]
         assert feedback2.feedback_text == response.data["results"][1]["feedback_text"]
+
+
+class TestUserActivityLogDataset(APITestMixin):
+    def test_no_logs(self):
+        url = reverse("dataset:user-activity-log")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 0
+
+    @time_machine.travel("2022-10-15 12:00:01")
+    def test_logs(self):
+        # perform user login
+        assert datetime.now() == datetime(2022, 10, 15, 12, 0, 1)
+        csv_downd_permission_codename = "download_barriers"
+        permission = Permission.objects.get(codename=csv_downd_permission_codename)
+        user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+        user.is_superuser = True
+        user.is_enabled = True
+        user.save()
+        self.create_api_client(user=user)
+
+        url = reverse("dataset:user-activity-log")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 0
+
+        # user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+        # client = Client()
+        self.api_client.force_login(user)
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 1
+
+        csv_download_url = reverse("barriers-s3-email")
+
+        response = self.api_client.get(csv_download_url)
+        assert response.status_code == status.HTTP_200_OK
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 2
+
+        with time_machine.travel("2022-10-18 12:00:02"):
+            assert datetime.now() == datetime(2022, 10, 18, 12, 0, 2)
+            response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 3
+
+        # response = self.api_client.get(url)
+        # assert response.status_code == status.HTTP_200_OK
+        # assert len(response.data["results"]) == 3
+
+        assert False

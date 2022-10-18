@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
-from api.user.models import Profile, SavedSearch
+from api.user.models import Profile, SavedSearch, UserActvitiyLog
 from api.user.staff_sso import sso
 
 UserModel = get_user_model()
@@ -247,4 +247,26 @@ class GroupSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "users",
+        ]
+
+
+class UserActvitiyLogSerializer(serializers.ModelSerializer):
+
+    user_id = serializers.SerializerMethodField()
+    user_email = serializers.SerializerMethodField()
+
+    def get_user_id(self, obj):
+        return obj.user.id
+
+    def get_user_email(self, obj):
+        return obj.user.email
+
+    class Meta:
+        model = UserActvitiyLog
+        fields = [
+            "id",
+            "user_id",
+            "user_email",
+            "event_type",
+            "event_description",
         ]
