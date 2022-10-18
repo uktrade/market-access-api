@@ -211,15 +211,3 @@ class TestUserActivityLogDataset(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 2
-
-        with time_machine.travel("2022-10-18 12:00:02"):
-            assert datetime.now() == datetime(2022, 10, 18, 12, 0, 2)
-            response = self.api_client.get(url)
-        assert response.status_code == status.HTTP_200_OK
-        assert len(response.data["results"]) == 3
-
-        # response = self.api_client.get(url)
-        # assert response.status_code == status.HTTP_200_OK
-        # assert len(response.data["results"]) == 3
-
-        assert False
