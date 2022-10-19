@@ -192,6 +192,8 @@ class TestDataWarehouseExport(TestCase):
             TOP_PRIORITY_BARRIER_STATUS.NONE: False,
         }
 
+        priority_summary = "PB100 status summary"
+
         barrier = BarrierFactory(status_date=date.today())
 
         for (
@@ -199,11 +201,18 @@ class TestDataWarehouseExport(TestCase):
             is_top_priority,
         ) in top_priority_status_to_is_top_priority_map.items():
             barrier.top_priority_status = top_priority_status
+            expected_priority_summary = priority_summary if is_top_priority else ""
+            barrier.priority_summary = expected_priority_summary
+
             serialised_data = DataWorkspaceSerializer(barrier).data
             assert serialised_data["top_priority_status"] == top_priority_status
             assert (
                 "is_top_priority" in serialised_data.keys()
                 and serialised_data["is_top_priority"] is is_top_priority
+            )
+            assert (
+                "priority_summary" in serialised_data
+                and serialised_data["priority_summary"] == expected_priority_summary
             )
 
     def test_resolved_date_empty_for_non_resolved_barriers(self):
