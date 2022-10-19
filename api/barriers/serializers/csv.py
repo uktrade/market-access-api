@@ -107,6 +107,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     government_organisations = serializers.SerializerMethodField()
     is_top_priority = serializers.BooleanField()
     top_priority_status = serializers.CharField()
+    priority_summary = serializers.CharField()
 
     # progress update fields
     progress_update_status = serializers.SerializerMethodField()
