@@ -167,6 +167,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "programme_fund_progress_update_author",
             "is_top_priority",
             "top_priority_status",
+            "priority_summary",
             "government_organisations",
             "is_regional_trade_plan",
         )
