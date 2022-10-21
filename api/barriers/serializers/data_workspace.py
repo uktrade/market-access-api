@@ -201,6 +201,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "modified_on",
             "other_source",
             "priority",
+            "priority_level",
             "priority_summary",
             "product",
             "public_barrier",

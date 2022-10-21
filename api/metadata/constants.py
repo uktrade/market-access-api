@@ -509,3 +509,10 @@ FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS = Choices(
     ("OTHER", "Other"),
     ("DONT_KNOW", "Don't know"),
 )
+
+PRIORITY_LEVELS = Choices(
+    ("NONE", ""),
+    ("REGIONAL", "Regional Priority"),
+    ("COUNTRY", "Country Priority"),
+    ("WATCHLIST", "Watch list"),
+)

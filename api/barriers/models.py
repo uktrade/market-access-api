@@ -37,6 +37,7 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_TERMS,
     GOVERNMENT_ORGANISATION_TYPES,
+    PRIORITY_LEVELS,
     PROGRESS_UPDATE_CHOICES,
     STAGE_STATUS,
     TOP_PRIORITY_BARRIER_STATUS,
@@ -416,15 +417,22 @@ class Barrier(FullyArchivableMixin, BaseModel):
             " this is the message that will be displayed to the user."
         ),
     )
-
-    # Barrier priority
+    # Summary provided when Top 100 barrier requested
+    priority_summary = models.TextField(blank=True)
+    # Old Barrier priority - keep for legacy use
     priority = models.ForeignKey(
         metadata_models.BarrierPriority,
         default=1,
         related_name="barrier",
         on_delete=models.PROTECT,
     )
-    priority_summary = models.TextField(blank=True)
+    # New barrier priority
+    priority_level = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=PRIORITY_LEVELS,
+        default=PRIORITY_LEVELS.NONE,
+    )
     priority_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     stages = models.ManyToManyField(
         Stage,
