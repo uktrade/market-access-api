@@ -43,6 +43,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "modified_by",
             "modified_on",
             "other_source",
+            "priority_level",
             "priority_summary",
             "product",
             "public_barrier",

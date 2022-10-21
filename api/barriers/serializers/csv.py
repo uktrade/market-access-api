@@ -51,6 +51,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
+    priority_level = serializers.CharField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     commercial_value = serializers.IntegerField()
@@ -133,6 +134,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "status_summary",
             "status_date",
             "priority",
+            "priority_level",
             "overseas_region",
             "country",
             "admin_areas",
