@@ -162,7 +162,6 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.data["status"]["id"] == 2
         assert response.data["status_date"]
         assert not response.data["status_summary"]
-        assert "UNKNOWN" == response.data["priority"]["code"]
         assert 0 == len(response.data["categories"])
         assert response.data["created_on"]
 
@@ -204,7 +203,6 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.data["status"]["id"] == 2
         assert response.data["status_date"]
         assert "some status summary" == response.data["status_summary"]
-        assert "UNKNOWN" == response.data["priority"]["code"]
         assert 0 == len(response.data["categories"])
         assert response.data["created_on"]
 

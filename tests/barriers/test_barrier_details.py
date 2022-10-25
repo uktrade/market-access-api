@@ -14,7 +14,7 @@ from api.barriers.models import (
 )
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER_STATUS
-from api.metadata.models import BarrierPriority, Category, Organisation
+from api.metadata.models import Category, Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
 
@@ -172,22 +172,6 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert self.barrier.sectors == [
             sector["id"] for sector in response.data["sectors"]
         ]
-
-    def test_patch_barrier_priority(self):
-        unknown_priority = BarrierPriority.objects.get(code="UNKNOWN")
-        assert unknown_priority == self.barrier.priority
-
-        priorities = ["HIGH", "MEDIUM", "LOW", "UNKNOWN"]
-
-        for priority in priorities:
-            with self.subTest(priority=priority):
-                payload = {"priority": priority, "priority_summary": "wibble wobble"}
-
-                response = self.api_client.patch(self.url, format="json", data=payload)
-
-                assert status.HTTP_200_OK == response.status_code
-                assert str(self.barrier.id) == response.data["id"]
-                assert priority == response.data["priority"]["code"]
 
     def test_add_barrier_categories(self):
         categories = Category.objects.all()
