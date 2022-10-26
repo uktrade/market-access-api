@@ -9,6 +9,7 @@ from api.history.models import CachedHistoryItem
 from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     PROGRESS_UPDATE_CHOICES,
+    TOP_PRIORITY_BARRIER_STATUS,
     BarrierStatus,
 )
 
@@ -163,6 +164,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     government_organisations = serializers.SerializerMethodField()
     resolved_date = serializers.SerializerMethodField()
     is_regional_trade_plan = serializers.SerializerMethodField()
+    is_resolved_top_priority = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -194,6 +196,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "import_market_size",
             "is_summary_sensitive",
             "top_priority_status",
+            "is_resolved_top_priority",
             "is_top_priority",
             "latest_progress_update",
             "location",
@@ -223,6 +226,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "team_count",
             "term",
             "title",
+            "top_priority_status",
             "trade_category",
             "trade_direction",
             "trading_bloc",
@@ -236,7 +240,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "value_to_economy",
             "wto_profile",
             "government_organisations",
-            # action plans
             "action_plan_added",
             "action_plan",
             "completion_percent",
@@ -289,3 +292,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_is_regional_trade_plan(self, obj):
         return obj.is_regional_trade_plan
+
+    def get_is_resolved_top_priority(self, obj):
+        return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
