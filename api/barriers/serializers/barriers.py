@@ -34,6 +34,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "economic_assessments",
             "valuation_assessments",
             "estimated_resolution_date",
+            "example_things",
             "id",
             "is_summary_sensitive",
             "is_top_priority",
