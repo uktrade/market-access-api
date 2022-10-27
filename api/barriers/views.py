@@ -492,6 +492,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "is_top_priority": "Is Top Priority",
         "top_priority_status": "Top Priority Status",
         "priority_summary": "Reason for Top Priority Status",
+        "is_resolved_top_priority": "Is Resolved Top Priority",
         "government_organisations": "Related Organisations",
         "progress_update_status": "Progress update status",
         "progress_update_message": "Progress update message",
