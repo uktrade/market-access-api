@@ -10,6 +10,7 @@ from api.barriers.helpers import get_team_members
 from api.barriers.models import (
     Barrier,
     BarrierProgressUpdate,
+    ExampleThing,
     ProgrammeFundProgressUpdate,
 )
 from api.core.test_utils import APITestMixin
@@ -572,3 +573,12 @@ class TestBarrierExampleThing(APITestMixin, TestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert "example_things" in response.data
+
+    def test_barrier_has_new_thing(self):
+        new_thing_name = "New thing"
+        ExampleThing.objects.create(barrier=self.barrier, name=new_thing_name)
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert len(response.data["example_things"]) == 1
+        assert response.data["example_things"][0]["name"] == new_thing_name
