@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Barrier, PublicBarrier
+from .models import Barrier, ExampleThing, PublicBarrier
 
 
 class BarrierAdmin(admin.ModelAdmin):
@@ -57,3 +57,5 @@ class PublicBarrierAdmin(admin.ModelAdmin):
 
 
 admin.site.register(PublicBarrier, PublicBarrierAdmin)
+
+admin.site.register(ExampleThing)
