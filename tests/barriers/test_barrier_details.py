@@ -559,3 +559,16 @@ class TestBarrierPublicEligibility(APITestMixin, TestCase):
 
     def test_patch_public_eligibility_without_permissions(self):
         pass
+
+
+class TestBarrierExampleThing(APITestMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.barrier = BarrierFactory()
+        self.url = reverse("get-barrier", kwargs={"pk": self.barrier.id})
+
+    def test_barrier_things_in_api_response(self):
+        response = self.api_client.get(self.url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert "example_things" in response.data
