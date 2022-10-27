@@ -34,6 +34,7 @@ from api.barriers.serializers.progress_updates import (
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
+from .example_thing import ExampleThingField
 from .mixins import LocationFieldMixin
 from .public_barriers import NestedPublicBarrierSerializer
 
@@ -81,6 +82,7 @@ class BarrierSerializerBase(
         required=False, many=True
     )
     is_top_priority = serializers.BooleanField(required=False)
+    example_things = ExampleThingField(required=False)
 
     class Meta:
         model = Barrier
