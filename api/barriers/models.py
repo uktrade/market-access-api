@@ -1914,3 +1914,16 @@ class BarrierSearchCSVDownloadEvent(models.Model):
     email = models.EmailField()
     barrier_ids = models.TextField(validators=[int_list_validator])
     created = models.DateTimeField(auto_now_add=True)
+
+
+class ExampleThing(BaseModel):
+    # subclassing BaseModel gives us creation and modification fields
+    barrier = models.ForeignKey(
+        to=Barrier, on_delete=models.CASCADE, related_name="example_things"
+    )
+    name = models.TextField(default="example thing", blank=True)
+
+    class Meta:
+        ordering = [
+            "created_on",
+        ]
