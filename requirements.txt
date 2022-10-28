@@ -33,7 +33,7 @@ django-redis==4.12.1; python_version >= "3.5"
 django-simple-history==2.11.0; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
 django-staff-sso-client==3.1.0
 django-timezone-field==4.2.3; python_version >= "3.5"
-django==3.2.12; python_version >= "3.6"
+django==3.2.16; python_version >= "3.6"
 djangorestframework==3.12.1; python_version >= "3.5"
 docopt==0.6.2; python_version >= "3.6"
 elastic-apm==6.3.3; python_version >= "3.6" and python_version < "4"
