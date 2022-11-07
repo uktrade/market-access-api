@@ -1380,6 +1380,10 @@ class BarrierFilterSet(django_filters.FilterSet):
         if value:
             # for v in value:
             queryset = queryset.filter(priority_level__in=value)
+            if "NONE" in value:
+                queryset = queryset.filter(
+                    Q(top_priority_status="NONE") & Q(priority_level="NONE")
+                )
         return queryset
 
     def priority_filter(self, queryset, name, value):
