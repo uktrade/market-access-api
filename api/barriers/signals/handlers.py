@@ -251,8 +251,15 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
                 new_top_priority_status == "NONE"
                 and old_top_priority_status == "APPROVAL_PENDING"
             ):
-                # If status has changed from Pending to None, we know it has been rejected
-                send_top_priority_notification("REJECTION", instance)
+                # Removal of APPROVAL_PENDING status can be in 2 situations;
+                # - Admin has rejected, so send email
+                # - Barrier has moved to WATCHLIST priority, automatically removing the request, so don't send email
+
+                # If the barrier's priority is WATCHLIST now, we know this shouldn't trigger an email
+                if instance.priority_level == "WATCHLIST":
+                    return
+                else:
+                    send_top_priority_notification("REJECTION", instance)
             else:
                 # Status change indicates barrier has neither been rejected or accepted in this save operation
                 return
