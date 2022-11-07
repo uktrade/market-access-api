@@ -117,6 +117,7 @@ class BarrierListSerializer(BarrierSerializerBase):
             "trading_bloc",
             "progress_updates",
             "is_top_priority",
+            "priority_level",
             "top_priority_status",
             "top_priority_rejection_summary",
             "current_valuation_assessment",
