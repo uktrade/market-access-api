@@ -37,6 +37,7 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_TERMS,
     GOVERNMENT_ORGANISATION_TYPES,
+    PRIORITY_LEVELS,
     PROGRESS_UPDATE_CHOICES,
     STAGE_STATUS,
     TOP_PRIORITY_BARRIER_STATUS,
@@ -416,15 +417,22 @@ class Barrier(FullyArchivableMixin, BaseModel):
             " this is the message that will be displayed to the user."
         ),
     )
-
-    # Barrier priority
+    # Summary provided when Top 100 barrier requested
+    priority_summary = models.TextField(blank=True)
+    # Old Barrier priority - keep for legacy use
     priority = models.ForeignKey(
         metadata_models.BarrierPriority,
         default=1,
         related_name="barrier",
         on_delete=models.PROTECT,
     )
-    priority_summary = models.TextField(blank=True)
+    # New barrier priority
+    priority_level = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=PRIORITY_LEVELS,
+        default=PRIORITY_LEVELS.NONE,
+    )
     priority_date = models.DateTimeField(auto_now=True, blank=True, null=True)
     stages = models.ManyToManyField(
         Stage,
@@ -1276,6 +1284,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     top_priority_status = django_filters.BaseInFilter(
         method="top_priority_status_filter"
     )
+    priority_level = django_filters.BaseInFilter(method="priority_level_filter")
     location = django_filters.BaseInFilter(method="location_filter")
     search = django_filters.Filter(method="text_search")
     text = django_filters.Filter(method="text_search")
@@ -1345,20 +1354,17 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset.exclude(all_sectors=True)
 
     def top_priority_status_filter(self, queryset, name, value):
-        values_to_filter = []
-        if "PENDING" in value:
-            values_to_filter.extend(
-                [
-                    TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
-                    TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-                ]
-            )
-        if "APPROVED" in value:
-            values_to_filter.append(TOP_PRIORITY_BARRIER_STATUS.APPROVED)
-        if "RESOLVED" in value:
-            values_to_filter.append(TOP_PRIORITY_BARRIER_STATUS.RESOLVED)
-        if values_to_filter:
-            return queryset.filter(top_priority_status__in=values_to_filter)
+        if value:
+            queryset = queryset.filter(top_priority_status__in=value)
+        return queryset
+
+    def priority_level_filter(self, queryset, name, value):
+        if value:
+            queryset = queryset.filter(priority_level__in=value)
+            if "NONE" in value:
+                queryset = queryset.filter(
+                    Q(top_priority_status="NONE") & Q(priority_level="NONE")
+                )
         return queryset
 
     def priority_filter(self, queryset, name, value):
