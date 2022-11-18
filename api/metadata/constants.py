@@ -61,8 +61,8 @@ class BarrierStatus(StatusNameMixin):
 
     choices = Choices(
         (UNFINISHED, "Unfinished"),
-        (OPEN_PENDING, "Open: Pending action"),
-        (OPEN_IN_PROGRESS, "Open: In progress"),
+        (OPEN_PENDING, "Open"),
+        (OPEN_IN_PROGRESS, "Open"),
         (RESOLVED_IN_PART, "Resolved: In part"),
         (RESOLVED_IN_FULL, "Resolved: In full"),
         (DORMANT, "Dormant"),
