@@ -62,7 +62,7 @@ class MetadataView(generics.GenericAPIView):
         barrier_status = dict(
             [
                 choice
-                for choice in BarrierStatus.choices()
+                for choice in BarrierStatus.choices
                 if choice[0] != BarrierStatus.OPEN_PENDING
             ]
         )
