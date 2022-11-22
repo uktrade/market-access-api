@@ -75,7 +75,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["status_history"] == [
             {
                 "date": "2020-01-25T00:00:00+00:00",
-                "status": {"id": 2, "name": "Open: In progress"},
+                "status": {"id": 2, "name": "Open"},
             }
         ]
 
