@@ -49,8 +49,7 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
             instance = self.get_object()
         except Http404 as e:
             barrier = Barrier.objects.get(pk=barrier)
-            owner = barrier.barrier_team.get(role="Owner")
-            instance = ActionPlan(barrier=barrier, owner=owner.user)
+            instance = ActionPlan(barrier=barrier)
             instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
