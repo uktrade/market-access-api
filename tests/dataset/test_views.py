@@ -59,7 +59,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["id"] == str(db_barrier.id)
         assert barrier["code"] is not None
         assert barrier["title"] is not None
-        assert barrier["status"]["name"] == "Open: In progress"
+        assert barrier["status"]["name"] == "Open"
         assert barrier["priority"]["name"] == "Unknown"
         assert barrier["country"]["name"] == "Spain"
         assert barrier["country"]["overseas_region"]["name"] == "Europe"
