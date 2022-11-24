@@ -329,7 +329,7 @@ def public_barriers_to_json(public_barriers=None):
                 "id": "kjdfhkzx",
                 "title": "Belgian chocolate...",
                 "summary": "Lorem ipsum",
-                "status": {"name": "Open: in progress",}
+                "status": {"name": "Open",}
                 "country": {"name": "Belgium",}
                 "caused_by_trading_bloc": false,
                 "trading_bloc": null,
