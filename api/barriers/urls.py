@@ -10,6 +10,7 @@ from api.barriers.views import (
     BarrierListS3EmailFile,
     BarrierOpenActionRequired,
     BarrierOpenInProgress,
+    BarrierPrioritySummaryViewSet,
     BarrierProgressUpdateViewSet,
     BarrierReportDetail,
     BarrierReportList,
@@ -85,6 +86,28 @@ urlpatterns = router.urls + [
             }
         ),
         name="top_100_progress_updates_detail",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/top_priority_summary",
+        BarrierPrioritySummaryViewSet.as_view(
+            {
+                "get": "list",
+                "post": "create",
+            }
+        ),
+        name="top_priority_summary",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/top_priority_summary/<uuid:pk>",
+        BarrierPrioritySummaryViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="top_priority_summary_detail",
     ),
     path(
         "barriers/<uuid:barrier_pk>/programme_fund_progress_updates",
