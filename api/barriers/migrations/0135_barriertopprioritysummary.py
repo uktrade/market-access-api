@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('barriers', '0132_auto_20221021_1052'),
+        ('barriers', '0134_migrate_unknown_barriers_to_open'),
     ]
 
     operations = [
