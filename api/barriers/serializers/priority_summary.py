@@ -6,10 +6,10 @@ from api.barriers.serializers.progress_updates import UpdateSerializerMixin
 
 class PrioritySummarySerializer(serializers.ModelSerializer, UpdateSerializerMixin):
     top_priority_summary_text = serializers.CharField(required=False)
-    created_on = serializers.SerializerMethodField()
-    created_by = serializers.SerializerMethodField()
-    modified_on = serializers.SerializerMethodField()
-    modified_by = serializers.SerializerMethodField()
+    created_on = serializers.SerializerMethodField(required=False)
+    created_by = serializers.SerializerMethodField(required=False)
+    modified_on = serializers.SerializerMethodField(required=False)
+    modified_by = serializers.SerializerMethodField(required=False)
     barrier = serializers.CharField(source="barrier.id", required=False)
 
     class Meta:
@@ -37,11 +37,11 @@ class PrioritySummarySerializer(serializers.ModelSerializer, UpdateSerializerMix
         return instance
 
     def get_created_by(self, obj):
-        if obj.created_by:
+        if hasattr(obj, "created_by"):
             return f"{obj.created_by.first_name} {obj.created_by.last_name}"
 
     def get_modified_by(self, obj):
-        if obj.modified_by:
+        if hasattr(obj, "modified_by"):
             return f"{obj.modified_by.first_name} {obj.modified_by.last_name}"
 
     def format_priority_summary_date(self, stored_date):
@@ -52,9 +52,9 @@ class PrioritySummarySerializer(serializers.ModelSerializer, UpdateSerializerMix
         return f"{formatted_date} at {formatted_time}{am_pm} ({timezone})"
 
     def get_created_on(self, obj):
-        if obj.created_on:
+        if hasattr(obj, "created_on"):
             return self.format_priority_summary_date(obj.created_on)
 
     def get_modified_on(self, obj):
-        if obj.modified_on:
+        if hasattr(obj, "modified_on"):
             return self.format_priority_summary_date(obj.modified_on)
