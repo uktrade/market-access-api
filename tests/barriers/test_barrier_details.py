@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 from django.test import TestCase
@@ -17,6 +18,8 @@ from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER
 from api.metadata.models import Category, Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
+
+logger = logging.getLogger(__name__)
 
 
 class TestBarrierDetails(APITestMixin, APITestCase):

@@ -1,4 +1,5 @@
 import csv
+import logging
 from collections import defaultdict
 from datetime import datetime
 from itertools import chain
@@ -65,6 +66,8 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPub
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
+
+logger = logging.getLogger(__name__)
 
 
 class Echo:
@@ -1069,7 +1072,7 @@ class BarrierPrioritySummaryViewSet(ModelViewSet):
 
     def perform_create(self, serializer, user):
         # share the exact same date within both created_on and modified_on
-        now = datetime.now()
+        now = timezone.now()
         instance = serializer.save()
         instance.created_by = user
         instance.created_on = now
@@ -1087,7 +1090,7 @@ class BarrierPrioritySummaryViewSet(ModelViewSet):
         )
 
     def perform_update(self, serializer, user):
-        now = datetime.now()
+        now = timezone.now()
         instance = serializer.save()
         instance.modified_by = user
         instance.modified_on = now
