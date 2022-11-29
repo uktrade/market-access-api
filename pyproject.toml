@@ -61,6 +61,7 @@ simplejson = "==3.17.2"
 ipdb = "^0.13.9"
 pytest-watch = "^4.2.0"
 time-machine = "^2.8.2"
+greenlet = "~1.1.2"
 
 [build-system]
 requires = ["poetry~=1.1.8"]
