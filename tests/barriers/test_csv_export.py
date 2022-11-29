@@ -170,13 +170,82 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             assert is_top_priority == serialised_data["is_top_priority"]
 
     def test_top_priority_status(self):
-        for status in TOP_PRIORITY_BARRIER_STATUS:
+        priority_summary = "PB100 status summary"
+        top_priority_status_to_is_top_priority_map = {
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED: True,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING: True,
+            TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING: False,
+            TOP_PRIORITY_BARRIER_STATUS.NONE: False,
+            TOP_PRIORITY_BARRIER_STATUS.RESOLVED: False,
+        }
+        for (
+            top_priority_status,
+            is_top_priority,
+        ) in top_priority_status_to_is_top_priority_map.items():
+            expected_priority_summary = priority_summary if is_top_priority else ""
             barrier = BarrierFactory(
-                top_priority_status=status[0],
+                top_priority_status=top_priority_status,
+                priority_summary=expected_priority_summary,
                 status_date=datetime.date.today(),
             )
             serialised_data = BarrierCsvExportSerializer(barrier).data
-            assert serialised_data["top_priority_status"] == status[0]
+            assert serialised_data["top_priority_status"] == top_priority_status
+            assert "priority_summary" in serialised_data
+            assert serialised_data["priority_summary"] == expected_priority_summary
+
+    def test_has_value_for_is_resolved_top_priority(self):
+        barrier = BarrierFactory(status_date=datetime.date.today())
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert "is_resolved_top_priority" in serialised_data.keys()
+
+    def test_value_for_is_resolved_top_priority_is_bool(self):
+        barrier = BarrierFactory(status_date=datetime.date.today())
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert isinstance(serialised_data["is_resolved_top_priority"], bool)
+
+    def test_is_resolved_top_priority_value_for_resolved_top_priority_is_correct(self):
+        barrier = BarrierFactory(
+            status_date=datetime.date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.RESOLVED,
+        )
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is True
+
+    def test_is_resolved_top_priority_value_for_approved_top_priority_is_correct(self):
+        barrier = BarrierFactory(
+            status_date=datetime.date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+        )
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
+
+    def test_is_resolved_top_priority_value_for_approval_pending_top_priority_is_correct(
+        self,
+    ):
+        barrier = BarrierFactory(
+            status_date=datetime.date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
+        )
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
+
+    def test_is_resolved_top_priority_value_for_removal_pending_top_priority_is_correct(
+        self,
+    ):
+        barrier = BarrierFactory(
+            status_date=datetime.date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+        )
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
+
+    def test_is_resolved_top_priority_value_for_no_top_priority_is_correct(self):
+        barrier = BarrierFactory(
+            status_date=datetime.date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.NONE,
+        )
+        serialised_data = BarrierCsvExportSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
 
     def test_valuation_assessment_midpoint(self):
         impact_level = 6

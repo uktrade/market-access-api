@@ -182,6 +182,60 @@ class TestDataWarehouseExport(TestCase):
             serialised_data["is_top_priority"], bool
         )
 
+    def test_has_value_for_is_resolved_top_priority(self):
+        barrier = BarrierFactory(status_date=date.today())
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert "is_resolved_top_priority" in serialised_data.keys()
+
+    def test_value_for_is_resolved_top_priority_is_bool(self):
+        barrier = BarrierFactory(status_date=date.today())
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert isinstance(serialised_data["is_resolved_top_priority"], bool)
+
+    def test_is_resolved_top_priority_value_for_resolved_top_priority_is_correct(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.RESOLVED,
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is True
+
+    def test_is_resolved_top_priority_value_for_approved_top_priority_is_correct(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
+
+    def test_is_resolved_top_priority_value_for_approval_pending_top_priority_is_correct(
+        self,
+    ):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
+
+    def test_is_resolved_top_priority_value_for_removal_pending_top_priority_is_correct(
+        self,
+    ):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
+
+    def test_is_resolved_top_priority_value_for_no_top_priority_is_correct(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.NONE,
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert serialised_data["is_resolved_top_priority"] is False
+
     def test_data_warehouse_is_top_priority_barrier(self):
 
         # Left: top_priority_status - Right: expected is_top_priority value
@@ -192,6 +246,8 @@ class TestDataWarehouseExport(TestCase):
             TOP_PRIORITY_BARRIER_STATUS.NONE: False,
         }
 
+        priority_summary = "PB100 status summary"
+
         barrier = BarrierFactory(status_date=date.today())
 
         for (
@@ -199,11 +255,18 @@ class TestDataWarehouseExport(TestCase):
             is_top_priority,
         ) in top_priority_status_to_is_top_priority_map.items():
             barrier.top_priority_status = top_priority_status
+            expected_priority_summary = priority_summary if is_top_priority else ""
+            barrier.priority_summary = expected_priority_summary
+
             serialised_data = DataWorkspaceSerializer(barrier).data
             assert serialised_data["top_priority_status"] == top_priority_status
             assert (
                 "is_top_priority" in serialised_data.keys()
                 and serialised_data["is_top_priority"] is is_top_priority
+            )
+            assert (
+                "priority_summary" in serialised_data
+                and serialised_data["priority_summary"] == expected_priority_summary
             )
 
     def test_resolved_date_empty_for_non_resolved_barriers(self):

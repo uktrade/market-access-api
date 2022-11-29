@@ -58,7 +58,14 @@ class MetadataView(generics.GenericAPIView):
         publish_response = dict(PUBLISH_RESPONSE)
         report_status = dict(REPORT_STATUS)
         support_type = dict(SUPPORT_TYPE)
-        barrier_status = dict(BarrierStatus.choices)
+        # skip OPEN_PENDING as it's not used in the frontend
+        barrier_status = dict(
+            [
+                choice
+                for choice in BarrierStatus.choices
+                if choice[0] != BarrierStatus.OPEN_PENDING
+            ]
+        )
         barrier_pending = dict(BARRIER_PENDING)
         barrier_chance = dict(BARRIER_CHANCE_OF_SUCCESS)
         barrier_inter_type = dict(BARRIER_INTERACTION_TYPE)

@@ -61,6 +61,7 @@ class BarrierSerializerBase(
     last_seen_on = serializers.SerializerMethodField()
     modified_by = UserField(required=False)
     priority = BarrierPriorityField(required=False)
+    priority_level = serializers.CharField(required=False)
     sectors = SectorsField(required=False)
     source = SourceField(required=False)
     status = StatusField(required=False)

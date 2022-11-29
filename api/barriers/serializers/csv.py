@@ -16,6 +16,7 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_TERMS,
     GOVERNMENT_ORGANISATION_TYPES,
+    TOP_PRIORITY_BARRIER_STATUS,
     TRADE_DIRECTION_CHOICES,
     BarrierStatus,
     PublicBarrierStatus,
@@ -51,6 +52,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     product = serializers.CharField()
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
+    priority_level = serializers.CharField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     commercial_value = serializers.IntegerField()
@@ -107,6 +109,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     government_organisations = serializers.SerializerMethodField()
     is_top_priority = serializers.BooleanField()
     top_priority_status = serializers.CharField()
+    priority_summary = serializers.CharField()
+    is_resolved_top_priority = serializers.SerializerMethodField()
 
     # progress update fields
     progress_update_status = serializers.SerializerMethodField()
@@ -132,6 +136,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "status_summary",
             "status_date",
             "priority",
+            "priority_level",
             "overseas_region",
             "country",
             "admin_areas",
@@ -166,6 +171,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "programme_fund_progress_update_author",
             "is_top_priority",
             "top_priority_status",
+            "is_resolved_top_priority",
+            "priority_summary",
             "government_organisations",
             "is_regional_trade_plan",
         )
@@ -473,6 +480,9 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
 
     def get_is_regional_trade_plan(self, obj):
         return obj.is_regional_trade_plan
+
+    def get_is_resolved_top_priority(self, obj):
+        return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
 
 
 class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):

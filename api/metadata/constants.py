@@ -61,8 +61,8 @@ class BarrierStatus(StatusNameMixin):
 
     choices = Choices(
         (UNFINISHED, "Unfinished"),
-        (OPEN_PENDING, "Open: Pending action"),
-        (OPEN_IN_PROGRESS, "Open: In progress"),
+        (OPEN_PENDING, "Open"),
+        (OPEN_IN_PROGRESS, "Open"),
         (RESOLVED_IN_PART, "Resolved: In part"),
         (RESOLVED_IN_FULL, "Resolved: In full"),
         (DORMANT, "Dormant"),
@@ -508,4 +508,11 @@ FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS = Choices(
     ("ACTION_PLAN", "Create or edit an action plan"),
     ("OTHER", "Other"),
     ("DONT_KNOW", "Don't know"),
+)
+
+PRIORITY_LEVELS = Choices(
+    ("NONE", ""),
+    ("REGIONAL", "Regional Priority"),
+    ("COUNTRY", "Country Priority"),
+    ("WATCHLIST", "Watch list"),
 )
