@@ -6,6 +6,7 @@ from rest_framework import serializers
 from api.barriers.models import (
     Barrier,
     BarrierRequestDownloadApproval,
+    BarrierTopPrioritySummary,
     HistoricalBarrier,
 )
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
@@ -109,7 +110,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     government_organisations = serializers.SerializerMethodField()
     is_top_priority = serializers.BooleanField()
     top_priority_status = serializers.CharField()
-    priority_summary = serializers.CharField()
+    top_priority_summary = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
 
     # progress update fields
@@ -172,7 +173,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "is_top_priority",
             "top_priority_status",
             "is_resolved_top_priority",
-            "priority_summary",
+            "top_priority_summary",
             "government_organisations",
             "is_regional_trade_plan",
         )
@@ -483,6 +484,14 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
 
     def get_is_resolved_top_priority(self, obj):
         return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+
+    def get_top_priority_summary(self, obj):
+        priority_summary = BarrierTopPrioritySummary.objects.filter(barrier=obj.id)
+        if priority_summary:
+            latest_summary = priority_summary.latest("modified_on")
+            return latest_summary.top_priority_summary_text
+        else:
+            return None
 
 
 class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):

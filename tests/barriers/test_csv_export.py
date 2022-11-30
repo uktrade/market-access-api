@@ -11,6 +11,7 @@ from rest_framework.test import APITestCase
 from api.barriers.models import (
     Barrier,
     BarrierProgressUpdate,
+    BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
 )
 from api.barriers.serializers import BarrierCsvExportSerializer
@@ -170,7 +171,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             assert is_top_priority == serialised_data["is_top_priority"]
 
     def test_top_priority_status(self):
-        priority_summary = "PB100 status summary"
+        top_priority_summary = "PB100 status summary"
         top_priority_status_to_is_top_priority_map = {
             TOP_PRIORITY_BARRIER_STATUS.APPROVED: True,
             TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING: True,
@@ -182,16 +183,23 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             top_priority_status,
             is_top_priority,
         ) in top_priority_status_to_is_top_priority_map.items():
-            expected_priority_summary = priority_summary if is_top_priority else ""
+            expected_top_priority_summary = (
+                top_priority_summary if is_top_priority else ""
+            )
             barrier = BarrierFactory(
                 top_priority_status=top_priority_status,
-                priority_summary=expected_priority_summary,
                 status_date=datetime.date.today(),
             )
+            summary = BarrierTopPrioritySummary()
+            summary.barrier = barrier
+            summary.top_priority_summary_text = expected_top_priority_summary
+            summary.save()
             serialised_data = BarrierCsvExportSerializer(barrier).data
             assert serialised_data["top_priority_status"] == top_priority_status
-            assert "priority_summary" in serialised_data
-            assert serialised_data["priority_summary"] == expected_priority_summary
+            assert "top_priority_summary" in serialised_data
+            assert (
+                serialised_data["top_priority_summary"] == expected_top_priority_summary
+            )
 
     def test_has_value_for_is_resolved_top_priority(self):
         barrier = BarrierFactory(status_date=datetime.date.today())
