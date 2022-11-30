@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.auth.signals import user_logged_in
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models.signals import post_save
@@ -10,6 +11,7 @@ from django_filters import BaseInFilter
 
 from api.barriers import models as barriers_models
 from api.core.utils import nested_sort
+from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -39,6 +41,7 @@ class Profile(models.Model):
         max_length=255,
         help_text="Canonical Staff SSO UUID for reference",
     )
+    last_activity = models.DateTimeField(null=True, blank=True)
 
 
 class BaseSavedSearch(models.Model):
@@ -304,3 +307,35 @@ def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
     except Profile.DoesNotExist:
         Profile.objects.create(user=instance)
+
+
+class UserActvitiyLog(models.Model):
+    # nullable so audit trail stays after user is deleted
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    event_type = models.TextField(choices=USER_ACTIVITY_EVENT_TYPES)
+    event_time = models.DateTimeField(auto_now_add=True)
+    event_description = models.TextField(
+        help_text="A human readable description of the event"
+    )
+    event_data = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="Field for extra event based data that is not covered by other fields",
+    )
+
+    class Meta:
+        ordering = ("-event_time",)
+
+
+# signal on login
+
+
+def record_user_login_activity(sender, user, request, **kwargs):
+    UserActvitiyLog.objects.create(
+        user=user,
+        event_type=USER_ACTIVITY_EVENT_TYPES.USER_LOGGED_IN,
+        event_description="User logged in",
+    )
+
+
+user_logged_in.connect(record_user_login_activity)

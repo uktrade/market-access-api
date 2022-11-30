@@ -51,10 +51,12 @@ from api.metadata.constants import (
     BARRIER_SEARCH_ORDERING_CHOICES,
     PublicBarrierStatus,
 )
+from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.helpers import has_profile, update_user_profile
 from api.user.models import (
     Profile,
     SavedSearch,
+    UserActvitiyLog,
     get_my_barriers_saved_search,
     get_team_barriers_saved_search,
 )
@@ -526,6 +528,12 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         barrier_ids = list(
             chain.from_iterable(queryset)
         )  # flatten queryset to a list of ids
+
+        UserActvitiyLog.objects.create(
+            user=self.request.user,
+            event_type=USER_ACTIVITY_EVENT_TYPES.BARRIER_CSV_DOWNLOAD,
+            event_description="User has exported a CSV of barriers",
+        )
 
         # Make celery call don't wait for return
         generate_s3_and_send_email.delay(
