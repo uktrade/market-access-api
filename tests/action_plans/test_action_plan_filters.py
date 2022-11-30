@@ -1,5 +1,4 @@
 import pytest
-from django.contrib.auth.models import User
 from django.test import TestCase
 
 from api.action_plans.models import ActionPlan
@@ -94,17 +93,4 @@ class TestActionPlanFilters(TestCase):
 
         # skip the save method
         ActionPlan.objects.filter(id=action_plan.id).update(has_risks="")
-        self.assertEqual(self._active_count(), 0)
-
-        user = User(
-            username=User.objects.make_random_password(),
-            first_name="TestFirst",
-            last_name="TestLast",
-        )
-        user.save()
-        ActionPlan.objects.filter(id=action_plan.id).update(owner=user)
-
-        self.assertEqual(self._active_count(), 1)
-
-        ActionPlan.objects.filter(id=action_plan.id).update(owner=None)
         self.assertEqual(self._active_count(), 0)
