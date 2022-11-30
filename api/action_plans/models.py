@@ -41,7 +41,6 @@ class ActionPlanManager(models.Manager):
                 | Q(potential_risks__gt="")
                 | Q(risk_mitigation_measures__gt="")
                 | Q(num_milestones__gt=0)
-                | Q(owner__isnull=False)
                 | Q(num_stakeholders__gt=0)
             )
         )
