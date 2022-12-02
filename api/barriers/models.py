@@ -1920,3 +1920,30 @@ class BarrierSearchCSVDownloadEvent(models.Model):
     email = models.EmailField()
     barrier_ids = models.TextField(validators=[int_list_validator])
     created = models.DateTimeField(auto_now_add=True)
+
+
+class BarrierPriorityHistoricalSummary(models.Model):
+    # PB100 summaries
+    barrier = models.ForeignKey(
+        Barrier, related_name="priority_historical_summaries", on_delete=models.CASCADE
+    )
+
+    created_on = models.DateTimeField(auto_now_add=True)
+    modified_on = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        blank=True,
+        null=True,
+        to=User,
+        on_delete=models.SET_NULL,
+        related_name="created_barrier_priorities",
+    )
+    modified_by = models.ForeignKey(
+        blank=True,
+        null=True,
+        to=User,
+        on_delete=models.SET_NULL,
+        related_name="modified_barrier_priorities",
+    )
+    top_priority_status = models.CharField(blank=True, null=True, max_length=50)
+    top_priority_rejection_summary = models.TextField(null=True, blank=True)
+    top_priority_summary = models.TextField(blank=True, null=True)
