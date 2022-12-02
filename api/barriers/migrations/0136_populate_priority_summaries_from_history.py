@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def compare_priority_dicts(dict1, dict2):
     for key in dict1:
         if dict1[key] != dict2[key]:
@@ -14,6 +15,7 @@ def get_barrier_priority_fields(barrier):
         "top_priority_status": barrier.top_priority_status,
         "priority_summary": barrier.priority_summary,
     }
+
 
 def populate_summaries_table_from_history(apps, schema_editor):
     Barrier = apps.get_model("barriers", "Barrier")
@@ -36,13 +38,20 @@ def populate_summaries_table_from_history(apps, schema_editor):
                     barrier=barrier,
                     modified_by=user,
                     modified_on=history_item.history_date,
-                    top_priority_summary_text=new_priority_state.get("priority_summary"),
+                    top_priority_summary_text=new_priority_state.get(
+                        "priority_summary"
+                    ),
                 )
                 new_summary.save()
             else:
-                existing_summary = BarrierPriorityHistoricalSummary.objects.filter(barrier=barrier).order_by("-created_by")
+                existing_summary = (
+                    BarrierPriorityHistoricalSummary.objects.filter(barrier=barrier)
+                    .order_by("-created_by")
                     .first()
-                existing_summary.top_priority_summary_text = new_priority_state.get("priority_summary")
+                )
+                existing_summary.top_priority_summary_text = new_priority_state.get(
+                    "priority_summary"
+                )
                 existing_summary.created_by = new_priority_state["created_by"]
                 existing_summary.created_on = history_item.history_date
                 existing_summary.save()
@@ -51,9 +60,8 @@ def populate_summaries_table_from_history(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('barriers', '0135_barriertopprioritysummary'),
+        ("barriers", "0135_barriertopprioritysummary"),
     ]
-
 
     operations = [
         migrations.RunPython(populate_summaries_table_from_history),
