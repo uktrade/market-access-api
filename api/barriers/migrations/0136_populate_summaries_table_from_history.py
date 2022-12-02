@@ -61,6 +61,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 existing_summary.top_priority_status = new_priority_status
                 existing_summary.top_priority_rejection_summary = new_priority_state.get("top_priority_rejection_summary")
                 existing_summary.top_priority_summary = new_priority_state["priority_summary"]
+                existing_summary.save()
 
 
 
