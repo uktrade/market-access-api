@@ -48,7 +48,8 @@ def populate_summaries_table_from_history(apps, schema_editor):
             if is_changed:
                 new_summary = BarrierPriorityHistoricalSummary(
                     barrier=barrier,
-                    created_by=user,
+                    modified_by=user,
+                    modified_on=history_item.history_date,
                     top_priority_status=new_priority_status,
                     top_priority_rejection_summary=new_priority_state.get("top_priority_rejection_summary"),
                     priority_status=new_priority_state["priority_status"]
@@ -61,6 +62,8 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 existing_summary.top_priority_status = new_priority_status
                 existing_summary.top_priority_rejection_summary = new_priority_state.get("top_priority_rejection_summary")
                 existing_summary.top_priority_summary = new_priority_state["priority_summary"]
+                existing_summary.created_by = new_priority_state["created_by"]
+                existing_summary.created_on = history_item.history_date
                 existing_summary.save()
 
 
