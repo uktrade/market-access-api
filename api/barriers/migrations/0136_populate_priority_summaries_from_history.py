@@ -40,8 +40,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 )
                 new_summary.save()
             else:
-                existing_summary = BarrierPriorityHistoricalSummary.objects.filter(barrier=barrier)
-                    .order_by("-created_by")
+                existing_summary = BarrierPriorityHistoricalSummary.objects.filter(barrier=barrier).order_by("-created_by")
                     .first()
                 existing_summary.top_priority_summary_text = new_priority_state.get("priority_summary")
                 existing_summary.created_by = new_priority_state["created_by"]
