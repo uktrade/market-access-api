@@ -29,6 +29,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
         current_priority_state = get_barrier_priority_fields(barrier)
         for history_item in history_items:
             new_priority_state = get_barrier_priority_fields(history_item)
+
             if compare_priority_dicts(current_priority_state, new_priority_state):
                 continue
 
@@ -66,7 +67,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 existing_summary.modified_on = history_item.history_date
                 existing_summary.save()
 
-            current_priority_state = new_priority_state
+            current_priority_state = new_priority_state.copy()
 
 
 def revert_populate_summaries_table_from_history(apps, schema_editor):
