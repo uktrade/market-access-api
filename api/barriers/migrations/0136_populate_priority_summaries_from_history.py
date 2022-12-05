@@ -3,73 +3,75 @@
 from django.db import migrations
 
 
-def compare_priority_dicts(dict1, dict2):
-    for key in dict1:
-        if dict1[key] != dict2[key]:
-            return False
-    return True
-
-
-def get_barrier_priority_fields(barrier):
-    return {
-        "top_priority_status": barrier.top_priority_status,
-        "priority_summary": barrier.priority_summary,
-    }
-
-
 def populate_summaries_table_from_history(apps, schema_editor):
     Barrier = apps.get_model("barriers", "Barrier")
     HistoricalBarrier = apps.get_model("barriers", "HistoricalBarrier")
 
     BarrierTopPrioritySummary = apps.get_model("barriers", "BarrierTopPrioritySummary")
+
+    # Get and loop through every barrier
     for barrier in Barrier.objects.all():
+        # Get the historical changes of the barrier which contain priority summary
         history_items = (
             HistoricalBarrier.objects.filter(id=barrier.id)
-            .order_by("-created_on")
+            .order_by("-history_date")
             .all()
+            .exclude(priority_summary__exact="")
         )
-        current_priority_state = get_barrier_priority_fields(barrier)
-        for history_item in history_items:
-            new_priority_state = get_barrier_priority_fields(history_item)
-            if compare_priority_dicts(current_priority_state, new_priority_state):
-                continue
 
-            current_top_priority_status = current_priority_state["top_priority_status"]
-            new_priority_status = new_priority_state["top_priority_status"]
-            is_changed = new_priority_status != current_top_priority_status
-            user = history_item.history_user
+        print(history_items.count())
+        # Perform next section if the barrier has had a priority_summary at some point
+        if history_items.count() > 0:
 
-            barrier_has_no_historical_summaries = (
-                BarrierTopPrioritySummary.objects.filter(barrier=barrier).count() == 0
-            )
+            # Loop through history items
+            # We are looking for the instance where priority_summary was last changed
+            iterator = 0
+            for item in history_items:
+                # Make sure we are not looking at the last barrier in the list - as
+                # there is no older update to compare it to
+                if iterator+1 < history_items.count():
+                    # Get the next oldest history item
+                    next_item = history_items[iterator+1]
 
-            is_new_summary_blank = not new_priority_state.get("priority_summary")
+                    # If the summaries are the same, move onto the next loop iteration
+                    if next_item.priority_summary == item.priority_summary:
+                        iterator=iterator+1
+                        continue
+                    else:
+                        # In this case, we have found the earliest history item
+                        # with the current priority_status, so break out of the loop
+                        break
 
-            if is_new_summary_blank:
-                continue
+            # Get the earliest appearence of the priority_summary and the latest
+            first_update = history_items.last()
+            last_update = history_items[iterator]
 
-            if is_changed or barrier_has_no_historical_summaries:
+            # Get the user objects of the users who caused the updates
+            first_user = first_update.history_user
+            last_user = last_update.history_user
+
+            # If the first update text matches the last update text, we can use
+            # the creation_date as modified_date
+            if first_update.priority_summary == last_update.priority_summary:
                 new_summary = BarrierTopPrioritySummary(
                     barrier=barrier,
-                    modified_by=user,
-                    modified_on=history_item.history_date,
-                    top_priority_summary_text=new_priority_state.get(
-                        "priority_summary"
-                    ),
+                    created_by=first_user,
+                    created_on=first_update.history_date,
+                    modified_by=first_user,
+                    modified_on=first_update.history_date,
+                    top_priority_summary_text=last_update.priority_summary
                 )
                 new_summary.save()
             else:
-                existing_summary = (
-                    BarrierTopPrioritySummary.objects.filter(barrier=barrier)
-                    .order_by("-created_by")
-                    .first()
+                new_summary = BarrierTopPrioritySummary(
+                    barrier=barrier,
+                    created_by=first_user,
+                    created_on=first_update.history_date,
+                    modified_by=last_user,
+                    modified_on=last_update.history_date,
+                    top_priority_summary_text=last_update.priority_summary
                 )
-                existing_summary.top_priority_summary_text = new_priority_state.get(
-                    "priority_summary"
-                )
-                existing_summary.created_by = user
-                existing_summary.created_on = history_item.history_date
-                existing_summary.save()
+                new_summary.save()
 
 
 def revert_populate_summaries_table_from_history(apps, schema_editor):
