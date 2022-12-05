@@ -41,15 +41,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 BarrierTopPrioritySummary.objects.filter(barrier=barrier).count() == 0
             )
 
-            # is_new_summary_blank = not new_priority_state.get("priority_summary")
-
-            # if is_new_summary_blank:
-            #     continue
-
             if is_changed or barrier_has_no_historical_summaries:
-                print(
-                    f"Summary changed from {current_priority_state} to {new_priority_state} - creating"
-                )
                 new_summary = BarrierTopPrioritySummary(
                     barrier=barrier,
                     created_by=user,
@@ -60,7 +52,6 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 )
                 new_summary.save()
             else:
-                print("re-use existing")
                 existing_summary = (
                     BarrierTopPrioritySummary.objects.filter(barrier=barrier)
                     .order_by("-created_by")
