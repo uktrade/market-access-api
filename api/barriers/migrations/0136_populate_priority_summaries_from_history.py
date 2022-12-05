@@ -24,9 +24,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
     BarrierTopPrioritySummary = apps.get_model("barriers", "BarrierTopPrioritySummary")
     for barrier in Barrier.objects.all():
         history_items = (
-            HistoricalBarrier.objects.filter(id=barrier.id)
-            .order_by("-created_on")
-            .all()
+            HistoricalBarrier.objects.filter(id=barrier.id).order_by("created_on").all()
         )
         current_priority_state = get_barrier_priority_fields(barrier)
         for history_item in history_items:
@@ -70,6 +68,8 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 existing_summary.created_by = user
                 existing_summary.created_on = history_item.history_date
                 existing_summary.save()
+
+            current_priority_state = new_priority_status.copy()
 
 
 def revert_populate_summaries_table_from_history(apps, schema_editor):
