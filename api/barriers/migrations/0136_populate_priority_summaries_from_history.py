@@ -69,7 +69,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 existing_summary.created_on = history_item.history_date
                 existing_summary.save()
 
-            current_priority_state = new_priority_status.copy()
+            current_priority_state = new_priority_state
 
 
 def revert_populate_summaries_table_from_history(apps, schema_editor):
