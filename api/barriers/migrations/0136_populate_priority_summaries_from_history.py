@@ -46,6 +46,8 @@ def populate_summaries_table_from_history(apps, schema_editor):
                     barrier=barrier,
                     created_by=user,
                     created_on=history_item.history_date,
+                    modified_by=user,
+                    modified_on=history_item.history_date,
                     top_priority_summary_text=new_priority_state.get(
                         "priority_summary", ""
                     ),
