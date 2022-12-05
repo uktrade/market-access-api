@@ -47,16 +47,20 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 continue
 
             if is_changed or barrier_has_no_historical_summaries:
+                print(
+                    f"Summary changed from {current_priority_state} to {new_priority_state} - creating"
+                )
                 new_summary = BarrierTopPrioritySummary(
                     barrier=barrier,
-                    modified_by=user,
-                    modified_on=history_item.history_date,
+                    created_by=user,
+                    created_on=history_item.history_date,
                     top_priority_summary_text=new_priority_state.get(
                         "priority_summary"
                     ),
                 )
                 new_summary.save()
             else:
+                print("re-use existing")
                 existing_summary = (
                     BarrierTopPrioritySummary.objects.filter(barrier=barrier)
                     .order_by("-created_by")
@@ -65,8 +69,8 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 existing_summary.top_priority_summary_text = new_priority_state.get(
                     "priority_summary"
                 )
-                existing_summary.created_by = user
-                existing_summary.created_on = history_item.history_date
+                existing_summary.modified_by = user
+                existing_summary.modified_on = history_item.history_date
                 existing_summary.save()
 
             current_priority_state = new_priority_state
