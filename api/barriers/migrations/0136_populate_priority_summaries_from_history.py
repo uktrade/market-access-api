@@ -19,22 +19,37 @@ def get_barrier_priority_fields(barrier):
 
 def populate_summaries_table_from_history(apps, schema_editor):
     Barrier = apps.get_model("barriers", "Barrier")
-    BarrierPriorityHistoricalSummary = apps.get_model(
-        "barriers", "BarrierTopPrioritySummary"
-    )
+    HistoricalBarrier = apps.get_model("barriers", "HistoricalBarrier")
+
+    BarrierTopPrioritySummary = apps.get_model("barriers", "BarrierTopPrioritySummary")
     for barrier in Barrier.objects.all():
-        history_items = barrier.history.all()
+        history_items = (
+            HistoricalBarrier.objects.filter(id=barrier.id)
+            .order_by("-created_on")
+            .all()
+        )
         current_priority_state = get_barrier_priority_fields(barrier)
         for history_item in history_items:
             new_priority_state = get_barrier_priority_fields(history_item)
             if compare_priority_dicts(current_priority_state, new_priority_state):
                 continue
+
             current_top_priority_status = current_priority_state["top_priority_status"]
             new_priority_status = new_priority_state["top_priority_status"]
             is_changed = new_priority_status != current_top_priority_status
             user = history_item.history_user
-            if is_changed:
-                new_summary = BarrierPriorityHistoricalSummary(
+
+            barrier_has_no_historical_summaries = (
+                BarrierTopPrioritySummary.objects.filter(barrier=barrier).count() == 0
+            )
+
+            is_new_summary_blank = not new_priority_state.get("priority_summary")
+
+            if is_new_summary_blank:
+                continue
+
+            if is_changed or barrier_has_no_historical_summaries:
+                new_summary = BarrierTopPrioritySummary(
                     barrier=barrier,
                     modified_by=user,
                     modified_on=history_item.history_date,
@@ -45,16 +60,21 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 new_summary.save()
             else:
                 existing_summary = (
-                    BarrierPriorityHistoricalSummary.objects.filter(barrier=barrier)
+                    BarrierTopPrioritySummary.objects.filter(barrier=barrier)
                     .order_by("-created_by")
                     .first()
                 )
                 existing_summary.top_priority_summary_text = new_priority_state.get(
                     "priority_summary"
                 )
-                existing_summary.created_by = new_priority_state["created_by"]
+                existing_summary.created_by = user
                 existing_summary.created_on = history_item.history_date
                 existing_summary.save()
+
+
+def revert_populate_summaries_table_from_history(apps, schema_editor):
+    BarrierTopPrioritySummary = apps.get_model("barriers", "BarrierTopPrioritySummary")
+    BarrierTopPrioritySummary.objects.all().delete()
 
 
 class Migration(migrations.Migration):
@@ -64,5 +84,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(populate_summaries_table_from_history),
+        migrations.RunPython(
+            populate_summaries_table_from_history,
+            revert_populate_summaries_table_from_history,
+        ),
     ]
