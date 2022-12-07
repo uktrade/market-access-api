@@ -1925,7 +1925,7 @@ class BarrierSearchCSVDownloadEvent(models.Model):
 
 
 class BarrierTopPrioritySummary(models.Model):
-    top_priority_summary_text = models.TextField(blank=True)
+    top_priority_summary_text = models.TextField(blank=True, default="")
     created_by = models.ForeignKey(
         User,
         null=True,
