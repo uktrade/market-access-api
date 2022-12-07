@@ -23,6 +23,9 @@ def populate_summaries_table_from_history(apps, schema_editor):
         # Perform next section if the barrier has had a priority_summary at some point
         if history_items.count() > 0:
 
+            print("-----")
+            print("Barrier Has Summary")
+
             # Loop through history items
             # We are looking for the instance where priority_summary was last changed
             iterator = 0
@@ -53,6 +56,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
             # If the first update text matches the last update text, we can use
             # the creation_date as modified_date
             if first_update.priority_summary == last_update.priority_summary:
+                print("Creating entry - one summary record for barrier: " + str(barrier.id))
                 new_summary = BarrierTopPrioritySummary(
                     barrier=barrier,
                     created_by=first_user,
@@ -63,6 +67,7 @@ def populate_summaries_table_from_history(apps, schema_editor):
                 )
                 new_summary.save()
             else:
+                print("Creating entry - multiple summary records for barrier: " + str(barrier.id))
                 new_summary = BarrierTopPrioritySummary(
                     barrier=barrier,
                     created_by=first_user,
@@ -72,6 +77,8 @@ def populate_summaries_table_from_history(apps, schema_editor):
                     top_priority_summary_text=last_update.priority_summary
                 )
                 new_summary.save()
+
+            print("-----")
 
 
 def revert_populate_summaries_table_from_history(apps, schema_editor):
