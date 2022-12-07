@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 
 from ...action_plans.serializers import ActionPlanSerializer
@@ -8,6 +9,7 @@ from .base import BarrierSerializerBase
 
 class BarrierDetailSerializer(BarrierSerializerBase):
     action_plan = ActionPlanSerializer(required=False, many=False, allow_null=False)
+    top_priority_summary = PrioritySummarySerializer(required=False, many=False)
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -77,6 +79,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "programme_fund_progress_updates",
             "top_priority_status",
             "top_priority_rejection_summary",
+            "top_priority_summary",
         )
 
 

@@ -1,4 +1,5 @@
 import csv
+import logging
 from collections import defaultdict
 from datetime import datetime
 from itertools import chain
@@ -26,6 +27,7 @@ from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import (
     Barrier,
     BarrierReportStage,
+    BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
     PublicBarrierLightTouchReviews,
@@ -38,6 +40,7 @@ from api.barriers.serializers import (
     PublicBarrierSerializer,
 )
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
+from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.barriers.serializers.progress_updates import (
     ProgrammeFundProgressUpdateSerializer,
     ProgressUpdateSerializer,
@@ -65,6 +68,8 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPub
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
+
+logger = logging.getLogger(__name__)
 
 
 class Echo:
@@ -494,7 +499,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "strategic_assessment_scale": "Strategic assessment scale",
         "is_top_priority": "Is Top Priority",
         "top_priority_status": "Top Priority Status",
-        "priority_summary": "Reason for Top Priority Status",
+        "top_priority_summary": "Reason for Top Priority Status",
         "is_resolved_top_priority": "Is Resolved Top Priority",
         "government_organisations": "Related Organisations",
         "progress_update_status": "Progress update status",
@@ -1040,6 +1045,60 @@ class ProgrammeFundProgressUpdateViewSet(ModelViewSet):
 
     def perform_update(self, serializer, user):
         now = datetime.now()
+        instance = serializer.save()
+        instance.modified_by = user
+        instance.modified_on = now
+        return instance.save()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer, request.user)
+
+        if getattr(instance, "_prefetched_objects_cache", None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+
+class BarrierPrioritySummaryViewSet(ModelViewSet):
+    queryset = BarrierTopPrioritySummary.objects.all()
+    serializer_class = PrioritySummarySerializer
+
+    def get_object(self):
+        return_object = BarrierTopPrioritySummary.objects.filter(
+            barrier=self.kwargs.get("pk")
+        )
+        if return_object:
+            return return_object.latest("modified_on")
+        else:
+            return None
+
+    def perform_create(self, serializer, user):
+        # share the exact same date within both created_on and modified_on
+        now = timezone.now()
+        instance = serializer.save()
+        instance.created_by = user
+        instance.created_on = now
+        instance.modified_by = user
+        instance.modified_on = now
+        return instance.save()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer, request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_update(self, serializer, user):
+        now = timezone.now()
         instance = serializer.save()
         instance.modified_by = user
         instance.modified_on = now

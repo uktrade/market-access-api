@@ -417,8 +417,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
             " this is the message that will be displayed to the user."
         ),
     )
-    # Summary provided when Top 100 barrier requested
+
+    # Legacy priority summary - can be deleted after TSS-515 goes live
     priority_summary = models.TextField(blank=True)
+
     # Old Barrier priority - keep for legacy use
     priority = models.ForeignKey(
         metadata_models.BarrierPriority,
@@ -1920,3 +1922,30 @@ class BarrierSearchCSVDownloadEvent(models.Model):
     email = models.EmailField()
     barrier_ids = models.TextField(validators=[int_list_validator])
     created = models.DateTimeField(auto_now_add=True)
+
+
+class BarrierTopPrioritySummary(models.Model):
+    top_priority_summary_text = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="top_priority_summary_submit_user",
+    )
+    created_on = models.DateTimeField(null=True, blank=True, auto_now=False)
+    modified_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="top_priority_summary_modify_user",
+    )
+    modified_on = models.DateTimeField(null=True, blank=True, auto_now=False)
+    barrier = models.ForeignKey(
+        Barrier,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="top_priority_summary",
+        primary_key=True,
+    )
