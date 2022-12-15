@@ -3,7 +3,10 @@
         "id": "af959812-6095-e211-a939-e4115bead28a",
         "name": "Advanced engineering",
         "segment": "Advanced engineering",
-        "parent": {},
+        "parent": {
+            "name": "Advanced engineering",
+            "id": "af959812-6095-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -110,7 +113,10 @@
         "id": "9538cecc-5f95-e211-a939-e4115bead28a",
         "name": "Aerospace",
         "segment": "Aerospace",
-        "parent": {},
+        "parent": {
+            "name": "Aerospace",
+            "id": "9538cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -228,7 +234,10 @@
         "id": "9638cecc-5f95-e211-a939-e4115bead28a",
         "name": "Agriculture, horticulture, fisheries and pets",
         "segment": "Agriculture, horticulture, fisheries and pets",
-        "parent": {},
+        "parent": {
+            "name": "Agriculture, horticulture, fisheries and pets",
+            "id": "9638cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -522,7 +531,10 @@
         "id": "9738cecc-5f95-e211-a939-e4115bead28a",
         "name": "Airports",
         "segment": "Airports",
-        "parent": {},
+        "parent": {
+            "name": "Airports",
+            "id": "9738cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -530,7 +542,10 @@
         "id": "9838cecc-5f95-e211-a939-e4115bead28a",
         "name": "Automotive",
         "segment": "Automotive",
-        "parent": {},
+        "parent": {
+            "name": "Automotive",
+            "id": "9838cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -758,7 +773,10 @@
         "id": "9b38cecc-5f95-e211-a939-e4115bead28a",
         "name": "Chemicals",
         "segment": "Chemicals",
-        "parent": {},
+        "parent": {
+            "name": "Chemicals",
+            "id": "9b38cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -832,7 +850,10 @@
         "id": "9e38cecc-5f95-e211-a939-e4115bead28a",
         "name": "Construction",
         "segment": "Construction",
-        "parent": {},
+        "parent": {
+            "name": "Construction",
+            "id": "9e38cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -840,7 +861,10 @@
         "id": "355f977b-8ac3-e211-a646-e4115bead28a",
         "name": "Consumer and retail",
         "segment": "Consumer and retail",
-        "parent": {},
+        "parent": {
+            "name": "Consumer and retail",
+            "id": "355f977b-8ac3-e211-a646-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -1101,7 +1125,10 @@
         "id": "9f38cecc-5f95-e211-a939-e4115bead28a",
         "name": "Creative industries",
         "segment": "Creative industries",
-        "parent": {},
+        "parent": {
+            "name": "Creative industries",
+            "id": "9f38cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -1505,7 +1532,10 @@
         "id": "7dbb9fc6-5f95-e211-a939-e4115bead28a",
         "name": "Defence",
         "segment": "Defence",
-        "parent": {},
+        "parent": {
+            "name": "Defence",
+            "id": "7dbb9fc6-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -1513,7 +1543,10 @@
         "id": "a038cecc-5f95-e211-a939-e4115bead28a",
         "name": "Education and training",
         "segment": "Education and training",
-        "parent": {},
+        "parent": {
+            "name": "Education and training",
+            "id": "a038cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -1829,7 +1862,10 @@
         "id": "b1959812-6095-e211-a939-e4115bead28a",
         "name": "Energy",
         "segment": "Energy",
-        "parent": {},
+        "parent": {
+            "name": "Energy",
+            "id": "b1959812-6095-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -2024,7 +2060,10 @@
         "id": "a238cecc-5f95-e211-a939-e4115bead28a",
         "name": "Environment",
         "segment": "Environment",
-        "parent": {},
+        "parent": {
+            "name": "Environment",
+            "id": "a238cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -2098,7 +2137,10 @@
         "id": "a338cecc-5f95-e211-a939-e4115bead28a",
         "name": "Financial and professional services",
         "segment": "Financial and professional services",
-        "parent": {},
+        "parent": {
+            "name": "Financial and professional services",
+            "id": "a338cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -2469,7 +2511,10 @@
         "id": "a538cecc-5f95-e211-a939-e4115bead28a",
         "name": "Food and drink",
         "segment": "Food and drink",
-        "parent": {},
+        "parent": {
+            "name": "Food and drink",
+            "id": "a538cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -2631,7 +2676,10 @@
         "id": "a738cecc-5f95-e211-a939-e4115bead28a",
         "name": "Healthcare services",
         "segment": "Healthcare services",
-        "parent": {},
+        "parent": {
+            "name": "Healthcare services",
+            "id": "a738cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -2705,7 +2753,10 @@
         "id": "aa38cecc-5f95-e211-a939-e4115bead28a",
         "name": "Maritime",
         "segment": "Maritime",
-        "parent": {},
+        "parent": {
+            "name": "Maritime",
+            "id": "aa38cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3021,7 +3072,10 @@
         "id": "a622c9d2-5f95-e211-a939-e4115bead28a",
         "name": "Mining",
         "segment": "Mining",
-        "parent": {},
+        "parent": {
+            "name": "Mining",
+            "id": "a622c9d2-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3029,7 +3083,10 @@
         "id": "44329c18-6095-e211-a939-e4115bead28a",
         "name": "More Sectors",
         "segment": "More Sectors",
-        "parent": {},
+        "parent": {
+            "name": "More Sectors",
+            "id": "44329c18-6095-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": "2013-08-06T15:51:32Z"
     },
@@ -3037,7 +3094,10 @@
         "id": "9938cecc-5f95-e211-a939-e4115bead28a",
         "name": "Pharmaceuticals and biotechnology",
         "segment": "Pharmaceuticals and biotechnology",
-        "parent": {},
+        "parent": {
+            "name": "Pharmaceuticals and biotechnology",
+            "id": "9938cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3100,7 +3160,10 @@
         "id": "aa22c9d2-5f95-e211-a939-e4115bead28a",
         "name": "Railways",
         "segment": "Railways",
-        "parent": {},
+        "parent": {
+            "name": "Railways",
+            "id": "aa22c9d2-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3108,7 +3171,10 @@
         "id": "a438cecc-5f95-e211-a939-e4115bead28a",
         "name": "Security",
         "segment": "Security",
-        "parent": {},
+        "parent": {
+            "name": "Security",
+            "id": "a438cecc-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3127,7 +3193,10 @@
         "id": "6448e2bd-3f92-4e3d-8c41-0aff88a7a66b",
         "name": "Space",
         "segment": "Space",
-        "parent": {},
+        "parent": {
+            "name": "Space",
+            "id": "6448e2bd-3f92-4e3d-8c41-0aff88a7a66b"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3300,7 +3369,10 @@
         "id": "ac22c9d2-5f95-e211-a939-e4115bead28a",
         "name": "Sports economy",
         "segment": "Sports economy",
-        "parent": {},
+        "parent": {
+            "name": "Sports economy",
+            "id": "ac22c9d2-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3374,7 +3446,10 @@
         "id": "ae22c9d2-5f95-e211-a939-e4115bead28a",
         "name": "Water",
         "segment": "Water",
-        "parent": {},
+        "parent": {
+            "name": "Water",
+            "id": "ae22c9d2-5f95-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3415,7 +3490,10 @@
         "id": "6f535406-6095-e211-a939-e4115bead28a",
         "name": "Medical devices and equipment",
         "segment": "Medical devices and equipment",
-        "parent": {},
+        "parent": {
+            "name": "Medical devices and equipment",
+            "id": "6f535406-6095-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
@@ -3467,7 +3545,10 @@
         "id": "ac959812-6095-e211-a939-e4115bead28a",
         "name": "Technology and smart cities",
         "segment": "Technology and smart cities",
-        "parent": {},
+        "parent": {
+            "name": "Technology and smart cities",
+            "id": "ac959812-6095-e211-a939-e4115bead28a"
+        },
         "level": 0,
         "disabled_on": ""
     },
