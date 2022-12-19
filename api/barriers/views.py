@@ -434,7 +434,9 @@ class BarrierListS3EmailFile(generics.ListAPIView):
     )
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
+    # Disable ordering as ordering context not available at download
     filter_backends = (DjangoFilterBackend,)  # , BarrierListOrderingFilter)
+
     field_titles = {
         "id": "id",
         "code": "code",
