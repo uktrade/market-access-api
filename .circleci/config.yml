@@ -20,64 +20,63 @@ jobs:
           POSTGRES_PASSWORD: postgres # pragma: allowlist secret
       - image: ukti/mock-sso
         environment:
-          MOCK_SSO_PORT: '5000'
+          MOCK_SSO_PORT: "5000"
           MOCK_SSO_USERNAME: test-user
           MOCK_SSO_SCOPE: test
 
     environment:
-      DATABASE_URL: 'postgresql://postgres@localhost/market_access'
-      DATAHUB_SECRET: 'secret' # pragma: allowlist secret
-      DH_HAWK_ID: 'dh_hawk_id' # pragma: allowlist secret
-      DH_HAWK_KEY: 'dh_hawk_key' # pragma: allowlist secret
-      DJANGO_HASHID_FIELD_SALT: 'dash-of-salt'
-      DJANGO_SETTINGS_MODULE: 'config.settings.test'
-      DEBUG: 'False'
-      ELASTIC_APM_ENABLED: 'False'
-      SECRET_KEY: 'changeme' # pragma: allowlist secret
-      SSO_ENABLED: 'True'
-      SENTRY_DSN: ''
-      SENTRY_ENVIRONMENT: ''
-      RESOURCE_SERVER_INTROSPECTION_URL: 'http://localhost:5000/o/introspect/'
+      DATABASE_URL: "postgresql://postgres@localhost/market_access"
+      DATAHUB_SECRET: "secret" # pragma: allowlist secret
+      DH_HAWK_ID: "dh_hawk_id" # pragma: allowlist secret
+      DH_HAWK_KEY: "dh_hawk_key" # pragma: allowlist secret
+      DJANGO_HASHID_FIELD_SALT: "dash-of-salt"
+      DJANGO_SETTINGS_MODULE: "config.settings.test"
+      DEBUG: "False"
+      ELASTIC_APM_ENABLED: "False"
+      SECRET_KEY: "changeme" # pragma: allowlist secret
+      SSO_ENABLED: "True"
+      SENTRY_DSN: ""
+      SENTRY_ENVIRONMENT: ""
+      RESOURCE_SERVER_INTROSPECTION_URL: "http://localhost:5000/o/introspect/"
       RESOURCE_SERVER_AUTH_TOKEN: sso-token
-      RESOURCE_SERVER_USER_INFO_URL: 'http://localhost:8080/api/v1/user/me/'
-      RESOURCE_SERVER_USER_INTROSPECT_URL: 'http://localhost:8080/api/v1/user/introspect/'
-      FAKE_METADATA: 'True'
-      DH_METADATA_URL: 'https://datahub-api-dev.london.cloudapps.digital/metadata/'
-      HAWK_ENABLED: 'False'
-      HAWK_KEY: 'hawkkey'
-      HAWK_ID: 'metadata'
-      AUTHBROKER_URL: 'http://localhost:5000/o/'
-      AUTHBROKER_CLIENT_ID: 'auth client'
+      RESOURCE_SERVER_USER_INFO_URL: "http://localhost:8080/api/v1/user/me/"
+      RESOURCE_SERVER_USER_INTROSPECT_URL: "http://localhost:8080/api/v1/user/introspect/"
+      FAKE_METADATA: "True"
+      DH_METADATA_URL: "https://datahub-api-dev.london.cloudapps.digital/metadata/"
+      HAWK_ENABLED: "False"
+      HAWK_KEY: "hawkkey"
+      HAWK_ID: "metadata"
+      AUTHBROKER_URL: "http://localhost:5000/o/"
+      AUTHBROKER_CLIENT_ID: "auth client"
       AUTHBROKER_CLIENT_SECRET: auth secret # pragma: allowlist secret
-      ALLOWED_ADMIN_IPS: '1.2.3.4'
-      RESTRICT_ADMIN: 'False'
-      AV_V2_SERVICE_URL: 'https://test:secret@av-api/scan' # pragma: allowlist secret
-      DEFAULT_BUCKET: 'market-access-enc-dev'
-      AWS_ACCESS_KEY_ID: 'access_key'
-      AWS_SECRET_ACCESS_KEY: 'access_secret' # pragma: allowlist secret
-      AWS_DEFAULT_REGION: 'eu-west-2'
-      REDIS_BASE_URL: 'redis://localhost'
-      DMAS_BASE_URL: 'https://dummy.market-access.net'
-      NOTIFY_API_KEY: 'xxx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' # pragma: allowlist secret
-      NOTIFY_SAVED_SEARCHES_TEMPLATE_ID: ''
-      NOTIFY_BARRIER_NOTIFCATION_ID: ''
-      NOTIFY_GENERATED_FILE_ID: ''
-      NOTIFY_ACTION_PLAN_NOTIFCATION_ID: ''
-      NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID: ''
-      PUBLIC_DATA_AWS_ACCESS_KEY_ID: 'dummy'
-      PUBLIC_DATA_AWS_SECRET_ACCESS_KEY: 'dummy' # pragma: allowlist secret
-      PUBLIC_DATA_BUCKET: 'dummy'
-      PUBLIC_DATA_BUCKET_REGION: 'us-east-1'
-      PUBLIC_DATA_KEY_PREFIX: 'dummy/'
-      PIP_USE_FEATURE: 2020-resolver
+      ALLOWED_ADMIN_IPS: "1.2.3.4"
+      RESTRICT_ADMIN: "False"
+      AV_V2_SERVICE_URL: "https://test:secret@av-api/scan" # pragma: allowlist secret
+      DEFAULT_BUCKET: "market-access-enc-dev"
+      AWS_ACCESS_KEY_ID: "access_key"
+      AWS_SECRET_ACCESS_KEY: "access_secret" # pragma: allowlist secret
+      AWS_DEFAULT_REGION: "eu-west-2"
+      REDIS_BASE_URL: "redis://localhost"
+      DMAS_BASE_URL: "https://dummy.market-access.net"
+      NOTIFY_API_KEY: "xxx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # pragma: allowlist secret
+      NOTIFY_SAVED_SEARCHES_TEMPLATE_ID: ""
+      NOTIFY_BARRIER_NOTIFCATION_ID: ""
+      NOTIFY_GENERATED_FILE_ID: ""
+      NOTIFY_ACTION_PLAN_NOTIFCATION_ID: ""
+      NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID: ""
+      PUBLIC_DATA_AWS_ACCESS_KEY_ID: "dummy"
+      PUBLIC_DATA_AWS_SECRET_ACCESS_KEY: "dummy" # pragma: allowlist secret
+      PUBLIC_DATA_BUCKET: "dummy"
+      PUBLIC_DATA_BUCKET_REGION: "us-east-1"
+      PUBLIC_DATA_KEY_PREFIX: "dummy/"
       COMTRADE_TEST_DB_HOST: localhost
       COMTRADE_TEST_DB_NAME: market_access
       COMTRADE_TEST_DB_USER: postgres
-      SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID: 'change-me'
+      SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID: "change-me"
       SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS: john.doe@example.org
-      APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS: ''
-      BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID: 'test-123' # pragma: allowlist secret
-      AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID: 'test-1234' # pragma: allowlist secret
+      APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS: ""
+      BARRIER_INACTIVITY_REMINDER_NOTIFICATION_ID: "test-123" # pragma: allowlist secret
+      AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID: "test-1234" # pragma: allowlist secret
 
     working_directory: ~/market-access-api
 
@@ -131,7 +130,6 @@ jobs:
       - store_artifacts:
           path: test-reports
           destination: test-reports
-
 
   format_and_secrets_checks:
     docker:
