@@ -60,7 +60,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     team_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
-    estimated_resolution_date = serializers.DateField(format="%Y-%m")
+    estimated_resolution_date = serializers.DateField(format="%b-%y")
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
     link = serializers.SerializerMethodField()
@@ -459,7 +459,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return None
 
         if history.estimated_resolution_date:
-            return history.estimated_resolution_date.strftime("%Y-%m")
+            return history.estimated_resolution_date.strftime("%b-%y")
         else:
             return None
 
