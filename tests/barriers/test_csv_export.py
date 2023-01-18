@@ -289,7 +289,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         barrier.save()
 
         serializer = BarrierCsvExportSerializer(barrier)
-        assert serializer.data["previous_estimated_resolution_date"] == "2022-10"
+        assert serializer.data["previous_estimated_resolution_date"] == "Oct-22"
         assert serializer.data[
             "estimated_resolution_updated_date"
         ] == datetime.date.today().strftime("%Y-%m-%d")
