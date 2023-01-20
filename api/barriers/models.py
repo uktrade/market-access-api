@@ -1357,6 +1357,13 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def top_priority_status_filter(self, queryset, name, value):
         if value:
+
+            # If user is searching for APPROVED top priority barriers, the search must also
+            # include barriers PENDING REMOVAL. So if APPROVED is selected, but PENDING
+            # REMOVAL has not, we need to include it in the search parameter.
+            if "APPROVED" in value and "REMOVAL_PENDING" not in value:
+                value.append("REMOVAL_PENDING")
+
             queryset = queryset.filter(top_priority_status__in=value)
         return queryset
 
