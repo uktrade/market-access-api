@@ -150,10 +150,10 @@ class TestCategories(APITestMixin):
         key = "top_priority_status"
         expected = {
             "NONE": "",
-            "APPROVAL_PENDING": "Top 100 Priority Barrier - Approval Pending",
-            "REMOVAL_PENDING": "Top 100 Priority Barrier - Removal Pending",
-            "APPROVED": "Top 100 Priority Barrier",
-            "RESOLVED": "Top 100 Priority Barrier - Resolved",
+            "APPROVAL_PENDING": "Top 100 Approval Pending",
+            "REMOVAL_PENDING": "Top 100 Removal Pending",
+            "APPROVED": "Top 100 Priority",
+            "RESOLVED": "Resolved Top 100 Priority",
         }
 
         url = reverse("metadata")
@@ -167,7 +167,7 @@ class TestCategories(APITestMixin):
             "COVID-19",
             "Brexit",
             "NI Protocol",
-            "Asia Pacific Cross-Government Pilot",
+            "Asia Pacific Pilot",
             "Programme Fund",
             "International Standards",
             "Clean Growth",
