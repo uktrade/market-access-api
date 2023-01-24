@@ -167,7 +167,7 @@ class TestCategories(APITestMixin):
             "COVID-19",
             "Brexit",
             "NI Protocol",
-            "Asia Pacific Cross-Government Pilot",
+            "Asia Pacific Pilot",
             "Programme Fund",
             "International Standards",
             "Clean Growth",
