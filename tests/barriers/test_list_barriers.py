@@ -868,6 +868,29 @@ class TestListBarriers(APITestMixin, APITestCase):
                 == top_priority_status
             )
 
+    def test_top_priority_search_returns_removal_pending(self):
+        approved_barrier = BarrierFactory()
+        approved_barrier.top_priority_status = "APPROVED"
+        approved_barrier.save()
+
+        removal_pending_barrier = BarrierFactory()
+        removal_pending_barrier.top_priority_status = "REMOVAL_PENDING"
+        removal_pending_barrier.save()
+
+        approved_url = f'{reverse("list-barriers")}?top_priority_status=APPROVED'
+        approved_response = self.api_client.get(approved_url)
+        assert approved_response.status_code == status.HTTP_200_OK
+        approved_serialised_data = approved_response.data
+        assert len(approved_serialised_data["results"]) == 2
+
+        removal_pending_url = (
+            f'{reverse("list-barriers")}?top_priority_status=REMOVAL_PENDING'
+        )
+        removal_pending_response = self.api_client.get(removal_pending_url)
+        assert removal_pending_response.status_code == status.HTTP_200_OK
+        removal_pending_serialised_data = removal_pending_response.data
+        assert len(removal_pending_serialised_data["results"]) == 1
+
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
     def test_changed_filter(self):
