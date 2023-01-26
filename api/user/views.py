@@ -1,8 +1,8 @@
 from http import HTTPStatus
 
-from django.conf import settings
 from hawkrest import HawkAuthentication
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db.models import F
