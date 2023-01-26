@@ -1,11 +1,15 @@
 from http import HTTPStatus
 
+from django.conf import settings
+from hawkrest import HawkAuthentication
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db.models import F
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
@@ -132,6 +136,13 @@ class UserList(generics.ListAPIView):
 
 
 class UserActivityLogList(generics.ListAPIView):
+    if settings.HAWK_ENABLED:
+        authentication_classes = (HawkAuthentication,)
+        permission_classes = (IsAuthenticated,)
+    else:
+        authentication_classes = ()
+        permission_classes = ()
+
     serializer_class = UserActvitiyLogSerializer
 
     def get_queryset(self):
