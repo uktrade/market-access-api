@@ -8,9 +8,9 @@ from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from hawkrest import HawkAuthentication
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.user.helpers import get_django_user_by_sso_user_id
