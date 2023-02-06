@@ -92,10 +92,11 @@ class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
         Otherwise milestone is IN_PROGRESS
         """
         tasks = obj.tasks.all()
-        if tasks.filter(status="COMPLETED").count() == tasks.count():
-            return "COMPLETED"
+
         if tasks.filter(status="NOT_STARTED").count() == tasks.count():
             return "NOT_STARTED"
+        if tasks.filter(status="COMPLETED").count() == tasks.count():
+            return "COMPLETED"
         return "IN_PROGRESS"
 
     def get_tasks(self, obj):
