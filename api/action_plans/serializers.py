@@ -68,11 +68,41 @@ class ActionPlanTaskSerializer(serializers.ModelSerializer):
 
 class ActionPlanMilestoneSerializer(serializers.ModelSerializer):
 
-    tasks = ActionPlanTaskSerializer(many=True, required=False, read_only=True)
+    tasks = serializers.SerializerMethodField()
+    estimated_completion_date = serializers.SerializerMethodField()
+
+    def get_estimated_completion_date(self, obj):
+        # latest value of estimated_completion_date for all tasks in milestone
+        relevant_task = (
+            obj.tasks.exclude(status="COMPLETED")
+            .filter(completion_date__isnull=False)
+            .order_by("-completion_date")
+            .first()
+        )
+        if relevant_task:
+            # Use format e.g. May 2023
+            return relevant_task.completion_date.strftime("%b %Y")
+        return None
+
+    def get_tasks(self, obj):
+        # order tasks by completion_date, descending, and place tasks with status == COMPLETED at the end
+        tasks = obj.tasks.all()
+        tasks = tasks.order_by("completion_date")
+        completed_tasks = tasks.filter(status="COMPLETED")
+        in_progress_tasks = tasks.exclude(status="COMPLETED")
+        tasks = [*in_progress_tasks, *completed_tasks]
+        return ActionPlanTaskSerializer(tasks, many=True).data
 
     class Meta:
         model = ActionPlanMilestone
-        fields = ("id", "action_plan", "objective", "completion_date", "tasks")
+        fields = (
+            "id",
+            "action_plan",
+            "objective",
+            "completion_date",
+            "tasks",
+            "estimated_completion_date",
+        )
 
 
 class ActionPlanSerializer(serializers.ModelSerializer):
