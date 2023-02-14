@@ -11,7 +11,7 @@ from .base import BarrierSerializerBase
 class BarrierDetailSerializer(BarrierSerializerBase):
     action_plan = ActionPlanSerializer(required=False, many=False, allow_null=False)
     top_priority_summary = PrioritySummarySerializer(required=False, many=False)
-    proposed_estimated_resolution_date_user = UserSerializer()
+    proposed_estimated_resolution_date_user = UserSerializer(required=False)
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
