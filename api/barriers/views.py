@@ -471,6 +471,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "tags": "Tags",
         "trade_direction": "Trade direction",
         "estimated_resolution_date": "Estimated resolution date",
+        "proposed_estimated_resolution_date": "Proposed estimated resolution date",
         "previous_estimated_resolution_date": "The previous estimate for resolution date",
         "estimated_resolution_updated_date": "The last date the resolution date was re-estimated",
         "summary": "Summary",

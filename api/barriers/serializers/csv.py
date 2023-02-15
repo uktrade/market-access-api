@@ -61,6 +61,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
     estimated_resolution_date = serializers.DateField(format="%b-%y")
+    proposed_estimated_resolution_date = serializers.SerializerMethodField()
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
     link = serializers.SerializerMethodField()
@@ -158,6 +159,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "valuation_assessment_explanation",
             "commercial_value",
             "estimated_resolution_date",
+            "proposed_estimated_resolution_date",
             "previous_estimated_resolution_date",
             "estimated_resolution_updated_date",
             "link",
@@ -446,6 +448,17 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             )
 
         return None
+
+    def get_proposed_estimated_resolution_date(self, obj):
+        # only show the proposed date if it is different to the current date
+        if not obj.proposed_estimated_resolution_date:
+            return None
+
+        # compare to estimated_resolution_date
+        if obj.proposed_estimated_resolution_date == obj.estimated_resolution_date:
+            return None
+
+        return obj.proposed_estimated_resolution_date.strftime("%b-%y")
 
     def get_previous_estimated_resolution_date(self, obj):
         try:
