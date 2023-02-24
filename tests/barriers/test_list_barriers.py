@@ -239,6 +239,84 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         assert 0 == response.data["count"]
 
+    def test_list_barriers_admin_areas_filter(self):
+        china = "63af72a6-5d95-e211-a939-e4115bead28a"
+        beijing = "56f5f425-e3e3-4c9a-b886-ecb671b81503"
+        anhui = "5dad1164-2bd0-4187-a471-7d588cb5af35"
+        BarrierFactory(country=china, admin_areas=[beijing])
+        BarrierFactory(country=china, admin_areas=[anhui])
+        BarrierFactory()
+
+        assert 3 == Barrier.objects.count()
+        assert 1 == Barrier.objects.filter(admin_areas=[beijing]).count()
+
+        url = f'{reverse("list-barriers")}?location={china}&admin_areas={beijing}'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 1 == response.data["count"]
+
+    def test_list_barriers_admin_areas_filter_multiple_areas(self):
+        china = "63af72a6-5d95-e211-a939-e4115bead28a"
+        beijing = "56f5f425-e3e3-4c9a-b886-ecb671b81503"
+        anhui = "5dad1164-2bd0-4187-a471-7d588cb5af35"
+        BarrierFactory(country=china, admin_areas=[beijing])
+        BarrierFactory(country=china, admin_areas=[anhui])
+        BarrierFactory()
+
+        assert 3 == Barrier.objects.count()
+        assert 1 == Barrier.objects.filter(admin_areas__contains=[beijing]).count()
+        assert 1 == Barrier.objects.filter(admin_areas__contains=[anhui]).count()
+
+        url = (
+            f'{reverse("list-barriers")}?location={china}&admin_areas={beijing},{anhui}'
+        )
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 2 == response.data["count"]
+
+    def test_list_barriers_admin_areas_filter_multiple_countries(self):
+        china = "63af72a6-5d95-e211-a939-e4115bead28a"
+        beijing = "56f5f425-e3e3-4c9a-b886-ecb671b81503"
+        anhui = "5dad1164-2bd0-4187-a471-7d588cb5af35"
+        russia = "5961b8be-5d95-e211-a939-e4115bead28a"
+        moscow = "2384702f-01e9-4792-857b-026b2623f2fa"
+        mordovia = "be4221b9-fbd8-4297-81a5-a9e3a8a583e6"
+        BarrierFactory(country=china, admin_areas=[beijing])
+        BarrierFactory(country=china, admin_areas=[anhui])
+        BarrierFactory(country=russia, admin_areas=[moscow])
+        BarrierFactory(country=russia, admin_areas=[mordovia])
+        BarrierFactory()
+
+        assert 5 == Barrier.objects.count()
+        assert 1 == Barrier.objects.filter(admin_areas__contains=[beijing]).count()
+        assert 1 == Barrier.objects.filter(admin_areas__contains=[anhui]).count()
+        assert 1 == Barrier.objects.filter(admin_areas__contains=[moscow]).count()
+        assert 1 == Barrier.objects.filter(admin_areas__contains=[mordovia]).count()
+
+        url = f'{reverse("list-barriers")}?location={china},{russia}&admin_areas={beijing},{anhui},{moscow},{mordovia}'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 4 == response.data["count"]
+
+    def test_list_barriers_admin_areas_filter_no_result(self):
+        china = "63af72a6-5d95-e211-a939-e4115bead28a"
+        beijing = "56f5f425-e3e3-4c9a-b886-ecb671b81503"
+        anhui = "5dad1164-2bd0-4187-a471-7d588cb5af35"
+        BarrierFactory(country=china, admin_areas=[anhui])
+        BarrierFactory()
+
+        assert 2 == Barrier.objects.count()
+        assert 1 == Barrier.objects.filter(admin_areas=[anhui]).count()
+
+        url = f'{reverse("list-barriers")}?location={china}&admin_areas={beijing}'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert 0 == response.data["count"]
+
     def test_list_barriers_status_filter(self):
         prob_status = 2
         BarrierFactory.create_batch(2, term=1)

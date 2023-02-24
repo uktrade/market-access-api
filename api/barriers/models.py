@@ -1,6 +1,8 @@
 import datetime
 import logging
+import operator
 import urllib.parse
+from functools import reduce
 from typing import List
 from uuid import uuid4
 
@@ -1288,6 +1290,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     )
     priority_level = django_filters.BaseInFilter(method="priority_level_filter")
     location = django_filters.BaseInFilter(method="location_filter")
+    admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
     search = django_filters.Filter(method="text_search")
     text = django_filters.Filter(method="text_search")
 
@@ -1484,6 +1487,21 @@ class BarrierFilterSet(django_filters.FilterSet):
             Q(country__in=location["countries"])
             | Q(country__in=location["overseas_region_countries"])
             | Q(admin_areas__overlap=location["countries"])
+        )
+
+    def admin_areas_filter(self, queryset, name, value):
+        """
+        Custom filter to filter by a country's administrative areas (states/provinces)
+        """
+        # Since we are comparing 2 lists we need to use reduce to allow the for loop
+        # to go through each submitted admin_area id and append a Q object seperated
+        # by an OR operator | to the query which will check the individual selected value
+        # is present in the list of admin_areas stored on the barrier
+        return queryset.filter(
+            reduce(
+                operator.or_,
+                (Q(admin_areas__contains=[selected_area]) for selected_area in value),
+            )
         )
 
     def text_search(self, queryset, name, value):
