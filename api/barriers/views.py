@@ -471,6 +471,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "tags": "Tags",
         "trade_direction": "Trade direction",
         "estimated_resolution_date": "Estimated resolution date",
+        "proposed_estimated_resolution_date": "Proposed estimated resolution date",
         "previous_estimated_resolution_date": "The previous estimate for resolution date",
         "estimated_resolution_updated_date": "The last date the resolution date was re-estimated",
         "summary": "Summary",
@@ -587,7 +588,18 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         barrier = self.get_object()
         self.update_contributors(barrier)
-        serializer.save(modified_by=self.request.user)
+        barrier = serializer.save(modified_by=self.request.user)
+        self.update_metadata_for_proposed_estimated_date(barrier)
+
+    def update_metadata_for_proposed_estimated_date(self, barrier):
+        # get patched data from request
+        patch_data = self.request.data
+
+        if "proposed_estimated_resolution_date" in patch_data:
+            # fill date and user with requests context
+            barrier.proposed_estimated_resolution_date_user = self.request.user
+            barrier.proposed_estimated_resolution_date_created = datetime.now()
+            barrier.save()
 
 
 class BarrierFullHistory(generics.GenericAPIView):

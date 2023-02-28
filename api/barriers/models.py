@@ -58,6 +58,8 @@ logger = logging.getLogger(__name__)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
+User = get_user_model()
+
 
 class Stage(models.Model):
     """Reporting workflow stages"""
@@ -303,6 +305,23 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
     estimated_resolution_date = models.DateField(
         blank=True, null=True, help_text="Date the barrier ends"
+    )
+    proposed_estimated_resolution_date = models.DateField(
+        blank=True, null=True, help_text="Proposed date the barrier ends"
+    )
+    proposed_estimated_resolution_date_created = models.DateTimeField(
+        blank=True, null=True, help_text="Date in which the proposed date was created"
+    )
+    proposed_estimated_resolution_date_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="proposed_estimated_resolution_date_user",
+        blank=True,
+        null=True,
+        help_text="User who created the proposed date",
+    )
+    estimated_resolution_date_change_reason = models.TextField(
+        blank=True, null=True, help_text="Reason for proposed date"
     )
     country = models.UUIDField(blank=True, null=True)
     caused_by_admin_areas = models.BooleanField(null=True, blank=True)
