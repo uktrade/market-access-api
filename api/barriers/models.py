@@ -49,6 +49,7 @@ from api.metadata.constants import (
     TRADING_BLOCS,
     BarrierStatus,
     PublicBarrierStatus,
+    NEXT_STEPS_ITEMS_STATUS_CHOICES,
 )
 
 from . import validators
@@ -1974,3 +1975,30 @@ class BarrierTopPrioritySummary(models.Model):
         related_name="top_priority_summary",
         primary_key=True,
     )
+
+
+class BarrierNextStepItem(BaseModel):
+    status = models.CharField(
+        max_length=15,
+        choices=NEXT_STEPS_ITEMS_STATUS_CHOICES,
+        default="NOT_STARTED",
+        blank=True,
+    )
+    next_step_owner = models.TextField()
+    next_step_item = models.TextField()
+    start_date = models.DateField(blank=True, null=True, auto_now_add=True)
+    completion_date = models.DateField(blank=True, null=True)
+    barrier = models.ForeignKey(
+        Barrier,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="barrier_next_steps_item",
+        primary_key=True,
+    )
+    history = HistoricalRecords()
+
+    class Meta:
+        # order by date descending
+        ordering = ("-completion_date",)
+        verbose_name = "Barrier Next Step Item"
+        verbose_name_plural = "Barrier Next Step Items"

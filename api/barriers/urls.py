@@ -23,6 +23,7 @@ from api.barriers.views import (
     PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count,
+    BarrierNextStepItemViewSet,
 )
 
 app_name = "barriers"
@@ -30,6 +31,9 @@ app_name = "barriers"
 router = DefaultRouter(trailing_slash=False)
 # Important Notice: Public barriers should only be used within Market Access Service exclusively!
 router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barriers")
+router.register(
+    r"next-steps-items", BarrierNextStepItemViewSet, basename="next-steps_items"
+)
 
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),

@@ -31,6 +31,7 @@ from api.barriers.models import (
     ProgrammeFundProgressUpdate,
     PublicBarrier,
     PublicBarrierLightTouchReviews,
+    BarrierNextStepItem,
 )
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
@@ -44,6 +45,7 @@ from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.barriers.serializers.progress_updates import (
     ProgrammeFundProgressUpdateSerializer,
     ProgressUpdateSerializer,
+    NextStepItemSerializer,
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember
@@ -1118,3 +1120,8 @@ class BarrierPrioritySummaryViewSet(ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
+class BarrierNextStepItemViewSet(ModelViewSet):
+    queryset = BarrierNextStepItem.objects.all()
+    serializer_class = NextStepItemSerializer

@@ -516,3 +516,9 @@ PRIORITY_LEVELS = Choices(
     ("COUNTRY", "Country Priority"),
     ("WATCHLIST", "Watch list"),
 )
+
+NEXT_STEPS_ITEMS_STATUS_CHOICES = Choices(
+    ("NOT_STARTED", "Not started"),
+    ("IN_PROGRESS", "In progress"),
+    ("COMPLETED", "Completed"),
+)
