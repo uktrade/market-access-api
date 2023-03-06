@@ -1997,6 +1997,7 @@ class BarrierTopPrioritySummary(models.Model):
 
 
 class BarrierNextStepItem(BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
     status = models.CharField(
         max_length=15,
         choices=NEXT_STEPS_ITEMS_STATUS_CHOICES,
@@ -2008,11 +2009,10 @@ class BarrierNextStepItem(BaseModel):
     start_date = models.DateField(blank=True, null=True, auto_now_add=True)
     completion_date = models.DateField(blank=True, null=True)
     barrier = models.ForeignKey(
-        Barrier,
+        "Barrier",
         blank=True,
         on_delete=models.CASCADE,
-        related_name="barrier_next_steps_item",
-        primary_key=True,
+        related_name="next_steps_items",
     )
     history = HistoricalRecords()
 

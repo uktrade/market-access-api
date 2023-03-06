@@ -31,9 +31,7 @@ app_name = "barriers"
 router = DefaultRouter(trailing_slash=False)
 # Important Notice: Public barriers should only be used within Market Access Service exclusively!
 router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barriers")
-router.register(
-    r"next-steps-items", BarrierNextStepItemViewSet, basename="next-steps_items"
-)
+
 
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
@@ -90,6 +88,28 @@ urlpatterns = router.urls + [
             }
         ),
         name="top_100_progress_updates_detail",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/next_steps_items",
+        BarrierNextStepItemViewSet.as_view(
+            {
+                "get": "list",
+                "post": "create",
+            }
+        ),
+        name="next_steps_items",
+    ),
+    path(
+        "barriers/<uuid:barrier_pk>/next_steps_items/<uuid:pk>",
+        BarrierNextStepItemViewSet.as_view(
+            {
+                "get": "retrieve",
+                "put": "update",
+                "patch": "partial_update",
+                "delete": "destroy",
+            }
+        ),
+        name="next_steps_items_detail",
     ),
     path(
         "barriers/<uuid:barrier_pk>/top_priority_summary",
