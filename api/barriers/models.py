@@ -37,6 +37,7 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_TERMS,
     GOVERNMENT_ORGANISATION_TYPES,
+    NEXT_STEPS_ITEMS_STATUS_CHOICES,
     PRIORITY_LEVELS,
     PROGRESS_UPDATE_CHOICES,
     STAGE_STATUS,
@@ -47,7 +48,6 @@ from api.metadata.constants import (
     TRADING_BLOCS,
     BarrierStatus,
     PublicBarrierStatus,
-    NEXT_STEPS_ITEMS_STATUS_CHOICES,
 )
 
 from . import validators

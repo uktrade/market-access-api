@@ -28,9 +28,9 @@ from api.barriers.fields import (
 )
 from api.barriers.models import Barrier, BarrierUserHit
 from api.barriers.serializers.progress_updates import (
+    NextStepItemSerializer,
     ProgrammeFundProgressUpdateSerializer,
     ProgressUpdateSerializer,
-    NextStepItemSerializer,
 )
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
