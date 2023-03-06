@@ -30,6 +30,7 @@ from api.barriers.models import Barrier, BarrierUserHit
 from api.barriers.serializers.progress_updates import (
     ProgrammeFundProgressUpdateSerializer,
     ProgressUpdateSerializer,
+    NextStepItemSerializer,
 )
 from api.core.serializers.mixins import CustomUpdateMixin
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
@@ -82,6 +83,7 @@ class BarrierSerializerBase(
         required=False, many=True
     )
     is_top_priority = serializers.BooleanField(required=False)
+    next_steps_items = NextStepItemSerializer(required=False, many=True)
 
     class Meta:
         model = Barrier
@@ -105,6 +107,7 @@ class BarrierSerializerBase(
             "unarchived_by",
             "unarchived_on",
             "progress_updates",
+            "next_steps_items",
         )
 
     def get_last_seen_on(self, obj):
