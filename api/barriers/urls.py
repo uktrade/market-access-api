@@ -8,6 +8,7 @@ from api.barriers.views import (
     BarrierHibernate,
     BarrierList,
     BarrierListS3EmailFile,
+    BarrierNextStepItemViewSet,
     BarrierOpenActionRequired,
     BarrierOpenInProgress,
     BarrierPrioritySummaryViewSet,
@@ -23,7 +24,6 @@ from api.barriers.views import (
     PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count,
-    BarrierNextStepItemViewSet,
 )
 
 app_name = "barriers"

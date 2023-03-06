@@ -26,12 +26,12 @@ from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import (
     Barrier,
+    BarrierNextStepItem,
     BarrierReportStage,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
     PublicBarrierLightTouchReviews,
-    BarrierNextStepItem,
 )
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
@@ -43,9 +43,9 @@ from api.barriers.serializers import (
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.barriers.serializers.progress_updates import (
+    NextStepItemSerializer,
     ProgrammeFundProgressUpdateSerializer,
     ProgressUpdateSerializer,
-    NextStepItemSerializer,
 )
 from api.collaboration.mixins import TeamMemberModelMixin
 from api.collaboration.models import TeamMember

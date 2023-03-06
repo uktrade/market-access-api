@@ -2,9 +2,9 @@ from rest_framework import serializers
 
 from api.barriers.models import (
     Barrier,
+    BarrierNextStepItem,
     BarrierProgressUpdate,
     ProgrammeFundProgressUpdate,
-    BarrierNextStepItem,
 )
 
 
@@ -117,14 +117,14 @@ class NextStepItemSerializer(UpdateSerializerMixin, serializers.ModelSerializer)
         model = BarrierNextStepItem
         fields = (
             "id",
-            "status",
-            "next_step_owner",
-            "next_step_item",
-            "start_date",
-            "completion_date",
             "barrier",
             "created_by",
             "created_on",
             "modified_by",
             "modified_on",
+            "completion_date",
+            "status",
+            "next_step_owner",
+            "next_step_item",
+            "start_date",
         )
