@@ -2001,7 +2001,7 @@ class BarrierNextStepItem(BaseModel):
     status = models.CharField(
         max_length=15,
         choices=NEXT_STEPS_ITEMS_STATUS_CHOICES,
-        default="NOT_STARTED",
+        default=NEXT_STEPS_ITEMS_STATUS_CHOICES.IN_PROGRESS,
         blank=True,
     )
     next_step_owner = models.TextField()
