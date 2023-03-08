@@ -1,3 +1,5 @@
+import logging
+
 from django.forms import BooleanField
 from rest_framework import serializers
 
@@ -37,6 +39,8 @@ from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
 from .mixins import LocationFieldMixin
 from .public_barriers import NestedPublicBarrierSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class BarrierSerializerBase(
@@ -83,7 +87,7 @@ class BarrierSerializerBase(
         required=False, many=True
     )
     is_top_priority = serializers.BooleanField(required=False)
-    next_steps_items = NextStepItemSerializer(required=False, many=True)
+    next_steps_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Barrier
@@ -119,6 +123,12 @@ class BarrierSerializerBase(
             last_seen = hit.last_seen
             hit.save()
             return last_seen
+
+    def get_next_steps_items(self, instance):
+        next_steps = instance.next_steps_items.all().order_by(
+            "-status", "completion_date"
+        )
+        return NextStepItemSerializer(next_steps, required=False, many=True).data
 
     def validate_public_eligibility(self, attrs):
         """Check for permissions here"""
