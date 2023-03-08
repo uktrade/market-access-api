@@ -46,7 +46,7 @@ class ProgressUpdateSerializer(UpdateSerializerMixin, serializers.Serializer):
     def update(self, instance, validated_data):
         instance.status = validated_data["status"]
         instance.update = validated_data["update"]
-        instance.next_steps = validated_data["next_steps"]
+        # instance.next_steps = validated_data["next_steps"]
         instance.save()
         return instance
 
