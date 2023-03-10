@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from api.barriers.models import (
     Barrier,
+    BarrierNextStepItem,
     BarrierProgressUpdate,
     ProgrammeFundProgressUpdate,
 )
@@ -45,7 +46,7 @@ class ProgressUpdateSerializer(UpdateSerializerMixin, serializers.Serializer):
     def update(self, instance, validated_data):
         instance.status = validated_data["status"]
         instance.update = validated_data["update"]
-        instance.next_steps = validated_data["next_steps"]
+        # instance.next_steps = validated_data["next_steps"]
         instance.save()
         return instance
 
@@ -108,4 +109,22 @@ class ProgrammeFundProgressUpdateSerializer(
             "modified_by",
             "milestones_and_deliverables",
             "expenditure",
+        )
+
+
+class NextStepItemSerializer(UpdateSerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = BarrierNextStepItem
+        fields = (
+            "id",
+            "barrier",
+            "created_by",
+            "created_on",
+            "modified_by",
+            "modified_on",
+            "completion_date",
+            "status",
+            "next_step_owner",
+            "next_step_item",
+            "start_date",
         )

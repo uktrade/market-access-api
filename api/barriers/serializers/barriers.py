@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from api.barriers.serializers.data_workspace import UserSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 
@@ -10,6 +11,7 @@ from .base import BarrierSerializerBase
 class BarrierDetailSerializer(BarrierSerializerBase):
     action_plan = ActionPlanSerializer(required=False, many=False, allow_null=False)
     top_priority_summary = PrioritySummarySerializer(required=False, many=False)
+    proposed_estimated_resolution_date_user = UserSerializer(required=False)
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -36,6 +38,10 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "economic_assessments",
             "valuation_assessments",
             "estimated_resolution_date",
+            "proposed_estimated_resolution_date",
+            "proposed_estimated_resolution_date_user",
+            "proposed_estimated_resolution_date_created",
+            "estimated_resolution_date_change_reason",
             "id",
             "is_summary_sensitive",
             "is_top_priority",
@@ -78,6 +84,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "government_organisations",
             "progress_updates",
             "programme_fund_progress_updates",
+            "next_steps_items",
             "top_priority_status",
             "top_priority_rejection_summary",
             "top_priority_summary",
@@ -121,6 +128,7 @@ class BarrierListSerializer(BarrierSerializerBase):
             "trade_direction",
             "trading_bloc",
             "progress_updates",
+            "next_steps_items",
             "is_top_priority",
             "priority_level",
             "top_priority_status",

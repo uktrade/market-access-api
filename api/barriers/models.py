@@ -39,6 +39,7 @@ from api.metadata.constants import (
     BARRIER_SOURCE,
     BARRIER_TERMS,
     GOVERNMENT_ORGANISATION_TYPES,
+    NEXT_STEPS_ITEMS_STATUS_CHOICES,
     PRIORITY_LEVELS,
     PROGRESS_UPDATE_CHOICES,
     STAGE_STATUS,
@@ -58,6 +59,8 @@ from .utils import random_barrier_reference
 logger = logging.getLogger(__name__)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
+
+User = get_user_model()
 
 
 class Stage(models.Model):
@@ -304,6 +307,23 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
     estimated_resolution_date = models.DateField(
         blank=True, null=True, help_text="Date the barrier ends"
+    )
+    proposed_estimated_resolution_date = models.DateField(
+        blank=True, null=True, help_text="Proposed date the barrier ends"
+    )
+    proposed_estimated_resolution_date_created = models.DateTimeField(
+        blank=True, null=True, help_text="Date in which the proposed date was created"
+    )
+    proposed_estimated_resolution_date_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="proposed_estimated_resolution_date_user",
+        blank=True,
+        null=True,
+        help_text="User who created the proposed date",
+    )
+    estimated_resolution_date_change_reason = models.TextField(
+        blank=True, null=True, help_text="Reason for proposed date"
     )
     country = models.UUIDField(blank=True, null=True)
     caused_by_admin_areas = models.BooleanField(null=True, blank=True)
@@ -1974,3 +1994,30 @@ class BarrierTopPrioritySummary(models.Model):
         related_name="top_priority_summary",
         primary_key=True,
     )
+
+
+class BarrierNextStepItem(BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    status = models.CharField(
+        max_length=15,
+        choices=NEXT_STEPS_ITEMS_STATUS_CHOICES,
+        default=NEXT_STEPS_ITEMS_STATUS_CHOICES.IN_PROGRESS,
+        blank=True,
+    )
+    next_step_owner = models.TextField()
+    next_step_item = models.TextField()
+    start_date = models.DateField(blank=True, null=True, auto_now_add=True)
+    completion_date = models.DateField(blank=True, null=True)
+    barrier = models.ForeignKey(
+        "Barrier",
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="next_steps_items",
+    )
+    history = HistoricalRecords()
+
+    class Meta:
+        # order by date descending
+        ordering = ("-completion_date",)
+        verbose_name = "Barrier Next Step Item"
+        verbose_name_plural = "Barrier Next Step Items"
