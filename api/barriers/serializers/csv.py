@@ -64,6 +64,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
+    estimated_resolution_date_change_reason = serializers.CharField()
     link = serializers.SerializerMethodField()
     wto_has_been_notified = serializers.SerializerMethodField()
     wto_should_be_notified = serializers.SerializerMethodField()
@@ -120,6 +121,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     progress_update_date = serializers.SerializerMethodField()
     progress_update_author = serializers.SerializerMethodField()
     progress_update_next_steps = serializers.SerializerMethodField()
+    next_steps_items = serializers.SerializerMethodField()
     programme_fund_progress_update_milestones = serializers.SerializerMethodField()
     programme_fund_progress_update_expenditure = serializers.SerializerMethodField()
     programme_fund_progress_update_date = serializers.SerializerMethodField()
@@ -162,12 +164,14 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "proposed_estimated_resolution_date",
             "previous_estimated_resolution_date",
             "estimated_resolution_updated_date",
+            "estimated_resolution_date_change_reason",
             "link",
             "progress_update_status",
             "progress_update_message",
             "progress_update_date",
             "progress_update_author",
             "progress_update_next_steps",
+            "next_steps_items",
             "programme_fund_progress_update_milestones",
             "programme_fund_progress_update_expenditure",
             "programme_fund_progress_update_date",
@@ -425,6 +429,15 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         if obj.latest_progress_update:
             return obj.latest_progress_update.next_steps
         return None
+
+    def get_next_steps_items(self, obj):
+        if obj.next_steps_items:
+            item_summary = []
+            for item in obj.next_steps_items.all():
+                item_summary.append(
+                    f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
+                )
+        return item_summary
 
     def get_programme_fund_progress_update_milestones(self, obj):
         if obj.latest_programme_fund_progress_update:
