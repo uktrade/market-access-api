@@ -431,13 +431,15 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         return None
 
     def get_next_steps_items(self, obj):
+        item_summary_paragraph = None
         if obj.next_steps_items:
             item_summary = []
             for item in obj.next_steps_items.all():
                 item_summary.append(
                     f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
                 )
-        return "\u2022 " + "\n\u2022".join(item_summary)
+            item_summary_paragraph = "\u2022\u00a0" + "\n\u2022".join(item_summary)
+        return item_summary_paragraph
 
     def get_programme_fund_progress_update_milestones(self, obj):
         if obj.latest_programme_fund_progress_update:
