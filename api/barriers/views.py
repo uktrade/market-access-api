@@ -474,7 +474,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         "proposed_estimated_resolution_date": "Proposed estimated resolution date",
         "previous_estimated_resolution_date": "The previous estimate for resolution date",
         "estimated_resolution_updated_date": "The last date the resolution date was re-estimated",
-        "estimated_resolution_date_change_reason": "The reason for the proposed change to the estimated resolution date",
+        "estimated_resolution_date_change_reason": "The reason for change to the estimated resolution date",
         "summary": "Summary",
         "link": "Link",
         "wto_has_been_notified": "WTO Notified",
