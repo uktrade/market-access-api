@@ -436,7 +436,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             item_summary = []
             for item in obj.next_steps_items.all():
                 # Add item to list if still pending
-                if item.staus == "IN_PROGRESS":
+                if item.status == "IN_PROGRESS":
                     item_summary.append(
                         f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
                     )
