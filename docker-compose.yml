@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.8"
 
 services:
   comtrade_test_db:
@@ -33,7 +33,7 @@ services:
       - .:/usr/src/app:delegated
     env_file: docker-compose.env
     # Running the main service directly within the contain is helpful
-    command: python3.7 ./manage.py runserver 0:8000
+    command: python3.8 ./manage.py runserver 0:8000
     ports:
       - "8880:8000"
       - "8882:22"
