@@ -440,7 +440,9 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
                     item_summary.append(
                         f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
                     )
-            item_summary_paragraph = "\u2022\u00A0" + "\n\u2022".join(item_summary)
+            item_summary_paragraph = "\u2022\u00A0" + "\n\u2022\u00A0".join(
+                item_summary
+            )
         return item_summary_paragraph
 
     def get_programme_fund_progress_update_milestones(self, obj):
