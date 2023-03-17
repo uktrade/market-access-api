@@ -438,7 +438,6 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
                 "completion_date"
             ):
                 # Add item to list if still pending
-
                 item_summary.append(
                     f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
                 )
