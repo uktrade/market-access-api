@@ -434,12 +434,14 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         item_summary_paragraph = None
         if obj.next_steps_items:
             item_summary = []
-            for item in obj.next_steps_items.all():
+            for item in obj.next_steps_items.filter(status="IN_PROGRESS").order_by(
+                "completion_date"
+            ):
                 # Add item to list if still pending
-                if item.status == "IN_PROGRESS":
-                    item_summary.append(
-                        f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
-                    )
+
+                item_summary.append(
+                    f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
+                )
             item_summary_paragraph = "\u2022\u00A0" + "\n\u2022\u00A0".join(
                 item_summary
             )
