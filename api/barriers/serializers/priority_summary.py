@@ -37,14 +37,16 @@ class PrioritySummarySerializer(serializers.ModelSerializer, UpdateSerializerMix
         return instance
 
     def get_created_by(self, obj):
-        if obj.created_by is not None:
-            return f"{obj.created_by.first_name} {obj.created_by.last_name}"
+        if hasattr(obj, "created_by"):
+            if obj.created_by is not None:
+                return f"{obj.created_by.first_name} {obj.created_by.last_name}"
         else:
             return None
 
     def get_modified_by(self, obj):
-        if obj.modified_by is not None:
-            return f"{obj.modified_by.first_name} {obj.modified_by.last_name}"
+        if hasattr(obj, "modified_by"):
+            if obj.modified_by is not None:
+                return f"{obj.modified_by.first_name} {obj.modified_by.last_name}"
         else:
             return None
 
@@ -59,13 +61,15 @@ class PrioritySummarySerializer(serializers.ModelSerializer, UpdateSerializerMix
             return None
 
     def get_created_on(self, obj):
-        if obj.created_on is not None:
-            return self.format_priority_summary_date(obj.created_on)
+        if hasattr(obj, "created_on"):
+            if obj.created_on is not None:
+                return self.format_priority_summary_date(obj.created_on)
         else:
             return None
 
     def get_modified_on(self, obj):
-        if obj.modified_on is not None:
-            return self.format_priority_summary_date(obj.modified_on)
+        if hasattr(obj, "modified_on"):
+            if obj.modified_on is not None:
+                return self.format_priority_summary_date(obj.modified_on)
         else:
             return None
