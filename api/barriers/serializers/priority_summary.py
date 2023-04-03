@@ -37,24 +37,35 @@ class PrioritySummarySerializer(serializers.ModelSerializer, UpdateSerializerMix
         return instance
 
     def get_created_by(self, obj):
-        if hasattr(obj, "created_by"):
+        if obj.created_by is not None:
             return f"{obj.created_by.first_name} {obj.created_by.last_name}"
+        else:
+            return None
 
     def get_modified_by(self, obj):
-        if hasattr(obj, "modified_by"):
+        if obj.modified_by is not None:
             return f"{obj.modified_by.first_name} {obj.modified_by.last_name}"
+        else:
+            return None
 
     def format_priority_summary_date(self, stored_date):
-        formatted_date = stored_date.strftime("%d %B %Y")
-        formatted_time = stored_date.strftime("%I:%M")
-        am_pm = stored_date.strftime("%p").lower()
-        timezone = stored_date.strftime("%Z")
-        return f"{formatted_date} at {formatted_time}{am_pm} ({timezone})"
+        if stored_date is not None:
+            formatted_date = stored_date.strftime("%d %B %Y")
+            formatted_time = stored_date.strftime("%I:%M")
+            am_pm = stored_date.strftime("%p").lower()
+            timezone = stored_date.strftime("%Z")
+            return f"{formatted_date} at {formatted_time}{am_pm} ({timezone})"
+        else:
+            return None
 
     def get_created_on(self, obj):
-        if hasattr(obj, "created_on"):
+        if obj.created_on is not None:
             return self.format_priority_summary_date(obj.created_on)
+        else:
+            return None
 
     def get_modified_on(self, obj):
-        if hasattr(obj, "modified_on"):
+        if obj.modified_on is not None:
             return self.format_priority_summary_date(obj.modified_on)
+        else:
+            return None
