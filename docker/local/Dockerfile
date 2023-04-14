@@ -1,29 +1,17 @@
-FROM rockylinux:8
+FROM python:3.8
 
-RUN dnf -y update \
-    && dnf -y install \
+RUN apt-get -y update \
+    && apt-get -y install \
     gcc \
     wget \
     postgresql \
     # packages so python can be compiled
     nano \
     make \
-    which \
-    openssl-devel \
-    bzip2-devel \
-    zlib-devel \
-    libffi \
-    libffi-devel \
-    # packages for pytest
-    sqlite-devel \
-    # packages for localdef
-    glibc-locale-source \
-    glibc-langpack-en \
-    # packages for ssh server
-    openssh-server \
-    openssh-clients \
-    && dnf -y clean all \
-    && rm -rf /var/cache/dnf
+    openssl \
+    libssl-dev \
+    openssh-client \
+    openssh-server
 
 ENV PYTHON_VERSION 3.8.0
 RUN wget --no-verbose https://www.python.org/ftp/python/$PYTHON_VERSION/Python-$PYTHON_VERSION.tgz \
