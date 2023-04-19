@@ -287,7 +287,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_resolved_date(self, obj):
         if obj.status_date and (obj.status == 4 or obj.status == 3):
-            return obj.status_date
+            return obj.status_date.strftime("%d-%b-%y")
         else:
             return None
 
