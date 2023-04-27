@@ -669,6 +669,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
         # has "Regional Trade Plan" in the tags
         return self.tags.filter(title="Regional Trade Plan").exists()
 
+    @property
+    def history(self):
+        return self.progress.history
+
     def last_seen_by(self, user_id):
         try:
             hit = BarrierUserHit.objects.get(user=user_id, barrier=self)
@@ -717,6 +721,128 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
         # Ensure that a PublicBarrier for this Barrier exists
         PublicBarrier.public_barriers.get_or_create_for_barrier(barrier=self)
+
+
+class BarrierReportProxy(Barrier):
+    """
+    This is a proxy model for the Barrier model for reporting
+    which allows for the existing model to act thesame were it has been used in the service
+    However we can then add addtional property methods for reporting
+    which will be exectuted when this model is used
+    """
+
+    class Meta:
+        proxy = True
+
+    @property
+    def latest_progress_update(self):
+        return self.progress_updates.latest()
+
+    @property
+    def estimated_resolution_updated_date(self):
+        return self.estimated_resolution_date
+
+    @property
+    def overseas_region(self):
+        if self.country:
+            country = metadata_utils.get_country(str(self.country))
+            if country:
+                overseas_region = country.get("overseas_region")
+                if overseas_region:
+                    return overseas_region.get("name")
+        elif self.trading_bloc:
+            overseas_regions = metadata_utils.get_trading_bloc_overseas_regions(
+                self.trading_bloc
+            )
+            return [region["name"] for region in overseas_regions]
+
+    @property
+    def previous_estimated_resolution_date(self):
+        try:
+            history = (
+                self.__class__.history.filter(id=self.id)
+                .exclude(estimated_resolution_date=self.estimated_resolution_date)
+                .latest("history_date")
+            )
+        except self.__class__.DoesNotExist:
+            # Error case if barriers are missing history
+            return None
+
+        if history.estimated_resolution_date:
+            return history.estimated_resolution_date.strftime("%b-%y")
+        else:
+            return None
+
+    @property
+    def programme_fund_progress_update_author(self):
+        if self.latest_programme_fund_progress_update:
+            return (
+                f"{self.latest_programme_fund_progress_update.created_by.first_name} "
+                + self.latest_programme_fund_progress_update.created_by.last_name
+            )
+
+        return None
+
+    @property
+    def programme_fund_progress_update_date(self):
+        if self.latest_programme_fund_progress_update:
+            return self.latest_programme_fund_progress_update.created_on
+        return None
+
+    @property
+    def programme_fund_progress_update_expenditure(self):
+        if self.latest_programme_fund_progress_update:
+            return self.latest_programme_fund_progress_update.expenditure
+
+    @property
+    def programme_fund_progress_update_milestones(self):
+        if self.latest_programme_fund_progress_update:
+            return (
+                self.latest_programme_fund_progress_update.milestones_and_deliverables
+            )
+        return None
+
+    @property
+    def progress_update_author(self):
+        if self.latest_progress_update:
+            return (
+                f"{self.latest_progress_update.created_by.first_name} "
+                + self.latest_progress_update.created_by.last_name
+            )
+
+        return None
+
+    @property
+    def progress_update_date(self):
+        if self.latest_progress_update:
+            return self.latest_progress_update.created_on
+        return None
+
+    @property
+    def progress_update_message(self):
+        if self.latest_progress_update:
+            return self.latest_progress_update.update
+
+    @property
+    def progress_update_next_steps(self):
+        if self.latest_progress_update:
+            return self.latest_progress_update.next_steps
+        return None
+
+    @property
+    def progress_update_status(self):
+        if self.latest_progress_update:
+            return self.latest_progress_update.get_status_display()
+        return None
+
+    @property
+    def top_priority_summary(self):
+        priority_summary = BarrierTopPrioritySummary.objects.filter(barrier=self)
+        if priority_summary:
+            latest_summary = priority_summary.latest("modified_on")
+            return latest_summary.top_priority_summary_text
+        else:
+            return None
 
 
 class PublicBarrierHistoricalModel(models.Model):

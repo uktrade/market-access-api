@@ -13,7 +13,7 @@ from api.metadata.constants import (
     BarrierStatus,
 )
 
-from ..models import BarrierProgressUpdate
+from ..models import BarrierProgressUpdate, BarrierReportProxy
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
 
@@ -165,8 +165,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     resolved_date = serializers.SerializerMethodField()
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
+    estimated_resolution_updated_date = serializers.DateTimeField()
 
     class Meta(BarrierSerializerBase.Meta):
+        model = BarrierReportProxy
         fields = (
             "admin_areas",
             "all_sectors",
@@ -246,6 +248,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "completion_percent",
             "resolved_date",
             "is_regional_trade_plan",
+            "estimated_resolution_updated_date",
         )
 
     def get_status_history(self, obj):
