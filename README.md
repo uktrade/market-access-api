@@ -131,8 +131,6 @@ To run the tests:
 pytest .
 ```
 
-adding line for test
-
 To run the linter:
 
 ```shell
