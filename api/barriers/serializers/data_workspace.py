@@ -1,19 +1,19 @@
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Count, Q
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
+from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
     BarrierStatus,
 )
-from api.metadata import utils as metadata_utils
 
 from ..models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
