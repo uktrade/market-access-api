@@ -170,7 +170,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     estimated_resolution_updated_date = serializers.DateTimeField()
 
     class Meta(BarrierSerializerBase.Meta):
-        model = BarrierReportProxy
         fields = (
             "admin_areas",
             "all_sectors",
