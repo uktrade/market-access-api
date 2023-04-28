@@ -167,7 +167,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     resolved_date = serializers.SerializerMethodField()
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
-    estimated_resolution_updated_date = serializers.DateTimeField()
+    estimated_resolution_updated_date = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
