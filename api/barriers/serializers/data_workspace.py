@@ -168,6 +168,18 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
+    previous_estimated_resolution_date = serializers.SerializerMethodField()
+    overseas_region = serializers.SerializerMethodField()
+    programme_fund_progress_update_author = serializers.SerializerMethodField()
+    programme_fund_progress_update_date = serializers.SerializerMethodField()
+    programme_fund_progress_update_expenditure = serializers.SerializerMethodField()
+    programme_fund_progress_update_milestones = serializers.SerializerMethodField()
+    progress_update_author = serializers.SerializerMethodField()
+    progress_update_date = serializers.SerializerMethodField()
+    progress_update_message = serializers.SerializerMethodField()
+    progress_update_next_steps = serializers.SerializerMethodField()
+    progress_update_status = serializers.SerializerMethodField()
+    top_priority_summary = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -250,6 +262,18 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "resolved_date",
             "is_regional_trade_plan",
             "estimated_resolution_updated_date",
+            "previous_estimated_resolution_date",
+            "overseas_region",
+            "programme_fund_progress_update_author",
+            "programme_fund_progress_update_date",
+            "programme_fund_progress_update_expenditure",
+            "programme_fund_progress_update_milestones",
+            "progress_update_author",
+            "progress_update_date",
+            "progress_update_message",
+            "progress_update_next_steps",
+            "progress_update_status",
+            "top_priority_summary",
         )
 
     def get_status_history(self, obj):
