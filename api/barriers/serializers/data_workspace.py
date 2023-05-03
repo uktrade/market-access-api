@@ -274,6 +274,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "progress_update_next_steps",
             "progress_update_status",
             "top_priority_summary",
+            "next_steps_items",
         )
 
     def get_status_history(self, obj):
