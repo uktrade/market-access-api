@@ -213,20 +213,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "is_resolved_top_priority",
             "is_top_priority",
             "latest_progress_update",
-            "programme_fund_progress_update_author",
-            "programme_fund_progress_update_date",
-            "programme_fund_progress_update_expenditure",
-            "programme_fund_progress_update_milestones",
-            "progress_update_author",
-            "progress_update_date",
-            "progress_update_message",
-            "progress_update_next_steps",
-            "progress_update_status",
-            "top_priority_summary",
             "location",
             "modified_by",
             "modified_on",
-            "next_steps_items",
             "other_source",
             "priority",
             "priority_level",
@@ -274,6 +263,17 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "estimated_resolution_updated_date",
             "previous_estimated_resolution_date",
             "overseas_region",
+            "programme_fund_progress_update_author",
+            "programme_fund_progress_update_date",
+            "programme_fund_progress_update_expenditure",
+            "programme_fund_progress_update_milestones",
+            "progress_update_author",
+            "progress_update_date",
+            "progress_update_message",
+            "progress_update_next_steps",
+            "progress_update_status",
+            "top_priority_summary",
+            "next_steps_items",
         )
 
     def get_status_history(self, obj):
@@ -372,13 +372,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_programme_fund_progress_update_author(self, instance):
         if instance.latest_programme_fund_progress_update:
-            try:
-                created_by = f"{instance.latest_programme_fund_progress_update.created_by.first_name} "
-                +instance.latest_programme_fund_progress_update.created_by.last_name
-                return created_by
-            except:
-                return None
-        return None
+            return instance.latest_programme_fund_progress_update.created_by
 
     def get_programme_fund_progress_update_date(self, instance):
         if instance.latest_programme_fund_progress_update:
@@ -398,16 +392,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_progress_update_author(self, instance):
         if instance.latest_progress_update:
-            try:
-                created_by = (
-                    f"{instance.latest_progress_update.created_by.first_name} "
-                    + instance.latest_progress_update.created_by.last_name
-                )
-                return created_by
-            except:
-                return None
-
-        return None
+            return (
+                f"{instance.latest_progress_update.created_by.first_name} "
+                + instance.latest_progress_update.created_by.last_name
+            )
 
     def get_progress_update_date(self, instance):
         if instance.latest_progress_update:
