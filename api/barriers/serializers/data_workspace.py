@@ -391,7 +391,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return None
 
     def get_progress_update_author(self, instance):
-        if instance.latest_progress_update:
+        if (
+            instance.latest_progress_update
+            and instance.latest_progress_update.created_by
+        ):
             first_name = getattr(
                 instance.latest_progress_update.created_by, "first_name"
             )
