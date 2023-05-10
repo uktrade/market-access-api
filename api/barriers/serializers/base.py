@@ -88,6 +88,7 @@ class BarrierSerializerBase(
     )
     is_top_priority = serializers.BooleanField(required=False)
     next_steps_items = serializers.SerializerMethodField()
+    public_barrier_summary = serializers.CharField(max_length=500)
 
     class Meta:
         model = Barrier
