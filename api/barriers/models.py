@@ -491,6 +491,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Percentage value representing how much information regarding a barrier has been provided",
     )
 
+    public_barrier_summary = models.TextField(
+        blank=True,
+        help_text="Public summary of the barrier if provided by user.",
+    )
+
     def __str__(self):
         if self.title is None:
             return self.code
