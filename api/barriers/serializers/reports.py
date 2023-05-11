@@ -43,5 +43,4 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "commodities",
             "draft",
             "caused_by_admin_areas",
-            "public_barrier_summary",
         )
