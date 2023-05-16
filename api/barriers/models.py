@@ -458,12 +458,15 @@ class Barrier(FullyArchivableMixin, BaseModel):
         default=PRIORITY_LEVELS.NONE,
     )
     priority_date = models.DateTimeField(auto_now=True, blank=True, null=True)
+    # Todo : this field may become redundant post migration to django-formtools for report workflow
     stages = models.ManyToManyField(
         Stage,
         related_name="report_stages",
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting",
     )
+    # Temporary store for session data during barrier creation
+    new_report_session_data = models.TextField(blank=True)
     archived_reason = models.CharField(
         choices=BARRIER_ARCHIVED_REASON,
         max_length=25,
