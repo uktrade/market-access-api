@@ -521,8 +521,8 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def latest_programme_fund_progress_update(self):
-        if self.programme_fund_progress_updates.all().exists():
-            return self.programme_fund_progress_updates.all().latest("created_on")
+        if self.programme_fund_progress_updates.exists():
+            return self.programme_fund_progress_updates.latest("created_on")
         return None
 
     @property
