@@ -337,7 +337,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return None
 
         if history.estimated_resolution_date:
-            return history.history_date.strftime("%b-%y")
+            return history.history_date.strftime("%Y-%m-%d")
         else:
             return None
 
@@ -353,7 +353,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return None
 
         if history.estimated_resolution_date:
-            return history.estimated_resolution_date.strftime("%b-%y")
+            return history.estimated_resolution_date.strftime("%Y-%m-%d")
         else:
             return None
 
@@ -372,7 +372,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_programme_fund_progress_update_author(self, instance):
         if instance.latest_programme_fund_progress_update:
-            return instance.latest_programme_fund_progress_update.created_by
+            author = instance.latest_programme_fund_progress_update.created_by
+            first_name = getattr(author, "first_name")
+            last_name = getattr(author, "last_name")
+            return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_programme_fund_progress_update_date(self, instance):
         if instance.latest_programme_fund_progress_update:
