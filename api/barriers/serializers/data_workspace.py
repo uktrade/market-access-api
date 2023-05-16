@@ -337,7 +337,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return None
 
         if history.estimated_resolution_date:
-            return history.history_date.strftime("%b-%y")
+            return history.history_date.strftime("%Y-%m-%d")
         else:
             return None
 
@@ -353,7 +353,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return None
 
         if history.estimated_resolution_date:
-            return history.estimated_resolution_date.strftime("%b-%y")
+            return history.estimated_resolution_date.strftime("%Y-%m-%d")
         else:
             return None
 
