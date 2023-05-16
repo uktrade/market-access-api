@@ -372,10 +372,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_programme_fund_progress_update_author(self, instance):
         if instance.latest_programme_fund_progress_update:
-            first_name = getattr(
-                instance.latest_programme_fund_progress_update.created_by, "first_name"
-            )
-            last_name = getattr(instance.latest_programme_fund_progress_update.created_by, "last_name")
+            author = instance.latest_programme_fund_progress_update.created_by
+            first_name = getattr(author, "first_name")
+            last_name = getattr(author, "last_name")
             return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_programme_fund_progress_update_date(self, instance):
