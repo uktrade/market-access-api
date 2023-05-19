@@ -466,7 +466,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Store reporting stages before submitting",
     )
     # Temporary store for session data during barrier creation
-    new_report_session_data = models.TextField(blank=True)
+    new_report_session_data = models.TextField(blank=True, null=True)
     archived_reason = models.CharField(
         choices=BARRIER_ARCHIVED_REASON,
         max_length=25,
