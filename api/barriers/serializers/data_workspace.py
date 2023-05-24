@@ -179,6 +179,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     progress_update_next_steps = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
     top_priority_summary = serializers.SerializerMethodField()
+    proposed_estimated_resolution_date = serializers.SerializerMethodField()
+    proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
+    proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -274,6 +277,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "progress_update_status",
             "top_priority_summary",
             "next_steps_items",
+            "proposed_estimated_resolution_date",
+            "proposed_estimated_resolution_date_user",
+            "proposed_estimated_resolution_date_created",
+            "priority_level",
         )
 
     def get_status_history(self, obj):
@@ -430,3 +437,42 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return latest_summary.top_priority_summary_text
         else:
             return None
+
+    def get_proposed_estimated_resolution_date(self, instance):
+        # only show the proposed date if it is different to the current date
+        if not instance.proposed_estimated_resolution_date:
+            return None
+
+        # compare to estimated_resolution_date
+        if (
+            instance.proposed_estimated_resolution_date
+            == instance.estimated_resolution_date
+        ):
+            return None
+
+        return instance.proposed_estimated_resolution_date.strftime("%Y-%m-%d")
+
+    def get_proposed_estimated_resolution_date_created(self, instance):
+        # only show the proposed date if it is different to the current date
+        if not instance.proposed_estimated_resolution_date_created:
+            return None
+
+        # compare to estimated_resolution_date
+        if (
+            instance.proposed_estimated_resolution_date_created
+            == instance.estimated_resolution_date
+        ):
+            return None
+        return instance.proposed_estimated_resolution_date_created.strftime("%Y-%m-%d")
+
+    def get_proposed_estimated_resolution_date_user(self, instance):
+        # only show the proposed date if it is different to the current date
+        if not instance.proposed_estimated_resolution_date:
+            return None
+        first_name = getattr(
+            instance.proposed_estimated_resolution_date_user, "first_name"
+        )
+        last_name = getattr(
+            instance.proposed_estimated_resolution_date_user, "last_name"
+        )
+        return f"{first_name} {last_name}" if first_name and last_name else None
