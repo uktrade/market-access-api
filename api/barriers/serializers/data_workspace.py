@@ -280,7 +280,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "proposed_estimated_resolution_date",
             "proposed_estimated_resolution_date_user",
             "proposed_estimated_resolution_date_created",
-            "priority_level",
             "estimated_resolution_date_change_reason",
         )
 
