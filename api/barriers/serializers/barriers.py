@@ -1,13 +1,12 @@
 from rest_framework import serializers
 
+from api.barriers.models import ExportType
 from api.barriers.serializers.data_workspace import UserSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 
 from ...action_plans.serializers import ActionPlanSerializer
 from .base import BarrierSerializerBase
-
-from api.barriers.models import ExportType
 
 
 class BarrierDetailSerializer(BarrierSerializerBase):

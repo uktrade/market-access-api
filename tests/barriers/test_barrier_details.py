@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 from django.test import TestCase
 from freezegun import freeze_time
