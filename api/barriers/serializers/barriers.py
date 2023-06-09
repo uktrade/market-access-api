@@ -15,7 +15,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
     top_priority_summary = PrioritySummarySerializer(required=False, many=False)
     proposed_estimated_resolution_date_user = UserSerializer(required=False)
     export_types = serializers.SlugRelatedField(
-        many=True, slug_field="name", queryset=ExportType.objects.all()
+        many=True, slug_field="name", queryset=ExportType.objects.all(), required=False
     )
 
     class Meta(BarrierSerializerBase.Meta):
