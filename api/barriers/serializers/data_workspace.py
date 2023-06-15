@@ -364,7 +364,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         else:
             return None
 
-    def get_overseas_region(self, instance):
+    def get_overseas_region(self, instance) -> str:
         if instance.country:
             country = metadata_utils.get_country(str(instance.country))
             if country:
@@ -375,7 +375,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             overseas_regions = metadata_utils.get_trading_bloc_overseas_regions(
                 instance.trading_bloc
             )
-            return [region["name"] for region in overseas_regions]
+            return ",".join([region["name"] for region in overseas_regions])
 
     def get_programme_fund_progress_update_author(self, instance):
         if instance.latest_programme_fund_progress_update:
