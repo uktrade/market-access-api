@@ -496,6 +496,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     start_date = models.DateField(blank=True, null=True)
     export_types = models.ManyToManyField("barriers.ExportType")
+    is_currently_active = models.BooleanField(
+        help_text="Is the barrier currently affecting trade?",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         if self.title is None:
