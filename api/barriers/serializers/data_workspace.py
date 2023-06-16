@@ -1,3 +1,4 @@
+import typing
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -364,18 +365,18 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         else:
             return None
 
-    def get_overseas_region(self, instance) -> str:
+    def get_overseas_region(self, instance) -> typing.List[str]:
         if instance.country:
             country = metadata_utils.get_country(str(instance.country))
             if country:
                 overseas_region = country.get("overseas_region")
                 if overseas_region:
-                    return overseas_region.get("name")
+                    return [overseas_region.get("name")]
         elif instance.trading_bloc:
             overseas_regions = metadata_utils.get_trading_bloc_overseas_regions(
                 instance.trading_bloc
             )
-            return ",".join([region["name"] for region in overseas_regions])
+            return [region["name"] for region in overseas_regions]
 
     def get_programme_fund_progress_update_author(self, instance):
         if instance.latest_programme_fund_progress_update:
