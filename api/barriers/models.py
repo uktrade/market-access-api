@@ -2029,10 +2029,3 @@ class BarrierNextStepItem(BaseModel):
         ordering = ("-completion_date",)
         verbose_name = "Barrier Next Step Item"
         verbose_name_plural = "Barrier Next Step Items"
-
-
-class ExportType(BaseModel):
-    name = models.CharField(max_length=200, unique=True)
-
-    def __str__(self) -> str:
-        return f"{self.__class__} {self.name}"
