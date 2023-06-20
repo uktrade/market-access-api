@@ -482,10 +482,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         metadata_models.Organisation,
         help_text="Organisations that are related to the barrier",
     )
-    # export_types = models.ManyToManyField(
-    #     metadata_models.ExportType,
-    #     blank=True,
-    # )
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
@@ -499,6 +495,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
 
     start_date = models.DateField(blank=True, null=True)
+
+    export_types = models.ManyToManyField(
+        metadata_models.ExportType,
+        blank=True,
+    )
 
     def __str__(self):
         if self.title is None:
