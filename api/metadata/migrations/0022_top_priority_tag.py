@@ -4,7 +4,6 @@ from django.db import migrations
 
 TAGS = {
     "TOP-PRIORITY BARRIER": {
-        "id": 4,
         "description": "Indicator that the barrier is marked as a top priority for resolution.",
         "order": 4,
         "show_at_reporting": True,
