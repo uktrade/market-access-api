@@ -116,6 +116,10 @@ jobs:
       # postgres docker image binds to without creating your own image and this is a much simpler solution.
 
       - run:
+          name: Check for pending migrations
+          command: poetry run python manage.py makemigrations --check --dry-run
+
+      - run:
           name: Apply migrations
           command: poetry run python manage.py migrate
 

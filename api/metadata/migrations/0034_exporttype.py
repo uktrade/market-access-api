@@ -5,6 +5,21 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def create_export_types(apps, schema_editor):
+    # Get the ExportType model from the apps registry
+    ExportType = apps.get_model("metadata", "ExportType")
+    # Create the ExportTypes
+    ExportType.objects.create(name="goods")
+    ExportType.objects.create(name="services")
+    ExportType.objects.create(name="investments")
+
+
+def reverse_create_export_types(apps, schema_editor):
+    ExportType = apps.get_model("metadata", "ExportType")
+    # Delete the ExportType
+    ExportType.objects.all().delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -56,4 +71,5 @@ class Migration(migrations.Migration):
                 "abstract": False,
             },
         ),
+        migrations.RunPython(create_export_types, reverse_create_export_types),
     ]
