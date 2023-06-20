@@ -495,7 +495,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
 
     start_date = models.DateField(blank=True, null=True)
-    export_types = models.ManyToManyField("metadata.ExportType")
+    export_types = models.ManyToManyField(
+        "metadata.ExportType",
+        help_text="Is the barrier currently affecting trade?",
+        blank=True,
+    )
 
     def __str__(self):
         if self.title is None:
