@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.AlterField(
             model_name="barrier",
             name="export_types",
             field=models.ManyToManyField(blank=True, to="metadata.ExportType"),
