@@ -44,4 +44,5 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "draft",
             "caused_by_admin_areas",
             "new_report_session_data",
+            "companies",
         )

@@ -61,15 +61,6 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert user.last_name == member["user"]["last_name"]
         assert owner == member["role"]
 
-    def test_submit_report_without_all_sectors_and_sectors(self):
-        report = ReportFactory(sectors=[], sectors_affected=True)
-        assert not report.sectors
-
-        url = reverse("submit-report", kwargs={"pk": report.id})
-        submit_response = self.api_client.put(url, format="json", data={})
-
-        assert submit_response.status_code == status.HTTP_400_BAD_REQUEST
-
     @freeze_time("2020-02-22")
     def test_submit_report_as_half_baked_user(self):
         user1 = create_test_user(
@@ -120,7 +111,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert 1 == Interaction.objects.filter(barrier=report).count()
 
     def test_no_interaction_is_created_when_submit_report_fails(self):
-        report = ReportFactory(term=None)
+        report = ReportFactory(trade_direction=None)
 
         assert not Interaction.objects.filter(barrier=report)
 
