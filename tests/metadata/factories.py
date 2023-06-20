@@ -15,7 +15,7 @@ class BarrierTagFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = BarrierTag
 
-    id = factory.Sequence(lambda n: 50 + n)
+    # id = factory.Sequence(lambda n: 50 + n)
     title = factory.Sequence(lambda n: "Tag {}".format(n + 1))
 
 

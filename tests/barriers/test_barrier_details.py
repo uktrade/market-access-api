@@ -383,15 +383,15 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert str(self.barrier.id) == response.data["id"]
         assert start_date == response.data["start_date"]
 
-    # def test_patch_export_types(self):
-    #     export_types = ["goods", "services"]
-    #     payload = {"export_types": export_types}
-    #     response = self.api_client.patch(self.url, format="json", data=payload)
+    def test_patch_export_types(self):
+        export_types = ["goods", "services"]
+        payload = {"export_types": export_types}
+        response = self.api_client.patch(self.url, format="json", data=payload)
 
-    #     assert status.HTTP_200_OK == response.status_code
-    #     self.barrier.refresh_from_db()
-    #     assert str(self.barrier.id) == response.data["id"]
-    #     assert export_types == sorted(response.data["export_types"])
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert str(self.barrier.id) == response.data["id"]
+        assert export_types == sorted(response.data["export_types"])
 
 
 class TestHibernateEndpoint(APITestMixin, TestCase):
