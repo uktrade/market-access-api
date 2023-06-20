@@ -103,7 +103,7 @@ class Organisation(models.Model):
         ordering = ("name",)
 
 
-class ExportType(models.Model):
+class ExportType(BaseModel):
     name = models.CharField(max_length=200, unique=True)
 
     def __str__(self) -> str:
