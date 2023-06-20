@@ -72,11 +72,6 @@ class BarrierTag(OrderedModel, BaseModel):
         help_text="Denotes that this tag labels a barrier as Top Priority",
     )
 
-    def save(self, *args, **kwargs):
-        if self._state.adding and self.id or self.pk:
-            self.id, self.pk = None
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.title
 
@@ -106,3 +101,10 @@ class Organisation(models.Model):
     class Meta:
         unique_together = ("name", "organisation_type")
         ordering = ("name",)
+
+
+class ExportType(BaseModel):
+    name = models.CharField(max_length=200, unique=True)
+
+    def __str__(self) -> str:
+        return f"{self.__class__} {self.name}"
