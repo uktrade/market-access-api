@@ -495,9 +495,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
 
     start_date = models.DateField(blank=True, null=True)
-    export_types = models.ManyToManyField(
-        "metadata.ExportType", related_name="barriers"
-    )
+    export_types = models.ManyToManyField("metadata.ExportType")
 
     def __str__(self):
         if self.title is None:
