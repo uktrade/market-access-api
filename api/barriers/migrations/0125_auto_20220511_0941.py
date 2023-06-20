@@ -35,7 +35,7 @@ def change_top_priority_field_to_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
     top_priority_barrier_tag = BarrierTag.objects.create(  # values taken from prod as of 2022-05-11
         title=top_priority_tag_title,
-        # order=4,
+        order=4,
         description="'Indicator that the barrier is marked as a top priority for resolution.",
         show_at_reporting=True,
         is_top_priority_tag=True,

@@ -72,6 +72,11 @@ class BarrierTag(OrderedModel, BaseModel):
         help_text="Denotes that this tag labels a barrier as Top Priority",
     )
 
+    def save(self, *args, **kwargs):
+        if self._state.adding and self.id == 4:
+            self.id, self.pk = None
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
