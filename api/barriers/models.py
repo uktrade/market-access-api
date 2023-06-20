@@ -506,13 +506,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Is the barrier currently active",
     )
 
-    @property
-    def is_resolved(self):
-        return self.status in (
-            BarrierStatus.RESOLVED_IN_FULL,
-            BarrierStatus.RESOLVED_IN_PART,
-        )
-
     def __str__(self):
         if self.title is None:
             return self.code
