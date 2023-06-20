@@ -106,10 +106,3 @@ class Organisation(models.Model):
     class Meta:
         unique_together = ("name", "organisation_type")
         ordering = ("name",)
-
-
-class ExportType(BaseModel):
-    name = models.CharField(max_length=200, unique=True)
-
-    def __str__(self) -> str:
-        return f"{self.__class__} {self.name}"

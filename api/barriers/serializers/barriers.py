@@ -3,7 +3,6 @@ from rest_framework import serializers
 from api.barriers.serializers.data_workspace import UserSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
-from api.metadata.models import ExportType
 
 from ...action_plans.serializers import ActionPlanSerializer
 from .base import BarrierSerializerBase
@@ -13,9 +12,9 @@ class BarrierDetailSerializer(BarrierSerializerBase):
     action_plan = ActionPlanSerializer(required=False, many=False, allow_null=False)
     top_priority_summary = PrioritySummarySerializer(required=False, many=False)
     proposed_estimated_resolution_date_user = UserSerializer(required=False)
-    export_types = serializers.SlugRelatedField(
-        many=True, slug_field="name", queryset=ExportType.objects.all(), required=False
-    )
+    # export_types = serializers.SlugRelatedField(
+    #     many=True, slug_field="name", queryset=ExportType.objects.all(), required=False
+    # )
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -93,7 +92,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "top_priority_rejection_summary",
             "top_priority_summary",
             "start_date",
-            "export_types",
+            # "export_types",
         )
 
     def create(self, validated_data):
