@@ -73,7 +73,7 @@ class BarrierTag(OrderedModel, BaseModel):
     )
 
     def save(self, *args, **kwargs):
-        if self._state.adding and self.id == 4:
+        if self._state.adding and self.id or self.pk:
             self.id, self.pk = None
         super().save(*args, **kwargs)
 
