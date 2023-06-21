@@ -494,6 +494,13 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Percentage value representing how much information regarding a barrier has been provided",
     )
 
+    start_date = models.DateField(blank=True, null=True)
+
+    export_types = models.ManyToManyField(
+        metadata_models.ExportType,
+        blank=True,
+    )
+
     def __str__(self):
         if self.title is None:
             return self.code

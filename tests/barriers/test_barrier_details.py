@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from django.test import TestCase
 from freezegun import freeze_time
@@ -372,6 +372,26 @@ class TestBarrierDetails(APITestMixin, APITestCase):
             ]
             == "Milestones_and_deliverables value 2"
         )
+
+    def test_patch_start_date(self):
+        start_date = date.today().strftime("%Y-%m-%d")
+        payload = {"start_date": start_date}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert str(self.barrier.id) == response.data["id"]
+        assert start_date == response.data["start_date"]
+
+    def test_patch_export_types(self):
+        export_types = ["goods", "services"]
+        payload = {"export_types": export_types}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert str(self.barrier.id) == response.data["id"]
+        assert export_types == sorted(response.data["export_types"])
 
 
 class TestHibernateEndpoint(APITestMixin, TestCase):

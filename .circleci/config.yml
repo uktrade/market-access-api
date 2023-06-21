@@ -114,6 +114,15 @@ jobs:
       # Writing to the already existing market_access database as setting up two postgres instances on circleci, at
       # least with the docker executor, isn't easily possible due to clashing ports. You can't change the port that the
       # postgres docker image binds to without creating your own image and this is a much simpler solution.
+
+      - run:
+          name: Check for pending migrations
+          command: poetry run python manage.py makemigrations --check --dry-run
+
+      - run:
+          name: Apply migrations
+          command: poetry run python manage.py migrate
+
       - run:
           name: Initialise comtrade data
           command: |
