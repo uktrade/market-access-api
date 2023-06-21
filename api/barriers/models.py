@@ -502,7 +502,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
 
     is_currently_active = models.BooleanField(
-        default=True,
+        null=True,
         help_text="Is the barrier currently active",
     )
 
