@@ -501,6 +501,11 @@ class Barrier(FullyArchivableMixin, BaseModel):
         blank=True,
     )
 
+    is_currently_active = models.BooleanField(
+        null=True,
+        help_text="Is the barrier currently active",
+    )
+
     def __str__(self):
         if self.title is None:
             return self.code

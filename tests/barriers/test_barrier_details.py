@@ -393,6 +393,19 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert str(self.barrier.id) == response.data["id"]
         assert export_types == sorted(response.data["export_types"])
 
+    def test_is_currently_active(self):
+        """
+        Barrier is active if it has a start date and it is in the past.
+        """
+        is_currently_active = "true"
+        payload = {"is_currently_active": is_currently_active}
+        response = self.api_client.patch(self.url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        self.barrier.refresh_from_db()
+        assert str(self.barrier.id) == response.data["id"]
+        assert is_currently_active
+
 
 class TestHibernateEndpoint(APITestMixin, TestCase):
     def setUp(self):

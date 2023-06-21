@@ -94,6 +94,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "top_priority_summary",
             "start_date",
             "export_types",
+            "is_currently_active",
         )
 
     def create(self, validated_data):
