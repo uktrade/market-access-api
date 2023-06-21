@@ -1,11 +1,15 @@
+import typing
+
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
+from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     PROGRESS_UPDATE_CHOICES,
@@ -13,7 +17,7 @@ from api.metadata.constants import (
     BarrierStatus,
 )
 
-from ..models import BarrierProgressUpdate
+from ..models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
 
@@ -146,7 +150,6 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
             "id",
             "status",
             "update",
-            "next_steps",
         )
 
     def get_status(self, obj):
@@ -165,6 +168,22 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     resolved_date = serializers.SerializerMethodField()
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
+    estimated_resolution_updated_date = serializers.SerializerMethodField()
+    previous_estimated_resolution_date = serializers.SerializerMethodField()
+    overseas_region = serializers.SerializerMethodField()
+    programme_fund_progress_update_author = serializers.SerializerMethodField()
+    programme_fund_progress_update_date = serializers.SerializerMethodField()
+    programme_fund_progress_update_expenditure = serializers.SerializerMethodField()
+    programme_fund_progress_update_milestones = serializers.SerializerMethodField()
+    progress_update_author = serializers.SerializerMethodField()
+    progress_update_date = serializers.SerializerMethodField()
+    progress_update_message = serializers.SerializerMethodField()
+    progress_update_next_steps = serializers.SerializerMethodField()
+    progress_update_status = serializers.SerializerMethodField()
+    top_priority_summary = serializers.SerializerMethodField()
+    proposed_estimated_resolution_date = serializers.SerializerMethodField()
+    proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
+    proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -246,6 +265,24 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "completion_percent",
             "resolved_date",
             "is_regional_trade_plan",
+            "estimated_resolution_updated_date",
+            "previous_estimated_resolution_date",
+            "overseas_region",
+            "programme_fund_progress_update_author",
+            "programme_fund_progress_update_date",
+            "programme_fund_progress_update_expenditure",
+            "programme_fund_progress_update_milestones",
+            "progress_update_author",
+            "progress_update_date",
+            "progress_update_message",
+            "progress_update_next_steps",
+            "progress_update_status",
+            "top_priority_summary",
+            "next_steps_items",
+            "proposed_estimated_resolution_date",
+            "proposed_estimated_resolution_date_user",
+            "proposed_estimated_resolution_date_created",
+            "estimated_resolution_date_change_reason",
         )
 
     def get_status_history(self, obj):
@@ -296,3 +333,148 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_is_resolved_top_priority(self, obj):
         return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+
+    def get_estimated_resolution_updated_date(self, instance):
+        try:
+            history = (
+                instance.__class__.history.filter(id=instance.id)
+                .exclude(estimated_resolution_date=instance.estimated_resolution_date)
+                .latest("history_date")
+            )
+        except ObjectDoesNotExist:
+            # Error case if barriers are missing history
+            return None
+
+        if history.estimated_resolution_date:
+            return history.history_date.strftime("%Y-%m-%d")
+        else:
+            return None
+
+    def get_previous_estimated_resolution_date(self, instance):
+        try:
+            history = (
+                instance.__class__.history.filter(id=instance.id)
+                .exclude(estimated_resolution_date=instance.estimated_resolution_date)
+                .latest("history_date")
+            )
+        except ObjectDoesNotExist:
+            # Error case if barriers are missing history
+            return None
+
+        if history.estimated_resolution_date:
+            return history.estimated_resolution_date.strftime("%Y-%m-%d")
+        else:
+            return None
+
+    def get_overseas_region(self, instance) -> typing.List[str]:
+        if instance.country:
+            country = metadata_utils.get_country(str(instance.country))
+            if country:
+                overseas_region = country.get("overseas_region")
+                if overseas_region:
+                    return [overseas_region.get("name")]
+        elif instance.trading_bloc:
+            overseas_regions = metadata_utils.get_trading_bloc_overseas_regions(
+                instance.trading_bloc
+            )
+            return [region["name"] for region in overseas_regions]
+
+    def get_programme_fund_progress_update_author(self, instance):
+        if instance.latest_programme_fund_progress_update:
+            author = instance.latest_programme_fund_progress_update.created_by
+            first_name = getattr(author, "first_name")
+            last_name = getattr(author, "last_name")
+            return f"{first_name} {last_name}" if first_name and last_name else None
+
+    def get_programme_fund_progress_update_date(self, instance):
+        if instance.latest_programme_fund_progress_update:
+            return instance.latest_programme_fund_progress_update.created_on
+        return None
+
+    def get_programme_fund_progress_update_expenditure(self, instance):
+        if instance.latest_programme_fund_progress_update:
+            return instance.latest_programme_fund_progress_update.expenditure
+
+    def get_programme_fund_progress_update_milestones(self, instance):
+        if instance.latest_programme_fund_progress_update:
+            return (
+                instance.latest_programme_fund_progress_update.milestones_and_deliverables
+            )
+        return None
+
+    def get_progress_update_author(self, instance):
+        if (
+            instance.latest_progress_update
+            and instance.latest_progress_update.created_by
+        ):
+            first_name = getattr(
+                instance.latest_progress_update.created_by, "first_name"
+            )
+            last_name = getattr(instance.latest_progress_update.created_by, "last_name")
+            return f"{first_name} {last_name}" if first_name and last_name else None
+
+    def get_progress_update_date(self, instance):
+        if instance.latest_progress_update:
+            return instance.latest_progress_update.created_on
+        return None
+
+    def get_progress_update_message(self, instance):
+        if instance.latest_progress_update:
+            return instance.latest_progress_update.update
+
+    def get_progress_update_next_steps(self, instance):
+        if instance.latest_progress_update:
+            return instance.latest_progress_update.next_steps
+        return None
+
+    def get_progress_update_status(self, instance):
+        if instance.latest_progress_update:
+            return instance.latest_progress_update.get_status_display()
+        return None
+
+    def get_top_priority_summary(self, instance):
+        priority_summary = BarrierTopPrioritySummary.objects.filter(barrier=instance)
+        if priority_summary:
+            latest_summary = priority_summary.latest("modified_on")
+            return latest_summary.top_priority_summary_text
+        else:
+            return None
+
+    def get_proposed_estimated_resolution_date(self, instance):
+        # only show the proposed date if it is different to the current date
+        if not instance.proposed_estimated_resolution_date:
+            return None
+
+        # compare to estimated_resolution_date
+        if (
+            instance.proposed_estimated_resolution_date
+            == instance.estimated_resolution_date
+        ):
+            return None
+
+        return instance.proposed_estimated_resolution_date.strftime("%Y-%m-%d")
+
+    def get_proposed_estimated_resolution_date_created(self, instance):
+        # only show the proposed date if it is different to the current date
+        if not instance.proposed_estimated_resolution_date_created:
+            return None
+
+        # compare to estimated_resolution_date
+        if (
+            instance.proposed_estimated_resolution_date_created
+            == instance.estimated_resolution_date
+        ):
+            return None
+        return instance.proposed_estimated_resolution_date_created.strftime("%Y-%m-%d")
+
+    def get_proposed_estimated_resolution_date_user(self, instance):
+        # only show the proposed date if it is different to the current date
+        if not instance.proposed_estimated_resolution_date:
+            return None
+        first_name = getattr(
+            instance.proposed_estimated_resolution_date_user, "first_name"
+        )
+        last_name = getattr(
+            instance.proposed_estimated_resolution_date_user, "last_name"
+        )
+        return f"{first_name} {last_name}" if first_name and last_name else None

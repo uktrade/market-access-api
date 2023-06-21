@@ -139,7 +139,7 @@ class TestCategories(APITestMixin):
 
         assert status.HTTP_200_OK == response.status_code
         assert response.data[key] is not None
-        assert 49 == len(response.data[key])
+        assert 50 == len(response.data[key])
 
         org = response.data[key][0]
         assert "id" in org.keys()
@@ -172,6 +172,7 @@ class TestCategories(APITestMixin):
             "International Standards",
             "Clean Growth",
             "Regional Trade Plan",
+            "EU Market Access Board",
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)

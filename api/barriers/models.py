@@ -458,12 +458,15 @@ class Barrier(FullyArchivableMixin, BaseModel):
         default=PRIORITY_LEVELS.NONE,
     )
     priority_date = models.DateTimeField(auto_now=True, blank=True, null=True)
+    # Todo : this field may become redundant post migration to django-formtools for report workflow
     stages = models.ManyToManyField(
         Stage,
         related_name="report_stages",
         through="BarrierReportStage",
         help_text="Store reporting stages before submitting",
     )
+    # Temporary store for session data during barrier creation
+    new_report_session_data = models.TextField(blank=True)
     archived_reason = models.CharField(
         choices=BARRIER_ARCHIVED_REASON,
         max_length=25,
@@ -489,6 +492,18 @@ class Barrier(FullyArchivableMixin, BaseModel):
         blank=True,
         null=True,
         help_text="Percentage value representing how much information regarding a barrier has been provided",
+    )
+
+    start_date = models.DateField(blank=True, null=True)
+
+    export_types = models.ManyToManyField(
+        metadata_models.ExportType,
+        blank=True,
+    )
+
+    is_currently_active = models.BooleanField(
+        null=True,
+        help_text="Is the barrier currently active",
     )
 
     def __str__(self):
@@ -518,8 +533,8 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def latest_programme_fund_progress_update(self):
-        if self.programme_fund_progress_updates.all().exists():
-            return self.programme_fund_progress_updates.all().latest("created_on")
+        if self.programme_fund_progress_updates.exists():
+            return self.programme_fund_progress_updates.latest("created_on")
         return None
 
     @property

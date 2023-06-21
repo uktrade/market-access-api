@@ -20,7 +20,7 @@ class TestBarrierTags(TestCase):
 
 class TestOrganisations(TestCase):
     def test_goverment_organisations(self):
-        """There should be 23 MD and 3 DA - correct as of Nov 2020"""
+        """There should be 24 MD and 3 DA - correct as of Mar 2023"""
         md_qs = Organisation.objects.filter(
             organisation_type=OrganisationType.MINISTERIAL_DEPARTMENTS
         )
@@ -28,5 +28,5 @@ class TestOrganisations(TestCase):
             organisation_type=OrganisationType.DEVOLVED_ADMINISTRATIONS
         )
 
-        assert 23 == md_qs.count()
+        assert 24 == md_qs.count()
         assert 3 == da_qs.count()
