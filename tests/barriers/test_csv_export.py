@@ -89,7 +89,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert expected_status_date == serializer.data["status_date"]
 
     def test_resolved_date_resolved_in_full(self):
-        expected_resolved_date = "02/2022"
+        expected_resolved_date = "17-Feb-22"
         barrier = BarrierFactory()
         barrier.status_date = datetime.datetime(2022, 2, 17)
         barrier.status = 4
@@ -99,7 +99,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert expected_resolved_date == serializer.data["resolved_date"]
 
     def test_resolved_date_partially_resolved(self):
-        expected_resolved_date = "02/2022"
+        expected_resolved_date = "17-Feb-22"
         barrier = BarrierFactory()
         barrier.status_date = datetime.datetime(2022, 2, 17)
         barrier.status = 3
