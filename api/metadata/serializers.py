@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .fields import CategoryGroupField
-from .models import BarrierPriority, BarrierTag, Category, Organisation
+from .models import BarrierPriority, BarrierTag, Category, ExportType, Organisation
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -44,3 +44,12 @@ class OrganisationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organisation
         fields = ("id", "name", "organisation_type")
+
+
+class ExportTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExportType
+        fields = (
+            "id",
+            "name",
+        )

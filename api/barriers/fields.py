@@ -17,11 +17,18 @@ from api.metadata.constants import (
     BarrierStatus,
     PublicBarrierStatus,
 )
-from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
+from api.metadata.models import (
+    BarrierPriority,
+    BarrierTag,
+    Category,
+    ExportType,
+    Organisation,
+)
 from api.metadata.serializers import (
     BarrierPrioritySerializer,
     BarrierTagSerializer,
     CategorySerializer,
+    ExportTypeSerializer,
     OrganisationSerializer,
 )
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
@@ -202,6 +209,18 @@ class TagsField(serializers.ListField):
             return BarrierTag.objects.filter(id__in=data)
         except (ValueError, TypeError):
             raise serializers.ValidationError("Invalid tag ids")
+
+
+class ExportTypesField(serializers.ListField):
+    def to_representation(self, value):
+        serializer = ExportTypeSerializer(value.all(), many=True)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        try:
+            return ExportType.objects.filter(name__in=data)
+        except (ValueError, TypeError):
+            raise serializers.ValidationError("Invalid export types")
 
 
 class TermField(serializers.ChoiceField):

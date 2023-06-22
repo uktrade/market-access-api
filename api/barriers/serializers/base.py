@@ -15,6 +15,7 @@ from api.barriers.fields import (
     BarrierPriorityField,
     CategoriesField,
     CommoditiesField,
+    ExportTypesField,
     OrganisationsField,
     PublicEligibilityField,
     SectorsField,
@@ -88,6 +89,7 @@ class BarrierSerializerBase(
     )
     is_top_priority = serializers.BooleanField(required=False)
     next_steps_items = serializers.SerializerMethodField()
+    export_types = ExportTypesField(required=False)
 
     class Meta:
         model = Barrier

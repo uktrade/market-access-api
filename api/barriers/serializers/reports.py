@@ -45,4 +45,7 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "caused_by_admin_areas",
             "new_report_session_data",
             "companies",
+            "start_date",
+            "is_currently_active",
+            "export_types",
         )
