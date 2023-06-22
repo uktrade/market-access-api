@@ -72,8 +72,8 @@ requests-toolbelt==0.9.1
 requests==2.28.2; python_version >= "3.7" and python_version < "4" and (python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0")
 s3transfer==0.4.2; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0"
 sentry-sdk==1.14.0
-six==1.16.0; python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.4.0" and python_version >= "3.7"
-sqlparse==0.4.4; python_version >= "3.5"
+six==1.16.0; python_version >= "3.7" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version >= "3.7"
+sqlparse==0.4.4; python_version >= "3.6"
 time-machine==2.9.0; python_version >= "3.7"
 tomli==2.0.1; python_version < "3.11" and python_version >= "3.7"
 urllib3==1.26.15; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.6.0")
