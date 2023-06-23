@@ -26,6 +26,7 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "product",
             "progress",
             "sectors",
+            "main_sector",
             "sectors_affected",
             "source",
             "status",
@@ -45,7 +46,10 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "caused_by_admin_areas",
             "new_report_session_data",
             "companies",
+            "related_organisations",
             "start_date",
+            "is_start_date_known",
             "is_currently_active",
             "export_types",
+            "export_description",
         )

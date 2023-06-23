@@ -3,7 +3,6 @@ from rest_framework import serializers
 from api.barriers.serializers.data_workspace import UserSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
-from api.metadata.models import ExportType
 
 from ...action_plans.serializers import ActionPlanSerializer
 from .base import BarrierSerializerBase
@@ -13,9 +12,6 @@ class BarrierDetailSerializer(BarrierSerializerBase):
     action_plan = ActionPlanSerializer(required=False, many=False, allow_null=False)
     top_priority_summary = PrioritySummarySerializer(required=False, many=False)
     proposed_estimated_resolution_date_user = UserSerializer(required=False)
-    export_types = serializers.SlugRelatedField(
-        many=True, slug_field="name", queryset=ExportType.objects.all(), required=False
-    )
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -96,24 +92,6 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "export_types",
             "is_currently_active",
         )
-
-    def create(self, validated_data):
-        export_types_data = validated_data.pop("export_types")
-        instance = super().create(validated_data)
-        for export_type in export_types_data:
-            instance.export_types.add(export_type)
-        return instance
-
-    def update(self, instance, validated_data):
-        export_type_data = validated_data.pop("export_types", [])
-
-        instance = super().update(instance, validated_data)
-
-        # Clear all export types and add new ones
-        instance.export_types.clear()
-        for export_type in export_type_data:
-            instance.export_types.add(export_type)
-        return instance
 
 
 class BarrierMinimumDetailSerializer(BarrierSerializerBase):
