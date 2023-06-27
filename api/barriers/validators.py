@@ -53,4 +53,5 @@ class ReportReadyForSubmitValidator:
                     errors[field_name] = [item["error_message"]]
 
         if errors:
-            raise ValidationError(errors)
+            logger.critical(errors)
+            raise ValidationError(str(errors))
