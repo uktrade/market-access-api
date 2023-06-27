@@ -393,7 +393,6 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert str(self.barrier.id) == response.data["id"]
 
         for response_type_item in response.data["export_types"]:
-            logger.critical(response_type_item["name"])
             assert response_type_item["name"] in export_types_payload
 
     def test_is_currently_active(self):
