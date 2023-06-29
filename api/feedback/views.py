@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
-from .models import Feedback
 from api.feedback.serializers import FeedbackSerializer
+from .models import Feedback
 
 
 class AddFeedbackViewSet(ModelViewSet):
