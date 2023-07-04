@@ -76,7 +76,7 @@ def generate_and_upload_to_s3(
 
 @shared_task
 def generate_s3_and_send_email(
-    barrier_ids: List[int],
+    barrier_ids: List[str],
     s3_filename: str,
     email: str,
     first_name: str,

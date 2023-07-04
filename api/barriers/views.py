@@ -2,7 +2,6 @@ import csv
 import logging
 from collections import defaultdict
 from datetime import datetime
-from itertools import chain
 
 from dateutil.parser import parse
 from django.conf import settings
@@ -536,9 +535,9 @@ class BarrierListS3EmailFile(generics.ListAPIView):
         first_name = self.request.user.first_name
 
         queryset = self.filter_queryset(self.get_queryset()).values_list("id")
-        barrier_ids = list(
-            chain.from_iterable(queryset)
-        )  # flatten queryset to a list of ids
+
+        # Create list of IDs in string format
+        barrier_ids = list(map(str, queryset.values_list("id", flat=True)))
 
         UserActvitiyLog.objects.create(
             user=self.request.user,
