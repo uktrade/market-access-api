@@ -90,6 +90,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "top_priority_summary",
             "start_date",
             "export_types",
+            "export_description",
             "is_currently_active",
             "related_organisations",
         )
