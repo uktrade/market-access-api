@@ -163,6 +163,11 @@ class SectorsField(serializers.ListField):
         return [get_sector(str(sector_id)) for sector_id in value]
 
 
+class SectorField(serializers.UUIDField):
+    def to_representation(self, value):
+        return get_sector(str(value))
+
+
 class SourceField(serializers.ChoiceField):
     def __init__(self, **kwargs):
         return super().__init__(choices=BARRIER_SOURCE, **kwargs)
