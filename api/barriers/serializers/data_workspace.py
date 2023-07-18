@@ -488,8 +488,11 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         )
         return f"{first_name} {last_name}" if first_name and last_name else None
 
-    def get_main_sector(self, instance):
-        return metadata_utils.get_sector(instance.main_sector)
+    def get_main_sector(self, instance) -> typing.Optional[str]:
+        main_sector = metadata_utils.get_sector(instance.main_sector)
+        if main_sector:
+            return main_sector["name"]
+        return None
 
     def get_export_types(self, instance) -> typing.List[str]:
         if instance.export_types.exists():
