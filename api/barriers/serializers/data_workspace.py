@@ -14,6 +14,7 @@ from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
+    TRADE_DIRECTION_CHOICES,
     BarrierStatus,
 )
 
@@ -494,3 +495,11 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         if instance.export_types:
             return instance.export_types_set.all().values_list("name", flat=True)
         return None
+
+    def get_trade_direction(self, instance) -> typing.Optional[str]:
+        if instance.trade_direction:
+            return dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES).get(
+                str(instance.trade_direction)
+            )
+        else:
+            return None
