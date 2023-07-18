@@ -291,7 +291,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "export_types",
             "is_currently_active",
             "trade_direction",
-            "main_sector"
+            "main_sector",
         )
 
     def get_status_history(self, obj):
