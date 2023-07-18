@@ -187,7 +187,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     main_sector = serializers.SerializerMethodField()
     export_types = serializers.SerializerMethodField()
     trade_direction = serializers.SerializerMethodField()
-    commodity_codes = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
