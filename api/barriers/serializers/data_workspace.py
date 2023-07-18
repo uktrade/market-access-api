@@ -492,8 +492,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return metadata_utils.get_sector(instance.main_sector)
 
     def get_export_types(self, instance) -> typing.List[str]:
-        if instance.export_types:
-            return instance.export_types_set.all().values_list("name", flat=True)
+        if instance.export_types.exists():
+            return instance.export_types.all().values_list("name", flat=True)
         return None
 
     def get_trade_direction(self, instance) -> typing.Optional[str]:
