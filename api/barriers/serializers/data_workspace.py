@@ -184,6 +184,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
+    main_sector = serializers.SerializerMethodField()
+    export_types = serializers.SerializerMethodField()
+    trade_direction = serializers.SerializerMethodField()
+    commodity_codes = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -283,6 +287,11 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "proposed_estimated_resolution_date_user",
             "proposed_estimated_resolution_date_created",
             "estimated_resolution_date_change_reason",
+            "start_date",
+            "export_types",
+            "is_currently_active",
+            "trade_direction",
+            "main_sector"
         )
 
     def get_status_history(self, obj):
@@ -478,3 +487,11 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             instance.proposed_estimated_resolution_date_user, "last_name"
         )
         return f"{first_name} {last_name}" if first_name and last_name else None
+
+    def get_main_sector(self, instance):
+        return metadata_utils.get_sector(instance.main_sector)
+
+    def get_export_types(self, instance) -> typing.List[str]:
+        if instance.export_types:
+            return instance.export_types_set.all().values_list("name", flat=True)
+        return None
