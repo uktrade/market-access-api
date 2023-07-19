@@ -146,11 +146,12 @@ class BarrierFactory(factory.django.DjangoModelFactory):
         if not create:
             return
         if extracted:
-            for candle in extracted:
-                self.export_types.add(candle)
+            for exp in extracted:
+                self.export_types.add(exp)
         else:
-            for _ in range(3):
-                ExportTypeFactory(Barrier=self, **kwargs)
+            names = ["goods", "services", "investment"]
+            for name in names:
+                ExportTypeFactory(name=name)
 
 
 class ReportFactory(factory.django.DjangoModelFactory):
