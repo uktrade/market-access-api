@@ -17,6 +17,7 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     BarrierStatus,
 )
+from api.barriers.fields import ExportTypesField, SectorField
 
 from ..models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
@@ -186,7 +187,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
     main_sector = serializers.SerializerMethodField()
-    export_types = serializers.SerializerMethodField()
+    export_types = ExportTypesField(required=False)
     trade_direction = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
@@ -489,9 +490,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_main_sector(self, instance) -> typing.Optional[str]:
-        main_sector = metadata_utils.get_sector(instance.main_sector)
-        if main_sector:
-            return main_sector["name"]
+        main_sector = SectorField(instance=instance, required=False)
+        if main_sector.is_valid():
+            return main_sector.data["name"]
         return None
 
     def get_export_types(self, instance) -> typing.List[str]:
@@ -501,7 +502,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_trade_direction(self, instance) -> typing.Optional[str]:
         if instance.trade_direction:
-            return {str(x): y for x,y in TRADE_DIRECTION_CHOICES}.get(
+            return {str(x): y for x, y in TRADE_DIRECTION_CHOICES}.get(
                 str(instance.trade_direction)
             )
         else:
