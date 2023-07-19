@@ -495,11 +495,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return main_sector["name"]
         return None
 
-    def get_export_types(self, instance) -> typing.List[str]:
-        if instance.export_types.exists():
-            return list(instance.export_types.all().values_list("name", flat=True))
-        return None
-
     def get_trade_direction(self, instance) -> typing.Optional[str]:
         if instance.trade_direction:
             return {str(x): y for x, y in TRADE_DIRECTION_CHOICES}.get(
