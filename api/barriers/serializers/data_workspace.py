@@ -501,7 +501,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
 
     def get_trade_direction(self, instance) -> typing.Optional[str]:
         if instance.trade_direction:
-            return dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES).get(
+            return {str(x): y for x,y in TRADE_DIRECTION_CHOICES}.get(
                 str(instance.trade_direction)
             )
         else:
