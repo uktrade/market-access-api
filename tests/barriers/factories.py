@@ -95,7 +95,6 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     is_currently_active = True
     start_date = fuzzy_date()
     trade_direction = 1
-    export_types = factory.RelatedFactoryList(ExportTypeFactory, size=1)
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
