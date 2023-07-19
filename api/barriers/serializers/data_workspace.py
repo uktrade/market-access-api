@@ -7,6 +7,7 @@ from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
+from api.barriers.fields import ExportTypesField, SectorField
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata import utils as metadata_utils
@@ -17,7 +18,6 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     BarrierStatus,
 )
-from api.barriers.fields import ExportTypesField, SectorField
 
 from ..models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
