@@ -84,6 +84,11 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
     top_priority_status = "NONE"
+    main_sector = fuzzy_sector()
+    is_currently_active = True
+    start_date = fuzzy_date()
+    trade_direction = 1
+    export_types = ["GOODS"]
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
