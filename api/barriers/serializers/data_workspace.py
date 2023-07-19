@@ -490,9 +490,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_main_sector(self, instance) -> typing.Optional[str]:
-        main_sector = SectorField(instance=instance, required=False)
+        main_sector = SectorField.to_representation(instance)
         if main_sector.is_valid():
-            return main_sector.data["name"]
+            return main_sector["name"]
         return None
 
     def get_export_types(self, instance) -> typing.List[str]:
