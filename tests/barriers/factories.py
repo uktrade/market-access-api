@@ -72,7 +72,7 @@ class ExportTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ExportType
 
-    name = factory.Iterator(["goods", "services", "investment"])
+    name = factory.Sequence(lambda n: ["goods", "services", "investment"][n % 3])
 
 
 class BarrierFactory(factory.django.DjangoModelFactory):
@@ -95,6 +95,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     is_currently_active = True
     start_date = fuzzy_date()
     trade_direction = 1
+    export_types = factory.RelatedFactoryList(ExportTypeFactory, size=1)
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
@@ -140,18 +141,6 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     def wto_profile(self, create, extracted, **kwargs):
         if kwargs:
             WTOProfileFactory(barrier=self, **kwargs)
-
-    @factory.post_generation
-    def export_types(self, create, extracted, **kwargs):
-        if not create:
-            return
-        if extracted:
-            for exp in extracted:
-                self.export_types.add(exp)
-        else:
-            names = ["goods", "services", "investment"]
-            for name in names:
-                ExportTypeFactory(name=name)
 
 
 class ReportFactory(factory.django.DjangoModelFactory):
