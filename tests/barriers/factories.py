@@ -6,7 +6,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyDate, FuzzyInteger, FuzzyText
 
 from api.barriers.models import Barrier, PublicBarrier
 from api.commodities.models import Commodity
-from api.metadata.models import BarrierPriority
+from api.metadata.models import BarrierPriority, ExportType
 from api.wto.models import WTOCommittee, WTOCommitteeGroup, WTOProfile
 
 
@@ -68,6 +68,13 @@ class WTOProfileFactory(factory.django.DjangoModelFactory):
     committee_raised_in = factory.SubFactory(WTOCommitteeFactory)
 
 
+class ExportTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ExportType
+
+    name = factory.Iterator(["goods", "services", "investment"])
+
+
 class BarrierFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Barrier
@@ -88,7 +95,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     is_currently_active = True
     start_date = fuzzy_date()
     trade_direction = 1
-    export_types = ["GOODS"]
+    export_types = factory.RelatedFactory(ExportTypeFactory, "barrier", size=3)
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
