@@ -95,7 +95,6 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     is_currently_active = True
     start_date = fuzzy_date()
     trade_direction = 1
-    export_types = factory.RelatedFactory(ExportTypeFactory, "barrier", size=3)
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
@@ -141,6 +140,17 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     def wto_profile(self, create, extracted, **kwargs):
         if kwargs:
             WTOProfileFactory(barrier=self, **kwargs)
+
+    @factory.post_generation
+    def export_types(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for candle in extracted:
+                self.export_types.add(candle)
+        else:
+            for _ in range(3):
+                ExportTypeFactory(Barrier=self, **kwargs)
 
 
 class ReportFactory(factory.django.DjangoModelFactory):
