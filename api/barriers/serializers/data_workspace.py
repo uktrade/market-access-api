@@ -7,6 +7,7 @@ from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
+from api.barriers.fields import ExportTypesField
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata import utils as metadata_utils
@@ -14,6 +15,7 @@ from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
+    TRADE_DIRECTION_CHOICES,
     BarrierStatus,
 )
 
@@ -184,6 +186,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
+    main_sector = serializers.SerializerMethodField()
+    export_types = ExportTypesField(required=False)
+    trade_direction = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -283,6 +288,11 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "proposed_estimated_resolution_date_user",
             "proposed_estimated_resolution_date_created",
             "estimated_resolution_date_change_reason",
+            "start_date",
+            "export_types",
+            "is_currently_active",
+            "trade_direction",
+            "main_sector",
         )
 
     def get_status_history(self, obj):
@@ -478,3 +488,17 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             instance.proposed_estimated_resolution_date_user, "last_name"
         )
         return f"{first_name} {last_name}" if first_name and last_name else None
+
+    def get_main_sector(self, instance) -> typing.Optional[str]:
+        main_sector = metadata_utils.get_sector(instance.main_sector)
+        if main_sector:
+            return main_sector["name"]
+        return None
+
+    def get_trade_direction(self, instance) -> typing.Optional[str]:
+        if instance.trade_direction:
+            return {str(x): y for x, y in TRADE_DIRECTION_CHOICES}.get(
+                str(instance.trade_direction)
+            )
+        else:
+            return None
