@@ -342,6 +342,7 @@ class TestDataWarehouseExport(TestCase):
         assert "export_types" in keys
         assert "is_currently_active" in keys
         assert "main_sector" in keys
+        assert "export_description" in keys
 
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):

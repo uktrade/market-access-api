@@ -466,3 +466,13 @@ class DisplayChoiceField(serializers.ChoiceField):
             if val == data:
                 return key
         self.fail("invalid_choice", input=data)
+
+
+class LineBreakCharField(serializers.CharField):
+    def to_representation(self, value):
+        # Convert the string value to a list of lines.
+        return value.splitlines()
+
+    def to_internal_value(self, data):
+        # Convert the list of lines back to a single string value.
+        return "\n".join(data)

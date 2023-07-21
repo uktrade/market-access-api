@@ -7,7 +7,7 @@ from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
-from api.barriers.fields import ExportTypesField
+from api.barriers.fields import ExportTypesField, LineBreakCharField
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata import utils as metadata_utils
@@ -189,6 +189,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     main_sector = serializers.SerializerMethodField()
     export_types = ExportTypesField(required=False)
     trade_direction = serializers.SerializerMethodField()
+    export_description = LineBreakCharField(required=False)
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -293,6 +294,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "is_currently_active",
             "trade_direction",
             "main_sector",
+            "export_description",
         )
 
     def get_status_history(self, obj):
