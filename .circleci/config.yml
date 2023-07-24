@@ -136,9 +136,12 @@ jobs:
             psql -h localhost -U postgres -d market_access -f docker/local/comtrade_test_db/20_insert_test_data.sql
 
       - run:
-          name: run tests
+          name: run tests & save coverage
           command: |
             poetry run pytest tests
+            coverage json
+
+      - codecov/upload
 
       - store_artifacts:
           path: test-reports
