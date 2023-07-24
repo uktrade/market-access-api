@@ -139,7 +139,7 @@ jobs:
           name: run tests & save coverage
           command: |
             poetry run pytest tests
-            coverage json
+            poetry run coverage json
 
       - codecov/upload
 
