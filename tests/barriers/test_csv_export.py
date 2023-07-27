@@ -24,7 +24,7 @@ from api.metadata.constants import (
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
 )
-from api.metadata.models import Organisation
+from api.metadata.models import Organisation, ExportType
 from tests.assessment.factories import (
     EconomicAssessmentFactory,
     EconomicImpactAssessmentFactory,
@@ -328,6 +328,52 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
             serializer.data["programme_fund_progress_update_author"]
             == f"{self.user.first_name} {self.user.last_name}"
         )
+
+    def test_start_date(self):
+        barrier = BarrierFactory(start_date="2022-10-01")
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert serializer.data["start_date"] == "Oct-22"
+
+    def test_main_sector(self):
+        barrier = BarrierFactory()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert serializer.data["main_sector"] is not None
+
+    def test_export_types(self):
+        barrier = BarrierFactory()
+        export_type = ExportType.objects.first
+        barrier.export_types.add(export_type)
+        barrier.save()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert serializer.data["export_types"] == [export_type.name]
+
+    def test_is_currently_active(self):
+        barrier = BarrierFactory()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert serializer.data["is_currently_active"] is True
+
+    def test_export_description(self):
+        barrier = BarrierFactory()
+        barrier.export_description = "Export summary\nExport description"
+        barrier.save()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert (
+            serializer.data["export_description"]
+            == "Export summary\nExport description"
+        )
+
+    def test_all_sectors(self):
+        barrier = BarrierFactory()
+        barrier.all_sectors = True
+        barrier.save()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert serializer.data["all_sectors"] is True
 
 
 class TestBarrierCsvExport(APITestMixin, APITestCase):

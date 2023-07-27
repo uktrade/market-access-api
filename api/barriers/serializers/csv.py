@@ -1,3 +1,4 @@
+import typing
 import logging
 
 from django.conf import settings
@@ -10,6 +11,7 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
 )
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
+from api.barriers.fields import ExportTypesField, LineBreakCharField
 from api.collaboration.models import TeamMember
 from api.history.factories.public_barriers import PublicBarrierHistoryFactory
 from api.metadata.constants import (
@@ -129,6 +131,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
 
     # regional trade plan fields
     is_regional_trade_plan = serializers.SerializerMethodField()
+    export_types = ExportTypesField(required=False)
+    export_description = LineBreakCharField(required=False)
 
     class Meta:
         model = Barrier
@@ -182,6 +186,12 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "top_priority_summary",
             "government_organisations",
             "is_regional_trade_plan",
+            "start_date",
+            "export_types",
+            "is_currently_active",
+            "main_sector",
+            "export_description",
+            "all_sectors",
         )
 
     def get_term(self, obj):
@@ -525,6 +535,12 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return latest_summary.top_priority_summary_text
         else:
             return None
+
+    def get_main_sector(self, obj) -> typing.Optional[str]:
+        main_sector = get_sector(obj.main_sector)
+        if main_sector:
+            return main_sector["name"]
+        return None
 
 
 class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):
