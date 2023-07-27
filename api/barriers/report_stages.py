@@ -6,7 +6,7 @@ REPORT_CONDITIONS = [
     {
         "stage": "1.1",
         "order": 1,
-        "required": ["term"],
+        "required": [],
         "conditional": [
             {
                 "condition_field": "status",

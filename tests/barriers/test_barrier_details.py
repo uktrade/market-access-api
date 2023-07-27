@@ -384,14 +384,16 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert start_date == response.data["start_date"]
 
     def test_patch_export_types(self):
-        export_types = ["goods", "services"]
-        payload = {"export_types": export_types}
+        export_types_payload = ["goods", "services"]
+        payload = {"export_types": export_types_payload}
         response = self.api_client.patch(self.url, format="json", data=payload)
 
         assert status.HTTP_200_OK == response.status_code
         self.barrier.refresh_from_db()
         assert str(self.barrier.id) == response.data["id"]
-        assert export_types == sorted(response.data["export_types"])
+
+        for response_type_item in response.data["export_types"]:
+            assert response_type_item["name"] in export_types_payload
 
     def test_is_currently_active(self):
         """

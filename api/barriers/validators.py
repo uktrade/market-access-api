@@ -1,9 +1,12 @@
+import logging
 from collections import defaultdict
 
 from rest_framework.exceptions import ValidationError
 
 from api.barriers.report_stages import REPORT_CONDITIONS
 from api.core.validate_utils import DataCombiner
+
+logger = logging.getLogger(__name__)
 
 
 class ReportReadyForSubmitValidator:
@@ -49,15 +52,6 @@ class ReportReadyForSubmitValidator:
                     field_name = item["condition_field"]
                     errors[field_name] = [item["error_message"]]
 
-        sectors_affected = data_combiner.get_value("sectors_affected")
-        all_sectors = data_combiner.get_value("all_sectors")
-        sectors = data_combiner.get_value("sectors")
-
-        if sectors_affected and all_sectors is None and sectors == []:
-            errors["sectors"] = "missing data"
-
-        if sectors_affected and all_sectors and sectors:
-            errors["sectors"] = "conflicting input"
-
         if errors:
-            raise ValidationError(errors)
+            logger.critical(errors)
+            raise ValidationError(str(errors))

@@ -17,11 +17,18 @@ from api.metadata.constants import (
     BarrierStatus,
     PublicBarrierStatus,
 )
-from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation
+from api.metadata.models import (
+    BarrierPriority,
+    BarrierTag,
+    Category,
+    ExportType,
+    Organisation,
+)
 from api.metadata.serializers import (
     BarrierPrioritySerializer,
     BarrierTagSerializer,
     CategorySerializer,
+    ExportTypeSerializer,
     OrganisationSerializer,
 )
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
@@ -156,6 +163,11 @@ class SectorsField(serializers.ListField):
         return [get_sector(str(sector_id)) for sector_id in value]
 
 
+class SectorField(serializers.UUIDField):
+    def to_representation(self, value):
+        return get_sector(str(value))
+
+
 class SourceField(serializers.ChoiceField):
     def __init__(self, **kwargs):
         return super().__init__(choices=BARRIER_SOURCE, **kwargs)
@@ -202,6 +214,18 @@ class TagsField(serializers.ListField):
             return BarrierTag.objects.filter(id__in=data)
         except (ValueError, TypeError):
             raise serializers.ValidationError("Invalid tag ids")
+
+
+class ExportTypesField(serializers.ListField):
+    def to_representation(self, value):
+        serializer = ExportTypeSerializer(value.all(), many=True)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        try:
+            return ExportType.objects.filter(name__in=data)
+        except (ValueError, TypeError):
+            raise serializers.ValidationError("Invalid export types")
 
 
 class TermField(serializers.ChoiceField):
@@ -442,3 +466,13 @@ class DisplayChoiceField(serializers.ChoiceField):
             if val == data:
                 return key
         self.fail("invalid_choice", input=data)
+
+
+class LineBreakCharField(serializers.CharField):
+    def to_representation(self, value):
+        # Convert the string value to a list of lines.
+        return value.splitlines()
+
+    def to_internal_value(self, data):
+        # Convert the list of lines back to a single string value.
+        return "\n".join(data)

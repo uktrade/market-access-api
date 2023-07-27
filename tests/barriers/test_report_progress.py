@@ -80,13 +80,6 @@ class TestReportProgress(BaseReportTestCase):
         """
         test_parameters = (
             {
-                "case": 0,
-                "payload": {
-                    "term": ProblemStatus.AFFECTING_SINGLE,
-                },
-                "expected_status": self.IN_PROGRESS,
-            },
-            {
                 "case": 10,
                 "hint": "It remains NOT_STARTED because UNFINISHED is the default for status.",
                 "payload": {
@@ -95,26 +88,8 @@ class TestReportProgress(BaseReportTestCase):
                 "expected_status": self.NOT_STARTED,
             },
             {
-                "case": 11,
-                "payload": {
-                    "term": ProblemStatus.AFFECTING_SINGLE,
-                    "status": BarrierStatus.UNFINISHED,
-                },
-                "expected_status": self.IN_PROGRESS,
-            },
-            {
-                "case": 20,
-                "hints": "Cannot get COMPLETED without term.",
-                "payload": {
-                    "term": None,
-                    "status": BarrierStatus.OPEN_PENDING_ACTION,
-                },
-                "expected_status": self.IN_PROGRESS,
-            },
-            {
                 "case": 30,
                 "payload": {
-                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.OPEN_PENDING_ACTION,
                 },
                 "expected_status": self.COMPLETED,
@@ -123,7 +98,6 @@ class TestReportProgress(BaseReportTestCase):
                 "case": 40,
                 "hints": "Cannot get COMPLETED without status_date and status_summary.",
                 "payload": {
-                    "term": ProblemStatus.AFFECTING_MULTIPLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                 },
                 "expected_status": self.IN_PROGRESS,
@@ -132,7 +106,6 @@ class TestReportProgress(BaseReportTestCase):
                 "case": 50,
                 "hints": "Cannot get COMPLETED without status_summary.",
                 "payload": {
-                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                     "status_date": "2020-02-02",
                 },
@@ -141,7 +114,6 @@ class TestReportProgress(BaseReportTestCase):
             {
                 "case": 60,
                 "payload": {
-                    "term": ProblemStatus.AFFECTING_SINGLE,
                     "status": BarrierStatus.RESOLVED_IN_FULL,
                     "status_date": "2020-02-02",
                     "status_summary": "wibble wobble",

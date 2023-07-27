@@ -126,3 +126,4 @@ config/settings/static/
 src/
 
 requirements-dev.txt
+/local.env

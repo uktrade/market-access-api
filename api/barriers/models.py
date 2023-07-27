@@ -359,7 +359,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         blank=True,
         default=list,
     )
+    main_sector = models.UUIDField(blank=True, null=True)
     companies = models.JSONField(blank=True, null=True)
+    related_organisations = models.JSONField(blank=True, null=True)
     product = models.CharField(max_length=MAX_LENGTH, blank=True)
     source = models.CharField(choices=BARRIER_SOURCE, max_length=25, blank=True)
     other_source = models.CharField(max_length=MAX_LENGTH, blank=True)
@@ -495,10 +497,15 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
 
     start_date = models.DateField(blank=True, null=True)
+    is_start_date_known = models.BooleanField(default=False)
 
     export_types = models.ManyToManyField(
         metadata_models.ExportType,
         blank=True,
+    )
+    export_description = models.TextField(
+        blank=True,
+        null=True,
     )
 
     is_currently_active = models.BooleanField(

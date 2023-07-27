@@ -332,6 +332,18 @@ class TestDataWarehouseExport(TestCase):
             == expected_midpoint_value
         )
 
+    def test_mve_new_fields_in_dataworkspace(self):
+        barrier = BarrierFactory(
+            status_date=date.today(), status=BarrierStatus.OPEN_IN_PROGRESS
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        keys = serialised_data.keys()
+        assert "start_date" in keys
+        assert "export_types" in keys
+        assert "is_currently_active" in keys
+        assert "main_sector" in keys
+        assert "export_description" in keys
+
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):
     def setUp(self):
