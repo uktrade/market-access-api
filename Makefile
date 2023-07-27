@@ -69,7 +69,6 @@ django-showmigrations: ## Show django migrations.
 	docker-compose exec web ./manage.py showmigrations
 # ==================================================
 
-
 # UTIL COMMANDS
 # ==================================================
 .PHONY: flake8
