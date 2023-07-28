@@ -200,5 +200,3 @@ With docker:
 
 Or for local builds:
 ```poetry run pytest tests --cov-report term```
-
-
