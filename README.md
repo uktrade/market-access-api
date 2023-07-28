@@ -189,3 +189,16 @@ Market Access API can run on any Heroku-style platform. Configuration is perform
 ## Management commands
 
 TBD
+
+## Test Coverage
+
+Testing code coverage is automatically ran as part of the CircleCI build and sent to [codecov.io](https://codecov.io/gh/uktrade/market-access-api).
+You can run the tests locally and generate a coverage report by running:
+
+With docker:
+```docker-compose run --rm web pytest tests --cov-report term```
+
+Or for local builds:
+```poetry run pytest tests --cov-report term```
+
+
