@@ -24,7 +24,7 @@ from api.metadata.constants import (
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
 )
-from api.metadata.models import Organisation, ExportType
+from api.metadata.models import ExportType, Organisation
 from tests.assessment.factories import (
     EconomicAssessmentFactory,
     EconomicImpactAssessmentFactory,

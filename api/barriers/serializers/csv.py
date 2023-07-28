@@ -1,17 +1,17 @@
-import typing
 import logging
+import typing
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
+from api.barriers.fields import ExportTypesField, LineBreakCharField
 from api.barriers.models import (
     Barrier,
     BarrierRequestDownloadApproval,
     BarrierTopPrioritySummary,
 )
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
-from api.barriers.fields import ExportTypesField, LineBreakCharField
 from api.collaboration.models import TeamMember
 from api.history.factories.public_barriers import PublicBarrierHistoryFactory
 from api.metadata.constants import (
