@@ -343,7 +343,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
     def test_export_types(self):
         barrier = BarrierFactory()
-        export_type = ExportType.objects.first
+        export_type = ExportType.objects.first()
         barrier.export_types.add(export_type)
         barrier.save()
 
@@ -362,10 +362,10 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         barrier.save()
 
         serializer = BarrierCsvExportSerializer(barrier)
-        assert (
-            serializer.data["export_description"]
-            == "Export summary\nExport description"
-        )
+        assert serializer.data["export_description"] == [
+            "Export summary",
+            "Export description",
+        ]
 
     def test_all_sectors(self):
         barrier = BarrierFactory()
