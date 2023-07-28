@@ -330,10 +330,10 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         )
 
     def test_start_date(self):
-        barrier = BarrierFactory(start_date="2022-10-01")
+        barrier = BarrierFactory()
 
         serializer = BarrierCsvExportSerializer(barrier)
-        assert serializer.data["start_date"] == "Oct-22"
+        assert serializer.data["start_date"] == barrier.start_date.strftime("%Y-%m-%d")
 
     def test_main_sector(self):
         barrier = BarrierFactory()
@@ -348,7 +348,9 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         barrier.save()
 
         serializer = BarrierCsvExportSerializer(barrier)
-        assert serializer.data["export_types"] == [export_type.name]
+        assert serializer.data["export_types"] == [
+            {"id": export_type.id, "name": export_type.name}
+        ]
 
     def test_is_currently_active(self):
         barrier = BarrierFactory()

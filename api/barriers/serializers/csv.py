@@ -130,9 +130,13 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     programme_fund_progress_update_author = serializers.SerializerMethodField()
 
     # regional trade plan fields
+    start_date = serializers.DateField(format="%Y-%m-%d")
     is_regional_trade_plan = serializers.SerializerMethodField()
+    is_currently_active = serializers.BooleanField(required=False)
     export_types = ExportTypesField(required=False)
     export_description = LineBreakCharField(required=False)
+    all_sectors = serializers.BooleanField(required=False)
+    main_sector = serializers.SerializerMethodField()
 
     class Meta:
         model = Barrier
