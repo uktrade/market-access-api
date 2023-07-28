@@ -354,6 +354,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
     def test_is_currently_active(self):
         barrier = BarrierFactory()
+        barrier.is_currently_active = True
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert serializer.data["is_currently_active"] is True
