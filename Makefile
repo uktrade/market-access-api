@@ -34,6 +34,10 @@ django-test: ## Run django tests (keeps existing test db).
 django-test-create-db: ## Run django tests (recreates test db).
 	docker-compose exec web pytest --create-db tests/$(path)
 
+.PHONY: django-test-with-coverage
+django-test-create-db: ## Run django tests and generate coverage report in terminal.
+	docker-compose run --rm web pytest --cov-report term tests/$(path)
+
 .PHONY: django-gen-secretkey
 django-gen-secretkey: ## Generates a secret key (using django's util function)
 	@docker-compose exec web bash -c "./tools/secret_keygen.py"
