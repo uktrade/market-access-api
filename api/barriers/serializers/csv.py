@@ -1,9 +1,11 @@
 import logging
+import typing
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
+from api.barriers.fields import ExportTypesField, LineBreakCharField
 from api.barriers.models import (
     Barrier,
     BarrierRequestDownloadApproval,
@@ -128,7 +130,13 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     programme_fund_progress_update_author = serializers.SerializerMethodField()
 
     # regional trade plan fields
+    start_date = serializers.DateField(format="%Y-%m-%d")
     is_regional_trade_plan = serializers.SerializerMethodField()
+    is_currently_active = serializers.BooleanField(required=False)
+    export_types = ExportTypesField(required=False)
+    export_description = LineBreakCharField(required=False)
+    all_sectors = serializers.BooleanField(required=False)
+    main_sector = serializers.SerializerMethodField()
 
     class Meta:
         model = Barrier
@@ -182,6 +190,12 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "top_priority_summary",
             "government_organisations",
             "is_regional_trade_plan",
+            "start_date",
+            "export_types",
+            "is_currently_active",
+            "main_sector",
+            "export_description",
+            "all_sectors",
         )
 
     def get_term(self, obj):
@@ -525,6 +539,12 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             return latest_summary.top_priority_summary_text
         else:
             return None
+
+    def get_main_sector(self, obj) -> typing.Optional[str]:
+        main_sector = get_sector(obj.main_sector)
+        if main_sector:
+            return main_sector["name"]
+        return None
 
 
 class BarrierRequestDownloadApprovalSerializer(serializers.ModelSerializer):
