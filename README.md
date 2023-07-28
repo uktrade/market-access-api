@@ -196,7 +196,7 @@ Testing code coverage is automatically ran as part of the CircleCI build and sen
 You can run the tests locally and generate a coverage report by running:
 
 With docker:
-```docker-compose run --rm web pytest tests --cov-report term```
+```docker compose run --rm web pytest tests --cov-report term```
 
 Or for local builds:
 ```poetry run pytest tests --cov-report term```
