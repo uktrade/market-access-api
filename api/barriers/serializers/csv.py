@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
-from api.barriers.fields import ExportTypesField, LineBreakCharField
+from api.barriers.fields import ExportTypeReportField, LineBreakCharField
 from api.barriers.models import (
     Barrier,
     BarrierRequestDownloadApproval,
@@ -133,7 +133,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     start_date = serializers.DateField(format="%Y-%m-%d")
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_currently_active = serializers.BooleanField(required=False)
-    export_types = ExportTypesField(required=False)
+    export_types = ExportTypeReportField(required=False)
     export_description = LineBreakCharField(required=False)
     all_sectors = serializers.BooleanField(required=False)
     main_sector = serializers.SerializerMethodField()

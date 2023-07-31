@@ -7,7 +7,7 @@ from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
-from api.barriers.fields import ExportTypesField, LineBreakCharField
+from api.barriers.fields import ExportTypeReportField, LineBreakCharField
 from api.collaboration.models import TeamMember
 from api.history.models import CachedHistoryItem
 from api.metadata import utils as metadata_utils
@@ -187,7 +187,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
     main_sector = serializers.SerializerMethodField()
-    export_types = ExportTypesField(required=False)
+    export_types = ExportTypeReportField(required=False)
     trade_direction = serializers.SerializerMethodField()
     export_description = LineBreakCharField(required=False)
 

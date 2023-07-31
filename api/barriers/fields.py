@@ -228,6 +228,11 @@ class ExportTypesField(serializers.ListField):
             raise serializers.ValidationError("Invalid export types")
 
 
+class ExportTypeReportField(ExportTypesField):
+    def to_representation(self, value):
+        return [export_type.name for export_type in value.all()]
+
+
 class TermField(serializers.ChoiceField):
     def __init__(self, **kwargs):
         return super().__init__(choices=BARRIER_TERMS, **kwargs)

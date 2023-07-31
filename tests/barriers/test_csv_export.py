@@ -348,9 +348,7 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         barrier.save()
 
         serializer = BarrierCsvExportSerializer(barrier)
-        assert serializer.data["export_types"] == [
-            {"id": export_type.id, "name": export_type.name}
-        ]
+        assert serializer.data["export_types"] == [export_type.name]
 
     def test_is_currently_active(self):
         barrier = BarrierFactory()
