@@ -1,11 +1,11 @@
-# Python CircleCI 2.0 configuration file
+# Python CircleCI 2.1 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: 2.1
 
 orbs:
-  codecov/codecov@3.2.4
+  codecov: codecov/codecov@3
 
 jobs:
   tests:
@@ -136,9 +136,12 @@ jobs:
             psql -h localhost -U postgres -d market_access -f docker/local/comtrade_test_db/20_insert_test_data.sql
 
       - run:
-          name: run tests
+          name: run tests & save coverage
           command: |
             poetry run pytest tests
+            poetry run coverage json
+
+      - codecov/upload
 
       - store_artifacts:
           path: test-reports
