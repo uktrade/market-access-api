@@ -500,7 +500,7 @@ zstd = ["zstandard"]
 
 [[package]]
 name = "certifi"
-version = "2022.12.7"
+version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -2151,7 +2151,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "79c0b3f4425d5920b6f8a636461cc98471e8454f5c8aedc0ce3d1bcf78b7dd14"
+content-hash = "eddea6a497d8dcd17b7405ed50ad3b25d2008233d163df47b35051ff38100538"
 
 [metadata.files]
 amqp = []
