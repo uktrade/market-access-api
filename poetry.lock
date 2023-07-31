@@ -437,7 +437,7 @@ crt = ["awscrt (==0.11.24)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.29.165"
+version = "1.31.9"
 description = "Type annotations and code completion for botocore"
 category = "dev"
 optional = false
@@ -527,7 +527,7 @@ python-versions = ">=3.7.0"
 
 [[package]]
 name = "click"
-version = "8.1.4"
+version = "8.1.6"
 description = "Composable command line interface toolkit"
 category = "main"
 optional = false
@@ -640,8 +640,8 @@ dev = ["tox", "pytest", "pytest-cov", "bump2version (<1)", "sphinx (<2)"]
 
 [[package]]
 name = "dill"
-version = "0.3.6"
-description = "serialize all of python"
+version = "0.3.7"
+description = "serialize all of Python"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
@@ -944,14 +944,15 @@ doc = ["sphinx", "sphinx-rtd-theme"]
 
 [[package]]
 name = "faker"
-version = "18.13.0"
+version = "19.2.0"
 description = "Faker is a Python package that generates fake data for you."
 category = "dev"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.dependencies]
 python-dateutil = ">=2.4"
+typing-extensions = {version = ">=3.10.0.1", markers = "python_version <= \"3.8\""}
 
 [[package]]
 name = "flake8"
@@ -1440,7 +1441,7 @@ python-versions = "*"
 
 [[package]]
 name = "platformdirs"
-version = "3.8.1"
+version = "3.9.1"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 category = "dev"
 optional = false
@@ -1545,7 +1546,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyjwt"
-version = "2.7.0"
+version = "2.8.0"
 description = "JSON Web Token implementation in Python"
 category = "main"
 optional = false
@@ -1704,7 +1705,7 @@ testing = ["filelock"]
 
 [[package]]
 name = "python-crontab"
-version = "2.7.1"
+version = "3.0.0"
 description = "Python Crontab API"
 category = "main"
 optional = false
@@ -1746,7 +1747,7 @@ python-versions = "*"
 
 [[package]]
 name = "pyyaml"
-version = "6.0"
+version = "6.0.1"
 description = "YAML parser and emitter for Python"
 category = "dev"
 optional = false
@@ -1991,7 +1992,7 @@ test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
 name = "types-awscrt"
-version = "0.16.23"
+version = "0.16.26"
 description = "Type annotations and code completion for awscrt"
 category = "dev"
 optional = false
@@ -1999,7 +2000,7 @@ python-versions = ">=3.7,<4.0"
 
 [[package]]
 name = "types-pyyaml"
-version = "6.0.12.10"
+version = "6.0.12.11"
 description = "Typing stubs for PyYAML"
 category = "dev"
 optional = false
@@ -2112,7 +2113,7 @@ python-versions = ">=3.4"
 
 [[package]]
 name = "zipp"
-version = "3.16.0"
+version = "3.16.2"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "main"
 optional = false
@@ -2120,7 +2121,7 @@ python-versions = ">=3.8"
 
 [package.extras]
 docs = ["sphinx (>=3.5)", "jaraco.packaging (>=9.3)", "rst.linker (>=1.9)", "furo", "sphinx-lint", "jaraco.tidelift (>=1.4)"]
-testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ruff", "jaraco.itertools", "jaraco.functools", "more-itertools", "big-o", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
+testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ruff", "jaraco.itertools", "jaraco.functools", "more-itertools", "big-o", "pytest-ignore-flaky", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [[package]]
 name = "zope.event"
@@ -2150,7 +2151,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "5fa7905f50dd9a660c5dbbf7e304fa904dd1d37f90c2257e071a7e73281e75c4"
+content-hash = "79c0b3f4425d5920b6f8a636461cc98471e8454f5c8aedc0ce3d1bcf78b7dd14"
 
 [metadata.files]
 amqp = []
