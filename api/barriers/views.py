@@ -252,7 +252,7 @@ class BarrierReportSubmit(generics.UpdateAPIView):
             ).save()
 
         Profile.objects.get_or_create(user=user)
-        if user.profile.sso_user_id is None:
+        if user.profile.sso_user_id is None and settings.DJANGO_ENV != "local":
             update_user_profile(user, self.request.auth.token)
 
         # Create default team members
