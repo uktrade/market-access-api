@@ -41,6 +41,7 @@ def get_django_user_by_sso_user_id(sso_user_id):
 
     return user
 
+
 def update_user_with_sso_dict(user, sso_user):
     user.username = sso_user.get("email_user_id")
     user.email = sso_user.get("email")
