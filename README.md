@@ -186,10 +186,6 @@ Market Access API can run on any Heroku-style platform. Configuration is perform
 | `SSO_ENABLED` | Yes | Whether single sign-on via RFC 7662 token introspection is enabled |
 | `VCAP_SERVICES` | No | Set by GOV.UK PaaS when using their backing services. Contains connection details for Postgres, Redis etc. |
 
-## Management commands
-
-TBD
-
 ## Test Coverage
 
 Testing code coverage is automatically ran as part of the CircleCI build and sent to [codecov.io](https://codecov.io/gh/uktrade/market-access-api).
