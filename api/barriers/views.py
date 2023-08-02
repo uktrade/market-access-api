@@ -58,7 +58,6 @@ from api.metadata.constants import (
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.helpers import has_profile
 from api.user.models import (
-    Profile,
     SavedSearch,
     UserActvitiyLog,
     get_my_barriers_saved_search,
