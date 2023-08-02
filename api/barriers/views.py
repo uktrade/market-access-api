@@ -251,8 +251,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 created_by=user,
             ).save()
 
-        Profile.objects.get_or_create(user=user)
-
         # Create default team members
         new_members = (
             TeamMember(
