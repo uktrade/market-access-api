@@ -56,9 +56,8 @@ from api.metadata.constants import (
     PublicBarrierStatus,
 )
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
-from api.user.helpers import has_profile, update_user_profile
+from api.user.helpers import has_profile
 from api.user.models import (
-    Profile,
     SavedSearch,
     UserActvitiyLog,
     get_my_barriers_saved_search,
@@ -250,10 +249,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
                 kind=kind,
                 created_by=user,
             ).save()
-
-        Profile.objects.get_or_create(user=user)
-        if user.profile.sso_user_id is None:
-            update_user_profile(user, self.request.auth.token)
 
         # Create default team members
         new_members = (

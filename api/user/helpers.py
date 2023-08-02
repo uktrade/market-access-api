@@ -42,20 +42,6 @@ def get_django_user_by_sso_user_id(sso_user_id):
     return user
 
 
-def update_user_profile(user, auth_token):
-    context = {"token": auth_token}
-    sso_user = sso.get_logged_in_user_details(context)
-    user.username = sso_user.get("email_user_id")
-    user.email = sso_user.get("email")
-    user.first_name = sso_user["first_name"]
-    user.last_name = sso_user["last_name"]
-    user.save()
-    # Profile
-    user.profile.sso_user_id = sso_user["user_id"]
-    user.profile.sso_email_user_id = sso_user["email_user_id"]
-    user.profile.save()
-
-
 def update_user_with_sso_dict(user, sso_user):
     user.username = sso_user.get("email_user_id")
     user.email = sso_user.get("email")
