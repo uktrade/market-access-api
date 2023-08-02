@@ -399,7 +399,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         null=True,
         help_text=(
             "If resolved or part-resolved, the month and year supplied by the user, "
-            "otherwise the current time when the status was set."
+            "otherwise the current time when the status was set. Records date status "
+            "is effective from; resolved statuses are user-set, other statuses are "
+            "effective immediately after the status change."
         ),
     )
     commercial_value = models.BigIntegerField(blank=True, null=True)
