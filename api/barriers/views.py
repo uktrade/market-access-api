@@ -56,7 +56,7 @@ from api.metadata.constants import (
     PublicBarrierStatus,
 )
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
-from api.user.helpers import has_profile, update_user_profile
+from api.user.helpers import has_profile
 from api.user.models import (
     Profile,
     SavedSearch,
@@ -252,16 +252,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
             ).save()
 
         Profile.objects.get_or_create(user=user)
-        if not user.profile.sso_user_id and settings.DJANGO_ENV not in [
-            "local",
-            "test",
-        ]:
-            logger.error(
-                "User has no sso_user_id",
-                extra={
-                    "user_id": user.id,
-                },
-            )
 
         # Create default team members
         new_members = (
