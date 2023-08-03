@@ -437,7 +437,7 @@ crt = ["awscrt (==0.11.24)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.31.15"
+version = "1.31.18"
 description = "Type annotations and code completion for botocore"
 category = "dev"
 optional = false
@@ -597,7 +597,7 @@ toml = ["tomli"]
 
 [[package]]
 name = "cryptography"
-version = "41.0.2"
+version = "41.0.3"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 category = "main"
 optional = false
@@ -1842,7 +1842,7 @@ requests = ">=2.0.1,<3.0.0"
 
 [[package]]
 name = "responses"
-version = "0.23.1"
+version = "0.23.3"
 description = "A utility library for mocking out the `requests` Python library."
 category = "dev"
 optional = false
@@ -1850,9 +1850,9 @@ python-versions = ">=3.7"
 
 [package.dependencies]
 pyyaml = "*"
-requests = ">=2.22.0,<3.0"
+requests = ">=2.30.0,<3.0"
 types-PyYAML = "*"
-urllib3 = ">=1.25.10"
+urllib3 = ">=1.25.10,<3.0"
 
 [package.extras]
 tests = ["pytest (>=7.0.0)", "coverage (>=6.0.0)", "pytest-cov", "pytest-asyncio", "pytest-httpserver", "flake8", "types-requests", "mypy", "tomli-w", "tomli"]
@@ -2151,7 +2151,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "eddea6a497d8dcd17b7405ed50ad3b25d2008233d163df47b35051ff38100538"
+content-hash = "c77d9750443508dc9a5861709f9dc41287f82fa8c810d74f44474ab4ab239ba9"
 
 [metadata.files]
 amqp = []
