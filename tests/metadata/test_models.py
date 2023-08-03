@@ -28,5 +28,5 @@ class TestOrganisations(TestCase):
             organisation_type=OrganisationType.DEVOLVED_ADMINISTRATIONS
         )
 
-        assert 27 == md_qs.count()
+        assert 28 == md_qs.count()
         assert 3 == da_qs.count()
