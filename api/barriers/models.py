@@ -17,8 +17,8 @@ from django.core.validators import int_list_validator
 from django.db import models
 from django.db.models import CASCADE, CharField, F, Q, QuerySet
 from django.db.models import Value as V
-from django.db.models.functions import Concat
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget

@@ -12,7 +12,7 @@ from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, PublicBarrierStatus
-from api.metadata.models import BarrierPriority, Organisation, ExportType
+from api.metadata.models import BarrierPriority, ExportType, Organisation
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanStakeholderFactory,
