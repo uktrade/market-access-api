@@ -18,6 +18,7 @@ from django.db import models
 from django.db.models import CASCADE, CharField, F, Q, QuerySet
 from django.db.models import Value as V
 from django.db.models.functions import Concat
+from django.db.models.expressions import RawSQL
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
@@ -1361,7 +1362,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         method="commercial_value_estimate_filter"
     )
     export_types = django_filters.BaseInFilter(method="export_types_filter")
-    start_date = django_filters.DateFilter(method="start_date_filter")
+    start_date = django_filters.BaseInFilter(method="start_date_filter")
 
     class Meta:
         model = Barrier
@@ -1557,11 +1558,14 @@ class BarrierFilterSet(django_filters.FilterSet):
             full text search on summary
             partial search on title
         """
-        return queryset.annotate(search=SearchVector("summary"),).filter(
+        return queryset.annotate(
+            search=SearchVector("summary", "export_description"),
+            company_name=RawSQL("(companies->0->>'name')", ())).filter(
             Q(code__icontains=value)
             | Q(search=value)
             | Q(title__icontains=value)
             | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
+            | Q(company_name__icontains=value)
         )
 
     def my_barriers(self, queryset, name, value):
@@ -1799,12 +1803,10 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def start_date_filter(self, queryset, name, value):
         if value:
-            dates_list = value.split(",")
-            start_date = dates_list[0]
-            end_date = dates_list[1]
+            start_date, end_date = value
             # Filtering the queryset based on the start_date range
-            return queryset.exclude(
-                Q(status__in="4"), ~Q(status_date__range=(start_date, end_date))
+            return queryset.filter(
+                start_date__range=(start_date, end_date)
             )
         return queryset
 
