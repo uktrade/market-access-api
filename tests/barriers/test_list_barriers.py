@@ -500,15 +500,9 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert {str(barrier2.id), str(barrier3.id)} == set(barrier_ids)
 
     def test_list_barriers_text_filter_based_on_barrier_export_description(self):
-        barrier1 = BarrierFactory(
-            export_description="Wibble blockade"
-        )
-        BarrierFactory(
-            export_description="Wobble blockade"
-        )
-        barrier3 = BarrierFactory(
-            export_description="Look wibble in the middle"
-        )
+        barrier1 = BarrierFactory(export_description="Wibble blockade")
+        BarrierFactory(export_description="Wobble blockade")
+        barrier3 = BarrierFactory(export_description="Look wibble in the middle")
 
         assert Barrier.objects.count() == 3
 
@@ -524,8 +518,8 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier = BarrierFactory()
 
         barrier.companies = [
-            {'id': '10876910', 'name': 'TEST COMPANY 3 DO NOT FORM LTD'},
-            {'id': '13286009', 'name': 'AGENT SUMMARY LIMITED'}
+            {"id": "10876910", "name": "TEST COMPANY 3 DO NOT FORM LTD"},
+            {"id": "13286009", "name": "AGENT SUMMARY LIMITED"},
         ]
 
         barrier.save()
@@ -533,7 +527,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier2 = BarrierFactory()
 
         barrier2.companies = [
-            {'id': '10', 'name': 'Springfield Nuclear Power Plant LTD'},
+            {"id": "10", "name": "Springfield Nuclear Power Plant LTD"},
         ]
         barrier2.save()
 

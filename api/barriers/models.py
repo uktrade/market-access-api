@@ -1560,7 +1560,8 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         return queryset.annotate(
             search=SearchVector("summary", "export_description"),
-            company_name=RawSQL("(companies->0->>'name')", ())).filter(
+            company_name=RawSQL("(companies->0->>'name')", ()),
+        ).filter(
             Q(code__icontains=value)
             | Q(search=value)
             | Q(title__icontains=value)
@@ -1805,9 +1806,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         if value:
             start_date, end_date = value
             # Filtering the queryset based on the start_date range
-            return queryset.filter(
-                start_date__range=(start_date, end_date)
-            )
+            return queryset.filter(start_date__range=(start_date, end_date))
         return queryset
 
 
