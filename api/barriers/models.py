@@ -1310,7 +1310,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     text: combination custom search across multiple fields.
         Searches for reference code,
-        barrier title and barrier summary
+        barrier title, company names, export description and barrier summary
     """
 
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
@@ -1360,6 +1360,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     commercial_value_estimate = django_filters.BaseInFilter(
         method="commercial_value_estimate_filter"
     )
+    export_types = django_filters.BaseInFilter(method="export_types_filter")
+    start_date = django_filters.DateFilter(method="start_date_filter")
 
     class Meta:
         model = Barrier
@@ -1390,7 +1392,9 @@ class BarrierFilterSet(django_filters.FilterSet):
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
         """
-        return queryset.filter(Q(all_sectors=True) | Q(sectors__overlap=value))
+        return queryset.filter(
+            Q(all_sectors=True) | Q(sectors__overlap=value) | Q(main_sector__in=value)
+        )
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """
@@ -1786,6 +1790,23 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "without" in value:
             filters &= Q(commercial_value=None)
         return queryset.filter(filters).distinct()
+
+    def export_types_filter(self, queryset, name, value):
+        # Filtering the queryset based on the selected export types
+        if value:
+            return queryset.filter(export_types__name__in=value)
+        return queryset
+
+    def start_date_filter(self, queryset, name, value):
+        if value:
+            dates_list = value.split(",")
+            start_date = dates_list[0]
+            end_date = dates_list[1]
+            # Filtering the queryset based on the start_date range
+            return queryset.exclude(
+                Q(status__in="4"), ~Q(status_date__range=(start_date, end_date))
+            )
+        return queryset
 
 
 class PublicBarrierFilterSet(django_filters.FilterSet):
