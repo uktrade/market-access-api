@@ -54,7 +54,7 @@ git-hooks: ## Set up hooks for git.
 
 
 # MIGRATION COMMANDS
-# ==================================================
+# ===================================================
 .PHONY: django-makemigrations
 django-makemigrations: ## Create django migrations
 	docker-compose exec web ./manage.py makemigrations
