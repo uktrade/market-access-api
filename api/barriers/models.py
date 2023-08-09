@@ -17,7 +17,6 @@ from django.core.validators import int_list_validator
 from django.db import models
 from django.db.models import CASCADE, CharField, F, Q, QuerySet
 from django.db.models import Value as V
-from django.db.models.expressions import RawSQL
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1558,15 +1557,27 @@ class BarrierFilterSet(django_filters.FilterSet):
             full text search on summary
             partial search on title
         """
+
+        MAX_DEPTH_COUNT = 20
+
+        # Assuming the name field can appear in any of the nested dicts inside companies
+        company_queries = [
+            Q(**{f"companies__{i}__name__icontains": value})
+            for i in range(MAX_DEPTH_COUNT)
+        ]
+
+        combined_company_query = Q()
+        for query in company_queries:
+            combined_company_query |= query
+
         return queryset.annotate(
             search=SearchVector("summary", "export_description"),
-            company_name=RawSQL("(companies->0->>'name')", ()),
         ).filter(
             Q(code__icontains=value)
             | Q(search=value)
             | Q(title__icontains=value)
             | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
-            | Q(company_name__icontains=value)
+            | combined_company_query
         )
 
     def my_barriers(self, queryset, name, value):
@@ -1799,7 +1810,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     def export_types_filter(self, queryset, name, value):
         # Filtering the queryset based on the selected export types
         if value:
-            return queryset.filter(export_types__name__in=value)
+            return queryset.filter(export_types__name__in=value).distinct()
         return queryset
 
     def start_date_filter(self, queryset, name, value):

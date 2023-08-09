@@ -538,6 +538,13 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.data["count"] == 1
         assert response.data["results"][0]["id"] == str(barrier.id)
 
+        url = f'{reverse("list-barriers")}?search=agent summary'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
     @pytest.mark.skip("""Failing on CircleCI for unknown reasons.""")
     def test_list_barriers_text_filter_based_on_public_id(self):
         barrier1 = BarrierFactory(public_barrier___title="Public Title")
@@ -1015,7 +1022,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier.export_types.add(*(export_type1, export_type2))
         barrier.save()
 
-        url = f'{reverse("list-barriers")}?export_types={export_type1.name}&export_types={export_type2.name}'
+        url = f'{reverse("list-barriers")}?export_types={export_type1.name},{export_type2.name}'
 
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
