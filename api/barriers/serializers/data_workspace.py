@@ -190,6 +190,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     export_types = ExportTypeReportField(required=False)
     trade_direction = serializers.SerializerMethodField()
     export_description = LineBreakCharField(required=False)
+    tags = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -265,7 +266,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "valuation_assessment_midpoint_value",
             "value_to_economy",
             "wto_profile",
-            "government_organisations",
             "action_plan_added",
             "action_plan",
             "completion_percent",
@@ -296,6 +296,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "main_sector",
             "export_description",
         )
+
+    @staticmethod
+    def get_tags(obj):
+        return [tag.title for tag in obj.tags.all()]
 
     def get_status_history(self, obj):
         history_items = CachedHistoryItem.objects.filter(
