@@ -295,6 +295,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "trade_direction",
             "main_sector",
             "export_description",
+            "tags",
         )
 
     @staticmethod
