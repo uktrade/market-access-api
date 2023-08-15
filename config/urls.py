@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
+
 
 from api.action_plans.urls import urlpatterns as action_plans_urls
 from api.assessment.urls import urlpatterns as assessment_urls
@@ -18,6 +20,9 @@ from api.related_barriers.urls import urlpatterns as related_barriers_urls
 from api.user.urls import urlpatterns as user_urls
 from api.user.views import who_am_i
 
+from rest_framework.schemas import get_schema_view
+
+
 urlpatterns = []
 
 # Allow regular login to admin panel for local development
@@ -30,11 +35,38 @@ urlpatterns += (
     [
         path("admin/", admin.site.urls),
         path("auth/", include("authbroker_client.urls", namespace="authbroker")),
-        path("", include("api.healthcheck.urls", namespace="healthcheck")),
+        # path("", include("api.healthcheck.urls", namespace="healthcheck")),
         path("feedback/", include(feedback_urls, namespace="feedback")),
         path("whoami", who_am_i, name="who_am_i"),
         path("metadata", MetadataView.as_view(), name="metadata"),
         path("", include("api.dataset.urls", namespace="dataset")),
+        path(
+            "openapi",
+            get_schema_view(
+                title="Digital Market Access Barriers",
+                description="API for Digital Market Access",
+                version="1.0.0",
+            ),
+            name="openapi-schema",
+        ),
+        # Route TemplateView to serve the ReDoc template.
+        #   * Provide `extra_context` with view name of `SchemaView`.
+        path(
+            "redoc/",
+            TemplateView.as_view(
+                template_name="redoc.html",
+                extra_context={"schema_url": "openapi-schema"},
+            ),
+            name="redoc",
+        ),
+        path(
+            "swagger-ui/",
+            TemplateView.as_view(
+                template_name="swagger-ui.html",
+                extra_context={"schema_url": "openapi-schema"},
+            ),
+            name="swagger-ui",
+        ),
     ]
     + action_plans_urls
     + assessment_urls
