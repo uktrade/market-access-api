@@ -31,12 +31,12 @@ urlpatterns += (
     [
         path("admin/", admin.site.urls),
         path("auth/", include("authbroker_client.urls", namespace="authbroker")),
-        path("", include("api.healthcheck.urls", namespace="healthcheck")),
+        # path("", include("api.healthcheck.urls", namespace="healthcheck")),
         path("feedback/", include(feedback_urls, namespace="feedback")),
         path("whoami", who_am_i, name="who_am_i"),
         path("users/<int:pk>", UserDetail.as_view(), name="get-user"),
         path("users/<uuid:sso_user_id>", UserDetail.as_view(), name="get-user"),
-        path("metadata", MetadataView.as_view(), name="metadata"),
+        # path("metadata", MetadataView.as_view(), name="metadata"),
         path("", include("api.dataset.urls", namespace="dataset")),
         path(
             "openapi",
