@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
+
 
 from api.action_plans.urls import urlpatterns as action_plans_urls
 from api.assessment.urls import urlpatterns as assessment_urls
@@ -13,6 +15,9 @@ from api.interactions.urls import urlpatterns as interaction_urls
 from api.metadata.views import MetadataView
 from api.user.urls import urlpatterns as user_urls
 from api.user.views import UserDetail, who_am_i
+
+from rest_framework.schemas import get_schema_view
+
 
 urlpatterns = []
 
@@ -33,6 +38,33 @@ urlpatterns += (
         path("users/<uuid:sso_user_id>", UserDetail.as_view(), name="get-user"),
         path("metadata", MetadataView.as_view(), name="metadata"),
         path("", include("api.dataset.urls", namespace="dataset")),
+        path(
+            "openapi",
+            get_schema_view(
+                title="Digital Market Access Barriers",
+                description="API for Digital Market Access",
+                version="1.0.0",
+            ),
+            name="openapi-schema",
+        ),
+        # Route TemplateView to serve the ReDoc template.
+        #   * Provide `extra_context` with view name of `SchemaView`.
+        path(
+            "redoc/",
+            TemplateView.as_view(
+                template_name="redoc.html",
+                extra_context={"schema_url": "openapi-schema"},
+            ),
+            name="redoc",
+        ),
+        path(
+            "swagger-ui/",
+            TemplateView.as_view(
+                template_name="swagger-ui.html",
+                extra_context={"schema_url": "openapi-schema"},
+            ),
+            name="swagger-ui",
+        ),
     ]
     + barrier_urls
     + commodities_urls

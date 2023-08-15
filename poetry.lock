@@ -1749,7 +1749,7 @@ python-versions = "*"
 name = "pyyaml"
 version = "6.0.1"
 description = "YAML parser and emitter for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -2023,6 +2023,14 @@ optional = false
 python-versions = ">=2"
 
 [[package]]
+name = "uritemplate"
+version = "4.1.1"
+description = "Implementation of RFC 6570 URI Templates"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[[package]]
 name = "urllib3"
 version = "1.26.16"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -2151,7 +2159,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "c77d9750443508dc9a5861709f9dc41287f82fa8c810d74f44474ab4ab239ba9"
+content-hash = "03b32f936ad1c22395ecd44ea8a8b1a41bc3fb6783d0823cd0a9dc29fdf8fdcc"
 
 [metadata.files]
 amqp = []
@@ -2291,6 +2299,7 @@ types-awscrt = []
 types-pyyaml = []
 typing-extensions = []
 tzdata = []
+uritemplate = []
 urllib3 = []
 urlobject = []
 vine = []
