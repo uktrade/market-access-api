@@ -1809,9 +1809,10 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def export_types_filter(self, queryset, name, value):
         # Filtering the queryset based on the selected export types
-        if value:
-            return queryset.filter(export_types__name__in=value).distinct()
-        return queryset
+        q_object = Q()
+        for val in value:
+            q_object |= Q(export_types__name=val)
+        return queryset.filter(q_object).distinct()
 
     def start_date_filter(self, queryset, name, value):
         if value:
