@@ -201,7 +201,8 @@ if REDIS_BASE_URL:
 AV_V2_SERVICE_URL = env("AV_V2_SERVICE_URL", default="http://av-service/")
 
 s3_bucket_service_name = env.str("S3_BUCKET_SERVICE_NAME", default="")
-if s3_bucket_service_name and s3_bucket_service_name in VCAP_SERVICES:
+sentry_sdk.capture_message(VCAP_SERVICES.keys())
+if s3_bucket_service_name in VCAP_SERVICES:
     bucket_credentials = VCAP_SERVICES[s3_bucket_service_name][0]["credentials"]
     default_bucket = {
         "bucket_name": bucket_credentials["bucket_name"],
