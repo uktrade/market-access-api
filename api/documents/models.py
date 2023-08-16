@@ -1,6 +1,7 @@
 import uuid
 from logging import getLogger
 
+import sentry_sdk
 from django.conf import settings
 from django.db import models, transaction
 from django.utils.timezone import now
@@ -117,7 +118,9 @@ class Document(ArchivableMixin, BaseModel):
         or allow_unsafe is set.
         """
         if self.av_clean or allow_unsafe:
-            return sign_s3_url(self.bucket_id, self.path)
+            signed_url = sign_s3_url(self.bucket_id, self.path)
+            sentry_sdk.capture_message(signed_url)
+            return signed_url
         return None
 
     def get_signed_upload_url(self):
