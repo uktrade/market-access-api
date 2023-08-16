@@ -1387,7 +1387,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         if self.request is not None:
             return self.request.user
 
-    def sector_filter(self, queryset, name, value):
+    def sector_filter(self, queryset, name, value: List[str]):
         """
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
@@ -1807,12 +1807,9 @@ class BarrierFilterSet(django_filters.FilterSet):
             filters &= Q(commercial_value=None)
         return queryset.filter(filters).distinct()
 
-    def export_types_filter(self, queryset, name, value):
+    def export_types_filter(self, queryset, name, value: List[str]):
         # Filtering the queryset based on the selected export types
-        q_object = Q()
-        for val in value:
-            q_object |= Q(export_types__name=val)
-        return queryset.filter(q_object).distinct()
+        return queryset.filter(export_types__name__in=value).distinct()
 
     def start_date_filter(self, queryset, name, value):
         if value:
