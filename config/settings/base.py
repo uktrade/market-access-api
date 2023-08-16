@@ -216,7 +216,6 @@ else:
         "aws_region": env("AWS_DEFAULT_REGION", default=""),
     }
 
-sentry_sdk.capture_message(default_bucket)
 S3_BUCKETS = {
     "default": default_bucket,
 }
