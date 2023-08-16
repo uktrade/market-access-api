@@ -200,19 +200,25 @@ if REDIS_BASE_URL:
 
 AV_V2_SERVICE_URL = env("AV_V2_SERVICE_URL", default="http://av-service/")
 
-S3_BUCKETS = {
-    "default": {
+s3_bucket_service_name = env.str("S3_BUCKET_SERVICE_NAME", default="")
+if s3_bucket_service_name and s3_bucket_service_name in VCAP_SERVICES:
+    bucket_credentials = VCAP_SERVICES[s3_bucket_service_name][0]["credentials"]
+    default_bucket = {
+        "bucket_name": bucket_credentials["bucket_name"],
+        "aws_access_key_id": bucket_credentials["access_key_id"],
+        "aws_secret_access_key": bucket_credentials["aws_secret_access_key"],
+        "aws_region": bucket_credentials["aws_region"],
+    }
+else:
+    default_bucket = {
         "bucket_name": env("DEFAULT_BUCKET", default=""),
         "aws_access_key_id": env("AWS_ACCESS_KEY_ID", default=""),
         "aws_secret_access_key": env("AWS_SECRET_ACCESS_KEY", default=""),
         "aws_region": env("AWS_DEFAULT_REGION", default=""),
-    },
-    "documents": {
-        "bucket_name": env("DOCUMENTS_BUCKET", default=""),
-        "aws_access_key_id": env("DOCUMENTS_AWS_ACCESS_KEY_ID", default=""),
-        "aws_secret_access_key": env("DOCUMENTS_AWS_SECRET_ACCESS_KEY", default=""),
-        "aws_region": env("DOCUMENTS_AWS_DEFAULT_REGION", default=""),
-    },
+    }
+
+S3_BUCKETS = {
+    "default": default_bucket,
 }
 
 # ServerSideEncryption
