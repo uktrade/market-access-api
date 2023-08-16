@@ -48,6 +48,7 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
     TRADING_BLOCS,
+    WIDER_EUROPE_REGIONS,
     BarrierStatus,
     PublicBarrierStatus,
 )
@@ -1460,7 +1461,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         return queryset.filter(action_plan__in=active_action_plans).distinct()
 
-    def clean_location_value(self, value):
+    def clean_location_value(self, value):  # noqa: C901
         """
         Splits a list of locations into countries, regions and trading blocs
         """
@@ -1487,12 +1488,29 @@ class BarrierFilterSet(django_filters.FilterSet):
                 if country["overseas_region"]["id"] not in overseas_region_values:
                     overseas_region_values.append(country["overseas_region"]["id"])
 
+            # For custom overseas region "Wider Europe" we need to build a seperate list
+            # If the country is in the wider europe constant or in europe in general, it
+            # should be displayed if the wider europe overseas region filter is applied
+            if ("wider_europe" in value and country["overseas_region"]) and (
+                country["name"] in WIDER_EUROPE_REGIONS
+                or country["overseas_region"]["name"] == "Europe"
+            ):
+                overseas_region_countries.append(country["id"])
+
         # Add all trading blocs associated with the overseas regions
         for overseas_region in overseas_region_values:
             for trading_bloc in TRADING_BLOCS.values():
                 if overseas_region in trading_bloc["overseas_regions"]:
                     trading_bloc_values.append(trading_bloc["code"])
+        # Need to add EU to wider_europe search result
+        if "wider_europe" in value:
+            trading_bloc_values.append(TRADING_BLOCS["TB00016"]["code"])
 
+        # Need to remove "wider_europe" from location_values as it isn't a searchable UUID
+        if "wider_europe" in location_values:
+            location_values.remove("wider_europe")
+
+        # Return cleaned value arrarys
         return {
             "countries": [
                 location
