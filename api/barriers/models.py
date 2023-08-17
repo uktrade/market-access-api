@@ -1387,7 +1387,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         if self.request is not None:
             return self.request.user
 
-    def sector_filter(self, queryset, name, value):
+    def sector_filter(self, queryset, name, value: List[str]):
         """
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
@@ -1807,7 +1807,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             filters &= Q(commercial_value=None)
         return queryset.filter(filters).distinct()
 
-    def export_types_filter(self, queryset, name, value):
+    def export_types_filter(self, queryset, name, value: List[str]):
         # Filtering the queryset based on the selected export types
         # we loop through instead of using export_types__name__in=value as this uses a JOIN
         # in the underlying SQL which is slow and also produces duplicates when the results are
