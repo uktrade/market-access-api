@@ -6,8 +6,7 @@ from datetime import datetime
 from dateutil.parser import parse
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Case, Count, F, IntegerField, Q, Value, When, Window
-from django.db.models.functions import RowNumber
+from django.db.models import Count, F
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -64,7 +63,6 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
-
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
@@ -295,10 +293,14 @@ class BarrierListOrderingFilter(OrderingFilter):
         special_queryset, default_queryset = self.divide_queryset(
             queryset, partition_on
         )
-        special_ordering_expression = self.get_ordering_expression(ordering_config["ordering"])
+        special_ordering_expression = self.get_ordering_expression(
+            ordering_config["ordering"]
+        )
         special_queryset = special_queryset.order_by(special_ordering_expression)
 
-        default_ordering_expression = self.get_ordering_expression(settings.BARRIER_LIST_DEFAULT_SORT)
+        default_ordering_expression = self.get_ordering_expression(
+            settings.BARRIER_LIST_DEFAULT_SORT
+        )
         default_queryset = default_queryset.order_by(default_ordering_expression)
 
         final_queryset = list(special_queryset) + list(default_queryset)
@@ -674,14 +676,14 @@ class PublicBarrierActivity(generics.GenericAPIView):
 
 class BarrierStatusBase(generics.UpdateAPIView):
     def _create(
-        self,
-        serializer,
-        barrier_id,
-        status,
-        summary,
-        sub_status="",
-        sub_other="",
-        status_date=None,
+            self,
+            serializer,
+            barrier_id,
+            status,
+            summary,
+            sub_status="",
+            sub_other="",
+            status_date=None,
     ):
         barrier_obj = get_object_or_404(Barrier, pk=barrier_id)
 
@@ -818,8 +820,8 @@ class BarrierOpenActionRequired(BarrierStatusBase):
         if self.request.data.get("sub_status", None) is None:
             errors["sub_status"] = "This field is required"
         elif (
-            self.request.data.get("sub_status", None) == "OTHER"
-            and self.request.data.get("sub_status_other", None) is None
+                self.request.data.get("sub_status", None) == "OTHER"
+                and self.request.data.get("sub_status_other", None) is None
         ):
             errors["sub_status_other"] = "This field is required"
         if self.request.data.get("status_summary", None) is None:
