@@ -119,7 +119,6 @@ class Document(ArchivableMixin, BaseModel):
         """
         if self.av_clean or allow_unsafe:
             signed_url = sign_s3_url(self.bucket_id, self.path)
-            sentry_sdk.capture_message(signed_url)
             return signed_url
         return None
 
