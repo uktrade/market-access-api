@@ -265,6 +265,52 @@ class BarrierReportSubmit(generics.UpdateAPIView):
 
 class BarrierListOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
+        """Custom ordering filter for the barrier list search view.
+
+        The queryset passed to this function is already filtered with the criteria selected by the
+        user (e.g. Only those with PB100 priority), so now we need to order this queryset by
+        the ordering criteria selected by the user (e.g. Date resolved (most recent).
+
+        The problem is that we need to order by a field that may not exist on all of the
+        queryset items, so we need to split the queryset into 2 parts:
+        1. The ones that have the relevant value to order by
+        2. The ones that don't
+
+        Then we can annotate the first part with the selected ordering value, and order by that.
+        Then we can annotate the second part by the default ordering value + the length of the
+        first part, and order by that.
+        Then chain the 2 parts together.
+
+        e.g. we want to order by the date resolved, but some of the barriers are not resolved.
+        queryset = [Barrier1, Barrier2, Barrier3, Barrier4]
+        queryset1 = [Barrier1, Barrier2]  - these are the ones that are resolved
+        queryset2 = [Barrier3, Barrier4]  - these are the ones that are not resolved
+
+        order queryset1 by the date resolved and annotate with the final rank
+        order queryset2 by the default ordering and annotate with the final rank + the length of queryset1
+
+        queryset1 = [
+            barrier2 -- rank 1
+            barrier1 -- rank 2
+        ]
+
+        queryset2 = [
+            barrier4 -- rank 3 (1+2)
+            barrier3 -- rank 4 (2+2)
+        ]
+
+        Then chain them together and order the whole lot by the rank.
+        final_queryset = [
+            barrier2 -- rank 1
+            barrier1 -- rank 2
+            barrier4 -- rank 3
+            barrier3 -- rank 4
+        ]
+
+        If we didn't do this, then the ordering would be wrong, because the ones that do have
+        the relevant value would be ordered correctly, and then the ones that don't would be
+        ordered by their PK, which is not what we want.
+        """
         # We need to get ones that have a relevant value ordered first,
         # then append those that don't, ordered by the default ordering.
         ordering = request.query_params.get(self.ordering_param)
@@ -276,24 +322,33 @@ class BarrierListOrderingFilter(OrderingFilter):
         # if it results in them being evaluated early,
         # so we go to great lengths to ensure the real work is handed off to the DB.
         partition_on = ordering_config["ordering-filter"]
+
         special_queryset, default_queryset = self.divide_queryset(
             queryset, partition_on
         )
         special_ordering = ordering_config["ordering"]
-        # Assume we only have one special ordering field
         ordering_expression = self.get_ordering_expression(special_ordering)
-        special_queryset = special_queryset.annotate(temp_rank=Value(0)).annotate(
-            final_rank=Window(expression=RowNumber(), order_by=ordering_expression)
-        )
         if default_queryset.exists():
+            # only bother annotating the special_queryset if the default_queryset is not empty
+            # ordering the special queryset by the special ordering expression (e.g. date resolved)
+            # and annotating each row with the row number
+            special_queryset = special_queryset.annotate(temp_rank=Value(0)).annotate(
+                final_rank=Window(expression=RowNumber(), order_by=ordering_expression)
+            )
             default_ordering = settings.BARRIER_LIST_DEFAULT_SORT
-            ordering_expression = self.get_ordering_expression(default_ordering)
+            default_ordering_expression = self.get_ordering_expression(default_ordering)
+            # ordering the default queryset by the default ordering expression
+            # and annotating each row with the row number + the number of rows in the special queryset
             default_queryset = default_queryset.annotate(
-                temp_rank=Window(expression=RowNumber(), order_by=ordering_expression)
+                temp_rank=Window(expression=RowNumber(), order_by=default_ordering_expression)
             ).annotate(final_rank=F("temp_rank") + Value(special_queryset.count()))
+
+            # chaining the two together and ordering by the final rank
             mixed_queryset = special_queryset.union(default_queryset)
             return mixed_queryset.order_by("final_rank")
-        return special_queryset.order_by("final_rank")
+        else:
+            # no default queryset, let's just return the special one ordered correctly
+            return special_queryset.order_by(ordering_expression)
 
     def get_ordering_expression(self, ordering):
         # This wouldn't be needed in Django 4.1, as
@@ -304,6 +359,18 @@ class BarrierListOrderingFilter(OrderingFilter):
         return ordering_expression
 
     def divide_queryset(self, queryset, filter_kwargs):
+        """
+        Split the queryset into 2 parts:
+        1. The ones that have the relevant value to order by (special_queryset)
+        2. The ones that don't (default_queryset)
+
+        e.g. if the ordering is "Estimated Resolution Date", then we want to split the queryset into
+        1. The ones that have an estimated resolution date
+        2. The ones that don't
+
+        This is so we can order the special_queryset by estimated resolution date.
+        Then we can order the default_queryset with a default ordering value, and order by that.
+        """
         if filter_kwargs:
             special_queryset = queryset.filter(**filter_kwargs)
             default_queryset = queryset.exclude(**filter_kwargs)
