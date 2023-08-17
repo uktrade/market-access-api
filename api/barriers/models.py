@@ -1489,12 +1489,8 @@ class BarrierFilterSet(django_filters.FilterSet):
                     overseas_region_values.append(country["overseas_region"]["id"])
 
             # For custom overseas region "Wider Europe" we need to build a seperate list
-            # If the country is in the wider europe constant or in europe in general, it
-            # should be displayed if the wider europe overseas region filter is applied
-            if ("wider_europe" in value and country["overseas_region"]) and (
-                country["name"] in WIDER_EUROPE_REGIONS
-                or country["overseas_region"]["name"] == "Europe"
-            ):
+            # If the country is in the wider europe constant, we want it displayed
+            if "wider_europe" in value and country["name"] in WIDER_EUROPE_REGIONS:
                 overseas_region_countries.append(country["id"])
 
         # Add all trading blocs associated with the overseas regions
@@ -1502,9 +1498,6 @@ class BarrierFilterSet(django_filters.FilterSet):
             for trading_bloc in TRADING_BLOCS.values():
                 if overseas_region in trading_bloc["overseas_regions"]:
                     trading_bloc_values.append(trading_bloc["code"])
-        # Need to add EU to wider_europe search result
-        if "wider_europe" in value:
-            trading_bloc_values.append(TRADING_BLOCS["TB00016"]["code"])
 
         # Need to remove "wider_europe" from location_values as it isn't a searchable UUID
         if "wider_europe" in location_values:
