@@ -6,7 +6,7 @@ from datetime import datetime
 from dateutil.parser import parse
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, F, Value, Window
+from django.db.models import Case, Count, F, IntegerField, Q, Value, When, Window
 from django.db.models.functions import RowNumber
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -276,36 +276,8 @@ class BarrierListOrderingFilter(OrderingFilter):
         1. The ones that have the relevant value to order by
         2. The ones that don't
 
-        Then we can annotate the first part with the selected ordering value, and order by that.
-        Then we can annotate the second part by the default ordering value + the length of the
-        first part, and order by that.
-        Then chain the 2 parts together.
-
-        e.g. we want to order by the date resolved, but some of the barriers are not resolved.
-        queryset = [Barrier1, Barrier2, Barrier3, Barrier4]
-        queryset1 = [Barrier1, Barrier2]  - these are the ones that are resolved
-        queryset2 = [Barrier3, Barrier4]  - these are the ones that are not resolved
-
-        order queryset1 by the date resolved and annotate with the final rank
-        order queryset2 by the default ordering and annotate with the final rank + the length of queryset1
-
-        queryset1 = [
-            barrier2 -- rank 1
-            barrier1 -- rank 2
-        ]
-
-        queryset2 = [
-            barrier4 -- rank 3 (1+2)
-            barrier3 -- rank 4 (2+2)
-        ]
-
-        Then chain them together and order the whole lot by the rank.
-        final_queryset = [
-            barrier2 -- rank 1
-            barrier1 -- rank 2
-            barrier4 -- rank 3
-            barrier3 -- rank 4
-        ]
+        Then we sort the first part by the selected ordering value and the 2nd part by the default
+        Then we evaluate the queryset and concatenate the 2 parts together in Python.
 
         If we didn't do this, then the ordering would be wrong, because the ones that do have
         the relevant value would be ordered correctly, and then the ones that don't would be
@@ -318,39 +290,19 @@ class BarrierListOrderingFilter(OrderingFilter):
         if ordering_config is None:
             # Not one of our fancy ones, so just do the usual
             return super().filter_queryset(request, queryset, view)
-        # Need to bear in mind that chaining querysets can cause performance problems
-        # if it results in them being evaluated early,
-        # so we go to great lengths to ensure the real work is handed off to the DB.
-        partition_on = ordering_config["ordering-filter"]
 
+        partition_on = ordering_config["ordering-filter"]
         special_queryset, default_queryset = self.divide_queryset(
             queryset, partition_on
         )
-        special_ordering = ordering_config["ordering"]
-        ordering_expression = self.get_ordering_expression(special_ordering)
-        if default_queryset.exists():
-            # only bother annotating the special_queryset if the default_queryset is not empty
-            # ordering the special queryset by the special ordering expression (e.g. date resolved)
-            # and annotating each row with the row number
-            special_queryset = special_queryset.annotate(temp_rank=Value(0)).annotate(
-                final_rank=Window(expression=RowNumber(), order_by=ordering_expression)
-            )
-            default_ordering = settings.BARRIER_LIST_DEFAULT_SORT
-            default_ordering_expression = self.get_ordering_expression(default_ordering)
-            # ordering the default queryset by the default ordering expression
-            # and annotating each row with the row number + the number of rows in the special queryset
-            default_queryset = default_queryset.annotate(
-                temp_rank=Window(
-                    expression=RowNumber(), order_by=default_ordering_expression
-                )
-            ).annotate(final_rank=F("temp_rank") + Value(special_queryset.count()))
+        special_ordering_expression = self.get_ordering_expression(ordering_config["ordering"])
+        special_queryset = special_queryset.order_by(special_ordering_expression)
 
-            # chaining the two together and ordering by the final rank
-            mixed_queryset = special_queryset.union(default_queryset)
-            return mixed_queryset.order_by("final_rank")
-        else:
-            # no default queryset, let's just return the special one ordered correctly
-            return special_queryset.order_by(ordering_expression)
+        default_ordering_expression = self.get_ordering_expression(settings.BARRIER_LIST_DEFAULT_SORT)
+        default_queryset = default_queryset.order_by(default_ordering_expression)
+
+        final_queryset = list(special_queryset) + list(default_queryset)
+        return final_queryset
 
     def get_ordering_expression(self, ordering):
         # This wouldn't be needed in Django 4.1, as
@@ -371,7 +323,7 @@ class BarrierListOrderingFilter(OrderingFilter):
         2. The ones that don't
 
         This is so we can order the special_queryset by estimated resolution date.
-        Then we can order the default_queryset with a default ordering value, and order by that.
+        Then we can order the default_queryset with a default ordering value.
         """
         if filter_kwargs:
             special_queryset = queryset.filter(**filter_kwargs)
