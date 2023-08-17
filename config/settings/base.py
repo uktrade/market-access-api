@@ -200,6 +200,8 @@ if REDIS_BASE_URL:
 
 AV_V2_SERVICE_URL = env("AV_V2_SERVICE_URL", default="http://av-service/")
 
+# If we have VCAP_SERVICES then we are running on gov.uk PaaS, let's use the AWS credentials from
+# the S3 bucket service binding rather than Vault env vars
 if "aws-s3-bucket" in VCAP_SERVICES:
     bucket_credentials = VCAP_SERVICES["aws-s3-bucket"][0]["credentials"]
     default_bucket = {
