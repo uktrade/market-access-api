@@ -1042,9 +1042,15 @@ class TestListBarriers(APITestMixin, APITestCase):
 
     def test_filter_ordering(self):
         barrier = BarrierFactory(estimated_resolution_date="2020-01-01")
-        barrier_2 = BarrierFactory(estimated_resolution_date=None, reported_on="2020-01-01")
-        barrier_3 = BarrierFactory(estimated_resolution_date=None, reported_on="2021-01-01")
-        barrier_4 = BarrierFactory(estimated_resolution_date=None, reported_on="2022-01-01")
+        barrier_2 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2020-01-01"
+        )
+        barrier_3 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2021-01-01"
+        )
+        barrier_4 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2022-01-01"
+        )
 
         url = f'{reverse("list-barriers")}?ordering=-resolution'
         response = self.api_client.get(url)
