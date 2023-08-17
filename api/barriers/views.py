@@ -340,7 +340,9 @@ class BarrierListOrderingFilter(OrderingFilter):
             # ordering the default queryset by the default ordering expression
             # and annotating each row with the row number + the number of rows in the special queryset
             default_queryset = default_queryset.annotate(
-                temp_rank=Window(expression=RowNumber(), order_by=default_ordering_expression)
+                temp_rank=Window(
+                    expression=RowNumber(), order_by=default_ordering_expression
+                )
             ).annotate(final_rank=F("temp_rank") + Value(special_queryset.count()))
 
             # chaining the two together and ordering by the final rank
