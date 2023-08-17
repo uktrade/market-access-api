@@ -1040,6 +1040,19 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.data["count"] == 1
         assert response.data["results"][0]["id"] == str(barrier.id)
 
+    def test_filter_ordering(self):
+        barrier = BarrierFactory(estimated_resolution_date="2020-01-01")
+        BarrierFactory(estimated_resolution_date=None)
+        BarrierFactory(estimated_resolution_date=None)
+        BarrierFactory(estimated_resolution_dat=None)
+
+        url = f'{reverse("list-barriers")}?ordering=-resolution'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 4
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
     def test_changed_filter(self):

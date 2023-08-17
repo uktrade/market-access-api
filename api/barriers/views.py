@@ -290,19 +290,30 @@ class BarrierListOrderingFilter(OrderingFilter):
             # Not one of our fancy ones, so just do the usual
             return super().filter_queryset(request, queryset, view)
 
+        # let's split the queryset into 2 parts, those that have the relevant value to order by
+        # and those that don't
         partition_on = ordering_config["ordering-filter"]
         special_queryset, default_queryset = self.divide_queryset(
             queryset, partition_on
         )
+
+        # now we can order each part separately
+
+        # order the special queryset by the chosen ordering value
         special_ordering_expression = self.get_ordering_expression(
             ordering_config["ordering"]
         )
         special_queryset = special_queryset.order_by(special_ordering_expression)
 
+        # order the default queryset by the default ordering value
         default_ordering_expression = self.get_ordering_expression(
             settings.BARRIER_LIST_DEFAULT_SORT
         )
         default_queryset = default_queryset.order_by(default_ordering_expression)
+
+        # then we can use Python to concatenate the 2 parts together
+        # I know what you're thinking, this is messy, but the queryset has to be evaluated at some
+        # point, and it makes for much cleaner code than trying to do this in SQL
 
         final_queryset = list(special_queryset) + list(default_queryset)
         return final_queryset
