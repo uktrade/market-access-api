@@ -1044,7 +1044,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier = BarrierFactory(estimated_resolution_date="2020-01-01")
         BarrierFactory(estimated_resolution_date=None)
         BarrierFactory(estimated_resolution_date=None)
-        BarrierFactory(estimated_resolution_dat=None)
+        BarrierFactory(estimated_resolution_date=None)
 
         url = f'{reverse("list-barriers")}?ordering=-resolution'
         response = self.api_client.get(url)
