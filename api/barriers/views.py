@@ -63,6 +63,7 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
+
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
@@ -676,14 +677,14 @@ class PublicBarrierActivity(generics.GenericAPIView):
 
 class BarrierStatusBase(generics.UpdateAPIView):
     def _create(
-            self,
-            serializer,
-            barrier_id,
-            status,
-            summary,
-            sub_status="",
-            sub_other="",
-            status_date=None,
+        self,
+        serializer,
+        barrier_id,
+        status,
+        summary,
+        sub_status="",
+        sub_other="",
+        status_date=None,
     ):
         barrier_obj = get_object_or_404(Barrier, pk=barrier_id)
 
@@ -820,8 +821,8 @@ class BarrierOpenActionRequired(BarrierStatusBase):
         if self.request.data.get("sub_status", None) is None:
             errors["sub_status"] = "This field is required"
         elif (
-                self.request.data.get("sub_status", None) == "OTHER"
-                and self.request.data.get("sub_status_other", None) is None
+            self.request.data.get("sub_status", None) == "OTHER"
+            and self.request.data.get("sub_status_other", None) is None
         ):
             errors["sub_status_other"] = "This field is required"
         if self.request.data.get("status_summary", None) is None:
