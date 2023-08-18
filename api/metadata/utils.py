@@ -63,6 +63,10 @@ def get_os_regions_and_countries():
             # there are few countries with no overseas region
             if item["overseas_region"] is not None:
                 dh_os_regions.append(item["overseas_region"])
+
+    # Add custom overseas region; Wider Europe
+    dh_os_regions.append({"name": "Wider Europe", "id": "wider_europe"})
+
     return dh_os_regions, dh_countries
 
 
