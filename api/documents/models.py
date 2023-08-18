@@ -117,8 +117,7 @@ class Document(ArchivableMixin, BaseModel):
         or allow_unsafe is set.
         """
         if self.av_clean or allow_unsafe:
-            signed_url = sign_s3_url(self.bucket_id, self.path)
-            return signed_url
+            return sign_s3_url(self.bucket_id, self.path)
         return None
 
     def get_signed_upload_url(self):
