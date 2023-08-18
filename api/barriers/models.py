@@ -1560,15 +1560,17 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         MAX_DEPTH_COUNT = 20
 
-        # Assuming the name field can appear in any of the nested dicts inside companies
-        company_queries = [
-            Q(**{f"companies__{i}__name__icontains": value})
-            for i in range(MAX_DEPTH_COUNT)
-        ]
+        # Assuming the name field can appear in any of the nested dicts inside companies/related_organisations
+        company_queries = []
+        for i in range(MAX_DEPTH_COUNT):
+            company_queries.append(Q(**{f"companies__{i}__name__icontains": value}))
+            company_queries.append(
+                Q(**{f"related_organisations__{i}__name__icontains": value})
+            )
 
-        combined_company_query = Q()
+        combined_company_related_organisation_query = Q()
         for query in company_queries:
-            combined_company_query |= query
+            combined_company_related_organisation_query |= query
 
         return queryset.annotate(
             search=SearchVector("summary", "export_description"),
@@ -1577,7 +1579,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             | Q(search=value)
             | Q(title__icontains=value)
             | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
-            | Q(combined_company_query)
+            | Q(combined_company_related_organisation_query)
         )
 
     def my_barriers(self, queryset, name, value):
