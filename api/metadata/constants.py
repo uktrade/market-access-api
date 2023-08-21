@@ -431,6 +431,9 @@ WIDER_EUROPE_REGIONS = {
     "Serbia",
     "Bosnia and Herzegovina",
     "Kosovo",
+    "Greenland",
+    "Faroe Islands",
+    "Occupied Palestinian Territories",
 }
 
 BARRIER_SEARCH_ORDERING_CHOICES = {
