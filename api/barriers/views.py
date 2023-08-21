@@ -263,56 +263,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         bulk_create_with_history(new_members, TeamMember)
 
 
-class BarrierListOrderingFilter(OrderingFilter):
-    def filter_queryset(self, request, queryset, view):
-        # We need to get ones that have a relevant value ordered first,
-        # then append those that don't, ordered by the default ordering.
-        ordering = request.query_params.get(self.ordering_param)
-        ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None)
-        if ordering_config is None:
-            # Not one of our fancy ones, so just do the usual
-            return super().filter_queryset(request, queryset, view)
-        # Need to bear in mind that chaining querysets can cause performance problems
-        # if it results in them being evaluated early,
-        # so we go to great lengths to ensure the real work is handed off to the DB.
-        partition_on = ordering_config["ordering-filter"]
-        special_queryset, default_queryset = self.divide_queryset(
-            queryset, partition_on
-        )
-        special_ordering = ordering_config["ordering"]
-        # Assume we only have one special ordering field
-        ordering_expression = self.get_ordering_expression(special_ordering)
-        special_queryset = special_queryset.annotate(temp_rank=Value(0)).annotate(
-            final_rank=Window(expression=RowNumber(), order_by=ordering_expression)
-        )
-        if default_queryset.exists():
-            default_ordering = settings.BARRIER_LIST_DEFAULT_SORT
-            ordering_expression = self.get_ordering_expression(default_ordering)
-            default_queryset = default_queryset.annotate(
-                temp_rank=Window(expression=RowNumber(), order_by=ordering_expression)
-            ).annotate(final_rank=F("temp_rank") + Value(special_queryset.count()))
-            mixed_queryset = special_queryset.union(default_queryset)
-            return mixed_queryset.order_by("final_rank")
-        return special_queryset.order_by("final_rank")
-
-    def get_ordering_expression(self, ordering):
-        # This wouldn't be needed in Django 4.1, as
-        # that allows use of "-field" syntax for the Window function's order_by parameter
-        ordering_expression = F(ordering).asc()
-        if ordering[0] == "-":
-            ordering_expression = F(ordering[1:]).desc()
-        return ordering_expression
-
-    def divide_queryset(self, queryset, filter_kwargs):
-        if filter_kwargs:
-            special_queryset = queryset.filter(**filter_kwargs)
-            default_queryset = queryset.exclude(**filter_kwargs)
-        else:
-            special_queryset = queryset
-            default_queryset = queryset.none()
-        return special_queryset, default_queryset
-
-
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the Barriers
@@ -330,7 +280,8 @@ class BarrierList(generics.ListAPIView):
     )
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
-    filter_backends = (DjangoFilterBackend, BarrierListOrderingFilter)
+
+    filter_backends = (DjangoFilterBackend,)
     ordering_fields = (
         "reported_on",
         "modified_on",
@@ -340,6 +291,27 @@ class BarrierList(generics.ListAPIView):
         "country",
     )
     ordering = ("-reported_on",)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        order = self.request.query_params.get("ordering", None)
+        ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(order, None)
+        if ordering_config is not None:
+            order_by = ordering_config["order_on"]
+            direction = ordering_config["direction"]
+            if direction == "ascending":
+                ordered_queryset = queryset.order_by(
+                    F(order_by).asc(nulls_last=True), "-reported_on"
+                ).distinct()
+            else:
+                ordered_queryset = queryset.order_by(
+                    F(order_by).desc(nulls_last=True), "-reported_on"
+                ).distinct()
+        else:
+            ordered_queryset = queryset.order_by(
+                "-reported_on",
+            )
+        return ordered_queryset
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
@@ -430,8 +402,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
     )
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
-    # Disable ordering as ordering context not available at download
-    filter_backends = (DjangoFilterBackend,)  # , BarrierListOrderingFilter)
+    filter_backends = (DjangoFilterBackend,)
 
     field_titles = {
         "id": "id",
