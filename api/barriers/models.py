@@ -1313,7 +1313,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     text: combination custom search across multiple fields.
         Searches for reference code,
-        barrier title and barrier summary
+        barrier title, company names, export description and barrier summary
     """
 
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
@@ -1363,6 +1363,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     commercial_value_estimate = django_filters.BaseInFilter(
         method="commercial_value_estimate_filter"
     )
+    export_types = django_filters.BaseInFilter(method="export_types_filter")
+    start_date = django_filters.BaseInFilter(method="start_date_filter")
 
     class Meta:
         model = Barrier
@@ -1388,12 +1390,14 @@ class BarrierFilterSet(django_filters.FilterSet):
         if self.request is not None:
             return self.request.user
 
-    def sector_filter(self, queryset, name, value):
+    def sector_filter(self, queryset, name, value: List[str]):
         """
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
         """
-        return queryset.filter(Q(all_sectors=True) | Q(sectors__overlap=value))
+        return queryset.filter(
+            Q(all_sectors=True) | Q(main_sector__in=value) | Q(sectors__overlap=value)
+        )
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """
@@ -1566,11 +1570,29 @@ class BarrierFilterSet(django_filters.FilterSet):
             full text search on summary
             partial search on title
         """
-        return queryset.annotate(search=SearchVector("summary"),).filter(
+
+        MAX_DEPTH_COUNT = 20
+
+        # Assuming the name field can appear in any of the nested dicts inside companies/related_organisations
+        company_queries = []
+        for i in range(MAX_DEPTH_COUNT):
+            company_queries.append(Q(**{f"companies__{i}__name__icontains": value}))
+            company_queries.append(
+                Q(**{f"related_organisations__{i}__name__icontains": value})
+            )
+
+        combined_company_related_organisation_query = Q()
+        for query in company_queries:
+            combined_company_related_organisation_query |= query
+
+        return queryset.annotate(
+            search=SearchVector("summary", "export_description"),
+        ).filter(
             Q(code__icontains=value)
             | Q(search=value)
             | Q(title__icontains=value)
             | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
+            | Q(combined_company_related_organisation_query)
         )
 
     def my_barriers(self, queryset, name, value):
@@ -1799,6 +1821,17 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "without" in value:
             filters &= Q(commercial_value=None)
         return queryset.filter(filters).distinct()
+
+    def export_types_filter(self, queryset, name, value: List[str]):
+        # Filtering the queryset based on the selected export types
+        return queryset.filter(export_types__name__in=value).distinct()
+
+    def start_date_filter(self, queryset, name, value):
+        if value:
+            start_date, end_date = value
+            # Filtering the queryset based on the start_date range
+            return queryset.filter(start_date__range=(start_date, end_date))
+        return queryset
 
 
 class PublicBarrierFilterSet(django_filters.FilterSet):

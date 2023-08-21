@@ -12,7 +12,7 @@ from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, PublicBarrierStatus
-from api.metadata.models import BarrierPriority, Organisation
+from api.metadata.models import BarrierPriority, ExportType, Organisation
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanStakeholderFactory,
@@ -499,6 +499,52 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier2.id), str(barrier3.id)} == set(barrier_ids)
 
+    def test_list_barriers_text_filter_based_on_barrier_export_description(self):
+        barrier1 = BarrierFactory(export_description="Wibble blockade")
+        BarrierFactory(export_description="Wobble blockade")
+        barrier3 = BarrierFactory(export_description="Look wibble in the middle")
+
+        assert Barrier.objects.count() == 3
+
+        url = f'{reverse("list-barriers")}?search=wibble'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+        barrier_ids = [b["id"] for b in response.data["results"]]
+        assert {str(barrier1.id), str(barrier3.id)} == set(barrier_ids)
+
+    def test_list_barriers_text_filter_based_on_barrier_companies(self):
+        barrier = BarrierFactory()
+
+        barrier.companies = [
+            {"id": "10876910", "name": "TEST COMPANY 3 DO NOT FORM LTD"},
+            {"id": "13286009", "name": "AGENT SUMMARY LIMITED"},
+        ]
+
+        barrier.save()
+
+        barrier2 = BarrierFactory()
+
+        barrier2.companies = [
+            {"id": "10", "name": "Springfield Nuclear Power Plant LTD"},
+        ]
+        barrier2.save()
+
+        url = f'{reverse("list-barriers")}?search=test company 3'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
+        url = f'{reverse("list-barriers")}?search=agent summary'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
     @pytest.mark.skip("""Failing on CircleCI for unknown reasons.""")
     def test_list_barriers_text_filter_based_on_public_id(self):
         barrier1 = BarrierFactory(public_barrier___title="Public Title")
@@ -968,6 +1014,31 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert removal_pending_response.status_code == status.HTTP_200_OK
         removal_pending_serialised_data = removal_pending_response.data
         assert len(removal_pending_serialised_data["results"]) == 1
+
+    def test_export_types_filter(self):
+        barrier = BarrierFactory()
+        export_type1 = ExportType.objects.first()
+        export_type2 = ExportType.objects.last()
+        barrier.export_types.add(*(export_type1, export_type2))
+        barrier.save()
+
+        url = f'{reverse("list-barriers")}?export_types={export_type1.name},{export_type2.name}'
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
+    def test_start_date_filter(self):
+        barrier = BarrierFactory(start_date="2020-01-01")
+
+        url = f'{reverse("list-barriers")}?start_date=2019-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
