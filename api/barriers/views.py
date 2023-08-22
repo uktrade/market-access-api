@@ -4,10 +4,8 @@ from collections import defaultdict
 from datetime import datetime
 
 from dateutil.parser import parse
-from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, F, Value, Window
-from django.db.models.functions import RowNumber
+from django.db.models import Count, F
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
