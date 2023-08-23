@@ -1827,11 +1827,9 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset.filter(export_types__name__in=value).distinct()
 
     def start_date_filter(self, queryset, name, value):
-        if value:
-            start_date, end_date = value
-            # Filtering the queryset based on the start_date range
-            return queryset.filter(start_date__range=(start_date, end_date))
-        return queryset
+        start_date, end_date = value
+        # Filtering the queryset based on the start_date range
+        return queryset.filter(start_date__range=(start_date, end_date))
 
 
 class PublicBarrierFilterSet(django_filters.FilterSet):
