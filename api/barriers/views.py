@@ -17,6 +17,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from simple_history.utils import bulk_create_with_history
 
@@ -375,6 +376,24 @@ class BarrierList(generics.ListAPIView):
         "country",
     )
     ordering = ("-reported_on",)
+
+    """def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+
+        current_results = set(response.data["results"])
+        ordering = request.query_params.get(api_settings.ORDERING_PARAM)
+        ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None)
+        if ordering_config is None:
+            return response
+        results_with_data = set([each for each in current_results if getattr(each, ordering_config["ordering-filter"], None)])
+        results_without_data = current_results - results_with_data
+
+        results_without_data = sorted(results_without_data, key=lambda x: getattr(x, ordering_config["ordering"], None))
+        results_with_data = sorted(results_with_data, key=lambda x: getattr(x, ordering_config["ordering"], None))
+
+        response.data["results"] = results_with_data + results_without_data
+
+        return response"""
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
