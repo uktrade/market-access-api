@@ -263,91 +263,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         bulk_create_with_history(new_members, TeamMember)
 
 
-class BarrierListOrderingFilter(OrderingFilter):
-    def filter_queryset(self, request, queryset, view):
-        """Custom ordering filter for the barrier list search view.
-
-        The queryset passed to this function is already filtered with the criteria selected by the
-        user (e.g. Only those with PB100 priority), so now we need to order this queryset by
-        the ordering criteria selected by the user (e.g. Date resolved (most recent).
-
-        The problem is that we need to order by a field that may not exist on all of the
-        queryset items, so we need to split the queryset into 2 parts:
-        1. The ones that have the relevant value to order by
-        2. The ones that don't
-
-        Then we sort the first part by the selected ordering value and the 2nd part by the default
-        Then we evaluate the queryset and concatenate the 2 parts together in Python.
-
-        If we didn't do this, then the ordering would be wrong, because the ones that do have
-        the relevant value would be ordered correctly, and then the ones that don't would be
-        ordered by their PK, which is not what we want.
-        """
-        # We need to get ones that have a relevant value ordered first,
-        # then append those that don't, ordered by the default ordering.
-        ordering = request.query_params.get(self.ordering_param)
-        ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None)
-        if ordering_config is None:
-            # Not one of our fancy ones, so just do the usual
-            return super().filter_queryset(request, queryset, view)
-
-        # let's split the queryset into 2 parts, those that have the relevant value to order by
-        # and those that don't
-        partition_on = ordering_config["ordering-filter"]
-        special_queryset, default_queryset = self.divide_queryset(
-            queryset, partition_on
-        )
-
-        # now we can order each part separately
-
-        # order the special queryset by the chosen ordering value
-        special_ordering_expression = self.get_ordering_expression(
-            ordering_config["ordering"]
-        )
-        special_queryset = special_queryset.order_by(special_ordering_expression)
-
-        # order the default queryset by the default ordering value
-        default_ordering_expression = self.get_ordering_expression(
-            settings.BARRIER_LIST_DEFAULT_SORT
-        )
-        default_queryset = default_queryset.order_by(default_ordering_expression)
-
-        # then we can use Python to concatenate the 2 parts together
-        # I know what you're thinking, this is messy, but the queryset has to be evaluated at some
-        # point, and it makes for much cleaner code than trying to do this in SQL
-
-        final_queryset = list(special_queryset) + list(default_queryset)
-        return final_queryset
-
-    def get_ordering_expression(self, ordering):
-        # This wouldn't be needed in Django 4.1, as
-        # that allows use of "-field" syntax for the Window function's order_by parameter
-        ordering_expression = F(ordering).asc()
-        if ordering[0] == "-":
-            ordering_expression = F(ordering[1:]).desc()
-        return ordering_expression
-
-    def divide_queryset(self, queryset, filter_kwargs):
-        """
-        Split the queryset into 2 parts:
-        1. The ones that have the relevant value to order by (special_queryset)
-        2. The ones that don't (default_queryset)
-
-        e.g. if the ordering is "Estimated Resolution Date", then we want to split the queryset into
-        1. The ones that have an estimated resolution date
-        2. The ones that don't
-
-        This is so we can order the special_queryset by estimated resolution date.
-        Then we can order the default_queryset with a default ordering value.
-        """
-        if filter_kwargs:
-            special_queryset = queryset.filter(**filter_kwargs)
-            default_queryset = queryset.exclude(**filter_kwargs)
-        else:
-            special_queryset = queryset
-            default_queryset = queryset.none()
-        return special_queryset, default_queryset
-
 
 class BarrierList(generics.ListAPIView):
     """
@@ -549,7 +464,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
     # Disable ordering as ordering context not available at download
-    filter_backends = (DjangoFilterBackend,)  # , BarrierListOrderingFilter)
+    filter_backends = (DjangoFilterBackend,)
 
     field_titles = {
         "id": "id",
