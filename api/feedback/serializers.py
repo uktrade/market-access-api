@@ -6,7 +6,7 @@ from api.metadata.constants import FEEDBACK_FORM_SATISFACTION_ANSWERS
 
 class FeedbackSerializer(serializers.ModelSerializer):
     satisfaction = serializers.ChoiceField(
-        choices=(("t", "ds")),
+        choices=FEEDBACK_FORM_SATISFACTION_ANSWERS,
         required=True,
         error_messages={
             "required": "You must express a level of satisfaction",
