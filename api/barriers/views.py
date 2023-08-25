@@ -297,16 +297,26 @@ class BarrierList(generics.ListAPIView):
         3. The pagination limits the list to 100 items, which is relatively small
         4. The ordering is only applied to the current page, we're ordering the entire queryset
         """
+
+        # let's star with the actual response that the API was meant to return
         response = super().list(request, *args, **kwargs)
+
+        # then we figure out if we need to do any custom ordering using the ordering query param
         ordering = request.query_params.get(api_settings.ORDERING_PARAM)
         if ordering_config := BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None):
+            # alright, we've got some custom ordering to do
             ordering_attribute = ordering_config["ordering"]
+
+            # check if we're ordering in reverse (ascending vs descending)
+            # e.g. ordering = "-status_date" vs ordering = "status_date"
             reverse = ordering.startswith("-")
 
+            # let's get the current results and do some variable setup
             current_results = response.data["results"]
             results_with_data = []
             results_without_data = []
 
+            # let's gooooooo
             for each in current_results:
                 # checking if the barrier has the relevant value to order by
                 if each.get(ordering_config["ordering"], None):
@@ -317,19 +327,15 @@ class BarrierList(generics.ListAPIView):
                         "additional_ordering_filters"
                     ):
                         for key, value in additional_ordering_filters.items():
-                            # additional ordering filters follow django string dict notation
-                            # e.g. "status__id": checks for the barrier["status"]["id"] value
-                            tokens = key.split("__")
-                            # get the first token from the string, which is the top-level attribute
-                            # name on the barrier
-                            # e.g. barrier["status"]
-                            v = each.get(tokens[0], None)
-
-                            # then loop through the rest of the tokens, which are the nested
-                            # dictionary keys
+                            # loop through the key, which represent the nested dictionary keys
+                            # e.g. key = "status__id"
+                            # e.g. tokens = ["status", "id"]
                             # e.g. barrier["status"]["id"]
-                            for token in tokens[1:]:
+                            tokens = key.split("__")
+                            v = each
+                            for token in tokens:
                                 v = v.get(token, None)
+                                # if we don't have the sub_token in the barrier, we can stop
                                 if not v:
                                     break
 
@@ -345,7 +351,7 @@ class BarrierList(generics.ListAPIView):
                 else:
                     results_without_data.append(each)
 
-            # then sort each list separately, using the 'reverse' parameter to determine the order
+            # then sort each list separately, using the 'reverse' variable to determine the order
             results_without_data = sorted(
                 results_without_data,
                 key=lambda x: x.get(self.default_ordering, None),
