@@ -454,11 +454,11 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
         "label": "Last updated (least recent)",
     },
     "-value": {
-        "ordering": "current_valuation_assessment",
+        "ordering": "current_valuation_assessment_impact",
         "label": "Value (highest)",
     },
     "value": {
-        "ordering": "current_valuation_assessment",
+        "ordering": "current_valuation_assessment_impact",
         "label": "Value (lowest)",
     },
     "-resolution": {
