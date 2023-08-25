@@ -366,7 +366,7 @@ class BarrierList(generics.ListAPIView):
     )
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
-    filter_backends = (DjangoFilterBackend, BarrierListOrderingFilter)
+    filter_backends = (DjangoFilterBackend,)
     ordering_fields = (
         "reported_on",
         "modified_on",
@@ -375,25 +375,77 @@ class BarrierList(generics.ListAPIView):
         "priority",
         "country",
     )
-    ordering = ("-reported_on",)
+    default_ordering = "reported_on"
 
-    """def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
+        """Overriding the list method so we can intercept the response data and do some custom ordering.
+
+        Doing this using the Django ORM is a bit difficult, as we need to order by a field that may not exist on all of the
+        queryset items, so we need to split the queryset into 2 parts, order each part separately, then concatenate them together.
+
+        This is difficult and slow as it involves complex annotations and is not really what SQL is designed for.
+
+        Instead, we can do this in Python, which is much easier and faster as it:
+
+        1. Doesn't require any complex annotations
+        2. Doesn't require any complex SQL
+        3. The pagination limits the list to 100 items, which is relatively small
+        4. The ordering is only applied to the current page, so it's not like we're ordering the entire queryset
+        """
         response = super().list(request, *args, **kwargs)
-
-        current_results = set(response.data["results"])
         ordering = request.query_params.get(api_settings.ORDERING_PARAM)
-        ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None)
-        if ordering_config is None:
-            return response
-        results_with_data = set([each for each in current_results if getattr(each, ordering_config["ordering-filter"], None)])
-        results_without_data = current_results - results_with_data
+        if ordering_config := BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None):
+            ordering_attribute = ordering_config["ordering"]
+            reverse = ordering.startswith("-")
 
-        results_without_data = sorted(results_without_data, key=lambda x: getattr(x, ordering_config["ordering"], None))
-        results_with_data = sorted(results_with_data, key=lambda x: getattr(x, ordering_config["ordering"], None))
+            current_results = response.data["results"]
+            results_with_data = []
+            results_without_data = []
 
-        response.data["results"] = results_with_data + results_without_data
+            for each in current_results:
+                # checking if the barrier has the relevant value to order by
+                if each.get(ordering_config["ordering"], None):
+                    # sometimes we have additional filters to apply to the ordering, e.g. if we're
+                    # ordering by date resolved, we need to check that the barrier is resolved in
+                    # full, then order by the status_date attribute
+                    if additional_ordering_filters := ordering_config.get("additional_ordering_filters"):
+                        for key, value in additional_ordering_filters.items():
+                            # additional ordering filters follow django string dict notation
+                            # e.g. "status__id": checks for the barrier["status"]["id"] value
+                            tokens = key.split("__")
+                            # get the first token from the string, which is the top-level attribute
+                            # name on the barrier
+                            # e.g. barrier["status"]
+                            v = each.get(tokens[0], None)
 
-        return response"""
+                            # then loop through the rest of the tokens, which are the nested
+                            # dictionary keys
+                            # e.g. barrier["status"]["id"]
+                            for token in tokens[1:]:
+                                v = v.get(token, None)
+                                if not v:
+                                    break
+
+                            # if the final value on the barrier matches the value we're filtering by
+                            # then we add it to the results_with_data list
+                            if v == value:
+                                results_with_data.append(each)
+                            # if not, we add it to the results_without_data list
+                            else:
+                                results_without_data.append(each)
+                    else:
+                        results_with_data.append(each)
+                else:
+                    results_without_data.append(each)
+
+            # we then sort each list separately, using the 'reverse' parameter to determine the order
+            results_without_data = sorted(results_without_data, key=lambda x: x.get(self.default_ordering, None), reverse=True)
+            results_with_data = sorted(results_with_data, key=lambda x: x.get(ordering_attribute, None), reverse=reverse)
+
+            # finally, we concatenate the 2 lists together, maintaining their order
+            response.data["results"] = results_with_data + results_without_data
+
+        return response
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
