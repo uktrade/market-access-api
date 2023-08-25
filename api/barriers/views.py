@@ -4,9 +4,8 @@ from collections import defaultdict
 from datetime import datetime
 
 from dateutil.parser import parse
-from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, F
+from django.db.models import Count
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -263,7 +262,6 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         bulk_create_with_history(new_members, TeamMember)
 
 
-
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the Barriers
@@ -274,10 +272,7 @@ class BarrierList(generics.ListAPIView):
         Barrier.barriers.all()
         .select_related("priority")
         .prefetch_related(
-            "tags",
-            "organisations",
-            "progress_updates",
-            "valuation_assessments"
+            "tags", "organisations", "progress_updates", "valuation_assessments"
         )
     )
     serializer_class = BarrierListSerializer
