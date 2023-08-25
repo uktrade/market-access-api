@@ -378,19 +378,21 @@ class BarrierList(generics.ListAPIView):
     default_ordering = "reported_on"
 
     def list(self, request, *args, **kwargs):
-        """Overriding the list method so we can intercept the response data and do some custom ordering.
+        """Overriding the list method to intercept the response data and do some custom ordering.
 
-        Doing this using the Django ORM is a bit difficult, as we need to order by a field that may not exist on all of the
-        queryset items, so we need to split the queryset into 2 parts, order each part separately, then concatenate them together.
+        Doing this using the Django ORM is a bit difficult, as we need to order by a field that
+        may not exist on all the queryset items, so we need to split the queryset into 2 parts,
+        order each part separately, then concatenate them together.
 
-        This is difficult and slow as it involves complex annotations and is not really what SQL is designed for.
+        This is difficult and slow as it involves complex annotations and is not really what SQL
+        is designed for.
 
         Instead, we can do this in Python, which is much easier and faster as it:
 
         1. Doesn't require any complex annotations
         2. Doesn't require any complex SQL
         3. The pagination limits the list to 100 items, which is relatively small
-        4. The ordering is only applied to the current page, so it's not like we're ordering the entire queryset
+        4. The ordering is only applied to the current page, we're ordering the entire queryset
         """
         response = super().list(request, *args, **kwargs)
         ordering = request.query_params.get(api_settings.ORDERING_PARAM)
@@ -408,7 +410,9 @@ class BarrierList(generics.ListAPIView):
                     # sometimes we have additional filters to apply to the ordering, e.g. if we're
                     # ordering by date resolved, we need to check that the barrier is resolved in
                     # full, then order by the status_date attribute
-                    if additional_ordering_filters := ordering_config.get("additional_ordering_filters"):
+                    if additional_ordering_filters := ordering_config.get(
+                        "additional_ordering_filters"
+                    ):
                         for key, value in additional_ordering_filters.items():
                             # additional ordering filters follow django string dict notation
                             # e.g. "status__id": checks for the barrier["status"]["id"] value
@@ -438,9 +442,17 @@ class BarrierList(generics.ListAPIView):
                 else:
                     results_without_data.append(each)
 
-            # we then sort each list separately, using the 'reverse' parameter to determine the order
-            results_without_data = sorted(results_without_data, key=lambda x: x.get(self.default_ordering, None), reverse=True)
-            results_with_data = sorted(results_with_data, key=lambda x: x.get(ordering_attribute, None), reverse=reverse)
+            # then sort each list separately, using the 'reverse' parameter to determine the order
+            results_without_data = sorted(
+                results_without_data,
+                key=lambda x: x.get(self.default_ordering, None),
+                reverse=True,
+            )
+            results_with_data = sorted(
+                results_with_data,
+                key=lambda x: x.get(ordering_attribute, None),
+                reverse=reverse,
+            )
 
             # finally, we concatenate the 2 lists together, maintaining their order
             response.data["results"] = results_with_data + results_without_data
