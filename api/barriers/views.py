@@ -277,6 +277,7 @@ class BarrierList(generics.ListAPIView):
             "tags",
             "organisations",
             "progress_updates",
+            "valuation_assessments"
         )
     )
     serializer_class = BarrierListSerializer
