@@ -173,6 +173,7 @@ class TestCategories(APITestMixin):
             "Clean Growth",
             "Regional Trade Plan",
             "EU Market Access Board",
+            "Wales Priority",
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)

@@ -48,6 +48,7 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     TRADING_BLOC_CHOICES,
     TRADING_BLOCS,
+    WIDER_EUROPE_REGIONS,
     BarrierStatus,
     PublicBarrierStatus,
 )
@@ -399,7 +400,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         null=True,
         help_text=(
             "If resolved or part-resolved, the month and year supplied by the user, "
-            "otherwise the current time when the status was set."
+            "otherwise the current time when the status was set. Records date status "
+            "is effective from; resolved statuses are user-set, other statuses are "
+            "effective immediately after the status change."
         ),
     )
     commercial_value = models.BigIntegerField(blank=True, null=True)
@@ -1462,7 +1465,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         return queryset.filter(action_plan__in=active_action_plans).distinct()
 
-    def clean_location_value(self, value):
+    def clean_location_value(self, value):  # noqa: C901
         """
         Splits a list of locations into countries, regions and trading blocs
         """
@@ -1489,12 +1492,22 @@ class BarrierFilterSet(django_filters.FilterSet):
                 if country["overseas_region"]["id"] not in overseas_region_values:
                     overseas_region_values.append(country["overseas_region"]["id"])
 
+            # For custom overseas region "Wider Europe" we need to build a seperate list
+            # If the country is in the wider europe constant, we want it displayed
+            if "wider_europe" in value and country["name"] in WIDER_EUROPE_REGIONS:
+                overseas_region_countries.append(country["id"])
+
         # Add all trading blocs associated with the overseas regions
         for overseas_region in overseas_region_values:
             for trading_bloc in TRADING_BLOCS.values():
                 if overseas_region in trading_bloc["overseas_regions"]:
                     trading_bloc_values.append(trading_bloc["code"])
 
+        # Need to remove "wider_europe" from location_values as it isn't a searchable UUID
+        if "wider_europe" in location_values:
+            location_values.remove("wider_europe")
+
+        # Return cleaned value arrarys
         return {
             "countries": [
                 location
@@ -1560,15 +1573,17 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         MAX_DEPTH_COUNT = 20
 
-        # Assuming the name field can appear in any of the nested dicts inside companies
-        company_queries = [
-            Q(**{f"companies__{i}__name__icontains": value})
-            for i in range(MAX_DEPTH_COUNT)
-        ]
+        # Assuming the name field can appear in any of the nested dicts inside companies/related_organisations
+        company_queries = []
+        for i in range(MAX_DEPTH_COUNT):
+            company_queries.append(Q(**{f"companies__{i}__name__icontains": value}))
+            company_queries.append(
+                Q(**{f"related_organisations__{i}__name__icontains": value})
+            )
 
-        combined_company_query = Q()
+        combined_company_related_organisation_query = Q()
         for query in company_queries:
-            combined_company_query |= query
+            combined_company_related_organisation_query |= query
 
         return queryset.annotate(
             search=SearchVector("summary", "export_description"),
@@ -1577,7 +1592,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             | Q(search=value)
             | Q(title__icontains=value)
             | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
-            | combined_company_query
+            | Q(combined_company_related_organisation_query)
         )
 
     def my_barriers(self, queryset, name, value):
@@ -1809,19 +1824,12 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def export_types_filter(self, queryset, name, value: List[str]):
         # Filtering the queryset based on the selected export types
-        # we loop through instead of using export_types__name__in=value as this uses a JOIN
-        # in the underlying SQL which is slow and also produces duplicates when the results are
-        # ordered in the BarrierListOrderingFilter
-        if value:
-            queryset = queryset.filter(export_types__name__in=value).distinct()
-        return queryset
+        return queryset.filter(export_types__name__in=value).distinct()
 
     def start_date_filter(self, queryset, name, value):
-        if value:
-            start_date, end_date = value
-            # Filtering the queryset based on the start_date range
-            return queryset.filter(start_date__range=(start_date, end_date))
-        return queryset
+        start_date, end_date = value
+        # Filtering the queryset based on the start_date range
+        return queryset.filter(start_date__range=(start_date, end_date))
 
 
 class PublicBarrierFilterSet(django_filters.FilterSet):

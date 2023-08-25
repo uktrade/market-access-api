@@ -1166,6 +1166,40 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
 
+    def test_location_filter_overseas_regions(self):
+        base_url = reverse("list-barriers")
+
+        # European Union
+        barrier1 = BarrierFactory(trading_bloc="TB00016")
+        # France
+        barrier2 = BarrierFactory(
+            country="82756b9a-5d95-e211-a939-e4115bead28a",
+            caused_by_trading_bloc=True,
+        )
+        # Switzerland
+        barrier3 = BarrierFactory(
+            country="310be5c4-5d95-e211-a939-e4115bead28a",
+            caused_by_trading_bloc=False,
+        )
+
+        # Search by Europe region
+        response = self.api_client.get(
+            f"{base_url}?location=3e6809d6-89f6-4590-8458-1d0dab73ad1a"
+        )
+        assert status.HTTP_200_OK == response.status_code
+        assert 3 == response.data["count"]
+        barrier_ids = set([result["id"] for result in response.data["results"]])
+        assert (
+            set([str(barrier1.id), str(barrier2.id), str(barrier3.id)]) == barrier_ids
+        )
+
+        # Search by custom Wider Europe region
+        response = self.api_client.get(f"{base_url}?location=wider_europe")
+        assert status.HTTP_200_OK == response.status_code
+        assert 1 == response.data["count"]
+        barrier_ids = set([result["id"] for result in response.data["results"]])
+        assert set([str(barrier3.id)]) == barrier_ids
+
     def test_action_plan_filter(self):
         base_url = reverse("list-barriers")
         barriers = BarrierFactory.create_batch(3)
