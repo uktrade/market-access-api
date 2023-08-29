@@ -5,7 +5,7 @@ from .base import *
 DJANGO_ENV = "local"
 
 # Celery
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
 # During local development all tasks will be executed syncronously,
 # blocking the processes until the task returns
 CELERY_TASK_ALWAYS_EAGER = True
