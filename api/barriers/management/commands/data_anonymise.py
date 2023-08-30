@@ -3,6 +3,7 @@ import random
 from datetime import datetime
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from faker import Faker
 
@@ -21,17 +22,11 @@ from api.barriers.models import (
     PublicBarrier,
 )
 from api.collaboration.models import TeamMember
+from api.history.items.action_plans import AuthUser
+from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, Mention, PublicBarrierNote
 
 logger = logging.getLogger(__name__)
-
-
-DUMMY_USER_PROFILES = [
-    "3903",
-    "3916",
-    "3871",
-    "3911",
-]
 
 
 class Command(BaseCommand):
@@ -48,7 +43,7 @@ class Command(BaseCommand):
     # https://faker.readthedocs.io/en/master/providers/baseprovider.html
 
     # ./manage.py data_anonymise --barrier_cutoff_date 01-01-23
-    # ./manage.py data_anonymise --barrier_id 0454e8cb-b5e7-4a3a-91e3-b0461beb533c
+    # ./manage.py data_anonymise --barrier_id e30d8422-d402-4436-a0bc-26eeba1cb52d
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -62,6 +57,24 @@ class Command(BaseCommand):
             type=str,
             help="Specify a single barrier for anonymisation",
         )
+
+    def _get_dummy_user(self):
+        # Development environments can use placeholder IDs that exist on those DBs
+        # local will need to source a random user from the local DB
+
+        if settings.DJANGO_ENV == "local":
+            AuthUser = get_user_model()
+            user_list = AuthUser.objects.all()
+            random_pick = random.choice(user_list)
+            return random_pick.id
+        else:
+            DUMMY_USER_PROFILES = [
+                "3903",
+                "3916",
+                "3871",
+                "3911",
+            ]
+            return random.choice(DUMMY_USER_PROFILES)
 
     def _anonymise_text_fields(self, barriers):  # noqa
         """
@@ -148,16 +161,16 @@ class Command(BaseCommand):
 
             # Change fields which indicate which users have amended
             # details on the barrier
-            barrier.created_by_id = random.choice(DUMMY_USER_PROFILES)
+            barrier.created_by_id = self._get_dummy_user()
             if barrier.modified_by_id:
-                barrier.modified_by_id = random.choice(DUMMY_USER_PROFILES)
+                barrier.modified_by_id = self._get_dummy_user()
             if barrier.archived_by_id:
-                barrier.archived_by_id = random.choice(DUMMY_USER_PROFILES)
+                barrier.archived_by_id = self._get_dummy_user()
             if barrier.unarchived_by_id:
-                barrier.unarchived_by_id = random.choice(DUMMY_USER_PROFILES)
+                barrier.unarchived_by_id = self._get_dummy_user()
             if barrier.proposed_estimated_resolution_date_user_id:
-                barrier.proposed_estimated_resolution_date_user_id = random.choice(
-                    DUMMY_USER_PROFILES
+                barrier.proposed_estimated_resolution_date_user_id = (
+                    self._get_dummy_user()
                 )
 
             barrier.save()
@@ -166,8 +179,8 @@ class Command(BaseCommand):
             # influence on the barrier in question.
             barrier_team_list = barrier.barrier_team.all()
             for team_member in barrier_team_list:
-                team_member.id = random.choice(DUMMY_USER_PROFILES)
-                team_member.save()
+                new_member_id = self._get_dummy_user()
+                TeamMember.objects.filter(id=team_member.id).update(user=new_member_id)
 
     def _clear_barrier_report_session_data(self, barriers):
         """
@@ -176,7 +189,7 @@ class Command(BaseCommand):
         been committed to a completed barrier.
         """
         for barrier in barriers:
-            barrier.new_report_session_data = None
+            barrier.new_report_session_data = ""
             barrier.save()
 
     def _clear_barrier_notes(self, barriers):
@@ -184,13 +197,24 @@ class Command(BaseCommand):
         Function to clear any notes attached to the barrier
         """
         for barrier in barriers:
-            barrier_notes = Interaction.objects.filter(id=barrier.pk)
+            barrier_notes = Interaction.objects.filter(barrier=barrier.pk)
+
             for note in barrier_notes:
                 note.text = Faker().paragraph(nb_sentences=4)
+                note_user = AuthUser.objects.get(id=self._get_dummy_user())
+                note.created_by = note_user
+                note.modified_by = note_user
                 note.save()
 
                 # Documents attached to notes could have personal identifiers in the filepath.
-                for document in note.documents:
+                for document in note.documents.all():
+                    #
+                    #
+                    #
+                    # NEED TO CHECK THIS ON UAT/DEV
+                    #
+                    #
+                    #
                     document.path = Faker().word() + "/" + Faker().word() + ".pdf"
                     document.save()
 
@@ -198,7 +222,7 @@ class Command(BaseCommand):
             barrier_mentions = Mention.objects.filter(id=barrier.pk)
             for mention in barrier_mentions:
                 mention.email_used = "fake_email@fake_provider.com"
-                mention.recipient = random.choice(DUMMY_USER_PROFILES)
+                mention.recipient = self._get_dummy_user()
                 mention.text = Faker().paragraph(nb_sentences=1)
                 mention.save()
 
@@ -287,7 +311,7 @@ class Command(BaseCommand):
         for barrier in barriers:
             next_step_items = BarrierNextStepItem.objects.filter(barrier=barrier.id)
             for next_step_item in next_step_items:
-                next_step_item.next_step_owner = Faker().word + " " + Faker().word
+                next_step_item.next_step_owner = Faker().word() + " " + Faker().word()
                 next_step_item.next_step_item = Faker().paragraph(nb_sentences=4)
                 next_step_item.save()
 
@@ -307,8 +331,8 @@ class Command(BaseCommand):
                 top_priority.top_priority_summary_text = Faker().paragraph(
                     nb_sentences=4
                 )
-                top_priority.created_by_id = random.choice(DUMMY_USER_PROFILES)
-                top_priority.modified_by_id = random.choice(DUMMY_USER_PROFILES)
+                top_priority.created_by_id = self._get_dummy_user()
+                top_priority.modified_by_id = self._get_dummy_user()
                 top_priority.save()
 
     def _anonymise_valuation_assessments(self, barriers):
@@ -335,7 +359,7 @@ class Command(BaseCommand):
                 assessment.save()
 
                 # Change the path of any attached documents
-                for document in economic_assessments.documents:
+                for document in assessment.documents.all():
                     document.path = Faker().word() + "/" + Faker().word() + ".pdf"
                     document.save()
 
@@ -368,72 +392,28 @@ class Command(BaseCommand):
 
     def _purge_barrier_history(self, barriers):  # noqa
         """
-        Function to purge all barrier histories.
+        Function to purge all barrier histories, and their related DB objects histories.
         """
-        # Barrier history
         for barrier in barriers:
-            for history_item in barrier.history:
-                history_item.delete()
+            barrier.history.all().delete()
+            CachedHistoryItem.objects.filter(
+                barrier_id=barrier.id,
+            ).delete()
 
-            progress_updates = BarrierProgressUpdate.objects.filter(barrier=barrier.pk)
-            for update in progress_updates:
-                for history_item in update.history:
-                    history_item.delete()
-
-            programme_fund_progress_updates = BarrierProgressUpdate.objects.filter(
-                barrier=barrier.pk
-            )
-            for update in programme_fund_progress_updates:
-                for history_item in update.history:
-                    history_item.delete()
-
-            team_members = TeamMember.objects.filter(barrier=barrier.pk)
-            for team_member in team_members:
-                for history_item in team_member.history:
-                    history_item.delete()
-
-            notes = Interaction.objects.filter(barrier=barrier.pk)
-            for note in notes:
-                for history_item in note.history:
-                    history_item.delete()
-
-            economic_assessments = EconomicAssessment.objects.filter(barrier=barrier.pk)
-            for assessment in economic_assessments:
-                for history_item in assessment.history:
-                    history_item.delete()
-
-            economic_impact_assessments = EconomicImpactAssessment.objects.filter(
-                barrier=barrier.pk
-            )
-            for assessment in economic_impact_assessments:
-                for history_item in assessment.history:
-                    history_item.delete()
-
-            resolvability_assessments = ResolvabilityAssessment.objects.filter(
-                barrier=barrier.pk
-            )
-            for assessment in resolvability_assessments:
-                for history_item in assessment.history:
-                    history_item.delete()
-
-            strategic_assessments = StrategicAssessment.objects.filter(
-                barrier=barrier.pk
-            )
-            for assessment in strategic_assessments:
-                for history_item in assessment.history:
-                    history_item.delete()
-
+            BarrierProgressUpdate.history.filter(barrier=barrier.pk).delete()
+            ProgrammeFundProgressUpdate.history.filter(barrier=barrier.pk).delete()
+            TeamMember.history.filter(barrier=barrier.pk).delete()
+            Interaction.history.filter(barrier=barrier.pk).delete()
+            EconomicAssessment.history.filter(barrier=barrier.pk).delete()
+            EconomicImpactAssessment.history.filter(barrier=barrier.pk).delete()
+            ResolvabilityAssessment.history.filter(barrier=barrier.pk).delete()
+            StrategicAssessment.history.filter(barrier=barrier.pk).delete()
             public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
             if public_barrier:
-                for history_item in public_barrier.history:
-                    history_item.delete()
-
-                public_barrier_notes = PublicBarrierNote.objects.filter(
-                    public_barrier=public_barrier.id
-                )
-                for public_note in public_barrier_notes:
-                    for history_item in public_note:
-                        history_item.delete()
+                public_barrier.history.all().delete()
+                PublicBarrierNote.history.filter(
+                    public_barrier=public_barrier.pk
+                ).delete()
 
     def handle(self, *args, **options):
         logger.info("Running management command: Data Anonymise.")
