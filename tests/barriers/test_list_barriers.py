@@ -361,8 +361,8 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert str(barrier.id) == response.data["results"][0]["id"]
 
     def test_list_barriers_sector_filter(self):
-        sector1 = "9b38cecc-5f95-e211-a939-e4115bead28a"  # Aerospace
-        sector2 = "af959812-6095-e211-a939-e4115bead28a"  # Advanced Engineering
+        sector1 = "9b38cecc-5f95-e211-a939-e4115bead28a"
+        sector2 = "af959812-6095-e211-a939-e4115bead28a"
         BarrierFactory(sectors=[sector1])
         barrier = BarrierFactory(sectors=[sector2])
 
