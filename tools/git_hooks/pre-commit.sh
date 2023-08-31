@@ -14,9 +14,13 @@ echo -e "╚════════════════════╝"
 
 container_name=web
 
-cd docker/local
-git diff --staged --name-only --diff-filter=d | grep '\.py' | xargs -t docker-compose exec -T ${container_name} black --check --exclude '/migrations/'
-
+# if the IGNORE_DOCKER environment variable is set, then we don't want to run the docker commands, so we check if it
+# hasn't been defined before running
+if [[ -z "${IGNORE_DOCKER}" ]]
+then
+  cd docker/local
+  git diff --staged --name-only --diff-filter=d | grep '\.py' | xargs -t docker-compose exec -T ${container_name} black --check --exclude '/migrations/'
+fi
 rc=$?
 if [[ ${rc} == 1 ]]
 then

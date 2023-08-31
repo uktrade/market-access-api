@@ -438,59 +438,45 @@ WIDER_EUROPE_REGIONS = {
 
 BARRIER_SEARCH_ORDERING_CHOICES = {
     "-reported": {
-        "ordering": "-reported_on",
-        "ordering-filter": None,
+        "ordering": "reported_on",
         "label": "Date reported (newest)",
     },
     "reported": {
         "ordering": "reported_on",
-        "ordering-filter": None,
         "label": "Date reported (oldest)",
     },
     "-updated": {
-        "ordering": "-modified_on",
-        "ordering-filter": None,
+        "ordering": "modified_on",
         "label": "Last updated (most recent)",
     },
     "updated": {
         "ordering": "modified_on",
-        "ordering-filter": None,
         "label": "Last updated (least recent)",
     },
     "-value": {
-        "ordering": "-valuation_assessments__impact",
-        "ordering-filter": {
-            "valuation_assessments__archived": False,
-            "valuation_assessments__isnull": False,
-        },
+        "ordering": "current_valuation_assessment_impact",
         "label": "Value (highest)",
     },
     "value": {
-        "ordering": "valuation_assessments__impact",
-        "ordering-filter": {
-            "valuation_assessments__archived": False,
-            "valuation_assessments__isnull": False,
-        },
+        "ordering": "current_valuation_assessment_impact",
         "label": "Value (lowest)",
     },
     "-resolution": {
-        "ordering": "-estimated_resolution_date",
-        "ordering-filter": {"estimated_resolution_date__isnull": False},
+        "ordering": "estimated_resolution_date",
         "label": "Estimated resolution date (most recent)",
     },
     "resolution": {
         "ordering": "estimated_resolution_date",
-        "ordering-filter": {"estimated_resolution_date__isnull": False},
         "label": "Estimated resolution date (least recent)",
     },
     "-resolved": {
-        "ordering": "-status_date",
-        "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
+        "ordering": "status_date",
+        "additional_ordering_filters": {"status__id": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (most recent)",
     },
     "resolved": {
         "ordering": "status_date",
-        "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
+        "additional_ordering_filters": {"status__id": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (least recent)",
     },
 }
