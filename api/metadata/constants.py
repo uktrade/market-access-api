@@ -470,7 +470,7 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
         "label": "Estimated resolution date (least recent)",
     },
     "-resolved": {
-        "ordering": "status_date",
+        "ordering": ("status_date",),
         "additional_ordering_filters": [
             {
                 "attribute_lookup": ["status", "id"],
@@ -480,7 +480,7 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
         "label": "Date resolved (most recent)",
     },
     "resolved": {
-        "ordering": "status_date",
+        "ordering": ("status_date",),
         "additional_ordering_filters": [
             {
                 "attribute_lookup": ["status", "id"],
