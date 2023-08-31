@@ -4,8 +4,10 @@ from collections import defaultdict
 from datetime import datetime
 
 from dateutil.parser import parse
+from django.conf import settings
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, F, Value, Window
+from django.db.models.functions import RowNumber
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -16,7 +18,6 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
-from rest_framework.settings import api_settings
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from simple_history.utils import bulk_create_with_history
 
@@ -262,6 +263,56 @@ class BarrierReportSubmit(generics.UpdateAPIView):
         bulk_create_with_history(new_members, TeamMember)
 
 
+class BarrierListOrderingFilter(OrderingFilter):
+    def filter_queryset(self, request, queryset, view):
+        # We need to get ones that have a relevant value ordered first,
+        # then append those that don't, ordered by the default ordering.
+        ordering = request.query_params.get(self.ordering_param)
+        ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None)
+        if ordering_config is None:
+            # Not one of our fancy ones, so just do the usual
+            return super().filter_queryset(request, queryset, view)
+        # Need to bear in mind that chaining querysets can cause performance problems
+        # if it results in them being evaluated early,
+        # so we go to great lengths to ensure the real work is handed off to the DB.
+        partition_on = ordering_config["ordering-filter"]
+        special_queryset, default_queryset = self.divide_queryset(
+            queryset, partition_on
+        )
+        special_ordering = ordering_config["ordering"]
+        # Assume we only have one special ordering field
+        ordering_expression = self.get_ordering_expression(special_ordering)
+        special_queryset = special_queryset.annotate(temp_rank=Value(0)).annotate(
+            final_rank=Window(expression=RowNumber(), order_by=ordering_expression)
+        )
+        if default_queryset.exists():
+            default_ordering = settings.BARRIER_LIST_DEFAULT_SORT
+            ordering_expression = self.get_ordering_expression(default_ordering)
+            default_queryset = default_queryset.annotate(
+                temp_rank=Window(expression=RowNumber(), order_by=ordering_expression)
+            ).annotate(final_rank=F("temp_rank") + Value(special_queryset.count()))
+            mixed_queryset = special_queryset.union(default_queryset)
+            return mixed_queryset.order_by("final_rank")
+        return special_queryset.order_by("final_rank")
+
+    def get_ordering_expression(self, ordering):
+        # This wouldn't be needed in Django 4.1, as
+        # that allows use of "-field" syntax for the Window function's order_by parameter
+        ordering_expression = F(ordering).asc()
+        if ordering[0] == "-":
+            ordering_expression = F(ordering[1:]).desc()
+        return ordering_expression
+
+    def divide_queryset(self, queryset, filter_kwargs):
+        if filter_kwargs:
+            special_queryset = queryset.filter(**filter_kwargs)
+            default_queryset = queryset.exclude(**filter_kwargs)
+        else:
+            special_queryset = queryset
+            default_queryset = queryset.none()
+        return special_queryset, default_queryset
+
+
 class BarrierList(generics.ListAPIView):
     """
     Return a list of all the Barriers
@@ -272,101 +323,23 @@ class BarrierList(generics.ListAPIView):
         Barrier.barriers.all()
         .select_related("priority")
         .prefetch_related(
-            "tags", "organisations", "progress_updates", "valuation_assessments"
+            "tags",
+            "organisations",
+            "progress_updates",
         )
     )
     serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
-    filter_backends = (DjangoFilterBackend,)
-    default_ordering = "reported_on"
-
-    def list(self, request, *args, **kwargs):
-        """Overriding the list method to intercept the response data and do some custom ordering.
-
-        Doing this using the Django ORM is a bit difficult, as we need to order by a field that
-        may not exist on all the queryset items, so we need to split the queryset into 2 parts,
-        order each part separately, then concatenate them together.
-
-        This is difficult and slow as it involves complex annotations and is not really what SQL
-        is designed for.
-
-        Instead, we can do this in Python, which is much easier and faster as it:
-
-        1. Doesn't require any complex annotations
-        2. Doesn't require any complex SQL
-        3. The pagination limits the list to 100 items, which is relatively small
-        4. The ordering is only applied to the current page, we're ordering the entire queryset
-        """
-
-        # let's star with the actual response that the API was meant to return
-        response = super().list(request, *args, **kwargs)
-
-        # then we figure out if we need to do any custom ordering using the ordering query param
-        ordering = request.query_params.get(api_settings.ORDERING_PARAM)
-        if ordering_config := BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None):
-            # alright, we've got some custom ordering to do
-            ordering_attribute = ordering_config["ordering"]
-
-            # check if we're ordering in reverse (ascending vs descending)
-            # e.g. ordering = "-status_date" vs ordering = "status_date"
-            reverse = ordering.startswith("-")
-
-            # let's get the current results and do some variable setup
-            current_results = response.data["results"]
-            results_with_data = []
-            results_without_data = []
-
-            # let's gooooooo
-            for each in current_results:
-                # checking if the barrier has the relevant value to order by
-                if each.get(ordering_config["ordering"], None):
-                    # sometimes we have additional filters to apply to the ordering, e.g. if we're
-                    # ordering by date resolved, we need to check that the barrier is resolved in
-                    # full, then order by the status_date attribute
-                    if additional_ordering_filters := ordering_config.get(
-                        "additional_ordering_filters"
-                    ):
-                        for key, value in additional_ordering_filters.items():
-                            # loop through the key, which represent the nested dictionary keys
-                            # e.g. key = "status__id"
-                            # e.g. tokens = ["status", "id"]
-                            # e.g. barrier["status"]["id"]
-                            tokens = key.split("__")
-                            v = each
-                            for token in tokens:
-                                v = v.get(token, None)
-                                # if we don't have the sub_token in the barrier, we can stop
-                                if not v:
-                                    break
-
-                            # if the final value on the barrier matches the value we're filtering by
-                            # then we add it to the results_with_data list
-                            if v == value:
-                                results_with_data.append(each)
-                            # if not, we add it to the results_without_data list
-                            else:
-                                results_without_data.append(each)
-                    else:
-                        results_with_data.append(each)
-                else:
-                    results_without_data.append(each)
-
-            # then sort each list separately, using the 'reverse' variable to determine the order
-            results_without_data = sorted(
-                results_without_data,
-                key=lambda x: x.get(self.default_ordering, None),
-                reverse=True,
-            )
-            results_with_data = sorted(
-                results_with_data,
-                key=lambda x: x.get(ordering_attribute, None),
-                reverse=reverse,
-            )
-
-            # finally, we concatenate the 2 lists together, maintaining their order
-            response.data["results"] = results_with_data + results_without_data
-
-        return response
+    filter_backends = (DjangoFilterBackend, BarrierListOrderingFilter)
+    ordering_fields = (
+        "reported_on",
+        "modified_on",
+        "estimated_resolution_date",
+        "status",
+        "priority",
+        "country",
+    )
+    ordering = ("-reported_on",)
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
@@ -458,7 +431,7 @@ class BarrierListS3EmailFile(generics.ListAPIView):
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
     # Disable ordering as ordering context not available at download
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)  # , BarrierListOrderingFilter)
 
     field_titles = {
         "id": "id",
