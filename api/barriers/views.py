@@ -2,7 +2,6 @@ import csv
 import logging
 from collections import defaultdict
 from datetime import datetime
-from functools import cmp_to_key
 
 from dateutil.parser import parse
 from django.db import transaction
@@ -64,6 +63,7 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
+
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
@@ -326,7 +326,9 @@ class BarrierList(generics.ListAPIView):
                     # sometimes we have additional filters to apply to the ordering, e.g. if we're
                     # ordering by date resolved, we need to check that the barrier is resolved in
                     # full, then order by the status_date attribute
-                    for additional_filter in ordering_config.get("additional_ordering_filters", {}):
+                    for additional_filter in ordering_config.get(
+                        "additional_ordering_filters", {}
+                    ):
                         barrier_value = string_attribute_lookup(
                             each, *additional_filter["attribute_lookup"]
                         )
@@ -357,7 +359,7 @@ class BarrierList(generics.ListAPIView):
             key=lambda x: getattr(x, self.default_ordering, None),
             reverse=True,
         )
-        
+
         # finally, we concatenate the 2 lists together, maintaining their order
         total_results = results_with_data + results_without_data
 

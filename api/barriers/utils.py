@@ -18,6 +18,7 @@ def random_barrier_reference():
         ref_code += CHARSET[randrange(0, len(CHARSET))]
     return ref_code
 
+
 def string_attribute_lookup(holder, *args, raise_exception=False):
     """
     Function to return nested attribute from an object, either a dict or an instance of a class.
@@ -41,7 +42,9 @@ def string_attribute_lookup(holder, *args, raise_exception=False):
         the value of the attribute if found, else None
     """
     if isinstance(args, str):
-        args = [args,]
+        args = [
+            args,
+        ]
 
     for arg in args:
         if isinstance(holder, dict):
