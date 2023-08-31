@@ -438,45 +438,55 @@ WIDER_EUROPE_REGIONS = {
 
 BARRIER_SEARCH_ORDERING_CHOICES = {
     "-reported": {
-        "ordering": "reported_on",
+        "ordering": ("reported_on",),
         "label": "Date reported (newest)",
     },
     "reported": {
-        "ordering": "reported_on",
+        "ordering": ("reported_on",),
         "label": "Date reported (oldest)",
     },
     "-updated": {
-        "ordering": "modified_on",
+        "ordering": ("modified_on",),
         "label": "Last updated (most recent)",
     },
     "updated": {
-        "ordering": "modified_on",
+        "ordering": ("modified_on",),
         "label": "Last updated (least recent)",
     },
     "-value": {
-        "ordering": "current_valuation_assessment_impact",
+        "ordering": ("current_valuation_assessment", "impact"),
         "label": "Value (highest)",
     },
     "value": {
-        "ordering": "current_valuation_assessment_impact",
+        "ordering": ("current_valuation_assessment", "impact"),
         "label": "Value (lowest)",
     },
     "-resolution": {
-        "ordering": "estimated_resolution_date",
+        "ordering": ("estimated_resolution_date",),
         "label": "Estimated resolution date (most recent)",
     },
     "resolution": {
-        "ordering": "estimated_resolution_date",
+        "ordering": ("estimated_resolution_date",),
         "label": "Estimated resolution date (least recent)",
     },
     "-resolved": {
         "ordering": "status_date",
-        "additional_ordering_filters": {"status__id": BarrierStatus.RESOLVED_IN_FULL},
+        "additional_ordering_filters": [
+            {
+                "attribute_lookup": ["status", "id"],
+                "expected_value": BarrierStatus.RESOLVED_IN_FULL,
+            }
+        ],
         "label": "Date resolved (most recent)",
     },
     "resolved": {
         "ordering": "status_date",
-        "additional_ordering_filters": {"status__id": BarrierStatus.RESOLVED_IN_FULL},
+        "additional_ordering_filters": [
+            {
+                "attribute_lookup": ["status", "id"],
+                "expected_value": BarrierStatus.RESOLVED_IN_FULL,
+            }
+        ],
         "label": "Date resolved (least recent)",
     },
 }

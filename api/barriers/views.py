@@ -2,6 +2,7 @@ import csv
 import logging
 from collections import defaultdict
 from datetime import datetime
+from functools import cmp_to_key
 
 from dateutil.parser import parse
 from django.db import transaction
@@ -63,10 +64,10 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
-
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
+from .utils import string_attribute_lookup
 
 logger = logging.getLogger(__name__)
 
@@ -304,6 +305,10 @@ class BarrierList(generics.ListAPIView):
         # let's evaluate the queryset, so we can do some custom ordering in Python.
         current_results = list(queryset)
 
+        # let's do some variable setup
+        results_with_data = []
+        results_without_data = []
+
         # then we figure out if we need to do any custom ordering using the ordering query param
         ordering = request.query_params.get(api_settings.ORDERING_PARAM)
         if ordering_config := BARRIER_SEARCH_ORDERING_CHOICES.get(ordering, None):
@@ -314,68 +319,47 @@ class BarrierList(generics.ListAPIView):
             # e.g. ordering = "-status_date" vs ordering = "status_date"
             reverse = ordering.startswith("-")
 
-            # let's do some variable setup
-            results_with_data = []
-            results_without_data = []
-
             # let's gooooooo
             for each in current_results:
                 # checking if the barrier has the relevant value to order by
-                if getattr(each, ordering_config["ordering"], None):
+                if string_attribute_lookup(each, *ordering_attribute):
                     # sometimes we have additional filters to apply to the ordering, e.g. if we're
                     # ordering by date resolved, we need to check that the barrier is resolved in
                     # full, then order by the status_date attribute
-                    if additional_ordering_filters := ordering_config.get(
-                        "additional_ordering_filters"
-                    ):
-                        for key, value in additional_ordering_filters.items():
-                            # loop through the key, which represent the nested dictionary keys
-                            # e.g. key = "status__id"
-                            # e.g. tokens = ["status", "id"]
-                            # e.g. barrier["status"]["id"]
-                            tokens = key.split("__")
-                            v = each
-                            for token in tokens:
-                                v = getattr(v, token, None)
-                                # if we don't have the sub_token in the barrier, we can stop
-                                if not v:
-                                    break
-
-                            # if the final value on the barrier matches the value we're filtering by
-                            # then we add it to the results_with_data list
-                            if v == value:
-                                results_with_data.append(each)
-                            # if not, we add it to the results_without_data list
-                            else:
-                                results_without_data.append(each)
+                    for additional_filter in ordering_config.get("additional_ordering_filters", {}):
+                        barrier_value = string_attribute_lookup(
+                            each, *additional_filter["attribute_lookup"]
+                        )
+                        if barrier_value == additional_filter["expected_value"]:
+                            # the barrier has the correct additional attribute to match the filter
+                            results_with_data.append(each)
+                        else:
+                            results_without_data.append(each)
                     else:
                         results_with_data.append(each)
                 else:
+                    # the barrier doesn't have the relevant value to order by
                     results_without_data.append(each)
 
             # then sort each list separately, using the 'reverse' variable to determine the order
             results_with_data = sorted(
                 results_with_data,
-                key=lambda x: getattr(x, ordering_attribute, None),
+                key=lambda x: string_attribute_lookup(x, *ordering_attribute),
                 reverse=reverse,
             )
 
-            results_without_data = sorted(
-                results_without_data,
-                key=lambda x: getattr(x, self.default_ordering, None),
-                reverse=True,
-            )
-
-            # finally, we concatenate the 2 lists together, maintaining their order
-            total_results = results_with_data + results_without_data
-
         # no special ordering was defined, use the default ordering
         else:
-            total_results = sorted(
-                current_results,
-                key=lambda x: getattr(x, self.default_ordering, None),
-                reverse=True,
-            )
+            results_without_data = current_results
+
+        results_without_data = sorted(
+            results_without_data,
+            key=lambda x: getattr(x, self.default_ordering, None),
+            reverse=True,
+        )
+        
+        # finally, we concatenate the 2 lists together, maintaining their order
+        total_results = results_with_data + results_without_data
 
         serializer = self.get_serializer(total_results, many=True)
         return self.get_paginated_response(serializer.data)
