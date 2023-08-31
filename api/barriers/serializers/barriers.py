@@ -107,9 +107,6 @@ class BarrierListSerializer(BarrierSerializerBase):
     # when loading/submitting on the search page
 
     current_valuation_assessment = serializers.SerializerMethodField()
-    current_valuation_assessment_impact = serializers.IntegerField(
-        source="current_valuation_assessment.impact", read_only=True
-    )
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -143,11 +140,9 @@ class BarrierListSerializer(BarrierSerializerBase):
             "top_priority_status",
             "top_priority_rejection_summary",
             "current_valuation_assessment",
-            "current_valuation_assessment_impact",
         )
 
-    @staticmethod
-    def get_current_valuation_assessment(obj):
+    def get_current_valuation_assessment(self, obj):
         if obj.current_valuation_assessment:
             rating = ECONOMIC_ASSESSMENT_IMPACT[obj.current_valuation_assessment.impact]
             rating = rating.split(":")[1]
