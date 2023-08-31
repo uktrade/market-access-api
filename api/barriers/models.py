@@ -1397,7 +1397,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         return queryset.filter(
             Q(all_sectors=True) | Q(main_sector__in=value) | Q(sectors__overlap=value)
-        )
+        ).distinct()
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """

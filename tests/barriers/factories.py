@@ -91,7 +91,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
     top_priority_status = "NONE"
-    main_sector = fuzzy_sector()
+    main_sector = "355f977b-8ac3-e211-a646-e4115bead28a"  # Consumer and retail
     is_currently_active = True
     start_date = fuzzy_date()
     trade_direction = 1
