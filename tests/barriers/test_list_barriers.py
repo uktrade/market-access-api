@@ -366,7 +366,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         BarrierFactory(sectors=[sector1])
         barrier = BarrierFactory(sectors=[sector2])
 
-        assert 2 == Barrier.objects.count()
+        assert Barrier.objects.count() == 2
 
         url = f'{reverse("list-barriers")}?sector={sector2}'
         response = self.api_client.get(url)
