@@ -220,6 +220,12 @@ else:
 
 S3_BUCKETS = {
     "default": default_bucket,
+    "documents": {
+        "bucket_name": env("DOCUMENTS_BUCKET", default=""),
+        "aws_access_key_id": env("DOCUMENTS_AWS_ACCESS_KEY_ID", default=""),
+        "aws_secret_access_key": env("DOCUMENTS_AWS_SECRET_ACCESS_KEY", default=""),
+        "aws_region": env("DOCUMENTS_AWS_DEFAULT_REGION", default=""),
+    },
 }
 
 # ServerSideEncryption
