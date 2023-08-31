@@ -107,9 +107,6 @@ class BarrierListSerializer(BarrierSerializerBase):
     # when loading/submitting on the search page
 
     current_valuation_assessment = serializers.SerializerMethodField()
-    current_valuation_assessment_impact = serializers.IntegerField(
-        source="current_valuation_assessment.impact", read_only=True
-    )
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (

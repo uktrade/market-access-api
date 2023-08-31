@@ -590,13 +590,19 @@ class Barrier(FullyArchivableMixin, BaseModel):
     @property
     def current_valuation_assessment(self):
         """
-        Get the current valuration assessment
+        Get the current valuation assessment
 
         Filter in python to avoid another db call if prefetch_related has been used.
         """
         for assessment in self.valuation_assessments.all():
             if not assessment.archived:
                 return assessment
+
+    @property
+    def current_valuation_assessment_impact(self):
+        """Get the current valuation assessment's impact score."""
+        if assessment := self.current_valuation_assessment:
+            return assessment.impact
 
     @property
     def current_resolvability_assessment(self):

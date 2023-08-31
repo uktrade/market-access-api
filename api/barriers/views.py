@@ -297,9 +297,12 @@ class BarrierList(generics.ListAPIView):
         3. The pagination limits the list to 100 items, which is relatively small
         4. The ordering is only applied to the current page, we're ordering the entire queryset
         """
+        # let's start by duplicating the parent list function, so we can apply the filters & pagination
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.paginate_queryset(queryset)
 
-        # let's star with the actual response that the API was meant to return
-        response = super().list(request, *args, **kwargs)
+        # let's evaluate the queryset, so we can do some custom ordering in Python.
+        current_results = list(queryset)
 
         # then we figure out if we need to do any custom ordering using the ordering query param
         ordering = request.query_params.get(api_settings.ORDERING_PARAM)
@@ -311,15 +314,14 @@ class BarrierList(generics.ListAPIView):
             # e.g. ordering = "-status_date" vs ordering = "status_date"
             reverse = ordering.startswith("-")
 
-            # let's get the current results and do some variable setup
-            current_results = response.data["results"]
+            # let's do some variable setup
             results_with_data = []
             results_without_data = []
 
             # let's gooooooo
             for each in current_results:
                 # checking if the barrier has the relevant value to order by
-                if each.get(ordering_config["ordering"], None):
+                if getattr(each, ordering_config["ordering"], None):
                     # sometimes we have additional filters to apply to the ordering, e.g. if we're
                     # ordering by date resolved, we need to check that the barrier is resolved in
                     # full, then order by the status_date attribute
@@ -334,7 +336,7 @@ class BarrierList(generics.ListAPIView):
                             tokens = key.split("__")
                             v = each
                             for token in tokens:
-                                v = v.get(token, None)
+                                v = getattr(v, token, None)
                                 # if we don't have the sub_token in the barrier, we can stop
                                 if not v:
                                     break
@@ -352,21 +354,31 @@ class BarrierList(generics.ListAPIView):
                     results_without_data.append(each)
 
             # then sort each list separately, using the 'reverse' variable to determine the order
-            results_without_data = sorted(
-                results_without_data,
-                key=lambda x: x.get(self.default_ordering, None),
-                reverse=True,
-            )
             results_with_data = sorted(
                 results_with_data,
-                key=lambda x: x.get(ordering_attribute, None),
+                key=lambda x: getattr(x, ordering_attribute, None),
                 reverse=reverse,
             )
 
-            # finally, we concatenate the 2 lists together, maintaining their order
-            response.data["results"] = results_with_data + results_without_data
+            results_without_data = sorted(
+                results_without_data,
+                key=lambda x: getattr(x, self.default_ordering, None),
+                reverse=True,
+            )
 
-        return response
+            # finally, we concatenate the 2 lists together, maintaining their order
+            total_results = results_with_data + results_without_data
+
+        # no special ordering was defined, use the default ordering
+        else:
+            total_results = sorted(
+                current_results,
+                key=lambda x: getattr(x, self.default_ordering, None),
+                reverse=True,
+            )
+
+        serializer = self.get_serializer(total_results, many=True)
+        return self.get_paginated_response(serializer.data)
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
