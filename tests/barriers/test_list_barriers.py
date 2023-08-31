@@ -372,7 +372,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert response.data["count"] == 1
+        assert response.data["count"] == 2
         assert str(barrier.title) == response.data["results"][0]["title"]
 
     def test_list_barriers_filter_location_europe(self):
