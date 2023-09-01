@@ -1,6 +1,6 @@
 import logging
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -25,6 +25,9 @@ from api.collaboration.models import TeamMember
 from api.history.items.action_plans import AuthUser
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, Mention, PublicBarrierNote
+from api.metadata.models import BarrierTag, Category, Organisation
+from api.metadata.utils import get_countries, get_sectors
+from api.wto.models import WTOCommittee, WTOProfile
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +145,104 @@ class Command(BaseCommand):
 
             barrier.save()
 
+    def _anonymise_complex_barrier_fields(self, barriers):  # noqa
+        """
+        Function to take fields more complex than a text field and either
+        scramble or anonymise their contents.
+        Fields that will be anonymised (if they have existing value):
+            - companies
+            - related_organisations
+            - commercial_value
+            - sectors
+            - main_sector
+            - categories
+            - organisations
+            - tags
+        """
+        for barrier in barriers:
+
+            company_suffixes = [" CO.", " PLC.", " LTD.", " INC."]
+            if barrier.companies:
+                for company in barrier.companies:
+                    company["name"] = (
+                        Faker().word()
+                        + " "
+                        + Faker().word()
+                        + random.choice(company_suffixes)
+                    )
+            if barrier.related_organisations:
+                for organisation in barrier.related_organisations:
+                    organisation["name"] = (
+                        Faker().word()
+                        + " "
+                        + Faker().word()
+                        + random.choice(company_suffixes)
+                    )
+
+            if barrier.commercial_value:
+                barrier.commercial_value = random.randint(10000, 10000000000)
+
+            if barrier.sectors:
+                sectors_list = get_sectors()
+                number_of_sectors = len(barrier.sectors)
+                new_sectors_list = []
+                i = 0
+                while i < number_of_sectors:
+                    random_pick = random.choice(sectors_list)
+                    new_sectors_list.append(random_pick["id"])
+                    i = i + 1
+                barrier.sectors = new_sectors_list
+
+            if barrier.main_sector:
+                sectors_list = get_sectors()
+                random_pick = random.choice(sectors_list)
+                main_sector_updated = False
+                while main_sector_updated is not True:
+                    # Cannot have a main_sector that is in the other sectors list
+                    if random_pick["id"] not in new_sectors_list:
+                        barrier.main_sector = random_pick["id"]
+                        main_sector_updated = True
+                    else:
+                        random_pick = random.choice(sectors_list)
+
+            if barrier.categories:
+                categories_list = Category.objects.all()
+                number_of_categories = barrier.categories.count()
+                barrier.categories.clear()
+                i = 0
+                while i < number_of_categories:
+                    random_pick = random.choice(categories_list)
+                    barrier.categories.add(random_pick)
+                    i = i + 1
+
+            if barrier.organisations:
+                organisations_list = Organisation.objects.all()
+                number_of_organisations = barrier.organisations.count()
+                barrier.organisations.clear()
+                i = 0
+                while i < number_of_organisations:
+                    random_pick = random.choice(organisations_list)
+                    barrier.organisations.add(random_pick)
+                    i = i + 1
+
+            if barrier.tags:
+                tags_list = BarrierTag.objects.all()
+                number_of_tags = barrier.tags.count()
+                barrier.tags.clear()
+                i = 0
+                while i < number_of_tags:
+                    random_pick = random.choice(tags_list)
+                    barrier.tags.add(random_pick)
+                    i = i + 1
+
+            barrier.save()
+
+    def _scramble_date_fields(self, barriers):
+        """
+        Function to get date fields and add or subtract days to mask
+        actual dates.
+        """
+
     def _anonymise_users_data(self, barriers):
         """
         Function to replace real staff with dummy users.
@@ -211,7 +312,14 @@ class Command(BaseCommand):
                     #
                     #
                     #
-                    # NEED TO CHECK THIS ON UAT/DEV
+                    #
+                    #
+                    # NEED TO TEST THIS ON UAT/DEV
+                    # Upload file on specific barrier, do it on note and WTO page.
+                    # Run script on this one specific barrier.
+                    # Check filenames are different.
+                    #
+                    #
                     #
                     #
                     #
@@ -390,6 +498,73 @@ class Command(BaseCommand):
                 assessment.additional_information = Faker().paragraph(nb_sentences=2)
                 assessment.save()
 
+    def _anonymise_wto_profiles(self, barriers):  # noqa
+        """
+        Function to anaonymise data held in a barriers WTO profile.
+        These are all optional fields so we only need to replace ones that exist.
+        Fields that need anonymising:
+            - committee_notified
+            - committee_notification_link
+            - committee_notification_document
+            - member_states
+            - committee_raised_in
+            - meeting_minutes
+            - raised_date
+            - case_number
+        """
+        for barrier in barriers:
+            wto_profiles = WTOProfile.objects.filter(barrier=barrier.id)
+            for profile in wto_profiles:
+                if profile.committee_notification_link:
+                    profile.committee_notification_link = (
+                        "https://"
+                        + Faker().word()
+                        + "-"
+                        + Faker().word()
+                        + ".com/"
+                        + Faker().word()
+                    )
+                if profile.case_number:
+                    profile.case_number = Faker().word()
+
+                if profile.raised_date:
+                    profile.raised_date = profile.raised_date + timedelta(days=22)
+                if profile.committee_notification_document:
+                    for document in profile.committee_notification_document.all():
+                        document.path = Faker().word() + "/" + Faker().word() + ".pdf"
+                        document.save()
+                if profile.meeting_minutes:
+                    for document in profile.meeting_minutes.all():
+                        document.path = Faker().word() + "/" + Faker().word() + ".pdf"
+                        document.save()
+
+                # Get count of countries in array
+                # Loop that number of times, building array of countries by
+                # randomly picking them from metadata.get_countries()
+                # Overwrite existing member_states array
+                if profile.member_states:
+                    countries_list = get_countries()
+                    number_of_states = len(profile.member_states)
+                    new_country_list = []
+                    i = 0
+                    while i < number_of_states:
+                        random_pick = random.choice(countries_list)
+                        new_country_list.append(random_pick["id"])
+                        i = i + 1
+                    profile.member_states = new_country_list
+
+                # Pick a random entry from the WTOCommittee table
+                if profile.committee_notified:
+                    wto_committee_options = WTOCommittee.objects.all()
+                    random_pick = random.choice(wto_committee_options)
+                    profile.committee_notified = random_pick
+                if profile.committee_raised_in:
+                    wto_committee_options = WTOCommittee.objects.all()
+                    random_pick = random.choice(wto_committee_options)
+                    profile.committee_raised_in = random_pick
+
+                profile.save()
+
     def _purge_barrier_history(self, barriers):  # noqa
         """
         Function to purge all barrier histories, and their related DB objects histories.
@@ -408,6 +583,7 @@ class Command(BaseCommand):
             EconomicImpactAssessment.history.filter(barrier=barrier.pk).delete()
             ResolvabilityAssessment.history.filter(barrier=barrier.pk).delete()
             StrategicAssessment.history.filter(barrier=barrier.pk).delete()
+            WTOProfile.history.filter(barrier=barrier.pk).delete()
             public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
             if public_barrier:
                 public_barrier.history.all().delete()
@@ -452,6 +628,14 @@ class Command(BaseCommand):
         self._anonymise_text_fields(barriers)
         logger.info("Completed anonymising text data.")
 
+        logger.info("Anonymising barrier fields more complex than simple text fields.")
+        self._anonymise_complex_barrier_fields(barriers)
+        logger.info("Completed anonymising more varied & complex data fields.")
+
+        logger.info("Randomising the date fields across barrier and sub-objects.")
+        self._scramble_date_fields(barriers)
+        logger.info("Completed randomising dates.")
+
         logger.info("Anonymising barrier user data.")
         self._anonymise_users_data(barriers)
         logger.info("Completed anonymising user data.")
@@ -484,6 +668,49 @@ class Command(BaseCommand):
         self._anonymise_valuation_assessments(barriers)
         logger.info("Completed anonymising valuation assessments data.")
 
+        logger.info("Anonymising WTO profile.")
+        self._anonymise_wto_profiles(barriers)
+        logger.info("Completed anonymising WTO profile.")
+
         logger.info("Deleting barrier history")
         self._purge_barrier_history(barriers)
         logger.info("Finished deleting barrier histories.")
+
+    # TODO:
+    #
+    # Date fields:
+    #
+    # Barrier
+    # estimated_resolution_date
+    # proposed_estimated_resolution_date
+    # proposed_estimated_resolution_date_created
+    # reported_on
+    # status_date
+    # priority_date
+    # start_date
+    #
+    # Document
+    # uploaded_on
+    #
+    # BarrierProgressUpdate
+    # created_on
+    # modified_on
+    #
+    # ProgrammeFundProgressUpdate:
+    # created_on
+    # modified_on
+    #
+    # PublicBarrier:
+    # first_published_on
+    # last_published_on
+    # unpublished_on
+    # title_updated_on
+    # summary_updated_on
+    #
+    # BarrierNextStepItem:
+    # start_date
+    # completion_date
+    #
+    # BarrierTopPrioritySummary:
+    # created_on
+    # modified_on
