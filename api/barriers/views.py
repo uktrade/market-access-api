@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Count, F
+from django.db.models import Count, F, ExpressionWrapper, Q, Sum
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -290,26 +290,34 @@ class BarrierList(generics.ListAPIView):
     )
     ordering = ("-reported_on",)
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
+    def get_ordering_config(self):
         order = self.request.query_params.get("ordering", None)
         ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(order, None)
-        if ordering_config is not None:
+        return ordering_config
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        ordering_config = self.get_ordering_config()
+        if ordering_config:
             order_by = ordering_config["order_on"]
             direction = ordering_config["direction"]
+            if ordering_filter := ordering_config.get("ordering-filter", None):
+                queryset = queryset.annotate(ordering_value=(F(order_by) if ordering_filter else None))
+            else:
+                queryset = queryset.annotate(ordering_value=F(order_by))
             if direction == "ascending":
                 ordered_queryset = queryset.order_by(
-                    F(order_by).asc(nulls_last=True), "-reported_on"
-                ).distinct()
+                    F("ordering_value").asc(nulls_last=True), "-reported_on"
+                )
             else:
                 ordered_queryset = queryset.order_by(
-                    F(order_by).desc(nulls_last=True), "-reported_on"
-                ).distinct()
+                    F("ordering_value").desc(nulls_last=True), "-reported_on"
+                )
         else:
             ordered_queryset = queryset.order_by(
                 "-reported_on",
             )
-        return ordered_queryset
+        return ordered_queryset.distinct()
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":
