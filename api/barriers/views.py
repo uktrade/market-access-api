@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Count, F, ExpressionWrapper, Q, Sum
+from django.db.models import Count, F
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -302,7 +302,9 @@ class BarrierList(generics.ListAPIView):
             order_by = ordering_config["order_on"]
             direction = ordering_config["direction"]
             if ordering_filter := ordering_config.get("ordering-filter", None):
-                queryset = queryset.annotate(ordering_value=(F(order_by) if ordering_filter else None))
+                queryset = queryset.annotate(
+                    ordering_value=(F(order_by) if ordering_filter else None)
+                )
             else:
                 queryset = queryset.annotate(ordering_value=F(order_by))
             if direction == "ascending":

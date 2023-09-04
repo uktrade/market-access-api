@@ -1605,12 +1605,9 @@ class BarrierFilterSet(django_filters.FilterSet):
     def team_barriers(self, queryset, name, value):
         if value:
             current_user = self.get_user()
-            return (
-                queryset.filter(
-                    Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
-                )
-                .exclude(created_by=current_user)
-            )
+            return queryset.filter(
+                Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
+            ).exclude(created_by=current_user)
         return queryset
 
     def member_filter(self, queryset, name, value):
@@ -1760,27 +1757,18 @@ class BarrierFilterSet(django_filters.FilterSet):
         assessment_queryset = queryset.none()
 
         if "with" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__archived=False,
-                )
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__archived=False,
             )
         if "without" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__isnull=True,
-                )
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__isnull=True,
             )
         if "ready_for_approval" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__archived=False,
-                    economic_assessments__ready_for_approval=True,
-                    economic_assessments__approved__isnull=True,
-                )
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__archived=False,
+                economic_assessments__ready_for_approval=True,
+                economic_assessments__approved__isnull=True,
             )
 
         return queryset & assessment_queryset
@@ -1789,18 +1777,12 @@ class BarrierFilterSet(django_filters.FilterSet):
         assessment_queryset = queryset.none()
 
         if "with" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__economic_impact_assessments__archived=False,
-                )
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__economic_impact_assessments__archived=False,
             )
         if "without" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__economic_impact_assessments__isnull=True,
-                )
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__economic_impact_assessments__isnull=True,
             )
 
         return queryset & assessment_queryset
