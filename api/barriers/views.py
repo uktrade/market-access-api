@@ -62,6 +62,7 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
+
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .tasks import generate_s3_and_send_email
@@ -307,9 +308,9 @@ class BarrierList(generics.ListAPIView):
                 # so that we only annotate the rows which meet additional criteria. e.g. only economic assessment
                 # impact ratings that are NOT archived.
                 subquery = Subquery(
-                    queryset.filter(id=OuterRef("id"), **ordering_filter).distinct().values_list(
-                        order_by, flat=True
-                    )
+                    queryset.filter(id=OuterRef("id"), **ordering_filter)
+                    .distinct()
+                    .values_list(order_by, flat=True)
                 )
                 queryset = queryset.annotate(ordering_value=subquery)
             else:
