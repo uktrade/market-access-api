@@ -301,7 +301,12 @@ class BarrierList(generics.ListAPIView):
         if ordering_config:
             order_by = ordering_config["order_on"]
             direction = ordering_config["direction"]
+            # now we annotate the queryset with a new column - 'ordering_value' - which will contain either the value of
+            # the field we want to order on, or a null if it doesn't exist
             if ordering_filter := ordering_config.get("ordering-filter", None):
+                # if we have defined a filter for the ordering, we need to use a subquery to further filter the queryset
+                # so that we only annotate the rows which meet additional criteria. e.g. only economic assessment
+                # impact ratings that are NOT archived.
                 subquery = Subquery(
                     Barrier.objects.filter(
                         id=OuterRef("id"), **ordering_filter
@@ -310,6 +315,9 @@ class BarrierList(generics.ListAPIView):
                 queryset = queryset.annotate(ordering_value=subquery)
             else:
                 queryset = queryset.annotate(ordering_value=F(order_by))
+
+            # once we have annotated the queryset with the ordering_value, we can order by that column first, then those
+            # rows which have null which be ordered by reported_on
             if direction == "ascending":
                 ordered_queryset = queryset.order_by(
                     F("ordering_value").asc(nulls_last=True), "-reported_on"
@@ -322,6 +330,8 @@ class BarrierList(generics.ListAPIView):
             ordered_queryset = queryset.order_by(
                 "-reported_on",
             )
+
+        # finally, remove duplicates from the queryset
         return ordered_queryset.distinct()
 
     def is_my_barriers_search(self):
