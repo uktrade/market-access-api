@@ -1,14 +1,14 @@
 import datetime
-import os
 import json
+import os
 import uuid
 from io import StringIO
 
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.core import management
 from django.db import models
 from django.test import TestCase
-from django.conf import settings
+from django.test import override_settings
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -16,6 +16,7 @@ from api.assessment.models import (
     ResolvabilityAssessment,
     StrategicAssessment,
 )
+from api.barriers.management.commands.data_anonymise import Command
 from api.barriers.models import (
     Barrier,
     PublicBarrierManager,
@@ -28,17 +29,13 @@ from api.collaboration.models import TeamMember
 from api.core.exceptions import AnonymiseProductionDataException
 # from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin
-from django.test import override_settings
-from api.barriers.management.commands.data_anonymise import Command
-from api.documents.models import Document
 from api.interactions.models import (
     Interaction,
     Document as InteractionDocument,
     Mention,
     PublicBarrierNote,
 )
-from api.metadata.constants import ECONOMIC_ASSESSMENT_RATING
-from api.metadata.models import Organisation, BarrierTag, Category
+from api.metadata.models import BarrierTag, Category
 from api.metadata.utils import get_sectors
 from api.wto.models import WTOProfile
 
