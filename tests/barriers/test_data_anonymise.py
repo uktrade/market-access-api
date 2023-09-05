@@ -35,13 +35,22 @@ from api.wto.models import WTOProfile
 
 
 class TestDataAnonymise(APITestMixin, TestCase):
-    fixtures = ["barrier_priorities", "barrier_for_anonymisation", "categories", "users"]
+    fixtures = [
+        "barrier_priorities",
+        "barrier_for_anonymisation",
+        "categories",
+        "users",
+    ]
 
     @classmethod
     def setUpClass(cls):
         with open(
             os.path.join(
-                settings.ROOT_DIR, "api", "barriers", "fixtures", "barrier_priorities.json"
+                settings.ROOT_DIR,
+                "api",
+                "barriers",
+                "fixtures",
+                "barrier_priorities.json",
             ),
             "r",
         ) as barrier_fixture:
