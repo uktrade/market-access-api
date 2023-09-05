@@ -26,8 +26,6 @@ from api.barriers.models import (
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import AnonymiseProductionDataException
-
-# from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Document as InteractionDocument
 from api.interactions.models import Interaction, Mention, PublicBarrierNote
@@ -35,11 +33,9 @@ from api.metadata.models import BarrierTag, Category
 from api.metadata.utils import get_sectors
 from api.wto.models import WTOProfile
 
-# from api.history.factories import BarrierHistoryFactory
-
 
 class TestDataAnonymise(APITestMixin, TestCase):
-    fixtures = ["barrier_priorities", "barriers", "categories", "users"]
+    fixtures = ["barrier_priorities", "barrier_for_anonymisation", "categories", "users"]
 
     @classmethod
     def setUpClass(cls):
