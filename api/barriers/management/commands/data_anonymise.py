@@ -117,7 +117,7 @@ class Command(BaseCommand):
         )
 
     @staticmethod
-    def anonymise_text_fields(barriers):
+    def anonymise_text_fields(barriers):  # noqa
         """
         Function to create junk strings and replace text fields with
         this randomised data.
@@ -182,7 +182,7 @@ class Command(BaseCommand):
             barrier.save()
 
     @staticmethod
-    def anonymise_complex_barrier_fields(barriers):
+    def anonymise_complex_barrier_fields(barriers):  # noqa
         """
         Function to take fields more complex than a text field and either
         scramble or anonymise their contents.
@@ -589,7 +589,7 @@ class Command(BaseCommand):
                 assessment.save()
 
     @staticmethod
-    def anonymise_wto_profiles(barriers):
+    def anonymise_wto_profiles(barriers):  # noqa
         """
         Function to anonymise data held in a barriers WTO profile.
         These are all optional fields, so we only need to replace ones that exist.
