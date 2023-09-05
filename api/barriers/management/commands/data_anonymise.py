@@ -36,6 +36,7 @@ from api.wto.models import WTOCommittee, WTOProfile
 
 logger = logging.getLogger(__name__)
 
+SAFE_ENVIRONMENTS = ["uat", "local", "dev", "test"]  # the environments we can run this command on
 
 def _get_dummy_user():
     # Development environments can use placeholder IDs that exist on those DBs
@@ -685,9 +686,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Running management command: Data Anonymise.")
 
-        if settings.DJANGO_ENV == "prod":
+        if settings.DJANGO_ENV not in SAFE_ENVIRONMENTS:
             raise AnonymiseProductionDataException(
-                "You cannot anonymise production data. You came this close to a very bad day."
+                "You cannot anonymise data outside of UAT, Dev, or local. You came this close to a very bad day."
             )
 
         if (
