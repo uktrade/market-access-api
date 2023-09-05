@@ -15,10 +15,12 @@ class S3UploadException(Exception):
 
     pass
 
+
 class AtomicTransactionException(Exception):
     """Exception to be used when you want to roll back an atomic transaction"""
 
     pass
+
 
 class AnonymiseProductionDataException(Exception):
     """Exception to be used when you try to anonymise production data using the data_anonymise management command"""

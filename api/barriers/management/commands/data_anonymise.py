@@ -23,15 +23,19 @@ from api.barriers.models import (
     PublicBarrier,
 )
 from api.collaboration.models import TeamMember
-from api.core.exceptions import AtomicTransactionException, AnonymiseProductionDataException
+from api.core.exceptions import (
+    AnonymiseProductionDataException,
+    AtomicTransactionException,
+)
 from api.history.items.action_plans import AuthUser
 from api.history.models import CachedHistoryItem
-from api.interactions.models import Interaction, Mention, PublicBarrierNote, Document
+from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.models import BarrierTag, Category, Organisation
 from api.metadata.utils import get_countries, get_sectors
 from api.wto.models import WTOCommittee, WTOProfile
 
 logger = logging.getLogger(__name__)
+
 
 def _get_dummy_user():
     # Development environments can use placeholder IDs that exist on those DBs
@@ -61,6 +65,7 @@ def _get_dummy_user():
         ]
         return random.choice(DUMMY_USER_PROFILES)
 
+
 def _randomise_date(date):
     """
     Function to take a date and add or minus days to mask the actual date.
@@ -72,6 +77,7 @@ def _randomise_date(date):
             days_change = days_change * -1
         return date + timedelta(days=days_change)
     return None
+
 
 class Command(BaseCommand):
     help = "Anonymise sensitive data on barriers in the DB created before given date"
@@ -107,7 +113,7 @@ class Command(BaseCommand):
             type=bool,
             help="Run the command without committing any changes to the DB.",
             default=False,
-            nargs="?"
+            nargs="?",
         )
 
     @staticmethod
@@ -213,7 +219,6 @@ class Command(BaseCommand):
             if barrier.commercial_value:
                 barrier.commercial_value = random.randint(10000, 10000000000)
 
-
             new_sectors_list = []
             if barrier.sectors:
                 sectors_list = get_sectors()
@@ -268,22 +273,28 @@ class Command(BaseCommand):
                     i = i + 1
 
             barrier.save()
-    
+
     @staticmethod
     def scramble_barrier_date_fields(barriers):
         """
         Function to scramble date fields of barrier and child objects
         """
         for barrier in barriers:
-            barrier.estimated_resolution_date = _randomise_date(barrier.estimated_resolution_date)
-            barrier.proposed_estimated_resolution_date = _randomise_date(barrier.proposed_estimated_resolution_date)
-            barrier.proposed_estimated_resolution_date_created = _randomise_date(barrier.proposed_estimated_resolution_date_created)
+            barrier.estimated_resolution_date = _randomise_date(
+                barrier.estimated_resolution_date
+            )
+            barrier.proposed_estimated_resolution_date = _randomise_date(
+                barrier.proposed_estimated_resolution_date
+            )
+            barrier.proposed_estimated_resolution_date_created = _randomise_date(
+                barrier.proposed_estimated_resolution_date_created
+            )
             barrier.reported_on = _randomise_date(barrier.reported_on)
             barrier.status_date = _randomise_date(barrier.status_date)
             barrier.priority_date = _randomise_date(barrier.priority_date)
             barrier.start_date = _randomise_date(barrier.start_date)
             barrier.save()
-    
+
     @staticmethod
     def anonymise_users_data(barriers):
         """
@@ -312,9 +323,7 @@ class Command(BaseCommand):
             if barrier.unarchived_by_id:
                 barrier.unarchived_by_id = _get_dummy_user()
             if barrier.proposed_estimated_resolution_date_user_id:
-                barrier.proposed_estimated_resolution_date_user_id = (
-                    _get_dummy_user()
-                )
+                barrier.proposed_estimated_resolution_date_user_id = _get_dummy_user()
 
             barrier.save()
 
@@ -370,7 +379,9 @@ class Command(BaseCommand):
                     mock_filename = f"{Faker().word()}-{Faker().word()}.pdf"
                     document.original_filename = mock_filename
                     document.document.path = f"documents/2023-01-01/{mock_filename}"
-                    document.document.uploaded_on = _randomise_date(document.document.uploaded_on)
+                    document.document.uploaded_on = _randomise_date(
+                        document.document.uploaded_on
+                    )
                     document.save()
                     document.document.save()
 
@@ -421,11 +432,21 @@ class Command(BaseCommand):
                     )
 
                 # anonymising the dates
-                public_barrier.first_published_on = _randomise_date(public_barrier.first_published_on)
-                public_barrier.last_published_on = _randomise_date(public_barrier.last_published_on)
-                public_barrier.unpublished_on = _randomise_date(public_barrier.unpublished_on)
-                public_barrier.title_updated_on = _randomise_date(public_barrier.title_updated_on)
-                public_barrier.summary_updated_on = _randomise_date(public_barrier.summary_updated_on)
+                public_barrier.first_published_on = _randomise_date(
+                    public_barrier.first_published_on
+                )
+                public_barrier.last_published_on = _randomise_date(
+                    public_barrier.last_published_on
+                )
+                public_barrier.unpublished_on = _randomise_date(
+                    public_barrier.unpublished_on
+                )
+                public_barrier.title_updated_on = _randomise_date(
+                    public_barrier.title_updated_on
+                )
+                public_barrier.summary_updated_on = _randomise_date(
+                    public_barrier.summary_updated_on
+                )
 
                 # Save the public barrier
                 public_barrier.save()
@@ -483,7 +504,9 @@ class Command(BaseCommand):
                 next_step_item.next_step_owner = Faker().word() + " " + Faker().word()
                 next_step_item.next_step_item = Faker().paragraph(nb_sentences=4)
                 next_step_item.start_date = _randomise_date(next_step_item.start_date)
-                next_step_item.completion_date = _randomise_date(next_step_item.completion_date)
+                next_step_item.completion_date = _randomise_date(
+                    next_step_item.completion_date
+                )
                 next_step_item.save()
 
     @staticmethod
@@ -701,7 +724,9 @@ class Command(BaseCommand):
             except AtomicTransactionException:
                 self.stdout.write("Anonymisation complete, rolling back changes")
         else:
-            self.stdout.write("Running in live run mode. Changes will be committed to the database")
+            self.stdout.write(
+                "Running in live run mode. Changes will be committed to the database"
+            )
             self.anonymise(barriers)
 
     def anonymise(self, barriers):
@@ -715,7 +740,9 @@ class Command(BaseCommand):
         self.anonymise_text_fields(barriers)
         self.stdout.write("Completed anonymising text data.")
 
-        self.stdout.write("Anonymising barrier fields more complex than simple text fields.")
+        self.stdout.write(
+            "Anonymising barrier fields more complex than simple text fields."
+        )
         self.anonymise_complex_barrier_fields(barriers)
         self.stdout.write("Completed anonymising more varied & complex data fields.")
 

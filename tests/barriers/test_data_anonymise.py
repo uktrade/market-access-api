@@ -7,8 +7,7 @@ from io import StringIO
 from django.conf import settings
 from django.core import management
 from django.db import models
-from django.test import TestCase
-from django.test import override_settings
+from django.test import TestCase, override_settings
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -19,26 +18,22 @@ from api.assessment.models import (
 from api.barriers.management.commands.data_anonymise import Command
 from api.barriers.models import (
     Barrier,
-    PublicBarrierManager,
-    BarrierProgressUpdate,
-    ProgrammeFundProgressUpdate,
     BarrierNextStepItem,
+    BarrierProgressUpdate,
     BarrierTopPrioritySummary,
+    ProgrammeFundProgressUpdate,
+    PublicBarrierManager,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import AnonymiseProductionDataException
+
 # from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin
-from api.interactions.models import (
-    Interaction,
-    Document as InteractionDocument,
-    Mention,
-    PublicBarrierNote,
-)
+from api.interactions.models import Document as InteractionDocument
+from api.interactions.models import Interaction, Mention, PublicBarrierNote
 from api.metadata.models import BarrierTag, Category
 from api.metadata.utils import get_sectors
 from api.wto.models import WTOProfile
-
 
 # from api.history.factories import BarrierHistoryFactory
 
@@ -48,7 +43,12 @@ class TestDataAnonymise(APITestMixin, TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open(os.path.join(settings.ROOT_DIR, "api", "barriers", "fixtures", "barriers.json"), "r") as barrier_fixture:
+        with open(
+            os.path.join(
+                settings.ROOT_DIR, "api", "barriers", "fixtures", "barriers.json"
+            ),
+            "r",
+        ) as barrier_fixture:
             barrier = json.load(barrier_fixture)[0]
             cls.barrier_fields = barrier["fields"]
         super().setUpClass()
@@ -96,10 +96,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
     def call_command(self, **kwargs):
         out = StringIO()
         management.call_command(
-            "data_anonymise",
-            stdout=out,
-            stderr=StringIO(),
-            **kwargs
+            "data_anonymise", stdout=out, stderr=StringIO(), **kwargs
         )
         self.barrier.refresh_from_db()
         return out.getvalue()
@@ -121,7 +118,10 @@ class TestDataAnonymise(APITestMixin, TestCase):
     def test_live_run(self):
         output = self.call_command(barrier_cutoff_date=self.today_date, dry_run=False)
         assert self._has_db_barrier_changed()
-        assert "Running in live run mode. Changes will be committed to the database" in output
+        assert (
+            "Running in live run mode. Changes will be committed to the database"
+            in output
+        )
 
     def test_logging(self):
         output = self.call_command(barrier_cutoff_date=self.today_date, dry_run=False)
@@ -133,26 +133,57 @@ class TestDataAnonymise(APITestMixin, TestCase):
         self.barrier.refresh_from_db()
         assert self.barrier.title != self.barrier_fields["title"]
         assert self.barrier.summary != self.barrier_fields["summary"]
-        assert self.barrier.archived_explanation != self.barrier_fields["archived_explanation"]
-        assert self.barrier.next_steps_summary != self.barrier_fields["next_steps_summary"]
+        assert (
+            self.barrier.archived_explanation
+            != self.barrier_fields["archived_explanation"]
+        )
+        assert (
+            self.barrier.next_steps_summary != self.barrier_fields["next_steps_summary"]
+        )
         assert self.barrier.archived_reason != self.barrier_fields["archived_reason"]
-        assert self.barrier.unarchived_reason != self.barrier_fields["unarchived_reason"]
-        assert self.barrier.public_eligibility_summary != self.barrier_fields["public_eligibility_summary"]
-        assert self.barrier.economic_assessment_eligibility_summary != self.barrier_fields["economic_assessment_eligibility_summary"]
-        assert self.barrier.commercial_value_explanation != self.barrier_fields["commercial_value_explanation"]
-        assert self.barrier.top_priority_rejection_summary != self.barrier_fields["top_priority_rejection_summary"]
-        assert self.barrier.estimated_resolution_date_change_reason != self.barrier_fields["estimated_resolution_date_change_reason"]
-        assert self.barrier.export_description != self.barrier_fields["export_description"]
+        assert (
+            self.barrier.unarchived_reason != self.barrier_fields["unarchived_reason"]
+        )
+        assert (
+            self.barrier.public_eligibility_summary
+            != self.barrier_fields["public_eligibility_summary"]
+        )
+        assert (
+            self.barrier.economic_assessment_eligibility_summary
+            != self.barrier_fields["economic_assessment_eligibility_summary"]
+        )
+        assert (
+            self.barrier.commercial_value_explanation
+            != self.barrier_fields["commercial_value_explanation"]
+        )
+        assert (
+            self.barrier.top_priority_rejection_summary
+            != self.barrier_fields["top_priority_rejection_summary"]
+        )
+        assert (
+            self.barrier.estimated_resolution_date_change_reason
+            != self.barrier_fields["estimated_resolution_date_change_reason"]
+        )
+        assert (
+            self.barrier.export_description != self.barrier_fields["export_description"]
+        )
 
     def test_anonymise_complex_fields(self):
         self.barrier.categories.add(Category.objects.first())
         Command.anonymise_complex_barrier_fields(self.barrier_queryset)
         self.barrier.refresh_from_db()
         assert self.barrier.companies[0] != self.barrier_fields["companies"][0]
-        assert self.barrier.companies[0]["name"].endswith((" CO.", " PLC.", " LTD.", " INC."))
+        assert self.barrier.companies[0]["name"].endswith(
+            (" CO.", " PLC.", " LTD.", " INC.")
+        )
 
-        assert self.barrier.related_organisations[0] != self.barrier_fields["related_organisations"][0]
-        assert self.barrier.related_organisations[0]["name"].endswith((" CO.", " PLC.", " LTD.", " INC."))
+        assert (
+            self.barrier.related_organisations[0]
+            != self.barrier_fields["related_organisations"][0]
+        )
+        assert self.barrier.related_organisations[0]["name"].endswith(
+            (" CO.", " PLC.", " LTD.", " INC.")
+        )
 
         assert self.barrier.commercial_value != self.barrier_fields["commercial_value"]
 
@@ -176,9 +207,18 @@ class TestDataAnonymise(APITestMixin, TestCase):
     def test_anonymise_date_fields(self):
         Command.scramble_barrier_date_fields(self.barrier_queryset)
         self.barrier.refresh_from_db()
-        assert self.barrier.estimated_resolution_date != self.barrier_fields["estimated_resolution_date"]
-        assert self.barrier.proposed_estimated_resolution_date != self.barrier_fields["proposed_estimated_resolution_date"]
-        assert self.barrier.proposed_estimated_resolution_date_created != self.barrier_fields["proposed_estimated_resolution_date_created"]
+        assert (
+            self.barrier.estimated_resolution_date
+            != self.barrier_fields["estimated_resolution_date"]
+        )
+        assert (
+            self.barrier.proposed_estimated_resolution_date
+            != self.barrier_fields["proposed_estimated_resolution_date"]
+        )
+        assert (
+            self.barrier.proposed_estimated_resolution_date_created
+            != self.barrier_fields["proposed_estimated_resolution_date_created"]
+        )
         assert self.barrier.reported_on != self.barrier_fields["reported_on"]
         assert self.barrier.status_date != self.barrier_fields["status_date"]
         assert self.barrier.priority_date != self.barrier_fields["priority_date"]
@@ -194,10 +234,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert self.barrier.proposed_estimated_resolution_date_user_id != self.user.id
 
     def test_anonymise_barrier_team(self):
-        tm = TeamMember.objects.create(
-            barrier=self.barrier,
-            user=self.user
-        )
+        tm = TeamMember.objects.create(barrier=self.barrier, user=self.user)
         self.barrier.barrier_team.add(tm)
         Command.anonymise_users_data(self.barrier_queryset)
         self.barrier.refresh_from_db()
@@ -215,7 +252,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
             kind="Comment",
             text="Test note",
             created_by=self.user,
-            modified_by=self.user
+            modified_by=self.user,
         )
         document = InteractionDocument.objects.create(
             original_filename="test.jpg",
@@ -238,7 +275,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
             barrier=self.barrier,
             recipient=self.user,
             email_used=self.user.email,
-            text="test"
+            text="test",
         )
         Command.anonymise_barrier_notes(self.barrier_queryset)
         mention.refresh_from_db()
@@ -249,9 +286,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
     def test_anonymise_public_barrier(self):
         public_barrier, _ = PublicBarrierManager.get_or_create_for_barrier(self.barrier)
         note = PublicBarrierNote.objects.create(
-            public_barrier=public_barrier,
-            text="test",
-            created_by=self.user
+            public_barrier=public_barrier, text="test", created_by=self.user
         )
         Command.anonymise_public_data(self.barrier_queryset)
         public_barrier.refresh_from_db()
@@ -259,7 +294,9 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert public_barrier.title != self.barrier_fields["title"]
         assert public_barrier.summary != self.barrier_fields["summary"]
         assert public_barrier.internal_title_at_update != self.barrier_fields["title"]
-        assert public_barrier.internal_summary_at_update != self.barrier_fields["summary"]
+        assert (
+            public_barrier.internal_summary_at_update != self.barrier_fields["summary"]
+        )
 
         assert note.text != "test"
 
@@ -268,7 +305,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
             barrier=self.barrier,
             status="ON_TRACK",
             update="update",
-            next_steps="next steps"
+            next_steps="next steps",
         )
         pfpu = ProgrammeFundProgressUpdate.objects.create(
             barrier=self.barrier,
@@ -289,7 +326,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
             barrier=self.barrier,
             next_step_owner="john",
             next_step_item="item",
-            completion_date=self.today_date_object
+            completion_date=self.today_date_object,
         )
         original_start_date = bnsi.start_date
         Command.anonymise_next_step_items(self.barrier_queryset)
@@ -306,7 +343,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
             modified_by=self.user,
             created_on=self.today_date_object,
             modified_on=self.today_date_object,
-            created_by=self.user
+            created_by=self.user,
         )
         Command.anonymise_top_priority_data(self.barrier_queryset)
         btps.refresh_from_db()
@@ -321,16 +358,13 @@ class TestDataAnonymise(APITestMixin, TestCase):
             explanation="test",
         )
         eia = EconomicImpactAssessment.objects.create(
-            economic_assessment=ea,
-            barrier=self.barrier,
-            explanation="test",
-            impact=1
+            economic_assessment=ea, barrier=self.barrier, explanation="test", impact=1
         )
         ra = ResolvabilityAssessment.objects.create(
             barrier=self.barrier,
             explanation="test",
             time_to_resolve=0,
-            effort_to_resolve=0
+            effort_to_resolve=0,
         )
         sa = StrategicAssessment.objects.create(
             barrier=self.barrier,
@@ -341,7 +375,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
             uk_grants="uk_grants",
             competition="competition",
             additional_information="additional_information",
-            scale=1
+            scale=1,
         )
         Command.anonymise_valuation_assessments(self.barrier_queryset)
         ea.refresh_from_db()
@@ -367,9 +401,10 @@ class TestDataAnonymise(APITestMixin, TestCase):
             committee_notification_link="https://www.example.com",
             case_number="1234",
             raised_date=self.today_date_object,
-            member_states=[member_state_id,],
+            member_states=[
+                member_state_id,
+            ],
             wto_has_been_notified=True,
-
         )
         Command.anonymise_wto_profiles(self.barrier_queryset)
         wto.refresh_from_db()
