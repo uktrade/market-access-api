@@ -1082,8 +1082,14 @@ class TestListBarriers(APITestMixin, APITestCase):
             status=BarrierStatus.RESOLVED_IN_FULL,
             status_date="2020-01-01",
         )
-        BarrierFactory(status=BarrierStatus.RESOLVED_IN_PART)
-        BarrierFactory(status=BarrierStatus.RESOLVED_IN_PART)
+        BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_PART,
+            status_date="2020-01-01",
+        )
+        BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_PART,
+            status_date="2020-01-01",
+        )
 
         url = f'{reverse("list-barriers")}?ordering=-resolved'
         request = RequestFactory().get(url)
@@ -1126,8 +1132,8 @@ class TestListBarriers(APITestMixin, APITestCase):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 4
-        assert response.data["results"][0]["id"] == str(barrier.id)
-        assert response.data["results"][1]["id"] == str(barrier_2.id)
+        assert response.data["results"][0]["id"] == str(barrier_2.id)
+        assert response.data["results"][1]["id"] == str(barrier.id)
         assert response.data["results"][2]["id"] == str(barrier_4.id)
         assert response.data["results"][3]["id"] == str(barrier_3.id)
 
