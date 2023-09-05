@@ -50,7 +50,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
                 "api",
                 "barriers",
                 "fixtures",
-                "barrier_priorities.json",
+                "barrier_for_anonymisation.json",
             ),
             "r",
         ) as barrier_fixture:
