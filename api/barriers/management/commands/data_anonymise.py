@@ -36,7 +36,13 @@ from api.wto.models import WTOCommittee, WTOProfile
 
 logger = logging.getLogger(__name__)
 
-SAFE_ENVIRONMENTS = ["uat", "local", "dev", "test"]  # the environments we can run this command on
+SAFE_ENVIRONMENTS = [
+    "uat",
+    "local",
+    "dev",
+    "test",
+]  # the environments we can run this command on
+
 
 def _get_dummy_user():
     # Development environments can use placeholder IDs that exist on those DBs
