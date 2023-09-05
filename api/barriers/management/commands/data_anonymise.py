@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
+from django.db import transaction
 from faker import Faker
 
 from api.assessment.models import (
@@ -22,15 +23,55 @@ from api.barriers.models import (
     PublicBarrier,
 )
 from api.collaboration.models import TeamMember
+from api.core.exceptions import AtomicTransactionException, AnonymiseProductionDataException
 from api.history.items.action_plans import AuthUser
 from api.history.models import CachedHistoryItem
-from api.interactions.models import Interaction, Mention, PublicBarrierNote
+from api.interactions.models import Interaction, Mention, PublicBarrierNote, Document
 from api.metadata.models import BarrierTag, Category, Organisation
 from api.metadata.utils import get_countries, get_sectors
 from api.wto.models import WTOCommittee, WTOProfile
 
 logger = logging.getLogger(__name__)
 
+def _get_dummy_user():
+    # Development environments can use placeholder IDs that exist on those DBs
+    # local will need to source a random user from the local DB
+    if settings.DJANGO_ENV == "local":
+        AuthUser = get_user_model()
+        user_list = AuthUser.objects.all()
+        random_pick = random.choice(user_list)
+        return random_pick.id
+    elif settings.DJANGO_ENV == "test":
+        # if we're testing, we want to assign a different user to the one defined in
+        # the test fixtures, so we can test that the user has been changed.
+        AuthUser = get_user_model()
+        user, _ = AuthUser.objects.get_or_create(
+            username="test@example.com",
+            email="test@example.com",
+        )
+        return user.id
+    else:
+        # if we're on a non-local environment, we want to assign a random user from a
+        # pre-defined list. These are the devs emails.
+        DUMMY_USER_PROFILES = [
+            "3903",
+            "3916",
+            "3871",
+            "3911",
+        ]
+        return random.choice(DUMMY_USER_PROFILES)
+
+def _randomise_date(date):
+    """
+    Function to take a date and add or minus days to mask the actual date.
+    """
+    if date:
+        days_change = random.randint(1, 100)
+        if random.randint(0, 1) == 0:
+            # minus days 50/50 chance
+            days_change = days_change * -1
+        return date + timedelta(days=days_change)
+    return None
 
 class Command(BaseCommand):
     help = "Anonymise sensitive data on barriers in the DB created before given date"
@@ -61,25 +102,16 @@ class Command(BaseCommand):
             help="Specify a single barrier for anonymisation",
         )
 
-    def _get_dummy_user(self):
-        # Development environments can use placeholder IDs that exist on those DBs
-        # local will need to source a random user from the local DB
+        parser.add_argument(
+            "--dry_run",
+            type=bool,
+            help="Run the command without committing any changes to the DB.",
+            default=False,
+            nargs="?"
+        )
 
-        if settings.DJANGO_ENV == "local":
-            AuthUser = get_user_model()
-            user_list = AuthUser.objects.all()
-            random_pick = random.choice(user_list)
-            return random_pick.id
-        else:
-            DUMMY_USER_PROFILES = [
-                "3903",
-                "3916",
-                "3871",
-                "3911",
-            ]
-            return random.choice(DUMMY_USER_PROFILES)
-
-    def _anonymise_text_fields(self, barriers):  # noqa
+    @staticmethod
+    def anonymise_text_fields(barriers):
         """
         Function to create junk strings and replace text fields with
         this randomised data.
@@ -116,12 +148,10 @@ class Command(BaseCommand):
                 barrier.status_summary = Faker().paragraph(nb_sentences=3)
             if barrier.archived_explanation:
                 barrier.archived_explanation = Faker().paragraph(nb_sentences=2)
-            if barrier.priority_summary:
-                barrier.priority_summary = Faker().paragraph(nb_sentences=2)
             if barrier.next_steps_summary:
                 barrier.next_steps_summary = Faker().paragraph(nb_sentences=2)
             if barrier.archived_reason:
-                barrier.archived_reason = Faker().paragraph(nb_sentences=2)
+                barrier.archived_reason = Faker().word()
             if barrier.unarchived_reason:
                 barrier.unarchived_reason = Faker().paragraph(nb_sentences=2)
             if barrier.public_eligibility_summary:
@@ -145,7 +175,8 @@ class Command(BaseCommand):
 
             barrier.save()
 
-    def _anonymise_complex_barrier_fields(self, barriers):  # noqa
+    @staticmethod
+    def anonymise_complex_barrier_fields(barriers):
         """
         Function to take fields more complex than a text field and either
         scramble or anonymise their contents.
@@ -182,10 +213,11 @@ class Command(BaseCommand):
             if barrier.commercial_value:
                 barrier.commercial_value = random.randint(10000, 10000000000)
 
+
+            new_sectors_list = []
             if barrier.sectors:
                 sectors_list = get_sectors()
                 number_of_sectors = len(barrier.sectors)
-                new_sectors_list = []
                 i = 0
                 while i < number_of_sectors:
                     random_pick = random.choice(sectors_list)
@@ -236,14 +268,24 @@ class Command(BaseCommand):
                     i = i + 1
 
             barrier.save()
-
-    def _scramble_date_fields(self, barriers):
+    
+    @staticmethod
+    def scramble_barrier_date_fields(barriers):
         """
-        Function to get date fields and add or subtract days to mask
-        actual dates.
+        Function to scramble date fields of barrier and child objects
         """
-
-    def _anonymise_users_data(self, barriers):
+        for barrier in barriers:
+            barrier.estimated_resolution_date = _randomise_date(barrier.estimated_resolution_date)
+            barrier.proposed_estimated_resolution_date = _randomise_date(barrier.proposed_estimated_resolution_date)
+            barrier.proposed_estimated_resolution_date_created = _randomise_date(barrier.proposed_estimated_resolution_date_created)
+            barrier.reported_on = _randomise_date(barrier.reported_on)
+            barrier.status_date = _randomise_date(barrier.status_date)
+            barrier.priority_date = _randomise_date(barrier.priority_date)
+            barrier.start_date = _randomise_date(barrier.start_date)
+            barrier.save()
+    
+    @staticmethod
+    def anonymise_users_data(barriers):
         """
         Function to replace real staff with dummy users.
         We can replace with our own accounts as we know they will be in
@@ -262,16 +304,16 @@ class Command(BaseCommand):
 
             # Change fields which indicate which users have amended
             # details on the barrier
-            barrier.created_by_id = self._get_dummy_user()
+            barrier.created_by_id = _get_dummy_user()
             if barrier.modified_by_id:
-                barrier.modified_by_id = self._get_dummy_user()
+                barrier.modified_by_id = _get_dummy_user()
             if barrier.archived_by_id:
-                barrier.archived_by_id = self._get_dummy_user()
+                barrier.archived_by_id = _get_dummy_user()
             if barrier.unarchived_by_id:
-                barrier.unarchived_by_id = self._get_dummy_user()
+                barrier.unarchived_by_id = _get_dummy_user()
             if barrier.proposed_estimated_resolution_date_user_id:
                 barrier.proposed_estimated_resolution_date_user_id = (
-                    self._get_dummy_user()
+                    _get_dummy_user()
                 )
 
             barrier.save()
@@ -280,10 +322,11 @@ class Command(BaseCommand):
             # influence on the barrier in question.
             barrier_team_list = barrier.barrier_team.all()
             for team_member in barrier_team_list:
-                new_member_id = self._get_dummy_user()
+                new_member_id = _get_dummy_user()
                 TeamMember.objects.filter(id=team_member.id).update(user=new_member_id)
 
-    def _clear_barrier_report_session_data(self, barriers):
+    @staticmethod
+    def clear_barrier_report_session_data(barriers):
         """
         Function to clear any data stored in the new_report_session_data
         field which could hold sensitive data which has not yet
@@ -293,7 +336,8 @@ class Command(BaseCommand):
             barrier.new_report_session_data = ""
             barrier.save()
 
-    def _clear_barrier_notes(self, barriers):
+    @staticmethod
+    def anonymise_barrier_notes(barriers):
         """
         Function to clear any notes attached to the barrier
         """
@@ -302,7 +346,7 @@ class Command(BaseCommand):
 
             for note in barrier_notes:
                 note.text = Faker().paragraph(nb_sentences=4)
-                note_user = AuthUser.objects.get(id=self._get_dummy_user())
+                note_user = AuthUser.objects.get(id=_get_dummy_user())
                 note.created_by = note_user
                 note.modified_by = note_user
                 note.save()
@@ -323,18 +367,22 @@ class Command(BaseCommand):
                     #
                     #
                     #
-                    document.path = Faker().word() + "/" + Faker().word() + ".pdf"
+                    mock_filename = f"{Faker().word()}-{Faker().word()}.pdf"
+                    document.original_filename = mock_filename
+                    document.document.path = f"documents/2023-01-01/{mock_filename}"
+                    document.document.uploaded_on = _randomise_date(document.document.uploaded_on)
                     document.save()
+                    document.document.save()
 
-            # Mentions attcheched to the barrier also need clearing
-            barrier_mentions = Mention.objects.filter(id=barrier.pk)
-            for mention in barrier_mentions:
+            # Mentions attached to the barrier also need clearing
+            for mention in barrier.mention.all():
                 mention.email_used = "fake_email@fake_provider.com"
-                mention.recipient = self._get_dummy_user()
+                mention.recipient_id = _get_dummy_user()
                 mention.text = Faker().paragraph(nb_sentences=1)
                 mention.save()
 
-    def _anonymise_public_data(self, barriers):
+    @staticmethod
+    def anonymise_public_data(barriers):
         """
         Function to replace public fields with anonymous data
         Fields that need anonymising:
@@ -372,6 +420,13 @@ class Command(BaseCommand):
                         nb_sentences=4
                     )
 
+                # anonymising the dates
+                public_barrier.first_published_on = _randomise_date(public_barrier.first_published_on)
+                public_barrier.last_published_on = _randomise_date(public_barrier.last_published_on)
+                public_barrier.unpublished_on = _randomise_date(public_barrier.unpublished_on)
+                public_barrier.title_updated_on = _randomise_date(public_barrier.title_updated_on)
+                public_barrier.summary_updated_on = _randomise_date(public_barrier.summary_updated_on)
+
                 # Save the public barrier
                 public_barrier.save()
 
@@ -383,7 +438,8 @@ class Command(BaseCommand):
                     public_note.text = Faker().paragraph(nb_sentences=4)
                     public_note.save()
 
-    def _anonymise_progress_updates(self, barriers):
+    @staticmethod
+    def anonymise_progress_updates(barriers):
         """
         Function to randomise the content of progress updates
         Fields that need anonymising:
@@ -399,6 +455,8 @@ class Command(BaseCommand):
             for update in top_100_progress_updates:
                 update.update = Faker().paragraph(nb_sentences=4)
                 update.next_steps = Faker().paragraph(nb_sentences=4)
+                update.created_on = _randomise_date(update.created_on)
+                update.modified_on = _randomise_date(update.modified_on)
                 update.save()
 
             programme_fund_progress_updates = (
@@ -407,9 +465,12 @@ class Command(BaseCommand):
             for update in programme_fund_progress_updates:
                 update.milestones_and_deliverables = Faker().paragraph(nb_sentences=4)
                 update.expenditure = Faker().paragraph(nb_sentences=4)
+                update.created_on = _randomise_date(update.created_on)
+                update.modified_on = _randomise_date(update.modified_on)
                 update.save()
 
-    def _anonymise_next_step_items(self, barriers):
+    @staticmethod
+    def anonymise_next_step_items(barriers):
         """
         Function to randomise the content of next step items
         Fields that need anonymising:
@@ -421,9 +482,12 @@ class Command(BaseCommand):
             for next_step_item in next_step_items:
                 next_step_item.next_step_owner = Faker().word() + " " + Faker().word()
                 next_step_item.next_step_item = Faker().paragraph(nb_sentences=4)
+                next_step_item.start_date = _randomise_date(next_step_item.start_date)
+                next_step_item.completion_date = _randomise_date(next_step_item.completion_date)
                 next_step_item.save()
 
-    def _anonymise_top_priority_data(self, barriers):
+    @staticmethod
+    def anonymise_top_priority_data(barriers):
         """
         Function to anaonymise data held in BarrierTopPrioritySummary objects.
         Fields that need anonymising:
@@ -439,11 +503,14 @@ class Command(BaseCommand):
                 top_priority.top_priority_summary_text = Faker().paragraph(
                     nb_sentences=4
                 )
-                top_priority.created_by_id = self._get_dummy_user()
-                top_priority.modified_by_id = self._get_dummy_user()
+                top_priority.created_by_id = _get_dummy_user()
+                top_priority.modified_by_id = _get_dummy_user()
+                top_priority.created_on = _randomise_date(top_priority.created_on)
+                top_priority.modified_on = _randomise_date(top_priority.modified_on)
                 top_priority.save()
 
-    def _anonymise_valuation_assessments(self, barriers):
+    @staticmethod
+    def anonymise_valuation_assessments(barriers):
         """
         Function to check each type of valuation assessment and replace potentially
         sensitive data.
@@ -498,10 +565,11 @@ class Command(BaseCommand):
                 assessment.additional_information = Faker().paragraph(nb_sentences=2)
                 assessment.save()
 
-    def _anonymise_wto_profiles(self, barriers):  # noqa
+    @staticmethod
+    def anonymise_wto_profiles(barriers):
         """
-        Function to anaonymise data held in a barriers WTO profile.
-        These are all optional fields so we only need to replace ones that exist.
+        Function to anonymise data held in a barriers WTO profile.
+        These are all optional fields, so we only need to replace ones that exist.
         Fields that need anonymising:
             - committee_notified
             - committee_notification_link
@@ -527,8 +595,7 @@ class Command(BaseCommand):
                 if profile.case_number:
                     profile.case_number = Faker().word()
 
-                if profile.raised_date:
-                    profile.raised_date = profile.raised_date + timedelta(days=22)
+                profile.raised_date = _randomise_date(profile.raised_date)
                 if profile.committee_notification_document:
                     for document in profile.committee_notification_document.all():
                         document.path = Faker().word() + "/" + Faker().word() + ".pdf"
@@ -565,7 +632,8 @@ class Command(BaseCommand):
 
                 profile.save()
 
-    def _purge_barrier_history(self, barriers):  # noqa
+    @staticmethod
+    def purge_barrier_history(barriers):
         """
         Function to purge all barrier histories, and their related DB objects histories.
         """
@@ -592,10 +660,10 @@ class Command(BaseCommand):
                 ).delete()
 
     def handle(self, *args, **options):
-        logger.info("Running management command: Data Anonymise.")
+        self.stdout.write("Running management command: Data Anonymise.")
 
         if settings.DJANGO_ENV == "prod":
-            raise Exception(
+            raise AnonymiseProductionDataException(
                 "You cannot anonymise production data. You came this close to a very bad day."
             )
 
@@ -611,106 +679,84 @@ class Command(BaseCommand):
                 options["barrier_cutoff_date"], "%d-%m-%y"
             )
 
-            logger.info(
+            self.stdout.write(
                 "Getting barriers before date: " + str(options["barrier_cutoff_date"])
             )
             barriers = Barrier.objects.filter(
                 created_on__lte=barrier_cutoff_date_formatted,
             )
-            logger.info("Got " + str(barriers.count()) + " barriers.")
+            self.stdout.write("Got " + str(barriers.count()) + " barriers.")
 
         if options["barrier_id"]:
-            logger.info("Getting barrier " + str(options["barrier_id"]))
+            self.stdout.write("Getting barrier " + str(options["barrier_id"]))
             barriers = Barrier.objects.filter(id=options["barrier_id"])
-            logger.info("Got " + str(barriers.count()) + " barrier.")
+            self.stdout.write("Got " + str(barriers.count()) + " barrier.")
 
-        logger.info("Anonymising barrier text fields.")
-        self._anonymise_text_fields(barriers)
-        logger.info("Completed anonymising text data.")
+        if options.get("dry_run", False):
+            try:
+                with transaction.atomic():
+                    self.stdout.write("Running in dry run mode.")
+                    self.anonymise(barriers)
+                    raise AtomicTransactionException()
+            except AtomicTransactionException:
+                self.stdout.write("Anonymisation complete, rolling back changes")
+        else:
+            self.stdout.write("Running in live run mode. Changes will be committed to the database")
+            self.anonymise(barriers)
 
-        logger.info("Anonymising barrier fields more complex than simple text fields.")
-        self._anonymise_complex_barrier_fields(barriers)
-        logger.info("Completed anonymising more varied & complex data fields.")
+    def anonymise(self, barriers):
+        self.stdout.write("Starting anonymising barrier data.")
 
-        logger.info("Randomising the date fields across barrier and sub-objects.")
-        self._scramble_date_fields(barriers)
-        logger.info("Completed randomising dates.")
+        self.stdout.write("Randomising the date fields across barrier and sub-objects.")
+        self.scramble_barrier_date_fields(barriers)
+        self.stdout.write("Completed randomising dates.")
 
-        logger.info("Anonymising barrier user data.")
-        self._anonymise_users_data(barriers)
-        logger.info("Completed anonymising user data.")
+        self.stdout.write("Anonymising barrier text fields.")
+        self.anonymise_text_fields(barriers)
+        self.stdout.write("Completed anonymising text data.")
 
-        logger.info("Clearing report session data")
-        self._clear_barrier_report_session_data(barriers)
-        logger.info("Completed clearing report sesson data.")
+        self.stdout.write("Anonymising barrier fields more complex than simple text fields.")
+        self.anonymise_complex_barrier_fields(barriers)
+        self.stdout.write("Completed anonymising more varied & complex data fields.")
 
-        logger.info("Clearing barrier notes")
-        self._clear_barrier_notes(barriers)
-        logger.info("Completed removing barrier notes.")
+        self.stdout.write("Anonymising barrier user data.")
+        self.anonymise_users_data(barriers)
+        self.stdout.write("Completed anonymising user data.")
 
-        logger.info("Anonymising Public Barrier data.")
-        self._anonymise_public_data(barriers)
-        logger.info("Completed anonymising public barrier data.")
+        self.stdout.write("Clearing report session data")
+        self.clear_barrier_report_session_data(barriers)
+        self.stdout.write("Completed clearing report session data.")
 
-        logger.info("Anonymising Progress Update data.")
-        self._anonymise_progress_updates(barriers)
-        logger.info("Completed anonymising progress update data.")
+        self.stdout.write("Clearing barrier notes")
+        self.anonymise_barrier_notes(barriers)
+        self.stdout.write("Completed removing barrier notes.")
 
-        logger.info("Anonymising Next Step Items data.")
-        self._anonymise_next_step_items(barriers)
-        logger.info("Completed anonymising Next Step Items data.")
+        self.stdout.write("Anonymising Public Barrier data.")
+        self.anonymise_public_data(barriers)
+        self.stdout.write("Completed anonymising public barrier data.")
 
-        logger.info("Anonymising Top Priority data.")
-        self._anonymise_top_priority_data(barriers)
-        logger.info("Completed anonymising Top Priority data.")
+        self.stdout.write("Anonymising Progress Update data.")
+        self.anonymise_progress_updates(barriers)
+        self.stdout.write("Completed anonymising progress update data.")
 
-        logger.info("Anonymising valuation assessments data.")
-        self._anonymise_valuation_assessments(barriers)
-        logger.info("Completed anonymising valuation assessments data.")
+        self.stdout.write("Anonymising Next Step Items data.")
+        self.anonymise_next_step_items(barriers)
+        self.stdout.write("Completed anonymising Next Step Items data.")
 
-        logger.info("Anonymising WTO profile.")
-        self._anonymise_wto_profiles(barriers)
-        logger.info("Completed anonymising WTO profile.")
+        self.stdout.write("Anonymising Top Priority data.")
+        self.anonymise_top_priority_data(barriers)
+        self.stdout.write("Completed anonymising Top Priority data.")
 
-        logger.info("Deleting barrier history")
-        self._purge_barrier_history(barriers)
-        logger.info("Finished deleting barrier histories.")
+        self.stdout.write("Anonymising valuation assessments data.")
+        self.anonymise_valuation_assessments(barriers)
+        self.stdout.write("Completed anonymising valuation assessments data.")
 
-    # TODO:
-    #
-    # Date fields:
-    #
-    # Barrier
-    # estimated_resolution_date
-    # proposed_estimated_resolution_date
-    # proposed_estimated_resolution_date_created
-    # reported_on
-    # status_date
-    # priority_date
-    # start_date
-    #
-    # Document
-    # uploaded_on
-    #
-    # BarrierProgressUpdate
-    # created_on
-    # modified_on
-    #
-    # ProgrammeFundProgressUpdate:
-    # created_on
-    # modified_on
-    #
-    # PublicBarrier:
-    # first_published_on
-    # last_published_on
-    # unpublished_on
-    # title_updated_on
-    # summary_updated_on
-    #
-    # BarrierNextStepItem:
-    # start_date
-    # completion_date
-    #
-    # BarrierTopPrioritySummary:
-    # created_on
-    # modified_on
+        self.stdout.write("Anonymising WTO profile.")
+        self.anonymise_wto_profiles(barriers)
+        self.stdout.write("Completed anonymising WTO profile.")
+
+        self.stdout.write("Deleting barrier history")
+        self.purge_barrier_history(barriers)
+        self.stdout.write("Finished deleting barrier histories.")
+
+        self.stdout.write("Finished anonymising barrier data.")
