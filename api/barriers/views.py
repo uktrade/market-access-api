@@ -302,10 +302,12 @@ class BarrierList(generics.ListAPIView):
             order_by = ordering_config["order_on"]
             direction = ordering_config["direction"]
             if ordering_filter := ordering_config.get("ordering-filter", None):
-                subquery = Subquery(Barrier.objects.filter(id=OuterRef("id"), **ordering_filter).values_list(order_by))
-                queryset = queryset.annotate(
-                    ordering_value=subquery
+                subquery = Subquery(
+                    Barrier.objects.filter(
+                        id=OuterRef("id"), **ordering_filter
+                    ).values_list(order_by)
                 )
+                queryset = queryset.annotate(ordering_value=subquery)
             else:
                 queryset = queryset.annotate(ordering_value=F(order_by))
             if direction == "ascending":

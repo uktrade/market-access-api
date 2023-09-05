@@ -1,4 +1,3 @@
-from django.db.models import Q
 from model_utils import Choices
 
 BARRIER_TERMS = Choices(
