@@ -464,14 +464,14 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
     },
     "-value": {
         "ordering": "-valuation_assessments__impact",
-        "ordering-filter": Q(valuation_assessments__archived=False),
+        "ordering-filter": {"valuation_assessments__archived": False},
         "label": "Value (highest)",
         "order_on": "valuation_assessments__impact",
         "direction": "descending",
     },
     "value": {
         "ordering": "valuation_assessments__impact",
-        "ordering-filter": Q(valuation_assessments__archived=False),
+        "ordering-filter": {"valuation_assessments__archived": False},
         "label": "Value (lowest)",
         "order_on": "valuation_assessments__impact",
         "direction": "ascending",
@@ -490,14 +490,14 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
     },
     "-resolved": {
         "ordering": "-status_date",
-        "ordering-filter": Q(status=BarrierStatus.RESOLVED_IN_FULL),
+        "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (most recent)",
         "order_on": "status_date",
         "direction": "descending",
     },
     "resolved": {
         "ordering": "status_date",
-        "ordering-filter": Q(status=BarrierStatus.RESOLVED_IN_FULL),
+        "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (least recent)",
         "order_on": "status_date",
         "direction": "ascending",
