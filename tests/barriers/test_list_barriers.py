@@ -1112,10 +1112,14 @@ class TestListBarriers(APITestMixin, APITestCase):
             status_date="2021-01-01",
         )
         barrier_3 = BarrierFactory(
-            status=BarrierStatus.RESOLVED_IN_PART, reported_on="2021-01-01"
+            status=BarrierStatus.RESOLVED_IN_PART,
+            reported_on="2021-01-01",
+            status_date="2019-01-01",
         )
         barrier_4 = BarrierFactory(
-            status=BarrierStatus.RESOLVED_IN_PART, reported_on="2022-01-01"
+            status=BarrierStatus.RESOLVED_IN_PART,
+            reported_on="2022-01-01",
+            status_date="2019-01-01",
         )
 
         url = f'{reverse("list-barriers")}?ordering=-resolved'
