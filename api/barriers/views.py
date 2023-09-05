@@ -310,7 +310,7 @@ class BarrierList(generics.ListAPIView):
                 subquery = Subquery(
                     Barrier.objects.filter(
                         id=OuterRef("id"), **ordering_filter
-                    ).values_list(order_by)
+                    ).values_list(order_by, flat=True)
                 )
                 queryset = queryset.annotate(ordering_value=subquery)
             else:
