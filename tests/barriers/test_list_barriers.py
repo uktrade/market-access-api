@@ -367,19 +367,19 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert str(barrier.id) == response.data["results"][0]["id"]
 
     def test_list_barriers_sector_filter(self):
-        sector1 = "75debee7-a182-410e-bde0-3098e4f7b822"
+        sector1 = "9b38cecc-5f95-e211-a939-e4115bead28a"
         sector2 = "af959812-6095-e211-a939-e4115bead28a"
         BarrierFactory(sectors=[sector1])
         barrier = BarrierFactory(sectors=[sector2])
 
-        assert 2 == Barrier.objects.count()
+        assert Barrier.objects.count() == 2
 
         url = f'{reverse("list-barriers")}?sector={sector2}'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 1 == response.data["count"]
-        assert str(barrier.id) == response.data["results"][0]["id"]
+        assert response.data["count"] == 1
+        assert str(barrier.title) == response.data["results"][0]["title"]
 
     def test_list_barriers_filter_location_europe(self):
         """
