@@ -41,7 +41,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
     def setUpClass(cls):
         with open(
             os.path.join(
-                settings.ROOT_DIR, "api", "barriers", "fixtures", "barriers.json"
+                settings.ROOT_DIR, "api", "barriers", "fixtures", "barrier_priorities.json"
             ),
             "r",
         ) as barrier_fixture:
