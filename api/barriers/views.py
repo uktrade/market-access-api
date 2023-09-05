@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Count, F
+from django.db.models import Count, F, OuterRef, Subquery
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -291,6 +291,71 @@ class BarrierList(generics.ListAPIView):
     ordering = ("-reported_on",)
 
     def get_ordering_config(self):
+        BARRIER_SEARCH_ORDERING_CHOICES = {
+            "-reported": {
+                "ordering": "-reported_on",
+                "label": "Date reported (newest)",
+                "order_on": "reported_on",
+                "direction": "descending",
+            },
+            "reported": {
+                "ordering": "reported_on",
+                "label": "Date reported (oldest)",
+                "order_on": "reported_on",
+                "direction": "ascending",
+            },
+            "-updated": {
+                "ordering": "-modified_on",
+                "label": "Last updated (most recent)",
+                "order_on": "modified_on",
+                "direction": "descending",
+            },
+            "updated": {
+                "ordering": "modified_on",
+                "label": "Last updated (least recent)",
+                "order_on": "modified_on",
+                "direction": "ascending",
+            },
+            "-value": {
+                "ordering": "-valuation_assessments__impact",
+                "ordering-filter": Subquery(Barrier.objects.filter(id=OuterRef("pk"), valuation_assessments__archived=False).values_list("valuation_assessments__impact")),
+                "label": "Value (highest)",
+                "order_on": "valuation_assessments__impact",
+                "direction": "descending",
+            },
+            "value": {
+                "ordering": "valuation_assessments__impact",
+                "ordering-filter": Subquery(Barrier.objects.filter(id=OuterRef("pk"), valuation_assessments__archived=False).values_list("valuation_assessments__impact")),
+                "label": "Value (lowest)",
+                "order_on": "valuation_assessments__impact",
+                "direction": "ascending",
+            },
+            "-resolution": {
+                "ordering": "-estimated_resolution_date",
+                "label": "Estimated resolution date (most recent)",
+                "order_on": "estimated_resolution_date",
+                "direction": "descending",
+            },
+            "resolution": {
+                "ordering": "estimated_resolution_date",
+                "label": "Estimated resolution date (least recent)",
+                "order_on": "estimated_resolution_date",
+                "direction": "ascending",
+            },
+            "-resolved": {
+                "ordering": "-status_date",
+                "label": "Date resolved (most recent)",
+                "order_on": "status_date",
+                "direction": "descending",
+            },
+            "resolved": {
+                "ordering": "status_date",
+                "label": "Date resolved (least recent)",
+                "order_on": "status_date",
+                "direction": "ascending",
+            },
+        }
+
         order = self.request.query_params.get("ordering", None)
         ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(order, None)
         return ordering_config
@@ -303,7 +368,7 @@ class BarrierList(generics.ListAPIView):
             direction = ordering_config["direction"]
             if ordering_filter := ordering_config.get("ordering-filter", None):
                 queryset = queryset.annotate(
-                    ordering_value=(F(order_by) if ordering_filter else None)
+                    ordering_value=ordering_filter
                 )
             else:
                 queryset = queryset.annotate(ordering_value=F(order_by))
