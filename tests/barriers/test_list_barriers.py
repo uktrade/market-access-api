@@ -3,12 +3,14 @@ from unittest.mock import patch
 import pytest
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Q
+from django.test import RequestFactory
 from notifications_python_client.notifications import NotificationsAPIClient
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from api.barriers.models import Barrier
+from api.barriers.views import BarrierList
 from api.core.test_utils import APITestMixin, create_test_user
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, PublicBarrierStatus
@@ -1039,6 +1041,56 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
         assert response.data["results"][0]["id"] == str(barrier.id)
+
+    def test_filter_ordering(self):
+        """Tests that the barrier list is correctly ordered.
+
+        First by the chosen ordering parameter, then by the default ordering.
+        """
+        barrier = BarrierFactory(estimated_resolution_date="2020-01-01")
+        barrier_2 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2020-01-01"
+        )
+        barrier_3 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2021-01-01"
+        )
+        barrier_4 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2022-01-01"
+        )
+
+        url = f'{reverse("list-barriers")}?ordering=-resolution'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 4
+        assert response.data["results"][0]["id"] == str(barrier.id)
+        assert response.data["results"][1]["id"] == str(barrier_4.id)
+        assert response.data["results"][2]["id"] == str(barrier_3.id)
+        assert response.data["results"][3]["id"] == str(barrier_2.id)
+
+    def test_barrier_list_queryset(self):
+        """Tests that the barrier list queryset is correctly annotated."""
+        barrier = BarrierFactory(estimated_resolution_date="2020-01-01")
+        barrier_2 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2020-01-01"
+        )
+        barrier_3 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2021-01-01"
+        )
+        barrier_4 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2022-01-01"
+        )
+
+        url = f'{reverse("list-barriers")}?ordering=-resolution'
+        request = RequestFactory().get(url)
+        request.query_params = {"ordering": "-resolution"}
+        view = BarrierList()
+        view.request = request
+
+        qs = view.get_queryset()
+        annotations = [each.ordering_value for each in qs]
+        assert annotations[0].strftime("%Y-%m-%d") == barrier.estimated_resolution_date
+        assert not any(annotations[1:0])
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
