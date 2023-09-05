@@ -308,9 +308,9 @@ class BarrierList(generics.ListAPIView):
                 # so that we only annotate the rows which meet additional criteria. e.g. only economic assessment
                 # impact ratings that are NOT archived.
                 subquery = Subquery(
-                    queryset.filter(
-                        id=OuterRef("id"), **ordering_filter
-                    ).values_list(order_by, flat=True)
+                    queryset.filter(id=OuterRef("id"), **ordering_filter).values_list(
+                        order_by, flat=True
+                    )
                 )
                 queryset = queryset.annotate(ordering_value=subquery)
             else:
