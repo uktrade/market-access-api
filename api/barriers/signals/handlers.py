@@ -214,7 +214,11 @@ def send_new_valuation_notification(barrier):
             recipient = team_recipient.user
 
             personalisation_items = {}
-            personalisation_items["first_name"] = recipient.first_name
+            try:
+                personalisation_items["first_name"] = recipient.first_name
+            except AttributeError:
+                logger.warning("User has no first_name attribute")
+                continue
             personalisation_items["barrier_id"] = str(barrier.id)
             personalisation_items["barrier_code"] = str(barrier.code)
 
@@ -224,6 +228,7 @@ def send_new_valuation_notification(barrier):
                 template_id=template_id,
                 personalisation=personalisation_items,
             )
+
 
 
 def barrier_priority_approval_email_notification(sender, instance: Barrier, **kwargs):
