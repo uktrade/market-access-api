@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Count, F
+from django.db.models import Count, F, OuterRef, Subquery
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -290,26 +290,49 @@ class BarrierList(generics.ListAPIView):
     )
     ordering = ("-reported_on",)
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
+    def get_ordering_config(self):
         order = self.request.query_params.get("ordering", None)
         ordering_config = BARRIER_SEARCH_ORDERING_CHOICES.get(order, None)
-        if ordering_config is not None:
+        return ordering_config
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        ordering_config = self.get_ordering_config()
+        if ordering_config:
             order_by = ordering_config["order_on"]
             direction = ordering_config["direction"]
+            # now we annotate the queryset with a new column - 'ordering_value' - which will contain either the value of
+            # the field we want to order on, or a null if it doesn't exist
+            if ordering_filter := ordering_config.get("ordering-filter", None):
+                # if we have defined a filter for the ordering, we need to use a subquery to further filter the queryset
+                # so that we only annotate the rows which meet additional criteria. e.g. only economic assessment
+                # impact ratings that are NOT archived.
+                subquery = Subquery(
+                    queryset.filter(id=OuterRef("id"), **ordering_filter)
+                    .distinct()
+                    .values_list(order_by, flat=True)
+                )
+                queryset = queryset.annotate(ordering_value=subquery)
+            else:
+                queryset = queryset.annotate(ordering_value=F(order_by))
+
+            # once we have annotated the queryset with the ordering_value, we can order by that column first, then those
+            # rows which have null which be ordered by reported_on
             if direction == "ascending":
                 ordered_queryset = queryset.order_by(
-                    F(order_by).asc(nulls_last=True), "-reported_on"
-                ).distinct()
+                    F("ordering_value").asc(nulls_last=True), "-reported_on"
+                )
             else:
                 ordered_queryset = queryset.order_by(
-                    F(order_by).desc(nulls_last=True), "-reported_on"
-                ).distinct()
+                    F("ordering_value").desc(nulls_last=True), "-reported_on"
+                )
         else:
             ordered_queryset = queryset.order_by(
                 "-reported_on",
             )
-        return ordered_queryset
+
+        # finally, remove duplicates from the queryset
+        return ordered_queryset.distinct()
 
     def is_my_barriers_search(self):
         if self.request.GET.get("user") == "1":

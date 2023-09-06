@@ -3,16 +3,22 @@ from unittest.mock import patch
 import pytest
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Q
+from django.test import RequestFactory
 from notifications_python_client.notifications import NotificationsAPIClient
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from api.barriers.models import Barrier
+from api.barriers.views import BarrierList
 from api.core.test_utils import APITestMixin, create_test_user
 from api.history.models import CachedHistoryItem
-from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, PublicBarrierStatus
-from api.metadata.models import BarrierPriority, Organisation
+from api.metadata.constants import (
+    TOP_PRIORITY_BARRIER_STATUS,
+    BarrierStatus,
+    PublicBarrierStatus,
+)
+from api.metadata.models import BarrierPriority, ExportType, Organisation
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanStakeholderFactory,
@@ -361,19 +367,19 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert str(barrier.id) == response.data["results"][0]["id"]
 
     def test_list_barriers_sector_filter(self):
-        sector1 = "75debee7-a182-410e-bde0-3098e4f7b822"
+        sector1 = "9b38cecc-5f95-e211-a939-e4115bead28a"
         sector2 = "af959812-6095-e211-a939-e4115bead28a"
         BarrierFactory(sectors=[sector1])
         barrier = BarrierFactory(sectors=[sector2])
 
-        assert 2 == Barrier.objects.count()
+        assert Barrier.objects.count() == 2
 
         url = f'{reverse("list-barriers")}?sector={sector2}'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert 1 == response.data["count"]
-        assert str(barrier.id) == response.data["results"][0]["id"]
+        assert response.data["count"] == 1
+        assert str(barrier.title) == response.data["results"][0]["title"]
 
     def test_list_barriers_filter_location_europe(self):
         """
@@ -498,6 +504,52 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert 2 == response.data["count"]
         barrier_ids = [b["id"] for b in response.data["results"]]
         assert {str(barrier2.id), str(barrier3.id)} == set(barrier_ids)
+
+    def test_list_barriers_text_filter_based_on_barrier_export_description(self):
+        barrier1 = BarrierFactory(export_description="Wibble blockade")
+        BarrierFactory(export_description="Wobble blockade")
+        barrier3 = BarrierFactory(export_description="Look wibble in the middle")
+
+        assert Barrier.objects.count() == 3
+
+        url = f'{reverse("list-barriers")}?search=wibble'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+        barrier_ids = [b["id"] for b in response.data["results"]]
+        assert {str(barrier1.id), str(barrier3.id)} == set(barrier_ids)
+
+    def test_list_barriers_text_filter_based_on_barrier_companies(self):
+        barrier = BarrierFactory()
+
+        barrier.companies = [
+            {"id": "10876910", "name": "TEST COMPANY 3 DO NOT FORM LTD"},
+            {"id": "13286009", "name": "AGENT SUMMARY LIMITED"},
+        ]
+
+        barrier.save()
+
+        barrier2 = BarrierFactory()
+
+        barrier2.companies = [
+            {"id": "10", "name": "Springfield Nuclear Power Plant LTD"},
+        ]
+        barrier2.save()
+
+        url = f'{reverse("list-barriers")}?search=test company 3'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
+        url = f'{reverse("list-barriers")}?search=agent summary'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
 
     @pytest.mark.skip("""Failing on CircleCI for unknown reasons.""")
     def test_list_barriers_text_filter_based_on_public_id(self):
@@ -968,6 +1020,122 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert removal_pending_response.status_code == status.HTTP_200_OK
         removal_pending_serialised_data = removal_pending_response.data
         assert len(removal_pending_serialised_data["results"]) == 1
+
+    def test_export_types_filter(self):
+        barrier = BarrierFactory()
+        export_type1 = ExportType.objects.first()
+        export_type2 = ExportType.objects.last()
+        barrier.export_types.add(*(export_type1, export_type2))
+        barrier.save()
+
+        url = f'{reverse("list-barriers")}?export_types={export_type1.name},{export_type2.name}'
+
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
+    def test_start_date_filter(self):
+        barrier = BarrierFactory(start_date="2020-01-01")
+
+        url = f'{reverse("list-barriers")}?start_date=2019-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
+        assert response.data["results"][0]["id"] == str(barrier.id)
+
+    def test_filter_ordering(self):
+        """Tests that the barrier list is correctly ordered.
+
+        First by the chosen ordering parameter, then by the default ordering.
+        """
+        barrier = BarrierFactory(estimated_resolution_date="2020-01-01")
+        barrier_2 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2020-01-01"
+        )
+        barrier_3 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2021-01-01"
+        )
+        barrier_4 = BarrierFactory(
+            estimated_resolution_date=None, reported_on="2022-01-01"
+        )
+
+        url = f'{reverse("list-barriers")}?ordering=-resolution'
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 4
+        assert response.data["results"][0]["id"] == str(barrier.id)
+        assert response.data["results"][1]["id"] == str(barrier_4.id)
+        assert response.data["results"][2]["id"] == str(barrier_3.id)
+        assert response.data["results"][3]["id"] == str(barrier_2.id)
+
+    def test_barrier_list_queryset(self):
+        """Tests that the barrier list queryset is correctly annotated."""
+        barrier = BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_FULL,
+            status_date="2021-01-01",
+        )
+        barrier_2 = BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_FULL,
+            status_date="2020-01-01",
+        )
+        BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_PART,
+            status_date="2020-01-01",
+        )
+        BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_PART,
+            status_date="2020-01-01",
+        )
+
+        url = f'{reverse("list-barriers")}?ordering=-resolved'
+        request = RequestFactory().get(url)
+        request.query_params = {"ordering": "-resolved"}
+        view = BarrierList()
+        view.request = request
+
+        qs = view.get_queryset()
+        annotations = [each.ordering_value for each in qs]
+
+        # the first row returned should be annotated
+        assert annotations[0].strftime("%Y-%m-%d") == barrier.status_date
+        assert annotations[1].strftime("%Y-%m-%d") == barrier_2.status_date
+
+        # the rest shouldn't be, as they do not have an estimated resolution date
+        assert not any(annotations[2:0])
+
+    def test_additional_ordering_filters(self):
+        """Tests that additional order filters are applied for certain ordering parameters."""
+        barrier = BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_FULL,
+            status_date="2020-01-01",
+        )
+        barrier_2 = BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_FULL,
+            status_date="2021-01-01",
+        )
+        barrier_3 = BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_PART,
+            reported_on="2021-01-01",
+            status_date="2019-01-01",
+        )
+        barrier_4 = BarrierFactory(
+            status=BarrierStatus.RESOLVED_IN_PART,
+            reported_on="2022-01-01",
+            status_date="2019-01-01",
+        )
+
+        url = f'{reverse("list-barriers")}?ordering=-resolved'
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 4
+        assert response.data["results"][0]["id"] == str(barrier_2.id)
+        assert response.data["results"][1]["id"] == str(barrier.id)
+        assert response.data["results"][2]["id"] == str(barrier_4.id)
+        assert response.data["results"][3]["id"] == str(barrier_3.id)
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):

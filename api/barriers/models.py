@@ -1313,7 +1313,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         ex: priority=UNKNOWN or priority=UNKNOWN,LOW
     text: combination custom search across multiple fields.
         Searches for reference code,
-        barrier title and barrier summary
+        barrier title, company names, export description and barrier summary
     """
 
     reported_on = django_filters.DateFromToRangeFilter("reported_on")
@@ -1363,6 +1363,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     commercial_value_estimate = django_filters.BaseInFilter(
         method="commercial_value_estimate_filter"
     )
+    export_types = django_filters.BaseInFilter(method="export_types_filter")
+    start_date = django_filters.BaseInFilter(method="start_date_filter")
 
     class Meta:
         model = Barrier
@@ -1380,7 +1382,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     def __init__(self, *args, **kwargs):
         if kwargs.get("user"):
             self.user = kwargs.pop("user")
-        return super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_user(self):
         if hasattr(self, "user"):
@@ -1388,12 +1390,14 @@ class BarrierFilterSet(django_filters.FilterSet):
         if self.request is not None:
             return self.request.user
 
-    def sector_filter(self, queryset, name, value):
+    def sector_filter(self, queryset, name, value: List[str]):
         """
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
         """
-        return queryset.filter(Q(all_sectors=True) | Q(sectors__overlap=value))
+        return queryset.filter(
+            Q(all_sectors=True) | Q(main_sector__in=value) | Q(sectors__overlap=value)
+        ).distinct()
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """
@@ -1441,7 +1445,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.filter(priority__in=priorities)
 
     def progress_status_filter(self, queryset, name, value):
-        # First query to run will will filter out each unique Barriers historical updates, leaving the latest entries
+        # First query to run will filter out each unique Barriers historical updates, leaving the latest entries
         # the query wrapping it will cut out all the progress_status's that don't match the search query
         delivery_confidences = BarrierProgressUpdate.objects.filter(
             id__in=BarrierProgressUpdate.objects.distinct("barrier_id")
@@ -1459,7 +1463,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         active_action_plans = ActionPlan.objects.get_active_action_plans().all()
 
-        return queryset.filter(action_plan__in=active_action_plans).distinct()
+        return queryset.filter(action_plan__in=active_action_plans)
 
     def clean_location_value(self, value):  # noqa: C901
         """
@@ -1566,11 +1570,29 @@ class BarrierFilterSet(django_filters.FilterSet):
             full text search on summary
             partial search on title
         """
-        return queryset.annotate(search=SearchVector("summary"),).filter(
+
+        MAX_DEPTH_COUNT = 20
+
+        # Assuming the name field can appear in any of the nested dicts inside companies/related_organisations
+        company_queries = []
+        for i in range(MAX_DEPTH_COUNT):
+            company_queries.append(Q(**{f"companies__{i}__name__icontains": value}))
+            company_queries.append(
+                Q(**{f"related_organisations__{i}__name__icontains": value})
+            )
+
+        combined_company_related_organisation_query = Q()
+        for query in company_queries:
+            combined_company_related_organisation_query |= query
+
+        return queryset.annotate(
+            search=SearchVector("summary", "export_description"),
+        ).filter(
             Q(code__icontains=value)
             | Q(search=value)
             | Q(title__icontains=value)
             | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
+            | Q(combined_company_related_organisation_query)
         )
 
     def my_barriers(self, queryset, name, value):
@@ -1583,19 +1605,15 @@ class BarrierFilterSet(django_filters.FilterSet):
     def team_barriers(self, queryset, name, value):
         if value:
             current_user = self.get_user()
-            return (
-                queryset.filter(
-                    Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
-                )
-                .exclude(created_by=current_user)
-                .distinct()
-            )
+            return queryset.filter(
+                Q(barrier_team__user=current_user) & Q(barrier_team__archived=False)
+            ).exclude(created_by=current_user)
         return queryset
 
     def member_filter(self, queryset, name, value):
         if value:
             member = get_object_or_404(collaboration_models.TeamMember, pk=value)
-            return queryset.filter(barrier_team__user=member.user).distinct()
+            return queryset.filter(barrier_team__user=member.user)
         return queryset
 
     def public_view_filter(self, queryset, name, value):
@@ -1653,7 +1671,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset & public_queryset
 
     def tags_filter(self, queryset, name, value):
-        return queryset.filter(tags__in=value).distinct()
+        return queryset.filter(tags__in=value)
 
     def resolved_date_filter(self, queryset, name, value):
         dates_list = value.split(",")
@@ -1739,50 +1757,35 @@ class BarrierFilterSet(django_filters.FilterSet):
         assessment_queryset = queryset.none()
 
         if "with" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__archived=False,
-                ).distinct()
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__archived=False,
             )
         if "without" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__isnull=True,
-                ).distinct()
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__isnull=True,
             )
         if "ready_for_approval" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__archived=False,
-                    economic_assessments__ready_for_approval=True,
-                    economic_assessments__approved__isnull=True,
-                ).distinct()
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__archived=False,
+                economic_assessments__ready_for_approval=True,
+                economic_assessments__approved__isnull=True,
             )
 
-        return queryset.distinct() & assessment_queryset
+        return queryset & assessment_queryset
 
     def economic_impact_assessment_filter(self, queryset, name, value):
         assessment_queryset = queryset.none()
 
         if "with" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__economic_impact_assessments__archived=False,
-                ).distinct()
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__economic_impact_assessments__archived=False,
             )
         if "without" in value:
-            assessment_queryset = (
-                assessment_queryset
-                | queryset.filter(
-                    economic_assessments__economic_impact_assessments__isnull=True,
-                ).distinct()
+            assessment_queryset = assessment_queryset | queryset.filter(
+                economic_assessments__economic_impact_assessments__isnull=True,
             )
 
-        return queryset.distinct() & assessment_queryset
+        return queryset & assessment_queryset
 
     def commodity_code_filter(self, queryset, name, value):
         filters = Q()
@@ -1790,7 +1793,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             filters &= ~Q(commodities=None)
         if "without" in value:
             filters &= Q(commodities=None)
-        return queryset.filter(filters).distinct()
+        return queryset.filter(filters)
 
     def commercial_value_estimate_filter(self, queryset, name, value):
         filters = Q()
@@ -1798,7 +1801,16 @@ class BarrierFilterSet(django_filters.FilterSet):
             filters &= ~Q(commercial_value=None)
         if "without" in value:
             filters &= Q(commercial_value=None)
-        return queryset.filter(filters).distinct()
+        return queryset.filter(filters)
+
+    def export_types_filter(self, queryset, name, value: List[str]):
+        # Filtering the queryset based on the selected export types
+        return queryset.filter(export_types__name__in=value)
+
+    def start_date_filter(self, queryset, name, value):
+        start_date, end_date = value
+        # Filtering the queryset based on the start_date range
+        return queryset.filter(start_date__range=(start_date, end_date))
 
 
 class PublicBarrierFilterSet(django_filters.FilterSet):
