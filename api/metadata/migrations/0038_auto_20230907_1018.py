@@ -5,10 +5,10 @@ from django.db import migrations
 def create_scoping_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
     BarrierTag.objects.create(
-        order=12,
+        order=11,
         title="Scoping",
         show_at_reporting=True,
-        id=12,
+        id=11,
     )
 
 def delete_scoping_tag(apps, schema_editor):
