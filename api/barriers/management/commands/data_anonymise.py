@@ -493,8 +493,7 @@ class Command(BaseCommand):
                     public_barrier=public_barrier.id
                 )
                 for public_note in public_barrier_notes:
-                    public_note.text = Faker().paragraph(nb_sentences=4)
-                    public_note.save()
+                    public_note.update(text=Faker().paragraph(nb_sentences=4))
 
     @staticmethod
     def anonymise_progress_updates(barriers):
