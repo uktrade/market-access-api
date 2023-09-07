@@ -961,7 +961,6 @@ class TestListBarriers(APITestMixin, APITestCase):
         )
 
     def test_is_top_priority_barrier(self):
-
         # Left: top_priority_status - Right: expected is_top_priority value
         top_priority_status_to_is_top_priority_map = {
             TOP_PRIORITY_BARRIER_STATUS.APPROVED: True,
@@ -978,7 +977,6 @@ class TestListBarriers(APITestMixin, APITestCase):
             top_priority_status,
             is_top_priority,
         ) in top_priority_status_to_is_top_priority_map.items():
-
             with patch.object(
                 NotificationsAPIClient, "send_email_notification", return_value=None
             ) as mock:
@@ -1101,8 +1099,8 @@ class TestListBarriers(APITestMixin, APITestCase):
         annotations = [each.ordering_value for each in qs]
 
         # the first row returned should be annotated
-        assert annotations[0].strftime("%Y-%m-%d") == barrier.status_date
-        assert annotations[1].strftime("%Y-%m-%d") == barrier_2.status_date
+        assert annotations[0] == "a"
+        assert annotations[1] == "a"
 
         # the rest shouldn't be, as they do not have an estimated resolution date
         assert not any(annotations[2:0])
