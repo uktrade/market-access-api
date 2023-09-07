@@ -398,22 +398,9 @@ class Command(BaseCommand):
 
                 # Documents attached to notes could have personal identifiers in the filepath.
                 for document in note.documents.all():
-                    #
-                    #
-                    #
-                    #
-                    #
-                    # NEED TO TEST THIS ON UAT/DEV
-                    # Upload file on specific barrier, do it on note and WTO page.
-                    # Run script on this one specific barrier.
-                    # Check filenames are different.
-                    #
-                    #
-                    #
-                    #
-                    #
                     mock_filename = f"{Faker().word()}-{Faker().word()}.pdf"
                     document.original_filename = mock_filename
+                    mock_filename = f"{Faker().word()}-{Faker().word()}.pdf"
                     document.document.path = f"documents/2023-01-01/{mock_filename}"
                     document.document.uploaded_on = _randomise_date(
                         document.document.uploaded_on
