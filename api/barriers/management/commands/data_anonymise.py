@@ -214,8 +214,7 @@ class Command(BaseCommand):
             if barrier.export_description:
                 barrier.export_description = Faker().paragraph(nb_sentences=2)
 
-            with DisableSignals():
-                barrier.save()
+            barrier.save()
 
     @staticmethod
     def anonymise_complex_barrier_fields(barriers):  # noqa
@@ -308,8 +307,7 @@ class Command(BaseCommand):
                     barrier.tags.add(random_pick)
                     i = i + 1
 
-            with DisableSignals():
-                barrier.save()
+            barrier.save()
 
     @staticmethod
     def scramble_barrier_date_fields(barriers):
@@ -331,8 +329,7 @@ class Command(BaseCommand):
             barrier.priority_date = _randomise_date(barrier.priority_date)
             barrier.start_date = _randomise_date(barrier.start_date)
 
-            with DisableSignals():
-                barrier.save()
+            barrier.save()
 
     @staticmethod
     def anonymise_users_data(barriers):
@@ -364,8 +361,7 @@ class Command(BaseCommand):
             if barrier.proposed_estimated_resolution_date_user_id:
                 barrier.proposed_estimated_resolution_date_user_id = _get_dummy_user()
 
-            with DisableSignals():
-                barrier.save()
+            barrier.save()
    
    # Change users who are listed as having a stake or
             # influence on the barrier in question.
@@ -383,8 +379,7 @@ class Command(BaseCommand):
         """
         for barrier in barriers:
             barrier.new_report_session_data = ""
-            with DisableSignals():
-                barrier.save()
+            barrier.save()
 
     @staticmethod
     def anonymise_barrier_notes(barriers):
@@ -399,8 +394,7 @@ class Command(BaseCommand):
                 note_user = AuthUser.objects.get(id=_get_dummy_user())
                 note.created_by = note_user
                 note.modified_by = note_user
-                with DisableSignals():
-                    note.save()
+                note.save()
 
                 # Documents attached to notes could have personal identifiers in the filepath.
                 for document in note.documents.all():
@@ -433,8 +427,7 @@ class Command(BaseCommand):
                 mention.recipient_id = _get_dummy_user()
                 mention.text = Faker().paragraph(nb_sentences=1)
 
-                with DisableSignals():
-                    mention.save()
+                mention.save()
 
     @staticmethod
     def anonymise_public_data(barriers):
@@ -493,8 +486,7 @@ class Command(BaseCommand):
                 )
 
                 # Save the public barrier
-                with DisableSignals():
-                    public_barrier.save()
+                public_barrier.save()
 
                 # Find all the public barrier notes and clear the text therein
                 public_barrier_notes = PublicBarrierNote.objects.filter(
@@ -777,9 +769,8 @@ class Command(BaseCommand):
     def anonymise(self, barriers):
         self.stdout.write("Starting anonymising barrier data.")
 
-        # let's mock the GOV.NOTIFY API client, so we don't send out emails as part of signal handlers when we save
-        # barriers
-        with patch("notifications_python_client.notifications.NotificationsAPIClient") as mocked_client:
+        # disabling signals so GOV.NOTIFY isn't called as part of a post_save signal
+        with DisableSignals():
             self.stdout.write("Randomising the date fields across barrier and sub-objects.")
             self.scramble_barrier_date_fields(barriers)
             self.stdout.write("Completed randomising dates.")
