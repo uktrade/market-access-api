@@ -463,14 +463,14 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
     },
     "-value": {
         "ordering": "-valuation_assessments__impact",
-        "ordering-filter": {"valuation_assessments__archived": False},
+        "ordering-filter": {"valuation_assessments__archived": True},
         "label": "Value (highest)",
         "order_on": "valuation_assessments__impact",
         "direction": "descending",
     },
     "value": {
         "ordering": "valuation_assessments__impact",
-        "ordering-filter": {"valuation_assessments__archived": False},
+        "ordering-filter": {"valuation_assessments__archived": True},
         "label": "Value (lowest)",
         "order_on": "valuation_assessments__impact",
         "direction": "ascending",

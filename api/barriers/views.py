@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Count, F, OuterRef, Subquery
+from django.db.models import Count, F, OuterRef, Subquery, Case, When, Value, CharField
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -51,6 +51,7 @@ from api.interactions.models import Interaction
 from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
     BARRIER_SEARCH_ORDERING_CHOICES,
+    BarrierStatus,
     PublicBarrierStatus,
 )
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
@@ -301,35 +302,82 @@ class BarrierList(generics.ListAPIView):
         if ordering_config:
             order_by = ordering_config["order_on"]
             direction = ordering_config["direction"]
-            # now we annotate the queryset with a new column - 'ordering_value' - which will contain either the value of
-            # the field we want to order on, or a null if it doesn't exist
-            if ordering_filter := ordering_config.get("ordering-filter", None):
-                # if we have defined a filter for the ordering, we need to use a subquery to further filter the queryset
-                # so that we only annotate the rows which meet additional criteria. e.g. only economic assessment
-                # impact ratings that are NOT archived.
-                subquery = Subquery(
-                    queryset.filter(id=OuterRef("id"), **ordering_filter)
-                    .distinct()
-                    .values_list(order_by, flat=True)
+            ordering_filter = ordering_config.get("ordering-filter", None)
+            logger.critical("**********   Additional filter: ")
+            logger.critical(ordering_filter)
+            logger.critical("count before annotation")
+            logger.critical(queryset.count())
+            logger.critical(
+                queryset.values(
+                    "title",
+                    "valuation_assessments__impact",
+                    "valuation_assessments__archived",
                 )
-                queryset = queryset.annotate(ordering_value=subquery)
+            )
+            # now we annotate the queryset with a new column - 'ordering_value' - which will contain the sort
+            # order of the field we want to order on. We also use this column to implement a filter to the
+            # queryset assigning 'c' value to entries(duplicates) we want to exclude from the final results
+            if ordering_filter:
+                logger.critical("**********   Additional filter needed")
+                # Here apply the custom logic to the extaordinary search orders e.g. barriers with multiple impact
+                # assesments and sorting on resolution date
+                if order_by == "valuation_assessments__impact":
+                    queryset = queryset.annotate(
+                        ordering_value=Case(
+                            When(
+                                valuation_assessments__archived=False, then=Value("a")
+                            ),
+                            When(valuation_assessments__archived=True, then=Value("c")),
+                            default=Value("b"),
+                            output_field=CharField(),
+                        )
+                    )
+                elif order_by == "status_date":
+                    queryset = queryset.annotate(
+                        ordering_value=Case(
+                            When(
+                                status=BarrierStatus.RESOLVED_IN_FULL, then=Value("a")
+                            ),
+                            default=Value("b"),
+                            output_field=CharField(),
+                        )
+                    )
+
+                logger.critical("count after annotation")
+                logger.critical(queryset.count())
+                # Implement Final filter to exclude duplicates where the search option implies extra
+                # filters e.g. Barriers my have multiple impact assesements which could be archived
+                # therefore would result in duplicates
+                logger.critical(ordering_filter)
+                # queryset = queryset.filter(**ordering_filter)
+                queryset = queryset.exclude(ordering_value="c")
+                logger.critical("count after annotation then filter")
+                logger.critical(queryset.count())
             else:
-                queryset = queryset.annotate(ordering_value=F(order_by))
+                queryset = queryset.annotate(
+                    ordering_value=Value("b", output_field=CharField())
+                )
 
             # once we have annotated the queryset with the ordering_value, we can order by that column first, then those
             # rows which have null which be ordered by reported_on
             if direction == "ascending":
                 ordered_queryset = queryset.order_by(
-                    F("ordering_value").asc(nulls_last=True), "-reported_on"
+                    "ordering_value",
+                    F(order_by).asc(nulls_last=True),
+                    "-reported_on",
                 )
             else:
                 ordered_queryset = queryset.order_by(
-                    F("ordering_value").desc(nulls_last=True), "-reported_on"
+                    "ordering_value",
+                    F(order_by).desc(nulls_last=True),
+                    "-reported_on",
                 )
         else:
             ordered_queryset = queryset.order_by(
                 "-reported_on",
             )
+
+        logger.critical(ordered_queryset.distinct().count())
 
         # finally, remove duplicates from the queryset
         return ordered_queryset.distinct()
