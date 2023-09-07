@@ -1,6 +1,7 @@
 import logging
 import random
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -739,58 +740,61 @@ class Command(BaseCommand):
     def anonymise(self, barriers):
         self.stdout.write("Starting anonymising barrier data.")
 
-        self.stdout.write("Randomising the date fields across barrier and sub-objects.")
-        self.scramble_barrier_date_fields(barriers)
-        self.stdout.write("Completed randomising dates.")
+        # let's mock the GOV.NOTIFY API client, so we don't send out emails as part of signal handlers when we save
+        # barriers
+        with patch("notifications_python_client.notifications.NotificationsAPIClient") as mocked_client:
+            self.stdout.write("Randomising the date fields across barrier and sub-objects.")
+            self.scramble_barrier_date_fields(barriers)
+            self.stdout.write("Completed randomising dates.")
 
-        self.stdout.write("Anonymising barrier text fields.")
-        self.anonymise_text_fields(barriers)
-        self.stdout.write("Completed anonymising text data.")
+            self.stdout.write("Anonymising barrier text fields.")
+            self.anonymise_text_fields(barriers)
+            self.stdout.write("Completed anonymising text data.")
 
-        self.stdout.write(
-            "Anonymising barrier fields more complex than simple text fields."
-        )
-        self.anonymise_complex_barrier_fields(barriers)
-        self.stdout.write("Completed anonymising more varied & complex data fields.")
+            self.stdout.write(
+                "Anonymising barrier fields more complex than simple text fields."
+            )
+            self.anonymise_complex_barrier_fields(barriers)
+            self.stdout.write("Completed anonymising more varied & complex data fields.")
 
-        self.stdout.write("Anonymising barrier user data.")
-        self.anonymise_users_data(barriers)
-        self.stdout.write("Completed anonymising user data.")
+            self.stdout.write("Anonymising barrier user data.")
+            self.anonymise_users_data(barriers)
+            self.stdout.write("Completed anonymising user data.")
 
-        self.stdout.write("Clearing report session data")
-        self.clear_barrier_report_session_data(barriers)
-        self.stdout.write("Completed clearing report session data.")
+            self.stdout.write("Clearing report session data")
+            self.clear_barrier_report_session_data(barriers)
+            self.stdout.write("Completed clearing report session data.")
 
-        self.stdout.write("Clearing barrier notes")
-        self.anonymise_barrier_notes(barriers)
-        self.stdout.write("Completed removing barrier notes.")
+            self.stdout.write("Clearing barrier notes")
+            self.anonymise_barrier_notes(barriers)
+            self.stdout.write("Completed removing barrier notes.")
 
-        self.stdout.write("Anonymising Public Barrier data.")
-        self.anonymise_public_data(barriers)
-        self.stdout.write("Completed anonymising public barrier data.")
+            self.stdout.write("Anonymising Public Barrier data.")
+            self.anonymise_public_data(barriers)
+            self.stdout.write("Completed anonymising public barrier data.")
 
-        self.stdout.write("Anonymising Progress Update data.")
-        self.anonymise_progress_updates(barriers)
-        self.stdout.write("Completed anonymising progress update data.")
+            self.stdout.write("Anonymising Progress Update data.")
+            self.anonymise_progress_updates(barriers)
+            self.stdout.write("Completed anonymising progress update data.")
 
-        self.stdout.write("Anonymising Next Step Items data.")
-        self.anonymise_next_step_items(barriers)
-        self.stdout.write("Completed anonymising Next Step Items data.")
+            self.stdout.write("Anonymising Next Step Items data.")
+            self.anonymise_next_step_items(barriers)
+            self.stdout.write("Completed anonymising Next Step Items data.")
 
-        self.stdout.write("Anonymising Top Priority data.")
-        self.anonymise_top_priority_data(barriers)
-        self.stdout.write("Completed anonymising Top Priority data.")
+            self.stdout.write("Anonymising Top Priority data.")
+            self.anonymise_top_priority_data(barriers)
+            self.stdout.write("Completed anonymising Top Priority data.")
 
-        self.stdout.write("Anonymising valuation assessments data.")
-        self.anonymise_valuation_assessments(barriers)
-        self.stdout.write("Completed anonymising valuation assessments data.")
+            self.stdout.write("Anonymising valuation assessments data.")
+            self.anonymise_valuation_assessments(barriers)
+            self.stdout.write("Completed anonymising valuation assessments data.")
 
-        self.stdout.write("Anonymising WTO profile.")
-        self.anonymise_wto_profiles(barriers)
-        self.stdout.write("Completed anonymising WTO profile.")
+            self.stdout.write("Anonymising WTO profile.")
+            self.anonymise_wto_profiles(barriers)
+            self.stdout.write("Completed anonymising WTO profile.")
 
-        self.stdout.write("Deleting barrier history")
-        self.purge_barrier_history(barriers)
-        self.stdout.write("Finished deleting barrier histories.")
+            self.stdout.write("Deleting barrier history")
+            self.purge_barrier_history(barriers)
+            self.stdout.write("Finished deleting barrier histories.")
 
         self.stdout.write("Finished anonymising barrier data.")
