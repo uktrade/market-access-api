@@ -1,5 +1,6 @@
 import logging
 import random
+from collections import defaultdict
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
@@ -7,6 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.db import transaction
+from django.db.models import signals
 from faker import Faker
 
 from api.assessment.models import (
@@ -44,6 +46,31 @@ SAFE_ENVIRONMENTS = [
     "test",
 ]  # the environments we can run this command on
 
+class DisableSignals(object):
+    def __init__(self, disabled_signals=None):
+        self.stashed_signals = defaultdict(list)
+        self.disabled_signals = disabled_signals or [
+            signals.pre_init, signals.post_init,
+            signals.pre_save, signals.post_save,
+            signals.pre_delete, signals.post_delete,
+            signals.pre_migrate, signals.post_migrate,
+        ]
+
+    def __enter__(self):
+        for signal in self.disabled_signals:
+            self.disconnect(signal)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        for signal in list(self.stashed_signals):
+            self.reconnect(signal)
+
+    def disconnect(self, signal):
+        self.stashed_signals[signal] = signal.receivers
+        signal.receivers = []
+
+    def reconnect(self, signal):
+        signal.receivers = self.stashed_signals.get(signal, [])
+        del self.stashed_signals[signal]
 
 def _get_dummy_user():
     # Development environments can use placeholder IDs that exist on those DBs
@@ -187,7 +214,8 @@ class Command(BaseCommand):
             if barrier.export_description:
                 barrier.export_description = Faker().paragraph(nb_sentences=2)
 
-            barrier.save()
+            with DisableSignals():
+                barrier.save()
 
     @staticmethod
     def anonymise_complex_barrier_fields(barriers):  # noqa
@@ -280,7 +308,8 @@ class Command(BaseCommand):
                     barrier.tags.add(random_pick)
                     i = i + 1
 
-            barrier.save()
+            with DisableSignals():
+                barrier.save()
 
     @staticmethod
     def scramble_barrier_date_fields(barriers):
@@ -301,7 +330,9 @@ class Command(BaseCommand):
             barrier.status_date = _randomise_date(barrier.status_date)
             barrier.priority_date = _randomise_date(barrier.priority_date)
             barrier.start_date = _randomise_date(barrier.start_date)
-            barrier.save()
+
+            with DisableSignals():
+                barrier.save()
 
     @staticmethod
     def anonymise_users_data(barriers):
@@ -333,9 +364,10 @@ class Command(BaseCommand):
             if barrier.proposed_estimated_resolution_date_user_id:
                 barrier.proposed_estimated_resolution_date_user_id = _get_dummy_user()
 
-            barrier.save()
-
-            # Change users who are listed as having a stake or
+            with DisableSignals():
+                barrier.save()
+   
+   # Change users who are listed as having a stake or
             # influence on the barrier in question.
             barrier_team_list = barrier.barrier_team.all()
             for team_member in barrier_team_list:
@@ -351,7 +383,8 @@ class Command(BaseCommand):
         """
         for barrier in barriers:
             barrier.new_report_session_data = ""
-            barrier.save()
+            with DisableSignals():
+                barrier.save()
 
     @staticmethod
     def anonymise_barrier_notes(barriers):
@@ -366,7 +399,8 @@ class Command(BaseCommand):
                 note_user = AuthUser.objects.get(id=_get_dummy_user())
                 note.created_by = note_user
                 note.modified_by = note_user
-                note.save()
+                with DisableSignals():
+                    note.save()
 
                 # Documents attached to notes could have personal identifiers in the filepath.
                 for document in note.documents.all():
@@ -398,7 +432,9 @@ class Command(BaseCommand):
                 mention.email_used = "fake_email@fake_provider.com"
                 mention.recipient_id = _get_dummy_user()
                 mention.text = Faker().paragraph(nb_sentences=1)
-                mention.save()
+
+                with DisableSignals():
+                    mention.save()
 
     @staticmethod
     def anonymise_public_data(barriers):
@@ -457,7 +493,8 @@ class Command(BaseCommand):
                 )
 
                 # Save the public barrier
-                public_barrier.save()
+                with DisableSignals():
+                    public_barrier.save()
 
                 # Find all the public barrier notes and clear the text therein
                 public_barrier_notes = PublicBarrierNote.objects.filter(
