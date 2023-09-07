@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Count, F, Case, When, Value, CharField
+from django.db.models import Case, CharField, Count, F, Value, When
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -349,7 +349,6 @@ class BarrierList(generics.ListAPIView):
                 # filters e.g. Barriers my have multiple impact assesements which could be archived
                 # therefore would result in duplicates
                 logger.critical(ordering_filter)
-                # queryset = queryset.filter(**ordering_filter)
                 queryset = queryset.exclude(ordering_value="c")
                 logger.critical("count after annotation then filter")
                 logger.critical(queryset.count())
