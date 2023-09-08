@@ -644,15 +644,13 @@ class Command(BaseCommand):
 
                 profile.raised_date = _randomise_date(profile.raised_date)
                 if profile.committee_notification_document:
-                    for document in profile.committee_notification_document.all():
-                        path = f"{Faker().word()}/{Faker().word()}/{uuid.uuid4()}.pdf"
-                        document.path = path
-                        document.save()
+                    path = f"{Faker().word()}/{Faker().word()}/{uuid.uuid4()}.pdf"
+                    profile.committee_notification_document.path = path
+                    profile.committee_notification_document.save()
                 if profile.meeting_minutes:
-                    for document in profile.meeting_minutes.all():
-                        path = f"{Faker().word()}/{Faker().word()}/{uuid.uuid4()}.pdf"
-                        document.path = path
-                        document.save()
+                    path = f"{Faker().word()}/{Faker().word()}/{uuid.uuid4()}.pdf"
+                    profile.meeting_minutes.path = path
+                    profile.meeting_minutes.save()
 
                 # Get count of countries in array
                 # Loop that number of times, building array of countries by
