@@ -1,5 +1,6 @@
 import logging
 import random
+import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
 from unittest.mock import patch
@@ -398,9 +399,8 @@ class Command(BaseCommand):
 
                 # Documents attached to notes could have personal identifiers in the filepath.
                 for document in note.documents.all():
-                    mock_filename = f"{Faker().word()}-{Faker().word()}.pdf"
+                    mock_filename = f"{Faker().word()}-{Faker().word()}-{uuid.uuid4()}.pdf"
                     document.original_filename = mock_filename
-                    mock_filename = f"{Faker().word()}-{Faker().word()}.pdf"
                     document.document.path = f"documents/2023-01-01/{mock_filename}"
                     document.document.uploaded_on = _randomise_date(
                         document.document.uploaded_on
@@ -582,7 +582,7 @@ class Command(BaseCommand):
 
                 # Change the path of any attached documents
                 for document in assessment.documents.all():
-                    document.path = Faker().word() + "/" + Faker().word() + ".pdf"
+                    document.path = Faker().word() + "/" + str(uuid.uuid4()) + "/" + Faker().word() + ".pdf"
                     document.save()
 
             economic_impact_assessments = EconomicImpactAssessment.objects.filter(
@@ -645,11 +645,13 @@ class Command(BaseCommand):
                 profile.raised_date = _randomise_date(profile.raised_date)
                 if profile.committee_notification_document:
                     for document in profile.committee_notification_document.all():
-                        document.path = Faker().word() + "/" + Faker().word() + ".pdf"
+                        path = f"{Faker().word()}/{Faker().word()}/{uuid.uuid4()}.pdf"
+                        document.path = path
                         document.save()
                 if profile.meeting_minutes:
                     for document in profile.meeting_minutes.all():
-                        document.path = Faker().word() + "/" + Faker().word() + ".pdf"
+                        path = f"{Faker().word()}/{Faker().word()}/{uuid.uuid4()}.pdf"
+                        document.path = path
                         document.save()
 
                 # Get count of countries in array
