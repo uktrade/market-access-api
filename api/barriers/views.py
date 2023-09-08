@@ -303,22 +303,11 @@ class BarrierList(generics.ListAPIView):
             order_by = ordering_config["order_on"]
             direction = ordering_config["direction"]
             ordering_filter = ordering_config.get("ordering-filter", None)
-            logger.critical("**********   Additional filter: ")
-            logger.critical(ordering_filter)
-            logger.critical("count before annotation")
-            logger.critical(queryset.count())
-            logger.critical(
-                queryset.values(
-                    "title",
-                    "valuation_assessments__impact",
-                    "valuation_assessments__archived",
-                )
-            )
+
             # now we annotate the queryset with a new column - 'ordering_value' - which will contain the sort
             # order of the field we want to order on. We also use this column to implement a filter to the
             # queryset assigning 'c' value to entries(duplicates) we want to exclude from the final results
             if ordering_filter:
-                logger.critical("**********   Additional filter needed")
                 # Here apply the custom logic to the extaordinary search orders e.g. barriers with multiple impact
                 # assesments and sorting on resolution date
                 if order_by == "valuation_assessments__impact":
@@ -343,15 +332,10 @@ class BarrierList(generics.ListAPIView):
                         )
                     )
 
-                logger.critical("count after annotation")
-                logger.critical(queryset.count())
                 # Implement Final filter to exclude duplicates where the search option implies extra
-                # filters e.g. Barriers my have multiple impact assesements which could be archived
-                # therefore would result in duplicates
-                logger.critical(ordering_filter)
+                # filters e.g. Barriers may have multiple impact assesements
+                # which could be archived therefore would result in duplicates due to annotation
                 queryset = queryset.exclude(ordering_value="c")
-                logger.critical("count after annotation then filter")
-                logger.critical(queryset.count())
             else:
                 queryset = queryset.annotate(
                     ordering_value=Value("b", output_field=CharField())
@@ -375,8 +359,6 @@ class BarrierList(generics.ListAPIView):
             ordered_queryset = queryset.order_by(
                 "-reported_on",
             )
-
-        logger.critical(ordered_queryset.distinct().count())
 
         # finally, remove duplicates from the queryset
         return ordered_queryset.distinct()
