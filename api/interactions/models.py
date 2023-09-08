@@ -183,9 +183,10 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
 
     history = HistoricalRecords()
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, trigger_mentions=True, **kwargs):
         super().save(*args, **kwargs)
-        _handle_mention_notification(self, self.public_barrier.barrier, self.created_by)
+        if trigger_mentions:
+            _handle_mention_notification(self, self.public_barrier.barrier, self.created_by)
 
     def get_note_url_path(self):
         """
