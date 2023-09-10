@@ -1395,9 +1395,13 @@ class BarrierFilterSet(django_filters.FilterSet):
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
         """
-        return queryset.filter(
-            Q(all_sectors=True) | Q(main_sector__in=value) | Q(sectors__overlap=value)
-        ).distinct()
+
+        base_query = Q(all_sectors=True) | Q(main_sector__in=value)
+
+        if self.data.get("only_main_sector") == "yes":
+            return queryset.filter(base_query).distinct()
+
+        return queryset.filter(base_query | Q(sectors__overlap=value)).distinct()
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """
