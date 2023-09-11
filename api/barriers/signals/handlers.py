@@ -230,7 +230,6 @@ def send_new_valuation_notification(barrier):
             )
 
 
-
 def barrier_priority_approval_email_notification(sender, instance: Barrier, **kwargs):
     """
     If a barrier's top_priority_status has changed, check if a

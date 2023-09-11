@@ -3,7 +3,6 @@ import random
 import uuid
 from collections import defaultdict
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -47,14 +46,19 @@ SAFE_ENVIRONMENTS = [
     "test",
 ]  # the environments we can run this command on
 
+
 class DisableSignals(object):
     def __init__(self, disabled_signals=None):
         self.stashed_signals = defaultdict(list)
         self.disabled_signals = disabled_signals or [
-            signals.pre_init, signals.post_init,
-            signals.pre_save, signals.post_save,
-            signals.pre_delete, signals.post_delete,
-            signals.pre_migrate, signals.post_migrate,
+            signals.pre_init,
+            signals.post_init,
+            signals.pre_save,
+            signals.post_save,
+            signals.pre_delete,
+            signals.post_delete,
+            signals.pre_migrate,
+            signals.post_migrate,
         ]
 
     def __enter__(self):
@@ -72,6 +76,7 @@ class DisableSignals(object):
     def reconnect(self, signal):
         signal.receivers = self.stashed_signals.get(signal, [])
         del self.stashed_signals[signal]
+
 
 def _get_dummy_user():
     # Development environments can use placeholder IDs that exist on those DBs
@@ -363,8 +368,8 @@ class Command(BaseCommand):
                 barrier.proposed_estimated_resolution_date_user_id = _get_dummy_user()
 
             barrier.save()
-   
-   # Change users who are listed as having a stake or
+
+            # Change users who are listed as having a stake or
             # influence on the barrier in question.
             barrier_team_list = barrier.barrier_team.all()
             for team_member in barrier_team_list:
@@ -399,7 +404,9 @@ class Command(BaseCommand):
 
                 # Documents attached to notes could have personal identifiers in the filepath.
                 for document in note.documents.all():
-                    mock_filename = f"{Faker().word()}-{Faker().word()}-{uuid.uuid4()}.pdf"
+                    mock_filename = (
+                        f"{Faker().word()}-{Faker().word()}-{uuid.uuid4()}.pdf"
+                    )
                     document.original_filename = mock_filename
                     document.document.path = f"documents/2023-01-01/{mock_filename}"
                     document.document.uploaded_on = _randomise_date(
@@ -480,7 +487,7 @@ class Command(BaseCommand):
                     public_barrier=public_barrier.id
                 )
                 for public_note in public_barrier_notes:
-                    public_note.text=Faker().paragraph(nb_sentences=4)
+                    public_note.text = Faker().paragraph(nb_sentences=4)
                     public_note.save(trigger_mentions=False)
 
     @staticmethod
@@ -582,7 +589,14 @@ class Command(BaseCommand):
 
                 # Change the path of any attached documents
                 for document in assessment.documents.all():
-                    document.path = Faker().word() + "/" + str(uuid.uuid4()) + "/" + Faker().word() + ".pdf"
+                    document.path = (
+                        Faker().word()
+                        + "/"
+                        + str(uuid.uuid4())
+                        + "/"
+                        + Faker().word()
+                        + ".pdf"
+                    )
                     document.save()
 
             economic_impact_assessments = EconomicImpactAssessment.objects.filter(
@@ -758,7 +772,9 @@ class Command(BaseCommand):
 
         # disabling signals so GOV.NOTIFY isn't called as part of a post_save signal
         with DisableSignals():
-            self.stdout.write("Randomising the date fields across barrier and sub-objects.")
+            self.stdout.write(
+                "Randomising the date fields across barrier and sub-objects."
+            )
             self.scramble_barrier_date_fields(barriers)
             self.stdout.write("Completed randomising dates.")
 
@@ -770,7 +786,9 @@ class Command(BaseCommand):
                 "Anonymising barrier fields more complex than simple text fields."
             )
             self.anonymise_complex_barrier_fields(barriers)
-            self.stdout.write("Completed anonymising more varied & complex data fields.")
+            self.stdout.write(
+                "Completed anonymising more varied & complex data fields."
+            )
 
             self.stdout.write("Anonymising barrier user data.")
             self.anonymise_users_data(barriers)
