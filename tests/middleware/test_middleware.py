@@ -1,6 +1,7 @@
 from unittest.mock import Mock
 
 from django.test import TestCase
+from sentry_sdk import set_user
 from sentry_sdk.hub import Hub
 
 from api.core.middleware import SentryUserContextMiddleware
@@ -16,6 +17,7 @@ class TestMiddleware(TestCase):
         super().setUp()
         self.middleware = SentryUserContextMiddleware(Mock())
         self.request = Mock()
+        set_user(None)
 
     def test_middleware_authenticated_user_sentry_context_added(self):
         assert Hub.current.scope._user is None
