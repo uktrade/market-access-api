@@ -1,10 +1,10 @@
+from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from api.metadata.utils import (
     get_country,
     get_location_text,
     get_trading_bloc,
     get_trading_bloc_by_country_id,
 )
-
 from .base import BaseHistoryItem
 
 
@@ -209,26 +209,24 @@ class OrganisationsHistoryItem(BaseBarrierHistoryItem):
 class TopPriorityHistoryItem(BaseBarrierHistoryItem):
     field = "top_priority_status"
 
-    def get_value(self, record):
-        top_priority_status = record.top_priority_status
-
-        if (
-            top_priority_status == "APPROVED"
-            or top_priority_status == "APPROVAL_PENDING"
-            or top_priority_status == "REMOVAL_PENDING"
-            or top_priority_status == "RESOLVED"
+    def get_new_value(self):
+        new_value = super().get_new_value()
+        if self.new_record.top_priority_status in (
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
         ):
-            # It's an accepted Top Priority Request, or pending review
-            top_priority_reason = record.priority_summary
-        else:
-            # The top_priority_status is NONE
-            if record.top_priority_rejection_summary:
-                # It's a rejected Top Priority Request
-                top_priority_status = "REJECTED"
-                top_priority_reason = record.top_priority_rejection_summary
-            else:
-                # The barrier has had its top-priority status removed
-                top_priority_status = "REMOVED"
-                top_priority_reason = record.priority_summary
+            new_value["reason"] = (
+                self.new_record.instance.top_priority_summary.first()
+                .history.as_of(self.new_record.history_date)
+                .top_priority_summary_text
+            )
+        return new_value
 
-        return {"value": top_priority_status, "reason": top_priority_reason}
+    def get_value(self, record):
+        return {
+            "value": record.get_top_priority_status_display(),
+        }
+
+
+class TopPrioritySummaryHistoryItem(BaseHistoryItem):
+    model = "barrier_top_priority_summary"
+    field = "top_priority_summary_text"
