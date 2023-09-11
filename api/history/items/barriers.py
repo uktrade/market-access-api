@@ -1,13 +1,11 @@
-from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from api.metadata.utils import (
     get_country,
     get_location_text,
     get_trading_bloc,
     get_trading_bloc_by_country_id,
 )
-
-from ...barriers.models import BarrierTopPrioritySummary
 from .base import BaseHistoryItem
+from ...barriers.models import BarrierTopPrioritySummary
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
@@ -211,33 +209,7 @@ class OrganisationsHistoryItem(BaseBarrierHistoryItem):
 class TopPriorityHistoryItem(BaseBarrierHistoryItem):
     field = "top_priority_status"
 
-    def get_new_value(self):
-        new_value = super().get_new_value()
-        if self.new_record.top_priority_status in (
-            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-            TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
-            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-            TOP_PRIORITY_BARRIER_STATUS.RESOLVED,
-        ):
-            new_value["reason"] = (
-                self.new_record.instance.top_priority_summary.first()
-                .history.as_of(self.new_record.history_date)
-                .top_priority_summary_text
-            )
-
-        return new_value
-
     def _get_top_priority_summary_text(self, record):
-        try:
-            return (
-                record.instance.top_priority_summary.first()
-                .history.as_of(self.new_record.history_date)
-                .top_priority_summary_text
-            )
-        except BarrierTopPrioritySummary.DoesNotExist:
-            return ""
-
-    def _get_top_priority_rejection_summary(self, record):
         try:
             return (
                 record.instance.top_priority_summary.first()
@@ -266,7 +238,7 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
             else:
                 # The barrier has had its top-priority status removed
                 status = "Removed"
-                top_priority_reason = self._get_top_priority_rejection_summary(record)
+                top_priority_reason = self._get_top_priority_summary_text(record)
 
         return {"value": status, "reason": top_priority_reason}
 
