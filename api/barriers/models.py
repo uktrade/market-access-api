@@ -961,9 +961,12 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         version = str(version)
         if self.published_versions:
             timestamp = self.published_versions["versions"][version]["published_on"]
-            historic_public_barrier = self.history.as_of(
-                datetime.datetime.fromisoformat(timestamp)
-            )
+            try:
+                historic_public_barrier = self.history.as_of(
+                    datetime.datetime.fromisoformat(timestamp)
+                )
+            except PublicBarrier.DoesNotExist:
+                historic_public_barrier = None
             return historic_public_barrier
         else:
             return None
