@@ -1396,11 +1396,21 @@ class BarrierFilterSet(django_filters.FilterSet):
         which is ArrayField
         """
 
-        base_query = Q(all_sectors=True) | Q(main_sector__in=value)
+        ignore_all_sectors = self.data.get("ignore_all_sectors", False)
+        only_main_sector = self.data.get("only_main_sector", "no")
 
-        if self.data.get("only_main_sector") == "yes":
+        # If we're only concerned with main sectors and there's no provided value,
+        # we can directly check if main_sector is not null
+        if only_main_sector == "yes" and not value:
+            return queryset.filter(main_sector__isnull=False).distinct()
+
+        # Define base query based on provided options
+        base_query = Q(all_sectors=not ignore_all_sectors) | Q(main_sector__in=value)
+
+        if only_main_sector == "yes":
             return queryset.filter(base_query).distinct()
 
+        # Add overlap condition for sectors
         return queryset.filter(base_query | Q(sectors__overlap=value)).distinct()
 
     def ignore_all_sectors_filter(self, queryset, name, value):
