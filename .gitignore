@@ -127,3 +127,4 @@ src/
 
 requirements-dev.txt
 /local.env
+/config/settings/debug.py
