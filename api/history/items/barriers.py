@@ -6,8 +6,8 @@ from api.metadata.utils import (
     get_trading_bloc_by_country_id,
 )
 
-from .base import BaseHistoryItem
 from ...barriers.models import BarrierTopPrioritySummary
+from .base import BaseHistoryItem
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
