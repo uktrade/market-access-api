@@ -15,11 +15,12 @@ class SentryUserContextMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
-            set_user({
-                "id": str(request.user.id),
-                "email": request.user.email,
-            })
+            set_user(
+                {
+                    "id": str(request.user.id),
+                    "email": request.user.email,
+                }
+            )
         else:
             set_user(None)
         return self.get_response(request)
-

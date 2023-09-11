@@ -17,7 +17,6 @@ class TestMiddleware(TestCase):
         self.middleware = SentryUserContextMiddleware(Mock())
         self.request = Mock()
 
-
     def test_middleware_authenticated_user_sentry_context_added(self):
         assert Hub.current.scope._user is None
         mock_user = Mock()
