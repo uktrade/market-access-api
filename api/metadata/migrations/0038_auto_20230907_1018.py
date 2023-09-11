@@ -8,6 +8,7 @@ def create_scoping_tag(apps, schema_editor):
         order=11,
         title="Scoping",
         show_at_reporting=True,
+        id=11,
     )
 
 def delete_scoping_tag(apps, schema_editor):
