@@ -5,6 +5,7 @@ from api.metadata.utils import (
     get_trading_bloc,
     get_trading_bloc_by_country_id,
 )
+
 from .base import BaseHistoryItem
 
 

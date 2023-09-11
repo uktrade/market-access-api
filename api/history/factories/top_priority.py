@@ -1,8 +1,7 @@
-from api.barriers.models import Barrier, BarrierTopPrioritySummary
+from api.barriers.models import BarrierTopPrioritySummary
+
+from ..items.barriers import TopPrioritySummaryHistoryItem
 from .base import HistoryItemFactoryBase
-from ..items.barriers import (
-    TopPrioritySummaryHistoryItem,
-)
 
 
 class BarrierTopPrioritySummaryHistoryFactory(HistoryItemFactoryBase):
@@ -11,11 +10,11 @@ class BarrierTopPrioritySummaryHistoryFactory(HistoryItemFactoryBase):
     """
 
     class_lookup = {}
-    history_item_classes = (
-        TopPrioritySummaryHistoryItem,
-    )
+    history_item_classes = (TopPrioritySummaryHistoryItem,)
     history_types = ("~", "+")
 
     @classmethod
     def get_history(cls, barrier_id):
-        return BarrierTopPrioritySummary.history.filter(barrier_id=barrier_id).order_by("history_date")
+        return BarrierTopPrioritySummary.history.filter(barrier_id=barrier_id).order_by(
+            "history_date"
+        )
