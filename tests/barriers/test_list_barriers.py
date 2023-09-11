@@ -393,6 +393,17 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.data["count"] == 1
         assert str(barrier.title) == response.data["results"][0]["title"]
 
+    def test_list_barriers_only_main_sector_filter_no_result(self):
+        barrier = BarrierFactory(main_sector=None)
+
+        assert Barrier.objects.count() == 1
+
+        url = f'{reverse("list-barriers")}?sector={barrier.sectors[0]}&only_main_sector=yes'
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data["count"] == 0
+
     def test_list_barriers_filter_location_europe(self):
         """
         Filter by overseas region - Europe
