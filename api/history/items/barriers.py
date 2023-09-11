@@ -7,6 +7,7 @@ from api.metadata.utils import (
 )
 
 from .base import BaseHistoryItem
+from ...barriers.models import BarrierTopPrioritySummary
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
@@ -214,18 +215,60 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
         new_value = super().get_new_value()
         if self.new_record.top_priority_status in (
             TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+            TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+            TOP_PRIORITY_BARRIER_STATUS.RESOLVED,
         ):
             new_value["reason"] = (
                 self.new_record.instance.top_priority_summary.first()
                 .history.as_of(self.new_record.history_date)
                 .top_priority_summary_text
             )
+
         return new_value
 
+    def _get_top_priority_summary_text(self, record):
+        try:
+            return (
+                record.instance.top_priority_summary.first()
+                .history.as_of(self.new_record.history_date)
+                .top_priority_summary_text
+            )
+        except BarrierTopPrioritySummary.DoesNotExist:
+            return ""
+
+    def _get_top_priority_rejection_summary(self, record):
+        try:
+            return (
+                record.instance.top_priority_summary.first()
+                .history.as_of(self.new_record.history_date)
+                .top_priority_summary_text
+            )
+        except BarrierTopPrioritySummary.DoesNotExist:
+            return ""
+
     def get_value(self, record):
-        return {
-            "value": record.get_top_priority_status_display(),
-        }
+        status = record.get_top_priority_status_display()
+        if (
+            record.top_priority_status == "APPROVED"
+            or record.top_priority_status == "APPROVAL_PENDING"
+            or record.top_priority_status == "REMOVAL_PENDING"
+            or record.top_priority_status == "RESOLVED"
+        ):
+            # It's an accepted Top Priority Request, or pending review
+            top_priority_reason = self._get_top_priority_summary_text(record)
+        else:
+            # The top_priority_status is NONE
+            if record.top_priority_rejection_summary:
+                # It's a rejected Top Priority Request
+                status = "Rejected"
+                top_priority_reason = record.top_priority_rejection_summary
+            else:
+                # The barrier has had its top-priority status removed
+                status = "Removed"
+                top_priority_reason = self._get_top_priority_rejection_summary(record)
+
+        return {"value": status, "reason": top_priority_reason}
 
 
 class TopPrioritySummaryHistoryItem(BaseHistoryItem):
