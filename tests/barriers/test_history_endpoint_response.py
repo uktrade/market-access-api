@@ -8,7 +8,7 @@ from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, BarrierTopPrioritySummary
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Interaction
@@ -798,16 +798,17 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
     def test_history_endpoint_has_top_priority_approval_pending(self, _):
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
         self.barrier.save()
+
+        BarrierTopPrioritySummary.objects.create(top_priority_summary_text="please approve me", barrier=self.barrier)
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
-        self.barrier.priority_summary = "an approval"
         self.barrier.save()
 
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        expected_old_value = {"value": "REMOVED", "reason": ""}
-        expected_new_value = {"value": "APPROVAL_PENDING", "reason": "an approval"}
+        expected_old_value = {"value": "Removed", "reason": ""}
+        expected_new_value = {"value": "Top 100 Approval Pending", "reason": "please approve me"}
 
         assert {
             "date": "2020-04-01T00:00:00Z",
@@ -821,8 +822,10 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
     @freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_approved(self, _):
+        BarrierTopPrioritySummary.objects.create(
+            top_priority_summary_text="please approve me", barrier=self.barrier
+        )
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
-        self.barrier.priority_summary = "an approval"
         self.barrier.save()
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
         self.barrier.save()
@@ -831,8 +834,8 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        expected_old_value = {"value": "APPROVAL_PENDING", "reason": "an approval"}
-        expected_new_value = {"value": "APPROVED", "reason": "an approval"}
+        expected_old_value = {"value": "APPROVAL_PENDING", "reason": "please approve me"}
+        expected_new_value = {"value": "APPROVED", "reason": "please approve me"}
 
         assert {
             "date": "2020-04-01T00:00:00Z",
@@ -846,19 +849,21 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
     @freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_removal_pending(self, _):
+        BarrierTopPrioritySummary.objects.create(
+            top_priority_summary_text="please approve me", barrier=self.barrier
+        )
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
-        self.barrier.priority_summary = "an approval"
         self.barrier.save()
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
-        self.barrier.priority_summary = "a reason"
+        self.barrier.top_priority_rejection_summary = "you have been rejected"
         self.barrier.save()
 
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        expected_old_value = {"value": "APPROVED", "reason": "an approval"}
-        expected_new_value = {"value": "REMOVAL_PENDING", "reason": "a reason"}
+        expected_old_value = {"value": "APPROVED", "reason": "please approve me"}
+        expected_new_value = {"value": "REMOVAL_PENDING", "reason": "you have been rejected"}
 
         assert {
             "date": "2020-04-01T00:00:00Z",
@@ -873,8 +878,10 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
     @freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_removed(self, _):
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
-        self.barrier.priority_summary = "a reason"
         self.barrier.save()
+        BarrierTopPrioritySummary.objects.create(
+            top_priority_summary_text="please reject me", barrier=self.barrier
+        )
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
         self.barrier.save()
 
@@ -882,8 +889,8 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        expected_old_value = {"value": "REMOVAL_PENDING", "reason": "a reason"}
-        expected_new_value = {"value": "REMOVED", "reason": "a reason"}
+        expected_old_value = {"value": "REMOVAL_PENDING", "reason": "please reject me"}
+        expected_new_value = {"value": "REMOVED", "reason": "please reject me"}
 
         assert {
             "date": "2020-04-01T00:00:00Z",
