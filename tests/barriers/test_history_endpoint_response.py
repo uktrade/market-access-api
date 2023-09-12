@@ -799,7 +799,9 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
         self.barrier.save()
 
-        BarrierTopPrioritySummary.objects.create(top_priority_summary_text="please approve me", barrier=self.barrier)
+        BarrierTopPrioritySummary.objects.create(
+            top_priority_summary_text="please approve me", barrier=self.barrier
+        )
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
         self.barrier.save()
 
@@ -808,7 +810,10 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         history = response.json()["history"]
 
         expected_old_value = {"value": "Removed", "reason": ""}
-        expected_new_value = {"value": "Top 100 Approval Pending", "reason": "please approve me"}
+        expected_new_value = {
+            "value": "Top 100 Approval Pending",
+            "reason": "please approve me",
+        }
 
         assert {
             "date": "2020-04-01T00:00:00Z",
@@ -834,7 +839,10 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        expected_old_value = {"value": "APPROVAL_PENDING", "reason": "please approve me"}
+        expected_old_value = {
+            "value": "APPROVAL_PENDING",
+            "reason": "please approve me",
+        }
         expected_new_value = {"value": "APPROVED", "reason": "please approve me"}
 
         assert {
@@ -863,7 +871,10 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         history = response.json()["history"]
 
         expected_old_value = {"value": "APPROVED", "reason": "please approve me"}
-        expected_new_value = {"value": "REMOVAL_PENDING", "reason": "you have been rejected"}
+        expected_new_value = {
+            "value": "REMOVAL_PENDING",
+            "reason": "you have been rejected",
+        }
 
         assert {
             "date": "2020-04-01T00:00:00Z",
