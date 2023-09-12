@@ -22,8 +22,8 @@ from api.barriers.models import (
     BarrierProgressUpdate,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
-    PublicBarrierManager,
     PublicBarrier,
+    PublicBarrierManager,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import AnonymiseProductionDataException
@@ -290,9 +290,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert mention.text != "test"
 
     def test_delete_public_barrier(self):
-        public_barrier, _ = PublicBarrierManager.get_or_create_for_barrier(
-            self.barrier
-        )
+        public_barrier, _ = PublicBarrierManager.get_or_create_for_barrier(self.barrier)
         public_barrier._public_view_status = 40
         public_barrier.save()
         Command.anonymise_public_data(self.barrier_queryset)
@@ -300,11 +298,8 @@ class TestDataAnonymise(APITestMixin, TestCase):
         with self.assertRaises(PublicBarrier.DoesNotExist):
             self.barrier.refresh_from_db()
 
-
         with self.assertRaises(PublicBarrier.DoesNotExist):
             public_barrier.refresh_from_db()
-
-
 
     def test_anonymise_progress_updates(self):
         bpu = BarrierProgressUpdate.objects.create(

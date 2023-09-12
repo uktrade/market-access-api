@@ -425,8 +425,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def anonymise_public_data(barriers):
-        """Function to delete barriers that have been published.
-        """
+        """Function to delete barriers that have been published."""
         for barrier in barriers:
             # Get the public barrier
             public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
