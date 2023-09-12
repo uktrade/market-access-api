@@ -23,6 +23,7 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrierManager,
+    PublicBarrier,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import AnonymiseProductionDataException
@@ -288,22 +289,22 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert mention.email_used != self.user.email
         assert mention.text != "test"
 
-    def test_anonymise_public_barrier(self):
-        public_barrier, _ = PublicBarrierManager.get_or_create_for_barrier(self.barrier)
-        note = PublicBarrierNote.objects.create(
-            public_barrier=public_barrier, text="test", created_by=self.user
+    def test_delete_public_barrier(self):
+        public_barrier, _ = PublicBarrierManager.get_or_create_for_barrier(
+            self.barrier
         )
+        public_barrier._public_view_status = 40
+        public_barrier.save()
         Command.anonymise_public_data(self.barrier_queryset)
-        public_barrier.refresh_from_db()
-        note.refresh_from_db()
-        assert public_barrier.title != self.barrier_fields["title"]
-        assert public_barrier.summary != self.barrier_fields["summary"]
-        assert public_barrier.internal_title_at_update != self.barrier_fields["title"]
-        assert (
-            public_barrier.internal_summary_at_update != self.barrier_fields["summary"]
-        )
 
-        assert note.text != "test"
+        with self.assertRaises(PublicBarrier.DoesNotExist):
+            self.barrier.refresh_from_db()
+
+
+        with self.assertRaises(PublicBarrier.DoesNotExist):
+            public_barrier.refresh_from_db()
+
+
 
     def test_anonymise_progress_updates(self):
         bpu = BarrierProgressUpdate.objects.create(

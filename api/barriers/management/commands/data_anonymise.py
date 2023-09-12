@@ -425,70 +425,18 @@ class Command(BaseCommand):
 
     @staticmethod
     def anonymise_public_data(barriers):
-        """
-        Function to replace public fields with anonymous data
-        Fields that need anonymising:
-            - _title
-            - internal_title_at_update
-            - _summary
-            - internal_summary_at_update
+        """Function to delete barriers that have been published.
         """
         for barrier in barriers:
             # Get the public barrier
             public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
 
             # Change the details
-            if public_barrier:
-                if public_barrier._title:
-                    public_barrier._title = (
-                        Faker().word()
-                        + " "
-                        + Faker().word()
-                        + " blocked in "
-                        + str(barrier.location)
-                    )
-                if public_barrier.internal_title_at_update:
-                    public_barrier.internal_title_at_update = (
-                        Faker().word()
-                        + " "
-                        + Faker().word()
-                        + " blocked in "
-                        + str(barrier.location)
-                    )
-                if public_barrier._summary:
-                    public_barrier._summary = Faker().paragraph(nb_sentences=4)
-                if public_barrier.internal_summary_at_update:
-                    public_barrier.internal_summary_at_update = Faker().paragraph(
-                        nb_sentences=4
-                    )
-
-                # anonymising the dates
-                public_barrier.first_published_on = _randomise_date(
-                    public_barrier.first_published_on
-                )
-                public_barrier.last_published_on = _randomise_date(
-                    public_barrier.last_published_on
-                )
-                public_barrier.unpublished_on = _randomise_date(
-                    public_barrier.unpublished_on
-                )
-                public_barrier.title_updated_on = _randomise_date(
-                    public_barrier.title_updated_on
-                )
-                public_barrier.summary_updated_on = _randomise_date(
-                    public_barrier.summary_updated_on
-                )
-
-                # Save the public barrier
-                public_barrier.save()
-
-                # Find all the public barrier notes and clear the text therein
-                public_barrier_notes = PublicBarrierNote.objects.filter(
-                    public_barrier=public_barrier.id
-                )
-                for public_note in public_barrier_notes:
-                    public_note.text = Faker().paragraph(nb_sentences=4)
-                    public_note.save(trigger_mentions=False)
+            if public_barrier and public_barrier._public_view_status in [
+                40,  # published
+                50,  # unpublished
+            ]:
+                barrier.delete()
 
     @staticmethod
     def anonymise_progress_updates(barriers):
