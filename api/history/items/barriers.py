@@ -211,13 +211,17 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
     field = "top_priority_status"
 
     def _get_top_priority_summary_text(self, record):
+        """We want to get the top_priority_summary_text from the point in time when the change to the
+        top_priority_status was made.
+        """
         try:
             return (
                 record.instance.top_priority_summary.first()
                 .history.as_of(self.new_record.history_date)
                 .top_priority_summary_text
             )
-        except BarrierTopPrioritySummary.DoesNotExist:
+        # sometimes the BarrierTopPrioritySummary does not exist, at which point we return an empty string
+        except (BarrierTopPrioritySummary.DoesNotExist, AttributeError):
             return ""
 
     def get_value(self, record):
