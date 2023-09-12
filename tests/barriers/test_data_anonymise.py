@@ -295,7 +295,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
         public_barrier.save()
         Command.anonymise_public_data(self.barrier_queryset)
 
-        with self.assertRaises(PublicBarrier.DoesNotExist):
+        with self.assertRaises(Barrier.DoesNotExist):
             self.barrier.refresh_from_db()
 
         with self.assertRaises(PublicBarrier.DoesNotExist):
