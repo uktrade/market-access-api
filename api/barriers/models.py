@@ -1411,7 +1411,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.filter(base_query)
 
         # Add overlap condition for sectors
-        return queryset.filter(base_query | Q(sectors__overlap=value)).distinct()
+        return queryset.filter(base_query | Q(sectors__overlap=value))
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """
