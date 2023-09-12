@@ -1401,17 +1401,17 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         # If we're only concerned with main sectors and there's no provided value,
         # we can directly check if main_sector is not null
-        if only_main_sector and not value:
-            return queryset.filter(main_sector__isnull=False).distinct()
+        if only_main_sector == "yes" and not value:
+            return queryset.filter(main_sector__isnull=False)
 
         # Define base query based on provided options
         base_query = Q(all_sectors=not ignore_all_sectors) | Q(main_sector__in=value)
 
-        if only_main_sector:
-            return queryset.filter(base_query).distinct()
+        if only_main_sector == "yes":
+            return queryset.filter(base_query)
 
         # Add overlap condition for sectors
-        return queryset.filter(base_query | Q(sectors__overlap=value)).distinct()
+        return queryset.filter(base_query | Q(sectors__overlap=value))
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """
