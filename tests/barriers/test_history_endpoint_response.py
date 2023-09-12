@@ -840,10 +840,10 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         history = response.json()["history"]
 
         expected_old_value = {
-            "value": "APPROVAL_PENDING",
+            "value": "Top 100 Approval Pending",
             "reason": "please approve me",
         }
-        expected_new_value = {"value": "APPROVED", "reason": "please approve me"}
+        expected_new_value = {"value": "Top 100 Priority", "reason": "please approve me"}
 
         assert {
             "date": "2020-04-01T00:00:00Z",
@@ -870,9 +870,9 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        expected_old_value = {"value": "APPROVED", "reason": "please approve me"}
+        expected_old_value = {"value": "Top 100 Priority", "reason": "please approve me"}
         expected_new_value = {
-            "value": "REMOVAL_PENDING",
+            "value": "Top 100 Removal Pending",
             "reason": "you have been rejected",
         }
 
@@ -900,8 +900,8 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        expected_old_value = {"value": "REMOVAL_PENDING", "reason": "please reject me"}
-        expected_new_value = {"value": "REMOVED", "reason": "please reject me"}
+        expected_old_value = {"value": "Top 100 Removal Pending", "reason": "please reject me"}
+        expected_new_value = {"value": "Removed", "reason": "please reject me"}
 
         assert {
             "date": "2020-04-01T00:00:00Z",
