@@ -1,7 +1,6 @@
 import logging
 import random
 import uuid
-from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -9,8 +8,8 @@ from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
 from django.db import transaction
 from django.db.models import signals
-from faker import Faker
 from factory.django import mute_signals
+from faker import Faker
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -695,9 +694,7 @@ class Command(BaseCommand):
         self.stdout.write("Starting anonymising barrier data.")
 
         # disabling signals so GOV.NOTIFY isn't called as part of a post_save signal
-        self.stdout.write(
-            "Randomising the date fields across barrier and sub-objects."
-        )
+        self.stdout.write("Randomising the date fields across barrier and sub-objects.")
         self.scramble_barrier_date_fields(barriers)
         self.stdout.write("Completed randomising dates.")
 
@@ -709,9 +706,7 @@ class Command(BaseCommand):
             "Anonymising barrier fields more complex than simple text fields."
         )
         self.anonymise_complex_barrier_fields(barriers)
-        self.stdout.write(
-            "Completed anonymising more varied & complex data fields."
-        )
+        self.stdout.write("Completed anonymising more varied & complex data fields.")
 
         self.stdout.write("Anonymising barrier user data.")
         self.anonymise_users_data(barriers)
