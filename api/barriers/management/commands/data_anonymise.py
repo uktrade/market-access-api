@@ -433,8 +433,7 @@ class Command(BaseCommand):
         for barrier in barriers:
             # Deleting all published/unpublished public barriers
             public_barriers = PublicBarrier.objects.filter(
-                barrier=barrier.id,
-                _public_view_status__in=[40, 50]
+                barrier=barrier.id, _public_view_status__in=[40, 50]
             )
             if public_barriers:
                 # if the barrier does have a published PublicBarrier, delete it
