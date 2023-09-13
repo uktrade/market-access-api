@@ -10,6 +10,7 @@ from django.core.management import BaseCommand
 from django.db import transaction
 from django.db.models import signals
 from faker import Faker
+from factory.django import mute_signals
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -45,37 +46,6 @@ SAFE_ENVIRONMENTS = [
     "dev",
     "test",
 ]  # the environments we can run this command on
-
-
-class DisableSignals(object):
-    def __init__(self, disabled_signals=None):
-        self.stashed_signals = defaultdict(list)
-        self.disabled_signals = disabled_signals or [
-            signals.pre_init,
-            signals.post_init,
-            signals.pre_save,
-            signals.post_save,
-            signals.pre_delete,
-            signals.post_delete,
-            signals.pre_migrate,
-            signals.post_migrate,
-        ]
-
-    def __enter__(self):
-        for signal in self.disabled_signals:
-            self.disconnect(signal)
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        for signal in list(self.stashed_signals):
-            self.reconnect(signal)
-
-    def disconnect(self, signal):
-        self.stashed_signals[signal] = signal.receivers
-        signal.receivers = []
-
-    def reconnect(self, signal):
-        signal.receivers = self.stashed_signals.get(signal, [])
-        del self.stashed_signals[signal]
 
 
 def _get_dummy_user():
@@ -720,67 +690,67 @@ class Command(BaseCommand):
             )
             self.anonymise(barriers)
 
+    @mute_signals(signals.pre_save, signals.post_save, signals.m2m_changed)
     def anonymise(self, barriers):
         self.stdout.write("Starting anonymising barrier data.")
 
         # disabling signals so GOV.NOTIFY isn't called as part of a post_save signal
-        with DisableSignals():
-            self.stdout.write(
-                "Randomising the date fields across barrier and sub-objects."
-            )
-            self.scramble_barrier_date_fields(barriers)
-            self.stdout.write("Completed randomising dates.")
+        self.stdout.write(
+            "Randomising the date fields across barrier and sub-objects."
+        )
+        self.scramble_barrier_date_fields(barriers)
+        self.stdout.write("Completed randomising dates.")
 
-            self.stdout.write("Anonymising barrier text fields.")
-            self.anonymise_text_fields(barriers)
-            self.stdout.write("Completed anonymising text data.")
+        self.stdout.write("Anonymising barrier text fields.")
+        self.anonymise_text_fields(barriers)
+        self.stdout.write("Completed anonymising text data.")
 
-            self.stdout.write(
-                "Anonymising barrier fields more complex than simple text fields."
-            )
-            self.anonymise_complex_barrier_fields(barriers)
-            self.stdout.write(
-                "Completed anonymising more varied & complex data fields."
-            )
+        self.stdout.write(
+            "Anonymising barrier fields more complex than simple text fields."
+        )
+        self.anonymise_complex_barrier_fields(barriers)
+        self.stdout.write(
+            "Completed anonymising more varied & complex data fields."
+        )
 
-            self.stdout.write("Anonymising barrier user data.")
-            self.anonymise_users_data(barriers)
-            self.stdout.write("Completed anonymising user data.")
+        self.stdout.write("Anonymising barrier user data.")
+        self.anonymise_users_data(barriers)
+        self.stdout.write("Completed anonymising user data.")
 
-            self.stdout.write("Clearing report session data")
-            self.clear_barrier_report_session_data(barriers)
-            self.stdout.write("Completed clearing report session data.")
+        self.stdout.write("Clearing report session data")
+        self.clear_barrier_report_session_data(barriers)
+        self.stdout.write("Completed clearing report session data.")
 
-            self.stdout.write("Clearing barrier notes")
-            self.anonymise_barrier_notes(barriers)
-            self.stdout.write("Completed removing barrier notes.")
+        self.stdout.write("Clearing barrier notes")
+        self.anonymise_barrier_notes(barriers)
+        self.stdout.write("Completed removing barrier notes.")
 
-            self.stdout.write("Anonymising Public Barrier data.")
-            self.anonymise_public_data(barriers)
-            self.stdout.write("Completed anonymising public barrier data.")
+        self.stdout.write("Anonymising Public Barrier data.")
+        self.anonymise_public_data(barriers)
+        self.stdout.write("Completed anonymising public barrier data.")
 
-            self.stdout.write("Anonymising Progress Update data.")
-            self.anonymise_progress_updates(barriers)
-            self.stdout.write("Completed anonymising progress update data.")
+        self.stdout.write("Anonymising Progress Update data.")
+        self.anonymise_progress_updates(barriers)
+        self.stdout.write("Completed anonymising progress update data.")
 
-            self.stdout.write("Anonymising Next Step Items data.")
-            self.anonymise_next_step_items(barriers)
-            self.stdout.write("Completed anonymising Next Step Items data.")
+        self.stdout.write("Anonymising Next Step Items data.")
+        self.anonymise_next_step_items(barriers)
+        self.stdout.write("Completed anonymising Next Step Items data.")
 
-            self.stdout.write("Anonymising Top Priority data.")
-            self.anonymise_top_priority_data(barriers)
-            self.stdout.write("Completed anonymising Top Priority data.")
+        self.stdout.write("Anonymising Top Priority data.")
+        self.anonymise_top_priority_data(barriers)
+        self.stdout.write("Completed anonymising Top Priority data.")
 
-            self.stdout.write("Anonymising valuation assessments data.")
-            self.anonymise_valuation_assessments(barriers)
-            self.stdout.write("Completed anonymising valuation assessments data.")
+        self.stdout.write("Anonymising valuation assessments data.")
+        self.anonymise_valuation_assessments(barriers)
+        self.stdout.write("Completed anonymising valuation assessments data.")
 
-            self.stdout.write("Anonymising WTO profile.")
-            self.anonymise_wto_profiles(barriers)
-            self.stdout.write("Completed anonymising WTO profile.")
+        self.stdout.write("Anonymising WTO profile.")
+        self.anonymise_wto_profiles(barriers)
+        self.stdout.write("Completed anonymising WTO profile.")
 
-            self.stdout.write("Deleting barrier history")
-            self.purge_barrier_history(barriers)
-            self.stdout.write("Finished deleting barrier histories.")
+        self.stdout.write("Deleting barrier history")
+        self.purge_barrier_history(barriers)
+        self.stdout.write("Finished deleting barrier histories.")
 
         self.stdout.write("Finished anonymising barrier data.")
