@@ -24,6 +24,7 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
+    PublicBarrierLightTouchReviews,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import (
@@ -399,7 +400,7 @@ class Command(BaseCommand):
     @staticmethod
     def anonymise_public_data(barriers):
         """Function to delete barriers that have been published."""
-
+        PublicBarrierLightTouchReviews.objects.all().delete()  # we need to delete these first
         for barrier in barriers:
             if (
                 barrier.has_public_barrier
@@ -409,9 +410,6 @@ class Command(BaseCommand):
                     50,  # un-published
                 )
             ):
-                # deleting the light-touch-reviews first
-                if hasattr(barrier.public_barrier, "light_touch_reviews"):
-                    barrier.public_barrier.light_touch_reviews.delete()
                 # deleting the barrier
                 barrier.delete()
 
