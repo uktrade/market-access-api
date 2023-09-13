@@ -439,7 +439,8 @@ class Command(BaseCommand):
                 40,  # published
                 50,  # unpublished
             ]:
-                barrier.delete()
+                with DisableSignals():
+                    barrier.delete()
 
     @staticmethod
     def anonymise_progress_updates(barriers):
