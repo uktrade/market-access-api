@@ -458,10 +458,6 @@ class Command(BaseCommand):
                 # Save the public barrier
                 public_barrier.save()
 
-                # marking the barrier as archived so people can't see it
-                barrier.archived = True
-                barrier.save()
-
                 # Find all the public barrier notes and clear the text therein
                 public_barrier_notes = PublicBarrierNote.objects.filter(
                     public_barrier=public_barrier.id
