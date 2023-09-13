@@ -409,6 +409,9 @@ class Command(BaseCommand):
                     50,  # un-published
                 )
             ):
+                # deleting the light-touch-reviews first
+                if hasattr(barrier.public_barrier, "light_touch_reviews"):
+                    barrier.public_barrier.light_touch_reviews.delete()
                 # deleting the barrier
                 barrier.delete()
 
@@ -635,12 +638,14 @@ class Command(BaseCommand):
             ResolvabilityAssessment.history.filter(barrier=barrier.pk).delete()
             StrategicAssessment.history.filter(barrier=barrier.pk).delete()
             WTOProfile.history.filter(barrier=barrier.pk).delete()
-            public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
-            if public_barrier:
+            try:
+                public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
                 public_barrier.history.all().delete()
                 PublicBarrierNote.history.filter(
                     public_barrier=public_barrier.pk
                 ).delete()
+            except PublicBarrier.DoesNotExist:
+                pass
 
     def handle(self, *args, **options):
         self.stdout.write("Running management command: Data Anonymise.")
