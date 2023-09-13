@@ -24,7 +24,6 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
-    PublicBarrierLightTouchReviews,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import (

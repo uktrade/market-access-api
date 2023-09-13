@@ -27,12 +27,11 @@ from api.barriers.models import (
 from api.collaboration.models import TeamMember
 from api.core.exceptions import AnonymiseProductionDataException
 from api.core.test_utils import APITestMixin
-from api.interactions.models import Document as InteractionDocument, PublicBarrierNote
-from api.interactions.models import Interaction, Mention
+from api.interactions.models import Document as InteractionDocument
+from api.interactions.models import Interaction, Mention, PublicBarrierNote
 from api.metadata.models import BarrierTag, Category
 from api.metadata.utils import get_sectors
 from api.wto.models import WTOProfile
-from tests.barriers.factories import PublicBarrierFactory
 
 
 class TestDataAnonymise(APITestMixin, TestCase):
