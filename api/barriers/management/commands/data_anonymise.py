@@ -374,7 +374,11 @@ class Command(BaseCommand):
             barrier_team_list = barrier.barrier_team.all()
             for team_member in barrier_team_list:
                 new_member_id = _get_dummy_user()
-                TeamMember.objects.filter(id=team_member.id).update(user=new_member_id)
+                TeamMember.objects.filter(id=team_member.id).update(
+                    user=new_member_id,
+                    created_by_id=new_member_id,
+                    modified_by_id=new_member_id,
+                )
 
     @staticmethod
     def clear_barrier_report_session_data(barriers):

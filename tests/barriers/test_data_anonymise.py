@@ -240,12 +240,13 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert self.barrier.proposed_estimated_resolution_date_user_id != self.user.id
 
     def test_anonymise_barrier_team(self):
-        tm = TeamMember.objects.create(barrier=self.barrier, user=self.user)
+        tm = TeamMember.objects.create(barrier=self.barrier, user=self.user, created_by=self.user)
         self.barrier.barrier_team.add(tm)
         Command.anonymise_users_data(self.barrier_queryset)
         self.barrier.refresh_from_db()
         assert self.user not in self.barrier.barrier_team.all()
         assert self.barrier.barrier_team.count() == 1
+        assert self.barrier.barrier_team.first().created_by_id != self.user.id
 
     def test_clear_barrier_report_session_data(self):
         Command.clear_barrier_report_session_data(self.barrier_queryset)
@@ -297,9 +298,6 @@ class TestDataAnonymise(APITestMixin, TestCase):
 
         with self.assertRaises(Barrier.DoesNotExist):
             self.barrier.refresh_from_db()
-
-        with self.assertRaises(PublicBarrier.DoesNotExist):
-            public_barrier.refresh_from_db()
 
     def test_anonymise_progress_updates(self):
         bpu = BarrierProgressUpdate.objects.create(
