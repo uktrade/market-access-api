@@ -436,7 +436,7 @@ class TestFixAllUsers(DbFixTestBase):
         assert self.user1.profile.sso_email_user_id == self.user1.username
 
     def test_multiple_current_good_user(self):
-        # First build mock data
+        # First build mock data.
         self.user1 = create_test_user()
         self.user2 = create_test_user()
         self.user1.profile.sso_email_user_id = None
