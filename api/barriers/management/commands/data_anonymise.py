@@ -432,13 +432,14 @@ class Command(BaseCommand):
         """Function to delete barriers that have been published."""
         if public_barriers := PublicBarrier.objects.filter(
             barrier_id__in=[barrier.id for barrier in barriers],
-            _public_view_status__in = [40, 50]
+            _public_view_status__in=[40, 50],
         ):
-            published_barriers = [public_barrier.barrier for public_barrier in public_barriers]
+            published_barriers = [
+                public_barrier.barrier for public_barrier in public_barriers
+            ]
             public_barriers.delete()
             for barrier in published_barriers:
                 barrier.delete()
-
 
     @staticmethod
     def anonymise_progress_updates(barriers):
