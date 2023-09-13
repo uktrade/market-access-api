@@ -292,7 +292,8 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert mention.text != "test"
 
     def test_delete_public_barrier(self):
-        PublicBarrierFactory(barrier=self.barrier, _public_view_status=40)
+        public_barrier = PublicBarrierFactory(barrier=self.barrier, _public_view_status=40)
+        public_barrier.skip_history_when_saving = True
         Command.anonymise_public_data(self.barrier_queryset)
 
         with self.assertRaises(Barrier.DoesNotExist):
