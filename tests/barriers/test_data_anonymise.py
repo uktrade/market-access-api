@@ -22,7 +22,6 @@ from api.barriers.models import (
     BarrierProgressUpdate,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
-    PublicBarrier,
     PublicBarrierManager,
 )
 from api.collaboration.models import TeamMember
@@ -240,7 +239,9 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert self.barrier.proposed_estimated_resolution_date_user_id != self.user.id
 
     def test_anonymise_barrier_team(self):
-        tm = TeamMember.objects.create(barrier=self.barrier, user=self.user, created_by=self.user)
+        tm = TeamMember.objects.create(
+            barrier=self.barrier, user=self.user, created_by=self.user
+        )
         self.barrier.barrier_team.add(tm)
         Command.anonymise_users_data(self.barrier_queryset)
         self.barrier.refresh_from_db()
