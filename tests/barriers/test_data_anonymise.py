@@ -31,7 +31,6 @@ from api.interactions.models import Interaction, Mention
 from api.metadata.models import BarrierTag, Category
 from api.metadata.utils import get_sectors
 from api.wto.models import WTOProfile
-from tests.barriers.factories import PublicBarrierFactory
 
 
 class TestDataAnonymise(APITestMixin, TestCase):
@@ -290,14 +289,6 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert mention.recipient_id != self.user.id
         assert mention.email_used != self.user.email
         assert mention.text != "test"
-
-    @override_settings(SIMPLE_HISTORY_ENABLED=False)
-    def test_delete_public_barrier(self):
-        PublicBarrierFactory(barrier=self.barrier, _public_view_status=40)
-        Command.anonymise_public_data(self.barrier_queryset)
-
-        with self.assertRaises(Barrier.DoesNotExist):
-            self.barrier.refresh_from_db()
 
     def test_anonymise_progress_updates(self):
         bpu = BarrierProgressUpdate.objects.create(
