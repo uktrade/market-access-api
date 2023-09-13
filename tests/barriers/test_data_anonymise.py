@@ -22,15 +22,17 @@ from api.barriers.models import (
     BarrierProgressUpdate,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
+    PublicBarrierManager,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import AnonymiseProductionDataException
 from api.core.test_utils import APITestMixin
-from api.interactions.models import Document as InteractionDocument
+from api.interactions.models import Document as InteractionDocument, PublicBarrierNote
 from api.interactions.models import Interaction, Mention
 from api.metadata.models import BarrierTag, Category
 from api.metadata.utils import get_sectors
 from api.wto.models import WTOProfile
+from tests.barriers.factories import PublicBarrierFactory
 
 
 class TestDataAnonymise(APITestMixin, TestCase):
@@ -289,6 +291,23 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert mention.recipient_id != self.user.id
         assert mention.email_used != self.user.email
         assert mention.text != "test"
+
+    def test_delete_public_barrier(self):
+        public_barrier, _ = PublicBarrierManager.get_or_create_for_barrier(self.barrier)
+        note = PublicBarrierNote.objects.create(
+            public_barrier=public_barrier, text="test", created_by=self.user
+        )
+        Command.anonymise_public_data(self.barrier_queryset)
+        public_barrier.refresh_from_db()
+        note.refresh_from_db()
+        assert public_barrier.title != self.barrier_fields["title"]
+        assert public_barrier.summary != self.barrier_fields["summary"]
+        assert public_barrier.internal_title_at_update != self.barrier_fields["title"]
+        assert (
+            public_barrier.internal_summary_at_update != self.barrier_fields["summary"]
+        )
+        assert public_barrier._public_view_status == 0
+        assert note.text != "test"
 
     def test_anonymise_progress_updates(self):
         bpu = BarrierProgressUpdate.objects.create(
