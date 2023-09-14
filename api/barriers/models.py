@@ -1403,7 +1403,7 @@ class BarrierFilterSet(django_filters.FilterSet):
                 return queryset.filter(main_sector__isnull=False)
             else:
                 # We're ensuring that main_sector is one of the values provided.
-                return queryset.filter(Q(all_sectors=True) | Q(main_sector__in=value))
+                return queryset.filter(main_sector__in=value)
 
         # Add overlap condition for sectors if specific sectors are provided
         if value:
