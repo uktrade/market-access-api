@@ -1409,7 +1409,10 @@ class BarrierFilterSet(django_filters.FilterSet):
                 return queryset.filter(main_sector__in=value)
 
         # Define base query based on provided options
-        base_query = Q(all_sectors=not ignore_all_sectors) | Q(main_sector__in=value)
+        base_query = Q(all_sectors=True) | Q(main_sector__in=value)
+
+        if ignore_all_sectors:
+            base_query = Q(all_sectors=False) | Q(main_sector__in=value)
 
         # If only the main sector is of interest, we just use the above base query.
         if only_main_sector:
