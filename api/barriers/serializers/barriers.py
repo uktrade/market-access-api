@@ -123,6 +123,7 @@ class BarrierListSerializer(BarrierSerializerBase):
             "admin_areas",
             "modified_on",
             "reported_on",
+            "main_sector",
             "sectors",
             "sectors_affected",
             "status",
