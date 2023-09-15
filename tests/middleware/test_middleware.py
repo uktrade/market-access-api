@@ -7,10 +7,10 @@ from sentry_sdk.hub import Hub
 from api.core.middleware import SentryUserContextMiddleware
 
 
-class TestMiddleware(TestCase):
+class TestUserSentryContextMiddleware(TestCase):
 
     """
-    Test Healthcheck Middleware
+    Test SentryUserContextMiddleware Middleware
     """
 
     def setUp(self):
