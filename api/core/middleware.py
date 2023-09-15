@@ -18,7 +18,6 @@ class SentryUserContextMiddleware:
             set_user(
                 {
                     "id": str(request.user.id),
-                    "email": request.user.email,
                 }
             )
         else:

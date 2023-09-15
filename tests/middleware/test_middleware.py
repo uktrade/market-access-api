@@ -23,14 +23,12 @@ class TestMiddleware(TestCase):
         assert Hub.current.scope._user is None
         mock_user = Mock()
         mock_user.id = 1
-        mock_user.email = "test@example.com"
         self.mock_user = mock_user
         self.request.user = mock_user
         self.middleware(self.request)
         assert Hub.current.scope._user
         assert Hub.current.scope._user == {
             "id": str(mock_user.id),
-            "email": mock_user.email,
         }
 
     def test_middleware_unauthenticated_user_sentry_context_added(self):
