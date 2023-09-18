@@ -11,6 +11,7 @@ from rest_framework.reverse import reverse
 from api.barriers.models import Barrier, BarrierTopPrioritySummary
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
+from api.history.factories.top_priority import BarrierTopPrioritySummaryHistoryFactory
 from api.interactions.models import Interaction
 from api.metadata.constants import (
     BARRIER_SOURCE,
@@ -965,5 +966,45 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "field": "trade_direction",
             "old_value": initial_trade_direction,
             "new_value": expected_trade_direction,
+            "user": None,
+        } in history
+
+    @freeze_time("2020-04-01")
+    def test_history_endpoint_barrier_top_priority_summary_creation(self):
+        new_summary = BarrierTopPrioritySummary.objects.create(
+            barrier=self.barrier,
+            top_priority_summary_text="please approve me",
+        )
+        url = reverse("history", kwargs={"pk": self.barrier.pk})
+        response = self.api_client.get(url)
+        history = response.json()["history"]
+    
+        assert {
+            "date": "2020-04-01T00:00:00Z",
+            "model": "barrier",
+            "field": "top_priority_summary_text",
+            "old_value": "",
+            "new_value": new_summary.top_priority_summary_text,
+            "user": None,
+        } in history
+
+    @freeze_time("2020-04-01")
+    def test_history_endpoint_barrier_top_priority_summary_modification(self):
+        new_summary = BarrierTopPrioritySummary.objects.create(
+            barrier=self.barrier,
+            top_priority_summary_text="please approve me",
+        )
+        new_summary.top_priority_summary_text = "please approve me edit 1"
+        new_summary.save()
+        url = reverse("history", kwargs={"pk": self.barrier.pk})
+        response = self.api_client.get(url)
+        history = response.json()["history"]
+
+        assert {
+            "date": "2020-04-01T00:00:00Z",
+            "model": "barrier",
+            "field": "top_priority_summary_text",
+            "old_value": "please approve me",
+            "new_value": new_summary.top_priority_summary_text,
             "user": None,
         } in history
