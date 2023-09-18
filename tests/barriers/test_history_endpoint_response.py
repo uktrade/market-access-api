@@ -11,7 +11,6 @@ from rest_framework.reverse import reverse
 from api.barriers.models import Barrier, BarrierTopPrioritySummary
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.history.factories.top_priority import BarrierTopPrioritySummaryHistoryFactory
 from api.interactions.models import Interaction
 from api.metadata.constants import (
     BARRIER_SOURCE,
@@ -978,7 +977,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         history = response.json()["history"]
-    
+
         assert {
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
