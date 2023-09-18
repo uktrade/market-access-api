@@ -977,10 +977,10 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         history = response.json()["history"]
-
+        assert len(history) == 1
         assert {
             "date": "2020-04-01T00:00:00Z",
-            "model": "barrier",
+            "model": "barrier_top_priority_summary",
             "field": "top_priority_summary_text",
             "old_value": "",
             "new_value": new_summary.top_priority_summary_text,
@@ -998,10 +998,11 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         history = response.json()["history"]
+        assert len(history) == 2
 
         assert {
             "date": "2020-04-01T00:00:00Z",
-            "model": "barrier",
+            "model": "barrier_top_priority_summary",
             "field": "top_priority_summary_text",
             "old_value": "please approve me",
             "new_value": new_summary.top_priority_summary_text,
