@@ -2057,6 +2057,7 @@ class BarrierTopPrioritySummary(models.Model):
         related_name="top_priority_summary",
         primary_key=True,
     )
+    history = HistoricalRecords()
 
 
 class BarrierNextStepItem(BaseModel):
