@@ -230,7 +230,9 @@ class Command(BaseCommand):
                 barrier.commercial_value = random.randint(10000, 10000000000)
 
             new_sectors_list = []
-            top_level_sectors = [sector for sector in get_sectors() if sector["level"] == 0]
+            top_level_sectors = [
+                sector for sector in get_sectors() if sector["level"] == 0
+            ]
             if barrier.sectors:
                 number_of_sectors = len(barrier.sectors)
                 i = 0
