@@ -230,19 +230,18 @@ class Command(BaseCommand):
                 barrier.commercial_value = random.randint(10000, 10000000000)
 
             new_sectors_list = []
+            top_level_sectors = [sector for sector in get_sectors() if sector["level"] == 0]
             if barrier.sectors:
-                sectors_list = get_sectors()
                 number_of_sectors = len(barrier.sectors)
                 i = 0
                 while i < number_of_sectors:
-                    random_pick = random.choice(sectors_list)
+                    random_pick = random.choice(top_level_sectors)
                     new_sectors_list.append(random_pick["id"])
                     i = i + 1
                 barrier.sectors = new_sectors_list
 
             if barrier.main_sector:
-                sectors_list = get_sectors()
-                random_pick = random.choice(sectors_list)
+                random_pick = random.choice(top_level_sectors)
                 main_sector_updated = False
                 while main_sector_updated is not True:
                     # Cannot have a main_sector that is in the other sectors list
@@ -250,7 +249,7 @@ class Command(BaseCommand):
                         barrier.main_sector = random_pick["id"]
                         main_sector_updated = True
                     else:
-                        random_pick = random.choice(sectors_list)
+                        random_pick = random.choice(top_level_sectors)
 
             if barrier.categories:
                 categories_list = Category.objects.all()
