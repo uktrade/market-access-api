@@ -692,7 +692,41 @@ class Command(BaseCommand):
             WTOProfile.history.filter(barrier=barrier.pk).delete()
             try:
                 public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
-                public_barrier.history.all().delete()
+
+                # cutting down its expected history to one
+                # and anonymising it
+                if public_barrier.published_versions:
+                    latest_version = public_barrier.published_versions.get(
+                        "latest_version", 0
+                    )
+                    timestamp = public_barrier.published_versions["versions"][
+                        latest_version
+                    ]["published_on"]
+                    expected_history_date = datetime.fromisoformat(timestamp)
+
+                    public_barrier_history = public_barrier.history.all()[:1].get()
+                    public_barrier_history.history_date = expected_history_date
+                    public_barrier_history._title = barrier.title
+                    public_barrier_history._summary = barrier.summary
+                    public_barrier_history.internal_title_at_update = Faker().paragraph(
+                        nb_sentences=4
+                    )
+                    public_barrier_history.internal_summary_at_update = (
+                        Faker().paragraph(nb_sentences=4)
+                    )
+                    public_barrier_history.categories_cache = barrier.categories
+                    public_barrier_history.sectors = barrier.sectors
+                    public_barrier_history.country = barrier.country
+                    public_barrier_history.is_resolved = barrier.is_resolved
+                    public_barrier_history.status_date = barrier.status_date
+                    public_barrier_history.save()
+                    delete_public_barrier_history = (
+                        public_barrier.history.all().exclude(
+                            id=public_barrier_history.id
+                        )
+                    )
+                    delete_public_barrier_history.delete()
+
                 PublicBarrierNote.history.filter(
                     public_barrier=public_barrier.pk
                 ).delete()
