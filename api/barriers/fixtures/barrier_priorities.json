@@ -1,0 +1,38 @@
+[
+  {
+    "model": "metadata.barrierpriority",
+    "pk": 1,
+    "fields": {
+      "code": "UNKNOWN",
+      "name": "Unknown",
+      "order": 0
+    }
+  },
+  {
+    "model": "metadata.barrierpriority",
+    "pk": 2,
+    "fields": {
+      "code": "HIGH",
+      "name": "High",
+      "order": 1
+    }
+  },
+  {
+    "model": "metadata.barrierpriority",
+    "pk": 3,
+    "fields": {
+      "code": "MEDIUM",
+      "name": "Medium",
+      "order": 2
+    }
+  },
+  {
+    "model": "metadata.barrierpriority",
+    "pk": 4,
+    "fields": {
+      "code": "LOW",
+      "name": "Low",
+      "order": 3
+    }
+  }
+]
