@@ -36,6 +36,7 @@ from api.barriers.serializers import (
     BarrierListSerializer,
     BarrierReportSerializer,
     PublicBarrierSerializer,
+    BarrierSlimListSerializer,
 )
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
@@ -277,7 +278,8 @@ class BarrierList(generics.ListAPIView):
             "progress_updates",
         )
     )
-    serializer_class = BarrierListSerializer
+    # serializer_class = BarrierListSerializer
+    serializer_class = BarrierSlimListSerializer
     filterset_class = BarrierFilterSet
 
     filter_backends = (DjangoFilterBackend,)

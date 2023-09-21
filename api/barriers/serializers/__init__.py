@@ -1,4 +1,8 @@
-from .barriers import BarrierDetailSerializer, BarrierListSerializer  # noqa
+from .barriers import (
+    BarrierDetailSerializer,
+    BarrierListSerializer,
+    BarrierSlimListSerializer,
+)  # noqa
 from .csv import BarrierCsvExportSerializer  # noqa
 from .data_workspace import DataWorkspaceSerializer  # noqa
 from .progress_updates import ProgressUpdateSerializer  # noqa
