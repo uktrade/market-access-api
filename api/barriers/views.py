@@ -34,8 +34,8 @@ from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierDetailSerializer,
     BarrierReportSerializer,
-    PublicBarrierSerializer,
     BarrierSlimListSerializer,
+    PublicBarrierSerializer,
 )
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer

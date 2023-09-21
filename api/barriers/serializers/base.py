@@ -37,8 +37,8 @@ from api.barriers.serializers.progress_updates import (
     ProgressUpdateSerializer,
 )
 from api.core.serializers.mixins import CustomUpdateMixin
-from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
+from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
 from .mixins import LocationFieldMixin
 from .public_barriers import NestedPublicBarrierSerializer
