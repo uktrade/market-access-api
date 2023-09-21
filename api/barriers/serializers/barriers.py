@@ -167,3 +167,4 @@ class BarrierSlimListSerializer(BarrierMixins, serializers.Serializer):
     tags = TagsField(required=False)
     top_priority_status = serializers.CharField(read_only=True)
     priority_level = serializers.CharField(read_only=True)
+    is_top_priority = serializers.BooleanField(read_only=True)
