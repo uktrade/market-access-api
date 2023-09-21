@@ -33,7 +33,6 @@ from api.barriers.models import (
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierDetailSerializer,
-    BarrierListSerializer,
     BarrierReportSerializer,
     PublicBarrierSerializer,
     BarrierSlimListSerializer,
@@ -278,7 +277,6 @@ class BarrierList(generics.ListAPIView):
             "progress_updates",
         )
     )
-    # serializer_class = BarrierListSerializer
     serializer_class = BarrierSlimListSerializer
     filterset_class = BarrierFilterSet
 
