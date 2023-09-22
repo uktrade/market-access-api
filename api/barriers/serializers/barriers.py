@@ -6,7 +6,7 @@ from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 
 from ...action_plans.serializers import ActionPlanSerializer
-from .base import BarrierMixins, BarrierSerializerBase
+from .base import BarrierBaseMixins, BarrierSerializerBase
 
 
 class BarrierDetailSerializer(BarrierSerializerBase):
@@ -151,7 +151,7 @@ class BarrierListSerializer(BarrierSerializerBase):
             return None
 
 
-class BarrierSlimListSerializer(BarrierMixins, serializers.Serializer):
+class BarrierSlimListSerializer(BarrierBaseMixins, serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     archived = serializers.BooleanField(read_only=True)
     code = serializers.CharField(read_only=True)

@@ -46,7 +46,7 @@ from .public_barriers import NestedPublicBarrierSerializer
 logger = logging.getLogger(__name__)
 
 
-class BarrierMixins(metaclass=serializers.SerializerMetaclass):
+class BarrierBaseMixins(metaclass=serializers.SerializerMetaclass):
 
     last_seen_on = serializers.SerializerMethodField()
     next_steps_items = serializers.SerializerMethodField()
@@ -80,7 +80,10 @@ class BarrierMixins(metaclass=serializers.SerializerMetaclass):
 
 
 class BarrierSerializerBase(
-    BarrierMixins, LocationFieldMixin, CustomUpdateMixin, serializers.ModelSerializer
+    BarrierBaseMixins,
+    LocationFieldMixin,
+    CustomUpdateMixin,
+    serializers.ModelSerializer,
 ):
     admin_areas = AdminAreasField(required=False)
     caused_by_admin_areas = BooleanField(required=False)
