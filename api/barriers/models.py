@@ -1395,9 +1395,25 @@ class BarrierFilterSet(django_filters.FilterSet):
         custom filter for multi-select filtering of Sectors field,
         which is ArrayField
         """
-        return queryset.filter(
-            Q(all_sectors=True) | Q(main_sector__in=value) | Q(sectors__overlap=value)
-        ).distinct()
+
+        only_main_sector = self.data.get("only_main_sector", False)
+
+        if only_main_sector:
+            if not value:
+                return queryset.filter(main_sector__isnull=False)
+            else:
+                # We're ensuring that main_sector is one of the values provided.
+                return queryset.filter(main_sector__in=value)
+
+        # Add overlap condition for sectors if specific sectors are provided
+        if value:
+            return queryset.filter(
+                Q(all_sectors=True)
+                | Q(main_sector__in=value)
+                | Q(sectors__overlap=value)
+            )
+
+        return queryset
 
     def ignore_all_sectors_filter(self, queryset, name, value):
         """
@@ -2041,6 +2057,7 @@ class BarrierTopPrioritySummary(models.Model):
         related_name="top_priority_summary",
         primary_key=True,
     )
+    history = HistoricalRecords()
 
 
 class BarrierNextStepItem(BaseModel):
