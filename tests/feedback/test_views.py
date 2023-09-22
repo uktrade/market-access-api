@@ -6,6 +6,7 @@ from api.core.test_utils import APITestMixin
 from api.feedback.models import Feedback
 from api.metadata.constants import (
     FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
+    FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS,
     FEEDBACK_FORM_SATISFACTION_ANSWERS,
 )
 
@@ -27,10 +28,16 @@ class MyTestCase(APITestMixin, APITestCase):
         ]
         satisfaction = FEEDBACK_FORM_SATISFACTION_ANSWERS.VERY_SATISFIED
         feedback_text = "test please delete"
+        experienced_issues = [
+            FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS.NO_ISSUE,
+        ]
+        other_detail = "test other details"
         data = {
             "attempted_actions": attempted_actions,
             "satisfaction": satisfaction,
             "feedback_text": feedback_text,
+            "experienced_issues": experienced_issues,
+            "other_detail": other_detail,
         }
         response = self.api_client.post(url, data=data)
         assert response.status_code == HTTP_201_CREATED
@@ -40,11 +47,17 @@ class MyTestCase(APITestMixin, APITestCase):
         assert response.data["satisfaction"] == satisfaction
         assert "feedback_text" in response.data
         assert response.data["feedback_text"] == feedback_text
+        assert "experienced_issues" in response.data
+        assert response.data["experienced_issues"] == experienced_issues
+        assert "other_detail" in response.data
+        assert response.data["other_detail"] == other_detail
         assert "id" in response.data
         instance = Feedback.objects.get(id=response.data["id"])
         assert instance.attempted_actions == attempted_actions
         assert instance.satisfaction == satisfaction
         assert instance.feedback_text == feedback_text
+        assert instance.experienced_issues == experienced_issues
+        assert instance.other_detail == other_detail
 
     def test_multiple_actions_are_saved(self):
         url = reverse("feedback:add")
@@ -53,12 +66,17 @@ class MyTestCase(APITestMixin, APITestCase):
             FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS.EXPORT_BARRIER_CSV,
             FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS.ACTION_PLAN,
         ]
+        experienced_issues = [
+            FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS.UNABLE_TO_FIND,
+            FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS.DIFFICULT_TO_NAVIGATE,
+        ]
         satisfaction = FEEDBACK_FORM_SATISFACTION_ANSWERS.NEITHER
         feedback_text = "test please delete"
         data = {
             "attempted_actions": attempted_actions,
             "satisfaction": satisfaction,
             "feedback_text": feedback_text,
+            "experienced_issues": experienced_issues,
         }
         response = self.api_client.post(url, data=data)
         assert response.status_code == HTTP_201_CREATED
