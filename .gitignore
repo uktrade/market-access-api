@@ -125,5 +125,7 @@ config/settings/static/
 # SSO src commit pip install folder
 src/
 
+# Local dev ennv
 requirements-dev.txt
 /local.env
+/config/settings/debug.py

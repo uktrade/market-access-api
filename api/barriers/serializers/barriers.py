@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
+from api.barriers.fields import SectorField, SectorsField, StatusField, TagsField
 from api.barriers.serializers.data_workspace import UserSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 
 from ...action_plans.serializers import ActionPlanSerializer
-from .base import BarrierSerializerBase
+from .base import BarrierBaseMixins, BarrierSerializerBase
 
 
 class BarrierDetailSerializer(BarrierSerializerBase):
@@ -106,8 +107,6 @@ class BarrierListSerializer(BarrierSerializerBase):
     # List Serializer provides list of fields returned to frontend
     # when loading/submitting on the search page
 
-    current_valuation_assessment = serializers.SerializerMethodField()
-
     class Meta(BarrierSerializerBase.Meta):
         fields = (
             "admin_areas",
@@ -150,3 +149,22 @@ class BarrierListSerializer(BarrierSerializerBase):
             return f"{rating}"
         else:
             return None
+
+
+class BarrierSlimListSerializer(BarrierBaseMixins, serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
+    archived = serializers.BooleanField(read_only=True)
+    code = serializers.CharField(read_only=True)
+    title = serializers.CharField(read_only=True)
+    reported_on = serializers.DateTimeField(read_only=True)
+    modified_on = serializers.DateTimeField(read_only=True)
+    status = StatusField(required=False)
+    status_date = serializers.DateField(read_only=True)
+    estimated_resolution_date = serializers.DateField(read_only=True)
+    main_sector = SectorField(required=False)
+    sectors = SectorsField(required=False)
+    location = serializers.CharField(read_only=True)
+    tags = TagsField(required=False)
+    top_priority_status = serializers.CharField(read_only=True)
+    priority_level = serializers.CharField(read_only=True)
+    is_top_priority = serializers.BooleanField(read_only=True)

@@ -521,6 +521,14 @@ FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS = Choices(
     ("DONT_KNOW", "Don't know"),
 )
 
+FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS = Choices(
+    ("NO_ISSUE", "I did not experience any issues"),
+    ("UNABLE_TO_FIND", "I did not find what I was looking for"),
+    ("DIFFICULT_TO_NAVIGATE", "I found it difficult to navigate"),
+    ("LACKS_FEATURE", "The system lacks the feature I need"),
+    ("OTHER", "Other"),
+)
+
 PRIORITY_LEVELS = Choices(
     ("NONE", ""),
     ("REGIONAL", "Regional Priority"),

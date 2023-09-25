@@ -931,7 +931,7 @@ tests = ["asttokens", "pytest", "littleutils", "rich"]
 name = "factory-boy"
 version = "3.0.1"
 description = "A versatile test fixtures replacement based on thoughtbot's factory_bot for Ruby."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -946,7 +946,7 @@ doc = ["sphinx", "sphinx-rtd-theme"]
 name = "faker"
 version = "19.6.2"
 description = "Faker is a Python package that generates fake data for you."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 
