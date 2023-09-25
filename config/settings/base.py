@@ -107,6 +107,7 @@ MIDDLEWARE = [
     "api.user.middleware.UserActivityLogMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "django_audit_log_middleware.AuditLogMiddleware",
+    "api.core.middleware.SentryUserContextMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
