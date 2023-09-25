@@ -27,7 +27,7 @@ from api.barriers.models import (
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import (
-    AnonymiseProductionDataException,
+    IllegalManagementCommandException,
     AtomicTransactionException,
 )
 from api.history.items.action_plans import AuthUser
@@ -703,7 +703,7 @@ class Command(BaseCommand):
         self.stdout.write("Running management command: Data Anonymise.")
 
         if settings.DJANGO_ENV not in SAFE_ENVIRONMENTS:
-            raise AnonymiseProductionDataException(
+            raise IllegalManagementCommandException(
                 "You cannot anonymise data outside of UAT, Dev, or local. You came this close to a very bad day."
             )
 

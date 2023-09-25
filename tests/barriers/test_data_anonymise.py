@@ -25,7 +25,7 @@ from api.barriers.models import (
     PublicBarrierManager,
 )
 from api.collaboration.models import TeamMember
-from api.core.exceptions import AnonymiseProductionDataException
+from api.core.exceptions import IllegalManagementCommandException
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Document as InteractionDocument
 from api.interactions.models import Interaction, Mention, PublicBarrierNote
@@ -109,7 +109,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
     @override_settings(DJANGO_ENV="prod")
     def test_production_run_raises_error(self):
 
-        with self.assertRaises(AnonymiseProductionDataException):
+        with self.assertRaises(IllegalManagementCommandException):
             self.call_command(barrier_cutoff_date=self.today_date)
 
         assert not self._has_db_barrier_changed()
