@@ -102,7 +102,7 @@ class Command(BaseCommand):
     # different types of data.
     # https://faker.readthedocs.io/en/master/providers/baseprovider.html
 
-    # ./manage.py data_anonymise --barrier_cutoff_date 01-01-23
+    # ./manage.py data_anonymise --barrier_cutoff_date 01-01-24
     # ./manage.py data_anonymise --barrier_id e30d8422-d402-4436-a0bc-26eeba1cb52d
 
     def add_arguments(self, parser):
@@ -456,6 +456,11 @@ class Command(BaseCommand):
                 # marking it as unpublished so people can't see it
                 public_barrier._public_view_status = 0
 
+                if public_barrier.published_versions != {}:
+                    public_barrier.published_versions = {}
+                    public_barrier.title = ""
+                    public_barrier.summary = ""
+
                 # Save the public barrier
                 public_barrier.save()
 
@@ -466,6 +471,8 @@ class Command(BaseCommand):
                 for public_note in public_barrier_notes:
                     public_note.text = Faker().paragraph(nb_sentences=4)
                     public_note.save(trigger_mentions=False)
+
+                public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
 
     @staticmethod
     def anonymise_progress_updates(barriers):
@@ -690,14 +697,13 @@ class Command(BaseCommand):
             ResolvabilityAssessment.history.filter(barrier=barrier.pk).delete()
             StrategicAssessment.history.filter(barrier=barrier.pk).delete()
             WTOProfile.history.filter(barrier=barrier.pk).delete()
-            try:
-                public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
+
+            public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
+            if public_barrier:
                 public_barrier.history.all().delete()
                 PublicBarrierNote.history.filter(
                     public_barrier=public_barrier.pk
                 ).delete()
-            except PublicBarrier.DoesNotExist:
-                pass
 
     def handle(self, *args, **options):
         self.stdout.write("Running management command: Data Anonymise.")
