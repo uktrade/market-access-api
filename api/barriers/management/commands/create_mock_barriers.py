@@ -3,14 +3,15 @@ from random import choice
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.db import transaction
-from faker.typing import Country
 
 from api.barriers.models import Barrier
 from api.core.exceptions import IllegalManagementCommandException
-from api.metadata.models import Category, Organisation, BarrierTag, ExportType
+from api.metadata.models import BarrierTag, Category, ExportType, Organisation
 from api.metadata.utils import get_countries
 from tests.barriers.factories import BarrierFactory
-from .data_anonymise import Command as AnonymiseCommand, SAFE_ENVIRONMENTS
+
+from .data_anonymise import SAFE_ENVIRONMENTS
+from .data_anonymise import Command as AnonymiseCommand
 
 
 class Command(BaseCommand):
@@ -38,7 +39,7 @@ class Command(BaseCommand):
                         status=2,
                         country=choice(countries)["id"],
                         export_description="Export description",
-                        wto_profile__wto_should_be_notified=choice((True, False))
+                        wto_profile__wto_should_be_notified=choice((True, False)),
                     )
 
                     # adding some m2m fields which will get later anonymised and changed
@@ -51,4 +52,6 @@ class Command(BaseCommand):
                 barrier_queryset = Barrier.objects.filter(id__in=barrier_ids)
                 AnonymiseCommand().anonymise(barrier_queryset)
         else:
-            raise IllegalManagementCommandException(f"Creating fake barriers is disabled on {settings.DJANGO_ENV}")
+            raise IllegalManagementCommandException(
+                f"Creating fake barriers is disabled on {settings.DJANGO_ENV}"
+            )

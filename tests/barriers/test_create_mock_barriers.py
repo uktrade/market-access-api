@@ -3,9 +3,7 @@ from io import StringIO
 from django.core import management
 from django.test import TestCase, override_settings
 
-from api.barriers.models import (
-    Barrier,
-)
+from api.barriers.models import Barrier
 from api.core.exceptions import IllegalManagementCommandException
 from api.core.test_utils import APITestMixin
 

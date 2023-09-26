@@ -96,7 +96,6 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     start_date = fuzzy_date()
     estimated_resolution_date = fuzzy_date()
 
-
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
         # a barrier is considered a report until it's submitted
