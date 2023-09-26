@@ -4,6 +4,7 @@ from api.metadata.constants import BarrierStatus, PublicBarrierStatus
 from api.metadata.utils import get_location_text
 
 from .base import BaseHistoryItem
+from ...barriers.models import Barrier
 
 
 class BasePublicBarrierHistoryItem(BaseHistoryItem):
@@ -39,9 +40,20 @@ class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
     field = "public_view_status"
 
     def get_value(self, record):
-        barrier_record = record.barrier.history.as_of(
-            record.history_date + datetime.timedelta(seconds=1)
-        )
+        try:
+            barrier_record = record.barrier.history.as_of(
+                record.history_date + datetime.timedelta(seconds=1)
+            )
+        except Barrier.DoesNotExist:
+            # the barrier did not exist at that point.
+            return {
+                "public_view_status": {
+                    "id": "",
+                    "name": "",
+                },
+                "public_eligibility": "",
+                "public_eligibility_summary": "",
+            }
 
         return {
             "public_view_status": {
