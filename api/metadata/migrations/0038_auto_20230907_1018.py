@@ -6,13 +6,13 @@ def create_scoping_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
     BarrierTag.objects.create(
         order=11,
-        title="Scoping",
+        title="Scoping (Top 100 priority barrier)",
         show_at_reporting=True,
     )
 
 def delete_scoping_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
-    BarrierTag.objects.filter(title="Scoping").delete()
+    BarrierTag.objects.filter(title="Scoping (Top 100 priority barrier)").delete()
 
 class Migration(migrations.Migration):
 
