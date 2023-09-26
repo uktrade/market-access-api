@@ -20,6 +20,7 @@ from .factories import (
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
+from .factories.top_priority import BarrierTopPrioritySummaryHistoryFactory
 
 
 class HistoryManager:
@@ -78,6 +79,9 @@ class HistoryManager:
             start_date = None
 
         history = cls.get_barrier_history(barrier.pk, start_date=start_date)
+        history += cls.get_top_priority_summary_history(
+            barrier.pk, start_date=start_date
+        )
         history += cls.get_action_plans_history(barrier.pk, start_date=start_date)
         history += cls.get_notes_history(barrier.pk, start_date=start_date)
         history += cls.get_delivery_confidence_history(
@@ -200,6 +204,24 @@ class HistoryManager:
             )
 
         return BarrierHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
+
+    @classmethod
+    def get_top_priority_summary_history(
+        cls, barrier_id, fields=(), start_date=None, use_cache=False
+    ):
+        if use_cache:
+            return cls.get_cached_history_items(
+                barrier_id,
+                model="barrier_top_priority_summary",
+                fields=fields,
+                start_date=start_date,
+            )
+
+        return BarrierTopPrioritySummaryHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,

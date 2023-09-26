@@ -439,59 +439,67 @@ WIDER_EUROPE_REGIONS = {
 BARRIER_SEARCH_ORDERING_CHOICES = {
     "-reported": {
         "ordering": "-reported_on",
-        "ordering-filter": None,
         "label": "Date reported (newest)",
+        "order_on": "reported_on",
+        "direction": "descending",
     },
     "reported": {
         "ordering": "reported_on",
-        "ordering-filter": None,
         "label": "Date reported (oldest)",
+        "order_on": "reported_on",
+        "direction": "ascending",
     },
     "-updated": {
         "ordering": "-modified_on",
-        "ordering-filter": None,
         "label": "Last updated (most recent)",
+        "order_on": "modified_on",
+        "direction": "descending",
     },
     "updated": {
         "ordering": "modified_on",
-        "ordering-filter": None,
         "label": "Last updated (least recent)",
+        "order_on": "modified_on",
+        "direction": "ascending",
     },
     "-value": {
         "ordering": "-valuation_assessments__impact",
-        "ordering-filter": {
-            "valuation_assessments__archived": False,
-            "valuation_assessments__isnull": False,
-        },
+        "ordering-filter": {"valuation_assessments__archived": True},
         "label": "Value (highest)",
+        "order_on": "valuation_assessments__impact",
+        "direction": "descending",
     },
     "value": {
         "ordering": "valuation_assessments__impact",
-        "ordering-filter": {
-            "valuation_assessments__archived": False,
-            "valuation_assessments__isnull": False,
-        },
+        "ordering-filter": {"valuation_assessments__archived": True},
         "label": "Value (lowest)",
+        "order_on": "valuation_assessments__impact",
+        "direction": "ascending",
     },
     "-resolution": {
         "ordering": "-estimated_resolution_date",
-        "ordering-filter": {"estimated_resolution_date__isnull": False},
         "label": "Estimated resolution date (most recent)",
+        "order_on": "estimated_resolution_date",
+        "direction": "descending",
     },
     "resolution": {
         "ordering": "estimated_resolution_date",
-        "ordering-filter": {"estimated_resolution_date__isnull": False},
         "label": "Estimated resolution date (least recent)",
+        "order_on": "estimated_resolution_date",
+        "direction": "ascending",
     },
     "-resolved": {
         "ordering": "-status_date",
         "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (most recent)",
+        "order_on": "status_date",
+        "direction": "descending",
     },
     "resolved": {
         "ordering": "status_date",
         "ordering-filter": {"status": BarrierStatus.RESOLVED_IN_FULL},
         "label": "Date resolved (least recent)",
+        "order_on": "status_date",
+        "direction": "ascending",
     },
 }
 
@@ -511,6 +519,14 @@ FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS = Choices(
     ("ACTION_PLAN", "Create or edit an action plan"),
     ("OTHER", "Other"),
     ("DONT_KNOW", "Don't know"),
+)
+
+FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS = Choices(
+    ("NO_ISSUE", "I did not experience any issues"),
+    ("UNABLE_TO_FIND", "I did not find what I was looking for"),
+    ("DIFFICULT_TO_NAVIGATE", "I found it difficult to navigate"),
+    ("LACKS_FEATURE", "The system lacks the feature I need"),
+    ("OTHER", "Other"),
 )
 
 PRIORITY_LEVELS = Choices(
