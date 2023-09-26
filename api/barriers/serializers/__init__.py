@@ -1,7 +1,6 @@
 from .barriers import (  # noqa
     BarrierDetailSerializer,
     BarrierListSerializer,
-    BarrierSlimListSerializer,
 )
 from .csv import BarrierCsvExportSerializer  # noqa
 from .data_workspace import DataWorkspaceSerializer  # noqa

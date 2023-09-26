@@ -6,7 +6,7 @@ from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 
 from ...action_plans.serializers import ActionPlanSerializer
-from .base import BarrierBaseMixins, BarrierSerializerBase
+from .base import BarrierSerializerBase
 
 
 class BarrierDetailSerializer(BarrierSerializerBase):
@@ -103,55 +103,7 @@ class BarrierMinimumDetailSerializer(BarrierSerializerBase):
         fields = ("id", "title")
 
 
-class BarrierListSerializer(BarrierSerializerBase):
-    # List Serializer provides list of fields returned to frontend
-    # when loading/submitting on the search page
-
-    class Meta(BarrierSerializerBase.Meta):
-        fields = (
-            "admin_areas",
-            "all_sectors",
-            "archived",
-            "archived_on",
-            "caused_by_trading_bloc",
-            "code",
-            "country",
-            "created_on",
-            "id",
-            "location",
-            "admin_areas",
-            "modified_on",
-            "reported_on",
-            "main_sector",
-            "sectors",
-            "sectors_affected",
-            "status",
-            "status_date",
-            "status_summary",
-            "estimated_resolution_date",
-            "tags",
-            "title",
-            "trade_direction",
-            "trading_bloc",
-            "progress_updates",
-            "next_steps_items",
-            "is_top_priority",
-            "priority_level",
-            "top_priority_status",
-            "top_priority_rejection_summary",
-            "current_valuation_assessment",
-        )
-
-    def get_current_valuation_assessment(self, obj):
-        if obj.current_valuation_assessment:
-            rating = ECONOMIC_ASSESSMENT_IMPACT[obj.current_valuation_assessment.impact]
-            rating = rating.split(":")[1]
-            return f"{rating}"
-        else:
-            return None
-
-
-class BarrierSlimListSerializer(BarrierBaseMixins, serializers.Serializer):
+class BarrierListSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     archived = serializers.BooleanField(read_only=True)
     code = serializers.CharField(read_only=True)
@@ -168,3 +120,15 @@ class BarrierSlimListSerializer(BarrierBaseMixins, serializers.Serializer):
     top_priority_status = serializers.CharField(read_only=True)
     priority_level = serializers.CharField(read_only=True)
     is_top_priority = serializers.BooleanField(read_only=True)
+    current_valuation_assessment = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_current_valuation_assessment(instance):
+        if instance.current_valuation_assessment:
+            rating = ECONOMIC_ASSESSMENT_IMPACT[
+                instance.current_valuation_assessment.impact
+            ]
+            rating = rating.split(":")[1]
+            return f"{rating}"
+        else:
+            return None
