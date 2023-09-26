@@ -35,9 +35,9 @@ class TestDataAnonymise(APITestMixin, TestCase):
             self.call_command(quantity=3)
 
     def test_barriers_are_created(self):
-        assert Barrier.objects.count() == 0
+        current_barrier_count = Barrier.objects.count()
         self.call_command(quantity=3)
-        assert Barrier.objects.count() == 3
+        assert Barrier.objects.count() == current_barrier_count + 3
 
     def test_categories_organisations_included(self):
         self.call_command(quantity=1)
