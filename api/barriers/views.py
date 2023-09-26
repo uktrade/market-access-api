@@ -33,8 +33,8 @@ from api.barriers.models import (
 from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierDetailSerializer,
-    BarrierReportSerializer,
     BarrierListSerializer,
+    BarrierReportSerializer,
     PublicBarrierSerializer,
 )
 from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer

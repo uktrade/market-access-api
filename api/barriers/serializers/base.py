@@ -37,7 +37,6 @@ from api.barriers.serializers.progress_updates import (
     ProgressUpdateSerializer,
 )
 from api.core.serializers.mixins import CustomUpdateMixin
-from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
 from .mixins import LocationFieldMixin
@@ -95,7 +94,7 @@ class BarrierSerializerBase(
     export_types = ExportTypesField(required=False)
     last_seen_on = serializers.SerializerMethodField()
     next_steps_items = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = Barrier
         read_only_fields = (
@@ -128,9 +127,11 @@ class BarrierSerializerBase(
                 user=request.user, barrier=obj
             )
             return hit.last_seen
-    
+
     def get_next_steps_items(self, instance):
-        next_steps = instance.next_steps_items.all().order_by("-status", "completion_date")
+        next_steps = instance.next_steps_items.all().order_by(
+            "-status", "completion_date"
+        )
         return NextStepItemSerializer(next_steps, required=False, many=True).data
 
     def validate_public_eligibility(self, attrs):
