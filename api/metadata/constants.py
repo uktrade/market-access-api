@@ -524,6 +524,7 @@ FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS = Choices(
 PRIORITY_LEVELS = Choices(
     ("NONE", ""),
     ("OVERSEAS", "Overseas Delivery"),
+    ("REGIONAL", "Regional Priority"),
     ("COUNTRY", "Country Priority"),
     ("WATCHLIST", "Watch list"),
 )
