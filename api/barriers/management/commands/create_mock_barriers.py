@@ -1,3 +1,4 @@
+import datetime
 from random import choice
 
 from django.conf import settings
@@ -8,7 +9,7 @@ from api.barriers.models import Barrier
 from api.core.exceptions import IllegalManagementCommandException
 from api.metadata.models import BarrierTag, Category, ExportType, Organisation
 from api.metadata.utils import get_countries
-from tests.barriers.factories import BarrierFactory
+from tests.barriers.factories import BarrierFactory, fuzzy_date
 
 from .data_anonymise import SAFE_ENVIRONMENTS
 from .data_anonymise import Command as AnonymiseCommand
@@ -35,11 +36,16 @@ class Command(BaseCommand):
                 export_type = ExportType.objects.first()
 
                 for x in range(quantity):
+                    status = choice((2, 3, 4, 5, 6))
+                    status_date = fuzzy_date()
+
                     barrier = BarrierFactory(
-                        status=2,
+                        status=status,
                         country=choice(countries)["id"],
                         export_description="Export description",
                         wto_profile__wto_should_be_notified=choice((True, False)),
+                        sectors=["aa22c9d2-5f95-e211-a939-e4115bead28a"],
+                        status_date=status_date,
                     )
 
                     # adding some m2m fields which will get later anonymised and changed
