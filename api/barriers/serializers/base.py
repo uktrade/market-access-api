@@ -37,7 +37,6 @@ from api.barriers.serializers.progress_updates import (
     ProgressUpdateSerializer,
 )
 from api.core.serializers.mixins import CustomUpdateMixin
-from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 from api.metadata.fields import AdminAreasField, CountryField, TradingBlocField
 
 from .mixins import LocationFieldMixin
@@ -46,41 +45,7 @@ from .public_barriers import NestedPublicBarrierSerializer
 logger = logging.getLogger(__name__)
 
 
-class BarrierBaseMixins(metaclass=serializers.SerializerMetaclass):
-
-    last_seen_on = serializers.SerializerMethodField()
-    next_steps_items = serializers.SerializerMethodField()
-    current_valuation_assessment = serializers.SerializerMethodField()
-
-    def get_last_seen_on(self, obj):
-        request = self.context.get("request")
-        if request and hasattr(request, "user"):
-            hit, _created = BarrierUserHit.objects.get_or_create(
-                user=request.user, barrier=obj
-            )
-            last_seen = hit.last_seen
-            hit.save()
-            return last_seen
-
-    def get_next_steps_items(self, instance):
-        next_steps = instance.next_steps_items.all().order_by(
-            "-status", "completion_date"
-        )
-        return NextStepItemSerializer(next_steps, required=False, many=True).data
-
-    def get_current_valuation_assessment(self, instance):
-        if instance.current_valuation_assessment:
-            rating = ECONOMIC_ASSESSMENT_IMPACT[
-                instance.current_valuation_assessment.impact
-            ]
-            rating = rating.split(":")[1]
-            return f"{rating}"
-        else:
-            return None
-
-
 class BarrierSerializerBase(
-    BarrierBaseMixins,
     LocationFieldMixin,
     CustomUpdateMixin,
     serializers.ModelSerializer,
@@ -127,6 +92,8 @@ class BarrierSerializerBase(
     )
     is_top_priority = serializers.BooleanField(required=False)
     export_types = ExportTypesField(required=False)
+    last_seen_on = serializers.SerializerMethodField()
+    next_steps_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Barrier
@@ -152,6 +119,20 @@ class BarrierSerializerBase(
             "progress_updates",
             "next_steps_items",
         )
+
+    def get_last_seen_on(self, obj):
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            hit, _ = BarrierUserHit.objects.get_or_create(
+                user=request.user, barrier=obj
+            )
+            return hit.last_seen
+
+    def get_next_steps_items(self, instance):
+        next_steps = instance.next_steps_items.all().order_by(
+            "-status", "completion_date"
+        )
+        return NextStepItemSerializer(next_steps, required=False, many=True).data
 
     def validate_public_eligibility(self, attrs):
         """Check for permissions here"""
