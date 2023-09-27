@@ -47,6 +47,7 @@ SAFE_ENVIRONMENTS = [
     "test",
 ]  # the environments we can run this command on
 
+
 def _get_dummy_user():
     # Development environments can use placeholder IDs that exist on those DBs
     # local will need to source a random user from the local DB

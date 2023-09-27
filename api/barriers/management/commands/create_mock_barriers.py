@@ -1,4 +1,3 @@
-import datetime
 from random import choice
 
 from django.conf import settings
