@@ -24,6 +24,7 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
+    User,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import (
@@ -46,7 +47,6 @@ SAFE_ENVIRONMENTS = [
     "test",
 ]  # the environments we can run this command on
 
-
 def _get_dummy_user():
     # Development environments can use placeholder IDs that exist on those DBs
     # local will need to source a random user from the local DB
@@ -66,14 +66,16 @@ def _get_dummy_user():
         return user.id
     else:
         # if we're on a non-local environment, we want to assign a random user from a
-        # pre-defined list. These are the devs emails.
-        DUMMY_USER_PROFILES = [
-            "3903",
-            "3916",
-            "3871",
-            "3911",
-        ]
-        return random.choice(DUMMY_USER_PROFILES)
+        # pre-defined list. These are the administrator emails.
+        from django.core.cache import cache
+
+        if cache.get("admin_users"):
+            admin_users = cache.get("admin_users")
+        else:
+            admin_users = User.objects.filter(groups__name="Administrator")
+            cache.set("admin_users", admin_users)
+
+        return random.choice(admin_users).id
 
 
 def _randomise_date(date):
