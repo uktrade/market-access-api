@@ -164,6 +164,7 @@ class TestCategories(APITestMixin):
 
     def test_barrier_tags(self):
         expected = [
+            "Scoping (Top 100 priority barrier)",
             "COVID-19",
             "Brexit",
             "NI Protocol",
@@ -174,7 +175,6 @@ class TestCategories(APITestMixin):
             "Regional Trade Plan",
             "EU Market Access Board",
             "Wales Priority",
-            "Scoping",
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)
