@@ -15,6 +15,7 @@ ignore =
 per-file-ignores =
     # Common imports for all files in api/barriers/history
     ./api/barriers/history/__init__.py:F401
+    api/barriers/serializers/__init__.py:F401
     ./config/settings/*:F401,F403,F405
     */urls.py:E501
 
