@@ -8,7 +8,7 @@ from api.core.exceptions import IllegalManagementCommandException
 from api.core.test_utils import APITestMixin
 
 
-class TestDataAnonymise(APITestMixin, TestCase):
+class TestCreateMockBarriers(APITestMixin, TestCase):
     fixtures = [
         "barrier_priorities",
         "barrier_for_anonymisation",
@@ -39,7 +39,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
 
     def test_categories_m2m_fields_included(self):
         self.call_command(quantity=1)
-        barrier = Barrier.objects.last()
+        barrier = Barrier.objects.first()
         assert barrier.categories.all().count() >= 1
         assert barrier.organisations.all().count() >= 1
         assert barrier.tags.all().count() >= 1
