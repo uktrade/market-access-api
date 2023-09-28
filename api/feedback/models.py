@@ -29,5 +29,12 @@ class Feedback(models.Model):
         blank=True,
         default=list,
     )
+    experienced_issues = ArrayField(
+        models.CharField(max_length=30),
+        blank=True,
+        default=list,
+    )
+
+    other_detail = models.TextField(default="", blank=True)
 
     feedback_text = models.TextField(default="", blank=True)

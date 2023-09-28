@@ -33,7 +33,7 @@ tests = ["pytest", "pytest-asyncio", "mypy (>=0.800)"]
 
 [[package]]
 name = "astroid"
-version = "2.15.6"
+version = "2.15.7"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
@@ -49,25 +49,25 @@ wrapt = [
 
 [[package]]
 name = "asttokens"
-version = "2.2.1"
+version = "2.4.0"
 description = "Annotate AST trees with source code positions"
 category = "dev"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-six = "*"
+six = ">=1.12.0"
 
 [package.extras]
 test = ["astroid", "pytest"]
 
 [[package]]
 name = "async-timeout"
-version = "4.0.2"
+version = "4.0.3"
 description = "Timeout context manager for asyncio programs"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.7"
 
 [[package]]
 name = "backcall"
@@ -437,7 +437,7 @@ crt = ["awscrt (==0.11.24)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.31.18"
+version = "1.31.53"
 description = "Type annotations and code completion for botocore"
 category = "dev"
 optional = false
@@ -527,7 +527,7 @@ python-versions = ">=3.7.0"
 
 [[package]]
 name = "click"
-version = "8.1.6"
+version = "8.1.7"
 description = "Composable command line interface toolkit"
 category = "main"
 optional = false
@@ -586,18 +586,18 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7
 
 [[package]]
 name = "coverage"
-version = "7.2.7"
+version = "7.3.1"
 description = "Code coverage measurement for Python"
 category = "dev"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.extras]
 toml = ["tomli"]
 
 [[package]]
 name = "cryptography"
-version = "41.0.3"
+version = "41.0.4"
 description = "cryptography is a package which provides cryptographic recipes and primitives to Python developers."
 category = "main"
 optional = false
@@ -896,7 +896,7 @@ tornado = ["tornado"]
 
 [[package]]
 name = "exceptiongroup"
-version = "1.1.2"
+version = "1.1.3"
 description = "Backport of PEP 654 (exception groups)"
 category = "main"
 optional = false
@@ -931,7 +931,7 @@ tests = ["asttokens", "pytest", "littleutils", "rich"]
 name = "factory-boy"
 version = "3.0.1"
 description = "A versatile test fixtures replacement based on thoughtbot's factory_bot for Ruby."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -944,9 +944,9 @@ doc = ["sphinx", "sphinx-rtd-theme"]
 
 [[package]]
 name = "faker"
-version = "19.2.0"
+version = "19.3.1"
 description = "Faker is a Python package that generates fake data for you."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 
@@ -1202,7 +1202,7 @@ deprecated = "*"
 
 [[package]]
 name = "kombu"
-version = "5.3.1"
+version = "5.3.2"
 description = "Messaging library for Python."
 category = "main"
 optional = false
@@ -1216,7 +1216,7 @@ vine = "*"
 
 [package.extras]
 azureservicebus = ["azure-servicebus (>=7.10.0)"]
-azurestoragequeues = ["azure-identity (>=1.12.0)", "azure-storage-queue (>=12.6.0)"]
+azurestoragequeues = ["azure-storage-queue (>=12.6.0)", "azure-identity (>=1.12.0)"]
 confluentkafka = ["confluent-kafka (==2.1.1)"]
 consul = ["python-consul2"]
 librabbitmq = ["librabbitmq (>=2.0.0)"]
@@ -1453,11 +1453,11 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest-cov (>=4.1)", "pytes
 
 [[package]]
 name = "pluggy"
-version = "1.2.0"
+version = "1.3.0"
 description = "plugin and hook calling mechanisms for python"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.extras]
 dev = ["pre-commit", "tox"]
@@ -1535,7 +1535,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pygments"
-version = "2.15.1"
+version = "2.16.1"
 description = "Pygments is a syntax highlighting package written in Python."
 category = "dev"
 optional = false
@@ -1560,14 +1560,14 @@ tests = ["pytest (>=6.0.0,<7.0.0)", "coverage[toml] (==5.0.4)"]
 
 [[package]]
 name = "pylint"
-version = "2.17.5"
+version = "2.17.6"
 description = "python code static checker"
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 
 [package.dependencies]
-astroid = ">=2.15.6,<=2.17.0-dev0"
+astroid = ">=2.15.7,<=2.17.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = [
     {version = ">=0.2", markers = "python_version < \"3.11\""},
@@ -1613,7 +1613,7 @@ pylint = ">=1.7"
 
 [[package]]
 name = "pytest"
-version = "7.4.0"
+version = "7.4.2"
 description = "pytest: simple powerful testing with Python"
 category = "main"
 optional = false
@@ -1739,7 +1739,7 @@ python-versions = ">=3.4"
 
 [[package]]
 name = "pytz"
-version = "2023.3"
+version = "2023.3.post1"
 description = "World timezone definitions, modern and historical"
 category = "main"
 optional = false
@@ -1767,7 +1767,7 @@ tests = ["Flask (>=0.8)", "Flask-Login (>=0.2.0)", "zconfig", "anyjson", "blinke
 
 [[package]]
 name = "redis"
-version = "4.6.0"
+version = "5.0.0"
 description = "Python client for Redis database and key-value store"
 category = "main"
 optional = false
@@ -1953,7 +1953,7 @@ tests = ["pytest", "typeguard", "pygments", "littleutils", "cython"]
 
 [[package]]
 name = "time-machine"
-version = "2.11.0"
+version = "2.13.0"
 description = "Travel through time in your tests."
 category = "main"
 optional = false
@@ -1980,19 +1980,19 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "traitlets"
-version = "5.9.0"
+version = "5.10.0"
 description = "Traitlets Python configuration system"
 category = "dev"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
-test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
+test = ["argcomplete (>=3.0.3)", "mypy (>=1.5.1)", "pre-commit", "pytest-mock", "pytest-mypy-testing", "pytest (>=7.0,<7.5)"]
 
 [[package]]
 name = "types-awscrt"
-version = "0.17.0"
+version = "0.19.1"
 description = "Type annotations and code completion for awscrt"
 category = "dev"
 optional = false
@@ -2000,7 +2000,7 @@ python-versions = ">=3.7,<4.0"
 
 [[package]]
 name = "types-pyyaml"
-version = "6.0.12.11"
+version = "6.0.12.12"
 description = "Typing stubs for PyYAML"
 category = "dev"
 optional = false
@@ -2008,11 +2008,11 @@ python-versions = "*"
 
 [[package]]
 name = "typing-extensions"
-version = "4.7.1"
-description = "Backported and Experimental Type Hints for Python 3.7+"
+version = "4.8.0"
+description = "Backported and Experimental Type Hints for Python 3.8+"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 
 [[package]]
 name = "tzdata"
@@ -2072,7 +2072,7 @@ python-versions = "*"
 
 [[package]]
 name = "werkzeug"
-version = "2.3.6"
+version = "2.3.7"
 description = "The comprehensive WSGI web application library."
 category = "dev"
 optional = false
@@ -2113,14 +2113,14 @@ python-versions = ">=3.4"
 
 [[package]]
 name = "zipp"
-version = "3.16.2"
+version = "3.17.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 
 [package.extras]
-docs = ["sphinx (>=3.5)", "jaraco.packaging (>=9.3)", "rst.linker (>=1.9)", "furo", "sphinx-lint", "jaraco.tidelift (>=1.4)"]
+docs = ["sphinx (>=3.5)", "sphinx (<7.2.5)", "jaraco.packaging (>=9.3)", "rst.linker (>=1.9)", "furo", "sphinx-lint", "jaraco.tidelift (>=1.4)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ruff", "jaraco.itertools", "jaraco.functools", "more-itertools", "big-o", "pytest-ignore-flaky", "pytest-black (>=0.3.7)", "pytest-mypy (>=0.9.1)"]
 
 [[package]]
@@ -2151,7 +2151,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "c77d9750443508dc9a5861709f9dc41287f82fa8c810d74f44474ab4ab239ba9"
+content-hash = "09359e7223655ca90ea1b809645a407272e1677673ad34410ab376fdc1f79d1e"
 
 [metadata.files]
 amqp = []
