@@ -7,7 +7,12 @@ def remove_priority_level_country_region_forwards_func(apps, schema_editor):
     Barrier = apps.get_model("barriers", "Barrier")
     db_alias = schema_editor.connection.alias
     Barrier.objects.using(db_alias).filter(
-        top_priority_status="APPROVED", priority_level__in=["REGIONAL", "OVERSEAS"]
+        top_priority_status__in=[
+            "APPROVED",
+            "APPROVAL_PENDING",
+            "REMOVAL_PENDING",
+        ],
+        priority_level__in=["REGIONAL", "OVERSEAS"],
     ).update(priority_level="NONE")
 
 
