@@ -1,31 +1,25 @@
 import logging
 
-from django.conf import settings
-from django.http import HttpResponse
-from django.urls import resolve
+from sentry_sdk import set_user
 
 logger = logging.getLogger(__name__)
 
 
-def AdminIpRestrictionMiddleware(get_response):
-    def middleware(request):
-        if resolve(request.path).app_name == "admin":
-            if settings.RESTRICT_ADMIN:
-                try:
-                    remote_address = (
-                        request.META["HTTP_X_FORWARDED_FOR"].split(",")[-2].strip()
-                    )  # noqa: E501
-                except (IndexError, KeyError):
-                    logger.warning(
-                        "X-Forwarded-For header is missing or does not "
-                        "contain enough elements to determine the "
-                        "client's ip"
-                    )
-                    return HttpResponse("Unauthorized", status=401)
+class SentryUserContextMiddleware:
+    """
+    Middleware to make a log record of each url request with logged in user
+    """
 
-                if remote_address not in settings.ALLOWED_ADMIN_IPS:
-                    return HttpResponse("Unauthorized", status=401)
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-        return get_response(request)
-
-    return middleware
+    def __call__(self, request):
+        if request.user.is_authenticated:
+            set_user(
+                {
+                    "id": str(request.user.id),
+                }
+            )
+        else:
+            set_user(None)
+        return self.get_response(request)

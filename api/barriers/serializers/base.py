@@ -46,7 +46,9 @@ logger = logging.getLogger(__name__)
 
 
 class BarrierSerializerBase(
-    LocationFieldMixin, CustomUpdateMixin, serializers.ModelSerializer
+    LocationFieldMixin,
+    CustomUpdateMixin,
+    serializers.ModelSerializer,
 ):
     admin_areas = AdminAreasField(required=False)
     caused_by_admin_areas = BooleanField(required=False)
@@ -65,7 +67,6 @@ class BarrierSerializerBase(
     commodities = CommoditiesField(source="barrier_commodities", required=False)
     country = CountryField(required=False, allow_null=True)
     created_by = UserField(required=False)
-    last_seen_on = serializers.SerializerMethodField()
     modified_by = UserField(required=False)
     priority = BarrierPriorityField(required=False)
     priority_level = serializers.CharField(required=False)
@@ -90,8 +91,9 @@ class BarrierSerializerBase(
         required=False, many=True
     )
     is_top_priority = serializers.BooleanField(required=False)
-    next_steps_items = serializers.SerializerMethodField()
     export_types = ExportTypesField(required=False)
+    last_seen_on = serializers.SerializerMethodField()
+    next_steps_items = serializers.SerializerMethodField()
 
     class Meta:
         model = Barrier
@@ -121,12 +123,10 @@ class BarrierSerializerBase(
     def get_last_seen_on(self, obj):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
-            hit, _created = BarrierUserHit.objects.get_or_create(
+            hit, _ = BarrierUserHit.objects.get_or_create(
                 user=request.user, barrier=obj
             )
-            last_seen = hit.last_seen
-            hit.save()
-            return last_seen
+            return hit.last_seen
 
     def get_next_steps_items(self, instance):
         next_steps = instance.next_steps_items.all().order_by(
