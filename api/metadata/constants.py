@@ -531,6 +531,7 @@ FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS = Choices(
 
 PRIORITY_LEVELS = Choices(
     ("NONE", ""),
+    ("OVERSEAS", "Overseas Delivery"),
     ("REGIONAL", "Regional Priority"),
     ("COUNTRY", "Country Priority"),
     ("WATCHLIST", "Watch list"),
