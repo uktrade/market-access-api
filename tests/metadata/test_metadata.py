@@ -164,6 +164,7 @@ class TestCategories(APITestMixin):
 
     def test_barrier_tags(self):
         expected = [
+            "Scoping (Top 100 priority barrier)",
             "COVID-19",
             "Brexit",
             "NI Protocol",
