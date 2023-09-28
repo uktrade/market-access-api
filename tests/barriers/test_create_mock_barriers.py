@@ -39,7 +39,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
 
     def test_categories_organisations_included(self):
         self.call_command(quantity=1)
-        barrier = Barrier.objects.first()
+        barrier = Barrier.objects.last()
         assert barrier.categories.count() >= 1
         assert barrier.organisations.count() >= 1
         assert barrier.tags.count() >= 1
