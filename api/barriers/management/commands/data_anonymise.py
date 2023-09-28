@@ -24,11 +24,12 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
+    User,
 )
 from api.collaboration.models import TeamMember
 from api.core.exceptions import (
-    AnonymiseProductionDataException,
     AtomicTransactionException,
+    IllegalManagementCommandException,
 )
 from api.history.items.action_plans import AuthUser
 from api.history.models import CachedHistoryItem
@@ -66,14 +67,16 @@ def _get_dummy_user():
         return user.id
     else:
         # if we're on a non-local environment, we want to assign a random user from a
-        # pre-defined list. These are the devs emails.
-        DUMMY_USER_PROFILES = [
-            "3903",
-            "3916",
-            "3871",
-            "3911",
-        ]
-        return random.choice(DUMMY_USER_PROFILES)
+        # pre-defined list. These are the administrator emails.
+        from django.core.cache import cache
+
+        if cache.get("admin_users"):
+            admin_users = cache.get("admin_users")
+        else:
+            admin_users = User.objects.filter(groups__name="Administrator")
+            cache.set("admin_users", admin_users)
+
+        return random.choice(admin_users).id
 
 
 def _randomise_date(date):
@@ -697,19 +700,20 @@ class Command(BaseCommand):
             ResolvabilityAssessment.history.filter(barrier=barrier.pk).delete()
             StrategicAssessment.history.filter(barrier=barrier.pk).delete()
             WTOProfile.history.filter(barrier=barrier.pk).delete()
-
-            public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
-            if public_barrier:
+            try:
+                public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
                 public_barrier.history.all().delete()
                 PublicBarrierNote.history.filter(
                     public_barrier=public_barrier.pk
                 ).delete()
+            except PublicBarrier.DoesNotExist:
+                pass
 
     def handle(self, *args, **options):
         self.stdout.write("Running management command: Data Anonymise.")
 
         if settings.DJANGO_ENV not in SAFE_ENVIRONMENTS:
-            raise AnonymiseProductionDataException(
+            raise IllegalManagementCommandException(
                 "You cannot anonymise data outside of UAT, Dev, or local. You came this close to a very bad day."
             )
 

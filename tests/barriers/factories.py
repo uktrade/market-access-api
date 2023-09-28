@@ -94,7 +94,7 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     main_sector = "355f977b-8ac3-e211-a646-e4115bead28a"  # Consumer and retail
     is_currently_active = True
     start_date = fuzzy_date()
-    trade_direction = 1
+    estimated_resolution_date = fuzzy_date()
 
     @factory.post_generation
     def convert_to_barrier(self, create, extracted, **kwargs):
