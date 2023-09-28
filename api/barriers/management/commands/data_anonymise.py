@@ -708,6 +708,7 @@ class Command(BaseCommand):
                 ).delete()
             except PublicBarrier.DoesNotExist:
                 pass
+
     def handle(self, *args, **options):
         self.stdout.write("Running management command: Data Anonymise.")
 
