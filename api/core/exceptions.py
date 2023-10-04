@@ -22,7 +22,7 @@ class AtomicTransactionException(Exception):
     pass
 
 
-class AnonymiseProductionDataException(Exception):
-    """Exception to be used when you try to anonymise production data using the data_anonymise management command"""
+class IllegalManagementCommandException(Exception):
+    """Exception to be used when you try to run a management command in an illegal environment"""
 
     pass

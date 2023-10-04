@@ -128,4 +128,4 @@ src/
 # Local dev ennv
 requirements-dev.txt
 /local.env
-/config/settings/debug.py
+config/settings/debug.py
