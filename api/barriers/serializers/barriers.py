@@ -110,6 +110,7 @@ class BarrierListSerializer(serializers.Serializer):
     title = serializers.CharField(read_only=True)
     reported_on = serializers.DateTimeField(read_only=True)
     modified_on = serializers.DateTimeField(read_only=True)
+    archived_on = serializers.DateTimeField(read_only=True)
     status = StatusField(required=False)
     status_date = serializers.DateField(read_only=True)
     estimated_resolution_date = serializers.DateField(read_only=True)
