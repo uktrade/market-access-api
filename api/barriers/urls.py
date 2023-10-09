@@ -24,6 +24,7 @@ from api.barriers.views import (
     PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count,
+    BarrierTableDataView,
 )
 
 app_name = "barriers"
@@ -32,9 +33,9 @@ router = DefaultRouter(trailing_slash=False)
 # Important Notice: Public barriers should only be used within Market Access Service exclusively!
 router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barriers")
 
-
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
+    path("barriers/table_data/<str:table_name>", BarrierTableDataView.as_view(), name="table-data"),
     path(
         "barriers/s3-email",
         BarrierListS3EmailFile.as_view(),

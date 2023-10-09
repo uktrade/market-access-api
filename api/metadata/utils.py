@@ -283,3 +283,15 @@ def get_barrier_search_ordering_choices():
         (ordering, config["label"])
         for ordering, config in BARRIER_SEARCH_ORDERING_CHOICES.items()
     ]
+
+
+def get_country_to_overseas_region():
+    """Return a dictionary mapping countries to their overseas regions"""
+    country_to_overseas_region_lookup = cache.get("country_to_overseas_region_lookup", None)
+    if not country_to_overseas_region_lookup:
+        country_to_overseas_region_lookup = {}
+        for country in get_countries():
+            if overseas_region := country.get("overseas_region"):
+                country_to_overseas_region_lookup[country["id"]] = overseas_region
+        cache.set("country_to_overseas_region_lookup", country_to_overseas_region_lookup)
+    return country_to_overseas_region_lookup

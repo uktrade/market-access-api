@@ -16,7 +16,8 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.viewsets import GenericViewSet, ModelViewSet, ViewSet
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.exceptions import PublicBarrierPublishException
@@ -66,6 +67,7 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPub
 
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
+from .serializers.tables import BarrierStatusSerializer, UnresolvedBarrierSerializer
 from .tasks import generate_s3_and_send_email
 
 logger = logging.getLogger(__name__)
@@ -402,7 +404,6 @@ class BarrierList(generics.ListAPIView):
         response = super().get(request, *args, **kwargs)
         self.update_saved_search_if_required()
         return response
-
 
 class BarrierRequestDownloadApproval(generics.CreateAPIView):
     """
@@ -1201,3 +1202,13 @@ class BarrierNextStepItemViewSet(ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+class BarrierTableDataView(APIView):
+    serializer_mapping = {
+        "status": BarrierStatusSerializer,
+        "open": UnresolvedBarrierSerializer
+    }
+
+    def get(self, request, table_name, *args, **kwargs):
+        serializer = self.serializer_mapping[table_name]
+        return Response(serializer().data)
