@@ -975,7 +975,7 @@ python-dateutil = ">=2.7"
 
 [[package]]
 name = "gevent"
-version = "23.9.0"
+version = "23.9.1"
 description = "Coroutine-based network library"
 category = "main"
 optional = false
@@ -984,18 +984,18 @@ python-versions = ">=3.8"
 [package.dependencies]
 cffi = {version = ">=1.12.2", markers = "platform_python_implementation == \"CPython\" and sys_platform == \"win32\""}
 greenlet = [
-    {version = ">=2.0.0", markers = "platform_python_implementation == \"CPython\" and python_version < \"3.12\""},
-    {version = ">=3.0rc1", markers = "platform_python_implementation == \"CPython\" and python_version >= \"3.12\""},
+    {version = ">=2.0.0", markers = "platform_python_implementation == \"CPython\" and python_version < \"3.11\""},
+    {version = ">=3.0rc3", markers = "platform_python_implementation == \"CPython\" and python_version >= \"3.11\""},
 ]
 "zope.event" = "*"
 "zope.interface" = "*"
 
 [package.extras]
 dnspython = ["dnspython (>=1.16.0,<2.0)", "idna"]
-docs = ["sphinx", "furo", "repoze.sphinx.autointerface", "sphinxcontrib-programoutput", "zope.schema"]
 monitor = ["psutil (>=5.7.0)"]
 recommended = ["cffi (>=1.12.2)", "dnspython (>=1.16.0,<2.0)", "idna", "psutil (>=5.7.0)"]
-test = ["requests", "objgraph", "setuptools", "cffi (>=1.12.2)", "dnspython (>=1.16.0,<2.0)", "idna", "coverage (>=5.0)", "psutil (>=5.7.0)"]
+docs = ["sphinx", "furo", "repoze.sphinx.autointerface", "sphinxcontrib-programoutput", "zope.schema"]
+test = ["cffi (>=1.12.2)", "dnspython (>=1.16.0,<2.0)", "idna", "psutil (>=5.7.0)", "requests", "coverage (>=5.0)", "objgraph", "setuptools"]
 
 [[package]]
 name = "greenlet"
@@ -2142,7 +2142,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "285494d9357c16b73d0c6d12b1a19bf8f484b44720ff1c12d5d195c565ea7bf6"
+content-hash = "1a6f666fdbd8aa0b57d47e4dc183e90a25ef165e1d546cd702b86a5736df7352"
 
 [metadata.files]
 amqp = [
