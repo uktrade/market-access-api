@@ -83,7 +83,7 @@ jobs:
       AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID: "test-1234" # pragma: allowlist secret
 
     working_directory: ~/market-access-api
-    parallelism: 4
+    parallelism: 5
     steps:
       - checkout
 
@@ -141,7 +141,7 @@ jobs:
           command: |
             TESTFILES=$(circleci tests glob tests/**/test*.py | circleci tests split --split-by=timings)
             poetry run pytest $TESTFILES
-            poetry run coverage json
+            poetry run coverage combine && poetry run coverage json
 
       - codecov/upload
 
