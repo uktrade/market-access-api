@@ -140,7 +140,7 @@ jobs:
           parallel: true
           command: |
             poetry run pytest tests --circleci-parallelize
-            poetry run coverage combine && poetry run coverage json
+            poetry run coverage json
 
       - codecov/upload
 
