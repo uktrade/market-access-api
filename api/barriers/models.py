@@ -1425,7 +1425,6 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def top_priority_status_filter(self, queryset, name, value):
         if value:
-
             # If user is searching for APPROVED top priority barriers, the search must also
             # include barriers PENDING REMOVAL. So if APPROVED is selected, but PENDING
             # REMOVAL has not, we need to include it in the search parameter.
@@ -1440,7 +1439,8 @@ class BarrierFilterSet(django_filters.FilterSet):
             queryset = queryset.filter(priority_level__in=value)
             if "NONE" in value:
                 queryset = queryset.filter(
-                    Q(top_priority_status="NONE") & Q(priority_level="NONE")
+                    (Q(top_priority_status="NONE") & Q(priority_level="NONE"))
+                    | Q(priority_level__in=value)
                 )
         return queryset
 
@@ -1453,6 +1453,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
         UNKNOWN = "UNKNOWN"
         priorities = metadata_models.BarrierPriority.objects.filter(code__in=value)
+
         if UNKNOWN in value:
             return queryset.filter(
                 Q(priority__isnull=True) | Q(priority__in=priorities)
@@ -1980,7 +1981,6 @@ User = get_user_model()
 
 
 class BarrierRequestDownloadApproval(models.Model):
-
     user = models.ForeignKey(
         User,
         null=True,
@@ -2026,7 +2026,6 @@ class BarrierRequestDownloadApproval(models.Model):
 
 
 class BarrierSearchCSVDownloadEvent(models.Model):
-
     email = models.EmailField()
     barrier_ids = models.TextField(validators=[int_list_validator])
     created = models.DateTimeField(auto_now_add=True)
