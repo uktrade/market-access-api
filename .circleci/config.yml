@@ -136,10 +136,19 @@ jobs:
             psql -h localhost -U postgres -d market_access -f docker/local/comtrade_test_db/20_insert_test_data.sql
 
       - run:
+          name: make coverage directory
+          command: mkdir coverage_reports
+
+      - run:
           name: run tests & save coverage
           parallel: true
           command: |
-            poetry run pytest tests --circleci-parallelize
+            poetry run pytest tests
+
+      - run:
+          name: combine coverage data files
+          command: |
+            poetry run coverage combine
             poetry run coverage json
 
       - codecov/upload

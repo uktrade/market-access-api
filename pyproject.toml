@@ -2,7 +2,11 @@
 name = "market-access-api"
 version = "0.51.00"
 description = "Market Access API"
-authors = ["Ferenc Csepregi <feri@31.digital>", "James Pacileo <jamespaxi@gmail.com>", "Ciaran Dohety <cad106uk@gmail.com>"]
+authors = [
+    "Ferenc Csepregi <feri@31.digital>",
+    "James Pacileo <jamespaxi@gmail.com>",
+    "Ciaran Dohety <cad106uk@gmail.com>",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -84,6 +88,7 @@ addopts = """
     --cov=api
     --no-cov-on-fail
     --cov-branch
+    --circleci-parallelize
 """
 
 [tool.coverage.run]
@@ -93,6 +98,8 @@ omit = [
     "*__init__*",
     "*test_*",
 ]
+
+parallel = true
 
 [tool.isort]
 profile = "black"
