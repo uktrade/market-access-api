@@ -83,7 +83,7 @@ jobs:
       AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID: "test-1234" # pragma: allowlist secret
 
     working_directory: ~/market-access-api
-
+    parallelism: 4
     steps:
       - checkout
 
