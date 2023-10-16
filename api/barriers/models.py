@@ -1701,10 +1701,14 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.filter(status=3, status_date__range=(start_date, end_date))
 
         elif name == "status_date_open_in_progress":
-            return queryset.filter(status=2, estimated_resolution_date__range=(start_date, end_date))
+            return queryset.filter(
+                status=2, estimated_resolution_date__range=(start_date, end_date)
+            )
 
         elif name == "status_date_open_pending_action":
-            return queryset.filter(status=1, estimated_resolution_date__range=(start_date, end_date))
+            return queryset.filter(
+                status=1, estimated_resolution_date__range=(start_date, end_date)
+            )
 
     def wto_filter(self, queryset, name, value):
         wto_queryset = queryset.none()
