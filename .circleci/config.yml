@@ -137,8 +137,10 @@ jobs:
 
       - run:
           name: run tests & save coverage
+          parallel: true
           command: |
-            poetry run pytest tests
+            TESTFILES=$(circleci tests glob tests/**/test*.py | circleci tests split --split-by=timings)
+            poetry run pytest $TESTFILES
             poetry run coverage json
 
       - codecov/upload
