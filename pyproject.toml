@@ -67,6 +67,7 @@ pytest-watch = "^4.2.0"
 time-machine = "^2.8.2"
 greenlet = "~3.0.0"
 coverage = "^7.2.7"
+pytest-circleci-parallelized = "^0.1.0"
 
 [build-system]
 requires = ["poetry~=1.1.8"]
