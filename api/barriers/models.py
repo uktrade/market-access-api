@@ -1694,27 +1694,17 @@ class BarrierFilterSet(django_filters.FilterSet):
         start_date = dates_list[0]
         end_date = dates_list[1]
 
-        # Exlude any barrier from the result which has the corresponding status but sits outside
-        # the given range.
         if name == "status_date_resolved_in_full":
-            return queryset.exclude(
-                Q(status__in="4"), ~Q(status_date__range=(start_date, end_date))
-            )
+            return queryset.filter(status=4, status_date__range=(start_date, end_date))
+
         elif name == "status_date_resolved_in_part":
-            return queryset.exclude(
-                Q(status__in="3"),
-                ~Q(status_date__range=(start_date, end_date)),
-            )
+            return queryset.filter(status=3, status_date__range=(start_date, end_date))
+
         elif name == "status_date_open_in_progress":
-            return queryset.exclude(
-                Q(status__in="2"),
-                ~Q(estimated_resolution_date__range=(start_date, end_date)),
-            )
+            return queryset.filter(status=2, estimated_resolution_date__range=(start_date, end_date))
+
         elif name == "status_date_open_pending_action":
-            return queryset.exclude(
-                Q(status__in="1"),
-                ~Q(estimated_resolution_date__range=(start_date, end_date)),
-            )
+            return queryset.filter(status=1, estimated_resolution_date__range=(start_date, end_date))
 
     def wto_filter(self, queryset, name, value):
         wto_queryset = queryset.none()
