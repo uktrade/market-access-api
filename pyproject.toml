@@ -95,6 +95,10 @@ omit = [
     "*__init__*",
     "*test_*",
 ]
+include = [
+    "api/*",
+]
+branch = true
 
 parallel = true
 
