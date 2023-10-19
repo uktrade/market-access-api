@@ -432,7 +432,7 @@ crt = ["awscrt (==0.11.24)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.31.63"
+version = "1.31.66"
 description = "Type annotations and code completion for botocore"
 category = "dev"
 optional = false
@@ -1994,7 +1994,7 @@ test = ["argcomplete (>=3.0.3)", "mypy (>=1.5.1)", "pre-commit", "pytest-mock", 
 
 [[package]]
 name = "types-awscrt"
-version = "0.19.2"
+version = "0.19.3"
 description = "Type annotations and code completion for awscrt"
 category = "dev"
 optional = false
@@ -2026,7 +2026,7 @@ python-versions = ">=2"
 
 [[package]]
 name = "urllib3"
-version = "1.26.17"
+version = "1.26.18"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
