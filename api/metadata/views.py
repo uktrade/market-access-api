@@ -1,4 +1,3 @@
-from django.conf import settings
 from hawkrest import HawkAuthentication
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
@@ -43,12 +42,8 @@ from .utils import (
 
 
 class MetadataView(generics.GenericAPIView):
-    if settings.HAWK_ENABLED:
-        authentication_classes = (HawkAuthentication,)
-        permission_classes = (IsAuthenticated,)
-    else:
-        authentication_classes = ()
-        permission_classes = ()
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
         barrier_terms = dict(BARRIER_TERMS)

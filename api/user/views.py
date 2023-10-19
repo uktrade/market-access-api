@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db.models import F
@@ -135,12 +134,8 @@ class UserList(generics.ListAPIView):
 
 
 class UserActivityLogList(generics.ListAPIView):
-    if settings.HAWK_ENABLED:
-        authentication_classes = (HawkAuthentication,)
-        permission_classes = (IsAuthenticated,)
-    else:
-        authentication_classes = ()
-        permission_classes = ()
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     serializer_class = UserActvitiyLogSerializer
 
