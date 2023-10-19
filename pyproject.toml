@@ -85,9 +85,6 @@ python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = """
     --reuse-db
     --ds=config.settings.test
-    --cov=api
-    --no-cov-on-fail
-    --cov-branch
     --circleci-parallelize
 """
 
