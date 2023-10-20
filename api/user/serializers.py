@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 from rest_framework import serializers
+from sentry_sdk import capture_message
 
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
@@ -166,18 +167,34 @@ class UserDetailSerializer(serializers.ModelSerializer):
             .values_list("codename", flat=True)
         )
 
-    def get_validated_group_ids(self):
-        group_ids = []
-        for group in self.initial_data.get("groups"):
-            try:
-                group_ids.append(int(group.get("id")))
-            except ValueError:
-                continue
-        return Group.objects.filter(pk__in=group_ids).values_list("id", flat=True)
-
     def update(self, instance, validated_data):
         if validated_data.pop("groups") is not None:
-            group_ids = self.get_validated_group_ids()
+            group_ids = [
+                int(each.get("id"))
+                for each in self.initial_data.get("groups")
+                if "id" in each
+            ]
+            group_queryset = Group.objects.filter(pk__in=group_ids)
+
+            # we need to figure out if the user has been granted Administrator rights, or if they have been removed.
+            admin_group = Group.objects.get(name="Administrator")
+            if (
+                admin_group in group_queryset
+                and admin_group not in instance.groups.all()
+            ):
+                # the user has been granted administrator access
+                capture_message(
+                    f"User {instance.id} has been granted Administrator access"
+                )
+            elif (
+                admin_group not in group_queryset
+                and admin_group in instance.groups.all()
+            ):
+                # the user has been removed from the administrator group
+                capture_message(
+                    f"User {instance.id} has been removed from Administrator group"
+                )
+
             instance.groups.set(group_ids)
         if validated_data.pop("is_active", None) is not None:
             instance.is_active = False
