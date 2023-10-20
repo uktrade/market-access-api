@@ -37,4 +37,4 @@ PUBLIC_DATA_AWS_ACCESS_KEY_ID = "dummy"
 PUBLIC_DATA_AWS_SECRET_ACCESS_KEY = "dummy"  # pragma: allowlist secret
 
 # monkey patching HawkAuthentication to always return an authenticated user
-HawkAuthentication.authenticate = lambda x, y: HawkAuthenticatedUser()
+HawkAuthentication.authenticate = lambda x, y: HawkAuthenticatedUser(), None
