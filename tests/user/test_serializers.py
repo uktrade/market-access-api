@@ -1,10 +1,13 @@
 from unittest import TestCase
 from unittest.mock import patch
 
+import pytest
 from django.contrib.auth.models import Group
 
 from api.user.serializers import UserDetailSerializer
 from tests.user.factories import UserFactoryMixin
+
+pytestmark = [pytest.mark.django_db]
 
 
 class TestUserDetailSerializer(TestCase, UserFactoryMixin):
