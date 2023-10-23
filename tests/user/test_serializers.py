@@ -19,7 +19,9 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
     def test_administrator_granted_send_to_sentry(self, mocked_capture_message):
         normal_user = self.create_standard_user()
         serializer = UserDetailSerializer(
-            instance=normal_user, data={"groups": [{"id": self.admin_group.id}]}
+            instance=normal_user,
+            partial=True,
+            data={"groups": [{"id": self.admin_group.id}]},
         )
         assert serializer.is_valid()
         serializer.save()
@@ -32,7 +34,9 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
     def test_administrator_revoked_send_to_sentry(self, mocked_capture_message):
         admin_user = self.create_admin()
         serializer = UserDetailSerializer(
-            instance=admin_user, data={"groups": [{"id": self.publisher_group.id}]}
+            instance=admin_user,
+            partial=True,
+            data={"groups": [{"id": self.publisher_group.id}]},
         )
         assert serializer.is_valid()
         serializer.save()
