@@ -2,7 +2,11 @@
 name = "market-access-api"
 version = "0.51.00"
 description = "Market Access API"
-authors = ["Ferenc Csepregi <feri@31.digital>", "James Pacileo <jamespaxi@gmail.com>", "Ciaran Dohety <cad106uk@gmail.com>"]
+authors = [
+    "Ferenc Csepregi <feri@31.digital>",
+    "James Pacileo <jamespaxi@gmail.com>",
+    "Ciaran Dohety <cad106uk@gmail.com>",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -56,7 +60,6 @@ ipython = "8.10.0"
 mock = "~=4.0.1"
 moto = "==2.2.16"
 pylint-django = "~=2.3.0"
-pytest-cov = "~=2.10.1"
 pytest-django = "~=3.10.0"
 pytest-xdist = "~=2.1.0"
 requests-mock = "~=1.8.0"
@@ -67,6 +70,7 @@ pytest-watch = "^4.2.0"
 time-machine = "^2.8.2"
 greenlet = "~3.0.0"
 coverage = "^7.2.7"
+pytest-circleci-parallelized = "^0.1.0"
 
 [build-system]
 requires = ["poetry~=1.1.8"]
@@ -80,9 +84,7 @@ python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = """
     --reuse-db
     --ds=config.settings.test
-    --cov=api
-    --no-cov-on-fail
-    --cov-branch
+    --circleci-parallelize
 """
 
 [tool.coverage.run]
@@ -92,6 +94,10 @@ omit = [
     "*__init__*",
     "*test_*",
 ]
+include = [
+    "api/*",
+]
+branch = true
 
 [tool.isort]
 profile = "black"
