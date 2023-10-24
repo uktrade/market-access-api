@@ -93,7 +93,7 @@ jobs:
             - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
       - run:
-          command: sudo pip install poetry
+          command: sudo pip install poetry==1.6.1
 
       - run:
           name: Install dependencies
@@ -180,7 +180,7 @@ jobs:
             - v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
 
       - run:
-          command: sudo pip install poetry
+          command: sudo pip install poetry==1.6.1
 
       - run:
           name: Install dependencies

@@ -73,7 +73,7 @@ coverage = "^7.2.7"
 pytest-circleci-parallelized = "^0.1.0"
 
 [build-system]
-requires = ["poetry~=1.1.8"]
+requires = ["poetry~=1.6.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
