@@ -1364,7 +1364,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         method="commercial_value_estimate_filter"
     )
     export_types = django_filters.BaseInFilter(method="export_types_filter")
-    start_date = django_filters.BaseInFilter(method="start_date_filter")
+    start_date = django_filters.Filter(method="start_date_filter")
 
     class Meta:
         model = Barrier
@@ -1825,7 +1825,9 @@ class BarrierFilterSet(django_filters.FilterSet):
         return queryset.filter(export_types__name__in=value)
 
     def start_date_filter(self, queryset, name, value):
-        start_date, end_date = value
+        dates_list = value.split(",")
+        start_date = dates_list[0]
+        end_date = dates_list[1]
         # Filtering the queryset based on the start_date range
         return queryset.filter(start_date__range=(start_date, end_date))
 
