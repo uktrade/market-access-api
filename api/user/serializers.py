@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 from rest_framework import serializers
+from sentry_sdk import push_scope
 
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
@@ -188,9 +189,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
                 )
                 if "Administrator" in groups_added:
                     # the user has been granted administrator access
-                    logger.critical(
-                        f"User {instance.id} has been granted Administrator access"
-                    )
+                    with push_scope() as scope:
+                        scope.set_tag("always_alert", "true")
+                        logger.critical(
+                            f"User {instance.id} has been granted Administrator access"
+                        )
 
             if groups_removed:
                 logger.info(
@@ -198,9 +201,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
                 )
                 if "Administrator" in groups_removed:
                     # the user has been removed from the administrator group
-                    logger.critical(
-                        f"User {instance.id} has been removed from the Administrator group"
-                    )
+                    with push_scope() as scope:
+                        scope.set_tag("always_alert", "true")
+                        logger.critical(
+                            f"User {instance.id} has been removed from the Administrator group"
+                        )
 
             instance.groups.set(group_ids)
         if validated_data.pop("is_active", None) is not None:
