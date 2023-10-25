@@ -1,4 +1,3 @@
-from django.conf import settings
 from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -13,12 +12,8 @@ from api.user.serializers import UserActvitiyLogSerializer
 
 
 class BarrierList(generics.ListAPIView):
-    if settings.HAWK_ENABLED:
-        authentication_classes = (HawkAuthentication,)
-        permission_classes = (IsAuthenticated,)
-    else:
-        authentication_classes = ()
-        permission_classes = ()
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     pagination_class = MarketAccessDatasetViewCursorPagination
 
@@ -41,24 +36,16 @@ class BarrierList(generics.ListAPIView):
 
 
 class FeedbackDataWorkspaceListView(generics.ListAPIView):
-    if settings.HAWK_ENABLED:
-        authentication_classes = (HawkAuthentication,)
-        permission_classes = (IsAuthenticated,)
-    else:
-        authentication_classes = ()
-        permission_classes = ()
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 
 
 class UserActivityLogView(generics.ListAPIView):
-    if settings.HAWK_ENABLED:
-        authentication_classes = (HawkAuthentication,)
-        permission_classes = (IsAuthenticated,)
-    else:
-        authentication_classes = ()
-        permission_classes = ()
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     queryset = UserActvitiyLog.objects.all()
     serializer_class = UserActvitiyLogSerializer
