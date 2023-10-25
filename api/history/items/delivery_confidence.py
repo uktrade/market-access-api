@@ -1,5 +1,5 @@
 from .base import BaseHistoryItem
-
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES
 
 class BaseProgressUpdateHistoryItem(BaseHistoryItem):
     model = "progress_update"
@@ -9,9 +9,10 @@ class DeliveryConfidenceHistoryItem(BaseProgressUpdateHistoryItem):
     field = "status"
 
     def get_value(self, record):
-        if record.archived:
-            return ""
-        return record.status or ""
+        return {
+            'status': PROGRESS_UPDATE_CHOICES._display_map.get(record.status, ''),
+            'summary': record.update or ''
+        } if not record.archived else {}
 
 
 class ProgressUpdateNoteHistoryItem(BaseProgressUpdateHistoryItem):
