@@ -652,10 +652,19 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0].data["old_value"] == ""
-        assert items[0].data["new_value"] == "ON_TRACK"
-        assert items[1].data["old_value"] == "ON_TRACK"
-        assert items[1].data["new_value"] == "DELAYED"
+        assert items[0].data["old_value"] == {"status": "", "summary": ""}
+        assert items[0].data["new_value"] == {
+            "status": "On track",
+            "summary": "Nothing Specific",
+        }
+        assert items[1].data["old_value"] == {
+            "status": "On track",
+            "summary": "Nothing Specific",
+        }
+        assert items[1].data["new_value"] == {
+            "status": "Delayed",
+            "summary": "Nothing Specific",
+        }
 
     def test_history_edited_progress_updates(self):
         # Ensure history returns a "created" progress update and a subsequent edit
@@ -676,10 +685,19 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0].data["old_value"] == ""
-        assert items[0].data["new_value"] == "ON_TRACK"
-        assert items[1].data["old_value"] == "ON_TRACK"
-        assert items[1].data["new_value"] == "DELAYED"
+        assert items[0].data["old_value"] == {"status": "", "summary": ""}
+        assert items[0].data["new_value"] == {
+            "status": "On track",
+            "summary": "Nothing Specific",
+        }
+        assert items[1].data["old_value"] == {
+            "status": "On track",
+            "summary": "Nothing Specific",
+        }
+        assert items[1].data["new_value"] == {
+            "status": "Delayed",
+            "summary": "Nothing Specific",
+        }
 
     def test_history_non_linear_updates(self):
         # Ensure history returns a sequence of "created" progress updates, and an edit to
@@ -709,12 +727,27 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
         # ON_TRACK changes to RISK_OF_DELAY
-        assert items[0].data["old_value"] == ""
-        assert items[0].data["new_value"] == "ON_TRACK"
-        assert items[1].data["old_value"] == "ON_TRACK"
-        assert items[1].data["new_value"] == "DELAYED"
-        assert items[2].data["old_value"] == "ON_TRACK"
-        assert items[2].data["new_value"] == "RISK_OF_DELAY"
+        assert items[0].data["old_value"] == {"status": "", "summary": ""}
+        assert items[0].data["new_value"] == {
+            "status": "On track",
+            "summary": "Nothing Specific",
+        }
+        assert items[1].data["old_value"] == {
+            "status": "On track",
+            "summary": "Nothing Specific",
+        }
+        assert items[1].data["new_value"] == {
+            "status": "Delayed",
+            "summary": "Nothing Specific",
+        }
+        assert items[2].data["old_value"] == {
+            "status": "On track",
+            "summary": "Nothing Specific",
+        }
+        assert items[2].data["new_value"] == {
+            "status": "Risk of delay",
+            "summary": "Nothing Specific",
+        }
 
 
 class TestCachedHistoryItems(APITestMixin, TestCase):
