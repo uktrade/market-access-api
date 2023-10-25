@@ -84,7 +84,6 @@ python_files = ["tests.py", "test_*.py", "*_tests.py"]
 addopts = """
     --reuse-db
     --ds=config.settings.test
-    --circleci-parallelize
 """
 
 [tool.coverage.run]
