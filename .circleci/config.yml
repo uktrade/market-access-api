@@ -98,7 +98,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            poetry install
+            poetry install --no-ansi
 
       - save_cache:
           key: v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
@@ -185,7 +185,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            poetry install
+            poetry install --no-ansi
 
       - save_cache:
           key: v1-dependencies-{{ .Branch }}-{{ checksum "poetry.lock" }}
