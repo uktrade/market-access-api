@@ -5,7 +5,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 from rest_framework import serializers
-from sentry_sdk import capture_message
 
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
@@ -176,24 +175,32 @@ class UserDetailSerializer(serializers.ModelSerializer):
             ]
             group_queryset = Group.objects.filter(pk__in=group_ids)
 
-            # we need to figure out if the user has been granted Administrator rights, or if they have been removed.
-            admin_group = Group.objects.get(name="Administrator")
-            if (
-                admin_group in group_queryset
-                and admin_group not in instance.groups.all()
-            ):
-                # the user has been granted administrator access
-                capture_message(
-                    f"User {instance.id} has been granted Administrator access"
+            current_groups = set([group.name for group in instance.groups.all()])
+            new_groups = set([group.name for group in group_queryset])
+
+            # figuring out the delta
+            groups_added = new_groups - current_groups
+            groups_removed = current_groups - new_groups
+
+            if groups_added:
+                logger.info(
+                    f"User {instance.id} has been added to the following groups: {groups_added}"
                 )
-            elif (
-                admin_group not in group_queryset
-                and admin_group in instance.groups.all()
-            ):
-                # the user has been removed from the administrator group
-                capture_message(
-                    f"User {instance.id} has been removed from Administrator group"
+                if "Administrator" in groups_added:
+                    # the user has been granted administrator access
+                    logger.critical(
+                        f"User {instance.id} has been granted Administrator access"
+                    )
+
+            if groups_removed:
+                logger.info(
+                    f"User {instance.id} has been removed from the following groups: {groups_removed}"
                 )
+                if "Administrator" in groups_removed:
+                    # the user has been removed from the administrator group
+                    logger.critical(
+                        f"User {instance.id} has been removed from the Administrator group"
+                    )
 
             instance.groups.set(group_ids)
         if validated_data.pop("is_active", None) is not None:

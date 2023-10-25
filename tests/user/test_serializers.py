@@ -15,8 +15,8 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
         self.admin_group = Group.objects.get(name="Administrator")
         self.publisher_group = Group.objects.get(name="Publisher")
 
-    @patch("sentry_sdk.capture_message")
-    def test_administrator_granted_send_to_sentry(self, mocked_capture_message):
+    @patch("logging.Logger")
+    def test_administrator_granted_critical_log(self, patched_logger):
         normal_user = self.create_standard_user()
         serializer = UserDetailSerializer(
             instance=normal_user,
@@ -26,12 +26,12 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
         assert serializer.is_valid()
         serializer.save()
 
-        assert mocked_capture_message.called_once_with(
+        assert patched_logger.called_once_with(
             f"User {normal_user.id} has been granted Administrator access"
         )
 
-    @patch("sentry_sdk.capture_message")
-    def test_administrator_revoked_send_to_sentry(self, mocked_capture_message):
+    @patch("logging.Logger")
+    def test_administrator_revoked_send_to_sentry(self, patched_logger):
         admin_user = self.create_admin()
         serializer = UserDetailSerializer(
             instance=admin_user,
@@ -41,6 +41,6 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
         assert serializer.is_valid()
         serializer.save()
 
-        assert mocked_capture_message.called_once_with(
+        assert patched_logger.called_once_with(
             f"User {admin_user.id} has been removed from Administrator group"
         )
