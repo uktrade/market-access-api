@@ -4,7 +4,7 @@ from django.test import TestCase
 from sentry_sdk import set_user
 from sentry_sdk.hub import Hub
 
-from api.core.middleware import SentryUserContextMiddleware
+from api.core.middleware.sentry import SentryUserContextMiddleware
 
 
 class TestUserSentryContextMiddleware(TestCase):
