@@ -1,7 +1,6 @@
 import time
 
 from django.db import connection
-from django.urls import resolve
 
 
 class SqlMonitor:
