@@ -1,6 +1,7 @@
 from .base import BaseHistoryItem
 from api.metadata.constants import PROGRESS_UPDATE_CHOICES
 
+
 class BaseProgressUpdateHistoryItem(BaseHistoryItem):
     model = "progress_update"
 
