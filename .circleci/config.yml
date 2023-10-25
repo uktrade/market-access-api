@@ -83,7 +83,7 @@ jobs:
       AUTOMATIC_ARCHIVE_AND_DORMANCY_UPDATE_EMAIL_TEMPLATE_ID: "test-1234" # pragma: allowlist secret
 
     working_directory: ~/market-access-api
-
+    parallelism: 10
     steps:
       - checkout
 
@@ -137,8 +137,9 @@ jobs:
 
       - run:
           name: run tests & save coverage
+          parallel: true
           command: |
-            poetry run pytest tests
+            poetry run coverage run -m pytest tests
             poetry run coverage json
 
       - codecov/upload
