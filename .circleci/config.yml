@@ -138,7 +138,7 @@ jobs:
           name: run tests & save coverage
           parallel: true
           command: |
-            poetry run coverage run -m pytest tests
+            poetry run coverage run -m pytest tests --circleci-parallelize
             poetry run coverage json
 
       - codecov/upload
