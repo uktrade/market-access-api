@@ -25,6 +25,7 @@ def import_api_results(endpoint):
     if fake_it:
         # TODO: fake all metadata, not just a part of it
         #       currently only a few countries are made available
+        capture_message(f"Using fake metadata for {endpoint}")
         file_path = os.path.join(settings.BASE_DIR, f"static/{endpoint}.json")
         return json.loads(open(file_path).read())
 
@@ -53,6 +54,7 @@ def import_api_results(endpoint):
     if response.ok:
         return response.json()
     else:
+        capture_message(f"Error fetching metadata for {endpoint}")
         capture_message(response)
     return None
 
