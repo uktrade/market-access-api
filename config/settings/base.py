@@ -107,7 +107,7 @@ MIDDLEWARE = [
     "api.user.middleware.UserActivityLogMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "django_audit_log_middleware.AuditLogMiddleware",
-    "api.core.middleware.SentryUserContextMiddleware",
+    "api.core.middleware.sentry.SentryUserContextMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -287,41 +287,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # HAWK settings
-HAWK_CREDENTIALS = {}
-HAWK_ENABLED = env.bool("HAWK_ENABLED", True)
+HAWK_ID = os.environ.get("HAWK_ID")
+DATAHUB_HAWK_ID = os.environ.get("DH_HAWK_ID")
 
-if HAWK_ENABLED:
-    HAWK_ID = os.environ.get("HAWK_ID")
-    HAWK_KEY = os.environ.get("HAWK_KEY")
-    HAWK_ALGORITHM = os.environ.get("HAWK_ALGORITHM", "sha256")
-
-    DATAHUB_HAWK_ID = os.environ.get("DH_HAWK_ID")
-    DATAHUB_HAWK_KEY = os.environ.get("DH_HAWK_KEY")
-    DATAHUB_HAWK_ALGORITHM = os.environ.get("DH_HAWK_ALGORITHM", "sha256")
-
-    DATA_WORKSPACE_HAWK_ID = os.environ.get("DATA_WORKSPACE_HAWK_ID")
-    DATA_WORKSPACE_HAWK_KEY = os.environ.get("DATA_WORKSPACE_HAWK_KEY")
-    DATA_WORKSPACE_HAWK_ALGORITHM = os.environ.get(
-        "DATA_WORKSPACE_HAWK_ALGORITHM", "sha256"
-    )
-
-    HAWK_CREDENTIALS = {
-        HAWK_ID: {
-            "id": HAWK_ID,
-            "key": HAWK_KEY,
-            "algorithm": HAWK_ALGORITHM,
-        },
-        DATAHUB_HAWK_ID: {
-            "id": DATAHUB_HAWK_ID,
-            "key": DATAHUB_HAWK_KEY,
-            "algorithm": DATAHUB_HAWK_ALGORITHM,
-        },
-        DATA_WORKSPACE_HAWK_ID: {
-            "id": DATA_WORKSPACE_HAWK_ID,
-            "key": DATA_WORKSPACE_HAWK_KEY,
-            "algorithm": DATA_WORKSPACE_HAWK_ALGORITHM,
-        },
-    }
+HAWK_CREDENTIALS = {
+    HAWK_ID: {
+        "id": HAWK_ID,
+        "key": os.environ.get("HAWK_KEY"),
+        "algorithm": os.environ.get("HAWK_ALGORITHM", "sha256"),
+    },
+    DATAHUB_HAWK_ID: {
+        "id": DATAHUB_HAWK_ID,
+        "key": os.environ.get("DH_HAWK_KEY"),
+        "algorithm": os.environ.get("DH_HAWK_ALGORITHM", "sha256"),
+    },
+}
 
 SLACK_WEBHOOK = env("SLACK_WEBHOOK", default="")
 
