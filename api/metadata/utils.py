@@ -5,6 +5,7 @@ import requests
 from django.conf import settings
 from django.core.cache import cache
 from mohawk import Sender
+from sentry_sdk import capture_message
 from urlobject import URLObject
 
 from api.wto import models as wto_models
@@ -51,7 +52,8 @@ def import_api_results(endpoint):
 
     if response.ok:
         return response.json()
-
+    else:
+        capture_message(response)
     return None
 
 
