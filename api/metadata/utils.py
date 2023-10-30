@@ -2,6 +2,7 @@ import json
 import os
 
 import requests
+import sentry_sdk
 from django.conf import settings
 from django.core.cache import cache
 from mohawk import Sender
@@ -21,6 +22,9 @@ from .models import BarrierPriority, BarrierTag, Category, Organisation
 def import_api_results(endpoint):
     # Avoid calling DH
     fake_it = settings.FAKE_METADATA
+    sentry_sdk.capture_message(
+        "Faking metadata" if fake_it else "Contact DataHub for metadata"
+    )
     if fake_it:
         # TODO: fake all metadata, not just a part of it
         #       currently only a few countries are made available
@@ -32,6 +36,9 @@ def import_api_results(endpoint):
     # v4 endpoints do not have trailing forward slash
     meta_url = base_url.relative(f"./{endpoint}")
 
+    sentry_sdk.capture_message(
+        f"Fetching metadata from {meta_url}, using {settings.DATAHUB_HAWK_ID}"
+    )
     credentials = settings.HAWK_CREDENTIALS[settings.DATAHUB_HAWK_ID]
 
     sender = Sender(
@@ -51,8 +58,10 @@ def import_api_results(endpoint):
 
     if response.ok:
         return response.json()
-
-    return None
+    else:
+        with sentry_sdk.push_scope() as scope:
+            scope.set_extra("datahub_response", response)
+            raise Exception(f"Error fetching metadata for {endpoint}")
 
 
 def get_os_regions_and_countries():
@@ -133,7 +142,9 @@ def get_sector(sector_id):
 
 
 def get_sectors():
-    return import_api_results("sector")
+    sectors = import_api_results("sector")
+    sentry_sdk.capture_message(f"Got {len(sectors)} sectors from DataHub")
+    return sectors
 
 
 def get_categories():
