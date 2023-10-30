@@ -23,7 +23,7 @@ def import_api_results(endpoint):
     # Avoid calling DH
     fake_it = settings.FAKE_METADATA
     sentry_sdk.capture_message(
-        "Faking metadata" if fake_it else "Contact DataHub for metadata"
+        "Faking metadata" if fake_it else "Contacting DataHub for metadata"
     )
     if fake_it:
         # TODO: fake all metadata, not just a part of it
