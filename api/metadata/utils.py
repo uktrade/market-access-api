@@ -2,6 +2,7 @@ import json
 import os
 
 import requests
+import sentry_sdk
 from django.conf import settings
 from django.core.cache import cache
 from mohawk import Sender
@@ -54,9 +55,9 @@ def import_api_results(endpoint):
     if response.ok:
         return response.json()
     else:
-        capture_message(f"Error fetching metadata for {endpoint}")
-        capture_message(response)
-    return None
+        with sentry_sdk.push_scope() as scope:
+            scope.set_extra("datahub_response", response)
+            raise Exception(f"Error fetching metadata for {endpoint}")
 
 
 def get_os_regions_and_countries():
