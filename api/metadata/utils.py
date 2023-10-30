@@ -6,7 +6,6 @@ import sentry_sdk
 from django.conf import settings
 from django.core.cache import cache
 from mohawk import Sender
-from sentry_sdk import capture_message
 from urlobject import URLObject
 
 from api.wto import models as wto_models
@@ -26,7 +25,6 @@ def import_api_results(endpoint):
     if fake_it:
         # TODO: fake all metadata, not just a part of it
         #       currently only a few countries are made available
-        capture_message(f"Using fake metadata for {endpoint}")
         file_path = os.path.join(settings.BASE_DIR, f"static/{endpoint}.json")
         return json.loads(open(file_path).read())
 
