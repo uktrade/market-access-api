@@ -47,6 +47,7 @@ jobs:
       RESOURCE_SERVER_USER_INTROSPECT_URL: "http://localhost:8080/api/v1/user/introspect/"
       FAKE_METADATA: "True"
       DH_METADATA_URL: "https://datahub-api-dev.london.cloudapps.digital/metadata/"
+      HAWK_ENABLED: "False"
       HAWK_KEY: "hawkkey"
       HAWK_ID: "metadata"
       AUTHBROKER_URL: "http://localhost:5000/o/"
