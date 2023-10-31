@@ -289,6 +289,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # HAWK settings
 HAWK_ID = os.environ.get("HAWK_ID")
 DATAHUB_HAWK_ID = os.environ.get("DH_HAWK_ID")
+DATA_WORKSPACE_HAWK_ID = os.environ.get("DATA_WORKSPACE_HAWK_ID")
 
 HAWK_CREDENTIALS = {
     HAWK_ID: {
@@ -300,6 +301,11 @@ HAWK_CREDENTIALS = {
         "id": DATAHUB_HAWK_ID,
         "key": os.environ.get("DH_HAWK_KEY"),
         "algorithm": os.environ.get("DH_HAWK_ALGORITHM", "sha256"),
+    },
+    DATA_WORKSPACE_HAWK_ID: {
+        "id": DATA_WORKSPACE_HAWK_ID,
+        "key": os.environ.get("DATA_WORKSPACE_HAWK_KEY"),
+        "algorithm": os.environ.get("DATA_WORKSPACE_HAWK_ALGORITHM", "sha256"),
     },
 }
 
