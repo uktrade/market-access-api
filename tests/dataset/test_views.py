@@ -134,6 +134,36 @@ class TestBarriersDataset(APITestMixin):
         assert len(response.data["results"]) == 1
         assert data_item["is_regional_trade_plan"] is True
 
+    def test_null_main_sector_all_sector(self):
+        """Tests that when main_sector is null and all_sectors is true, the main_sector is set to 'all sectors'"""
+        barrier = BarrierFactory(main_sector=None, all_sectors=True)
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 1
+
+        barrier_data = response.data["results"][0]
+        assert barrier_data["id"] == str(barrier.id)
+
+        assert barrier_data["main_sector"] == "all sectors"
+
+    def test_main_sector(self):
+        """Tests that when main_sector is set, the main_sector returned is the name of the sector"""
+        barrier = BarrierFactory(
+            main_sector="af959812-6095-e211-a939-e4115bead28a", all_sectors=True
+        )
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 1
+
+        barrier_data = response.data["results"][0]
+        assert barrier_data["id"] == str(barrier.id)
+
+        assert barrier_data["main_sector"] == "Advanced engineering"
+
 
 class TestFeedbackDataset(APITestMixin):
     def test_no_feedback(self):
