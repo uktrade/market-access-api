@@ -7,7 +7,7 @@ new_tag_title = "Europe Priority"
 
 def rename_eu_priority_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
-    BarrierTag.objects.get(title=old_tag_title).update(title=new_tag_title)
+    BarrierTag.objects.filter(title=old_tag_title).update(title=new_tag_title)
 
 def reverse_rename_eu_priority_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
