@@ -22,7 +22,7 @@ def assign_permissions(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("user", "0031_alter_useractivitylog_event_type"),
+        ("user", "0031_alter_useractvitiylog_event_type"),
     ]
 
     operations = [
