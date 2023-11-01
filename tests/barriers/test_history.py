@@ -22,7 +22,7 @@ from api.history.factories import (
 )
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
-from api.metadata.constants import PublicBarrierStatus, PRIORITY_LEVELS
+from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
 from tests.assessment.factories import (
     EconomicAssessmentFactory,
     EconomicImpactAssessmentFactory,
@@ -154,8 +154,8 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "priority_level"
-        assert data["old_value"] == ''
-        assert data["new_value"] == 'Regional Priority'
+        assert data["old_value"] == ""
+        assert data["new_value"] == "Regional Priority"
 
         self.barrier.priority_level = PRIORITY_LEVELS.COUNTRY
         self.barrier.save()
@@ -165,8 +165,8 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
         assert data["model"] == "barrier"
         assert data["field"] == "priority_level"
-        assert data["old_value"] == 'Regional Priority'
-        assert data["new_value"] == 'Country Priority'
+        assert data["old_value"] == "Regional Priority"
+        assert data["new_value"] == "Country Priority"
 
     def test_product_history(self):
         self.barrier.product = "New product"
