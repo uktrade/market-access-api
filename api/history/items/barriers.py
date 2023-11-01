@@ -1,13 +1,11 @@
+from api.barriers.models import BarrierTopPrioritySummary
+from api.history.items.base import BaseHistoryItem
 from api.metadata.utils import (
     get_country,
     get_location_text,
     get_trading_bloc,
     get_trading_bloc_by_country_id,
 )
-
-from ...barriers.models import BarrierTopPrioritySummary
-from .base import BaseHistoryItem
-from ...metadata.constants import PRIORITY_LEVELS
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
@@ -258,4 +256,4 @@ class PriorityLevelHistoryItem(BaseBarrierHistoryItem):
     field = "priority_level"
 
     def get_value(self, record):
-        return PRIORITY_LEVELS._display_map.get(record.priority_level, "")
+        return record.get_priority_level_display()

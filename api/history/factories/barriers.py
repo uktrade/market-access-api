@@ -1,6 +1,6 @@
 from api.barriers.models import Barrier
-from .base import HistoryItemFactoryBase
-from ..items.barriers import (
+from api.history.factories.base import HistoryItemFactoryBase
+from api.history.items.barriers import (
     ArchivedHistoryItem,
     CategoriesHistoryItem,
     CausedByTradingBlocHistoryItem,
