@@ -7,6 +7,7 @@ from api.metadata.utils import (
 
 from ...barriers.models import BarrierTopPrioritySummary
 from .base import BaseHistoryItem
+from ...metadata.constants import PRIORITY_LEVELS
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
@@ -251,3 +252,10 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
 class TopPrioritySummaryHistoryItem(BaseHistoryItem):
     model = "barrier_top_priority_summary"
     field = "top_priority_summary_text"
+
+
+class PriorityLevelHistoryItem(BaseBarrierHistoryItem):
+    field = "priority_level"
+
+    def get_value(self, record):
+        return PRIORITY_LEVELS._display_map.get(record.priority_level, "")
