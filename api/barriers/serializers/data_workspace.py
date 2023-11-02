@@ -501,8 +501,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         if main_sector:
             return main_sector["name"]
         elif instance.all_sectors:
-            # if there is no main sector, but there are all sectors, return "all sectors"
-            return "all sectors"
+            # if there is no main sector, but there are all sectors, return "All sectors"
+            return "All sectors"
 
         return None
 

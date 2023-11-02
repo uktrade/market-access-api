@@ -146,7 +146,7 @@ class TestBarriersDataset(APITestMixin):
         barrier_data = response.data["results"][0]
         assert barrier_data["id"] == str(barrier.id)
 
-        assert barrier_data["main_sector"] == "all sectors"
+        assert barrier_data["main_sector"] == "All sectors"
 
     def test_main_sector(self):
         """Tests that when main_sector is set, the main_sector returned is the name of the sector"""
