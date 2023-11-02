@@ -51,12 +51,12 @@ def import_api_results(endpoint):
         headers={"Authorization": sender.request_header},
     )
 
-    if response.ok:
-        return response.json()
-    else:
+    if not response.ok:
         with sentry_sdk.push_scope() as scope:
             scope.set_extra("datahub_response", response)
             raise APIException(f"Error fetching metadata from DataHub for {endpoint}")
+
+    return response.json()
 
 
 def get_os_regions_and_countries():
