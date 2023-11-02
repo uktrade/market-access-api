@@ -18,6 +18,22 @@ def assign_permissions(apps, schema_editor):
     delete_users_permission = Permission.objects.get(codename="delete_profile")
     administrator_group.permissions.add(delete_users_permission)
 
+def reverse_permissions(apps, schema_editor):
+    Permission = apps.get_model("auth", "Permission")
+    Group = apps.get_model("auth", "Group")
+
+    permission = Permission.objects.get(codename="delete_profile")
+
+    admin_group = Group.objects.get(name="Administrator")
+    admin_group.permissions.remove(permission)
+
+    role_admin_group = Group.objects.get(name="Role administrator")
+    change_user_permission = Permission.objects.get(codename="change_user")
+    list_users_permission = Permission.objects.get(codename="list_users")
+    role_admin_group.permissions.remove(change_user_permission)
+    role_admin_group.permissions.remove(list_users_permission)
+    role_admin_group.delete()
+
 
 class Migration(migrations.Migration):
 
@@ -27,6 +43,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            assign_permissions, reverse_code=migrations.RunPython.noop
+            assign_permissions, reverse_code=reverse_permissions
         ),
     ]
