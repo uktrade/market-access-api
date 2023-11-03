@@ -56,10 +56,10 @@ from api.metadata.constants import (
 from . import validators
 from .report_stages import REPORT_CONDITIONS, report_stage_status
 from .utils import (
-    random_barrier_reference,
     get_similar_barriers,
-    query_set_to_pandas_df,
     preprocess_text,
+    query_set_to_pandas_df,
+    random_barrier_reference,
 )
 
 logger = logging.getLogger(__name__)

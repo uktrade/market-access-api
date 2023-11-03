@@ -1,15 +1,13 @@
-import re
 import datetime
+import re
 import typing
-import numpy as np
-import nltk
 from random import randrange
 
+import nltk
+import numpy as np
 from django.conf import settings
-
-from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
-
+from nltk.tokenize import word_tokenize
 from sentence_transformers import SentenceTransformer, util
 
 nltk.download("punkt")
