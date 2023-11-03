@@ -141,10 +141,10 @@ def get_similar_barriers(
     cosine_scores = util.cos_sim(title_embeddings, embeddings_matrix)[0]
 
     # Add cosine scores to dataframe
-    df["cosine_scores"] = cosine_scores
+    df["similarity"] = cosine_scores
 
     # Sort dataframe by cosine scores
-    df = df.sort_values(by=["cosine_scores"], ascending=False)
+    df = df.sort_values(by=["similarity"], ascending=False)
 
     df = df[df["id"] != barrier_id]
 

@@ -757,8 +757,8 @@ class Barrier(FullyArchivableMixin, BaseModel):
         cache_key = f"related_barriers_{barrier_id}_{limit}"
         cached_queryset = cache.get(cache_key)
 
-        # if cached_queryset:
-        #     return cached_queryset
+        if cached_queryset:
+            return cached_queryset
 
         queryset = Barrier.objects.all().values("id", "summary")
 
@@ -774,13 +774,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
         result_df = get_similar_barriers(title_row, barrier_id, df, n=limit)
 
-        print("-----------results-----------")
-        print(result_df)
+        queryset = Barrier.objects.filter(id__in=result_df["id"].values)
 
-        queryset = cls.objects.filter(id__in=result_df["id"].values)
-
-        # # Cache the queryset for 24 hours
-        # cache.set(cache_key, queryset, 60 * 60 * 24)
+        cache.set(cache_key, queryset, 60)
         return queryset
 
 
