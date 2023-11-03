@@ -1201,3 +1201,13 @@ class BarrierNextStepItemViewSet(ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
+@api_view(["GET"])
+def related_barriers(request, pk) -> Response:
+    """
+    Return a list of related barriers
+    """
+    queryset = Barrier.related_barriers(barrier_id=pk, limit=10)
+    serializer = BarrierListSerializer(queryset, many=True)
+    return Response(serializer.data)

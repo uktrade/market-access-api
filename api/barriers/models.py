@@ -55,7 +55,11 @@ from api.metadata.constants import (
 
 from . import validators
 from .report_stages import REPORT_CONDITIONS, report_stage_status
-from .utils import random_barrier_reference
+from .utils import (
+    random_barrier_reference,
+    get_similar_barriers,
+    query_set_to_pandas_df,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -742,6 +746,36 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
         # Ensure that a PublicBarrier for this Barrier exists
         PublicBarrier.public_barriers.get_or_create_for_barrier(barrier=self)
+
+    @staticmethod
+    def related_barriers(barrier_id: int, limit: int = 10) -> QuerySet["Barrier"]:
+        """
+        Returns a queryset of barriers that are related to the given barrier.
+        """
+
+        cache_key = f"related_barriers_{barrier_id}_{limit}"
+        cached_queryset = cache.get(cache_key)
+
+        if cached_queryset:
+            return cached_queryset
+
+        queryset = Barrier.objects.all().values_list("id", "summary", flat=True)
+
+        df = query_set_to_pandas_df(queryset)
+
+        # Check if title exists in data
+        title_row = df[df["id"] == barrier_id].copy()
+
+        if title_row.empty:
+            return Barrier.objects.none()
+
+        df = get_similar_barriers(title_row, df, limit)
+
+        queryset = Barrier.objects.filter(id__in=df["id"].values)
+
+        # Cache the queryset for 24 hours
+        cache.set(cache_key, queryset, 60 * 60 * 24)
+        return queryset
 
 
 class PublicBarrierHistoricalModel(models.Model):
