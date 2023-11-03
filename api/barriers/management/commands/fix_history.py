@@ -7,6 +7,7 @@ from simple_history.exceptions import NotHistoricalModelError
 
 from api.barriers.models import Barrier
 from api.core.exceptions import IllegalManagementCommandException
+from api.history.models import CachedHistoryItem
 
 from .data_anonymise import SAFE_ENVIRONMENTS
 
@@ -48,6 +49,9 @@ class Command(BaseCommand):
                     history_model.objects.all().update(history_date=history_date)
                 except NotHistoricalModelError:
                     continue
+
+            self.stdout.write("Deleting Cached History items")
+            CachedHistoryItem.objects.all().delete()
         else:
             raise IllegalManagementCommandException(
                 f"Deleting historical records is disabled on {settings.DJANGO_ENV}"
