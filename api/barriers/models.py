@@ -749,7 +749,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         PublicBarrier.public_barriers.get_or_create_for_barrier(barrier=self)
 
     @staticmethod
-    def related_barriers(cls, barrier_id: int, limit: int = 10) -> QuerySet["Barrier"]:
+    def related_barriers(barrier_id: int, limit: int = 10) -> QuerySet["Barrier"]:
         """
         Returns a queryset of barriers that are related to the given barrier.
         """
