@@ -59,6 +59,7 @@ from .utils import (
     random_barrier_reference,
     get_similar_barriers,
     query_set_to_pandas_df,
+    preprocess_text,
 )
 
 logger = logging.getLogger(__name__)
@@ -748,7 +749,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         PublicBarrier.public_barriers.get_or_create_for_barrier(barrier=self)
 
     @staticmethod
-    def related_barriers(barrier_id: int, limit: int = 10) -> QuerySet["Barrier"]:
+    def related_barriers(cls, barrier_id: int, limit: int = 10) -> QuerySet["Barrier"]:
         """
         Returns a queryset of barriers that are related to the given barrier.
         """
@@ -756,12 +757,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
         cache_key = f"related_barriers_{barrier_id}_{limit}"
         cached_queryset = cache.get(cache_key)
 
-        if cached_queryset:
-            return cached_queryset
+        # if cached_queryset:
+        #     return cached_queryset
 
-        queryset = Barrier.objects.all().values_list("id", "summary", flat=True)
+        queryset = Barrier.objects.all().values("id", "summary")
 
         df = query_set_to_pandas_df(queryset)
+
+        df["processed_text"] = df["summary"].apply(lambda x: preprocess_text(x))
 
         # Check if title exists in data
         title_row = df[df["id"] == barrier_id].copy()
@@ -769,12 +772,15 @@ class Barrier(FullyArchivableMixin, BaseModel):
         if title_row.empty:
             return Barrier.objects.none()
 
-        df = get_similar_barriers(title_row, df, limit)
+        result_df = get_similar_barriers(title_row, barrier_id, df, n=limit)
 
-        queryset = Barrier.objects.filter(id__in=df["id"].values)
+        print("-----------results-----------")
+        print(result_df)
 
-        # Cache the queryset for 24 hours
-        cache.set(cache_key, queryset, 60 * 60 * 24)
+        queryset = cls.objects.filter(id__in=result_df["id"].values)
+
+        # # Cache the queryset for 24 hours
+        # cache.set(cache_key, queryset, 60 * 60 * 24)
         return queryset
 
 

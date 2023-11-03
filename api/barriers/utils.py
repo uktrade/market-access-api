@@ -1,6 +1,8 @@
 import re
 import datetime
+import typing
 import numpy as np
+import nltk
 from random import randrange
 
 from django.conf import settings
@@ -9,6 +11,8 @@ from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 
 from sentence_transformers import SentenceTransformer, util
+
+nltk.download("punkt")
 
 CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -61,6 +65,19 @@ ENGLISH_STOP_WORDS = {
 }
 
 
+class QuerySet(typing.Protocol):
+    def values(self):
+        ...
+
+
+class DataFrame(typing.Protocol):
+    def __init__(self, *args, **kwargs):
+        ...
+
+    def from_records(self, *args, **kwargs):
+        ...
+
+
 def random_barrier_reference() -> str:
 
     """
@@ -95,7 +112,7 @@ def preprocess_text(text: str) -> str:
     return " ".join(stemmed_tokens)
 
 
-def query_set_to_pandas_df(queryset: "Queryset") -> "pd.DataFrame":
+def query_set_to_pandas_df(queryset: QuerySet) -> DataFrame:
     """
     function to convert a django query set to a pandas dataframe
     """
@@ -105,8 +122,8 @@ def query_set_to_pandas_df(queryset: "Queryset") -> "pd.DataFrame":
 
 
 def get_similar_barriers(
-    title_row: "pd.DataFrame", barrier_id: str, df: "pd.DataFrame", n: int
-) -> "pd.DataFrame":
+    title_row: DataFrame, barrier_id: str, df: DataFrame, n: int
+) -> DataFrame:
     """
     function to get similar barriers based on cosine similarity
     """
