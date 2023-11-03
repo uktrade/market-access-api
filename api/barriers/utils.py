@@ -7,7 +7,6 @@ from django.conf import settings
 
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
-from nltk.corpus import stopwords
 
 from sentence_transformers import SentenceTransformer, util
 
@@ -22,9 +21,44 @@ SINGLE_CHAR_PATTERN = re.compile(r"\s+[a-z]\s+")  # Matches all single character
 # Load the sentence transformer model
 # albert-small-v2 # 43 MB size
 # smaller model
-transformer_model = SentenceTransformer("albert-small-v2")
+transformer_model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
-ENGLISH_STOP_WORDS = set(stopwords.words("english"))
+# using static stop words here to remove dependency on nltk corpus
+ENGLISH_STOP_WORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "but",
+    "by",
+    "for",
+    "if",
+    "in",
+    "into",
+    "is",
+    "it",
+    "no",
+    "not",
+    "of",
+    "on",
+    "or",
+    "such",
+    "that",
+    "the",
+    "their",
+    "then",
+    "there",
+    "these",
+    "they",
+    "this",
+    "to",
+    "was",
+    "will",
+    "with",
+}
 
 
 def random_barrier_reference() -> str:
