@@ -18,6 +18,8 @@ CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 NON_WORD_PATTERN = re.compile(r"\W")  # Matches any non-word character
 SINGLE_CHAR_PATTERN = re.compile(r"\s+[a-z]\s+")  # Matches all single characters
 
+SIMILARITY_THRESHOLD = 0.4
+
 
 # https://www.sbert.net/docs/pretrained_models.html
 # Load the sentence transformer model
@@ -142,7 +144,9 @@ def get_similar_barriers(
     df["similarity"] = cosine_scores
 
     # Sort dataframe by cosine scores
-    df = df.sort_values(by=["similarity"], ascending=False)
+    df = df[df["similarity"] > SIMILARITY_THRESHOLD].sort_values(
+        by=["similarity"], ascending=False
+    )
 
     df = df[df["id"] != barrier_id]
 
