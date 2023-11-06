@@ -5,7 +5,7 @@ from django.core.management import BaseCommand, call_command
 from simple_history import models, utils
 from simple_history.exceptions import NotHistoricalModelError
 
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, PublicBarrier
 from api.core.exceptions import IllegalManagementCommandException
 from api.history.models import CachedHistoryItem
 
@@ -52,6 +52,9 @@ class Command(BaseCommand):
 
             self.stdout.write("Deleting Cached History items")
             CachedHistoryItem.objects.all().delete()
+
+            self.stdout.write("Setting published barrier date")
+            PublicBarrier.objects.all().update(published_on=reported_on)
         else:
             raise IllegalManagementCommandException(
                 f"Deleting historical records is disabled on {settings.DJANGO_ENV}"
