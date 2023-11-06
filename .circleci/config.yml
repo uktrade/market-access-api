@@ -97,6 +97,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            apt-get install cuda-compiler-10-2
             poetry install --no-ansi
 
       - save_cache:
