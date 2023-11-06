@@ -1,7 +1,6 @@
 from api.barriers.models import BarrierTopPrioritySummary
-
-from ..items.barriers import TopPrioritySummaryHistoryItem
-from .base import HistoryItemFactoryBase
+from api.history.factories.base import HistoryItemFactoryBase
+from api.history.items.barriers import TopPrioritySummaryHistoryItem
 
 
 class BarrierTopPrioritySummaryHistoryFactory(HistoryItemFactoryBase):
