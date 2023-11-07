@@ -23,6 +23,7 @@ freezegun.configure(extend_ignore_list=["transformers"])
 
 User = get_user_model()
 
+
 class TestBarrierInactivityReminders(TestCase):
     def test_inactive_barrier_reminder_email(self):
         test_user = create_test_user()
