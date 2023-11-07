@@ -37,10 +37,6 @@ from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 from tests.user.factories import UserFactoryMixin
 
-IGNORE_LIST = ["transformers"]
-
-freezegun.configure(extend_ignore_list=IGNORE_LIST)
-
 
 class PublicBarrierBaseTestCase(UserFactoryMixin, APITestMixin, TestCase):
     def setUp(self):
