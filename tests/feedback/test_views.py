@@ -1,8 +1,13 @@
 from django.urls import reverse
-from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from rest_framework.status import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+)
 from rest_framework.test import APITestCase
 
-from api.core.test_utils import APITestMixin
+from api.core.test_utils import APITestMixin, create_test_user
 from api.feedback.models import Feedback
 from api.metadata.constants import (
     FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
@@ -11,7 +16,14 @@ from api.metadata.constants import (
 )
 
 
-class MyTestCase(APITestMixin, APITestCase):
+class FeedbackTestCase(APITestMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.user1 = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
+        self.user2 = create_test_user(sso_user_id=self.sso_user_data_2["user_id"])
+        self.api_client1 = self.create_api_client(user=self.user1)
+        self.api_client2 = self.create_api_client(user=self.user2)
+
     def test_empty_feedback_fails_validation(self):
         url = reverse("feedback:add")
         data = {}
@@ -83,3 +95,43 @@ class MyTestCase(APITestMixin, APITestCase):
         assert "id" in response.data
         instance = Feedback.objects.get(id=response.data["id"])
         assert instance.attempted_actions == attempted_actions
+
+    def test_csat_and_update(self):
+        url = reverse("feedback:add")
+
+        attempted_actions = [
+            FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS.REPORT_BARRIER,
+        ]
+        satisfaction = FEEDBACK_FORM_SATISFACTION_ANSWERS.VERY_SATISFIED
+        feedback_text = "test please delete"
+        experienced_issues = [
+            FEEDBACK_FORM_EXPERIENCED_ISSUES_ANSWERS.NO_ISSUE,
+        ]
+        other_detail = "test other details"
+        data = {
+            "attempted_actions": attempted_actions,
+            "satisfaction": satisfaction,
+            "experienced_issues": experienced_issues,
+        }
+        response = self.api_client.post(url, data=data)
+        assert response.status_code == HTTP_201_CREATED
+        assert "id" in response.data
+        instance = Feedback.objects.get(id=response.data["id"])
+        assert instance.attempted_actions == attempted_actions
+        data = {
+            "attempted_actions": attempted_actions,
+            "satisfaction": satisfaction,
+            "feedback_text": feedback_text,
+            "experienced_issues": experienced_issues,
+            "other_detail": other_detail,
+        }
+        url_update = reverse("feedback:update", kwargs={"pk": instance.id})
+        response = self.api_client.patch(url_update, data=data)
+        assert response.status_code == HTTP_200_OK
+        # Get the original instance and check that it has been updated
+        instance_updated = Feedback.objects.get(id=instance.id)
+        assert instance_updated.other_detail == other_detail
+        # test that another user can't update the original instance
+        url_update = reverse("feedback:update", kwargs={"pk": instance.id})
+        response = self.api_client1.patch(url_update, data=data)
+        assert response.status_code == HTTP_403_FORBIDDEN
