@@ -1,6 +1,6 @@
 from api.barriers.models import Barrier
-
-from ..items.barriers import (
+from api.history.factories.base import HistoryItemFactoryBase
+from api.history.items.barriers import (
     ArchivedHistoryItem,
     CategoriesHistoryItem,
     CausedByTradingBlocHistoryItem,
@@ -15,6 +15,7 @@ from ..items.barriers import (
     LocationHistoryItem,
     OrganisationsHistoryItem,
     PriorityHistoryItem,
+    PriorityLevelHistoryItem,
     ProductHistoryItem,
     PublicEligibilitySummaryHistoryItem,
     SectorsHistoryItem,
@@ -28,7 +29,6 @@ from ..items.barriers import (
     TradeCategoryHistoryItem,
     TradeDirectionHistoryItem,
 )
-from .base import HistoryItemFactoryBase
 
 
 class BarrierHistoryFactory(HistoryItemFactoryBase):
@@ -50,6 +50,7 @@ class BarrierHistoryFactory(HistoryItemFactoryBase):
         EndDateHistoryItem,
         IsSummarySensitiveHistoryItem,
         LocationHistoryItem,
+        PriorityLevelHistoryItem,
         PriorityHistoryItem,
         ProductHistoryItem,
         PublicEligibilitySummaryHistoryItem,
