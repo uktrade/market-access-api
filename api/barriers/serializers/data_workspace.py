@@ -500,6 +500,10 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         main_sector = metadata_utils.get_sector(instance.main_sector)
         if main_sector:
             return main_sector["name"]
+        elif instance.all_sectors:
+            # if there is no main sector, but there are all sectors, return "All sectors"
+            return "All sectors"
+
         return None
 
     def get_trade_direction(self, instance) -> typing.Optional[str]:
