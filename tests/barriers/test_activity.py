@@ -63,7 +63,7 @@ class TestActivityView(APITestMixin, TestCase):
         self.barrier.title = "New title"
         self.barrier.save()
 
-        with freeze_time("2020-04-02"):
+        with freezegun.freeze_time("2020-04-02"):
             self.barrier.archive(
                 user=self.user, reason="DUPLICATE", explanation="It was a duplicate"
             )
