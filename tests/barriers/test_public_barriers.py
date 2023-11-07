@@ -37,7 +37,6 @@ from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 from tests.user.factories import UserFactoryMixin
 
-
 IGNORE_LIST = ["transformers"]
 
 freezegun.configure(extend_ignore_list=IGNORE_LIST)
@@ -328,11 +327,11 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
         url = reverse("public-barriers-list")
         pb1, _ = self.publish_barrier(barrier=self.barrier)
 
-        with freeze_time("2020-02-02"):
+        with freezegun.freeze_time("2020-02-02"):
             _note1 = PublicBarrierNote.objects.create(
                 public_barrier=pb1, text="wibble", created_by=self.mock_user
             )
-        with freeze_time("2020-02-03"):
+        with freezegun.freeze_time("2020-02-03"):
             note2 = PublicBarrierNote.objects.create(
                 public_barrier=pb1, text="wobble", created_by=self.mock_user
             )
