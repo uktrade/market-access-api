@@ -1,8 +1,8 @@
 import datetime
 import logging
-import freezegun
 from unittest.mock import patch
 
+import freezegun
 from django.test import TestCase
 from notifications_python_client.notifications import NotificationsAPIClient
 

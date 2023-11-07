@@ -14,7 +14,7 @@ class TestReportDetail(APITestMixin):
         report = ReportFactory()
         assert report.code not in ("", None)
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_delete_request_archives_report(self):
         creator = create_test_user(sso_user_id=self.sso_creator["user_id"])
         report = ReportFactory(created_by=creator)

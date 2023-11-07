@@ -1,6 +1,6 @@
-import freezegun
 from unittest.mock import patch
 
+import freezegun
 from django.test import TestCase
 from notifications_python_client.notifications import NotificationsAPIClient
 from rest_framework import status

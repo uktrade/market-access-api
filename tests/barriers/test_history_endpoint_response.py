@@ -1,9 +1,9 @@
 import datetime
 import random
-import freezegun
 from unittest import skip
 from unittest.mock import patch
 
+import freezegun
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
