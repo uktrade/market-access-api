@@ -1,9 +1,9 @@
 import datetime
 import logging
+import freezegun
 from unittest.mock import patch
 
 from django.test import TestCase
-from freezegun import freeze_time
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.assessment.models import EconomicAssessment
@@ -291,7 +291,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
 class TestPublicBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
 
-    @freeze_time("2020-03-02")
+    @freezegun.freeze_time("2020-03-02")
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
@@ -776,7 +776,7 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
 class TestCachedHistoryItems(APITestMixin, TestCase):
     fixtures = ["categories", "documents", "users", "barriers"]
 
-    @freeze_time("2020-03-02")
+    @freezegun.freeze_time("2020-03-02")
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
@@ -790,7 +790,7 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         )
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_cached_history_items(self):
         CachedHistoryItem.objects.all().delete()
 

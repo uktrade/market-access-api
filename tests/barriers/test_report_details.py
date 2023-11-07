@@ -1,10 +1,12 @@
-from freezegun import freeze_time
+import freezegun
 from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from tests.barriers.factories import ReportFactory
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestReportDetail(APITestMixin):
