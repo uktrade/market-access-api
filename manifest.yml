@@ -1,4 +1,5 @@
 ---
+version: 1
 applications:
   - buildpacks:
       - https://github.com/cloudfoundry/python-buildpack.git#v1.8.0
@@ -8,7 +9,9 @@ applications:
         command: celery -A config.celery beat -l info -S django
         health-check-type: process
         instances: 1
+        memory: 256M
       - type: celeryworker
         command: celery -A config.celery worker -l info -Q celery
         health-check-type: process
         instances: 1
+        memory: 1024M
