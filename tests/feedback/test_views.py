@@ -20,9 +20,7 @@ class FeedbackTestCase(APITestMixin, APITestCase):
     def setUp(self):
         super().setUp()
         self.user1 = create_test_user(sso_user_id=self.sso_user_data_1["user_id"])
-        self.user2 = create_test_user(sso_user_id=self.sso_user_data_2["user_id"])
         self.api_client1 = self.create_api_client(user=self.user1)
-        self.api_client2 = self.create_api_client(user=self.user2)
 
     def test_empty_feedback_fails_validation(self):
         url = reverse("feedback:add")
