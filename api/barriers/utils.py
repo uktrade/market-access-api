@@ -3,14 +3,9 @@ import re
 import typing
 from random import randrange
 
-import nltk
 import numpy as np
 from django.conf import settings
-from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
 from sentence_transformers import SentenceTransformer, util
-
-nltk.download("punkt")
 
 CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -27,43 +22,6 @@ SIMILARITY_THRESHOLD = 0.4
 # smaller model
 transformer_model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
-# using static stop words here to remove dependency on nltk corpus
-ENGLISH_STOP_WORDS = {
-    "a",
-    "an",
-    "and",
-    "are",
-    "as",
-    "at",
-    "be",
-    "but",
-    "by",
-    "for",
-    "if",
-    "in",
-    "into",
-    "is",
-    "it",
-    "no",
-    "not",
-    "of",
-    "on",
-    "or",
-    "such",
-    "that",
-    "the",
-    "their",
-    "then",
-    "there",
-    "these",
-    "they",
-    "this",
-    "to",
-    "was",
-    "will",
-    "with",
-}
-
 
 class QuerySet(typing.Protocol):
     def values(self):
@@ -78,6 +36,16 @@ class DataFrame(typing.Protocol):
         ...
 
 
+def preprocess_text(text: str) -> str:
+    """
+    function to preprocess text before it is saved to the database
+    """
+    text = str(text).lower()
+    # remove all non-word characters & all single characters
+    text = NON_WORD_PATTERN.sub(" ", SINGLE_CHAR_PATTERN.sub(" ", text))
+    return text
+
+
 def random_barrier_reference() -> str:
 
     """
@@ -90,26 +58,6 @@ def random_barrier_reference() -> str:
     for i in range(settings.REF_CODE_LENGTH):
         ref_code += CHARSET[randrange(0, len(CHARSET))]
     return ref_code
-
-
-def preprocess_text(text: str) -> str:
-    """
-    function to preprocess text before it is saved to the database
-    """
-    text = str(text).lower()
-    # remove all non-word characters & all single characters
-    text = NON_WORD_PATTERN.sub(" ", SINGLE_CHAR_PATTERN.sub(" ", text))
-
-    # Tokenization
-    tokens = word_tokenize(text)
-
-    # Stemming
-    stemmer = PorterStemmer()
-    stemmed_tokens = {
-        stemmer.stem(word) for word in tokens if word not in ENGLISH_STOP_WORDS
-    }
-
-    return " ".join(stemmed_tokens)
 
 
 def query_set_to_pandas_df(queryset: QuerySet) -> DataFrame:

@@ -50,10 +50,8 @@ pytest = "^7.2.0"
 certifi = "2023.07.22"
 sqlparse = "0.4.4"
 cryptography = "~=41.0.4"
-nltk = "3.6.5"
 pandas = "2.0.3"
 sentence-transformers = "2.2.2"
-torch = ">=2.0.0, !=2.0.1, !=2.1.0"
 transformers = "4.25.1"
 
 [tool.poetry.dev-dependencies]
