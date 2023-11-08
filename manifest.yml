@@ -4,14 +4,12 @@ applications:
   - buildpacks:
       - https://github.com/cloudfoundry/python-buildpack.git#v1.8.0
     stack: cflinuxfs4
-    processes:
-      - type: celerybeat
+    sidecars:
+      - name: celerybeat
+        process_types: [ 'worker' ]
         command: celery -A config.celery beat -l info -S django
-        health-check-type: process
-        instances: 1
         memory: 256M
-      - type: celeryworker
+      - name: celeryworker
+        process_types: [ 'worker' ]
         command: celery -A config.celery worker -l info -Q celery
-        health-check-type: process
-        instances: 1
         memory: 1024M
