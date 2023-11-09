@@ -133,3 +133,7 @@ class BarrierListSerializer(serializers.Serializer):
             return f"{rating}"
         else:
             return None
+
+
+class BarrierRelatedListSerializer(BarrierListSerializer):
+    summary = serializers.CharField(read_only=True)
