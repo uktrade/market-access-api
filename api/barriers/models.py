@@ -753,7 +753,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         """
         Returns a queryset of barriers that are related to the given barrier.
         """
-
         cache_key = f"related_barriers_{barrier_id}_{limit}"
         cached_queryset = cache.get(cache_key)
 
