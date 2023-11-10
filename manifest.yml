@@ -3,4 +3,3 @@ applications:
   - buildpacks:
       - https://github.com/cloudfoundry/python-buildpack.git#v1.8.0
     stack: cflinuxfs4
-    memory: 2048M
