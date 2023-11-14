@@ -55,12 +55,8 @@ from api.metadata.constants import (
 
 from . import validators
 from .report_stages import REPORT_CONDITIONS, report_stage_status
-from .utils import (
-    get_similar_barriers,
-    preprocess_text,
-    query_set_to_pandas_df,
-    random_barrier_reference,
-)
+from .utils import random_barrier_reference
+from .related_barrier import get_similar_barriers
 
 logger = logging.getLogger(__name__)
 
@@ -759,19 +755,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         if cached_queryset:
             return cached_queryset
 
-        queryset = Barrier.objects.all().values("id", "summary")
+        values_query_set = Barrier.objects.all().values("id", "summary")
 
-        df = query_set_to_pandas_df(queryset)
-
-        df["processed_text"] = df["summary"].apply(lambda x: preprocess_text(x))
-
-        # Check if title exists in data
-        title_row = df[df["id"] == barrier_id].copy()
-
-        if title_row.empty:
-            return Barrier.objects.none()
-
-        result_df = get_similar_barriers(title_row, barrier_id, df, n=limit)
+        result_df = get_similar_barriers(values_query_set, barrier_id, n=limit)
 
         queryset = Barrier.objects.filter(id__in=result_df["id"].values)
 
