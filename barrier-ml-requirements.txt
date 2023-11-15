@@ -1,0 +1,4 @@
+pandas==2.0.3
+sentence-transformers==2.2.2
+transformers==4.25.1
+torch==2.0.0
