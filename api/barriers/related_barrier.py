@@ -34,9 +34,7 @@ def __get_similar_barriers(
     embeddings_matrix = np.vstack(df["embeddings"].to_numpy())
 
     # Obtain embeddings for title
-    barrier_embeddings = transformer_model.encode(
-        barrier_row["processed_text"].values[0]
-    )
+    barrier_embeddings = transformer_model.encode(barrier_row["summary"].values[0])
 
     # Calculate cosine similarity between title and all other processed_text
     cosine_scores = util.cos_sim(barrier_embeddings, embeddings_matrix)[0]
