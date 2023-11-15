@@ -54,9 +54,9 @@ from api.metadata.constants import (
 )
 
 from . import validators
+from .related_barrier import get_similar_barriers
 from .report_stages import REPORT_CONDITIONS, report_stage_status
 from .utils import random_barrier_reference
-from .related_barrier import get_similar_barriers
 
 logger = logging.getLogger(__name__)
 
