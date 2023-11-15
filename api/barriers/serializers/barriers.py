@@ -135,5 +135,6 @@ class BarrierListSerializer(serializers.Serializer):
             return None
 
 
-class BarrierRelatedListSerializer(BarrierListSerializer):
+class BarrierRelatedListSerializer(serializers.Serializer):
     summary = serializers.CharField(read_only=True)
+    title = serializers.CharField(read_only=True)
