@@ -138,3 +138,4 @@ class BarrierListSerializer(serializers.Serializer):
 class BarrierRelatedListSerializer(serializers.Serializer):
     summary = serializers.CharField(read_only=True)
     title = serializers.CharField(read_only=True)
+    id = serializers.UUIDField(read_only=True)
