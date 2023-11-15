@@ -6,7 +6,7 @@ echo "---- RUNNING release tasks (.profile) ------"
 
 echo "---- Installing Related Barrier ML Packages ------"
 mkdir ~/ml-tmp-dir
-TMPDIR=~/ml-tmp-dir python -m pip install -r requirements-related-barriers.txt
+TMPDIR=~/ml-tmp-dir pip3 install -r requirements-related-barriers.txt
 
 echo "---- Collecting static ------"
 python manage.py collectstatic --noinput
