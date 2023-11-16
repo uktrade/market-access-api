@@ -1,10 +1,12 @@
+from api.barriers.fields import ExportTypesField
 from api.barriers.models import BarrierTopPrioritySummary
 from api.history.items.base import BaseHistoryItem
+from api.metadata.models import ExportType
 from api.metadata.utils import (
     get_country,
     get_location_text,
     get_trading_bloc,
-    get_trading_bloc_by_country_id,
+    get_trading_bloc_by_country_id, get_sector,
 )
 
 
@@ -88,6 +90,27 @@ class EconomicAssessmentEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
 
 class EndDateHistoryItem(BaseBarrierHistoryItem):
     field = "estimated_resolution_date"
+
+
+class StartDateHistoryItem(BaseBarrierHistoryItem):
+    field = "start_date"
+
+
+# class ExportTypeHistoryItem(BaseBarrierHistoryItem):
+#     field = "export_types"
+#
+#     def get_value(self, record):
+#         export_types = ExportTypesField(record.export_types)
+#         return export_types
+
+
+class MainSectorHistoryItem(BaseBarrierHistoryItem):
+    field = "main_sector"
+
+    def get_value(self, record):
+        sector = get_sector(record.main_sector)
+        if sector:
+            return sector["name"]
 
 
 class IsSummarySensitiveHistoryItem(BaseBarrierHistoryItem):
