@@ -535,6 +535,7 @@ PRIORITY_LEVELS = Choices(
     ("REGIONAL", "Regional Priority"),
     ("COUNTRY", "Country Priority"),
     ("WATCHLIST", "Watch list"),
+    ("PB100", "Top 100 Priority"),
 )
 
 NEXT_STEPS_ITEMS_STATUS_CHOICES = Choices(
