@@ -1,7 +1,5 @@
-from api.barriers.fields import ExportTypesField
 from api.barriers.models import BarrierTopPrioritySummary
 from api.history.items.base import BaseHistoryItem
-from api.metadata.models import ExportType
 from api.metadata.utils import (
     get_country,
     get_location_text,

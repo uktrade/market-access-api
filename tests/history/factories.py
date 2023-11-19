@@ -1,5 +1,3 @@
-import datetime
-
 import factory
 
 from api.barriers.models import Barrier, ProgrammeFundProgressUpdate

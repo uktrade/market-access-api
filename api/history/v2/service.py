@@ -29,7 +29,7 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
             ]
         )
     return v2_list
-    
+
 
 def get_model_history(qs: QuerySet, model: str, fields: Tuple[str, ...], track_first_item: bool = False):
     qs = qs.order_by(
