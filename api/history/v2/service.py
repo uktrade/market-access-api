@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 from django.db.models import QuerySet
 
@@ -12,7 +12,7 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
         v2_list.extend(
             [
                 type(
-                    'HistoryItemMonkey',
+                    "HistoryItemMonkey",
                     (),
                     {
                         "data": {
@@ -21,9 +21,9 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
                             "model": item["model"],
                             "new_value": field["new"],
                             "old_value": field.get("old"),
-                            "user": item["user"]
+                            "user": item["user"],
                         }
-                    }
+                    },
                 )
                 for k, field in item["fields"].items()
             ]
@@ -31,10 +31,12 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
     return v2_list
 
 
-def get_model_history(qs: QuerySet, model: str, fields: Tuple[str, ...], track_first_item: bool = False):
-    qs = qs.order_by(
-        "history_date"
-    ).values(*fields, "history_date", "history_user__id", "history_user__username")
+def get_model_history(
+    qs: QuerySet, model: str, fields: Tuple[str, ...], track_first_item: bool = False
+):
+    qs = qs.order_by("history_date").values(
+        *fields, "history_date", "history_user__id", "history_user__username"
+    )
 
     count = qs.count()
 
@@ -55,12 +57,17 @@ def get_model_history(qs: QuerySet, model: str, fields: Tuple[str, ...], track_f
         if previous_item is None:
             if track_first_item:
                 # Append the first item as a historical change
-                history.append({
-                    "model": model,
-                    "date": item["history_date"],
-                    "fields": {field: {"new": item[field]} for field in fields},
-                    "user": {"id": item["history_user__id"], "name": item["history_user__username"]}
-                })
+                history.append(
+                    {
+                        "model": model,
+                        "date": item["history_date"],
+                        "fields": {field: {"new": item[field]} for field in fields},
+                        "user": {
+                            "id": item["history_user__id"],
+                            "name": item["history_user__username"],
+                        },
+                    }
+                )
 
             # Set the to compare to the previous historical item
             previous_item = item
@@ -69,13 +76,19 @@ def get_model_history(qs: QuerySet, model: str, fields: Tuple[str, ...], track_f
         changed_fields = {}
         for field in fields:
             if item[field] != previous_item[field]:
-                changed_fields[field] = {"new": item[field], "old": previous_item[field]}
+                changed_fields[field] = {
+                    "new": item[field],
+                    "old": previous_item[field],
+                }
 
         history_item = {
             "model": model,
             "date": item["history_date"],
             "fields": changed_fields,
-            "user": {"id": item["history_user__id"], "name": item["history_user__username"]}
+            "user": {
+                "id": item["history_user__id"],
+                "name": item["history_user__username"],
+            },
         }
 
         history.append(history_item)

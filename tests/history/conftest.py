@@ -3,7 +3,7 @@ import datetime
 from pytest import fixture
 
 from api.barriers.models import Barrier
-from api.metadata.models import BarrierTag, BarrierPriority
+from api.metadata.models import BarrierPriority, BarrierTag
 from tests.history.factories import BarrierFactory
 
 
@@ -16,7 +16,7 @@ def date_now():
 def draft_barrier(date_now) -> Barrier:
     return BarrierFactory(
         start_date=date_now,
-        estimated_resolution_date=date_now + datetime.timedelta(days=45)
+        estimated_resolution_date=date_now + datetime.timedelta(days=45),
     )
 
 

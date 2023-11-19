@@ -289,9 +289,14 @@ class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
     @classmethod
     def get_history(cls, barrier_id):
         qs = cls.history.filter(barrier__id=barrier_id)
-        fields = ('milestones_and_deliverables', 'expenditure')
+        fields = ("milestones_and_deliverables", "expenditure")
 
-        return get_model_history(qs, model='programme_fund_progress_update', fields=fields, track_first_item=True)
+        return get_model_history(
+            qs,
+            model="programme_fund_progress_update",
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class Barrier(FullyArchivableMixin, BaseModel):

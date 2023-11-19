@@ -3,8 +3,9 @@ from api.history.items.base import BaseHistoryItem
 from api.metadata.utils import (
     get_country,
     get_location_text,
+    get_sector,
     get_trading_bloc,
-    get_trading_bloc_by_country_id, get_sector,
+    get_trading_bloc_by_country_id,
 )
 
 

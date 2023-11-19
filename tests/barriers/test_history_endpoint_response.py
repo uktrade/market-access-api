@@ -101,7 +101,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         ProgrammeFundProgressUpdateFactory(
             barrier=self.barrier,
             expenditure="30,000",
-            milestones_and_deliverables="arsenal"
+            milestones_and_deliverables="arsenal",
         )
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
@@ -109,21 +109,21 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
 
         assert history == [
             {
-                'date': '2020-04-01T00:00:00Z',
-                'field': 'milestones_and_deliverables',
-                'model': 'programme_fund_progress_update',
-                'new_value': 'arsenal',
-                'old_value': None,
-                'user': {'id': None, 'name': None}
+                "date": "2020-04-01T00:00:00Z",
+                "field": "milestones_and_deliverables",
+                "model": "programme_fund_progress_update",
+                "new_value": "arsenal",
+                "old_value": None,
+                "user": {"id": None, "name": None},
             },
             {
-                'date': '2020-04-01T00:00:00Z',
-                'field': 'expenditure',
-                'model': 'programme_fund_progress_update',
-                'new_value': '30,000',
-                'old_value': None,
-                'user': {'id': None, 'name': None}
-            }
+                "date": "2020-04-01T00:00:00Z",
+                "field": "expenditure",
+                "model": "programme_fund_progress_update",
+                "new_value": "30,000",
+                "old_value": None,
+                "user": {"id": None, "name": None},
+            },
         ]
 
     @freeze_time("2020-04-01")
