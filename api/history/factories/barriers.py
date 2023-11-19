@@ -15,7 +15,6 @@ from api.history.items.barriers import (
     LocationHistoryItem,
     MainSectorHistoryItem,
     OrganisationsHistoryItem,
-    ExportTypesHistoryItem,
     PriorityHistoryItem,
     PriorityLevelHistoryItem,
     ProductHistoryItem,
@@ -69,7 +68,6 @@ class BarrierHistoryFactory(HistoryItemFactoryBase):
         TradeCategoryHistoryItem,
         TradeDirectionHistoryItem,
         OrganisationsHistoryItem,
-        ExportTypesHistoryItem,
         TopPriorityHistoryItem,
     )
     history_types = ("~", "+")
