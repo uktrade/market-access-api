@@ -107,7 +107,7 @@ class BarrierManager(models.Manager):
             Barrier.objects.all()
             .annotate(
                 barrier_corpus=Concat(
-                    "title", V(" . "), "summary", output_field=CharField()
+                    "title", V(". "), "summary", output_field=CharField()
                 )
             )
             .values("id", "barrier_corpus")
