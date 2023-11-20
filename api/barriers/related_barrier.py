@@ -3,7 +3,7 @@ import pandas as pd
 from django.db.models import QuerySet
 from sentence_transformers import SentenceTransformer, util
 
-SIMILARITY_THRESHOLD = 0.4
+SIMILARITY_THRESHOLD = 0.1
 
 # https://www.sbert.net/docs/pretrained_models.html
 # Load the sentence transformer model
@@ -28,13 +28,17 @@ def __get_similar_barriers(
     """
 
     # Obtain embeddings for each processed_text
-    df["embeddings"] = df["summary"].apply(lambda x: transformer_model.encode(x))
+    df["embeddings"] = df["barrier_corpus"].apply(
+        lambda x: transformer_model.encode(x, convert_to_tensor=True)
+    )
 
     # Create a matrix of the embeddings
     embeddings_matrix = np.vstack(df["embeddings"].to_numpy())
 
     # Obtain embeddings for title
-    barrier_embeddings = transformer_model.encode(barrier_row["summary"].values[0])
+    barrier_embeddings = transformer_model.encode(
+        barrier_row["barrier_corpus"].values[0]
+    )
 
     # Calculate cosine similarity between title and all other processed_text
     cosine_scores = util.cos_sim(barrier_embeddings, embeddings_matrix)[0]
@@ -57,7 +61,6 @@ def __get_similar_barriers(
 def get_similar_barriers(
     values_query_set: QuerySet, barrier_id: str, limit: int
 ) -> pd.DataFrame:
-
     df = query_set_to_pandas_df(values_query_set)
 
     # Getting the barrier row from the dataframe

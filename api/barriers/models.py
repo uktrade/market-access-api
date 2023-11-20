@@ -102,7 +102,16 @@ class BarrierManager(models.Manager):
         if cached_queryset:
             return cached_queryset
 
-        values_query_set = Barrier.objects.all().values("id", "summary")
+        # consider adding export types, sectors, services affected and companies to barrier corpus
+        values_query_set = (
+            Barrier.objects.all()
+            .annotate(
+                barrier_corpus=Concat(
+                    "title", V(" . "), "summary", output_field=CharField()
+                )
+            )
+            .values("id", "barrier_corpus")
+        )
 
         result_df = get_similar_barriers(values_query_set, barrier_id, limit=limit)
 
