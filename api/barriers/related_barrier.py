@@ -3,7 +3,7 @@ import pandas as pd
 from django.db.models import QuerySet
 from sentence_transformers import SentenceTransformer, util
 
-SIMILARITY_THRESHOLD = 0.1
+SIMILARITY_THRESHOLD = 0.19
 
 # https://www.sbert.net/docs/pretrained_models.html
 # Load the sentence transformer model
