@@ -104,9 +104,7 @@ class ActionPlanTaskCompletionDateHistoryItem(ActionPlanTaskHistoryItem):
     field = "completion_date"
 
     def get_value(self, record):
-        value = super().get_value(record)
-        reason = record.reason_for_completion_date_change
-        return {self.field: value, "reason_for_completion_date_change": reason}
+        return record.completion_date
 
 
 class ActionPlanTaskActionTextHistoryItem(ActionPlanTaskHistoryItem):
