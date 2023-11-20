@@ -137,9 +137,7 @@ class ActionPlanTaskAssignedToHistoryItem(ActionPlanTaskHistoryItem):
             record.user = backup_user
             record.save()
 
-        return {
-            "assigned_to": self._format_user(record.assigned_to),
-        }
+        return self._format_user(record.assigned_to).get('name')
 
 
 class ActionPlanTaskStakeholdersHistoryItem(ActionPlanTaskHistoryItem):
