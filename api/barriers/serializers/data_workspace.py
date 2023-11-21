@@ -518,7 +518,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     def get_priority_level(self, instance) -> typing.Optional[str]:
         if (
             instance.priority_level == "NONE"
-            and instance.top_priority_status == "APPROVED"
+            and instance.top_priority_status in ("APPROVED", "REMOVAL_PENDING")
         ):
             return "PB100"
         return instance.priority_level
