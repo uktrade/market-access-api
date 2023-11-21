@@ -191,6 +191,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     trade_direction = serializers.SerializerMethodField()
     export_description = LineBreakCharField(required=False)
     tags = serializers.SerializerMethodField()
+    priority_level = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -513,3 +514,11 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             )
         else:
             return None
+
+    def get_priority_level(self, instance) -> typing.Optional[str]:
+        if instance.priority_level == "NONE" and instance.top_priority_status in (
+            "APPROVED",
+            "REMOVAL_PENDING",
+        ):
+            return "PB100"
+        return instance.priority_level
