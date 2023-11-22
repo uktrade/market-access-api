@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("metadata", "0041_auto_20231031_1626"),
-        ("user", "0032_role_admin_permissions"),
+        ("user", "0033_auto_20231122_1312"),
     ]
 
     operations = [
