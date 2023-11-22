@@ -29,7 +29,7 @@ class TestFixAllUsers(TestCase):
 
         emails = [user1.email, user2.email]
 
-        call_command("deactivate_users", emails=','.join(emails))
+        call_command("deactivate_users", emails=",".join(emails))
 
         assert UserModel.objects.all().count() == 3
         assert UserModel.objects.filter(is_active=True).count() == 1
