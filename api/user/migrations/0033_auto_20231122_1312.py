@@ -6,12 +6,11 @@ from django.db import migrations
 def update_saved_searches_with_asia_pacific_pilot(apps, schema_editor):
     SavedSearch = apps.get_model("user", "SavedSearch")
     BarrierTag = apps.get_model("metadata", "BarrierTag")
-    asia_pacific_pilot_tag = BarrierTag.objects.filter(title="Asia Pacific Pilot")
-    if not asia_pacific_pilot_tag.exists():
-        return
-    tag = asia_pacific_pilot_tag.first()
-    saved_search = SavedSearch.objects.filter(filters__tags__contains=tag.id)
-    saved_search.filters["tags"].remove(tag.id)
+    asia_pacific_pilot_tag = BarrierTag.objects.get(title="Asia Pacific Pilot")
+    saved_search = SavedSearch.objects.filter(
+        filters__tags__contains=asia_pacific_pilot_tag.id
+    )
+    saved_search.filters["tags"].remove(asia_pacific_pilot_tag.id)
 
 
 class Migration(migrations.Migration):
