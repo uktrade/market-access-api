@@ -9,8 +9,10 @@ class TestBarrierTags(TestCase):
     def test_tag_ordering(self):
         new_tag = BarrierTagFactory()
 
-        tag_count = BarrierTag.objects.count()
-        assert tag_count == new_tag.order
+        last_tag = BarrierTag.objects.last()
+        # this is required as we are removing a tag in the
+        # middle of the tags list
+        assert last_tag.order == new_tag.order
 
         tags = BarrierTag.objects.all()
         assert 1 == tags[0].order
