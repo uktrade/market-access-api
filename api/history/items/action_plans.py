@@ -51,7 +51,7 @@ class ActionPlanOwnerHistoryItem(ActionPlanHistoryItem):
             record.user = backup_user
             record.save()
 
-        return {"owner": self._format_user(record.owner)}
+        return self._format_user(record.owner).get("name")
 
 
 class ActionPlanCurrentStatusHistoryItem(ActionPlanHistoryItem):
