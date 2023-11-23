@@ -42,16 +42,7 @@ class ActionPlanOwnerHistoryItem(ActionPlanHistoryItem):
         return None
 
     def get_value(self, record):
-        try:
-            # Check that the user exists
-            user = getattr(record, "owner", None)
-        except ObjectDoesNotExist:
-            # default to me if user does not exist.
-            backup_user = get_default_user()
-            record.user = backup_user
-            record.save()
-
-        return self._format_user(record.owner).get("name")
+        return self._format_user(record.owner).get("name") if record.owner else ""
 
 
 class ActionPlanCurrentStatusHistoryItem(ActionPlanHistoryItem):
