@@ -92,7 +92,7 @@ class BarrierManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(draft=False)
 
-    def related_barriers(self, barrier_id: str, limit: int = 10) -> QuerySet["Barrier"]:
+    def related_barriers(self, barrier_id: str, limit: int = 20) -> QuerySet["Barrier"]:
         """
         Returns a queryset of barriers that are related to the given barrier.
         """
@@ -102,7 +102,16 @@ class BarrierManager(models.Manager):
         if cached_queryset:
             return cached_queryset
 
-        values_query_set = Barrier.objects.all().values("id", "summary")
+        # consider adding export types, sectors, services affected and companies to barrier corpus
+        values_query_set = (
+            Barrier.objects.exclude(draft=True)
+            .annotate(
+                barrier_corpus=Concat(
+                    "title", V(". "), "summary", output_field=CharField()
+                )
+            )
+            .values("id", "barrier_corpus")
+        )
 
         result_df = get_similar_barriers(values_query_set, barrier_id, limit=limit)
 

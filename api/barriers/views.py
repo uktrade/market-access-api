@@ -1209,6 +1209,8 @@ def related_barriers(request, pk) -> Response:
     """
     Return a list of related barriers
     """
-    queryset = Barrier.barriers.related_barriers(barrier_id=pk, limit=10)
+    queryset = Barrier.barriers.related_barriers(barrier_id=pk, limit=20)
+    print("related query: ", queryset)
     serializer = BarrierRelatedListSerializer(queryset, many=True)
+    print("related barriers :", serializer.data)
     return Response(serializer.data)
