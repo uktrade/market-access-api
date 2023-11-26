@@ -1,5 +1,9 @@
 pandas==2.0.3
-sentence-transformers==2.2.2
+tqdm
 transformers==4.25.1
-torch==2.0.0
-numpy==1.26.2
+numpy==1.24.4
+scikit-learn
+scipy
+nltk
+sentencepiece
+huggingface-hub>=0.4.0
