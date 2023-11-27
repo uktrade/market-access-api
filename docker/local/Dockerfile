@@ -27,7 +27,7 @@ RUN pip install --upgrade pip \
     && pip install poetry==$POETRY_VERSION \
     && poetry export --without-hashes -f requirements.txt -o requirements.txt \
     && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
-    && pip install -r requirements-dev.txt \
+    && pip install -r requirements-dev.txt
 
 # install sentence-transformers model for similarity search
 RUN python -c 'from sentence_transformers import SentenceTransformer; model = SentenceTransformer("paraphrase-MiniLM-L3-v2"); model.save(".models")'
