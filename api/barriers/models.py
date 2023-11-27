@@ -54,6 +54,7 @@ from api.metadata.constants import (
 )
 
 from . import validators
+from .related_barrier import get_similar_barriers
 from .report_stages import REPORT_CONDITIONS, report_stage_status
 from .utils import random_barrier_reference
 
@@ -95,8 +96,6 @@ class BarrierManager(models.Manager):
         """
         Returns a queryset of barriers that are related to the given barrier.
         """
-        from .related_barrier import get_similar_barriers
-
         cache_key = f"related_barriers_{barrier_id}_{limit}"
         cached_queryset = cache.get(cache_key)
 
