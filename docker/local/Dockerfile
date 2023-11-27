@@ -28,6 +28,8 @@ RUN pip install --upgrade pip \
     && poetry export --without-hashes -f requirements.txt -o requirements.txt \
     && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
     && pip install -r requirements-dev.txt \
+    && pip install sentence-transformers==2.2.2 --no-deps \
+    && pip install torch==2.0.0 torchvision==0.15.1 --extra-index-url https://download.pytorch.org/whl/cpu \
     && pip install -r requirements-related-barriers.txt \
 
 # install sentence-transformers model for similarity search
