@@ -1,13 +1,7 @@
 import datetime
 
-from api.history.factories.action_plans import (
-    ActionPlanHistoryFactory,
-    ActionPlanMilestoneHistoryFactory,
-    ActionPlanTaskHistoryFactory,
-)
-from api.history.models import CachedHistoryItem
-
-from .factories import (
+from api.barriers.models import ProgrammeFundProgressUpdate
+from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
     EconomicAssessmentHistoryFactory,
@@ -20,7 +14,14 @@ from .factories import (
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
-from .factories.top_priority import BarrierTopPrioritySummaryHistoryFactory
+from api.history.factories.action_plans import (
+    ActionPlanHistoryFactory,
+    ActionPlanMilestoneHistoryFactory,
+    ActionPlanTaskHistoryFactory,
+)
+from api.history.factories.top_priority import BarrierTopPrioritySummaryHistoryFactory
+from api.history.models import CachedHistoryItem
+from api.history.v2.service import convert_v2_history_to_legacy_object
 
 
 class HistoryManager:
@@ -78,6 +79,7 @@ class HistoryManager:
         else:
             start_date = None
 
+        # TODO: Deprecate legacy history implementation for V2
         history = cls.get_barrier_history(barrier.pk, start_date=start_date)
         history += cls.get_top_priority_summary_history(
             barrier.pk, start_date=start_date
@@ -119,6 +121,15 @@ class HistoryManager:
             else:
                 history += cls.get_public_barrier_history(barrier.pk)
             history += cls.get_public_barrier_notes_history(barrier.pk)
+
+        # Create history items using v2
+        v2_history = []
+        v2_history.extend(
+            ProgrammeFundProgressUpdate.get_history(barrier_id=barrier.pk)
+        )
+        v2_history_to_legacy = convert_v2_history_to_legacy_object(v2_history)
+        # Convert v2 history items and add to legacy history
+        history.extend(v2_history_to_legacy)
 
         return history
 

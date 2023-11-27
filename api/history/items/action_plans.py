@@ -42,16 +42,7 @@ class ActionPlanOwnerHistoryItem(ActionPlanHistoryItem):
         return None
 
     def get_value(self, record):
-        try:
-            # Check that the user exists
-            user = getattr(record, "owner", None)
-        except ObjectDoesNotExist:
-            # default to me if user does not exist.
-            backup_user = get_default_user()
-            record.user = backup_user
-            record.save()
-
-        return {"owner": self._format_user(record.owner)}
+        return self._format_user(record.owner).get("name") if record.owner else ""
 
 
 class ActionPlanCurrentStatusHistoryItem(ActionPlanHistoryItem):
@@ -104,9 +95,7 @@ class ActionPlanTaskCompletionDateHistoryItem(ActionPlanTaskHistoryItem):
     field = "completion_date"
 
     def get_value(self, record):
-        value = super().get_value(record)
-        reason = record.reason_for_completion_date_change
-        return {self.field: value, "reason_for_completion_date_change": reason}
+        return record.completion_date
 
 
 class ActionPlanTaskActionTextHistoryItem(ActionPlanTaskHistoryItem):
@@ -137,9 +126,7 @@ class ActionPlanTaskAssignedToHistoryItem(ActionPlanTaskHistoryItem):
             record.user = backup_user
             record.save()
 
-        return {
-            "assigned_to": self._format_user(record.assigned_to),
-        }
+        return self._format_user(record.assigned_to).get("name")
 
 
 class ActionPlanTaskStakeholdersHistoryItem(ActionPlanTaskHistoryItem):

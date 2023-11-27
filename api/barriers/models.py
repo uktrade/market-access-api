@@ -25,11 +25,15 @@ from hashid_field import HashidAutoField
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
 
+from api.barriers import validators
+from api.barriers.report_stages import REPORT_CONDITIONS, report_stage_status
+from api.barriers.utils import random_barrier_reference
 from api.collaboration import models as collaboration_models
 from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
+from api.history.v2.service import get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
@@ -52,10 +56,6 @@ from api.metadata.constants import (
     BarrierStatus,
     PublicBarrierStatus,
 )
-
-from . import validators
-from .report_stages import REPORT_CONDITIONS, report_stage_status
-from .utils import random_barrier_reference
 
 logger = logging.getLogger(__name__)
 
@@ -285,6 +285,18 @@ class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
         ordering = ("-created_on",)
         verbose_name = "Programme Fund Barrier Progress Update"
         verbose_name_plural = "Programme Fund Barrier Progress Updates"
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("milestones_and_deliverables", "expenditure")
+
+        return get_model_history(
+            qs,
+            model="programme_fund_progress_update",
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class Barrier(FullyArchivableMixin, BaseModel):
