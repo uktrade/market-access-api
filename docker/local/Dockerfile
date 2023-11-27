@@ -28,8 +28,6 @@ RUN pip install --upgrade pip \
     && poetry export --without-hashes -f requirements.txt -o requirements.txt \
     && poetry export --dev --without-hashes -f requirements.txt -o requirements-dev.txt \
     && pip install -r requirements-dev.txt \
-    && pip install sentence-transformers==2.2.2 --no-deps \
-    && pip install torch==2.0.0 torchvision==0.15.1 --extra-index-url https://download.pytorch.org/whl/cpu \
 
 # install sentence-transformers model for similarity search
 RUN python -c 'from sentence_transformers import SentenceTransformer; model = SentenceTransformer("paraphrase-MiniLM-L3-v2"); model.save(".models")'
