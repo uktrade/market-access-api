@@ -165,7 +165,7 @@ def get_categories():
 def get_barrier_tags():
     return list(
         BarrierTag.objects.values(
-            "id", "title", "description", "show_at_reporting", "order"
+            "id", "title", "description", "show_at_reporting", "order", "archived"
         )
     )
 

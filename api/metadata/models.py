@@ -71,6 +71,7 @@ class BarrierTag(OrderedModel, BaseModel):
         default=False,
         help_text="Denotes that this tag labels a barrier as Top Priority",
     )
+    archived = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
