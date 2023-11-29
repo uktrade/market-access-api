@@ -1,6 +1,6 @@
 import datetime
 
-from api.barriers.models import ProgrammeFundProgressUpdate
+from api.barriers.models import ProgrammeFundProgressUpdate, Barrier
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
@@ -81,6 +81,7 @@ class HistoryManager:
 
         # TODO: Deprecate legacy history implementation for V2
         history = cls.get_barrier_history(barrier.pk, start_date=start_date)
+        # history = Barrier.get_history(barrier_id=barrier.pk)
         history += cls.get_top_priority_summary_history(
             barrier.pk, start_date=start_date
         )

@@ -547,6 +547,98 @@ class Barrier(FullyArchivableMixin, BaseModel):
             ("download_barriers", "Can download barriers"),
         ]
 
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(id=barrier_id)
+        fields = (
+            # ArchiveHistory
+            [
+                "archived",
+                "archived_reason",
+                "archived_explanation",
+                "unarchived_reason",
+                # "archived_by__username",
+                # "archived_on",
+                # "unarchived_by__username",
+                # "unarchived_on",
+            ],
+            [
+                # encriched
+                "country",
+                "trading_bloc",
+                "caused_by_trading_bloc",
+                "admin_areas",
+            ],
+            "commercial_value",  # check
+            "commercial_value_explanation",  # check
+
+            # "commodities",  # Needs enrichment
+            "companies",  # check
+            "economic_assessment_eligibility",  # check
+            "economic_assessment_eligibility_summary",  # check
+            "estimated_resolution_date",  # check
+            "start_date",  # check
+            "is_summary_sensitive",
+            "main_sector",  # Needs enrichment | check
+            "priority_level",  # Needs enrichment | check
+
+            # GROUP
+            ["priority", "priority_summary"],
+
+            "product",  # check
+            "public_eligibility_summary",  # check
+
+            # GROUP
+            [
+                "sectors",
+                "all_sectors",
+            ],
+            # GROUP
+            [
+                "source",
+                "other_source",
+            ],
+
+            # Grouped
+            [
+                "status",
+                "status_date",
+                "status_summary",
+                "sub_status",
+                "sub_status_other",
+            ],
+
+            "summary",
+            
+            # "tags",  # needs cache
+            "term",
+            "title",
+
+            "trade_category",  # Needs enrichment check | check
+
+            #  "organisations",  # Needs cache
+
+            "top_priority_status",  # needs enrichment
+
+            # Misc
+            "draft",
+        )
+
+        # Get all fields required - raw changes no enrichment
+        history = get_model_history(
+            qs,
+            model="barrier",
+            fields=fields,
+            track_first_item=False,
+        )
+
+        # Then enrich, ie:
+        # history = enrich_location_history(history)
+
+        # history = [type("HistoryItemMonkey", (), {'data': item}) for item in history]
+
+        return history
+
     @property
     def latest_progress_update(self):
         if self.progress_updates.all().exists():

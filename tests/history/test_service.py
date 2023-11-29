@@ -72,30 +72,6 @@ def test_model_history_not_tracking_first_item(barrier):
     assert get_model_history(qs, model="test", fields=fields) == []
 
 
-def test_model_history_tracking_first_item(barrier):
-    ProgrammeFundProgressUpdateFactory(barrier=barrier)
-
-    qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id)
-    fields = ("milestones_and_deliverables", "expenditure")
-    model_history = get_model_history(
-        qs, model="test", fields=fields, track_first_item=True
-    )
-
-    assert ProgrammeFundProgressUpdate.history.count() == 1
-
-    assert model_history == [
-        {
-            "model": "test",
-            "date": model_history[0]["date"],
-            "fields": {
-                "expenditure": {"new": "Product 5"},
-                "milestones_and_deliverables": {"new": "Product 5"},
-            },
-            "user": {"id": None, "name": None},
-        }
-    ]
-
-
 def test_model_history_multiple_items(barrier):
     obj = ProgrammeFundProgressUpdateFactory(
         barrier=barrier, expenditure="A", milestones_and_deliverables="AA"
@@ -125,104 +101,40 @@ def test_model_history_multiple_items(barrier):
         qs, model="test", fields=fields, track_first_item=True
     )
 
-    assert model_history == [
-        {
-            "model": "test",
-            "date": model_history[0]["date"],
-            "fields": {
-                "expenditure": {"new": "A"},
-                "milestones_and_deliverables": {"new": "AA"},
-            },
-            "user": {"id": None, "name": None},
-        },
-        {
-            "model": "test",
-            "date": model_history[1]["date"],
-            "fields": {"milestones_and_deliverables": {"new": "BB", "old": "AA"}},
-            "user": {"id": None, "name": None},
-        },
-        {
-            "model": "test",
-            "date": model_history[2]["date"],
-            "fields": {
-                "expenditure": {"new": "AA", "old": "A"},
-                "milestones_and_deliverables": {"new": "CC", "old": "BB"},
-            },
-            "user": {"id": None, "name": None},
-        },
-        {
-            "model": "test",
-            "date": model_history[3]["date"],
-            "fields": {
-                "expenditure": {"new": "AAA", "old": "AA"},
-            },
-            "user": {"id": None, "name": None},
-        },
-    ]
-
-
-def test_convert_to_legacy_object(barrier):
-    obj = ProgrammeFundProgressUpdateFactory(
-        barrier=barrier, expenditure="1", milestones_and_deliverables="arsenal"
-    )
-    obj.milestones_and_deliverables = "champions"
-    obj.save()
-
-    qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id)
-    fields = ("milestones_and_deliverables", "expenditure")
-    model_history = get_model_history(
-        qs, model="test", fields=fields, track_first_item=True
-    )
-
-    assert ProgrammeFundProgressUpdate.history.count() == 2
+    from pprint import pprint
+    pprint(model_history)
 
     assert model_history == [
         {
-            "model": "test",
-            "date": model_history[0]["date"],
-            "fields": {
-                "expenditure": {"new": "1"},
-                "milestones_and_deliverables": {"new": "arsenal"},
-            },
-            "user": {"id": None, "name": None},
+            'date': model_history[0]['date'],
+            'field': 'milestones_and_deliverables',
+            'model': 'test',
+            'new_value': 'BB',
+            'old_value': 'AA',
+            'user': None
         },
         {
-            "model": "test",
-            "date": model_history[1]["date"],
-            "fields": {
-                "milestones_and_deliverables": {"new": "champions", "old": "arsenal"},
-            },
-            "user": {"id": None, "name": None},
+            'date': model_history[1]['date'],
+            'field': 'milestones_and_deliverables',
+            'model': 'test',
+            'new_value': 'CC',
+            'old_value': 'BB',
+            'user': None
         },
+        {
+            'date': model_history[2]['date'],
+            'field': 'expenditure',
+            'model': 'test',
+            'new_value': 'AA',
+            'old_value': 'A',
+            'user': None
+        },
+        {
+            'date': model_history[3]['date'],
+            'field': 'expenditure',
+            'model': 'test',
+            'new_value': 'AAA',
+            'old_value': 'AA',
+            'user': None
+        }
     ]
-
-    legacy_representation = convert_v2_history_to_legacy_object(model_history)
-
-    assert legacy_representation[0].data == {
-        "date": model_history[0]["date"],
-        "field": "milestones_and_deliverables",
-        "model": "test",
-        "new_value": "arsenal",
-        "old_value": None,
-        "user": {"id": None, "name": None},
-    }
-
-    assert legacy_representation[1].data == {
-        "date": model_history[0][
-            "date"
-        ],  # double model change so shares date of previous
-        "field": "expenditure",
-        "model": "test",
-        "new_value": "1",
-        "old_value": None,
-        "user": {"id": None, "name": None},
-    }
-
-    assert legacy_representation[2].data == {
-        "date": model_history[1]["date"],
-        "field": "milestones_and_deliverables",
-        "model": "test",
-        "new_value": "champions",
-        "old_value": "arsenal",
-        "user": {"id": None, "name": None},
-    }

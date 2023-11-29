@@ -114,7 +114,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
                 "model": "programme_fund_progress_update",
                 "new_value": "arsenal",
                 "old_value": None,
-                "user": {"id": None, "name": None},
+                "user": None,
             },
             {
                 "date": "2020-04-01T00:00:00Z",
@@ -122,7 +122,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
                 "model": "programme_fund_progress_update",
                 "new_value": "30,000",
                 "old_value": None,
-                "user": {"id": None, "name": None},
+                "user": None,
             },
         ]
 
@@ -481,6 +481,34 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "new_value": {
                 "priority": self.barrier.priority.code,
                 "priority_summary": "",
+            },
+            "user": None,
+        } in history
+
+    @freeze_time("2020-04-01")
+    def test_history_endpoint_has_priority_summary(self):
+        self.barrier.priority = BarrierPriority.objects.get(code="HIGH")
+        initial_priority = self.barrier.priority
+        self.barrier.priority_summary = "TEST"
+        self.barrier.save()
+        self.barrier.priority = BarrierPriority.objects.get(code="LOW")
+        self.barrier.save()
+
+        url = reverse("history", kwargs={"pk": self.barrier.pk})
+        response = self.api_client.get(url)
+        history = response.json()["history"]
+
+        assert {
+            "date": "2020-04-01T00:00:00Z",
+            "model": "barrier",
+            "field": "priority",
+            "old_value": {
+                "priority": initial_priority.code,
+                "priority_summary": "TEST",
+            },
+            "new_value": {
+                "priority": self.barrier.priority.code,
+                "priority_summary": "TEST",
             },
             "user": None,
         } in history

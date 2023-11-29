@@ -10,9 +10,9 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     trade_direction = 1
     sectors_affected = True
     sectors = ["af959812-6095-e211-a939-e4115bead28a"]
-    product = factory.Sequence(lambda n: "Product {}".format(n + 1))
+    product = 'TEST PRODUCT'
     source = "COMPANY"
-    title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
+    title = 'TEST BARRIER'
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
     top_priority_status = "NONE"
