@@ -25,6 +25,7 @@ from tests.assessment.factories import (
     StrategicAssessmentFactory,
 )
 from tests.barriers.factories import CommodityFactory
+from tests.history.factories import ProgrammeFundProgressUpdateFactory
 from tests.metadata.factories import BarrierTagFactory
 
 
@@ -94,6 +95,36 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "new_value": expected_categories,
             "user": None,
         } in history
+
+    @freeze_time("2020-04-01")
+    def test_legacy_history_endpoint_has_v2_programme_fund_progress_update(self):
+        ProgrammeFundProgressUpdateFactory(
+            barrier=self.barrier,
+            expenditure="30,000",
+            milestones_and_deliverables="arsenal",
+        )
+        url = reverse("history", kwargs={"pk": self.barrier.pk})
+        response = self.api_client.get(url)
+        history = response.json()["history"]
+
+        assert history == [
+            {
+                "date": "2020-04-01T00:00:00Z",
+                "field": "milestones_and_deliverables",
+                "model": "programme_fund_progress_update",
+                "new_value": "arsenal",
+                "old_value": None,
+                "user": {"id": None, "name": None},
+            },
+            {
+                "date": "2020-04-01T00:00:00Z",
+                "field": "expenditure",
+                "model": "programme_fund_progress_update",
+                "new_value": "30,000",
+                "old_value": None,
+                "user": {"id": None, "name": None},
+            },
+        ]
 
     @freeze_time("2020-04-01")
     def test_history_endpoint_has_commercial_value(self):
