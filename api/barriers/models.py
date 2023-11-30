@@ -33,6 +33,7 @@ from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
+from api.history.v2.enrichment import enrich_country, enrich_trade_category, enrich_main_sector, enrich_priority_level
 from api.history.v2.service import get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
@@ -295,7 +296,7 @@ class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
             qs,
             model="programme_fund_progress_update",
             fields=fields,
-            track_first_item=True,
+            track_first_item=True
         )
 
 
@@ -548,58 +549,45 @@ class Barrier(FullyArchivableMixin, BaseModel):
         ]
 
     @classmethod
-    def get_history(cls, barrier_id):
+    def get_history(cls, barrier_id, enrich=False):
         qs = cls.history.filter(id=barrier_id)
         fields = (
-            # ArchiveHistory
             [
                 "archived",
                 "archived_reason",
                 "archived_explanation",
                 "unarchived_reason",
-                # "archived_by__username",
-                # "archived_on",
-                # "unarchived_by__username",
-                # "unarchived_on",
             ],
             [
-                # encriched
                 "country",
                 "trading_bloc",
                 "caused_by_trading_bloc",
                 "admin_areas",
             ],
-            "commercial_value",  # check
-            "commercial_value_explanation",  # check
-
-            # "commodities",  # Needs enrichment
-            "companies",  # check
-            "economic_assessment_eligibility",  # check
-            "economic_assessment_eligibility_summary",  # check
-            "estimated_resolution_date",  # check
-            "start_date",  # check
+            "commercial_value",
+            "commercial_value_explanation",
+            "companies",
+            "economic_assessment_eligibility",
+            "economic_assessment_eligibility_summary",
+            "estimated_resolution_date",
+            "start_date",
             "is_summary_sensitive",
-            "main_sector",  # Needs enrichment | check
-            "priority_level",  # Needs enrichment | check
-
-            # GROUP
-            ["priority", "priority_summary"],
-
-            "product",  # check
-            "public_eligibility_summary",  # check
-
-            # GROUP
+            "main_sector",
+            "priority_level",
+            [
+                "priority",
+                "priority_summary"
+            ],
+            "product",
+            "public_eligibility_summary",
             [
                 "sectors",
                 "all_sectors",
             ],
-            # GROUP
             [
                 "source",
                 "other_source",
             ],
-
-            # Grouped
             [
                 "status",
                 "status_date",
@@ -607,34 +595,27 @@ class Barrier(FullyArchivableMixin, BaseModel):
                 "sub_status",
                 "sub_status_other",
             ],
-
             "summary",
-            
-            # "tags",  # needs cache
             "term",
             "title",
-
-            "trade_category",  # Needs enrichment check | check
-
-            #  "organisations",  # Needs cache
-
-            "top_priority_status",  # needs enrichment
-
-            # Misc
+            "trade_category",
+            "top_priority_status",  # TODO: needs enrichment
             "draft",
+
+            # m2m - seperate
+            #  "tags",  # needs cache
+            #  "organisations",  # Needs cache
+            #  "commodities",  # Needs cache
         )
 
         # Get all fields required - raw changes no enrichment
-        history = get_model_history(
-            qs,
-            model="barrier",
-            fields=fields,
-            track_first_item=False,
-        )
+        history = get_model_history(qs, model="barrier", fields=fields)
 
-        # Then enrich, ie:
-        # history = enrich_location_history(history)
-
+        if enrich:
+            enrich_country(history)
+            enrich_trade_category(history)
+            enrich_main_sector(history)
+            enrich_priority_level(history)
         # history = [type("HistoryItemMonkey", (), {'data': item}) for item in history]
 
         return history

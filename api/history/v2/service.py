@@ -34,11 +34,23 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
 
 
 def get_model_history(
-        qs: QuerySet,
-        model: str,
-        fields: Tuple[Union[str, List[str]], ...],  # fields can be grouped ie ['a', ['b', 'c'], 'd]
-        track_first_item: bool = False
+        qs: QuerySet, model: str, fields: Tuple[Union[str, List[str]], ...], track_first_item: bool = False
 ) -> List[Dict]:
+    """
+    This function returns the raw historical changes for a django-simple-history table.
+
+    Args:
+        qs: Queryset of historical table.
+        model: Model name.
+        fields: A List of fields to be returned. Fields can be grouped into list.
+                    ie: [a, [b, c], d].
+                        [b, c] will be considered a group, with `b` as the primary change. This was done for
+                        backward compatibility with the legacy history FE.
+        track_first_item: Track first item in table (typically for M2M fields)
+
+    Returns:
+        Returns a list of dictionaries representing the historical changes.
+    """
     qs_fields = []
     for field in fields:
         if isinstance(field, list):
@@ -52,9 +64,11 @@ def get_model_history(
 
     count = qs.count()
 
+    print('QUERY COUNT: ', count)
+
     history = []
 
-    if count <= 1:
+    if count <= 1 and not track_first_item:
         # No history
         return history
 
@@ -62,7 +76,28 @@ def get_model_history(
 
     for item in qs:
         if previous_item is None:
-            # No history for first item
+            if track_first_item:
+                # Render first historical item in a table.
+                change = {'old_value': None, 'new_value': {}}
+                for field in fields:
+                    if isinstance(field, list):
+                        for f in field:
+                            change['old_value'][f] = None
+                            change['new_value'][f] = item[f]
+                    else:
+                        change['old_value'] = None
+                        change['new_value'] = item[field]
+
+                    history.append({
+                        "model": model,
+                        "date": item["history_date"],
+                        "field": field if isinstance(field, str) else field[0],
+                        "user": {
+                            "id": item["history_user__id"],
+                            "name": item["history_user__username"],
+                        } if item["history_user__id"] else None,
+                        **change
+                    })
             previous_item = item
             continue
 
@@ -87,7 +122,7 @@ def get_model_history(
                 change['new_value'] = item[field]
 
             if change:
-                history_item = {
+                history.append({
                     "model": model,
                     "date": item["history_date"],
                     "field": field if isinstance(field, str) else field[0],
@@ -96,8 +131,7 @@ def get_model_history(
                         "name": item["history_user__username"],
                     } if item["history_user__id"] else None,
                     **change
-                }
-                history.append(history_item)
+                })
 
         previous_item = item
 
