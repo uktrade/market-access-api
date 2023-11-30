@@ -786,7 +786,13 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "model": "barrier",
             "field": "tags",
             "old_value": initial_tags,
-            "new_value": [expected_tag.id],
+            "new_value": [
+                {
+                    "id": expected_tag.id,
+                    "order": expected_tag.order,
+                    "title": expected_tag.title,
+                }
+            ],
             "user": None,
         } in history
 
