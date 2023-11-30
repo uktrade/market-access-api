@@ -3,6 +3,7 @@ import json
 from django.db import models
 from django.db.models import Q
 from ordered_model.models import OrderedModel
+from simple_history.models import HistoricalRecords
 
 from api.core.models import BaseModel
 from api.metadata.constants import BARRIER_TYPE_CATEGORIES, OrganisationType
@@ -71,6 +72,7 @@ class BarrierTag(OrderedModel, BaseModel):
         default=False,
         help_text="Denotes that this tag labels a barrier as Top Priority",
     )
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.title

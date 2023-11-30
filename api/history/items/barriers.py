@@ -195,7 +195,16 @@ class TagsHistoryItem(BaseBarrierHistoryItem):
     field = "tags"
 
     def get_value(self, record):
-        return record.tags_cache or []
+        if tags_cache := record.tags_cache:
+            from api.metadata.models import BarrierTag
+
+            tags = BarrierTag.history.as_of(record.history_date).filter(
+                id__in=tags_cache
+            )
+            return [
+                {"id": tag.id, "title": tag.title, "order": tag.order} for tag in tags
+            ]
+        return []
 
 
 class TermHistoryItem(BaseBarrierHistoryItem):
