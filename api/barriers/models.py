@@ -505,10 +505,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         metadata_models.Organisation,
         help_text="Organisations that are related to the barrier",
     )
-
-    history = HistoricalRecords(bases=[BarrierHistoricalModel])
-
     tags = models.ManyToManyField(metadata_models.BarrierTag, blank=True)
+
+    history = HistoricalRecords(bases=[BarrierHistoricalModel], m2m_fields=[tags])
 
     completion_percent = models.PositiveIntegerField(
         max_length=3,
