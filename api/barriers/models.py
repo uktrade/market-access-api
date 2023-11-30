@@ -33,7 +33,12 @@ from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.history.v2.enrichment import enrich_country, enrich_trade_category, enrich_main_sector, enrich_priority_level
+from api.history.v2.enrichment import (
+    enrich_country,
+    enrich_main_sector,
+    enrich_priority_level,
+    enrich_trade_category,
+)
 from api.history.v2.service import get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
@@ -296,7 +301,7 @@ class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
             qs,
             model="programme_fund_progress_update",
             fields=fields,
-            track_first_item=True
+            track_first_item=True,
         )
 
 
@@ -574,10 +579,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "is_summary_sensitive",
             "main_sector",
             "priority_level",
-            [
-                "priority",
-                "priority_summary"
-            ],
+            ["priority", "priority_summary"],
             "product",
             "public_eligibility_summary",
             [
@@ -601,7 +603,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "trade_category",
             "top_priority_status",  # TODO: needs enrichment
             "draft",
-
             # m2m - seperate
             #  "tags",  # needs cache
             #  "organisations",  # Needs cache

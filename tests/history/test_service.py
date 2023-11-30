@@ -50,9 +50,7 @@ def test_new_programme_fund_equal_last_history_item(barrier):
 def test_programme_fund_history_no_history(barrier):
     qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id)
     fields = ("milestones_and_deliverables", "expenditure")
-    assert (
-        get_model_history(qs, model="test", fields=fields) == []
-    )
+    assert get_model_history(qs, model="test", fields=fields) == []
 
 
 def test_create_model(barrier):
@@ -85,21 +83,21 @@ def test_model_history_tracking_first_item(barrier):
 
     assert model_history == [
         {
-            'model': 'test',
-            'date': model_history[0]['date'],
-            'field': 'milestones_and_deliverables',
-            'user': None,
-            'old_value': None,
-            'new_value': 'Product 5'
+            "model": "test",
+            "date": model_history[0]["date"],
+            "field": "milestones_and_deliverables",
+            "user": None,
+            "old_value": None,
+            "new_value": "Product 5",
         },
         {
-            'model': 'test',
-            'date': model_history[0]['date'],
-            'field': 'expenditure',
-            'user': None,
-            'old_value': None,
-            'new_value': 'Product 5'
-        }
+            "model": "test",
+            "date": model_history[0]["date"],
+            "field": "expenditure",
+            "user": None,
+            "old_value": None,
+            "new_value": "Product 5",
+        },
     ]
 
 
@@ -132,37 +130,37 @@ def test_model_history_multiple_items(barrier):
 
     assert model_history == [
         {
-            'date': model_history[0]['date'],
-            'field': 'milestones_and_deliverables',
-            'model': 'test',
-            'new_value': 'BB',
-            'old_value': 'AA',
-            'user': None
+            "date": model_history[0]["date"],
+            "field": "milestones_and_deliverables",
+            "model": "test",
+            "new_value": "BB",
+            "old_value": "AA",
+            "user": None,
         },
         {
-            'date': model_history[1]['date'],
-            'field': 'milestones_and_deliverables',
-            'model': 'test',
-            'new_value': 'CC',
-            'old_value': 'BB',
-            'user': None
+            "date": model_history[1]["date"],
+            "field": "milestones_and_deliverables",
+            "model": "test",
+            "new_value": "CC",
+            "old_value": "BB",
+            "user": None,
         },
         {
-            'date': model_history[2]['date'],
-            'field': 'expenditure',
-            'model': 'test',
-            'new_value': 'AA',
-            'old_value': 'A',
-            'user': None
+            "date": model_history[2]["date"],
+            "field": "expenditure",
+            "model": "test",
+            "new_value": "AA",
+            "old_value": "A",
+            "user": None,
         },
         {
-            'date': model_history[3]['date'],
-            'field': 'expenditure',
-            'model': 'test',
-            'new_value': 'AAA',
-            'old_value': 'AA',
-            'user': None
-        }
+            "date": model_history[3]["date"],
+            "field": "expenditure",
+            "model": "test",
+            "new_value": "AAA",
+            "old_value": "AA",
+            "user": None,
+        },
     ]
 
 
@@ -184,6 +182,6 @@ def test_convert_to_legacy_object(barrier):
 
     v2_to_legacy = convert_v2_history_to_legacy_object(model_history)
 
-    assert hasattr(v2_to_legacy[0], 'data')
-    assert hasattr(v2_to_legacy[1], 'data')
-    assert hasattr(v2_to_legacy[2], 'data')
+    assert hasattr(v2_to_legacy[0], "data")
+    assert hasattr(v2_to_legacy[1], "data")
+    assert hasattr(v2_to_legacy[2], "data")

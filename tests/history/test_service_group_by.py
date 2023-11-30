@@ -28,49 +28,49 @@ def assert_and_get_initial_history(barrier):
 
     assert v2_history == [
         {
-            'date': v2_history[0]['date'],
-            'field': 'status',
-            'model': 'barrier',
-            'new_value': {
-                'status': 1,
-                'status_date': v2_history[0]['new_value']['status_date'],
-                'status_summary': '',
-                'sub_status': '',
-                'sub_status_other': ''
+            "date": v2_history[0]["date"],
+            "field": "status",
+            "model": "barrier",
+            "new_value": {
+                "status": 1,
+                "status_date": v2_history[0]["new_value"]["status_date"],
+                "status_summary": "",
+                "sub_status": "",
+                "sub_status_other": "",
             },
-            'old_value': {
-                'status': 1,
-                'status_date': None,
-                'status_summary': '',
-                'sub_status': '',
-                'sub_status_other': ''
+            "old_value": {
+                "status": 1,
+                "status_date": None,
+                "status_summary": "",
+                "sub_status": "",
+                "sub_status_other": "",
             },
-            'user': None
+            "user": None,
         },
         {
-            'date': v2_history[1]['date'],
-            'field': 'draft',
-            'model': 'barrier',
-            'new_value': False,
-            'old_value': True,
-            'user': None
+            "date": v2_history[1]["date"],
+            "field": "draft",
+            "model": "barrier",
+            "new_value": False,
+            "old_value": True,
+            "user": None,
         },
         {
-            'date': v2_history[2]['date'],
-            'field': 'summary',
-            'model': 'barrier',
-            'new_value': 'New summary',
-            'old_value': 'Some problem description.',
-            'user': None
+            "date": v2_history[2]["date"],
+            "field": "summary",
+            "model": "barrier",
+            "new_value": "New summary",
+            "old_value": "Some problem description.",
+            "user": None,
         },
         {
-            'date': v2_history[3]['date'],
-            'field': 'title',
-            'model': 'barrier',
-            'new_value': 'New title',
-            'old_value': 'TEST BARRIER',
-            'user': None
-        }
+            "date": v2_history[3]["date"],
+            "field": "title",
+            "model": "barrier",
+            "new_value": "New title",
+            "old_value": "TEST BARRIER",
+            "user": None,
+        },
     ]
 
     return v2_history
@@ -89,12 +89,12 @@ def test_group_by_priority_history(barrier):
 
     assert v2_history == initial_history + [
         {
-            'date': v2_history[len(initial_history)]['date'],
-            'field': 'priority',
-            'model': 'barrier',
-            'new_value': {'priority': 2, 'priority_summary': ''},
-            'old_value': {'priority': 1, 'priority_summary': ''},
-            'user': None
+            "date": v2_history[len(initial_history)]["date"],
+            "field": "priority",
+            "model": "barrier",
+            "new_value": {"priority": 2, "priority_summary": ""},
+            "old_value": {"priority": 1, "priority_summary": ""},
+            "user": None,
         }
     ]
 
@@ -108,12 +108,12 @@ def test_group_by_source(barrier):
 
     assert v2_history == initial_history + [
         {
-            'date': v2_history[-1]['date'],
-            'field': 'source',
-            'model': 'barrier',
-            'new_value': {'other_source': '', 'source': 'TRADE'},
-            'old_value': {'other_source': '', 'source': 'COMPANY'},
-            'user': None
+            "date": v2_history[-1]["date"],
+            "field": "source",
+            "model": "barrier",
+            "new_value": {"other_source": "", "source": "TRADE"},
+            "old_value": {"other_source": "", "source": "COMPANY"},
+            "user": None,
         }
     ]
 
@@ -127,11 +127,17 @@ def test_group_by_sectors(barrier):
 
     assert v2_history == initial_history + [
         {
-            'model': 'barrier',
-            'date': v2_history[-1]['date'],
-            'field': 'sectors',
-            'user': None,
-            'old_value': {'sectors': [UUID('af959812-6095-e211-a939-e4115bead28a')], 'all_sectors': None},
-            'new_value': {'sectors': [UUID('9538cecc-5f95-e211-a939-e4115bead28a')], 'all_sectors': None}
+            "model": "barrier",
+            "date": v2_history[-1]["date"],
+            "field": "sectors",
+            "user": None,
+            "old_value": {
+                "sectors": [UUID("af959812-6095-e211-a939-e4115bead28a")],
+                "all_sectors": None,
+            },
+            "new_value": {
+                "sectors": [UUID("9538cecc-5f95-e211-a939-e4115bead28a")],
+                "all_sectors": None,
+            },
         }
     ]
