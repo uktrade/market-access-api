@@ -72,6 +72,37 @@ def test_model_history_not_tracking_first_item(barrier):
     assert get_model_history(qs, model="test", fields=fields) == []
 
 
+def test_model_history_tracking_first_item(barrier):
+    ProgrammeFundProgressUpdateFactory(barrier=barrier)
+
+    qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id)
+    fields = ("milestones_and_deliverables", "expenditure")
+    model_history = get_model_history(
+        qs, model="test", fields=fields, track_first_item=True
+    )
+
+    assert ProgrammeFundProgressUpdate.history.count() == 1
+
+    assert model_history == [
+        {
+            'model': 'test',
+            'date': model_history[0]['date'],
+            'field': 'milestones_and_deliverables',
+            'user': None,
+            'old_value': None,
+            'new_value': 'Product 5'
+        },
+        {
+            'model': 'test',
+            'date': model_history[0]['date'],
+            'field': 'expenditure',
+            'user': None,
+            'old_value': None,
+            'new_value': 'Product 5'
+        }
+    ]
+
+
 def test_model_history_multiple_items(barrier):
     obj = ProgrammeFundProgressUpdateFactory(
         barrier=barrier, expenditure="A", milestones_and_deliverables="AA"
