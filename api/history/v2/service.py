@@ -1,5 +1,4 @@
-import itertools
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from django.db.models import QuerySet
 
@@ -11,7 +10,7 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
     return [type("HistoryItemMonkey", (), {"data": item}) for item in items]
 
 
-def get_model_history(
+def get_model_history(  # noqa: C901
     qs: QuerySet,
     model: str,
     fields: Tuple[Union[str, List[str]], ...],
@@ -44,8 +43,6 @@ def get_model_history(
     )
 
     count = qs.count()
-
-    print("QUERY COUNT: ", count)
 
     history = []
 

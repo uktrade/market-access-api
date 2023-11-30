@@ -1,6 +1,6 @@
 import datetime
 
-from api.barriers.models import Barrier, ProgrammeFundProgressUpdate
+from api.barriers.models import ProgrammeFundProgressUpdate
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
