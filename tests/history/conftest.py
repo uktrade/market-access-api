@@ -1,7 +1,5 @@
 import datetime
 
-from django.contrib.auth import get_user_model
-from freezegun import freeze_time
 from pytest import fixture
 
 from api.barriers.models import Barrier

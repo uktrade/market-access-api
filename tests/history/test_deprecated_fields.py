@@ -9,7 +9,6 @@ import pytest
 
 from api.barriers.models import Barrier
 from api.history.factories import BarrierHistoryFactory
-from api.history.v2.service import convert_v2_history_to_legacy_object
 
 pytestmark = [pytest.mark.django_db]
 
