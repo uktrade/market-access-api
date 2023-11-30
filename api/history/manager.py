@@ -129,9 +129,10 @@ class HistoryManager:
         v2_history.extend(
             ProgrammeFundProgressUpdate.get_history(barrier_id=barrier.pk)
         )
-        # v2_history_to_legacy = convert_v2_history_to_legacy_object(v2_history)
+
         # Convert v2 history items and add to legacy history
-        history.extend([type('MonkeyData', (), {'data': item}) for item in v2_history])
+        v2_history_to_legacy = convert_v2_history_to_legacy_object(v2_history)
+        history.extend(v2_history_to_legacy)
 
         return history
 

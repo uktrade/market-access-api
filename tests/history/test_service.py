@@ -164,3 +164,26 @@ def test_model_history_multiple_items(barrier):
             'user': None
         }
     ]
+
+
+def test_convert_to_legacy_object(barrier):
+    obj = ProgrammeFundProgressUpdateFactory(
+        barrier=barrier, expenditure="1", milestones_and_deliverables="arsenal"
+    )
+    obj.milestones_and_deliverables = "champions"
+    obj.save()
+
+    qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id)
+    fields = ("milestones_and_deliverables", "expenditure")
+    model_history = get_model_history(
+        qs, model="test", fields=fields, track_first_item=True
+    )
+
+    assert ProgrammeFundProgressUpdate.history.count() == 2
+    assert len(model_history) == 3
+
+    v2_to_legacy = convert_v2_history_to_legacy_object(model_history)
+
+    assert hasattr(v2_to_legacy[0], 'data')
+    assert hasattr(v2_to_legacy[1], 'data')
+    assert hasattr(v2_to_legacy[2], 'data')
