@@ -9,28 +9,7 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
     """
     Converts v2 data dictionaries to a monkey patch class with 'data' property
     """
-    v2_list = []
-    for item in items:
-        v2_list.extend(
-            [
-                type(
-                    "HistoryItemMonkey",
-                    (),
-                    {
-                        "data": {
-                            "date": item["date"],
-                            "field": k,
-                            "model": item["model"],
-                            "new_value": field["new"],
-                            "old_value": field.get("old"),
-                            "user": item["user"],
-                        }
-                    },
-                )
-                for k, field in item["fields"].items()
-            ]
-        )
-    return v2_list
+    return [type('HistoryItemMonkey', (), {'data': item}) for item in items]
 
 
 def get_model_history(
