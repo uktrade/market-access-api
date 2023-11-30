@@ -1,6 +1,5 @@
 import itertools
-
-from typing import List, Tuple, Dict, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from django.db.models import QuerySet
 
@@ -9,11 +8,14 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
     """
     Converts v2 data dictionaries to a monkey patch class with 'data' property
     """
-    return [type('HistoryItemMonkey', (), {'data': item}) for item in items]
+    return [type("HistoryItemMonkey", (), {"data": item}) for item in items]
 
 
 def get_model_history(
-        qs: QuerySet, model: str, fields: Tuple[Union[str, List[str]], ...], track_first_item: bool = False
+    qs: QuerySet,
+    model: str,
+    fields: Tuple[Union[str, List[str]], ...],
+    track_first_item: bool = False,
 ) -> List[Dict]:
     """
     This function returns the raw historical changes for a django-simple-history table.
@@ -43,7 +45,7 @@ def get_model_history(
 
     count = qs.count()
 
-    print('QUERY COUNT: ', count)
+    print("QUERY COUNT: ", count)
 
     history = []
 
@@ -57,26 +59,30 @@ def get_model_history(
         if previous_item is None:
             if track_first_item:
                 # Render first historical item in a table.
-                change = {'old_value': None, 'new_value': {}}
+                change = {"old_value": None, "new_value": {}}
                 for field in fields:
                     if isinstance(field, list):
                         for f in field:
-                            change['old_value'][f] = None
-                            change['new_value'][f] = item[f]
+                            change["old_value"][f] = None
+                            change["new_value"][f] = item[f]
                     else:
-                        change['old_value'] = None
-                        change['new_value'] = item[field]
+                        change["old_value"] = None
+                        change["new_value"] = item[field]
 
-                    history.append({
-                        "model": model,
-                        "date": item["history_date"],
-                        "field": field if isinstance(field, str) else field[0],
-                        "user": {
-                            "id": item["history_user__id"],
-                            "name": item["history_user__username"],
-                        } if item["history_user__id"] else None,
-                        **change
-                    })
+                    history.append(
+                        {
+                            "model": model,
+                            "date": item["history_date"],
+                            "field": field if isinstance(field, str) else field[0],
+                            "user": {
+                                "id": item["history_user__id"],
+                                "name": item["history_user__username"],
+                            }
+                            if item["history_user__id"]
+                            else None,
+                            **change,
+                        }
+                    )
             previous_item = item
             continue
 
@@ -90,27 +96,31 @@ def get_model_history(
                         break
 
                 if any_grouped_field_has_change:
-                    change['old_value'] = {}
-                    change['new_value'] = {}
+                    change["old_value"] = {}
+                    change["new_value"] = {}
 
                     for f in field:
-                        change['old_value'][f] = previous_item[f]
-                        change['new_value'][f] = item[f]
+                        change["old_value"][f] = previous_item[f]
+                        change["new_value"][f] = item[f]
             elif item[field] != previous_item[field]:
-                change['old_value'] = previous_item[field]
-                change['new_value'] = item[field]
+                change["old_value"] = previous_item[field]
+                change["new_value"] = item[field]
 
             if change:
-                history.append({
-                    "model": model,
-                    "date": item["history_date"],
-                    "field": field if isinstance(field, str) else field[0],
-                    "user": {
-                        "id": item["history_user__id"],
-                        "name": item["history_user__username"],
-                    } if item["history_user__id"] else None,
-                    **change
-                })
+                history.append(
+                    {
+                        "model": model,
+                        "date": item["history_date"],
+                        "field": field if isinstance(field, str) else field[0],
+                        "user": {
+                            "id": item["history_user__id"],
+                            "name": item["history_user__username"],
+                        }
+                        if item["history_user__id"]
+                        else None,
+                        **change,
+                    }
+                )
 
         previous_item = item
 

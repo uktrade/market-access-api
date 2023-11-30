@@ -30,9 +30,11 @@ pytestmark = [pytest.mark.django_db]
         ("summary", "teeeest", "Some problem description."),
         ("term", 2, 1),
         ("title", "teeeest", "TEST BARRIER"),
-    ]
+    ],
 )
-def test_commercial_value_explanation_history(draft_barrier, field, new_value, old_value):
+def test_commercial_value_explanation_history(
+    draft_barrier, field, new_value, old_value
+):
     setattr(draft_barrier, field, new_value)
     draft_barrier.save()
 
