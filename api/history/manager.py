@@ -80,8 +80,9 @@ class HistoryManager:
             start_date = None
 
         # TODO: Deprecate legacy history implementation for V2
-        history = cls.get_barrier_history(barrier.pk, start_date=start_date)
         # history = Barrier.get_history(barrier_id=barrier.pk)
+        history = cls.get_barrier_history(barrier.pk, start_date=start_date)
+
         history += cls.get_top_priority_summary_history(
             barrier.pk, start_date=start_date
         )
@@ -128,9 +129,9 @@ class HistoryManager:
         v2_history.extend(
             ProgrammeFundProgressUpdate.get_history(barrier_id=barrier.pk)
         )
-        v2_history_to_legacy = convert_v2_history_to_legacy_object(v2_history)
+        # v2_history_to_legacy = convert_v2_history_to_legacy_object(v2_history)
         # Convert v2 history items and add to legacy history
-        history.extend(v2_history_to_legacy)
+        history.extend([type('MonkeyData', (), {'data': item}) for item in v2_history])
 
         return history
 

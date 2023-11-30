@@ -51,7 +51,7 @@ def test_programme_fund_history_no_history(barrier):
     qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id)
     fields = ("milestones_and_deliverables", "expenditure")
     assert (
-        get_model_history(qs, model="test", fields=fields, track_first_item=True) == []
+        get_model_history(qs, model="test", fields=fields) == []
     )
 
 
@@ -97,12 +97,7 @@ def test_model_history_multiple_items(barrier):
 
     qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id, id=obj.id)
     fields = ("milestones_and_deliverables", "expenditure")
-    model_history = get_model_history(
-        qs, model="test", fields=fields, track_first_item=True
-    )
-
-    from pprint import pprint
-    pprint(model_history)
+    model_history = get_model_history(qs, model="test", fields=fields)
 
     assert model_history == [
         {
