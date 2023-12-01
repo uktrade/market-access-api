@@ -45,7 +45,7 @@ def enrich_main_sector(history: List[Dict]):
     def enrich(value):
         sector = get_sector(value)
         if sector:
-            return sector['name']
+            return sector["name"]
 
     for item in history:
         if item["field"] != "main_sector":

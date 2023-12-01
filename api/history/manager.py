@@ -1,6 +1,10 @@
 import datetime
 
-from api.barriers.models import ProgrammeFundProgressUpdate, Barrier
+from api.barriers.models import (
+    Barrier,
+    BarrierTopPrioritySummary,
+    ProgrammeFundProgressUpdate,
+)
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
@@ -19,7 +23,6 @@ from api.history.factories.action_plans import (
     ActionPlanMilestoneHistoryFactory,
     ActionPlanTaskHistoryFactory,
 )
-from api.history.factories.top_priority import BarrierTopPrioritySummaryHistoryFactory
 from api.history.models import CachedHistoryItem
 from api.history.v2.service import convert_v2_history_to_legacy_object
 
@@ -80,12 +83,15 @@ class HistoryManager:
             start_date = None
 
         # TODO: Deprecate legacy history implementation for V2
-        history = convert_v2_history_to_legacy_object(Barrier.get_history(barrier_id=barrier.pk, enrich=True))
+        history = convert_v2_history_to_legacy_object(
+            Barrier.get_history(barrier_id=barrier.pk, enrich=True)
+        )
         # history = cls.get_barrier_history(barrier.pk, start_date=start_date)
 
-        history += cls.get_top_priority_summary_history(
-            barrier.pk, start_date=start_date
-        )
+        # Deprecated legacy:
+        # history += cls.get_top_priority_summary_history(
+        #     barrier.pk, start_date=start_date
+        # )
         history += cls.get_action_plans_history(barrier.pk, start_date=start_date)
         history += cls.get_notes_history(barrier.pk, start_date=start_date)
         history += cls.get_delivery_confidence_history(
@@ -129,6 +135,7 @@ class HistoryManager:
         v2_history.extend(
             ProgrammeFundProgressUpdate.get_history(barrier_id=barrier.pk)
         )
+        v2_history.extend(BarrierTopPrioritySummary.get_history(barrier_id=barrier.pk))
 
         # Convert v2 history items and add to legacy history
         v2_history_to_legacy = convert_v2_history_to_legacy_object(v2_history)
@@ -218,24 +225,6 @@ class HistoryManager:
             )
 
         return BarrierHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_top_priority_summary_history(
-        cls, barrier_id, fields=(), start_date=None, use_cache=False
-    ):
-        if use_cache:
-            return cls.get_cached_history_items(
-                barrier_id,
-                model="barrier_top_priority_summary",
-                fields=fields,
-                start_date=start_date,
-            )
-
-        return BarrierTopPrioritySummaryHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,

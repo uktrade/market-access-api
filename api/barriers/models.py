@@ -601,7 +601,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "term",
             "title",
             "trade_category",
-            "top_priority_status",  # TODO: needs enrichment
+            # "top_priority_status",  # TODO: needs enrichment
             "draft",
             # m2m - seperate
             "tags_cache",  # needs cache
@@ -2146,6 +2146,18 @@ class BarrierTopPrioritySummary(models.Model):
         primary_key=True,
     )
     history = HistoricalRecords()
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("top_priority_summary_text",)
+
+        return get_model_history(
+            qs,
+            model="barrier_top_priority_summary",  # TODO: Update frontend, legacy history marked this as barrier item
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class BarrierNextStepItem(BaseModel):

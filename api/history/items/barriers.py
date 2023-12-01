@@ -269,11 +269,6 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
         return {"value": status, "reason": top_priority_reason}
 
 
-class TopPrioritySummaryHistoryItem(BaseHistoryItem):
-    model = "barrier_top_priority_summary"
-    field = "top_priority_summary_text"
-
-
 class PriorityLevelHistoryItem(BaseBarrierHistoryItem):
     field = "priority_level"
 
