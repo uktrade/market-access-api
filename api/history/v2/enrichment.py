@@ -42,12 +42,17 @@ def enrich_trade_category(history: List[Dict]):
 
 
 def enrich_main_sector(history: List[Dict]):
+    def enrich(value):
+        sector = get_sector(value)
+        if sector:
+            return sector['name']
+
     for item in history:
         if item["field"] != "main_sector":
             continue
 
-        item["old_value"] = get_sector(item["old_value"])
-        item["new_value"] = get_sector(item["new_value"])
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
 
 
 def enrich_priority_level(history: List[Dict]):
