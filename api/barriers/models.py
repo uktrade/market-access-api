@@ -606,7 +606,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             # m2m - seperate
             #  "tags",  # needs cache
             "organisations_cache",  # Needs cache
-            #  "commodities",  # Needs cache
+            "commodities_cache",  # Needs cache
         )
 
         # Get all fields required - raw changes no enrichment

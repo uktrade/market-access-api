@@ -3,6 +3,7 @@ import pytest
 from api.barriers.models import Barrier
 from api.metadata.constants import OrganisationType
 from api.metadata.models import Organisation
+from tests.barriers.factories import CommodityFactory
 
 pytestmark = [pytest.mark.django_db]
 
@@ -62,5 +63,85 @@ def test_m2m_organisation(barrier, organisation):
         "model": "barrier",
         "new_value": [o.id for o in new_orgs] + [organisation.id],
         "old_value": [organisation.id],
+        "user": None,
+    }
+
+
+def test_m2m_commodities(barrier):
+    commodity = CommodityFactory(code="2105000000", description="Ice cream")
+    barrier.commodities.add(commodity)
+    barrier.save()
+
+    v2_history = Barrier.get_history(barrier_id=barrier.id)
+
+    assert v2_history[-1] == {
+        "model": "barrier",
+        "date": v2_history[-1]["date"],
+        "field": "commodities",
+        "user": None,
+        "old_value": [],
+        "new_value": [
+            {
+                "code": "",
+                "country": None,
+                "commodity": {
+                    "code": "2105000000",
+                    "version": "2020-01-01",
+                    "description": "Ice cream",
+                    "full_description": "Ice cream",
+                },
+                "trading_bloc": None,
+            }
+        ],
+    }
+
+    commodity = CommodityFactory(code="2106000000", description="Snickers")
+    barrier.refresh_from_db()
+    barrier.commodities.add(commodity)
+    barrier.save()
+
+    v2_history = Barrier.get_history(barrier_id=barrier.id)
+
+    assert v2_history[-1] == {
+        "date": v2_history[-1]["date"],
+        "field": "commodities",
+        "model": "barrier",
+        "new_value": [
+            {
+                "code": "",
+                "commodity": {
+                    "code": "2105000000",
+                    "description": "Ice cream",
+                    "full_description": "Ice cream",
+                    "version": "2020-01-01",
+                },
+                "country": None,
+                "trading_bloc": None,
+            },
+            {
+                "code": "",
+                "commodity": {
+                    "code": "2106000000",
+                    "description": "Snickers",
+                    "full_description": "Snickers",
+                    "version": "2020-01-01",
+                },
+                "country": None,
+                "trading_bloc": None,
+            },
+        ],
+        "old_value": [
+            {
+                "code": "",
+                "commodity": {
+                    "code": "2105000000",
+                    "description": "Ice cream",
+                    "full_description": "Ice cream",
+                    "version": "2020-01-01",
+                },
+                "country": None,
+                "trading_bloc": None,
+            }
+        ],
         "user": None,
     }
