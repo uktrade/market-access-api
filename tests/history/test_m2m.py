@@ -4,6 +4,7 @@ from api.barriers.models import Barrier
 from api.metadata.constants import OrganisationType
 from api.metadata.models import Organisation
 from tests.barriers.factories import CommodityFactory
+from tests.metadata.factories import BarrierTagFactory
 
 pytestmark = [pytest.mark.django_db]
 
@@ -143,5 +144,45 @@ def test_m2m_commodities(barrier):
                 "trading_bloc": None,
             }
         ],
+        "user": None,
+    }
+
+
+def test_m2m_tags(barrier):
+    assert len(Barrier.get_history(barrier_id=barrier.id)) == 4
+    assert Barrier.history.filter(id=barrier.id).first().tags_cache == []
+
+    new_tag = BarrierTagFactory(title="brouhaha")
+    barrier.tags.add(new_tag)
+    barrier.save()
+
+    assert Barrier.history.filter(id=barrier.id).first().tags_cache == [new_tag.id]
+
+    v2_history = Barrier.get_history(barrier_id=barrier.id)
+
+    assert len(v2_history) == 5
+    assert v2_history[-1] == {
+        "date": v2_history[-1]["date"],
+        "model": "barrier",
+        "field": "tags",
+        "old_value": [],
+        "new_value": [new_tag.id],
+        "user": None,
+    }
+
+    new_tag_2 = BarrierTagFactory(title="brouhahaasdsad")
+    barrier.tags.add(new_tag_2)
+    barrier.tags.remove(new_tag)
+    barrier.save()
+
+    v2_history = Barrier.get_history(barrier_id=barrier.id)
+
+    assert len(v2_history) == 6
+    assert v2_history[-1] == {
+        "date": v2_history[-1]["date"],
+        "model": "barrier",
+        "field": "tags",
+        "old_value": [new_tag.id],
+        "new_value": [new_tag_2.id],
         "user": None,
     }

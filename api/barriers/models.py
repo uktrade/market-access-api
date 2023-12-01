@@ -604,7 +604,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "top_priority_status",  # TODO: needs enrichment
             "draft",
             # m2m - seperate
-            #  "tags",  # needs cache
+            "tags_cache",  # needs cache
             "organisations_cache",  # Needs cache
             "commodities_cache",  # Needs cache
         )

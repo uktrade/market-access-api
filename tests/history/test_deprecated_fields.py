@@ -31,15 +31,11 @@ pytestmark = [pytest.mark.django_db]
         ("title", "teeeest", "TEST BARRIER"),
     ],
 )
-def test_commercial_value_explanation_history(
-    draft_barrier, field, new_value, old_value
-):
+def test_simple_fields(draft_barrier, field, new_value, old_value):
     setattr(draft_barrier, field, new_value)
     draft_barrier.save()
 
     items = BarrierHistoryFactory.get_history_items(barrier_id=draft_barrier.pk)
-    for item in items:
-        print(item.data)
     data = items[-1].data
 
     assert data["model"] == "barrier"
@@ -48,6 +44,5 @@ def test_commercial_value_explanation_history(
     assert data["new_value"] == new_value
 
     v2_history = Barrier.get_history(barrier_id=draft_barrier.id)
-    # items = convert_v2_history_to_legacy_object(v2_history)
 
     assert v2_history[-1] == data
