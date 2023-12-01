@@ -30,6 +30,7 @@ def test_m2m_organisation(barrier, organisation):
     assert Barrier.history.filter(id=barrier.id).first().organisations_cache == []
 
     barrier.organisations.add(organisation)
+    barrier.save()
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
     assert Barrier.history.filter(id=barrier.id).first().organisations_cache == [
@@ -49,7 +50,9 @@ def test_m2m_organisation(barrier, organisation):
     }
 
     new_orgs = Organisation.objects.all()[:2]
+    barrier.refresh_from_db()
     barrier.organisations.add(*new_orgs)
+    barrier.save()
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
     assert len(v2_history) == 6

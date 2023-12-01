@@ -18,7 +18,6 @@ from django.db import models
 from django.db.models import CASCADE, CharField, F, Q, QuerySet
 from django.db.models import Value as V
 from django.db.models.functions import Concat
-from django.db.models.signals import m2m_changed
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
@@ -2173,12 +2172,3 @@ class BarrierNextStepItem(BaseModel):
         ordering = ("-completion_date",)
         verbose_name = "Barrier Next Step Item"
         verbose_name_plural = "Barrier Next Step Items"
-
-
-def barrier_organisations_changed(sender, instance, action, **kwargs):
-    if action == "post_add":
-        # Force history organisations cache to run
-        instance.save()
-
-
-m2m_changed.connect(barrier_organisations_changed, sender=Barrier.organisations.through)
