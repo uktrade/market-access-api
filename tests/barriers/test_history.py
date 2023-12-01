@@ -6,11 +6,13 @@ from django.test import TestCase
 from freezegun import freeze_time
 from notifications_python_client.notifications import NotificationsAPIClient
 
+from api.action_plans.models import ActionPlan
 from api.assessment.models import EconomicAssessment
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
+from api.core.utils import cleansed_username
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
@@ -20,9 +22,15 @@ from api.history.factories import (
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
+from api.history.factories.action_plans import ActionPlanTaskHistoryFactory
+from api.history.items.action_plans import get_default_user
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
+from tests.action_plans.factories import (
+    ActionPlanMilestoneFactory,
+    ActionPlanTaskFactory,
+)
 from tests.assessment.factories import (
     EconomicAssessmentFactory,
     EconomicImpactAssessmentFactory,
@@ -899,3 +907,28 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         assert ("public_barrier", "status") in cached_changes
         assert ("public_barrier", "summary") in cached_changes
         assert ("public_barrier", "title") in cached_changes
+
+
+class TestActionPlanHistory(APITestMixin, TestCase):
+    fixtures = ["users", "barriers"]
+
+    def setUp(self):
+        super().setUp()
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
+
+    def test_action_plan_no_user_history(self):
+        action_plan = ActionPlan.objects.get(barrier=self.barrier)
+        milestone = ActionPlanMilestoneFactory(action_plan=action_plan)
+        action_plan = ActionPlanTaskFactory(milestone=milestone, assigned_to=None)
+
+        action_plan.assigned_to = self.mock_user
+        action_plan.save()
+
+        items = ActionPlanTaskHistoryFactory.get_history_items(
+            barrier_id=self.barrier.id,
+        )
+        data = items[-1].data
+        default_user = get_default_user()
+
+        # asserting that when the old value of assigned_to is None, the default user is returned
+        assert data["old_value"] == cleansed_username(default_user)
