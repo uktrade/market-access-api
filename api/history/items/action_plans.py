@@ -121,8 +121,8 @@ class ActionPlanTaskAssignedToHistoryItem(ActionPlanTaskHistoryItem):
             # Check that the user exists
             user = getattr(record, "assigned_to", None)
             if not user:
-                raise ObjectDoesNotExist
-        except ObjectDoesNotExist:
+                raise ValueError
+        except (ObjectDoesNotExist, ValueError):
             # default to me if user does not exist.
             backup_user = get_default_user()
             record.user = backup_user
