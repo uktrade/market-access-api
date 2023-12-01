@@ -3,6 +3,7 @@ import json
 from django.db import models
 from django.db.models import Q
 from ordered_model.models import OrderedModel
+from simple_history.models import HistoricalRecords
 
 from api.core.models import BaseModel
 from api.metadata.constants import BARRIER_TYPE_CATEGORIES, OrganisationType
@@ -97,6 +98,8 @@ class BarrierPriority(models.Model):
 class Organisation(models.Model):
     name = models.CharField(max_length=300)
     organisation_type = models.IntegerField(choices=OrganisationType.choices)
+
+    history = HistoricalRecords()
 
     class Meta:
         unique_together = ("name", "organisation_type")

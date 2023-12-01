@@ -1,8 +1,3 @@
-"""
-Sanity tests that fields can be replaced:
-
-TODO: Once approved, remove the fields from legacy history
-"""
 from uuid import UUID
 
 import pytest

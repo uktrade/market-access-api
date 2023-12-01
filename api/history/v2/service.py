@@ -70,7 +70,9 @@ def get_model_history(  # noqa: C901
                         {
                             "model": model,
                             "date": item["history_date"],
-                            "field": field if isinstance(field, str) else field[0],
+                            "field": (
+                                field if isinstance(field, str) else field[0]
+                            ).replace("_cache", ""),
                             "user": {
                                 "id": item["history_user__id"],
                                 "name": item["history_user__username"],
@@ -108,7 +110,9 @@ def get_model_history(  # noqa: C901
                     {
                         "model": model,
                         "date": item["history_date"],
-                        "field": field if isinstance(field, str) else field[0],
+                        "field": (
+                            field if isinstance(field, str) else field[0]
+                        ).replace("_cache", ""),
                         "user": {
                             "id": item["history_user__id"],
                             "name": item["history_user__username"],
