@@ -1,7 +1,16 @@
+import operator
 from collections import namedtuple
 from typing import Dict, List, Tuple, Union
 
 from django.db.models import QuerySet
+
+from api.history.v2.enrichment import (
+    enrich_country,
+    enrich_main_sector,
+    enrich_priority_level,
+    enrich_top_priority_status,
+    enrich_trade_category,
+)
 
 FieldMapping = namedtuple("FieldMapping", "query_name name")
 
@@ -11,6 +20,25 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
     Converts v2 data dictionaries to a monkey patch class with 'data' property
     """
     return [type("HistoryItemMonkey", (), {"data": item}) for item in items]
+
+
+def enrich_full_history(
+    barrier_history: List[Dict],
+    programme_fund_history: List[Dict],
+    top_priority_summary_history: List[Dict],
+) -> List[Dict]:
+    enrich_country(barrier_history)
+    enrich_trade_category(barrier_history)
+    enrich_main_sector(barrier_history)
+    enrich_priority_level(barrier_history)
+    enrich_top_priority_status(barrier_history, top_priority_summary_history)
+
+    enriched_history = (
+        barrier_history + programme_fund_history + top_priority_summary_history
+    )
+    enriched_history.sort(key=operator.itemgetter("date"))
+
+    return enriched_history
 
 
 def get_model_history(  # noqa: C901

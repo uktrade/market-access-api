@@ -1,10 +1,24 @@
 """
 Enrichments to historical data as done by legacy.
 """
-from typing import Dict, List
+from typing import Dict, List, Optional
 
-from api.metadata.constants import PRIORITY_LEVELS, TRADE_CATEGORIES
+from api.metadata.constants import (
+    PRIORITY_LEVELS,
+    TOP_PRIORITY_BARRIER_STATUS,
+    TRADE_CATEGORIES,
+)
 from api.metadata.utils import get_location_text, get_sector
+
+
+def get_matching_history_item(
+    history_item: Dict, history: List[Dict]
+) -> Optional[Dict]:
+    """Given a history_item, find the corresponding history item from another history table w.r.t. time"""
+    primary_date = history_item["date"]
+    for item in reversed(history):
+        if item["date"] <= primary_date:
+            return item
 
 
 def enrich_country(history: List[Dict]):
@@ -67,6 +81,59 @@ def enrich_priority_level(history: List[Dict]):
 
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_top_priority_status(
+    barrier_history: List[Dict], top_priority_summary_history: List[Dict]
+):
+    def enrich(value, summary_text: str):
+        status = TOP_PRIORITY_BARRIER_STATUS[value["top_priority_status"]]
+        if (
+            value["top_priority_status"] == "APPROVED"
+            or value["top_priority_status"] == "APPROVAL_PENDING"
+            or value["top_priority_status"] == "REMOVAL_PENDING"
+            or value["top_priority_status"] == "RESOLVED"
+        ):
+
+            # It's an accepted Top Priority Request, or pending review
+            top_priority_reason = summary_text
+        else:
+            # The top_priority_status is NONE
+            if value["top_priority_rejection_summary"]:
+                # It's a rejected Top Priority Request
+                status = "Rejected"
+                top_priority_reason = value["top_priority_rejection_summary"] or ""
+            else:
+                # The barrier has had its top-priority status removed
+                status = "Removed"
+                top_priority_reason = summary_text
+
+        return {"value": status, "reason": top_priority_reason}
+
+    previous = None
+    for item in barrier_history:
+        if item["field"] != "top_priority_status":
+            continue
+
+        matching_item = get_matching_history_item(item, top_priority_summary_history)
+        if (
+            matching_item
+            and previous
+            and previous["new_value"] == matching_item["new_value"]
+        ):
+            old_matching_value = matching_item["new_value"]
+        else:
+            old_matching_value = (
+                (matching_item["old_value"] or "") if matching_item else ""
+            )
+
+        item["model"] = "barrier"  # Backwards compat FE
+        item["old_value"] = enrich(item["old_value"], old_matching_value)
+        item["new_value"] = enrich(
+            item["new_value"],
+            (matching_item["new_value"] or "") if matching_item else "",
+        )
+        previous = matching_item
 
 
 def enrich_priority(history: List[Dict]):

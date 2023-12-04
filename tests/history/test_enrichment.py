@@ -7,13 +7,15 @@ from uuid import UUID
 
 import pytest
 
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, BarrierTopPrioritySummary
 from api.history.v2.enrichment import (
     enrich_country,
     enrich_main_sector,
     enrich_priority_level,
+    enrich_top_priority_status,
     enrich_trade_category,
 )
+from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 pytestmark = [pytest.mark.django_db]
 
@@ -200,5 +202,52 @@ def test_priority_level_enrichment(barrier):
         "model": "barrier",
         "new_value": "Watch list",
         "old_value": "",
+        "user": None,
+    }
+
+
+def test_top_priority_status_enrichment(barrier):
+    barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
+    barrier.save()
+
+    v2_barrier_history = Barrier.get_history(barrier_id=barrier.id)
+
+    # Pre enrich
+    assert v2_barrier_history[-1] == {
+        "date": v2_barrier_history[-1]["date"],
+        "field": "top_priority_status",
+        "model": "barrier",
+        "new_value": {
+            "top_priority_rejection_summary": None,
+            "top_priority_status": "APPROVAL_PENDING",
+        },
+        "old_value": {
+            "top_priority_rejection_summary": None,
+            "top_priority_status": "NONE",
+        },
+        "user": None,
+    }
+    BarrierTopPrioritySummary.objects.create(
+        top_priority_summary_text="Has been approved", barrier=barrier
+    )
+    barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+    barrier.save()
+    v2_history = Barrier.get_history(barrier_id=barrier.id)
+    v2_top_priority_summary_history = BarrierTopPrioritySummary.get_history(
+        barrier_id=barrier.id
+    )
+
+    # Enrich
+    enrich_top_priority_status(
+        barrier_history=v2_history,
+        top_priority_summary_history=v2_top_priority_summary_history,
+    )
+
+    assert v2_history[-1] == {
+        "date": v2_history[-1]["date"],
+        "field": "top_priority_status",
+        "model": "barrier",
+        "new_value": {"reason": "Has been approved", "value": "Top 100 Priority"},
+        "old_value": {"reason": "", "value": "Top 100 Approval Pending"},
         "user": None,
     }

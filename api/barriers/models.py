@@ -33,12 +33,6 @@ from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.history.v2.enrichment import (
-    enrich_country,
-    enrich_main_sector,
-    enrich_priority_level,
-    enrich_trade_category,
-)
 from api.history.v2.service import FieldMapping, get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
@@ -602,7 +596,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "title",
             "trade_category",
             "trade_direction",
-            # "top_priority_status",  # TODO: needs enrichment
+            ["top_priority_status", "top_priority_rejection_summary"],
             "draft",
             # m2m - seperate
             "tags_cache",  # needs cache
@@ -612,16 +606,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         )
 
         # Get all fields required - raw changes no enrichment
-        history = get_model_history(qs, model="barrier", fields=fields)
-
-        if enrich:
-            enrich_country(history)
-            enrich_trade_category(history)
-            enrich_main_sector(history)
-            enrich_priority_level(history)
-        # history = [type("HistoryItemMonkey", (), {'data': item}) for item in history]
-
-        return history
+        return get_model_history(qs, model="barrier", fields=fields)
 
     @property
     def latest_progress_update(self):
