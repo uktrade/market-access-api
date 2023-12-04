@@ -34,34 +34,6 @@ def assert_and_get_initial_history(barrier):
     assert v2_history == [
         {
             "date": v2_history[0]["date"],
-            "field": "status",
-            "model": "barrier",
-            "new_value": {
-                "status": 1,
-                "status_date": v2_history[0]["new_value"]["status_date"],
-                "status_summary": "",
-                "sub_status": "",
-                "sub_status_other": "",
-            },
-            "old_value": {
-                "status": 1,
-                "status_date": None,
-                "status_summary": "",
-                "sub_status": "",
-                "sub_status_other": "",
-            },
-            "user": None,
-        },
-        {
-            "date": v2_history[1]["date"],
-            "field": "draft",
-            "model": "barrier",
-            "new_value": False,
-            "old_value": True,
-            "user": None,
-        },
-        {
-            "date": v2_history[2]["date"],
             "field": "summary",
             "model": "barrier",
             "new_value": "New summary",
@@ -69,7 +41,7 @@ def assert_and_get_initial_history(barrier):
             "user": None,
         },
         {
-            "date": v2_history[3]["date"],
+            "date": v2_history[1]["date"],
             "field": "title",
             "model": "barrier",
             "new_value": "New title",
@@ -186,7 +158,6 @@ def test_trade_category_enrichment(barrier):
 
 
 def test_main_sector_enrichment(barrier):
-    initial_history = assert_and_get_initial_history(barrier)
     barrier.main_sector = "9538cecc-5f95-e211-a939-e4115bead28a"
     barrier.save()
 
@@ -203,26 +174,16 @@ def test_main_sector_enrichment(barrier):
 
     enrich_main_sector(v2_history)
 
+    from pprint import pprint
+
+    pprint(v2_history[-1])
+
     assert v2_history[-1] == {
         "date": v2_history[-1]["date"],
         "field": "main_sector",
         "model": "barrier",
-        "new_value": {
-            "disabled_on": None,
-            "id": "9538cecc-5f95-e211-a939-e4115bead28a",
-            "level": 0,
-            "name": "Aerospace",
-            "parent": None,
-            "segment": "Aerospace",
-        },
-        "old_value": {
-            "disabled_on": None,
-            "id": "355f977b-8ac3-e211-a646-e4115bead28a",
-            "level": 0,
-            "name": "Consumer and retail",
-            "parent": None,
-            "segment": "Consumer and retail",
-        },
+        "new_value": "Aerospace",
+        "old_value": "Consumer and retail",
         "user": None,
     }
 

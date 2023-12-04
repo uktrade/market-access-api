@@ -20,38 +20,12 @@ def barrier(barrier):
 
 def assert_and_get_initial_history(barrier):
     v2_history = Barrier.get_history(barrier_id=barrier.id)
-
+    # from pprint import pprint
+    # print('HIUSOTY')
+    # pprint(v2_history)
     assert v2_history == [
         {
             "date": v2_history[0]["date"],
-            "field": "status",
-            "model": "barrier",
-            "new_value": {
-                "status": 1,
-                "status_date": v2_history[0]["new_value"]["status_date"],
-                "status_summary": "",
-                "sub_status": "",
-                "sub_status_other": "",
-            },
-            "old_value": {
-                "status": 1,
-                "status_date": None,
-                "status_summary": "",
-                "sub_status": "",
-                "sub_status_other": "",
-            },
-            "user": None,
-        },
-        {
-            "date": v2_history[1]["date"],
-            "field": "draft",
-            "model": "barrier",
-            "new_value": False,
-            "old_value": True,
-            "user": None,
-        },
-        {
-            "date": v2_history[2]["date"],
             "field": "summary",
             "model": "barrier",
             "new_value": "New summary",
@@ -59,7 +33,7 @@ def assert_and_get_initial_history(barrier):
             "user": None,
         },
         {
-            "date": v2_history[3]["date"],
+            "date": v2_history[1]["date"],
             "field": "title",
             "model": "barrier",
             "new_value": "New title",
@@ -119,6 +93,11 @@ def test_group_by_sectors(barrier):
     barrier.save()
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
+
+    from pprint import pprint
+
+    print("HIUSOTY")
+    pprint(v2_history)
 
     assert v2_history == initial_history + [
         {

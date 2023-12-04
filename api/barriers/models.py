@@ -555,7 +555,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @classmethod
     def get_history(cls, barrier_id, enrich=False):
-        qs = cls.history.filter(id=barrier_id)
+        qs = cls.history.filter(id=barrier_id, draft=False)
         fields = (
             [
                 "archived",

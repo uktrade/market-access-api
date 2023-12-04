@@ -28,7 +28,7 @@ def organisation():
 
 def test_m2m_organisation(barrier, organisation):
     assert Organisation.history.filter(id=organisation.id).count() == 1
-    assert len(Barrier.get_history(barrier_id=barrier.id)) == 4
+    assert len(Barrier.get_history(barrier_id=barrier.id)) == 2
     assert organisation.name == "TestOrg"
     assert Barrier.history.filter(id=barrier.id).first().organisations_cache == []
 
@@ -39,7 +39,7 @@ def test_m2m_organisation(barrier, organisation):
     assert Barrier.history.filter(id=barrier.id).first().organisations_cache == [
         organisation.id
     ]
-    assert len(v2_history) == 5
+    assert len(v2_history) == 3
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
 
@@ -58,7 +58,7 @@ def test_m2m_organisation(barrier, organisation):
     barrier.save()
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
-    assert len(v2_history) == 6
+    assert len(v2_history) == 4
     assert v2_history[-1] == {
         "date": v2_history[-1]["date"],
         "field": "organisations",
@@ -150,7 +150,7 @@ def test_m2m_commodities(barrier):
 
 
 def test_m2m_tags(barrier):
-    assert len(Barrier.get_history(barrier_id=barrier.id)) == 4
+    assert len(Barrier.get_history(barrier_id=barrier.id)) == 2
     assert Barrier.history.filter(id=barrier.id).first().tags_cache == []
 
     new_tag = BarrierTagFactory(title="brouhaha")
@@ -161,7 +161,7 @@ def test_m2m_tags(barrier):
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
 
-    assert len(v2_history) == 5
+    assert len(v2_history) == 3
     assert v2_history[-1] == {
         "date": v2_history[-1]["date"],
         "model": "barrier",
@@ -178,7 +178,7 @@ def test_m2m_tags(barrier):
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
 
-    assert len(v2_history) == 6
+    assert len(v2_history) == 4
     assert v2_history[-1] == {
         "date": v2_history[-1]["date"],
         "model": "barrier",

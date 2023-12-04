@@ -31,11 +31,11 @@ pytestmark = [pytest.mark.django_db]
         ("title", "teeeest", "TEST BARRIER"),
     ],
 )
-def test_simple_fields(draft_barrier, field, new_value, old_value):
-    setattr(draft_barrier, field, new_value)
-    draft_barrier.save()
+def test_simple_fields(barrier, field, new_value, old_value):
+    setattr(barrier, field, new_value)
+    barrier.save()
 
-    items = BarrierHistoryFactory.get_history_items(barrier_id=draft_barrier.pk)
+    items = BarrierHistoryFactory.get_history_items(barrier_id=barrier.pk)
     data = items[-1].data
 
     assert data["model"] == "barrier"
@@ -43,6 +43,6 @@ def test_simple_fields(draft_barrier, field, new_value, old_value):
     assert data["old_value"] == old_value
     assert data["new_value"] == new_value
 
-    v2_history = Barrier.get_history(barrier_id=draft_barrier.id)
+    v2_history = Barrier.get_history(barrier_id=barrier.id)
 
     assert v2_history[-1] == data
