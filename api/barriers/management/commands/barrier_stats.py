@@ -2,7 +2,6 @@ import json
 import os
 import textwrap
 
-import requests
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -29,11 +28,6 @@ class Command(BaseCommand):
             "--print",
             action="store_true",
             help="Output the statistics to terminal in text format.",
-        )
-        parser.add_argument(
-            "--slack",
-            action="store_true",
-            help="Output the statistics to a slack channel",
         )
         parser.add_argument("--email", action="store_true", help="Email statistics")
 
@@ -75,9 +69,6 @@ class Command(BaseCommand):
 
         if options["print"]:
             return stats_txt
-
-        if options["slack"]:
-            self._report_to_slack(stats_txt)
 
         if options["email"]:
             send_to_addresses = os.getenv("STATS_EMAILS").split(",")
@@ -130,28 +121,6 @@ class Command(BaseCommand):
     @staticmethod
     def _handle_json(stats):
         return json.dumps(stats, separators={",", ":"})
-
-    def _report_to_slack(self, stats):
-        messages = self._split_and_format_slack_message(
-            stats
-        )  # split in multiple messages
-        webhook_url = settings.SLACK_WEBHOOK
-        for msg in messages:
-            slack_data = {
-                "text": msg,
-                "mrkdwn": "true",
-                "title": "Datahub CSV Validation",
-            }
-            response = requests.post(
-                webhook_url,
-                data=json.dumps(slack_data),
-                headers={"Content-Type": "application/json"},
-            )
-            if response.status_code != 200:
-                raise ValueError(
-                    "Request to slack returned an error %s, the response is:\n%s"
-                    % (response.status_code, response.text)
-                )
 
     def _split_and_format_slack_message(self, message):
         messages, lines = [], message.splitlines()
