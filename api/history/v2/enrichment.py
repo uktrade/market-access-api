@@ -67,3 +67,17 @@ def enrich_priority_level(history: List[Dict]):
 
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_priority(history: List[Dict]):
+    def enrich(value):
+        if value and value.get('priority') is not None:
+            value['priority'] = str(value['priority'])
+        return value
+
+    for item in history:
+        if item["field"] != "priority":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])

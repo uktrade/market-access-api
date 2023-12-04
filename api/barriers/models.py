@@ -39,7 +39,7 @@ from api.history.v2.enrichment import (
     enrich_priority_level,
     enrich_trade_category,
 )
-from api.history.v2.service import get_model_history
+from api.history.v2.service import get_model_history, FieldMapping
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
@@ -579,7 +579,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "is_summary_sensitive",
             "main_sector",
             "priority_level",
-            ["priority", "priority_summary"],
+            [FieldMapping("priority__code", "priority"), "priority_summary"],
             "product",
             "public_eligibility_summary",
             [
@@ -601,6 +601,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "term",
             "title",
             "trade_category",
+            "trade_direction",
             # "top_priority_status",  # TODO: needs enrichment
             "draft",
             # m2m - seperate

@@ -37,6 +37,8 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         # need to force a previous history item into existence to get history endpoint to work :-/
+        # print('Draft: ', self.barrier.draft)
+        self.barrier.draft = False
         self.barrier.title = "Force history entry"
         self.barrier.save()
 
@@ -60,19 +62,21 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         history = response.json()["history"]
-
         assert {
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier",
             "field": "archived",
             "old_value": {
                 "archived": initial_archived_state,
-                "unarchived_reason": initial_unarchived_reason,
+                "archived_reason": '',
+                "archived_explanation": '',
+                "unarchived_reason": '',
             },
             "new_value": {
                 "archived": True,
                 "archived_reason": archived_reason,
                 "archived_explanation": archived_explanation,
+                'unarchived_reason': ''
             },
             "user": None,
         } in history
@@ -713,14 +717,14 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "model": "barrier",
             "field": "status",
             "old_value": {
-                "status": str(initial_status),
+                "status": initial_status,
                 "status_date": "2019-04-09",
                 "status_summary": initial_status_summary,
                 "sub_status": initial_sub_status,
                 "sub_status_other": "",
             },
             "new_value": {
-                "status": str(self.barrier.status),
+                "status": self.barrier.status,
                 "status_date": "2019-04-09",
                 "status_summary": self.barrier.status_summary,
                 "sub_status": self.barrier.sub_status,
@@ -1041,7 +1045,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier_top_priority_summary",
             "field": "top_priority_summary_text",
-            "old_value": "",
+            "old_value": None,
             "new_value": new_summary.top_priority_summary_text,
             "user": None,
         } in history

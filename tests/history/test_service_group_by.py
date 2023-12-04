@@ -61,8 +61,8 @@ def test_group_by_priority_history(barrier):
             "date": v2_history[len(initial_history)]["date"],
             "field": "priority",
             "model": "barrier",
-            "new_value": {"priority": 2, "priority_summary": ""},
-            "old_value": {"priority": 1, "priority_summary": ""},
+            "new_value": {"priority": 'HIGH', "priority_summary": ""},
+            "old_value": {"priority": 'UNKNOWN', "priority_summary": ""},
             "user": None,
         }
     ]

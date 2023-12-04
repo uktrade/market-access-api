@@ -23,6 +23,7 @@ from api.history.factories.action_plans import (
     ActionPlanMilestoneHistoryFactory,
     ActionPlanTaskHistoryFactory,
 )
+from api.history.factories.barriers import BarrierHistoryRemnantsFactory
 from api.history.models import CachedHistoryItem
 from api.history.v2.service import convert_v2_history_to_legacy_object
 
@@ -86,7 +87,7 @@ class HistoryManager:
         history = convert_v2_history_to_legacy_object(
             Barrier.get_history(barrier_id=barrier.pk, enrich=True)
         )
-        # history = cls.get_barrier_history(barrier.pk, start_date=start_date)
+        history += cls.get_barrier_history_remnants(barrier.pk, start_date=start_date)
 
         # Deprecated legacy:
         # history += cls.get_top_priority_summary_history(
@@ -225,6 +226,16 @@ class HistoryManager:
             )
 
         return BarrierHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
+
+    @classmethod
+    def get_barrier_history_remnants(
+        cls, barrier_id, fields=(), start_date=None, use_cache=False
+    ):
+        return BarrierHistoryRemnantsFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,
