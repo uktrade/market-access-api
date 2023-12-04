@@ -1,5 +1,12 @@
 from api.barriers.models import BarrierTopPrioritySummary
 from api.history.items.base import BaseHistoryItem
+from api.metadata.utils import (
+    get_country,
+    get_location_text,
+    get_sector,
+    get_trading_bloc,
+    get_trading_bloc_by_country_id,
+)
 
 
 class BaseBarrierHistoryItem(BaseHistoryItem):
@@ -26,6 +33,101 @@ class ArchivedHistoryItem(BaseBarrierHistoryItem):
             }
 
 
+class CategoriesHistoryItem(BaseBarrierHistoryItem):
+    field = "categories"
+
+    def get_value(self, record):
+        return record.categories_cache or []
+
+
+class CausedByTradingBlocHistoryItem(BaseBarrierHistoryItem):
+    field = "caused_by_trading_bloc"
+
+    def get_value(self, record):
+        country_trading_bloc = None
+        if record.country:
+            country_trading_bloc = get_trading_bloc_by_country_id(str(record.country))
+        return {
+            "caused_by_trading_bloc": record.caused_by_trading_bloc,
+            "country_trading_bloc": country_trading_bloc,
+        }
+
+
+class CommercialValueHistoryItem(BaseBarrierHistoryItem):
+    field = "commercial_value"
+
+
+class CommercialValueExplanationHistoryItem(BaseBarrierHistoryItem):
+    field = "commercial_value_explanation"
+
+
+class CommoditiesHistoryItem(BaseBarrierHistoryItem):
+    field = "commodities"
+
+    def get_value(self, record):
+        for commodity in record.commodities_cache or []:
+            if commodity.get("country"):
+                commodity["country"] = get_country(commodity["country"].get("id"))
+            elif commodity.get("trading_bloc"):
+                commodity["trading_bloc"] = get_trading_bloc(
+                    commodity["trading_bloc"].get("code")
+                )
+        return record.commodities_cache
+
+
+class CompaniesHistoryItem(BaseBarrierHistoryItem):
+    field = "companies"
+
+
+class EconomicAssessmentEligibilityHistoryItem(BaseBarrierHistoryItem):
+    field = "economic_assessment_eligibility"
+
+
+class EconomicAssessmentEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
+    field = "economic_assessment_eligibility_summary"
+
+
+class EndDateHistoryItem(BaseBarrierHistoryItem):
+    field = "estimated_resolution_date"
+
+
+class StartDateHistoryItem(BaseBarrierHistoryItem):
+    field = "start_date"
+
+
+# class ExportTypeHistoryItem(BaseBarrierHistoryItem):
+#     field = "export_types"
+#
+#     def get_value(self, record):
+#         export_types = ExportTypesField(record.export_types)
+#         return export_types
+
+
+class MainSectorHistoryItem(BaseBarrierHistoryItem):
+    field = "main_sector"
+
+    def get_value(self, record):
+        sector = get_sector(record.main_sector)
+        if sector:
+            return sector["name"]
+
+
+class IsSummarySensitiveHistoryItem(BaseBarrierHistoryItem):
+    field = "is_summary_sensitive"
+
+
+class LocationHistoryItem(BaseBarrierHistoryItem):
+    field = "location"
+
+    def get_value(self, record):
+        return get_location_text(
+            country_id=record.country,
+            trading_bloc=record.trading_bloc,
+            caused_by_trading_bloc=record.caused_by_trading_bloc,
+            admin_area_ids=record.admin_areas,
+        )
+
+
 class PriorityHistoryItem(BaseBarrierHistoryItem):
     field = "priority"
 
@@ -36,6 +138,39 @@ class PriorityHistoryItem(BaseBarrierHistoryItem):
         return {
             "priority": priority,
             "priority_summary": record.priority_summary,
+        }
+
+
+class ProductHistoryItem(BaseBarrierHistoryItem):
+    field = "product"
+
+
+class PublicEligibilitySummaryHistoryItem(BaseBarrierHistoryItem):
+    field = "public_eligibility_summary"
+
+
+class SectorsHistoryItem(BaseBarrierHistoryItem):
+    field = "sectors"
+
+    def is_valid(self):
+        if self.old_record or self.new_record:
+            return True
+        return False
+
+    def get_value(self, record):
+        return {
+            "all_sectors": record.all_sectors,
+            "sectors": [str(sector_id) for sector_id in record.sectors or []],
+        }
+
+
+class SourceHistoryItem(BaseBarrierHistoryItem):
+    field = "source"
+
+    def get_value(self, record):
+        return {
+            "source": record.source,
+            "other_source": record.other_source,
         }
 
 
@@ -50,6 +185,47 @@ class StatusHistoryItem(BaseBarrierHistoryItem):
             "sub_status": record.sub_status,
             "sub_status_other": record.sub_status_other,
         }
+
+
+class SummaryHistoryItem(BaseBarrierHistoryItem):
+    field = "summary"
+
+
+class TagsHistoryItem(BaseBarrierHistoryItem):
+    field = "tags"
+
+    def get_value(self, record):
+        return record.tags_cache or []
+
+
+class TermHistoryItem(BaseBarrierHistoryItem):
+    field = "term"
+
+
+class TitleHistoryItem(BaseBarrierHistoryItem):
+    field = "title"
+
+
+class TradeCategoryHistoryItem(BaseBarrierHistoryItem):
+    field = "trade_category"
+
+    def get_value(self, record):
+        if record.trade_category:
+            return {
+                "id": record.trade_category,
+                "name": record.get_trade_category_display(),
+            }
+
+
+class TradeDirectionHistoryItem(BaseBarrierHistoryItem):
+    field = "trade_direction"
+
+
+class OrganisationsHistoryItem(BaseBarrierHistoryItem):
+    field = "organisations"
+
+    def get_value(self, record):
+        return record.organisations_cache or []
 
 
 class TopPriorityHistoryItem(BaseBarrierHistoryItem):
@@ -91,3 +267,15 @@ class TopPriorityHistoryItem(BaseBarrierHistoryItem):
                 top_priority_reason = self._get_top_priority_summary_text(record)
 
         return {"value": status, "reason": top_priority_reason}
+
+
+class TopPrioritySummaryHistoryItem(BaseHistoryItem):
+    model = "barrier_top_priority_summary"
+    field = "top_priority_summary_text"
+
+
+class PriorityLevelHistoryItem(BaseBarrierHistoryItem):
+    field = "priority_level"
+
+    def get_value(self, record):
+        return record.get_priority_level_display()

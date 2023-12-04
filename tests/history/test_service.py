@@ -71,7 +71,9 @@ def test_model_history_not_tracking_first_item(barrier):
 
 
 def test_model_history_tracking_first_item(barrier):
-    ProgrammeFundProgressUpdateFactory(barrier=barrier)
+    ProgrammeFundProgressUpdateFactory(
+        barrier=barrier, milestones_and_deliverables="a", expenditure="b"
+    )
 
     qs = ProgrammeFundProgressUpdate.history.filter(barrier__id=barrier.id)
     fields = ("milestones_and_deliverables", "expenditure")
@@ -81,6 +83,10 @@ def test_model_history_tracking_first_item(barrier):
 
     assert ProgrammeFundProgressUpdate.history.count() == 1
 
+    from pprint import pprint
+
+    pprint(model_history)
+
     assert model_history == [
         {
             "model": "test",
@@ -88,7 +94,7 @@ def test_model_history_tracking_first_item(barrier):
             "field": "milestones_and_deliverables",
             "user": None,
             "old_value": None,
-            "new_value": "Product 5",
+            "new_value": "a",
         },
         {
             "model": "test",
@@ -96,7 +102,7 @@ def test_model_history_tracking_first_item(barrier):
             "field": "expenditure",
             "user": None,
             "old_value": None,
-            "new_value": "Product 5",
+            "new_value": "b",
         },
     ]
 
