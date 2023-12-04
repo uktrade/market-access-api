@@ -37,7 +37,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         # need to force a previous history item into existence to get history endpoint to work :-/
-        # print('Draft: ', self.barrier.draft)
         self.barrier.draft = False
         self.barrier.title = "Force history entry"
         self.barrier.save()

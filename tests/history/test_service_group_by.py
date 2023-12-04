@@ -20,9 +20,6 @@ def barrier(barrier):
 
 def assert_and_get_initial_history(barrier):
     v2_history = Barrier.get_history(barrier_id=barrier.id)
-    # from pprint import pprint
-    # print('HIUSOTY')
-    # pprint(v2_history)
     assert v2_history == [
         {
             "date": v2_history[0]["date"],
@@ -93,11 +90,6 @@ def test_group_by_sectors(barrier):
     barrier.save()
 
     v2_history = Barrier.get_history(barrier_id=barrier.id)
-
-    from pprint import pprint
-
-    print("HIUSOTY")
-    pprint(v2_history)
 
     assert v2_history == initial_history + [
         {

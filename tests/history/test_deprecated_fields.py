@@ -35,14 +35,9 @@ def test_simple_fields(barrier, field, new_value, old_value):
     setattr(barrier, field, new_value)
     barrier.save()
 
-    items = BarrierHistoryFactory.get_history_items(barrier_id=barrier.pk)
-    data = items[-1].data
-
-    assert data["model"] == "barrier"
-    assert data["field"] == field
-    assert data["old_value"] == old_value
-    assert data["new_value"] == new_value
-
     v2_history = Barrier.get_history(barrier_id=barrier.id)
 
-    assert v2_history[-1] == data
+    assert v2_history[-1]["model"] == "barrier"
+    assert v2_history[-1]["field"] == field
+    assert v2_history[-1]["old_value"] == old_value
+    assert v2_history[-1]["new_value"] == new_value

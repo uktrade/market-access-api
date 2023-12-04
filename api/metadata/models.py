@@ -99,8 +99,6 @@ class Organisation(models.Model):
     name = models.CharField(max_length=300)
     organisation_type = models.IntegerField(choices=OrganisationType.choices)
 
-    history = HistoricalRecords()
-
     class Meta:
         unique_together = ("name", "organisation_type")
         ordering = ("name",)

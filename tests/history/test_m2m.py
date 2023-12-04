@@ -27,7 +27,6 @@ def organisation():
 
 
 def test_m2m_organisation(barrier, organisation):
-    assert Organisation.history.filter(id=organisation.id).count() == 1
     assert len(Barrier.get_history(barrier_id=barrier.id)) == 2
     assert organisation.name == "TestOrg"
     assert Barrier.history.filter(id=barrier.id).first().organisations_cache == []

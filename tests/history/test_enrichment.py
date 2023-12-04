@@ -86,8 +86,6 @@ def test_country_enrichment(barrier):
         }
     ]
 
-    legacy_items = BarrierHistoryFactory.get_history_items(barrier_id=barrier.pk)
-
     # enrich
     enrich_country(v2_history)
 
@@ -99,8 +97,6 @@ def test_country_enrichment(barrier):
         "old_value": "Angola",
         "user": None,
     }
-
-    assert v2_history[-1] == legacy_items[-1].data
 
 
 def test_trade_category_enrichment(barrier):
@@ -173,10 +169,6 @@ def test_main_sector_enrichment(barrier):
     }
 
     enrich_main_sector(v2_history)
-
-    from pprint import pprint
-
-    pprint(v2_history[-1])
 
     assert v2_history[-1] == {
         "date": v2_history[-1]["date"],
