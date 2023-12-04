@@ -98,7 +98,6 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.barrier.save()
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
-
     def test_public_view_status_history(self):
         self.barrier.public_eligibility = True
         self.barrier.public_eligibility_summary = "Allowed summary"
