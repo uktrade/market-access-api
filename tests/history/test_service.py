@@ -83,10 +83,6 @@ def test_model_history_tracking_first_item(barrier):
 
     assert ProgrammeFundProgressUpdate.history.count() == 1
 
-    from pprint import pprint
-
-    pprint(model_history)
-
     assert model_history == [
         {
             "model": "test",
