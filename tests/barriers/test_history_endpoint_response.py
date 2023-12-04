@@ -68,15 +68,15 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "field": "archived",
             "old_value": {
                 "archived": initial_archived_state,
-                "archived_reason": '',
-                "archived_explanation": '',
-                "unarchived_reason": '',
+                "archived_reason": "",
+                "archived_explanation": "",
+                "unarchived_reason": "",
             },
             "new_value": {
                 "archived": True,
                 "archived_reason": archived_reason,
                 "archived_explanation": archived_explanation,
-                'unarchived_reason': ''
+                "unarchived_reason": "",
             },
             "user": None,
         } in history

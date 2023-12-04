@@ -81,10 +81,9 @@ class BarrierHistoryRemnantsFactory(HistoryItemFactoryBase):
     """
     TODO: Remaining legacy history items that arent refactored yet
     """
+
     class_lookup = {}
-    history_item_classes = (
-        TopPriorityHistoryItem,
-    )
+    history_item_classes = (TopPriorityHistoryItem,)
     history_types = ("~", "+")
 
     @classmethod

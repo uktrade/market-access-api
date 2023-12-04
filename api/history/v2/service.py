@@ -1,9 +1,10 @@
-from typing import Dict, List, Tuple, Union
 from collections import namedtuple
+from typing import Dict, List, Tuple, Union
+
 from django.db.models import QuerySet
 
-
 FieldMapping = namedtuple("FieldMapping", "query_name name")
+
 
 def convert_v2_history_to_legacy_object(items: List) -> List:
     """
@@ -122,9 +123,12 @@ def get_model_history(  # noqa: C901
                         "model": model,
                         "date": item["history_date"],
                         "field": (
-                            field if isinstance(field, str)
-                            else field.name if isinstance(field, FieldMapping)
-                            else field[0].name if isinstance(field[0], FieldMapping)
+                            field
+                            if isinstance(field, str)
+                            else field.name
+                            if isinstance(field, FieldMapping)
+                            else field[0].name
+                            if isinstance(field[0], FieldMapping)
                             else field[0]
                         ).replace("_cache", ""),
                         "user": {

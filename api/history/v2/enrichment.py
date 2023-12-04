@@ -71,8 +71,8 @@ def enrich_priority_level(history: List[Dict]):
 
 def enrich_priority(history: List[Dict]):
     def enrich(value):
-        if value and value.get('priority') is not None:
-            value['priority'] = str(value['priority'])
+        if value and value.get("priority") is not None:
+            value["priority"] = str(value["priority"])
         return value
 
     for item in history:

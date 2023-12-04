@@ -39,7 +39,7 @@ from api.history.v2.enrichment import (
     enrich_priority_level,
     enrich_trade_category,
 )
-from api.history.v2.service import get_model_history, FieldMapping
+from api.history.v2.service import FieldMapping, get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
