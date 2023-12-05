@@ -1561,7 +1561,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "wider_europe" in location_values:
             location_values.remove("wider_europe")
 
-        # Return cleaned value arrarys
+        # Return cleaned value arrays
         return {
             "countries": [
                 location
