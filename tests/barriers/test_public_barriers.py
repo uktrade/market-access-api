@@ -183,7 +183,6 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
             return self.api_client.get(url)
 
         for status_code, status_name in PublicBarrierStatus.choices:
-
             r = get_list_for_status(status_code)
             public_barrier = barriers[status_code].public_barrier
             assert 200 == r.status_code
