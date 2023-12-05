@@ -69,7 +69,8 @@ def enrich_full_history(
     enrich_main_sector(barrier_history)
     enrich_priority_level(barrier_history)
     enrich_top_priority_status(
-        barrier_history=barrier_history, top_priority_summary_history=top_priority_summary_history
+        barrier_history=barrier_history,
+        top_priority_summary_history=top_priority_summary_history,
     )
 
     enriched_history = (
