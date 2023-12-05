@@ -1,3 +1,37 @@
+"""
+Converting legacy history to V2 example:
+
+1) Extend the model with a get_history class method
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("stakeholders",)
+
+        return get_model_history(
+            qs,
+            model="action_plan",
+            fields=fields,
+            track_first_item=True,
+        )
+
+2) Enrich the history - examples can be found in def get_full_history(). service.enrich_full_history() can be extended
+with new history tables and custom in-memory enrichments can be added to service.enrichment.py. State of all the history
+tables are shared in get_full_history()
+
+Fields:
+service.get_model_history() takes a list of fields to retrieve history for. These fields have 3 type:
+
+str
+    A single history field in 1 item
+
+FieldMapping
+    Convenience namdetuple mapping of a field using django query mechanics for foreign tables. (required by legacy)
+
+    ie - FieldMapping("priority__code", "priority") retrieves the value from related table and sets the field name.
+
+List[str, FieldMapping]
+    A collection of history fields in 1 item.
+"""
 import operator
 from collections import namedtuple
 from typing import Dict, List, Tuple, Union
@@ -27,11 +61,16 @@ def enrich_full_history(
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
 ) -> List[Dict]:
+    """
+    Enrichment pipeline for full barrier history.
+    """
     enrich_country(barrier_history)
     enrich_trade_category(barrier_history)
     enrich_main_sector(barrier_history)
     enrich_priority_level(barrier_history)
-    enrich_top_priority_status(barrier_history, top_priority_summary_history)
+    enrich_top_priority_status(
+        barrier_history=barrier_history, top_priority_summary_history=top_priority_summary_history
+    )
 
     enriched_history = (
         barrier_history + programme_fund_history + top_priority_summary_history

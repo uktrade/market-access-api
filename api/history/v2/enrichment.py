@@ -87,6 +87,7 @@ def enrich_top_priority_status(
     barrier_history: List[Dict], top_priority_summary_history: List[Dict]
 ):
     def enrich(value, summary_text: str):
+        # Same logic as legacy
         status = TOP_PRIORITY_BARRIER_STATUS[value["top_priority_status"]]
         if (
             value["top_priority_status"] == "APPROVED"
@@ -115,12 +116,14 @@ def enrich_top_priority_status(
         if item["field"] != "top_priority_status":
             continue
 
+        # Corresponding top_priority_summary history
         matching_item = get_matching_history_item(item, top_priority_summary_history)
         if (
             matching_item
             and previous
             and previous["new_value"] == matching_item["new_value"]
         ):
+            # If no change in history
             old_matching_value = matching_item["new_value"]
         else:
             old_matching_value = (
