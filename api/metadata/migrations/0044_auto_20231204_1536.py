@@ -14,7 +14,7 @@ def unassign_ni_protocol_tag(apps, schema_editor):
         barrier.save()
 
         try:
-            historical_instance = HistoricalBarrier.objects.filter(id=barrier.pk).latest()
+            historical_instance = HistoricalBarrier.objects.filter(id=barrier.pk, history_type="~").latest()
             historical_instance.pk = None
             historical_instance.save()
             # this new tags_cache will just contain the previous list of tags, minus the one we just removed
