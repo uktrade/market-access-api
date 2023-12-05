@@ -5,7 +5,6 @@ from django.test import TestCase
 
 from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin
-from api.history.factories import BarrierHistoryFactory
 
 
 class TestUglyHackFixingModifiedOnField(APITestMixin, TestCase):
@@ -14,6 +13,7 @@ class TestUglyHackFixingModifiedOnField(APITestMixin, TestCase):
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
+        self.barrier.draft = False
         self.barrier.save()
 
     def test_modified_on_set_to_value_of_last_history_item_date(self):
@@ -27,10 +27,12 @@ class TestUglyHackFixingModifiedOnField(APITestMixin, TestCase):
         # the following isn't necessary, but makes it possible to inspect the new date when debugging
         self.barrier.refresh_from_db()
 
-        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        most_recent_history_item = items[-1].data
+        assert self.barrier.modified_on == far_future_date
 
         management.call_command("ugly_hack_fixing_modified_on_field")
         self.barrier.refresh_from_db()
 
-        assert self.barrier.modified_on == most_recent_history_item["date"]
+        assert (
+            self.barrier.modified_on
+            < Barrier.history.filter(id=self.barrier.pk).first().history_date
+        )

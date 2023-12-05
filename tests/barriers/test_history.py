@@ -1,9 +1,8 @@
 import logging
-from unittest.mock import patch
 
+from api.history.factqories.action_plans import ActionPlanTaskHistoryFactory
 from django.test import TestCase
 from freezegun import freeze_time
-from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.action_plans.models import ActionPlan
 from api.assessment.models import EconomicAssessment
@@ -21,7 +20,6 @@ from api.history.factories import (
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
-from api.history.factories.action_plans import ActionPlanTaskHistoryFactory
 from api.history.items.action_plans import get_default_user
 from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote

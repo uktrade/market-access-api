@@ -12,8 +12,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         Barrier.objects.update(
             modified_on=Subquery(
-                Barrier.objects.filter(pk=OuterRef("pk")).values_list(
-                    Max("cached_history_items__date")
+                Barrier.history.filter(id=OuterRef("pk")).values_list(
+                    Max("history_date")
                 )[:1]
             )
         )

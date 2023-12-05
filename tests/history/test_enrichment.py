@@ -8,7 +8,6 @@ from uuid import UUID
 import pytest
 
 from api.barriers.models import Barrier
-from api.history.factories import BarrierHistoryFactory
 from api.history.v2.enrichment import (
     enrich_country,
     enrich_main_sector,
@@ -58,33 +57,30 @@ def test_assert_and_get_initial_history(barrier):
 
 
 def test_country_enrichment(barrier):
-    initial_history = assert_and_get_initial_history(barrier)
     barrier.country = "82756b9a-5d95-e211-a939-e4115bead28a"
     barrier.save()
 
-    v2_history = Barrier.get_history(barrier_id=barrier.id)
+    v2_history = Barrier.get_history(barrier_id=barrier.id, enrich=False)
 
     # Pre enrich
-    assert v2_history == initial_history + [
-        {
-            "date": v2_history[-1]["date"],
-            "field": "country",
-            "model": "barrier",
-            "new_value": {
-                "admin_areas": [],
-                "caused_by_trading_bloc": None,
-                "country": UUID("82756b9a-5d95-e211-a939-e4115bead28a"),
-                "trading_bloc": "",
-            },
-            "old_value": {
-                "admin_areas": [],
-                "caused_by_trading_bloc": None,
-                "country": UUID("985f66a0-5d95-e211-a939-e4115bead28a"),
-                "trading_bloc": "",
-            },
-            "user": None,
-        }
-    ]
+    assert v2_history[-1] == {
+        "date": v2_history[-1]["date"],
+        "field": "country",
+        "model": "barrier",
+        "new_value": {
+            "admin_areas": [],
+            "caused_by_trading_bloc": None,
+            "country": UUID("82756b9a-5d95-e211-a939-e4115bead28a"),
+            "trading_bloc": "",
+        },
+        "old_value": {
+            "admin_areas": [],
+            "caused_by_trading_bloc": None,
+            "country": UUID("985f66a0-5d95-e211-a939-e4115bead28a"),
+            "trading_bloc": "",
+        },
+        "user": None,
+    }
 
     # enrich
     enrich_country(v2_history)

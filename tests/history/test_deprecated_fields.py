@@ -8,7 +8,6 @@ import datetime
 import pytest
 
 from api.barriers.models import Barrier
-from api.history.factories import BarrierHistoryFactory
 
 pytestmark = [pytest.mark.django_db]
 

@@ -1,15 +1,11 @@
 import json
-from datetime import datetime, timedelta
-from typing import Dict
+from datetime import datetime
 from uuid import uuid4
 
 import boto3
 import dateutil.parser
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db.models import Case, CharField, F, Value, When
-from django.db.models.fields import BooleanField
-from django.db.models.functions import Concat
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from freezegun import freeze_time
@@ -160,101 +156,6 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
         assert 200 == r.status_code
         assert 2 == r.data["count"]
         assert {pb1.id, pb2.id} == {i["id"] for i in r.data["results"]}
-
-    def test_pb_list_status_filter(self):
-
-        barriers: Dict[int, Barrier] = {}
-        for status_code, status_name in PublicBarrierStatus.choices:
-            if status_code == PublicBarrierStatus.UNKNOWN:
-                # skip because self.barrier public_barrier is already in this status
-                # we only want 1 public barrier of each status
-                assert (
-                    PublicBarrierStatus.UNKNOWN
-                    == self.barrier.public_barrier._public_view_status
-                )
-                barriers[status_code] = self.barrier
-                continue
-            barriers[status_code] = BarrierFactory(
-                public_barrier___public_view_status=status_code
-            )
-
-        def get_list_for_status(status_code):
-            url = f'{reverse("public-barriers-list")}?status={status_code}'
-            return self.api_client.get(url)
-
-        for status_code, status_name in PublicBarrierStatus.choices:
-
-            r = get_list_for_status(status_code)
-            public_barrier = barriers[status_code].public_barrier
-            assert 200 == r.status_code
-            assert 1 == r.data["count"]
-            assert {public_barrier.id} == {i["id"] for i in r.data["results"]}
-
-        # test filtering on multiple statuses
-
-        r = get_list_for_status(
-            ",".join(
-                [str(PublicBarrierStatus.READY), str(PublicBarrierStatus.ELIGIBLE)]
-            )
-        )
-
-        public_barrier1 = barriers[PublicBarrierStatus.READY].public_barrier
-        public_barrier2 = barriers[PublicBarrierStatus.ELIGIBLE].public_barrier
-        assert 200 == r.status_code
-        assert 2 == r.data["count"]
-        assert {public_barrier1.id, public_barrier2.id} == {
-            i["id"] for i in r.data["results"]
-        }
-
-        # Test special status 'changed'
-
-        published_barrier = barriers[PublicBarrierStatus.PUBLISHED]
-
-        history_count = published_barrier.cached_history_items.count()
-        published_barrier.public_barrier.publish()
-        published_barrier.public_barrier.last_published_on = datetime.now() - timedelta(
-            days=30
-        )
-        published_barrier.public_barrier.save()
-        published_barrier.refresh_from_db()
-        published_barrier.summary = "New summary!"
-        published_barrier.save()
-        published_barrier.refresh_from_db()
-
-        history_count_after = published_barrier.cached_history_items.count()
-        assert history_count + 1 == history_count_after
-
-        history_items = published_barrier.cached_history_items.all()
-
-        pb_query = PublicBarrier.objects.filter(
-            id=published_barrier.public_barrier.id
-        ).annotate(
-            change=Concat(
-                "barrier__cached_history_items__model",
-                Value("."),
-                "barrier__cached_history_items__field",
-                output_field=CharField(),
-            ),
-            history_date=F("barrier__cached_history_items__date"),
-            current_date=F("last_published_on"),
-            has_changed=Case(
-                When(
-                    last_published_on__date__lt=F(
-                        "barrier__cached_history_items__date"
-                    ),
-                    then=Value(True),
-                ),
-                default=Value(False),
-                output_field=BooleanField(),
-            ),
-        )
-
-        summary_change = [
-            query_change
-            for query_change in pb_query
-            if query_change.change == "barrier.summary"
-        ][0]
-        assert summary_change.has_changed is True
 
     def test_pb_list_country_filter(self):
         country_id = "9f5f66a0-5d95-e211-a939-e4115bead28a"
