@@ -1068,9 +1068,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         response = self.api_client.get(url)
         history = response.json()["history"]
         assert len(history) == 1
-        from pprint import pprint
-
-        pprint(history)
         assert {
             "date": "2020-04-01T00:00:00Z",
             "model": "barrier_top_priority_summary",

@@ -199,8 +199,23 @@ def test_barrier_status_history(barrier):
     items = Barrier.get_history(barrier_id=barrier.pk)
     data = items[-1]
 
-    from pprint import pprint
-
-    pprint(data)
-
-    assert data == {}
+    assert data == {
+        "date": data["date"],
+        "field": "status",
+        "model": "barrier",
+        "new_value": {
+            "status": 4,
+            "status_date": data["new_value"]["status_date"],
+            "status_summary": "",
+            "sub_status": "",
+            "sub_status_other": "",
+        },
+        "old_value": {
+            "status": 1,
+            "status_date": data["old_value"]["status_date"],
+            "status_summary": "",
+            "sub_status": "",
+            "sub_status_other": "",
+        },
+        "user": None,
+    }
