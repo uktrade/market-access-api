@@ -15,9 +15,11 @@ ie:
 def test_model_history(model, fields):
     .....
 """
+from datetime import datetime
+
 import pytest
 
-from api.barriers.models import ProgrammeFundProgressUpdate
+from api.barriers.models import Barrier, ProgrammeFundProgressUpdate
 from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     get_model_history,
@@ -187,3 +189,18 @@ def test_convert_to_legacy_object(barrier):
     assert hasattr(v2_to_legacy[0], "data")
     assert hasattr(v2_to_legacy[1], "data")
     assert hasattr(v2_to_legacy[2], "data")
+
+
+def test_barrier_status_history(barrier):
+    barrier.status = 4
+    barrier.status_date = datetime(2020, 5, 1)
+    barrier.save()
+
+    items = Barrier.get_history(barrier_id=barrier.pk)
+    data = items[-1]
+
+    from pprint import pprint
+
+    pprint(data)
+
+    assert data == {}

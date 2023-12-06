@@ -41,6 +41,26 @@ def enrich_country(history: List[Dict]):
         )
 
 
+def enrich_sectors(history: List[Dict]):
+    for item in history:
+        if item["field"] != "sectors":
+            continue
+        item["old_value"]["sectors"] = [
+            str(sector) for sector in item["old_value"]["sectors"]
+        ]
+        item["new_value"]["sectors"] = [
+            str(sector) for sector in item["new_value"]["sectors"]
+        ]
+
+
+def enrich_status(history: List[Dict]):
+    for item in history:
+        if item["field"] != "status":
+            continue
+        item["old_value"]["status"] = str(item["old_value"]["status"])
+        item["new_value"]["status"] = str(item["new_value"]["status"])
+
+
 def enrich_trade_category(history: List[Dict]):
     def enrich(value):
         if not value:
