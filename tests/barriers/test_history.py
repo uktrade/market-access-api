@@ -1,3 +1,4 @@
+import datetime
 import logging
 from unittest.mock import patch
 
@@ -24,8 +25,13 @@ from api.history.factories import (
 from api.history.factories.action_plans import ActionPlanTaskHistoryFactory
 from api.history.items.action_plans import get_default_user
 from api.history.models import CachedHistoryItem
+from api.history.v2.enrichment import (
+    enrich_priority_level,
+    enrich_sectors,
+    enrich_status,
+)
 from api.interactions.models import Interaction, PublicBarrierNote
-from api.metadata.constants import PublicBarrierStatus
+from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
@@ -37,6 +43,7 @@ from tests.assessment.factories import (
     StrategicAssessmentFactory,
 )
 from tests.interactions.factories import InteractionFactory
+from tests.metadata.factories import OrganisationFactory
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +54,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
+        self.barrier.draft = False
         self.barrier.save()
 
     def test_archived_history(self):
@@ -69,12 +77,56 @@ class TestBarrierHistory(APITestMixin, TestCase):
             "archived_explanation": "It was a duplicate",
         }
 
+    def test_categories_history(self):
+        self.barrier.categories.add("109", "115")
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "categories"
+        assert data["old_value"] == []
+        assert set(data["new_value"]) == {109, 115}
+        assert data == v2_history[-1]
+
+    def test_organisations_history(self):
+        org1 = OrganisationFactory()
+        self.barrier.organisations.add(org1)
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "organisations"
+        assert data["old_value"] == []
+        assert set(data["new_value"]) == {org1.id}
+        assert data == v2_history[-1]
+
+    def test_companies_history(self):
+        self.barrier.companies = ["1", "2", "3"]
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "companies"
+        assert data["old_value"] == []
+        assert data["new_value"] == ["1", "2", "3"]
+        assert data == v2_history[-1]
+
     def test_priority_history(self):
         self.barrier.priority_id = 2
         self.barrier.save()
 
         items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
         data = items[-1].data
+
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
 
         assert data["model"] == "barrier"
         assert data["field"] == "priority"
@@ -87,6 +139,96 @@ class TestBarrierHistory(APITestMixin, TestCase):
             "priority_summary": "",
         }
 
+        assert data == v2_history[-1]
+
+    def test_priority_level_history(self):
+        self.barrier.priority_level = PRIORITY_LEVELS.REGIONAL
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
+        enrich_priority_level(v2_history)
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "priority_level"
+        assert data["old_value"] == ""
+        assert data["new_value"] == "Regional Priority"
+        assert data == v2_history[-1]
+
+        self.barrier.priority_level = PRIORITY_LEVELS.COUNTRY
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
+        enrich_priority_level(v2_history)
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "priority_level"
+        assert data["old_value"] == "Regional Priority"
+        assert data["new_value"] == "Country Priority"
+        assert data == v2_history[-1]
+
+    def test_product_history(self):
+        self.barrier.product = "New product"
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "product"
+        assert data["old_value"] == "Some product"
+        assert data["new_value"] == "New product"
+
+    def test_status_history(self):
+        self.barrier.status = 5
+        self.barrier.status_summary = "Summary"
+        self.barrier.sub_status = "UK_GOVT"
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
+        enrich_status(v2_history)
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "status"
+        assert data["old_value"] == {
+            "status": "1",
+            "status_date": datetime.date(2019, 4, 9),
+            "status_summary": "",
+            "sub_status": "",
+            "sub_status_other": "",
+        }
+        assert data["new_value"] == {
+            "status": "5",
+            "status_date": datetime.date(2019, 4, 9),
+            "status_summary": "Summary",
+            "sub_status": "UK_GOVT",
+            "sub_status_other": "",
+        }
+        assert data == v2_history[-1]
+
+    def test_sectors_history(self):
+        self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        self.barrier.save()
+
+        items = BarrierHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
+        data = items[-1].data
+        v2_history = Barrier.get_history(barrier_id=self.barrier.pk)
+        enrich_sectors(v2_history)
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "sectors"
+        assert data["old_value"]["sectors"] == [
+            "af959812-6095-e211-a939-e4115bead28a",
+            "9538cecc-5f95-e211-a939-e4115bead28a",
+        ]
+        assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        assert data == v2_history[-1]
+
 
 class TestPublicBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
@@ -97,6 +239,73 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
+
+    def test_categories_history(self):
+        self.public_barrier.categories.add("109", "115")
+
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "categories"
+        assert data["old_value"] == []
+        assert set(data["new_value"]) == {"109", "115"}
+
+    def test_location_history(self):
+        self.public_barrier.country = "e0f682ac-5d95-e211-a939-e4115bead28a"
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "location"
+        assert data["old_value"] == "France"
+        assert data["new_value"] == "Georgia"
+
+    def test_status_history(self):
+        self.public_barrier.status = 4
+        self.public_barrier.status_date = datetime.date(2020, 5, 1)
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "status"
+        assert data["old_value"] == {
+            "status": "1",
+            "status_date": self.barrier.status_date,
+            "is_resolved": False,
+        }
+        assert data["new_value"] == {
+            "status": "4",
+            "status_date": datetime.date(2020, 5, 1),
+            "is_resolved": True,
+        }
+
+    def test_sectors_history(self):
+        self.public_barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "sectors"
+        assert data["old_value"]["sectors"] == [
+            "af959812-6095-e211-a939-e4115bead28a",
+            "9538cecc-5f95-e211-a939-e4115bead28a",
+        ]
+        assert data["new_value"]["sectors"] == ["9538cecc-5f95-e211-a939-e4115bead28a"]
 
     def test_public_view_status_history(self):
         self.barrier.public_eligibility = True
@@ -142,6 +351,20 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "summary"
         assert data["old_value"] == ""
         assert data["new_value"] == "New summary"
+
+    def test_title_history(self):
+        self.public_barrier.title = "New title"
+        self.public_barrier.save()
+
+        items = PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=self.barrier.pk
+        )
+        data = items[-1].data
+
+        assert data["model"] == "public_barrier"
+        assert data["field"] == "title"
+        assert data["old_value"] == ""
+        assert data["new_value"] == "New title"
 
     def test_note_text_history(self):
         note = PublicBarrierNote.objects.create(

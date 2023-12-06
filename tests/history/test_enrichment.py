@@ -12,6 +12,7 @@ from api.history.v2.enrichment import (
     enrich_country,
     enrich_main_sector,
     enrich_priority_level,
+    enrich_sectors,
     enrich_top_priority_status,
     enrich_trade_category,
 )
@@ -249,5 +250,44 @@ def test_top_priority_status_enrichment(barrier):
         "model": "barrier",
         "new_value": {"reason": "Has been approved", "value": "Top 100 Priority"},
         "old_value": {"reason": "", "value": "Top 100 Approval Pending"},
+        "user": None,
+    }
+
+
+def test_sectors_enrichment(barrier):
+    barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
+    barrier.save()
+
+    history = Barrier.get_history(barrier_id=barrier.pk)
+
+    assert history[-1] == {
+        "date": history[-1]["date"],
+        "model": "barrier",
+        "field": "sectors",
+        "old_value": {
+            "all_sectors": None,
+            "sectors": [UUID("af959812-6095-e211-a939-e4115bead28a")],
+        },
+        "new_value": {
+            "all_sectors": None,
+            "sectors": [UUID("9538cecc-5f95-e211-a939-e4115bead28a")],
+        },
+        "user": None,
+    }
+
+    enrich_sectors(history)
+
+    assert history[-1] == {
+        "date": history[-1]["date"],
+        "model": "barrier",
+        "field": "sectors",
+        "old_value": {
+            "all_sectors": None,
+            "sectors": ["af959812-6095-e211-a939-e4115bead28a"],
+        },
+        "new_value": {
+            "all_sectors": None,
+            "sectors": ["9538cecc-5f95-e211-a939-e4115bead28a"],
+        },
         "user": None,
     }

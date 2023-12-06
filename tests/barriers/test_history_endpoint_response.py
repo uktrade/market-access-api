@@ -716,14 +716,14 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "model": "barrier",
             "field": "status",
             "old_value": {
-                "status": initial_status,
+                "status": str(initial_status),
                 "status_date": "2019-04-09",
                 "status_summary": initial_status_summary,
                 "sub_status": initial_sub_status,
                 "sub_status_other": "",
             },
             "new_value": {
-                "status": self.barrier.status,
+                "status": str(self.barrier.status),
                 "status_date": "2019-04-09",
                 "status_summary": self.barrier.status_summary,
                 "sub_status": self.barrier.sub_status,
@@ -856,30 +856,59 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         } in history
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
-    def test_history_endpoint_has_top_priority_approval_pending(self, _):
+    def test_history_endpoint_has_top_priority_approval_pending_and_resolved(self, _):
         # V2 tested
-
         BarrierTopPrioritySummary.objects.create(
             top_priority_summary_text="please approve me", barrier=self.barrier
         )
+        self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
+        self.barrier.save()
+
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
+        self.barrier.save()
+
+        self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.RESOLVED
         self.barrier.save()
 
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         history = response.json()["history"]
 
-        assert history[-1] == {
-            "date": history[-1]["date"],
-            "model": "barrier",
-            "field": "top_priority_status",
-            "old_value": {"reason": "", "value": "Removed"},
-            "new_value": {
-                "reason": "please approve me",
-                "value": "Top 100 Approval Pending",
+        assert history == [
+            {
+                "date": history[0]["date"],
+                "field": "top_priority_summary_text",
+                "model": "barrier_top_priority_summary",
+                "new_value": "please approve me",
+                "old_value": None,
+                "user": None,
             },
-            "user": None,
-        }
+            {
+                "date": history[1]["date"],
+                "field": "top_priority_status",
+                "model": "barrier",
+                "new_value": {
+                    "reason": "please approve me",
+                    "value": "Top 100 Approval Pending",
+                },
+                "old_value": {"reason": "", "value": "Removed"},
+                "user": None,
+            },
+            {
+                "date": history[2]["date"],
+                "field": "top_priority_status",
+                "model": "barrier",
+                "new_value": {
+                    "reason": "please approve me",
+                    "value": "Resolved Top 100 Priority",
+                },
+                "old_value": {
+                    "reason": "please approve me",
+                    "value": "Top 100 Approval Pending",
+                },
+                "user": None,
+            },
+        ]
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
     def test_history_endpoint_has_top_priority_approved(self, _):

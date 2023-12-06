@@ -39,9 +39,12 @@ from typing import Dict, List, Tuple, Union
 from django.db.models import QuerySet
 
 from api.history.v2.enrichment import (
+    enrich_commodities,
     enrich_country,
     enrich_main_sector,
     enrich_priority_level,
+    enrich_sectors,
+    enrich_status,
     enrich_top_priority_status,
     enrich_trade_category,
 )
@@ -68,6 +71,9 @@ def enrich_full_history(
     enrich_trade_category(barrier_history)
     enrich_main_sector(barrier_history)
     enrich_priority_level(barrier_history)
+    enrich_sectors(barrier_history)
+    enrich_status(barrier_history)
+    enrich_commodities(barrier_history)
     enrich_top_priority_status(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,
@@ -166,21 +172,24 @@ def get_model_history(  # noqa: C901
             change = {}
             if isinstance(field, list):
                 any_grouped_field_has_change = False
+                old_values, new_values = {}, {}
                 for f in field:
                     name = f if isinstance(f, str) else f.query_name
-                    if item[name] != previous_item[name]:
+                    if (
+                        not any_grouped_field_has_change
+                        and item[name] != previous_item[name]
+                    ):
                         any_grouped_field_has_change = True
-                        break
+
+                    # normalize all fields to FieldMapping
+                    f = f if isinstance(f, FieldMapping) else FieldMapping(f, f)
+                    old_values[f.name] = previous_item[f.query_name]
+                    new_values[f.name] = item[f.query_name]
 
                 if any_grouped_field_has_change:
-                    change["old_value"] = {}
-                    change["new_value"] = {}
+                    change["old_value"] = old_values
+                    change["new_value"] = new_values
 
-                    for f in field:
-                        # normalize all fields to FieldMapping
-                        f = f if isinstance(f, FieldMapping) else FieldMapping(f, f)
-                        change["old_value"][f.name] = previous_item[f.query_name]
-                        change["new_value"][f.name] = item[f.query_name]
             elif item[field] != previous_item[field]:
                 change["old_value"] = previous_item[field]
                 change["new_value"] = item[field]
@@ -197,7 +206,9 @@ def get_model_history(  # noqa: C901
                             if isinstance(field, FieldMapping)
                             else field[0].name
                             if isinstance(field[0], FieldMapping)
-                            else field[0]
+                            else field[
+                                0
+                            ]  # field[0] - First field defined is the primary field name
                         ).replace("_cache", ""),
                         "user": {
                             "id": item["history_user__id"],
