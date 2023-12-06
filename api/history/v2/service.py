@@ -39,6 +39,7 @@ from typing import Dict, List, Tuple, Union
 from django.db.models import QuerySet
 
 from api.history.v2.enrichment import (
+    enrich_commodities,
     enrich_country,
     enrich_main_sector,
     enrich_priority_level,
@@ -72,6 +73,7 @@ def enrich_full_history(
     enrich_priority_level(barrier_history)
     enrich_sectors(barrier_history)
     enrich_status(barrier_history)
+    enrich_commodities(barrier_history)
     enrich_top_priority_status(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,

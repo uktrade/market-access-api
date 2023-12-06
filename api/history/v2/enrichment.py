@@ -8,7 +8,12 @@ from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
 )
-from api.metadata.utils import get_location_text, get_sector
+from api.metadata.utils import (
+    get_country,
+    get_location_text,
+    get_sector,
+    get_trading_bloc,
+)
 
 
 def get_matching_history_item(
@@ -167,6 +172,25 @@ def enrich_priority(history: List[Dict]):
 
     for item in history:
         if item["field"] != "priority":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_commodities(history: List[Dict]):
+    def enrich(value):
+        for commodity in value or []:
+            if commodity.get("country"):
+                commodity["country"] = get_country(commodity["country"].get("id"))
+            elif commodity.get("trading_bloc"):
+                commodity["trading_bloc"] = get_trading_bloc(
+                    commodity["trading_bloc"].get("code")
+                )
+        return value
+
+    for item in history:
+        if item["field"] != "commodities":
             continue
 
         item["old_value"] = enrich(item["old_value"])
