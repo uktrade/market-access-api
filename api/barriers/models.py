@@ -15,9 +15,7 @@ from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.core.validators import int_list_validator
 from django.db import models
-from django.db.models import CASCADE, CharField, F, Q, QuerySet
-from django.db.models import Value as V
-from django.db.models.functions import Concat
+from django.db.models import CASCADE, Q, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
@@ -1961,34 +1959,6 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         changes
         """
         public_queryset = queryset.none()
-
-        if "changed" in value:
-            value.remove("changed")
-            changed_ids = (
-                queryset.annotate(
-                    change=Concat(
-                        "barrier__cached_history_items__model",
-                        V("."),
-                        "barrier__cached_history_items__field",
-                        output_field=CharField(),
-                    ),
-                    change_date=F("barrier__cached_history_items__date"),
-                )
-                .filter(
-                    _public_view_status=PublicBarrierStatus.PUBLISHED,
-                    change_date__gt=F("last_published_on"),
-                    change__in=(
-                        "barrier.categories",
-                        "barrier.location",
-                        "barrier.sectors",
-                        "barrier.status",
-                        "barrier.summary",
-                        "barrier.title",
-                    ),
-                )
-                .values_list("id", flat=True)
-            )
-            public_queryset = queryset.filter(id__in=changed_ids)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
