@@ -26,6 +26,7 @@ class TestActivityView(APITestMixin, TestCase):
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
+        self.barrier.draft = False
         self.barrier.save()
 
         self.note = Interaction.objects.create(

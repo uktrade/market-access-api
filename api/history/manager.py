@@ -57,6 +57,7 @@ class HistoryManager:
                     "sub_status_other",
                 ],
             ],
+            track_first_item=True,
         )
         enrich_status(v2_barrier_history)
         history = convert_v2_history_to_legacy_object(v2_barrier_history)

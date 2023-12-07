@@ -142,9 +142,12 @@ def get_model_history(  # noqa: C901
                 change = {"old_value": None, "new_value": {}}
                 for field in fields:
                     if isinstance(field, list):
+                        if change["old_value"] is None:
+                            change["old_value"] = {}
                         for f in field:
-                            change["old_value"][f] = None
-                            change["new_value"][f] = item[f]
+                            f = f if isinstance(f, FieldMapping) else FieldMapping(f, f)
+                            change["old_value"][f.name] = None
+                            change["new_value"][f.name] = item[f.query_name]
                     else:
                         change["old_value"] = None
                         change["new_value"] = item[field]
@@ -154,7 +157,15 @@ def get_model_history(  # noqa: C901
                             "model": model,
                             "date": item["history_date"],
                             "field": (
-                                field if isinstance(field, str) else field[0]
+                                field
+                                if isinstance(field, str)
+                                else field.name
+                                if isinstance(field, FieldMapping)
+                                else field[0].name
+                                if isinstance(field[0], FieldMapping)
+                                else field[
+                                    0
+                                ]  # field[0] - First field defined is the primary field name
                             ).replace("_cache", ""),
                             "user": {
                                 "id": item["history_user__id"],
