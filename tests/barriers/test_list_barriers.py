@@ -12,12 +12,8 @@ from rest_framework.test import APITestCase
 from api.barriers.models import Barrier
 from api.barriers.views import BarrierList
 from api.core.test_utils import APITestMixin, create_test_user
-from api.metadata.constants import (
-    TOP_PRIORITY_BARRIER_STATUS,
-    BarrierStatus,
-    PublicBarrierStatus,
-)
-from api.metadata.models import BarrierPriority, ExportType, Organisation
+from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, BarrierStatus
+from api.metadata.models import ExportType, Organisation
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanStakeholderFactory,

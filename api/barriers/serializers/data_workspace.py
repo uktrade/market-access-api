@@ -18,7 +18,7 @@ from api.metadata.constants import (
     BarrierStatus,
 )
 
-from ..models import BarrierProgressUpdate, BarrierTopPrioritySummary, Barrier
+from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
 

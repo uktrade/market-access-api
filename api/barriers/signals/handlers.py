@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from notifications_python_client.notifications import NotificationsAPIClient
-from simple_history.signals import post_create_historical_record
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -20,7 +19,6 @@ from api.barriers.models import (
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
-from api.history.factories import HistoryItemFactory
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 logger = logging.getLogger(__name__)
