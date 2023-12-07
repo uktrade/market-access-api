@@ -1486,14 +1486,20 @@ class BarrierFilterSet(django_filters.FilterSet):
             # REMOVAL has not, we need to include it in the search parameter.
             if "APPROVED" in value and "REMOVAL_PENDING" not in value:
                 value.append("REMOVAL_PENDING")
-            print("filter : ", value)
 
             if "NONE" in value:
-                queryset = queryset.filter(
-                    (Q(top_priority_status="NONE") & Q(priority_level="NONE"))
-                    | Q(top_priority_status__in=value)
-                    | Q(priority_level__in=value)
-                )
+                if len(value) > 1:
+                    # We have additional filters so need to combine with NONE query
+                    value.remove("NONE")
+                    queryset = queryset.filter(
+                        Q(top_priority_status__in=value)
+                        | Q(priority_level__in=value)
+                        | (Q(top_priority_status="NONE") & Q(priority_level="NONE")),
+                    )
+                else:
+                    queryset = queryset.filter(
+                        (Q(top_priority_status="NONE") & Q(priority_level="NONE")),
+                    )
             else:
                 queryset = queryset.filter(
                     Q(top_priority_status__in=value) | Q(priority_level__in=value)
