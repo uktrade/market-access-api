@@ -9,7 +9,6 @@ from rest_framework.reverse import reverse
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction
 
 from ..assessment.factories import (
@@ -38,8 +37,6 @@ class TestActivityView(APITestMixin, TestCase):
 
     @freeze_time("2020-04-01")
     def test_activity_endpoint(self):
-        CachedHistoryItem.objects.all().delete()
-
         url = reverse("activity", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK

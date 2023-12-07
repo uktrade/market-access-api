@@ -21,7 +21,6 @@ from api.barriers.models import (
     PublicBarrierLightTouchReviews,
 )
 from api.history.factories import HistoryItemFactory
-from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 logger = logging.getLogger(__name__)
@@ -315,18 +314,6 @@ def send_top_priority_notification(email_type, barrier):
         template_id=template_id,
         personalisation=personalisation_items,
     )
-
-
-@receiver(post_create_historical_record)
-def post_create_historical_record(sender, history_instance, **kwargs):
-    history_instance.refresh_from_db()
-    items = HistoryItemFactory.create_history_items(
-        new_record=history_instance,
-        old_record=history_instance.prev_record,
-    )
-
-    for item in items:
-        CachedHistoryItem.create_from_history_item(item)
 
 
 @receiver(post_save, sender=BarrierRequestDownloadApproval)

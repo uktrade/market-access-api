@@ -3,7 +3,7 @@ import logging
 import operator
 import urllib.parse
 from functools import reduce
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 import django_filters
@@ -548,9 +548,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
         ]
 
     @classmethod
-    def get_history(cls, barrier_id, enrich=False):
+    def get_history(cls, barrier_id, enrich=False, fields: Optional[List] = None):
         qs = cls.history.filter(id=barrier_id, draft=False)
-        fields = (
+        default_fields = (
             [
                 "archived",
                 "archived_reason",
@@ -604,6 +604,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "commodities_cache",  # Needs cache
             "categories_cache",  # Needs cache
         )
+
+        if fields is None:
+            # TODO: refactor to parametrize fields better
+            fields = default_fields
 
         # Get all fields required - raw changes no enrichment
         return get_model_history(qs, model="barrier", fields=fields)
@@ -1711,31 +1715,31 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            changed_ids = (
-                queryset.annotate(
-                    change=Concat(
-                        "cached_history_items__model",
-                        V("."),
-                        "cached_history_items__field",
-                        output_field=CharField(),
-                    ),
-                    change_date=F("cached_history_items__date"),
-                )
-                .filter(
-                    public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
-                    change_date__gt=F("public_barrier__last_published_on"),
-                    change__in=(
-                        "barrier.categories",
-                        "barrier.location",
-                        "barrier.sectors",
-                        "barrier.status",
-                        "barrier.summary",
-                        "barrier.title",
-                    ),
-                )
-                .values_list("id", flat=True)
-            )
-            public_queryset = queryset.filter(id__in=changed_ids)
+            # changed_ids = (
+            #     queryset.annotate(
+            #         change=Concat(
+            #             "cached_history_items__model",
+            #             V("."),
+            #             "cached_history_items__field",
+            #             output_field=CharField(),
+            #         ),
+            #         change_date=F("cached_history_items__date"),
+            #     )
+            #     .filter(
+            #         public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
+            #         change_date__gt=F("public_barrier__last_published_on"),
+            #         change__in=(
+            #             "barrier.categories",
+            #             "barrier.location",
+            #             "barrier.sectors",
+            #             "barrier.status",
+            #             "barrier.summary",
+            #             "barrier.title",
+            #         ),
+            #     )
+            #     .values_list("id", flat=True)
+            # )
+            # public_queryset = queryset.filter(id__in=changed_ids)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
