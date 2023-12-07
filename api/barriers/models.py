@@ -546,7 +546,13 @@ class Barrier(FullyArchivableMixin, BaseModel):
         ]
 
     @classmethod
-    def get_history(cls, barrier_id, enrich=False, fields: Optional[List] = None):
+    def get_history(
+        cls,
+        barrier_id,
+        enrich=False,
+        fields: Optional[List] = None,
+        track_first_item: bool = False,
+    ):
         qs = cls.history.filter(id=barrier_id, draft=False)
         default_fields = (
             [
@@ -608,7 +614,9 @@ class Barrier(FullyArchivableMixin, BaseModel):
             fields = default_fields
 
         # Get all fields required - raw changes no enrichment
-        return get_model_history(qs, model="barrier", fields=fields)
+        return get_model_history(
+            qs, model="barrier", fields=fields, track_first_item=track_first_item
+        )
 
     @property
     def latest_progress_update(self):

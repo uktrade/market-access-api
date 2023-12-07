@@ -303,7 +303,9 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return [tag.title for tag in obj.tags.all()]
 
     def get_status_history(self, obj):
-        history = Barrier.get_history(barrier_id=obj.id, fields=["status"])
+        history = Barrier.get_history(
+            barrier_id=obj.id, fields=["status"], track_first_item=True
+        )
         status_lookup = dict(BarrierStatus.choices)
         return [
             {
