@@ -33,7 +33,7 @@ from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
-from api.history.v2.service import get_model_history
+from api.history.v2.service import FieldMapping, get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
@@ -546,6 +546,67 @@ class Barrier(FullyArchivableMixin, BaseModel):
             ),
             ("download_barriers", "Can download barriers"),
         ]
+
+    @classmethod
+    def get_history(cls, barrier_id, enrich=False):
+        qs = cls.history.filter(id=barrier_id, draft=False)
+        fields = (
+            [
+                "archived",
+                "archived_reason",
+                "archived_explanation",
+                "unarchived_reason",
+            ],
+            [
+                "country",
+                "trading_bloc",
+                "caused_by_trading_bloc",
+                "admin_areas",
+            ],
+            "commercial_value",
+            "commercial_value_explanation",
+            "companies",
+            "economic_assessment_eligibility",
+            "economic_assessment_eligibility_summary",
+            "estimated_resolution_date",
+            "start_date",
+            "is_summary_sensitive",
+            "main_sector",
+            "priority_level",
+            [FieldMapping("priority__code", "priority"), "priority_summary"],
+            "product",
+            "public_eligibility_summary",
+            [
+                "sectors",
+                "all_sectors",
+            ],
+            [
+                "source",
+                "other_source",
+            ],
+            [
+                "status",
+                "status_date",
+                "status_summary",
+                "sub_status",
+                "sub_status_other",
+            ],
+            "summary",
+            "term",
+            "title",
+            "trade_category",
+            "trade_direction",
+            ["top_priority_status", "top_priority_rejection_summary"],
+            "draft",
+            # m2m - seperate
+            "tags_cache",  # needs cache
+            "organisations_cache",  # Needs cache
+            "commodities_cache",  # Needs cache
+            "categories_cache",  # Needs cache
+        )
+
+        # Get all fields required - raw changes no enrichment
+        return get_model_history(qs, model="barrier", fields=fields)
 
     @property
     def latest_progress_update(self):
@@ -2071,6 +2132,18 @@ class BarrierTopPrioritySummary(models.Model):
         primary_key=True,
     )
     history = HistoricalRecords()
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("top_priority_summary_text",)
+
+        return get_model_history(
+            qs,
+            model="barrier_top_priority_summary",  # TODO: Update frontend, legacy history marked this as barrier item
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class BarrierNextStepItem(BaseModel):
