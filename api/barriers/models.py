@@ -1407,6 +1407,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         method="top_priority_status_filter"
     )
     priority_level = django_filters.BaseInFilter(method="priority_level_filter")
+    combined_priority = django_filters.BaseInFilter(method="combined_priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
     admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
     search = django_filters.Filter(method="text_search")
@@ -1534,6 +1535,39 @@ class BarrierFilterSet(django_filters.FilterSet):
         else:
             return queryset.filter(priority__in=priorities)
 
+    def combined_priority_filter(self, queryset, name, value):
+        """
+        customer filter for multi-select of Barrier Priority and Top 100
+        filters
+        """
+
+        if value:
+            # If user is searching for APPROVED top priority barriers, the search must also
+            # include barriers PENDING REMOVAL. So if APPROVED is selected, but PENDING
+            # REMOVAL has not, we need to include it in the search parameter.
+            if "APPROVED" in value and "REMOVAL_PENDING" not in value:
+                value.append("REMOVAL_PENDING")
+
+            if "NONE" in value:
+                if len(value) > 1:
+                    # We have additional filters so need to combine with NONE query
+                    value.remove("NONE")
+                    queryset = queryset.filter(
+                        Q(top_priority_status__in=value)
+                        | Q(priority_level__in=value)
+                        | (Q(top_priority_status="NONE") & Q(priority_level="NONE")),
+                    )
+                else:
+                    queryset = queryset.filter(
+                        (Q(top_priority_status="NONE") & Q(priority_level="NONE")),
+                    )
+            else:
+                queryset = queryset.filter(
+                    Q(top_priority_status__in=value) | Q(priority_level__in=value)
+                )
+
+        return queryset
+
     def progress_status_filter(self, queryset, name, value):
         # First query to run will filter out each unique Barriers historical updates, leaving the latest entries
         # the query wrapping it will cut out all the progress_status's that don't match the search query
@@ -1597,7 +1631,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "wider_europe" in location_values:
             location_values.remove("wider_europe")
 
-        # Return cleaned value arrarys
+        # Return cleaned value arrays
         return {
             "countries": [
                 location

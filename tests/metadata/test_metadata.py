@@ -153,7 +153,7 @@ class TestCategories(APITestMixin):
             "APPROVAL_PENDING": "Top 100 Approval Pending",
             "REMOVAL_PENDING": "Top 100 Removal Pending",
             "APPROVED": "Top 100 Priority",
-            "RESOLVED": "Resolved Top 100 Priority",
+            "RESOLVED": "Top 100 Priority Resolved",
         }
 
         url = reverse("metadata")
