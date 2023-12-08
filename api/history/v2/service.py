@@ -39,6 +39,8 @@ from typing import Dict, List, Tuple, Union
 from django.db.models import QuerySet
 
 from api.history.v2.enrichment import (
+    enrich_action_plan,
+    enrich_action_plan_task,
     enrich_commodities,
     enrich_country,
     enrich_main_sector,
@@ -63,6 +65,9 @@ def enrich_full_history(
     barrier_history: List[Dict],
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
+    action_plan_history: List[Dict],
+    action_plan_task_history: List[Dict],
+    action_plan_milestone_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -78,9 +83,16 @@ def enrich_full_history(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,
     )
+    enrich_action_plan(action_plan_history)
+    enrich_action_plan_task(action_plan_task_history)
 
     enriched_history = (
-        barrier_history + programme_fund_history + top_priority_summary_history
+        barrier_history
+        + programme_fund_history
+        + top_priority_summary_history
+        + action_plan_history
+        + action_plan_task_history
+        + action_plan_milestone_history
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 

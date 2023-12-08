@@ -32,17 +32,17 @@ class ActionPlanViewSet(viewsets.ModelViewSet):
         barrier_url = urllib.parse.urljoin(
             settings.FRONTEND_DOMAIN, f"/barriers/{barrier}/action_plan"
         )
-        client.send_email_notification(
-            email_address=django_user.email,
-            template_id=settings.NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID,
-            personalisation={
-                "first_name": django_user.first_name,
-                "mentioned_by": f"{django_user.first_name} {django_user.last_name}",
-                "barrier_number": barrier_obj.code,
-                "barrier_name": barrier_obj.title,
-                "barrier_url": barrier_url,
-            },
-        )
+        # client.send_email_notification(
+        #    email_address=django_user.email,
+        #    template_id=settings.NOTIFY_ACTION_PLAN_USER_SET_AS_OWNER_ID,
+        #    personalisation={
+        #        "first_name": django_user.first_name,
+        #        "mentioned_by": f"{django_user.first_name} {django_user.last_name}",
+        #        "barrier_number": barrier_obj.code,
+        #        "barrier_name": barrier_obj.title,
+        #        "barrier_url": barrier_url,
+        #    },
+        # )
 
     def retrieve(self, request, barrier, *args, **kwargs):
         try:

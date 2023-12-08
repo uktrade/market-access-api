@@ -8,6 +8,7 @@ from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
 from api.barriers.models import Barrier
+from api.history.v2.service import get_model_history
 
 from .constants import (
     ACTION_PLAN_HAS_RISKS,
@@ -91,6 +92,17 @@ class ActionPlan(models.Model):
 
         super().save(*args, **kwargs)
 
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("strategic_context", "owner")
+        return get_model_history(
+            qs,
+            model="action_plan",
+            fields=fields,
+            track_first_item=True,
+        )
+
 
 def create_action_plan_on_barrier_post_save(sender, instance: Barrier, **kwargs):
     """
@@ -118,6 +130,17 @@ class ActionPlanMilestone(models.Model):
     completion_date = models.DateField(null=True, blank=True)
 
     history = HistoricalRecords()
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(action_plan__barrier_id=barrier_id)
+        fields = ("objective",)
+        return get_model_history(
+            qs,
+            model="action_plan_milestone",
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class ActionPlanTask(models.Model):
@@ -158,6 +181,24 @@ class ActionPlanTask(models.Model):
     progress = models.TextField(default="", blank=True)
 
     history = HistoricalRecords()
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(milestone__action_plan__barrier_id=barrier_id)
+        fields = (
+            "progress",
+            "completion_date",
+            "action_type",
+            "action_text",
+            "action_type_category",
+            "assigned_to",
+        )
+        return get_model_history(
+            qs,
+            model="action_plan_task",
+            fields=fields,
+            track_first_item=True,
+        )
 
     class Meta:
         ordering = ("start_date", "completion_date")
