@@ -1051,24 +1051,41 @@ class TestListBarriers(APITestMixin, APITestCase):
         removal_pending_barrier.top_priority_status = "REMOVAL_PENDING"
         removal_pending_barrier.save()
 
-        overseas_delivery_barrier = Barrier()
+        overseas_delivery_barrier = BarrierFactory()
+        overseas_delivery_barrier.top_priority_status = "NONE"
         overseas_delivery_barrier.priority_level = "OVERSEAS"
+        overseas_delivery_barrier.save()
 
-        approved_url = f'{reverse("list-barriers")}?top_priority_status=APPROVED'
+        no_priority_barrier = BarrierFactory()
+        no_priority_barrier.top_priority_status = "NONE"
+        no_priority_barrier.priority_level = "NONE"
+        no_priority_barrier.save()
+
+        approved_url = f'{reverse("list-barriers")}?combined_priority=APPROVED'
         approved_response = self.api_client.get(approved_url)
         assert approved_response.status_code == status.HTTP_200_OK
         approved_serialised_data = approved_response.data
         assert len(approved_serialised_data["results"]) == 2
 
         removal_pending_url = (
-            f'{reverse("list-barriers")}?top_priority_status=REMOVAL_PENDING'
+            f'{reverse("list-barriers")}?combined_priority=REMOVAL_PENDING'
         )
         removal_pending_response = self.api_client.get(removal_pending_url)
         assert removal_pending_response.status_code == status.HTTP_200_OK
         removal_pending_serialised_data = removal_pending_response.data
         assert len(removal_pending_serialised_data["results"]) == 1
 
-        # write extra tests here
+        overseas_url = f'{reverse("list-barriers")}?combined_priority=OVERSEAS'
+        overseas_response = self.api_client.get(overseas_url)
+        assert overseas_response.status_code == status.HTTP_200_OK
+        overseas_serialised_data = overseas_response.data
+        assert len(overseas_serialised_data["results"]) == 1
+
+        combined_url = f'{reverse("list-barriers")}?combined_priority=APPROVED,NONE'
+        combined_response = self.api_client.get(combined_url)
+        assert combined_response.status_code == status.HTTP_200_OK
+        combined_serialised_data = combined_response.data
+        assert len(combined_serialised_data["results"]) == 3
 
     def test_export_types_filter(self):
         barrier = BarrierFactory()
