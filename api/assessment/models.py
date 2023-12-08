@@ -1,3 +1,4 @@
+from typing import List, Optional
 from uuid import uuid4
 
 from django.conf import settings
@@ -116,9 +117,9 @@ class EconomicAssessment(
         super().save(*args, **kwargs)
 
     @classmethod
-    def get_history(cls, barrier_id: str):
+    def get_history(cls, barrier_id: str, fields: Optional[List] = None):
         qs = cls.history.filter(barrier__id=barrier_id)
-        fields = (
+        default_fields = (
             "approved",
             "archived",
             "documents_cache",
@@ -127,8 +128,10 @@ class EconomicAssessment(
             "import_market_size",
             "rating",  # Needs enrichment
             "ready_for_approval",
-            "value_to_economy"
+            "value_to_economy",
         )
+        if fields is None:
+            fields = default_fields
 
         return get_model_history(
             qs,

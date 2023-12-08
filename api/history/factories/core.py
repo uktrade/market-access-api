@@ -1,6 +1,5 @@
 from ..exceptions import HistoryFactoryNotFound
 from ..utils import get_model_name
-from .assessments.economic import EconomicAssessmentHistoryFactory
 from .assessments.economic_impact import EconomicImpactAssessmentHistoryFactory
 from .assessments.resolvability import ResolvabilityAssessmentHistoryFactory
 from .assessments.strategic import StrategicAssessmentHistoryFactory
@@ -19,7 +18,6 @@ class HistoryItemFactory:
 
     class_lookup = {}
     history_factory_classes = (
-        EconomicAssessmentHistoryFactory,
         EconomicImpactAssessmentHistoryFactory,
         BarrierHistoryFactory,
         NoteHistoryFactory,

@@ -9,7 +9,6 @@ from api.barriers.models import (
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
-    EconomicAssessmentHistoryFactory,
     EconomicImpactAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
@@ -45,11 +44,12 @@ class HistoryManager:
             fields=["archived", "priority", "status"],
             use_cache=use_cache,
         )
-        history += cls.get_economic_assessment_history(
-            barrier_id=barrier.pk,
-            fields=("rating",),
-            use_cache=use_cache,
+
+        v2_economic_assessment_history = EconomicAssessment.get_history(
+            barrier_id=barrier.pk, fields=["rating"]
         )
+        history += convert_v2_history_to_legacy_object(v2_economic_assessment_history)
+
         history += cls.get_economic_impact_assessment_history(
             barrier_id=barrier.pk,
             fields=("impact",),
@@ -93,13 +93,15 @@ class HistoryManager:
         v2_top_priority_summary_history = BarrierTopPrioritySummary.get_history(
             barrier_id=barrier.pk
         )
-        v2_economic_assessment_history = EconomicAssessment.get_history(barrier_id=barrier.pk)
+        v2_economic_assessment_history = EconomicAssessment.get_history(
+            barrier_id=barrier.pk
+        )
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
             programme_fund_history=v2_programme_fund_history,
             top_priority_summary_history=v2_top_priority_summary_history,
-            economic_assessment_history=v2_economic_assessment_history
+            economic_assessment_history=v2_economic_assessment_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
@@ -110,9 +112,6 @@ class HistoryManager:
         history += cls.get_delivery_confidence_history(
             barrier.pk, start_date=start_date
         )
-        # history += cls.get_economic_assessment_history(
-        #     barrier.pk, start_date=start_date
-        # )
         history += cls.get_economic_impact_assessment_history(
             barrier.pk, start_date=start_date
         )
@@ -177,24 +176,6 @@ class HistoryManager:
         if fields:
             queryset = queryset.filter(field__in=fields)
         return [item.as_history_item() for item in queryset]
-
-    @classmethod
-    def get_economic_assessment_history(
-        cls, barrier_id, fields=(), start_date=None, use_cache=False
-    ):
-        if use_cache:
-            return cls.get_cached_history_items(
-                barrier_id,
-                model="economic_assessment",
-                fields=fields,
-                start_date=start_date,
-            )
-
-        return EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
 
     @classmethod
     def get_economic_impact_assessment_history(
