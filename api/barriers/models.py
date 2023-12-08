@@ -54,7 +54,6 @@ from api.metadata.constants import (
 )
 
 from . import validators
-from .related_barrier import get_similar_barriers
 from .report_stages import REPORT_CONDITIONS, report_stage_status
 from .utils import random_barrier_reference
 
@@ -91,34 +90,6 @@ class BarrierManager(models.Manager):
 
     def get_queryset(self):
         return super().get_queryset().filter(draft=False)
-
-    def related_barriers(self, barrier_id: str, limit: int = 20) -> QuerySet["Barrier"]:
-        """
-        Returns a queryset of barriers that are related to the given barrier.
-        """
-        cache_key = f"related_barriers_{barrier_id}_{limit}"
-        cached_queryset = cache.get(cache_key)
-
-        if cached_queryset:
-            return cached_queryset
-
-        # consider adding export types, sectors, services affected and companies to barrier corpus
-        values_query_set = (
-            Barrier.objects.exclude(draft=True)
-            .annotate(
-                barrier_corpus=Concat(
-                    "title", V(". "), "summary", output_field=CharField()
-                )
-            )
-            .values("id", "barrier_corpus")
-        )
-
-        result_df = get_similar_barriers(values_query_set, barrier_id, limit=limit)
-
-        queryset = Barrier.objects.filter(id__in=result_df["id"].values)
-
-        cache.set(cache_key, queryset, 60)
-        return queryset
 
 
 class PublicBarrierManager(models.Manager):
