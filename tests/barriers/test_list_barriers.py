@@ -1087,6 +1087,12 @@ class TestListBarriers(APITestMixin, APITestCase):
         combined_serialised_data = combined_response.data
         assert len(combined_serialised_data["results"]) == 3
 
+        no_priority_url = f'{reverse("list-barriers")}?combined_priority=NONE'
+        no_priority_response = self.api_client.get(no_priority_url)
+        assert no_priority_response.status_code == status.HTTP_200_OK
+        no_priority_serialised_data = no_priority_response.data
+        assert len(no_priority_serialised_data["results"]) == 1
+
     def test_export_types_filter(self):
         barrier = BarrierFactory()
         export_type1 = ExportType.objects.first()
