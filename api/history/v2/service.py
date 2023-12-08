@@ -46,7 +46,7 @@ from api.history.v2.enrichment import (
     enrich_sectors,
     enrich_status,
     enrich_top_priority_status,
-    enrich_trade_category,
+    enrich_trade_category, enrich_rating,
 )
 
 FieldMapping = namedtuple("FieldMapping", "query_name name")
@@ -63,6 +63,7 @@ def enrich_full_history(
     barrier_history: List[Dict],
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
+    economic_assessment_history: List[Dict]
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -74,13 +75,14 @@ def enrich_full_history(
     enrich_sectors(barrier_history)
     enrich_status(barrier_history)
     enrich_commodities(barrier_history)
+    enrich_rating(economic_assessment_history)
     enrich_top_priority_status(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,
     )
 
     enriched_history = (
-        barrier_history + programme_fund_history + top_priority_summary_history
+        barrier_history + programme_fund_history + top_priority_summary_history + economic_assessment_history
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 

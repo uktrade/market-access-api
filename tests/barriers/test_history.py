@@ -510,10 +510,17 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         )
         data = items[-1].data
 
+        history = EconomicAssessment.get_history(barrier_id=self.barrier.pk)
+
+        from pprint import pprint
+        pprint(history)
+
         assert data["model"] == "economic_assessment"
         assert data["field"] == "value_to_economy"
         assert data["old_value"] == 10000
         assert data["new_value"] == 4444
+
+        assert history[-1] == data
 
 
 class TestNoteHistory(APITestMixin, TestCase):

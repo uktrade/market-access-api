@@ -8,6 +8,7 @@ from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ApprovalMixin, ArchivableMixin, BaseModel
+from api.history.v2.service import get_model_history
 from api.interactions.models import Document
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
@@ -113,6 +114,28 @@ class EconomicAssessment(
             for assessment in self.barrier.economic_assessments.filter(archived=False):
                 assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
+
+    @classmethod
+    def get_history(cls, barrier_id: str):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = (
+            "approved",
+            "archived",
+            "documents_cache",
+            "explanation",
+            "export_value",
+            "import_market_size",
+            "rating",  # Needs enrichment
+            "ready_for_approval",
+            "value_to_economy"
+        )
+
+        return get_model_history(
+            qs,
+            model="economic_assessment",
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):

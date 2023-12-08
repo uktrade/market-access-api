@@ -1,5 +1,6 @@
 import datetime
 
+from api.assessment.models import EconomicAssessment
 from api.barriers.models import (
     Barrier,
     BarrierTopPrioritySummary,
@@ -92,11 +93,13 @@ class HistoryManager:
         v2_top_priority_summary_history = BarrierTopPrioritySummary.get_history(
             barrier_id=barrier.pk
         )
+        v2_economic_assessment_history = EconomicAssessment.get_history(barrier_id=barrier.pk)
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
             programme_fund_history=v2_programme_fund_history,
             top_priority_summary_history=v2_top_priority_summary_history,
+            economic_assessment_history=v2_economic_assessment_history
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
@@ -107,9 +110,9 @@ class HistoryManager:
         history += cls.get_delivery_confidence_history(
             barrier.pk, start_date=start_date
         )
-        history += cls.get_economic_assessment_history(
-            barrier.pk, start_date=start_date
-        )
+        # history += cls.get_economic_assessment_history(
+        #     barrier.pk, start_date=start_date
+        # )
         history += cls.get_economic_impact_assessment_history(
             barrier.pk, start_date=start_date
         )
