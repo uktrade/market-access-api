@@ -251,6 +251,18 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
 
     history = HistoricalRecords()
 
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = (["status", "update"],)
+
+        return get_model_history(
+            qs,
+            model="progress_update",
+            fields=fields,
+            track_first_item=True,
+        )
+
     class Meta:
         # order by date descending
         ordering = ("-created_on",)

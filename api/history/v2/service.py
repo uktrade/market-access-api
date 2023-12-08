@@ -32,6 +32,7 @@ FieldMapping
 List[str, FieldMapping]
     A collection of history fields in 1 item.
 """
+import logging
 import operator
 from collections import namedtuple
 from typing import Dict, List, Tuple, Union
@@ -39,15 +40,21 @@ from typing import Dict, List, Tuple, Union
 from django.db.models import QuerySet
 
 from api.history.v2.enrichment import (
+    enrich_action_plan,
+    enrich_action_plan_task,
     enrich_commodities,
     enrich_country,
+    enrich_delivery_confidence,
     enrich_main_sector,
+    enrich_notes,
     enrich_priority_level,
     enrich_sectors,
     enrich_status,
     enrich_top_priority_status,
     enrich_trade_category,
 )
+
+logger = logging.getLogger(__name__)
 
 FieldMapping = namedtuple("FieldMapping", "query_name name")
 
@@ -63,6 +70,11 @@ def enrich_full_history(
     barrier_history: List[Dict],
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
+    action_plan_history: List[Dict],
+    action_plan_task_history: List[Dict],
+    action_plan_milestone_history: List[Dict],
+    notes_history: List[Dict],
+    delivery_confidence_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -78,9 +90,20 @@ def enrich_full_history(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,
     )
+    enrich_action_plan(action_plan_history)
+    enrich_action_plan_task(action_plan_task_history)
+    enrich_notes(notes_history)
+    enrich_delivery_confidence(delivery_confidence_history)
 
     enriched_history = (
-        barrier_history + programme_fund_history + top_priority_summary_history
+        barrier_history
+        + programme_fund_history
+        + top_priority_summary_history
+        + action_plan_history
+        + action_plan_task_history
+        + action_plan_milestone_history
+        + notes_history
+        + delivery_confidence_history
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 
@@ -143,7 +166,11 @@ def get_model_history(  # noqa: C901
                 for field in fields:
                     if isinstance(field, list):
                         for f in field:
+                            if change["old_value"] is None:
+                                change["old_value"] = {}
                             change["old_value"][f] = None
+                            if change["new_value"] is None:
+                                change["new_value"] = {}
                             change["new_value"][f] = item[f]
                     else:
                         change["old_value"] = None

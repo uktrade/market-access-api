@@ -1,30 +1,22 @@
 import datetime
 import logging
-from unittest.mock import patch
 
 from django.test import TestCase
 from freezegun import freeze_time
-from notifications_python_client import NotificationsAPIClient
 
-from api.action_plans.models import ActionPlan
+from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.assessment.models import EconomicAssessment
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.core.utils import cleansed_username
 from api.history.factories import (
     BarrierHistoryFactory,
-    DeliveryConfidenceHistoryFactory,
     EconomicAssessmentHistoryFactory,
-    NoteHistoryFactory,
     PublicBarrierHistoryFactory,
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
-from api.history.factories.action_plans import ActionPlanTaskHistoryFactory
-from api.history.items.action_plans import get_default_user
-from api.history.models import CachedHistoryItem
 from api.history.v2.enrichment import (
     enrich_priority_level,
     enrich_sectors,
@@ -36,12 +28,7 @@ from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
 )
-from tests.assessment.factories import (
-    EconomicAssessmentFactory,
-    EconomicImpactAssessmentFactory,
-    ResolvabilityAssessmentFactory,
-    StrategicAssessmentFactory,
-)
+from tests.assessment.factories import EconomicAssessmentFactory
 from tests.interactions.factories import InteractionFactory
 from tests.metadata.factories import OrganisationFactory
 
@@ -533,8 +520,8 @@ class TestNoteHistory(APITestMixin, TestCase):
     def test_documents_history(self):
         self.note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
 
-        items = NoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[-1].data
+        items = Interaction.get_history(barrier_id=self.barrier.pk)
+        data = items[-1]
 
         assert data["model"] == "note"
         assert data["field"] == "documents"
@@ -550,8 +537,8 @@ class TestNoteHistory(APITestMixin, TestCase):
         self.note.text = "Edited note"
         self.note.save()
 
-        items = NoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[-1].data
+        items = Interaction.get_history(barrier_id=self.barrier.pk)
+        data = items[-1]
 
         assert data["model"] == "note"
         assert data["field"] == "text"
@@ -610,25 +597,23 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
             next_steps="Get coffee.",
         )
 
-        items = DeliveryConfidenceHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
+        items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0].data["old_value"] == {"status": "", "summary": ""}
-        assert items[0].data["new_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["new_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[1]["old_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["new_value"] == {
-            "status": "Delayed",
-            "summary": "Nothing Specific",
+        assert items[1]["new_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
 
     def test_history_edited_progress_updates(self):
@@ -643,25 +628,23 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         self.progress_update.status = "DELAYED"
         self.progress_update.save()
 
-        items = DeliveryConfidenceHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
+        items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0].data["old_value"] == {"status": "", "summary": ""}
-        assert items[0].data["new_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["new_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[1]["old_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["new_value"] == {
-            "status": "Delayed",
-            "summary": "Nothing Specific",
+        assert items[1]["new_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
 
     def test_history_non_linear_updates(self):
@@ -684,34 +667,32 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         self.progress_update.status = "RISK_OF_DELAY"
         self.progress_update.save()
 
-        items = DeliveryConfidenceHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
+        items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
         # ON_TRACK changes to RISK_OF_DELAY
-        assert items[0].data["old_value"] == {"status": "", "summary": ""}
-        assert items[0].data["new_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["new_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[1]["old_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["new_value"] == {
-            "status": "Delayed",
-            "summary": "Nothing Specific",
+        assert items[1]["new_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
-        assert items[2].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[2]["old_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
-        assert items[2].data["new_value"] == {
-            "status": "Risk of delay",
-            "summary": "Nothing Specific",
+        assert items[2]["new_value"] == {
+            "status": "RISK_OF_DELAY",
+            "update": "Nothing Specific",
         }
 
 
@@ -732,119 +713,11 @@ class TestCachedHistoryItems(APITestMixin, TestCase):
         )
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
 
-    @freeze_time("2020-04-01")
-    def test_cached_history_items(self):
-        CachedHistoryItem.objects.all().delete()
-
-        # Barrier changes
-        self.barrier.categories.add("109", "115")
-        self.barrier.commercial_value = 55555
-        self.barrier.commercial_value_explanation = "Explanation"
-        self.barrier.companies = ["1", "2", "3"]
-        self.barrier.summary = "New summary"
-        self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
-        self.barrier.admin_areas = [
-            "a88512e0-62d4-4808-95dc-d3beab05d0e9"
-        ]  # California
-        self.barrier.priority_id = 2
-        self.barrier.product = "New product"
-        self.barrier.status = 5
-        self.barrier.status_summary = "Summary"
-        self.barrier.sub_status = "UK_GOVT"
-        self.barrier.term = 1
-        self.barrier.public_eligibility_summary = "New summary"
-        self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
-        self.barrier.source = "COMPANY"
-        self.barrier.title = "New title"
-        self.barrier.save()
-
-        self.barrier.archive(
-            user=self.user, reason="DUPLICATE", explanation="It was a duplicate"
-        )
-
-        # Note changes
-        self.note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
-        self.note.text = "Edited note"
-        self.note.save()
-
-        # Team Member changes
-        TeamMember.objects.create(
-            barrier=self.barrier, user=self.user, role="Contributor"
-        )
-
-        with patch.object(
-            NotificationsAPIClient, "send_email_notification", return_value=None
-        ) as mock:
-            # Assessment changes
-            economic_assessment = EconomicAssessmentFactory(
-                barrier=self.barrier,
-                rating="LOW",
-            )
-            EconomicImpactAssessmentFactory(
-                economic_assessment=economic_assessment,
-                barrier=economic_assessment.barrier,
-                impact=4,
-            )
-            ResolvabilityAssessmentFactory(
-                barrier=self.barrier,
-                time_to_resolve=4,
-                effort_to_resolve=1,
-            )
-            StrategicAssessmentFactory(
-                barrier=self.barrier,
-                scale=3,
-                uk_grants="Testing",
-            )
-
-        # Public barrier changes
-        self.public_barrier.categories.add("109", "115")
-        self.public_barrier.country = "570507cc-1592-4a99-afca-915d13a437d0"
-        self.public_barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
-        self.public_barrier.status = 4
-        self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
-        self.public_barrier.summary = "New summary"
-        self.public_barrier.title = "New title"
-        self.public_barrier.save()
-
-        items = CachedHistoryItem.objects.filter(barrier=self.barrier).values(
-            "model", "field"
-        )
-        cached_changes = [(item["model"], item["field"]) for item in items]
-
-        assert ("barrier", "archived") in cached_changes
-        assert ("barrier", "categories") in cached_changes
-        assert ("barrier", "companies") in cached_changes
-        assert ("barrier", "location") in cached_changes
-        assert ("barrier", "priority") in cached_changes
-        assert ("barrier", "product") in cached_changes
-        assert ("barrier", "term") in cached_changes
-        assert ("barrier", "sectors") in cached_changes
-        assert ("barrier", "source") in cached_changes
-        assert ("barrier", "status") in cached_changes
-        assert ("barrier", "summary") in cached_changes
-        assert ("barrier", "title") in cached_changes
-        assert ("economic_assessment", "rating") in cached_changes
-        assert ("economic_assessment", "explanation") in cached_changes
-        assert ("economic_impact_assessment", "impact") in cached_changes
-        assert ("economic_impact_assessment", "explanation") in cached_changes
-        assert ("resolvability_assessment", "time_to_resolve") in cached_changes
-        assert ("resolvability_assessment", "effort_to_resolve") in cached_changes
-        assert ("strategic_assessment", "scale") in cached_changes
-        assert ("strategic_assessment", "uk_grants") in cached_changes
-        assert ("note", "documents") in cached_changes
-        assert ("note", "text") in cached_changes
-        assert ("team_member", "user") in cached_changes
-        assert ("public_barrier", "categories") in cached_changes
-        assert ("public_barrier", "location") in cached_changes
-        assert ("public_barrier", "public_view_status") in cached_changes
-        assert ("public_barrier", "sectors") in cached_changes
-        assert ("public_barrier", "status") in cached_changes
-        assert ("public_barrier", "summary") in cached_changes
-        assert ("public_barrier", "title") in cached_changes
-
 
 class TestActionPlanHistory(APITestMixin, TestCase):
     fixtures = ["users", "barriers"]
+
+    # pytest tests/barriers/test_history.py::TestActionPlanHistory
 
     def setUp(self):
         super().setUp()
@@ -853,16 +726,20 @@ class TestActionPlanHistory(APITestMixin, TestCase):
     def test_action_plan_no_user_history(self):
         action_plan = ActionPlan.objects.get(barrier=self.barrier)
         milestone = ActionPlanMilestoneFactory(action_plan=action_plan)
-        action_plan = ActionPlanTaskFactory(milestone=milestone, assigned_to=None)
+        action_plan_task = ActionPlanTaskFactory(milestone=milestone, assigned_to=None)
 
-        action_plan.assigned_to = self.mock_user
-        action_plan.save()
+        action_plan_task.assigned_to = self.mock_user
+        action_plan_task.save()
 
-        items = ActionPlanTaskHistoryFactory.get_history_items(
-            barrier_id=self.barrier.id,
-        )
-        data = items[-1].data
-        default_user = get_default_user()
+        task_history = ActionPlanTask.get_history(barrier_id=self.barrier)
+        data = task_history[-1]
 
-        # asserting that when the old value of assigned_to is None, the default user is returned
-        assert data["old_value"] == cleansed_username(default_user)
+        # asserting that when the old value of assigned_to is None, the mock user is returned
+        assert data["old_value"] == {
+            "assigned_to__first_name": None,
+            "assigned_to__last_name": None,
+        }
+        assert data["new_value"] == {
+            "assigned_to__first_name": self.mock_user.first_name,
+            "assigned_to__last_name": self.mock_user.last_name,
+        }

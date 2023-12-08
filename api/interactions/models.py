@@ -17,6 +17,7 @@ from api.barriers.mixins import BarrierRelatedMixin
 from api.collaboration.models import TeamMember
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
+from api.history.v2 import service
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from api.user import helpers, staff_sso
 
@@ -171,6 +172,17 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("documents_cache", "text")
+        return service.get_model_history(
+            qs,
+            model="note",
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):

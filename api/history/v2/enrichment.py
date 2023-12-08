@@ -1,6 +1,7 @@
 """
 Enrichments to historical data as done by legacy.
 """
+import logging
 from typing import Dict, List, Optional
 
 from api.metadata.constants import (
@@ -14,6 +15,8 @@ from api.metadata.utils import (
     get_sector,
     get_trading_bloc,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_matching_history_item(
@@ -195,3 +198,126 @@ def enrich_commodities(history: List[Dict]):
 
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_action_plan(history: List[Dict]):
+    def enrich(value):
+        if value["owner__first_name"] and value["owner__last_name"]:
+            full_name = value["owner__first_name"] + " " + value["owner__last_name"]
+            return full_name
+
+        # If there was no result, there was no ID the
+        # action plan was previously owned by or is going to be owned by
+        return None
+
+    cleaned_history = []
+
+    for item in history:
+        # Enrich owner field
+        if item["field"] == "owner__id":
+            # History contains records where value has not changed, if we come
+            # across one we need to discount it from the history list
+            if item["old_value"] == item["new_value"]:
+                continue
+            else:
+                item["old_value"] = enrich(item["old_value"])
+                item["new_value"] = enrich(item["new_value"])
+                item["field"] = "owner"
+                cleaned_history.append(item)
+
+        # Enrich strategic context field
+        if item["field"] == "strategic_context":
+            # Strategic Context contains records where value has been instantiated,
+            # if we come across one we need to discount it from the history list
+            if item["old_value"] is None and item["new_value"] == "":
+                continue
+            else:
+                cleaned_history.append(item)
+
+    # Overwrite the passed history list with the cleaned version
+    history[:] = cleaned_history
+
+
+def enrich_action_plan_task(history: List[Dict]):
+    def enrich_assigned_to(value):
+        if value["assigned_to__first_name"] and value["assigned_to__last_name"]:
+            full_name = (
+                value["assigned_to__first_name"] + " " + value["assigned_to__last_name"]
+            )
+            return full_name
+
+        # If there was no result, there was no ID the
+        # action plan was previously assigned to or is being assigned to
+        return None
+
+    def enrich_action_type(value):
+        if value is not None:
+            action_type = value.replace("_", " ").lower().capitalize()
+            return action_type
+        else:
+            return None
+
+    for item in history:
+        # Enrich assigned_to field
+        if item["field"] == "assigned_to__first_name":
+            item["old_value"] = enrich_assigned_to(item["old_value"])
+            item["new_value"] = enrich_assigned_to(item["new_value"])
+            item["field"] = "assigned_to"
+        # Enrich action_type field
+        if item["field"] == "action_type":
+            item["old_value"] = enrich_action_type(item["old_value"])
+            item["new_value"] = enrich_action_type(item["new_value"])
+
+
+def enrich_notes(history: List[Dict]):
+    def enrich(value):
+        if value != []:
+            return value
+        else:
+            return ""
+
+    cleaned_history = []
+
+    for item in history:
+        if item["field"] == "documents":
+            # Documents field needs to be ignored if Note was created
+            # without an attachment
+            if item["old_value"] is None and item["new_value"] == []:
+                continue
+            else:
+                item["old_value"] = enrich(item["old_value"])
+                item["new_value"] = enrich(item["new_value"])
+                cleaned_history.append(item)
+
+        if item not in cleaned_history:
+            cleaned_history.append(item)
+        else:
+            continue
+
+    # Overwrite the passed history list with the cleaned version
+    history[:] = cleaned_history
+
+
+def enrich_delivery_confidence(history: List[Dict]):
+    def enrich(value):
+        value["summary"] = value.pop("update")
+        if value["status"] is not None:
+            value["status"] = value["status"].replace("_", " ").lower().capitalize()
+        return value
+
+    cleaned_history = []
+
+    for item in history:
+        # Existing functionality for Delivery Confidence history items
+        # is to display only when the status of a progress update has
+        # changed, not the summary - so we need to remove any items where
+        # status is the same across both old_value and new_value
+        if item["old_value"]["status"] == item["new_value"]["status"]:
+            continue
+        else:
+            item["old_value"] = enrich(item["old_value"])
+            item["new_value"] = enrich(item["new_value"])
+            cleaned_history.append(item)
+
+    # Overwrite the passed history list with the cleaned version
+    history[:] = cleaned_history

@@ -5,7 +5,6 @@ from .assessments.economic_impact import EconomicImpactAssessmentHistoryFactory
 from .assessments.resolvability import ResolvabilityAssessmentHistoryFactory
 from .assessments.strategic import StrategicAssessmentHistoryFactory
 from .barriers import BarrierHistoryFactory
-from .notes import NoteHistoryFactory
 from .public_barrier_notes import PublicBarrierNoteHistoryFactory
 from .public_barriers import PublicBarrierHistoryFactory
 from .team_members import TeamMemberHistoryFactory
@@ -22,7 +21,6 @@ class HistoryItemFactory:
         EconomicAssessmentHistoryFactory,
         EconomicImpactAssessmentHistoryFactory,
         BarrierHistoryFactory,
-        NoteHistoryFactory,
         PublicBarrierHistoryFactory,
         PublicBarrierNoteHistoryFactory,
         ResolvabilityAssessmentHistoryFactory,

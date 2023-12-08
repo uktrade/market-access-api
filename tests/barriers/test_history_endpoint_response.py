@@ -1,4 +1,5 @@
 import datetime
+import logging
 import random
 from unittest import skip
 from unittest.mock import patch
@@ -27,6 +28,8 @@ from tests.assessment.factories import (
 from tests.barriers.factories import CommodityFactory
 from tests.history.factories import ProgrammeFundProgressUpdateFactory
 from tests.metadata.factories import BarrierTagFactory
+
+logger = logging.getLogger(__name__)
 
 
 class TestHistoryEndpointResponse(APITestMixin, TestCase):
@@ -393,7 +396,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             text="Original note",
             created_by=self.mock_user,
         )
-        initial_documents = list(note.documents.all())
         note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
         note.save()
 
@@ -405,7 +407,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "note",
             "field": "documents",
-            "old_value": initial_documents,
+            "old_value": "",
             "new_value": [
                 {"id": "eda7ee4e-4786-4507-a0ed-05a10169764b", "name": "cat.jpg"}
             ],
