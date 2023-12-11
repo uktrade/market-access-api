@@ -11,6 +11,7 @@ from api.assessment.models import (
     ResolvabilityAssessment,
     StrategicAssessment,
 )
+from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import (
     Barrier,
     BarrierRequestDownloadApproval,
@@ -44,6 +45,12 @@ def barrier_categories_changed(sender, instance, action, **kwargs):
         else:
             instance.categories_history_saved = True
             instance.save()
+
+        public_barrier, _ = get_or_create_public_barrier(barrier=instance)
+
+        if not public_barrier.changed_since_public and public_barrier.last_published_on:
+            public_barrier.changed_since_public = True
+            public_barrier.save()
 
 
 def barrier_organisations_changed(sender, instance, action, **kwargs):
@@ -338,3 +345,28 @@ def barrier_completion_top_priority_barrier_resolved(
         Barrier.objects.filter(id=instance.id).update(
             top_priority_status=TOP_PRIORITY_BARRIER_STATUS.RESOLVED
         )
+
+
+def barrier_changed_after_published(sender, instance, **kwargs):
+    try:
+        obj = sender.objects.get(pk=instance.pk)
+        public_barrier, _ = get_or_create_public_barrier(barrier=instance)
+    except sender.DoesNotExist:
+        pass  # Object is new, so field hasn't technically changed, but you may want to do something else here.
+    else:
+        if not public_barrier.changed_since_public and public_barrier.last_published_on:
+            # Only set changed_since_public if certain barrier elements have been changed.
+            if any(
+                [
+                    obj.status != instance.status,
+                    str(obj.country) != str(instance.country),
+                    obj.title != instance.title,
+                    obj.categories != instance.categories,
+                    obj.summary != instance.summary,
+                    [str(s) for s in obj.sectors] != [str(s) for s in instance.sectors],
+                ]
+            ):
+                public_barrier.changed_since_public = True
+                public_barrier.save()
+
+    # do something
