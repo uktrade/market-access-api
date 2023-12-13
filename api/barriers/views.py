@@ -1214,12 +1214,8 @@ def related_barriers(request, pk) -> Response:
     """
     Return a list of related barriers
     """
-    values_query_set = (
-        Barrier.objects.exclude(draft=True)
-        .annotate(
-            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
-        )
-        .values("id", "barrier_corpus")
+    values_query_set = Barrier.objects.exclude(draft=True).annotate(
+        barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
     )
 
     related_barriers_df = get_similar_barriers(values_query_set, pk, limit=20)

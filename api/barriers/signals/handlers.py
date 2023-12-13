@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.signals import post_create_historical_record
@@ -19,6 +19,10 @@ from api.barriers.models import (
     HistoricalPublicBarrier,
     PublicBarrier,
     PublicBarrierLightTouchReviews,
+)
+from api.barriers.related_barrier import (
+    RELEVANT_BARRIER_FIELDS,
+    update_similarity_score_matrix,
 )
 from api.history.factories import HistoryItemFactory
 from api.history.models import CachedHistoryItem
@@ -353,3 +357,18 @@ def barrier_completion_top_priority_barrier_resolved(
         Barrier.objects.filter(id=instance.id).update(
             top_priority_status=TOP_PRIORITY_BARRIER_STATUS.RESOLVED
         )
+
+
+@receiver(pre_save, sender=Barrier)
+def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
+    try:
+        current_barrier_object = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        pass
+    else:
+        changed = any(
+            getattr(current_barrier_object, field) != getattr(instance, field)
+            for field in RELEVANT_BARRIER_FIELDS
+        )
+        if changed:
+            update_similarity_score_matrix(instance)
