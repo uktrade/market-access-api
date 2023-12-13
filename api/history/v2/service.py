@@ -47,6 +47,11 @@ from api.history.v2.enrichment import (
     enrich_status,
     enrich_top_priority_status,
     enrich_trade_category,
+    enrich_committee_notification_document,
+    enrich_committee_notified,
+    enrich_committee_raised_in,
+    enrich_minutes,
+    enrich_wto_notified_status,
 )
 
 FieldMapping = namedtuple("FieldMapping", "query_name name")
@@ -63,6 +68,7 @@ def enrich_full_history(
     barrier_history: List[Dict],
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
+    wto_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -78,6 +84,11 @@ def enrich_full_history(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,
     )
+    enrich_committee_notification_document(wto_history)
+    enrich_committee_notified(wto_history)
+    enrich_committee_raised_in(wto_history)
+    enrich_minutes(wto_history)
+    enrich_wto_notified_status(wto_history)
 
     enriched_history = (
         barrier_history + programme_fund_history + top_priority_summary_history

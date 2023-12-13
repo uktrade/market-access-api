@@ -5,6 +5,7 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
 )
+from api.wto.models import WTOProfile
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
@@ -93,10 +94,15 @@ class HistoryManager:
             barrier_id=barrier.pk
         )
 
+        v2_wto_history = WTOProfile.get_history(
+            barrier_id=barrier.pk, status_date=start_date
+        )
+
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
             programme_fund_history=v2_programme_fund_history,
             top_priority_summary_history=v2_top_priority_summary_history,
+            wto_history=v2_wto_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
