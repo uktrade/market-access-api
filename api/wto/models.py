@@ -5,7 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-from api.history.utils import get_model_history
+from api.history.v2.service import get_model_history
 from api.interactions.models import Document
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
