@@ -39,18 +39,18 @@ from typing import Dict, List, Tuple, Union
 from django.db.models import QuerySet
 
 from api.history.v2.enrichment import (
+    enrich_committee_notification_document,
+    enrich_committee_notified,
+    enrich_committee_raised_in,
     enrich_commodities,
     enrich_country,
     enrich_main_sector,
+    enrich_meeting_minutes,
     enrich_priority_level,
     enrich_sectors,
     enrich_status,
     enrich_top_priority_status,
     enrich_trade_category,
-    enrich_committee_notification_document,
-    enrich_committee_notified,
-    enrich_committee_raised_in,
-    enrich_meeting_minutes,
     enrich_wto_notified_status,
 )
 

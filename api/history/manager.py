@@ -5,7 +5,6 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
 )
-from api.wto.models import WTOProfile
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
@@ -29,6 +28,7 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
 )
+from api.wto.models import WTOProfile
 
 
 class HistoryManager:
