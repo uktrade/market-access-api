@@ -5,7 +5,11 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, Count, F, Value, When
+from django.db.models import Case, CharField, Count, F
+from django.db.models import Value
+from django.db.models import Value as V
+from django.db.models import When
+from django.db.models.functions import Concat
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -67,6 +71,7 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPub
 
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
+from .related_barrier import get_similar_barriers
 from .tasks import generate_s3_and_send_email
 
 logger = logging.getLogger(__name__)
@@ -1209,8 +1214,16 @@ def related_barriers(request, pk) -> Response:
     """
     Return a list of related barriers
     """
-    queryset = Barrier.barriers.related_barriers(barrier_id=pk, limit=20)
-    print("related query: ", queryset)
-    serializer = BarrierRelatedListSerializer(queryset, many=True)
-    print("related barriers :", serializer.data)
+    values_query_set = (
+        Barrier.objects.exclude(draft=True)
+        .annotate(
+            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
+        )
+        .values("id", "barrier_corpus")
+    )
+
+    related_barriers_df = get_similar_barriers(values_query_set, pk, limit=20)
+    serializer = BarrierRelatedListSerializer(
+        related_barriers_df.to_dict("records"), many=True
+    )
     return Response(serializer.data)

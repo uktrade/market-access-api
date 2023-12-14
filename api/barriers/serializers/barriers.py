@@ -144,3 +144,4 @@ class BarrierRelatedListSerializer(serializers.Serializer):
     modified_on = serializers.DateTimeField(read_only=True)
     status = StatusField(required=False)
     location = serializers.CharField(read_only=True)
+    similarity = serializers.FloatField(read_only=True)
