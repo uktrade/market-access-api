@@ -6,6 +6,7 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 
 from api.interactions.models import Document
+from api.history.utils import get_model_history, FieldMapping
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
