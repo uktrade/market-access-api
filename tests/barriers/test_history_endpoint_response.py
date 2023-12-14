@@ -900,7 +900,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
                 "model": "barrier",
                 "new_value": {
                     "reason": "please approve me",
-                    "value": "Resolved Top 100 Priority",
+                    "value": "Top 100 Priority Resolved",
                 },
                 "old_value": {
                     "reason": "please approve me",
