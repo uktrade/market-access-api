@@ -195,3 +195,96 @@ def enrich_commodities(history: List[Dict]):
 
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_committee_raised_in(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("committee_raised_in"):
+            committee_raised_in = value["committee_raised_in"]
+            committee_raised_in = {
+                "id": str(committee_raised_in.get("id")),
+                "name": committee_raised_in.get("name"),
+            }
+            value["committee_raised_in"] = committee_raised_in
+        return value
+
+    for item in history:
+        if item["field"] != "committee_raised_in":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_committee_notified(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("committee_notified"):
+            committee_notified = value["committee_notified"]
+            committee_notified = {
+                "id": str(committee_notified.get("id")),
+                "name": committee_notified.get("name"),
+            }
+            value["committee_notified"] = committee_notified
+        return value
+
+    for item in history:
+        if item["field"] != "committee_notified":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_meeting_minutes(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("meeting_minutes"):
+            meeting_minutes = value["meeting_minutes"]
+            meeting_minutes = {
+                "id": str(meeting_minutes.get("id")),
+                "name": meeting_minutes.get("original_filename"),
+            }
+            value["meeting_minutes"] = meeting_minutes
+        return value
+
+    for item in history:
+        if item["field"] != "meeting_minutes":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_wto_notified_status(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("wto_notified_status"):
+            value["wto_notified_status"] = {
+                "wto_has_been_notified": value["wto_has_been_notified"],
+                "wto_should_be_notified": value["wto_should_be_notified"],
+            }
+        return value
+
+    for item in history:
+        if item["field"] != "wto_notified_status":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_committee_notification_document(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("committee_notification_document"):
+            committee_notification_document = value["committee_notification_document"]
+            committee_notification_document = {
+                "id": str(committee_notification_document.get("id")),
+                "name": committee_notification_document.get("original_filename"),
+            }
+            value["committee_notification_document"] = committee_notification_document
+        return value
+
+    for item in history:
+        if item["field"] != "committee_notification_document":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])

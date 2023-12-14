@@ -50,7 +50,7 @@ from api.history.v2.enrichment import (
     enrich_committee_notification_document,
     enrich_committee_notified,
     enrich_committee_raised_in,
-    enrich_minutes,
+    enrich_meeting_minutes,
     enrich_wto_notified_status,
 )
 
@@ -87,7 +87,7 @@ def enrich_full_history(
     enrich_committee_notification_document(wto_history)
     enrich_committee_notified(wto_history)
     enrich_committee_raised_in(wto_history)
-    enrich_minutes(wto_history)
+    enrich_meeting_minutes(wto_history)
     enrich_wto_notified_status(wto_history)
 
     enriched_history = (
