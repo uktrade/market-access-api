@@ -54,7 +54,7 @@ from api.history.v2.enrichment import (
     enrich_wto_notified_status,
 )
 
-FieldMapping = namedtuple("FieldMapping", "query_name name")
+FieldMapping = namedtuple("FieldMapping", ["query_name", "name"])
 
 
 def convert_v2_history_to_legacy_object(items: List) -> List:

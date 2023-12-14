@@ -99,7 +99,7 @@ class WTOProfile(models.Model):
     def get_history(cls, barrier_id, start_date=None):
 
         # due to circlar import, we need to import here
-        from api.history.v2.service import get_model_history
+        from api.history.v2.service import get_model_history, FieldMapping
 
         if not start_date:
             qs = cls.history.filter(barrier__id=barrier_id)
@@ -117,7 +117,7 @@ class WTOProfile(models.Model):
             "member_states",
             "committee_raised_in",
             "raised_date",
-            "wto_notified_status",
+            ["wto_has_been_notified", "wto_should_be_notified"],
         )
         return get_model_history(
             qs,

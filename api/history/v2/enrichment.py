@@ -255,20 +255,12 @@ def enrich_meeting_minutes(history: List[Dict]):
 
 
 def enrich_wto_notified_status(history: List[Dict]):
-    def enrich(value):
-        if value and value.get("wto_notified_status"):
-            value["wto_notified_status"] = {
-                "wto_has_been_notified": value["wto_has_been_notified"],
-                "wto_should_be_notified": value["wto_should_be_notified"],
-            }
-        return value
 
     for item in history:
-        if item["field"] != "wto_notified_status":
+        if item["field"] != "wto_has_been_notified":
             continue
 
-        item["old_value"] = enrich(item["old_value"])
-        item["new_value"] = enrich(item["new_value"])
+        item["field"] = "wto_notified_status"
 
 
 def enrich_committee_notification_document(history: List[Dict]):
