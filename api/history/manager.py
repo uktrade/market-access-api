@@ -94,7 +94,9 @@ class HistoryManager:
             barrier_id=barrier.pk
         )
 
-        v2_wto_history = WTOProfile.get_history(barrier_id=barrier.pk)
+        v2_wto_history = WTOProfile.get_history(
+            barrier_id=barrier.pk, start_date=start_date
+        )
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
@@ -123,7 +125,7 @@ class HistoryManager:
         history += cls.get_strategic_assessment_history(
             barrier.pk, start_date=start_date
         )
-        history += cls.get_wto_history(barrier.pk, start_date=start_date)
+        # history += cls.get_wto_history(barrier.pk, start_date=start_date)
 
         if start_date:
             history += cls.get_team_history(
