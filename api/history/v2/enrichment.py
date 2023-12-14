@@ -7,7 +7,8 @@ from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_RATING,
     PRIORITY_LEVELS,
     TOP_PRIORITY_BARRIER_STATUS,
-    TRADE_CATEGORIES,
+    TRADE_CATEGORIES, ECONOMIC_ASSESSMENT_IMPACT, RESOLVABILITY_ASSESSMENT_TIME, RESOLVABILITY_ASSESSMENT_EFFORT,
+    STRATEGIC_ASSESSMENT_SCALE,
 )
 from api.metadata.utils import (
     get_country,
@@ -205,6 +206,54 @@ def enrich_rating(history: List[Dict]):
 
     for item in history:
         if item["field"] != "rating":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_impact(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"code": value, "name": ECONOMIC_ASSESSMENT_IMPACT[value]}
+
+    for item in history:
+        if item["field"] != "impact":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_time_to_resolve(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": RESOLVABILITY_ASSESSMENT_TIME[value]}
+
+    for item in history:
+        if item["field"] != "time_to_resolve":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_effort_to_resolve(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": RESOLVABILITY_ASSESSMENT_EFFORT[value]}
+
+    for item in history:
+        if item["field"] != "effort_to_resolve":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_scale_history(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": STRATEGIC_ASSESSMENT_SCALE[value]}
+
+    for item in history:
+        if item["field"] != "scale":
             continue
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])

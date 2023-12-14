@@ -215,6 +215,24 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
                         economic_impact_assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
 
+    @classmethod
+    def get_history(cls, barrier_id: str, fields: Optional[List] = None):
+        qs = cls.history.filter(economic_assessment__barrier_id=barrier_id)
+        default_fields = (
+            "archived",
+            "explanation",
+            "impact",  # Needs enrichment
+        )
+        if fields is None:
+            fields = default_fields
+
+        return get_model_history(
+            qs,
+            model="economic_impact_assessment",
+            fields=fields,
+            track_first_item=True,
+        )
+
 
 class ResolvabilityAssessment(
     ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel
@@ -247,6 +265,26 @@ class ResolvabilityAssessment(
             ):
                 assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
+
+    @classmethod
+    def get_history(cls, barrier_id: str, fields: Optional[List] = None):
+        qs = cls.history.filter(barrier_id=barrier_id)
+        default_fields = (
+            "approved",
+            "archived",
+            "effort_to_resolve",  # Needs enrichment
+            "explanation",
+            "time_to_resolve",  # Needs enrichment
+        )
+        if fields is None:
+            fields = default_fields
+
+        return get_model_history(
+            qs,
+            model="resolvability_assessment",
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class StrategicAssessment(
@@ -281,3 +319,28 @@ class StrategicAssessment(
             for assessment in self.barrier.strategic_assessments.filter(archived=False):
                 assessment.archive(user=self.created_by)
         super().save(*args, **kwargs)
+
+    @classmethod
+    def get_history(cls, barrier_id: str, fields: Optional[List] = None):
+        qs = cls.history.filter(barrier_id=barrier_id)
+        default_fields = (
+            "approved",
+            "archived",
+            "hmg_strategy",
+            "government_policy",
+            "trading_relations",
+            "uk_interest_and_security",
+            "uk_grants",
+            "competition",
+            "additional_information",
+            "scale"
+        )
+        if fields is None:
+            fields = default_fields
+
+        return get_model_history(
+            qs,
+            model="strategic_assessment",
+            fields=fields,
+            track_first_item=True,
+        )
