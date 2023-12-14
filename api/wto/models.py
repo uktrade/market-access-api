@@ -96,15 +96,12 @@ class WTOProfile(models.Model):
     history = HistoricalRecords(bases=[WTOProfileHistoricalModel])
 
     @classmethod
-    def get_history(cls, barrier_id, status_date=None):
+    def get_history(cls, barrier_id):
 
         # due to circlar import, we need to import here
         from api.history.v2.service import get_model_history
 
-        if not status_date:
-            qs = cls.history.filter(barrier__id=barrier_id)
-        else:
-            qs = cls.history.filter(barrier__id=barrier_id, start_date=status_date)
+        qs = cls.history.filter(barrier__id=barrier_id)
 
         fields = (
             "case_number",

@@ -94,9 +94,7 @@ class HistoryManager:
             barrier_id=barrier.pk
         )
 
-        v2_wto_history = WTOProfile.get_history(
-            barrier_id=barrier.pk, status_date=start_date
-        )
+        v2_wto_history = WTOProfile.get_history(barrier_id=barrier.pk)
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
