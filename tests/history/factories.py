@@ -1,6 +1,8 @@
 import factory
 
 from api.barriers.models import Barrier, ProgrammeFundProgressUpdate
+from api.metadata.constants import BARRIER_TYPE_CATEGORIES
+from api.metadata.models import Category
 
 
 class BarrierFactory(factory.django.DjangoModelFactory):
@@ -10,9 +12,9 @@ class BarrierFactory(factory.django.DjangoModelFactory):
     trade_direction = 1
     sectors_affected = True
     sectors = ["af959812-6095-e211-a939-e4115bead28a"]
-    product = factory.Sequence(lambda n: "Product {}".format(n + 1))
+    product = "TEST PRODUCT"
     source = "COMPANY"
-    title = factory.Sequence(lambda n: "Barrier {}".format(n + 1))
+    title = "TEST BARRIER"
     summary = "Some problem description."
     next_steps_summary = "Some steps to be taken."
     top_priority_status = "NONE"
@@ -21,6 +23,13 @@ class BarrierFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Barrier
+
+
+class CategoryFactory(factory.django.DjangoModelFactory):
+    category = BARRIER_TYPE_CATEGORIES.SERVICES
+
+    class Meta:
+        model = Category
 
 
 class ProgrammeFundProgressUpdateFactory(factory.django.DjangoModelFactory):

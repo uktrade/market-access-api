@@ -1,6 +1,11 @@
 import datetime
 
-from api.barriers.models import ProgrammeFundProgressUpdate
+from api.barriers.models import (
+    Barrier,
+    BarrierTopPrioritySummary,
+    ProgrammeFundProgressUpdate,
+)
+from api.wto.models import WTOProfile
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
@@ -19,9 +24,11 @@ from api.history.factories.action_plans import (
     ActionPlanMilestoneHistoryFactory,
     ActionPlanTaskHistoryFactory,
 )
-from api.history.factories.top_priority import BarrierTopPrioritySummaryHistoryFactory
 from api.history.models import CachedHistoryItem
-from api.history.v2.service import convert_v2_history_to_legacy_object
+from api.history.v2.service import (
+    convert_v2_history_to_legacy_object,
+    enrich_full_history,
+)
 
 
 class HistoryManager:
@@ -79,11 +86,28 @@ class HistoryManager:
         else:
             start_date = None
 
-        # TODO: Deprecate legacy history implementation for V2
-        history = cls.get_barrier_history(barrier.pk, start_date=start_date)
-        history += cls.get_top_priority_summary_history(
-            barrier.pk, start_date=start_date
+        v2_barrier_history = Barrier.get_history(barrier_id=barrier.pk)
+        v2_programme_fund_history = ProgrammeFundProgressUpdate.get_history(
+            barrier_id=barrier.pk
         )
+        v2_top_priority_summary_history = BarrierTopPrioritySummary.get_history(
+            barrier_id=barrier.pk
+        )
+
+        v2_wto_history = WTOProfile.get_history(
+            barrier_id=barrier.pk, status_date=start_date
+        )
+
+        v2_history = enrich_full_history(
+            barrier_history=v2_barrier_history,
+            programme_fund_history=v2_programme_fund_history,
+            top_priority_summary_history=v2_top_priority_summary_history,
+            wto_history=v2_wto_history,
+        )
+
+        history = convert_v2_history_to_legacy_object(v2_history)
+
+        # TODO: Deprecate legacy history implementation for V2
         history += cls.get_action_plans_history(barrier.pk, start_date=start_date)
         history += cls.get_notes_history(barrier.pk, start_date=start_date)
         history += cls.get_delivery_confidence_history(
@@ -121,15 +145,6 @@ class HistoryManager:
             else:
                 history += cls.get_public_barrier_history(barrier.pk)
             history += cls.get_public_barrier_notes_history(barrier.pk)
-
-        # Create history items using v2
-        v2_history = []
-        v2_history.extend(
-            ProgrammeFundProgressUpdate.get_history(barrier_id=barrier.pk)
-        )
-        v2_history_to_legacy = convert_v2_history_to_legacy_object(v2_history)
-        # Convert v2 history items and add to legacy history
-        history.extend(v2_history_to_legacy)
 
         return history
 
@@ -215,24 +230,6 @@ class HistoryManager:
             )
 
         return BarrierHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_top_priority_summary_history(
-        cls, barrier_id, fields=(), start_date=None, use_cache=False
-    ):
-        if use_cache:
-            return cls.get_cached_history_items(
-                barrier_id,
-                model="barrier_top_priority_summary",
-                fields=fields,
-                start_date=start_date,
-            )
-
-        return BarrierTopPrioritySummaryHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,

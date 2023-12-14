@@ -119,14 +119,16 @@ class ActionPlanTaskAssignedToHistoryItem(ActionPlanTaskHistoryItem):
     def get_value(self, record):
         try:
             # Check that the user exists
-            user = getattr(record, "assigned_to", None)
-        except ObjectDoesNotExist:
+            assigned_to_user = getattr(record, "assigned_to", None)
+            if not assigned_to_user:
+                raise ValueError
+        except (ObjectDoesNotExist, ValueError):
             # default to me if user does not exist.
-            backup_user = get_default_user()
-            record.user = backup_user
+            assigned_to_user = get_default_user()
+            record.assigned_to = assigned_to_user
             record.save()
 
-        return self._format_user(record.assigned_to).get("name")
+        return self._format_user(assigned_to_user).get("name")
 
 
 class ActionPlanTaskStakeholdersHistoryItem(ActionPlanTaskHistoryItem):
