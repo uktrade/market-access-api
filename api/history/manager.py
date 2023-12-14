@@ -1,7 +1,11 @@
 import datetime
 
-from api.assessment.models import EconomicAssessment, EconomicImpactAssessment, ResolvabilityAssessment, \
-    StrategicAssessment
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.barriers.models import (
     Barrier,
     BarrierTopPrioritySummary,
@@ -10,12 +14,9 @@ from api.barriers.models import (
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
-    EconomicImpactAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
     PublicBarrierNoteHistoryFactory,
-    ResolvabilityAssessmentHistoryFactory,
-    StrategicAssessmentHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
@@ -25,7 +26,11 @@ from api.history.factories.action_plans import (
     ActionPlanTaskHistoryFactory,
 )
 from api.history.models import CachedHistoryItem
-from api.history.v2.enrichment import enrich_scale_history, enrich_impact, enrich_time_to_resolve
+from api.history.v2.enrichment import (
+    enrich_impact,
+    enrich_scale_history,
+    enrich_time_to_resolve,
+)
 from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
@@ -56,7 +61,9 @@ class HistoryManager:
         v2_economic_impact_assessment_history = EconomicImpactAssessment.get_history(
             barrier_id=barrier.pk, fields=["impact"]
         )
-        v2_strategic_assessment_history = StrategicAssessment.get_history(barrier_id=barrier.pk, fields=["scale"])
+        v2_strategic_assessment_history = StrategicAssessment.get_history(
+            barrier_id=barrier.pk, fields=["scale"]
+        )
 
         enrich_scale_history(v2_strategic_assessment_history)
         enrich_impact(v2_strategic_assessment_history)
@@ -106,7 +113,9 @@ class HistoryManager:
         v2_resolvability_assessment_history = ResolvabilityAssessment.get_history(
             barrier_id=barrier.pk
         )
-        v2_strategic_assessment_history = StrategicAssessment.get_history(barrier_id=barrier.pk)
+        v2_strategic_assessment_history = StrategicAssessment.get_history(
+            barrier_id=barrier.pk
+        )
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
@@ -115,7 +124,7 @@ class HistoryManager:
             economic_assessment_history=v2_economic_assessment_history,
             economic_impact_assessment_history=v2_economic_impact_assessment_history,
             resolvability_assessment_history=v2_resolvability_assessment_history,
-            strategic_assessment_history=v2_strategic_assessment_history
+            strategic_assessment_history=v2_strategic_assessment_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
@@ -190,24 +199,6 @@ class HistoryManager:
         if fields:
             queryset = queryset.filter(field__in=fields)
         return [item.as_history_item() for item in queryset]
-
-    @classmethod
-    def get_economic_impact_assessment_history(
-        cls, barrier_id, fields=(), start_date=None, use_cache=False
-    ):
-        if use_cache:
-            return cls.get_cached_history_items(
-                barrier_id,
-                model="economic_impact_assessment",
-                fields=fields,
-                start_date=start_date,
-            )
-
-        return EconomicImpactAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
 
     @classmethod
     def get_barrier_history(
@@ -308,42 +299,6 @@ class HistoryManager:
             )
 
         return PublicBarrierNoteHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_resolvability_assessment_history(
-        cls, barrier_id, fields=(), start_date=None, use_cache=False
-    ):
-        if use_cache:
-            return cls.get_cached_history_items(
-                barrier_id,
-                model="resolvability_assessment",
-                fields=fields,
-                start_date=start_date,
-            )
-
-        return ResolvabilityAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_strategic_assessment_history(
-        cls, barrier_id, fields=(), start_date=None, use_cache=False
-    ):
-        if use_cache:
-            return cls.get_cached_history_items(
-                barrier_id,
-                model="strategic_assessment",
-                fields=fields,
-                start_date=start_date,
-            )
-
-        return StrategicAssessmentHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,

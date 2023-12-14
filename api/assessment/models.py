@@ -333,7 +333,7 @@ class StrategicAssessment(
             "uk_grants",
             "competition",
             "additional_information",
-            "scale"
+            "scale",
         )
         if fields is None:
             fields = default_fields

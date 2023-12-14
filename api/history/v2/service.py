@@ -41,13 +41,17 @@ from django.db.models import QuerySet
 from api.history.v2.enrichment import (
     enrich_commodities,
     enrich_country,
+    enrich_effort_to_resolve,
+    enrich_impact,
     enrich_main_sector,
     enrich_priority_level,
     enrich_rating,
+    enrich_scale_history,
     enrich_sectors,
     enrich_status,
+    enrich_time_to_resolve,
     enrich_top_priority_status,
-    enrich_trade_category, enrich_impact, enrich_time_to_resolve, enrich_effort_to_resolve, enrich_scale_history,
+    enrich_trade_category,
 )
 
 FieldMapping = namedtuple("FieldMapping", "query_name name")
@@ -67,7 +71,7 @@ def enrich_full_history(
     economic_assessment_history: List[Dict],
     economic_impact_assessment_history: List[Dict],
     resolvability_assessment_history: List[Dict],
-    strategic_assessment_history: List[Dict]
+    strategic_assessment_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
