@@ -5,7 +5,6 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-from api.history.v2.service import get_model_history
 from api.interactions.models import Document
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -98,6 +97,10 @@ class WTOProfile(models.Model):
 
     @classmethod
     def get_history(cls, barrier_id, status_date=None):
+
+        # due to circlar import, we need to import here
+        from api.history.v2.service import get_model_history
+
         if not status_date:
             qs = cls.history.filter(barrier__id=barrier_id)
         else:
