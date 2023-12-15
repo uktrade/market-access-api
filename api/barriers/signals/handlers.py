@@ -368,5 +368,3 @@ def barrier_changed_after_published(sender, instance, **kwargs):
             ):
                 public_barrier.changed_since_public = True
                 public_barrier.save()
-
-    # do something
