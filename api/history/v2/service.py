@@ -52,6 +52,13 @@ from api.history.v2.enrichment import (
     enrich_top_priority_status,
     enrich_trade_category,
     enrich_wto_notified_status,
+    enrich_public_barrier_note_archived,
+    enrich_public_barrier_categories,
+    enrich_public_barrier_light_touch_reviews,
+    enrich_public_barrier_location,
+    enrich_public_barrier_sectors,
+    enrich_public_barrier_public_view_status,
+    enrich_public_barrier_status,
 )
 
 FieldMapping = namedtuple("FieldMapping", ["query_name", "name"])
@@ -69,6 +76,9 @@ def enrich_full_history(
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
     wto_history: List[Dict],
+    team_member_history: List[Dict],
+    public_barrier_history: Union[List[Dict], None],
+    public_barrier_notes_history: Union[List[Dict], None],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -90,8 +100,25 @@ def enrich_full_history(
     enrich_meeting_minutes(wto_history)
     enrich_wto_notified_status(wto_history)
 
+    if public_barrier_history:
+        enrich_public_barrier_categories(public_barrier_history)
+        enrich_public_barrier_light_touch_reviews(public_barrier_history)
+        enrich_public_barrier_location(public_barrier_history)
+        enrich_public_barrier_sectors(public_barrier_history)
+        enrich_public_barrier_public_view_status(public_barrier_history)
+        enrich_public_barrier_status(public_barrier_history)
+
+    if public_barrier_notes_history:
+        enrich_public_barrier_note_archived(public_barrier_notes_history)
+
     enriched_history = (
-        barrier_history + programme_fund_history + top_priority_summary_history
+        barrier_history
+        + programme_fund_history
+        + top_priority_summary_history
+        + wto_history
+        + team_member_history
+        + public_barrier_history
+        + public_barrier_notes_history
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 

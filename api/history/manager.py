@@ -4,6 +4,7 @@ from api.barriers.models import (
     Barrier,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
+    PublicBarrier,
 )
 from api.history.factories import (
     BarrierHistoryFactory,
@@ -29,6 +30,8 @@ from api.history.v2.service import (
     enrich_full_history,
 )
 from api.wto.models import WTOProfile
+from api.collaboration.models import TeamMember
+from api.interactions.models import PublicBarrierNote
 
 
 class HistoryManager:
@@ -98,11 +101,34 @@ class HistoryManager:
             barrier_id=barrier.pk, start_date=start_date
         )
 
+        v2_team_member_history = (
+            TeamMember.get_history(barrier_id=barrier.pk, start_date=start_date)
+            if start_date
+            else TeamMember.get_history(barrier_id=barrier.pk)
+        )
+
+        v2_public_barrier_history = None
+        v2_public_barrier_notes_history = None
+
+        if barrier.has_public_barrier:
+            if ignore_creation_items:
+                v2_public_barrier_history = PublicBarrierNote.get_history(
+                    barrier.pk,
+                    start_date=barrier.public_barrier.created_on
+                    + datetime.timedelta(seconds=1),
+                )
+            else:
+                v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
+            v2_public_barrier_notes_history = PublicBarrierNote.get_history(barrier.pk)
+
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
             programme_fund_history=v2_programme_fund_history,
             top_priority_summary_history=v2_top_priority_summary_history,
             wto_history=v2_wto_history,
+            team_member_history=v2_team_member_history,
+            public_barrier_history=v2_public_barrier_history,
+            public_barrier_notes_history=v2_public_barrier_notes_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
@@ -125,26 +151,6 @@ class HistoryManager:
         history += cls.get_strategic_assessment_history(
             barrier.pk, start_date=start_date
         )
-        # history += cls.get_wto_history(barrier.pk, start_date=start_date)
-
-        if start_date:
-            history += cls.get_team_history(
-                barrier.pk,
-                start_date=start_date + datetime.timedelta(seconds=1),
-            )
-        else:
-            history += cls.get_team_history(barrier.pk)
-
-        if barrier.has_public_barrier:
-            if ignore_creation_items:
-                history += cls.get_public_barrier_history(
-                    barrier.pk,
-                    start_date=barrier.public_barrier.created_on
-                    + datetime.timedelta(seconds=1),
-                )
-            else:
-                history += cls.get_public_barrier_history(barrier.pk)
-            history += cls.get_public_barrier_notes_history(barrier.pk)
 
         return history
 

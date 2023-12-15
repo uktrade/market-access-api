@@ -1,12 +1,15 @@
 """
 Enrichments to historical data as done by legacy.
 """
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from api.metadata.constants import (
     PRIORITY_LEVELS,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
+    BarrierStatus,
+    PublicBarrierStatus,
 )
 from api.metadata.utils import (
     get_country,
@@ -276,6 +279,129 @@ def enrich_committee_notification_document(history: List[Dict]):
 
     for item in history:
         if item["field"] != "committee_notification_document":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_note_archived(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("archived") is not None:
+            value["archived"] = {"archived": value["archived"], "text": value["text"]}
+        return value
+
+    for item in history:
+        if item["field"] != "archived":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_categories(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("categories"):
+            value["categories"] = value.get("categories_cache") or []
+        return value
+
+    for item in history:
+        if item["field"] != "categories":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_light_touch_reviews(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("light_touch_reviews"):
+            value["light_touch_reviews"] = value.get("light_touch_reviews_cache")
+        return value
+
+    for item in history:
+        if item["field"] != "light_touch_reviews":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_location(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("location"):
+            value["location"] = get_location_text(
+                country_id=value["country"],
+                trading_bloc=value["trading_bloc"],
+                caused_by_trading_bloc=value["caused_by_trading_bloc"],
+            )
+        return value
+
+    for item in history:
+        if item["field"] != "location":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_sectors(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("sectors"):
+            value["sectors"] = {
+                "sectors": [str(sector) for sector in value["sectors"]],
+                "all_sectors": value["all_sectors"],
+            }
+        return value
+
+    for item in history:
+        if item["field"] != "sectors":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_public_view_status(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("public_view_status"):
+            barrier_record = value["barrier"].history.as_of(
+                value["history_date"] + datetime.timedelta(seconds=1)
+            )
+
+            value["public_view_status"] = {
+                "id": value["public_view_status"],
+                "name": PublicBarrierStatus.choices[value["public_view_status"]],
+            }
+            value["public_eligibility"] = barrier_record.public_eligibility
+            value[
+                "public_eligibility_summary"
+            ] = barrier_record.public_eligibility_summary
+        return value
+
+    for item in history:
+        if item["field"] != "public_view_status":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_status(history: List[Dict]):
+    def is_resolved(status: str):
+        return status == BarrierStatus.RESOLVED_IN_FULL
+
+    def enrich(value):
+        if value and value.get("status"):
+            value["status"] = {
+                "status": str(value["status"]),
+                "status_date": value["status_date"],
+                "is_resolved": is_resolved(str(value["status"])),
+            }
+        return value
+
+    for item in history:
+        if item["field"] != "status":
             continue
 
         item["old_value"] = enrich(item["old_value"])

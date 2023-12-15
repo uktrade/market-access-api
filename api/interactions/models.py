@@ -208,6 +208,27 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
 
+    @classmethod
+    def get_history(cls, barrier_id, start_date=None):
+        # due to circlar import, we need to import here
+        from api.history.v2.service import get_model_history
+
+        qs = (
+            cls.history.filter(barrier_id=barrier_id, history_date__gte=start_date)
+            if start_date
+            else cls.history.filter(barrier_id=barrier_id)
+        )
+
+        fields = (
+            "text",
+            "archived",
+        )
+        return get_model_history(
+            qs,
+            model="public_barrier_note",
+            fields=fields,
+        )
+
 
 # Manual made types from readability
 user_type = settings.AUTH_USER_MODEL
