@@ -1,6 +1,4 @@
 from .core import HistoryItemFactory  # noqa
-from .delivery_confidence import DeliveryConfidenceHistoryFactory  # noqa
-from .notes import NoteHistoryFactory  # noqa
 from .public_barrier_notes import PublicBarrierNoteHistoryFactory  # noqa
 from .public_barriers import PublicBarrierHistoryFactory  # noqa
 from .team_members import TeamMemberHistoryFactory  # noqa

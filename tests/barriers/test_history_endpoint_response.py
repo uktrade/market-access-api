@@ -393,7 +393,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             text="Original note",
             created_by=self.mock_user,
         )
-        initial_documents = list(note.documents.all())
         note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
         note.save()
 
@@ -405,7 +404,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "date": "2020-04-01T00:00:00Z",
             "model": "note",
             "field": "documents",
-            "old_value": initial_documents,
+            "old_value": "",
             "new_value": [
                 {"id": "eda7ee4e-4786-4507-a0ed-05a10169764b", "name": "cat.jpg"}
             ],
