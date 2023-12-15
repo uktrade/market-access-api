@@ -126,7 +126,7 @@ class EconomicAssessment(
             "explanation",
             "export_value",
             "import_market_size",
-            "rating",  # Needs enrichment
+            "rating",
             "ready_for_approval",
             "value_to_economy",
         )
@@ -221,7 +221,7 @@ class EconomicImpactAssessment(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         default_fields = (
             "archived",
             "explanation",
-            "impact",  # Needs enrichment
+            "impact",
         )
         if fields is None:
             fields = default_fields
@@ -272,9 +272,9 @@ class ResolvabilityAssessment(
         default_fields = (
             "approved",
             "archived",
-            "effort_to_resolve",  # Needs enrichment
+            "effort_to_resolve",
             "explanation",
-            "time_to_resolve",  # Needs enrichment
+            "time_to_resolve",
         )
         if fields is None:
             fields = default_fields

@@ -148,15 +148,6 @@ class HistoryManager:
         history += cls.get_delivery_confidence_history(
             barrier.pk, start_date=start_date
         )
-        # history += cls.get_economic_impact_assessment_history(
-        #     barrier.pk, start_date=start_date
-        # )
-        # history += cls.get_resolvability_assessment_history(
-        #     barrier.pk, start_date=start_date
-        # )
-        # history += cls.get_strategic_assessment_history(
-        #     barrier.pk, start_date=start_date
-        # )
         history += cls.get_wto_history(barrier.pk, start_date=start_date)
 
         if start_date:
