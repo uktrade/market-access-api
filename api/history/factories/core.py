@@ -1,6 +1,5 @@
 from ..exceptions import HistoryFactoryNotFound
 from ..utils import get_model_name
-
 from .notes import NoteHistoryFactory
 from .public_barrier_notes import PublicBarrierNoteHistoryFactory
 from .public_barriers import PublicBarrierHistoryFactory

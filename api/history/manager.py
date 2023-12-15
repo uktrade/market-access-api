@@ -27,8 +27,8 @@ from api.history.factories.action_plans import (
 from api.history.v2.enrichment import (
     enrich_impact,
     enrich_scale_history,
-    enrich_time_to_resolve,
     enrich_status,
+    enrich_time_to_resolve,
 )
 from api.history.v2.service import (
     FieldMapping,
