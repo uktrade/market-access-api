@@ -41,10 +41,15 @@ from django.db.models import QuerySet
 from api.history.v2.enrichment import (
     enrich_commodities,
     enrich_country,
+    enrich_effort_to_resolve,
+    enrich_impact,
     enrich_main_sector,
     enrich_priority_level,
+    enrich_rating,
+    enrich_scale_history,
     enrich_sectors,
     enrich_status,
+    enrich_time_to_resolve,
     enrich_top_priority_status,
     enrich_trade_category,
 )
@@ -63,6 +68,10 @@ def enrich_full_history(
     barrier_history: List[Dict],
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
+    economic_assessment_history: List[Dict],
+    economic_impact_assessment_history: List[Dict],
+    resolvability_assessment_history: List[Dict],
+    strategic_assessment_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -74,13 +83,24 @@ def enrich_full_history(
     enrich_sectors(barrier_history)
     enrich_status(barrier_history)
     enrich_commodities(barrier_history)
+    enrich_rating(economic_assessment_history)
     enrich_top_priority_status(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,
     )
+    enrich_impact(economic_impact_assessment_history)
+    enrich_time_to_resolve(resolvability_assessment_history)
+    enrich_effort_to_resolve(resolvability_assessment_history)
+    enrich_scale_history(strategic_assessment_history)
 
     enriched_history = (
-        barrier_history + programme_fund_history + top_priority_summary_history
+        barrier_history
+        + programme_fund_history
+        + top_priority_summary_history
+        + economic_assessment_history
+        + economic_impact_assessment_history
+        + resolvability_assessment_history
+        + strategic_assessment_history
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 

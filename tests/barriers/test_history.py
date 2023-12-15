@@ -13,7 +13,6 @@ from api.core.test_utils import APITestMixin
 from api.core.utils import cleansed_username
 from api.history.factories import (
     DeliveryConfidenceHistoryFactory,
-    EconomicAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
     PublicBarrierNoteHistoryFactory,
@@ -23,6 +22,7 @@ from api.history.factories.action_plans import ActionPlanTaskHistoryFactory
 from api.history.items.action_plans import get_default_user
 from api.history.v2.enrichment import (
     enrich_priority_level,
+    enrich_rating,
     enrich_sectors,
     enrich_status,
 )
@@ -392,10 +392,8 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.explanation = "New explanation"
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
+        v2_history = EconomicAssessment.get_history(barrier_id=self.barrier.pk)
+        data = v2_history[-1]
 
         assert data["model"] == "economic_assessment"
         assert data["field"] == "explanation"
@@ -406,10 +404,9 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.rating = "HIGH"
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
+        v2_history = EconomicAssessment.get_history(barrier_id=self.barrier.pk)
+        enrich_rating(v2_history)
+        data = v2_history[-1]
 
         assert data["model"] == "economic_assessment"
         assert data["field"] == "rating"
@@ -419,11 +416,8 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
     def test_documents_history(self):
         self.assessment.documents.add("fdb0624e-a549-4f70-b9a2-68896e4d1141")
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-
-        data = items[-1].data
+        v2_history = EconomicAssessment.get_history(barrier_id=self.barrier.pk)
+        data = v2_history[-1]
 
         assert data["model"] == "economic_assessment"
         assert data["field"] == "documents"
@@ -439,10 +433,8 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.export_value = 2222
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
+        v2_history = EconomicAssessment.get_history(barrier_id=self.barrier.pk)
+        data = v2_history[-1]
 
         assert data["model"] == "economic_assessment"
         assert data["field"] == "export_value"
@@ -453,10 +445,8 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.import_market_size = 3333
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
+        v2_history = EconomicAssessment.get_history(barrier_id=self.barrier.pk)
+        data = v2_history[-1]
 
         assert data["model"] == "economic_assessment"
         assert data["field"] == "import_market_size"
@@ -467,10 +457,8 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         self.assessment.value_to_economy = 4444
         self.assessment.save()
 
-        items = EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
+        v2_history = EconomicAssessment.get_history(barrier_id=self.barrier.pk)
+        data = v2_history[-1]
 
         assert data["model"] == "economic_assessment"
         assert data["field"] == "value_to_economy"

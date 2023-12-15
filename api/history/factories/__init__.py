@@ -1,7 +1,3 @@
-from .assessments.economic import EconomicAssessmentHistoryFactory  # noqa
-from .assessments.economic_impact import EconomicImpactAssessmentHistoryFactory  # noqa
-from .assessments.resolvability import ResolvabilityAssessmentHistoryFactory  # noqa
-from .assessments.strategic import StrategicAssessmentHistoryFactory  # noqa
 from .core import HistoryItemFactory  # noqa
 from .delivery_confidence import DeliveryConfidenceHistoryFactory  # noqa
 from .notes import NoteHistoryFactory  # noqa

@@ -4,7 +4,12 @@ Enrichments to historical data as done by legacy.
 from typing import Dict, List, Optional
 
 from api.metadata.constants import (
+    ECONOMIC_ASSESSMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_RATING,
     PRIORITY_LEVELS,
+    RESOLVABILITY_ASSESSMENT_EFFORT,
+    RESOLVABILITY_ASSESSMENT_TIME,
+    STRATEGIC_ASSESSMENT_SCALE,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
 )
@@ -193,5 +198,65 @@ def enrich_commodities(history: List[Dict]):
         if item["field"] != "commodities":
             continue
 
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_rating(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": ECONOMIC_ASSESSMENT_RATING[value]}
+
+    for item in history:
+        if item["field"] != "rating":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_impact(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"code": value, "name": ECONOMIC_ASSESSMENT_IMPACT[value]}
+
+    for item in history:
+        if item["field"] != "impact":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_time_to_resolve(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": RESOLVABILITY_ASSESSMENT_TIME[value]}
+
+    for item in history:
+        if item["field"] != "time_to_resolve":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_effort_to_resolve(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": RESOLVABILITY_ASSESSMENT_EFFORT[value]}
+
+    for item in history:
+        if item["field"] != "effort_to_resolve":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_scale_history(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": STRATEGIC_ASSESSMENT_SCALE[value]}
+
+    for item in history:
+        if item["field"] != "scale":
+            continue
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])

@@ -1,5 +1,11 @@
 import datetime
 
+from api.assessment.models import (
+    EconomicAssessment,
+    EconomicImpactAssessment,
+    ResolvabilityAssessment,
+    StrategicAssessment,
+)
 from api.barriers.models import (
     Barrier,
     BarrierTopPrioritySummary,
@@ -7,13 +13,9 @@ from api.barriers.models import (
 )
 from api.history.factories import (
     DeliveryConfidenceHistoryFactory,
-    EconomicAssessmentHistoryFactory,
-    EconomicImpactAssessmentHistoryFactory,
     NoteHistoryFactory,
     PublicBarrierHistoryFactory,
     PublicBarrierNoteHistoryFactory,
-    ResolvabilityAssessmentHistoryFactory,
-    StrategicAssessmentHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
 )
@@ -22,7 +24,12 @@ from api.history.factories.action_plans import (
     ActionPlanMilestoneHistoryFactory,
     ActionPlanTaskHistoryFactory,
 )
-from api.history.v2.enrichment import enrich_status
+from api.history.v2.enrichment import (
+    enrich_impact,
+    enrich_scale_history,
+    enrich_status,
+    enrich_time_to_resolve,
+)
 from api.history.v2.service import (
     FieldMapping,
     convert_v2_history_to_legacy_object,
@@ -59,25 +66,33 @@ class HistoryManager:
             ],
             track_first_item=True,
         )
+
+        v2_economic_assessment_history = EconomicAssessment.get_history(
+            barrier_id=barrier.pk, fields=["rating"]
+        )
+        v2_resolvability_assessment_history = ResolvabilityAssessment.get_history(
+            barrier_id=barrier.pk, fields=["time_to_resolve"]
+        )
+        v2_economic_impact_assessment_history = EconomicImpactAssessment.get_history(
+            barrier_id=barrier.pk, fields=["impact"]
+        )
+        v2_strategic_assessment_history = StrategicAssessment.get_history(
+            barrier_id=barrier.pk, fields=["scale"]
+        )
         enrich_status(v2_barrier_history)
         history = convert_v2_history_to_legacy_object(v2_barrier_history)
 
-        history += cls.get_economic_assessment_history(
-            barrier_id=barrier.pk,
-            fields=("rating",),
+        enrich_scale_history(v2_strategic_assessment_history)
+        enrich_impact(v2_strategic_assessment_history)
+        enrich_time_to_resolve(v2_strategic_assessment_history)
+
+        history += convert_v2_history_to_legacy_object(
+            v2_economic_assessment_history
+            + v2_resolvability_assessment_history
+            + v2_economic_impact_assessment_history
+            + v2_strategic_assessment_history
         )
-        history += cls.get_economic_impact_assessment_history(
-            barrier_id=barrier.pk,
-            fields=("impact",),
-        )
-        history += cls.get_resolvability_assessment_history(
-            barrier_id=barrier.pk,
-            fields=("time_to_resolve",),
-        )
-        history += cls.get_strategic_assessment_history(
-            barrier_id=barrier.pk,
-            fields=("scale",),
-        )
+
         return history
 
     @classmethod
@@ -102,11 +117,27 @@ class HistoryManager:
         v2_top_priority_summary_history = BarrierTopPrioritySummary.get_history(
             barrier_id=barrier.pk
         )
+        v2_economic_assessment_history = EconomicAssessment.get_history(
+            barrier_id=barrier.pk
+        )
+        v2_economic_impact_assessment_history = EconomicImpactAssessment.get_history(
+            barrier_id=barrier.pk
+        )
+        v2_resolvability_assessment_history = ResolvabilityAssessment.get_history(
+            barrier_id=barrier.pk
+        )
+        v2_strategic_assessment_history = StrategicAssessment.get_history(
+            barrier_id=barrier.pk
+        )
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
             programme_fund_history=v2_programme_fund_history,
             top_priority_summary_history=v2_top_priority_summary_history,
+            economic_assessment_history=v2_economic_assessment_history,
+            economic_impact_assessment_history=v2_economic_impact_assessment_history,
+            resolvability_assessment_history=v2_resolvability_assessment_history,
+            strategic_assessment_history=v2_strategic_assessment_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
@@ -115,18 +146,6 @@ class HistoryManager:
         history += cls.get_action_plans_history(barrier.pk, start_date=start_date)
         history += cls.get_notes_history(barrier.pk, start_date=start_date)
         history += cls.get_delivery_confidence_history(
-            barrier.pk, start_date=start_date
-        )
-        history += cls.get_economic_assessment_history(
-            barrier.pk, start_date=start_date
-        )
-        history += cls.get_economic_impact_assessment_history(
-            barrier.pk, start_date=start_date
-        )
-        history += cls.get_resolvability_assessment_history(
-            barrier.pk, start_date=start_date
-        )
-        history += cls.get_strategic_assessment_history(
             barrier.pk, start_date=start_date
         )
         history += cls.get_wto_history(barrier.pk, start_date=start_date)
@@ -153,26 +172,7 @@ class HistoryManager:
         return history
 
     @classmethod
-    def get_economic_assessment_history(cls, barrier_id, fields=(), start_date=None):
-        return EconomicAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_economic_impact_assessment_history(
-        cls, barrier_id, fields=(), start_date=None
-    ):
-        return EconomicImpactAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
     def get_action_plans_history(cls, barrier_id, fields=(), start_date=None):
-
         return [
             *ActionPlanHistoryFactory.get_history_items(
                 barrier_id=barrier_id,
@@ -219,24 +219,6 @@ class HistoryManager:
     @classmethod
     def get_public_barrier_notes_history(cls, barrier_id, fields=(), start_date=None):
         return PublicBarrierNoteHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_resolvability_assessment_history(
-        cls, barrier_id, fields=(), start_date=None
-    ):
-        return ResolvabilityAssessmentHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_strategic_assessment_history(cls, barrier_id, fields=(), start_date=None):
-        return StrategicAssessmentHistoryFactory.get_history_items(
             barrier_id=barrier_id,
             fields=fields,
             start_date=start_date,
