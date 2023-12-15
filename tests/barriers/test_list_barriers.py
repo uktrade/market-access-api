@@ -12,7 +12,6 @@ from rest_framework.test import APITestCase
 from api.barriers.models import Barrier
 from api.barriers.views import BarrierList
 from api.core.test_utils import APITestMixin, create_test_user
-from api.history.models import CachedHistoryItem
 from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
     BarrierStatus,
@@ -1227,7 +1226,6 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
             public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
             public_barrier__last_published_on="2020-08-01",
         )
-        CachedHistoryItem.objects.all().delete()
 
         # No barriers should have 'changed' since being published
         response = self.api_client.get(url)
@@ -1239,13 +1237,19 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         barrier1.priority = BarrierPriority.objects.get(code="MEDIUM")
         barrier1.save()
 
+        # assert 0
         # No barriers should have 'changed' since being published
         response = self.api_client.get(url)
         assert status.HTTP_200_OK == response.status_code
         assert 0 == response.data["count"]
 
         # Change a field that does affect the public barrier
-        barrier1.summary = "New summary"
+        # barrier1.summary = "New summary"
+        # barrier1.save()
+
+        c1 = CategoryFactory(title="31", description="311")
+        c2 = CategoryFactory(title="32", description="322")
+        barrier1.categories.add(c1.pk, c2.pk)
         barrier1.save()
 
         # barrier1 should now be in the search results for changed barriers
@@ -1254,6 +1258,15 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert 1 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id)]) == barrier_ids
+
+        barrier2.summary = "New summary"
+        barrier2.save()
+
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+        barrier_ids = set([result["id"] for result in response.data["results"]])
+        assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
 
         # Change a field that does affect the public barrier
         barrier2.sectors = ["9f38cecc-5f95-e211-a939-e4115bead28a"]
