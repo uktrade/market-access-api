@@ -9,7 +9,6 @@ from rest_framework import serializers
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.barriers.fields import ExportTypeReportField, LineBreakCharField
 from api.collaboration.models import TeamMember
-from api.history.models import CachedHistoryItem
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
@@ -19,7 +18,7 @@ from api.metadata.constants import (
     BarrierStatus,
 )
 
-from ..models import BarrierProgressUpdate, BarrierTopPrioritySummary
+from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
 from .mixins import AssessmentFieldsMixin
 
@@ -304,21 +303,19 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return [tag.title for tag in obj.tags.all()]
 
     def get_status_history(self, obj):
-        history_items = CachedHistoryItem.objects.filter(
-            barrier=obj,
-            model="barrier",
-            field="status",
+        history = Barrier.get_history(
+            barrier_id=obj.id, fields=["status"], track_first_item=True
         )
         status_lookup = dict(BarrierStatus.choices)
         return [
             {
-                "date": item.date.isoformat(),
+                "date": item["date"].isoformat(),
                 "status": {
-                    "id": item.new_record.status,
-                    "name": status_lookup.get(item.new_record.status, "Unknown"),
+                    "id": item["new_value"],
+                    "name": status_lookup.get(item["new_value"], "Unknown"),
                 },
             }
-            for item in history_items
+            for item in history
         ]
 
     def get_team_count(self, obj):

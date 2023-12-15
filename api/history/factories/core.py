@@ -1,6 +1,6 @@
 from ..exceptions import HistoryFactoryNotFound
 from ..utils import get_model_name
-from .barriers import BarrierHistoryFactory
+
 from .notes import NoteHistoryFactory
 from .public_barrier_notes import PublicBarrierNoteHistoryFactory
 from .public_barriers import PublicBarrierHistoryFactory
@@ -15,7 +15,6 @@ class HistoryItemFactory:
 
     class_lookup = {}
     history_factory_classes = (
-        BarrierHistoryFactory,
         NoteHistoryFactory,
         PublicBarrierHistoryFactory,
         PublicBarrierNoteHistoryFactory,

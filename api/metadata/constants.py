@@ -403,7 +403,7 @@ TOP_PRIORITY_BARRIER_STATUS = Choices(
     ("APPROVAL_PENDING", "Top 100 Approval Pending"),
     ("REMOVAL_PENDING", "Top 100 Removal Pending"),
     ("APPROVED", "Top 100 Priority"),
-    ("RESOLVED", "Resolved Top 100 Priority"),
+    ("RESOLVED", "Top 100 Priority Resolved"),
 )
 
 REGIONS_WITH_LEADS = {

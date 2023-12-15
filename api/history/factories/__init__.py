@@ -1,4 +1,3 @@
-from .barriers import BarrierHistoryFactory  # noqa
 from .core import HistoryItemFactory  # noqa
 from .delivery_confidence import DeliveryConfidenceHistoryFactory  # noqa
 from .notes import NoteHistoryFactory  # noqa
