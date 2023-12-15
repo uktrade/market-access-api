@@ -6,6 +6,7 @@ from api.barriers.models import (
     ProgrammeFundProgressUpdate,
     PublicBarrier,
 )
+from api.collaboration.models import TeamMember
 from api.history.factories import (
     BarrierHistoryFactory,
     DeliveryConfidenceHistoryFactory,
@@ -29,9 +30,8 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
 )
-from api.wto.models import WTOProfile
-from api.collaboration.models import TeamMember
 from api.interactions.models import PublicBarrierNote
+from api.wto.models import WTOProfile
 
 
 class HistoryManager:
