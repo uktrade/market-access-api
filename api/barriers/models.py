@@ -1338,8 +1338,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 "status",
                 "status_date",
             ],
-            "summary",
-            "title",
+            FieldMapping("barrier__status", "status"),
+            FieldMapping("barrier__title", "title"),
         )
 
         # Get all fields required - raw changes no enrichment
