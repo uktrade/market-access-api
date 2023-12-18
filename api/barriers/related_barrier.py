@@ -55,29 +55,15 @@ class SimilarityScoreMatrix(pd.DataFrame):
 
         for (
             current_barrier_id,
-            embeddings_dict,
+            current_barrier_embedding,
         ) in new_matrix.barrier_embeddings_dict.items():
             # looping through the barrier embeddings, and
             # computing the similarity scores between each and saving to the matrix
-            barrier_embedding = new_matrix.barrier_embeddings_dict[current_barrier_id]
-            similarity_scores_matrix_column = new_matrix.loc[current_barrier_id]
-            for (
-                relevant_barrier_id,
-                relevant_barrier_similarity_score,
-            ) in similarity_scores_matrix_column.items():
-                if relevant_barrier_id == current_barrier_id:
-                    continue
-                similarity_score = util.cos_sim(
-                    barrier_embedding,
-                    new_matrix.barrier_embeddings_dict[relevant_barrier_id],
-                )
-                # converting to float for easy JSON serialisation
-                float_similarity_score = similarity_score.item()
-
-                # saving to the matrix
-                new_matrix[current_barrier_id][
-                    relevant_barrier_id
-                ] = float_similarity_score
+            new_matrix.update_matrix(
+                barrier_id=current_barrier_id,
+                barrier_embedding=current_barrier_embedding,
+                save=False,
+            )
 
         return new_matrix.save_matrix()  # saving to JSON and caching
 
@@ -101,66 +87,6 @@ class SimilarityScoreMatrix(pd.DataFrame):
             else:
                 return cls.create_matrix()  # creating the matrix if it doesn't exist
 
-    def update_matrix(self, barrier_object) -> Self:
-        """Given a barrier id, update the similarity scores matrix column for that barrier.
-
-        Similarity scores are computed using cosine similarity between the barrier embeddings."""
-        barrier_id = str(barrier_object.id)
-        if barrier_id not in self.columns:
-            return self.add_barrier(barrier_object)
-
-        barrier_embedding = self.compute_barrier_embedding(barrier_object)
-        similarity_scores_matrix_column = self.loc[barrier_id]
-
-        for (
-            relevant_barrier_id,
-            relevant_barrier_similarity_score,
-        ) in similarity_scores_matrix_column.items():
-            if relevant_barrier_id == barrier_id:
-                continue
-
-            similarity_score = util.cos_sim(
-                barrier_embedding,
-                self.barrier_embeddings_dict[relevant_barrier_id],
-            )
-            # converting to float for easy JSON serialisation
-            float_similarity_score = similarity_score.item()
-
-            self[barrier_id][relevant_barrier_id] = float_similarity_score
-
-        return self.save_matrix()
-
-    def save_matrix(self) -> Self:
-        """Save the similarity scores matrix to a JSON file and caching it."""
-
-        # converting to string for JSON serialisation
-        dataframe_json = self.to_json(default_handler=str)
-        cache.set(
-            settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY, dataframe_json, timeout=None
-        )
-        with open(self.similarity_score_df_path, "w") as f:
-            json.dump(dataframe_json, f)
-
-        self.barrier_embeddings_dict.save_dict()
-
-        return self
-
-    def add_barrier(self, barrier_object) -> Self:
-        """Add a barrier to the similarity scores matrix.
-
-        This is made a little difficult by Pandas, so we create a new matrix with the new barrier and then return that
-        instead."""
-        barrier_id = str(barrier_object.id)
-
-        self[barrier_id] = np.nan  # creating the empty column
-        new_row = {}
-        for barrier in self:
-            new_row[barrier] = np.nan
-        new_row = pd.Series(new_row, name=barrier_id)
-
-        new_matrix = pd.concat([self, pd.DataFrame([new_row], columns=new_row.index)])
-        return new_matrix.update_matrix(barrier_object)
-
     @staticmethod
     def compute_barrier_embedding(barrier_object):
         """Compute the embedding for a barrier."""
@@ -181,6 +107,76 @@ class SimilarityScoreMatrix(pd.DataFrame):
                 barrier_corpus += ". "
         return barrier_corpus
 
+    def update_matrix_with_barrier_object(self, barrier_object):
+        """Update the similarity scores matrix with a barrier object."""
+        barrier_embedding = self.compute_barrier_embedding(barrier_object)
+        return self.update_matrix(
+            barrier_id=barrier_object.id, barrier_embedding=barrier_embedding
+        )
+
+    def update_matrix(self, barrier_id, barrier_embedding, save=True) -> Self:
+        """Given a barrier, or barrier_id and embedding, update the similarity scores matrix column for that barrier.
+
+        Similarity scores are computed using cosine similarity between the barrier embeddings."""
+        if barrier_id not in self.columns:
+            return self.add_barrier(barrier_id)
+
+        similarity_scores_matrix_column = self.loc[barrier_id]
+
+        for (
+            relevant_barrier_id,
+            relevant_barrier_similarity_score,
+        ) in similarity_scores_matrix_column.items():
+            if relevant_barrier_id == barrier_id:
+                continue
+
+            similarity_score = util.cos_sim(
+                barrier_embedding,
+                self.barrier_embeddings_dict[relevant_barrier_id],
+            )
+            # converting to float for easy JSON serialisation
+            float_similarity_score = similarity_score.item()
+
+            self[barrier_id][relevant_barrier_id] = float_similarity_score
+
+        if save:
+            return self.save_matrix()
+        else:
+            return self
+
+    def save_matrix(self) -> Self:
+        """Save the similarity scores matrix to a JSON file and caching it."""
+
+        # converting to string for JSON serialisation
+        dataframe_json = self.to_json(default_handler=str)
+        cache.set(
+            settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY, dataframe_json, timeout=None
+        )
+        with open(self.similarity_score_df_path, "w") as f:
+            json.dump(dataframe_json, f)
+
+        self.barrier_embeddings_dict.save_dict()
+
+        return self
+
+    def add_barrier(self, barrier_id) -> Self:
+        """Add a barrier to the similarity scores matrix.
+
+        This is made a little difficult by Pandas, so we create a new matrix with the new barrier and then return that
+        instead."""
+        barrier_id = str(barrier_id)
+
+        self[barrier_id] = np.nan  # creating the empty column
+        new_row = {}
+        for barrier in self:
+            new_row[barrier] = np.nan
+        new_row = pd.Series(new_row, name=barrier_id)
+
+        new_matrix = pd.concat([self, pd.DataFrame([new_row], columns=new_row.index)])
+        return new_matrix.update_matrix(
+            barrier_id, self.barrier_embeddings_dict[barrier_id]
+        )
+
     def retrieve_similar_barriers(
         self,
         barrier_object,
@@ -191,7 +187,7 @@ class SimilarityScoreMatrix(pd.DataFrame):
         barrier_id = str(barrier_object.id)
 
         if barrier_id not in self.columns:
-            new_matrix = self.add_barrier(barrier_object)
+            new_matrix = self.add_barrier(barrier_object.id)
             return new_matrix.retrieve_similar_barriers(
                 barrier_object, limit, threshold
             )
