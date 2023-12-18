@@ -369,4 +369,4 @@ def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
         )
         if changed and not current_barrier_object.draft:
             similarity_score_matrix = SimilarityScoreMatrix.retrieve_matrix()
-            similarity_score_matrix.update_matrix_with_barrier_object(instance)
+            similarity_score_matrix.update_matrix(instance)
