@@ -1316,8 +1316,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 
     @classmethod
-    def get_history(cls, barrier_id, enrich=False):
-        qs = cls.history.filter(barrier__id=barrier_id)
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier_id=barrier_id)
         fields = (
             [
                 "country",

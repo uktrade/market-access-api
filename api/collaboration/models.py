@@ -59,7 +59,7 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         qs = (
             cls.history.filter(barrier__id=barrier_id, history_date__gte=start_date)
             if start_date
-            else cls.history.filter(barrier_id=barrier_id)
+            else cls.history.filter(barrier__id=barrier_id)
         )
 
         fields = ("user",)
