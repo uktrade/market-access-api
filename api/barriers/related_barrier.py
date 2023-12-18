@@ -78,7 +78,7 @@ class SimilarityScoreMatrix(pd.DataFrame):
         The similarity score matrix is then saved to a json file and cached."""
         barriers = cls.get_annotated_barrier_queryset()
         barrier_ids = [str(barrier["id"]) for barrier in barriers]
-        barrier_corpuses = [barrier.barrier_corpus for barrier in barriers]
+        barrier_corpuses = [barrier["barrier_corpus"] for barrier in barriers]
         barrier_embeddings = transformer_model.encode(
             barrier_corpuses, convert_to_tensor=True
         )
