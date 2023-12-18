@@ -315,12 +315,12 @@ def enrich_public_barrier_categories(history: List[Dict]):
 
 def enrich_public_barrier_light_touch_reviews(history: List[Dict]):
     def enrich(value):
-        if value and value.get("light_touch_reviews"):
+        if value and value.get("light_touch_reviews_cache"):
             value["light_touch_reviews"] = value.get("light_touch_reviews_cache")
         return value
 
     for item in history:
-        if item["field"] != "light_touch_reviews":
+        if item["field"] != "light_touch_reviews_cache":
             continue
 
         item["old_value"] = enrich(item["old_value"])

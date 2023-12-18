@@ -1338,7 +1338,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 "status",
                 "status_date",
             ],
-            "light_touch_reviews",
             "summary",
             "title",
         )
