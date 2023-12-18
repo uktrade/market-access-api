@@ -1319,10 +1319,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def get_history(cls, barrier_id, start_date=None):
         if start_date:
             qs = cls.history.filter(
-                barrier_id=barrier_id, history_date__gte=start_date
+                barrier__id=barrier_id, history_date__gte=start_date
             ).order_by("history_date")
         else:
-            qs = cls.history.filter(barrier_id=barrier_id).order_by("history_date")
+            qs = cls.history.filter(barrier__id=barrier_id).order_by("history_date")
 
         fields = (
             [
