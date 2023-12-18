@@ -511,3 +511,10 @@ ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID = env(
 )
 
 BARRIER_LIST_DEFAULT_SORT = env.str("BARRIER_LIST_DEFAULT_SORT", default="-reported_on")
+
+BARRIER_SIMILARITY_MATRIX_CACHE_KEY = env.str(
+    "BARRIER_SIMILARITY_MATRIX_CACHE_KEY", default="barrier_similarity_score_matrix"
+)
+BARRIER_EMBEDDINGS_DICT_CACHE_KEY = env.str(
+    "BARRIER_EMBEDDINGS_DICT_CACHE_KEY", default="barrier_embeddings_dict"
+)

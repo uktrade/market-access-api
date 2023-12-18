@@ -5,11 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, Count, F
-from django.db.models import Value
-from django.db.models import Value as V
-from django.db.models import When
-from django.db.models.functions import Concat
+from django.db.models import Case, CharField, Count, F, Value, When
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -71,7 +67,7 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPub
 
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
-from .related_barrier import get_similar_barriers
+from .related_barrier import SimilarityScoreMatrix
 from .tasks import generate_s3_and_send_email
 
 logger = logging.getLogger(__name__)
@@ -1214,12 +1210,8 @@ def related_barriers(request, pk) -> Response:
     """
     Return a list of related barriers
     """
-    values_query_set = Barrier.objects.exclude(draft=True).annotate(
-        barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
-    )
-
-    related_barriers_df = get_similar_barriers(values_query_set, pk, limit=20)
-    serializer = BarrierRelatedListSerializer(
-        related_barriers_df.to_dict("records"), many=True
-    )
+    barrier_object = get_object_or_404(Barrier, pk=pk)
+    similarity_score_matrix = SimilarityScoreMatrix.retrieve_matrix()
+    barriers = similarity_score_matrix.retrieve_similar_barriers(barrier_object)
+    serializer = BarrierRelatedListSerializer(barriers, many=True)
     return Response(serializer.data)

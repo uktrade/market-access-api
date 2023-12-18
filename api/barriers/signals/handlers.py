@@ -20,10 +20,7 @@ from api.barriers.models import (
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
-from api.barriers.related_barrier import (
-    RELEVANT_BARRIER_FIELDS,
-    update_similarity_score_matrix,
-)
+from api.barriers.related_barrier import RELEVANT_BARRIER_FIELDS, SimilarityScoreMatrix
 from api.history.factories import HistoryItemFactory
 from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
@@ -364,11 +361,12 @@ def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
     try:
         current_barrier_object = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
-        pass
+        pass  # the barrier is new, we handle this elsewhere
     else:
         changed = any(
             getattr(current_barrier_object, field) != getattr(instance, field)
             for field in RELEVANT_BARRIER_FIELDS
         )
-        if changed:
-            update_similarity_score_matrix(instance)
+        if changed and not current_barrier_object.draft:
+            similarity_score_matrix = SimilarityScoreMatrix.retrieve_matrix()
+            similarity_score_matrix.update_matrix(instance)

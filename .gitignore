@@ -129,3 +129,5 @@ src/
 requirements-dev.txt
 /local.env
 config/settings/debug.py
+/barrier_embeddings_dict.pkl
+/barrier_similarity_scores_df.json
