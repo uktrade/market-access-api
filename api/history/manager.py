@@ -112,7 +112,7 @@ class HistoryManager:
 
         if barrier.has_public_barrier:
             if ignore_creation_items:
-                v2_public_barrier_history = PublicBarrierNote.get_history(
+                v2_public_barrier_history = PublicBarrier.get_history(
                     barrier.pk,
                     start_date=barrier.public_barrier.created_on
                     + datetime.timedelta(seconds=1),
