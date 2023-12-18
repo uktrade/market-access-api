@@ -1,10 +1,8 @@
 import json
 import os
-from collections import UserDict
 
 import numpy as np
 import pandas as pd
-import torch
 from django.conf import settings
 from django.core.cache import cache
 from django.db.models import CharField, QuerySet
@@ -34,10 +32,6 @@ class SimilarityScoreMatrix(pd.DataFrame):
     similarity_score_df_path = os.path.join(
         settings.ROOT_DIR, "barrier_similarity_scores_df.json"
     )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.barrier_embeddings_dict = BarrierEmbeddingDict()
 
     @property
     def base_class_view(self):
@@ -111,26 +105,6 @@ class SimilarityScoreMatrix(pd.DataFrame):
             else:
                 return cls.create_matrix()  # creating the matrix if it doesn't exist
 
-    @staticmethod
-    def compute_barrier_embedding(barrier_object):
-        """Compute the embedding for a barrier."""
-        barrier_corpus = SimilarityScoreMatrix.get_barrier_corpus(barrier_object)
-        return transformer_model.encode(barrier_corpus, convert_to_tensor=True)
-
-    @staticmethod
-    def get_barrier_corpus(barrier_object) -> str:
-        """Get the corpus for a barrier.
-
-        This is a concatenation of relevant fields, like summary and title."""
-        barrier_corpus = ""
-        for index, field in enumerate(RELEVANT_BARRIER_FIELDS):
-            barrier_corpus += getattr(barrier_object, field)
-            if index == len(RELEVANT_BARRIER_FIELDS) - 1:
-                break
-            else:
-                barrier_corpus += ". "
-        return barrier_corpus
-
     def update_matrix(self, barrier_object) -> Self:
         """Given a barrier, update the similarity scores matrix column for that barrier.
 
@@ -141,14 +115,16 @@ class SimilarityScoreMatrix(pd.DataFrame):
             return self.add_barrier(barrier_object)
 
         barrier_ids = self.index.tolist()
+        annotated_barrier_queryset = self.get_annotated_barrier_queryset(barrier_ids)
         barrier_corpuses = [
-            barrier["barrier_corpus"]
-            for barrier in self.get_annotated_barrier_queryset(barrier_ids)
+            barrier["barrier_corpus"] for barrier in annotated_barrier_queryset
         ]
         barrier_embeddings = transformer_model.encode(
             barrier_corpuses, convert_to_tensor=True
         )
-        this_barrier_embedding = self.compute_barrier_embedding(barrier_object)
+        this_barrier_embedding = annotated_barrier_queryset.get(id=barrier_id)[
+            "barrier_corpus"
+        ]
         similarity_scores = util.cos_sim(this_barrier_embedding, barrier_embeddings)
         self[barrier_id] = similarity_scores.numpy()[0]
 
@@ -164,8 +140,6 @@ class SimilarityScoreMatrix(pd.DataFrame):
         )
         with open(self.similarity_score_df_path, "w") as f:
             json.dump(dataframe_json, f)
-
-        self.barrier_embeddings_dict.save_dict()
 
         return self
 
@@ -210,55 +184,3 @@ class SimilarityScoreMatrix(pd.DataFrame):
             id__in=barrier_similarity_scores.index
         )
         return barrier_queryset
-
-
-class BarrierEmbeddingDict(UserDict):
-    """Dictionary for storing and retrieving barrier embeddings.
-
-    Uses torch.load/save for serialisation."""
-
-    barrier_embeddings_dict_path = os.path.join(
-        settings.ROOT_DIR, "barrier_embeddings_dict.pkl"
-    )
-
-    def __init__(self):
-        """Initialise the dictionary either with the cached version, the version on disk, or create a new one."""
-        if cached_barrier_embeddings_dict := cache.get(
-            settings.BARRIER_EMBEDDINGS_DICT_CACHE_KEY
-        ):
-            super().__init__(cached_barrier_embeddings_dict)
-        else:
-            if os.path.isfile(self.barrier_embeddings_dict_path):
-                with open(self.barrier_embeddings_dict_path, "rb") as f:
-                    super().__init__(torch.load(f))
-            else:
-                # we need to create it
-                super().__init__()  # creating empty dict
-                # computing the embeddings for each barrier and saving to dictionary
-                for barrier_object in Barrier.objects.exclude(draft=True):
-                    self[
-                        str(barrier_object.id)
-                    ] = SimilarityScoreMatrix.compute_barrier_embedding(barrier_object)
-                self.save_dict()  # saving to disk
-
-    def __getitem__(self, key):
-        """Get the barrier embedding for a barrier id.
-
-        If the barrier ID is not in the dictionary, compute the embedding and save it to the dictionary."""
-        try:
-            return super().__getitem__(key)
-        except KeyError:
-            barrier_object = Barrier.objects.get(id=key)
-            self[key] = SimilarityScoreMatrix.compute_barrier_embedding(barrier_object)
-            self.save_dict()
-            return super().__getitem__(key)
-
-    def save_dict(self):
-        """Save the barrier embeddings dictionary to disk and cache."""
-        cache.set(
-            settings.BARRIER_EMBEDDINGS_DICT_CACHE_KEY,
-            self.data,
-            timeout=None,
-        )
-
-        torch.save(self.data, self.barrier_embeddings_dict_path)
