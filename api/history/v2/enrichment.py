@@ -301,12 +301,12 @@ def enrich_public_barrier_note_archived(history: List[Dict]):
 
 def enrich_public_barrier_categories(history: List[Dict]):
     def enrich(value):
-        if value and value.get("categories"):
+        if value and value.get("categories_cache"):
             value["categories"] = value.get("categories_cache") or []
         return value
 
     for item in history:
-        if item["field"] != "categories":
+        if item["field"] != "categories_cache":
             continue
 
         item["old_value"] = enrich(item["old_value"])
