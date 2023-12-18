@@ -118,7 +118,8 @@ def enrich_full_history(
         + wto_history
         + team_member_history
         + public_barrier_history
-        + public_barrier_notes_history
+        or [] + public_barrier_notes_history
+        or []
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 
