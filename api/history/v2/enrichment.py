@@ -18,6 +18,8 @@ from api.metadata.utils import (
     get_trading_bloc,
 )
 
+from django.contrib.auth import get_user_model
+
 
 def get_matching_history_item(
     history_item: Dict, history: List[Dict]
@@ -406,3 +408,32 @@ def enrich_public_barrier_status(history: List[Dict]):
 
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_team_member_user(history: List[Dict]):
+    def enrich(value, matching_item_dict, is_old):
+        key = "old_value" if is_old else "new_value"
+        if value and isinstance(value, int):
+            user_model = get_user_model()
+            user = user_model.objects.filter(id=value).first()
+            new_data = {
+                "user": {
+                    "id": value,
+                    "name": f"{user.first_name} {user.last_name}"
+                    if user
+                    else "Unknown",
+                }
+            }
+            if matching_item_dict["field"] == "role":
+                new_data["role"] = matching_item_dict[key]
+            return new_data
+        return value
+
+    for item in history:
+        if item["field"] != "user":
+            continue
+
+        # search for the nrole value in history
+        matching_item = get_matching_history_item(item, history)
+        item["old_value"] = enrich(item["old_value"], matching_item, is_old=True)
+        item["new_value"] = enrich(item["new_value"], matching_item, is_old=False)

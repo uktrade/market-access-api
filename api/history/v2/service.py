@@ -59,6 +59,7 @@ from api.history.v2.enrichment import (
     enrich_top_priority_status,
     enrich_trade_category,
     enrich_wto_notified_status,
+    enrich_team_member_user,
 )
 
 FieldMapping = namedtuple("FieldMapping", ["query_name", "name"])
@@ -99,6 +100,7 @@ def enrich_full_history(
     enrich_committee_raised_in(wto_history)
     enrich_meeting_minutes(wto_history)
     enrich_wto_notified_status(wto_history)
+    enrich_team_member_user(team_member_history)
 
     if public_barrier_history:
         enrich_public_barrier_categories(public_barrier_history)
