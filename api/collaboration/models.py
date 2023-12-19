@@ -5,7 +5,6 @@ from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
-from api.history.v2 import service as history_service
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -65,7 +64,10 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
             "user",
             "role",
         ]
-        return history_service.get_model_history(
+
+        from api.history.v2.service import get_model_history
+
+        return get_model_history(
             qs,
             model="team_member",
             fields=fields,
