@@ -39,13 +39,19 @@ from typing import Dict, List, Tuple, Union
 from django.db.models import QuerySet
 
 from api.history.v2.enrichment import (
+    enrich_action_plan,
+    enrich_action_plan_task,
     enrich_committee_notification_document,
     enrich_committee_notified,
     enrich_committee_raised_in,
     enrich_commodities,
     enrich_country,
+    enrich_delivery_confidence,
+    enrich_effort_to_resolve,
+    enrich_impact,
     enrich_main_sector,
     enrich_meeting_minutes,
+    enrich_notes,
     enrich_priority_level,
     enrich_public_barrier_categories,
     enrich_public_barrier_light_touch_reviews,
@@ -54,9 +60,12 @@ from api.history.v2.enrichment import (
     enrich_public_barrier_public_view_status,
     enrich_public_barrier_sectors,
     enrich_public_barrier_status,
+    enrich_rating,
+    enrich_scale_history,
     enrich_sectors,
     enrich_status,
     enrich_team_member_user,
+    enrich_time_to_resolve,
     enrich_top_priority_status,
     enrich_trade_category,
     enrich_wto_notified_status,
@@ -80,6 +89,15 @@ def enrich_full_history(
     team_member_history: List[Dict],
     public_barrier_history: Union[List[Dict], None],
     public_barrier_notes_history: Union[List[Dict], None],
+    economic_assessment_history: List[Dict],
+    economic_impact_assessment_history: List[Dict],
+    resolvability_assessment_history: List[Dict],
+    strategic_assessment_history: List[Dict],
+    action_plan_history: List[Dict],
+    action_plan_task_history: List[Dict],
+    action_plan_milestone_history: List[Dict],
+    notes_history: List[Dict],
+    delivery_confidence_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -91,6 +109,7 @@ def enrich_full_history(
     enrich_sectors(barrier_history)
     enrich_status(barrier_history)
     enrich_commodities(barrier_history)
+    enrich_rating(economic_assessment_history)
     enrich_top_priority_status(
         barrier_history=barrier_history,
         top_priority_summary_history=top_priority_summary_history,
@@ -112,6 +131,14 @@ def enrich_full_history(
 
     if public_barrier_notes_history:
         enrich_public_barrier_note_archived(public_barrier_notes_history)
+    enrich_impact(economic_impact_assessment_history)
+    enrich_time_to_resolve(resolvability_assessment_history)
+    enrich_effort_to_resolve(resolvability_assessment_history)
+    enrich_scale_history(strategic_assessment_history)
+    enrich_action_plan(action_plan_history)
+    enrich_action_plan_task(action_plan_task_history)
+    enrich_notes(notes_history)
+    enrich_delivery_confidence(delivery_confidence_history)
 
     enriched_history = (
         barrier_history
@@ -122,6 +149,15 @@ def enrich_full_history(
         + public_barrier_history
         or [] + public_barrier_notes_history
         or []
+        + economic_assessment_history
+        + economic_impact_assessment_history
+        + resolvability_assessment_history
+        + strategic_assessment_history
+        + action_plan_history
+        + action_plan_task_history
+        + action_plan_milestone_history
+        + notes_history
+        + delivery_confidence_history
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 
@@ -183,9 +219,14 @@ def get_model_history(  # noqa: C901
                 change = {"old_value": None, "new_value": {}}
                 for field in fields:
                     if isinstance(field, list):
+                        if change["old_value"] is None:
+                            change["old_value"] = {}
+                        if change["new_value"] is None:
+                            change["new_value"] = {}
                         for f in field:
-                            change["old_value"][f] = None
-                            change["new_value"][f] = item[f]
+                            f = f if isinstance(f, FieldMapping) else FieldMapping(f, f)
+                            change["old_value"][f.name] = None
+                            change["new_value"][f.name] = item[f.query_name]
                     else:
                         change["old_value"] = None
                         change["new_value"] = item[field]
@@ -195,7 +236,15 @@ def get_model_history(  # noqa: C901
                             "model": model,
                             "date": item["history_date"],
                             "field": (
-                                field if isinstance(field, str) else field[0]
+                                field
+                                if isinstance(field, str)
+                                else field.name
+                                if isinstance(field, FieldMapping)
+                                else field[0].name
+                                if isinstance(field[0], FieldMapping)
+                                else field[
+                                    0
+                                ]  # field[0] - First field defined is the primary field name
                             ).replace("_cache", ""),
                             "user": {
                                 "id": item["history_user__id"],

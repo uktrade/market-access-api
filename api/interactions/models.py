@@ -173,6 +173,17 @@ class Interaction(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
 
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("documents_cache", "text")
+        return history_service.get_model_history(
+            qs,
+            model="note",
+            fields=fields,
+            track_first_item=True,
+        )
+
 
 class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     public_barrier = models.ForeignKey(

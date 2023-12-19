@@ -7,7 +7,12 @@ from typing import Dict, List, Optional
 from django.contrib.auth import get_user_model
 
 from api.metadata.constants import (
+    ECONOMIC_ASSESSMENT_IMPACT,
+    ECONOMIC_ASSESSMENT_RATING,
     PRIORITY_LEVELS,
+    RESOLVABILITY_ASSESSMENT_EFFORT,
+    RESOLVABILITY_ASSESSMENT_TIME,
+    STRATEGIC_ASSESSMENT_SCALE,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
     BarrierStatus,
@@ -221,6 +226,18 @@ def enrich_committee_raised_in(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
+def enrich_rating(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": ECONOMIC_ASSESSMENT_RATING[value]}
+
+    for item in history:
+        if item["field"] != "rating":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
 def enrich_committee_notified(history: List[Dict]):
     def enrich(value):
         if value and value.get("committee_notified"):
@@ -240,6 +257,18 @@ def enrich_committee_notified(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
+def enrich_impact(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"code": value, "name": ECONOMIC_ASSESSMENT_IMPACT[value]}
+
+    for item in history:
+        if item["field"] != "impact":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
 def enrich_meeting_minutes(history: List[Dict]):
     def enrich(value):
         if value and value.get("meeting_minutes"):
@@ -255,6 +284,18 @@ def enrich_meeting_minutes(history: List[Dict]):
         if item["field"] != "meeting_minutes":
             continue
 
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_time_to_resolve(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": RESOLVABILITY_ASSESSMENT_TIME[value]}
+
+    for item in history:
+        if item["field"] != "time_to_resolve":
+            continue
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
 
@@ -287,6 +328,18 @@ def enrich_committee_notification_document(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
+def enrich_effort_to_resolve(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": RESOLVABILITY_ASSESSMENT_EFFORT[value]}
+
+    for item in history:
+        if item["field"] != "effort_to_resolve":
+            continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
 def enrich_public_barrier_note_archived(history: List[Dict]):
     def enrich(value):
         if value and value.get("archived") is not None:
@@ -297,6 +350,18 @@ def enrich_public_barrier_note_archived(history: List[Dict]):
         if item["field"] != "archived":
             continue
 
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_scale_history(history: List[Dict]):
+    def enrich(value):
+        if value:
+            return {"id": value, "name": STRATEGIC_ASSESSMENT_SCALE[value]}
+
+    for item in history:
+        if item["field"] != "scale":
+            continue
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
 
@@ -434,3 +499,126 @@ def enrich_team_member_user(history: List[Dict]):
         matching_item = get_matching_history_item(item, history)
         item["old_value"] = enrich(item["old_value"], matching_item, is_old=True)
         item["new_value"] = enrich(item["new_value"], matching_item, is_old=False)
+
+
+def enrich_action_plan(history: List[Dict]):
+    def enrich(value):
+        if value["owner__first_name"] and value["owner__last_name"]:
+            full_name = value["owner__first_name"] + " " + value["owner__last_name"]
+            return full_name
+
+        # If there was no result, there was no ID the
+        # action plan was previously owned by or is going to be owned by
+        return None
+
+    cleaned_history = []
+
+    for item in history:
+        # Enrich owner field
+        if item["field"] == "owner__id":
+            # History contains records where value has not changed, if we come
+            # across one we need to discount it from the history list
+            if item["old_value"] == item["new_value"]:
+                continue
+            else:
+                item["old_value"] = enrich(item["old_value"])
+                item["new_value"] = enrich(item["new_value"])
+                item["field"] = "owner"
+                cleaned_history.append(item)
+
+        # Enrich strategic context field
+        if item["field"] == "strategic_context":
+            # Strategic Context contains records where value has been instantiated,
+            # if we come across one we need to discount it from the history list
+            if item["old_value"] is None and item["new_value"] == "":
+                continue
+            else:
+                cleaned_history.append(item)
+
+    # Overwrite the passed history list with the cleaned version
+    history[:] = cleaned_history
+
+
+def enrich_action_plan_task(history: List[Dict]):
+    def enrich_assigned_to(value):
+        if value["assigned_to__first_name"] and value["assigned_to__last_name"]:
+            full_name = (
+                value["assigned_to__first_name"] + " " + value["assigned_to__last_name"]
+            )
+            return full_name
+
+        # If there was no result, there was no ID the
+        # action plan was previously assigned to or is being assigned to
+        return None
+
+    def enrich_action_type(value):
+        if value is not None:
+            action_type = value.replace("_", " ").lower().capitalize()
+            return action_type
+        else:
+            return None
+
+    for item in history:
+        # Enrich assigned_to field
+        if item["field"] == "assigned_to__first_name":
+            item["old_value"] = enrich_assigned_to(item["old_value"])
+            item["new_value"] = enrich_assigned_to(item["new_value"])
+            item["field"] = "assigned_to"
+        # Enrich action_type field
+        if item["field"] == "action_type":
+            item["old_value"] = enrich_action_type(item["old_value"])
+            item["new_value"] = enrich_action_type(item["new_value"])
+
+
+def enrich_notes(history: List[Dict]):
+    def enrich(value):
+        if value != []:
+            return value
+        else:
+            return ""
+
+    cleaned_history = []
+
+    for item in history:
+        if item["field"] == "documents":
+            # Documents field needs to be ignored if Note was created
+            # without an attachment
+            if item["old_value"] is None and item["new_value"] == []:
+                continue
+            else:
+                item["old_value"] = enrich(item["old_value"])
+                item["new_value"] = enrich(item["new_value"])
+                cleaned_history.append(item)
+
+        if item not in cleaned_history:
+            cleaned_history.append(item)
+        else:
+            continue
+
+    # Overwrite the passed history list with the cleaned version
+    history[:] = cleaned_history
+
+
+def enrich_delivery_confidence(history: List[Dict]):
+    def enrich(value):
+        value["summary"] = value.pop("update")
+        if value["status"] is not None:
+            value["status"] = value["status"].replace("_", " ").lower().capitalize()
+        return value
+
+    cleaned_history = []
+
+    for item in history:
+        # Existing functionality for Delivery Confidence history items
+        # is to display only when the status of a progress update has
+        # changed, not the summary - so we need to remove any items where
+        # status is the same across both old_value and new_value
+        if item["old_value"]["status"] == item["new_value"]["status"]:
+            continue
+        else:
+            item["old_value"] = enrich(item["old_value"])
+            item["new_value"] = enrich(item["new_value"])
+            cleaned_history.append(item)
+
+    # Overwrite the passed history list with the cleaned version
+    history[:] = cleaned_history

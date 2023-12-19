@@ -631,7 +631,6 @@ class BarrierFullHistory(generics.GenericAPIView):
             # not caching action plans history entries correctly
             barrier=barrier,
             ignore_creation_items=True,
-            use_cache=False,
         )
         response = {
             "barrier_id": str(pk),
@@ -647,7 +646,7 @@ class BarrierActivity(generics.GenericAPIView):
 
     def get(self, request, pk):
         barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
-        history_items = HistoryManager.get_activity(barrier=barrier, use_cache=True)
+        history_items = HistoryManager.get_activity(barrier=barrier)
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
@@ -663,7 +662,7 @@ class PublicBarrierActivity(generics.GenericAPIView):
     def get(self, request, pk):
         public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_public_activity(
-            public_barrier=public_barrier, use_cache=False
+            public_barrier=public_barrier
         )
         response = {
             "barrier_id": str(pk),
