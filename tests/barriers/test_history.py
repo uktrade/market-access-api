@@ -4,22 +4,17 @@ import logging
 from django.test import TestCase
 from freezegun import freeze_time
 
-from api.action_plans.models import ActionPlan
+from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.assessment.models import EconomicAssessment
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.core.utils import cleansed_username
 from api.history.factories import (
-    DeliveryConfidenceHistoryFactory,
-    NoteHistoryFactory,
     PublicBarrierHistoryFactory,
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
 )
-from api.history.factories.action_plans import ActionPlanTaskHistoryFactory
-from api.history.items.action_plans import get_default_user
 from api.history.v2.enrichment import (
     enrich_priority_level,
     enrich_rating,
@@ -483,8 +478,8 @@ class TestNoteHistory(APITestMixin, TestCase):
     def test_documents_history(self):
         self.note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
 
-        items = NoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[-1].data
+        items = Interaction.get_history(barrier_id=self.barrier.pk)
+        data = items[-1]
 
         assert data["model"] == "note"
         assert data["field"] == "documents"
@@ -500,8 +495,8 @@ class TestNoteHistory(APITestMixin, TestCase):
         self.note.text = "Edited note"
         self.note.save()
 
-        items = NoteHistoryFactory.get_history_items(barrier_id=self.barrier.pk)
-        data = items[-1].data
+        items = Interaction.get_history(barrier_id=self.barrier.pk)
+        data = items[-1]
 
         assert data["model"] == "note"
         assert data["field"] == "text"
@@ -560,25 +555,23 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
             next_steps="Get coffee.",
         )
 
-        items = DeliveryConfidenceHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
+        items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0].data["old_value"] == {"status": "", "summary": ""}
-        assert items[0].data["new_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["new_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[1]["old_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["new_value"] == {
-            "status": "Delayed",
-            "summary": "Nothing Specific",
+        assert items[1]["new_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
 
     def test_history_edited_progress_updates(self):
@@ -593,25 +586,23 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         self.progress_update.status = "DELAYED"
         self.progress_update.save()
 
-        items = DeliveryConfidenceHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
+        items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0].data["old_value"] == {"status": "", "summary": ""}
-        assert items[0].data["new_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["new_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[1]["old_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["new_value"] == {
-            "status": "Delayed",
-            "summary": "Nothing Specific",
+        assert items[1]["new_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
 
     def test_history_non_linear_updates(self):
@@ -634,34 +625,32 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         self.progress_update.status = "RISK_OF_DELAY"
         self.progress_update.save()
 
-        items = DeliveryConfidenceHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
+        items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
         # ON_TRACK changes to RISK_OF_DELAY
-        assert items[0].data["old_value"] == {"status": "", "summary": ""}
-        assert items[0].data["new_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["new_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[1]["old_value"] == {
+            "status": "ON_TRACK",
+            "update": "Nothing Specific",
         }
-        assert items[1].data["new_value"] == {
-            "status": "Delayed",
-            "summary": "Nothing Specific",
+        assert items[1]["new_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
-        assert items[2].data["old_value"] == {
-            "status": "On track",
-            "summary": "Nothing Specific",
+        assert items[2]["old_value"] == {
+            "status": "DELAYED",
+            "update": "Nothing Specific",
         }
-        assert items[2].data["new_value"] == {
-            "status": "Risk of delay",
-            "summary": "Nothing Specific",
+        assert items[2]["new_value"] == {
+            "status": "RISK_OF_DELAY",
+            "update": "Nothing Specific",
         }
 
 
@@ -675,16 +664,23 @@ class TestActionPlanHistory(APITestMixin, TestCase):
     def test_action_plan_no_user_history(self):
         action_plan = ActionPlan.objects.get(barrier=self.barrier)
         milestone = ActionPlanMilestoneFactory(action_plan=action_plan)
-        action_plan = ActionPlanTaskFactory(milestone=milestone, assigned_to=None)
+        action_plan_task = ActionPlanTaskFactory(milestone=milestone, assigned_to=None)
 
         action_plan.assigned_to = self.mock_user
         action_plan.save()
 
-        items = ActionPlanTaskHistoryFactory.get_history_items(
-            barrier_id=self.barrier.id,
-        )
-        data = items[-1].data
-        default_user = get_default_user()
+        action_plan_task.assigned_to = self.mock_user
+        action_plan_task.save()
 
-        # asserting that when the old value of assigned_to is None, the default user is returned
-        assert data["old_value"] == cleansed_username(default_user)
+        task_history = ActionPlanTask.get_history(barrier_id=self.barrier)
+        data = task_history[-1]
+
+        # asserting that when the old value of assigned_to is None, the mock user is returned
+        assert data["old_value"] == {
+            "assigned_to__first_name": None,
+            "assigned_to__last_name": None,
+        }
+        assert data["new_value"] == {
+            "assigned_to__first_name": self.mock_user.first_name,
+            "assigned_to__last_name": self.mock_user.last_name,
+        }

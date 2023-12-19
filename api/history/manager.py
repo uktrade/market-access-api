@@ -1,5 +1,6 @@
 import datetime
 
+from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
@@ -8,21 +9,15 @@ from api.assessment.models import (
 )
 from api.barriers.models import (
     Barrier,
+    BarrierProgressUpdate,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
 )
 from api.history.factories import (
-    DeliveryConfidenceHistoryFactory,
-    NoteHistoryFactory,
     PublicBarrierHistoryFactory,
     PublicBarrierNoteHistoryFactory,
     TeamMemberHistoryFactory,
     WTOHistoryFactory,
-)
-from api.history.factories.action_plans import (
-    ActionPlanHistoryFactory,
-    ActionPlanMilestoneHistoryFactory,
-    ActionPlanTaskHistoryFactory,
 )
 from api.history.v2.enrichment import (
     enrich_impact,
@@ -35,6 +30,7 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
 )
+from api.interactions.models import Interaction
 
 
 class HistoryManager:
@@ -129,6 +125,16 @@ class HistoryManager:
         v2_strategic_assessment_history = StrategicAssessment.get_history(
             barrier_id=barrier.pk
         )
+        v2_action_plan_history = ActionPlan.get_history(barrier_id=barrier.pk)
+        v2_action_plan_task_history = ActionPlanTask.get_history(barrier_id=barrier.pk)
+        v2_action_plan_milestone_history = ActionPlanMilestone.get_history(
+            barrier_id=barrier.pk
+        )
+
+        v2_notes_history = Interaction.get_history(barrier_id=barrier.pk)
+        v2_delivery_confidence_history = BarrierProgressUpdate.get_history(
+            barrier_id=barrier.pk
+        )
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
@@ -138,16 +144,16 @@ class HistoryManager:
             economic_impact_assessment_history=v2_economic_impact_assessment_history,
             resolvability_assessment_history=v2_resolvability_assessment_history,
             strategic_assessment_history=v2_strategic_assessment_history,
+            action_plan_history=v2_action_plan_history,
+            action_plan_task_history=v2_action_plan_task_history,
+            action_plan_milestone_history=v2_action_plan_milestone_history,
+            notes_history=v2_notes_history,
+            delivery_confidence_history=v2_delivery_confidence_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
 
         # TODO: Deprecate legacy history implementation for V2
-        history += cls.get_action_plans_history(barrier.pk, start_date=start_date)
-        history += cls.get_notes_history(barrier.pk, start_date=start_date)
-        history += cls.get_delivery_confidence_history(
-            barrier.pk, start_date=start_date
-        )
         history += cls.get_wto_history(barrier.pk, start_date=start_date)
 
         if start_date:
@@ -170,43 +176,6 @@ class HistoryManager:
             history += cls.get_public_barrier_notes_history(barrier.pk)
 
         return history
-
-    @classmethod
-    def get_action_plans_history(cls, barrier_id, fields=(), start_date=None):
-        return [
-            *ActionPlanHistoryFactory.get_history_items(
-                barrier_id=barrier_id,
-                fields=fields,
-                start_date=start_date,
-            ),
-            *ActionPlanTaskHistoryFactory.get_history_items(
-                barrier_id=barrier_id,
-                fields=fields,
-                start_date=start_date,
-            ),
-            *ActionPlanMilestoneHistoryFactory.get_history_items(
-                barrier_id=barrier_id,
-                fields=fields,
-                start_date=start_date,
-            ),
-        ]
-
-    @classmethod
-    def get_notes_history(cls, barrier_id, fields=(), start_date=None):
-        return NoteHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_delivery_confidence_history(cls, barrier_id, fields=(), start_date=None):
-
-        return DeliveryConfidenceHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
 
     @classmethod
     def get_public_barrier_history(cls, barrier_id, fields=(), start_date=None):
