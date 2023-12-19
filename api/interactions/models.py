@@ -17,10 +17,9 @@ from api.barriers.mixins import BarrierRelatedMixin
 from api.collaboration.models import TeamMember
 from api.core.models import ArchivableMixin, BaseModel
 from api.documents.models import AbstractEntityDocumentModel
+from api.history.v2 import service as history_service
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from api.user import helpers, staff_sso
-
-from api.history.v2 import service as history_service
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
