@@ -143,11 +143,7 @@ class HistoryManager:
             barrier_id=barrier.pk, start_date=start_date
         )
 
-        v2_team_member_history = (
-            TeamMember.get_history(barrier_id=barrier.pk, start_date=start_date)
-            if start_date
-            else TeamMember.get_history(barrier_id=barrier.pk)
-        )
+        v2_team_member_history = TeamMember.get_history(barrier_id=barrier.pk)
 
         v2_public_barrier_history = None
         v2_public_barrier_notes_history = None
