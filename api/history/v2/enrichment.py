@@ -412,7 +412,7 @@ def enrich_team_member_user(history: List[Dict]):
         key = "old_value" if is_old else "new_value"
         if value and isinstance(value, int):
             user_model = get_user_model()
-            user = user_model.objects.filter(id=value).first()
+            user = user_model.objects.get(id=value)
             new_data = {
                 "user": {
                     "id": value,
