@@ -1797,35 +1797,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            changed_ids = (
-                queryset.annotate(
-                    change=Concat(
-                        "cached_history_items__model",
-                        V("."),
-                        "cached_history_items__field",
-                        output_field=CharField(),
-                    ),
-                    change_date=F("cached_history_items__date"),
-                )
-                .filter(
-                    public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
-                    change_date__gt=F("public_barrier__last_published_on"),
-                    change__in=(
-                        "barrier.categories",
-                        "barrier.location",
-                        "barrier.sectors",
-                        "barrier.status",
-                        "barrier.summary",
-                        "barrier.title",
-                    ),
-                )
-                .values_list("id", flat=True)
-            )
-            public_queryset = queryset.filter(id__in=changed_ids)
-
-        if "not_yet_sifted" in value:
-            value.remove("not_yet_sifted")
-            public_queryset = queryset.filter(public_eligibility=None)
+            public_queryset = queryset.filter(public_barrier__changed_since_public=True)
 
         status_lookup = {
             "unknown": PublicBarrierStatus.UNKNOWN,
