@@ -3,7 +3,7 @@ import logging
 import operator
 import urllib.parse
 from functools import reduce
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 import django_filters
@@ -548,9 +548,15 @@ class Barrier(FullyArchivableMixin, BaseModel):
         ]
 
     @classmethod
-    def get_history(cls, barrier_id, enrich=False):
+    def get_history(
+        cls,
+        barrier_id,
+        enrich=False,
+        fields: Optional[List] = None,
+        track_first_item: bool = False,
+    ):
         qs = cls.history.filter(id=barrier_id, draft=False)
-        fields = (
+        default_fields = (
             [
                 "archived",
                 "archived_reason",
@@ -605,8 +611,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "categories_cache",  # Needs cache
         )
 
+        if fields is None:
+            # TODO: refactor to parametrize fields better
+            fields = default_fields
+
         # Get all fields required - raw changes no enrichment
-        return get_model_history(qs, model="barrier", fields=fields)
+        return get_model_history(
+            qs, model="barrier", fields=fields, track_first_item=track_first_item
+        )
 
     @property
     def latest_progress_update(self):
@@ -1318,14 +1330,9 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 
     @classmethod
-    def get_history(cls, barrier_id, start_date=None):
+    def get_history(cls, barrier_id):
 
-        if start_date:
-            qs = cls.history.filter(
-                barrier__id=barrier_id, history_date__gte=start_date
-            )
-        else:
-            qs = cls.history.filter(barrier__id=barrier_id)
+        qs = cls.history.filter(barrier__id=barrier_id)
 
         fields = (
             [
