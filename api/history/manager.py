@@ -156,8 +156,7 @@ class HistoryManager:
             if ignore_creation_items:
                 v2_public_barrier_history = PublicBarrier.get_history(
                     barrier.pk,
-                    start_date=barrier.public_barrier.created_on
-                    + datetime.timedelta(seconds=1),
+                    track_first_item=not ignore_creation_items,
                 )
             else:
                 v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
