@@ -32,9 +32,8 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
 )
-from api.interactions.models import PublicBarrierNote
+from api.interactions.models import Interaction, PublicBarrierNote
 from api.wto.models import WTOProfile
-from api.interactions.models import Interaction
 
 
 class HistoryManager:
