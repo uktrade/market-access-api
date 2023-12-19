@@ -147,13 +147,7 @@ class HistoryManager:
         v2_public_barrier_notes_history = None
 
         if barrier.has_public_barrier:
-            if ignore_creation_items:
-                v2_public_barrier_history = PublicBarrier.get_history(
-                    barrier.pk,
-                    track_first_item=not ignore_creation_items,
-                )
-            else:
-                v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
+            v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
             v2_public_barrier_notes_history = PublicBarrierNote.get_history(barrier.pk)
 
         v2_history = enrich_full_history(
