@@ -1316,13 +1316,9 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 
     @classmethod
-    def get_history(cls, barrier_id, start_date=None):
-        if start_date:
-            qs = cls.history.filter(
-                barrier__id=barrier_id, history_date__gte=start_date
-            ).order_by("history_date")
-        else:
-            qs = cls.history.filter(barrier__id=barrier_id).order_by("history_date")
+    def get_history(cls, barrier_id):
+        
+        qs = cls.history.filter(barrier__id=barrier_id)
 
         fields = (
             [
@@ -1343,7 +1339,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         )
 
         # Get all fields required - raw changes no enrichment
-        return get_model_history(qs, model="public_barrier", fields=fields)
+        return get_model_history(qs, model="public_barrier", fields=fields, track_first_item=True)
 
 
 class BarrierUserHit(models.Model):

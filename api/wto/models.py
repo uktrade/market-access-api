@@ -6,6 +6,7 @@ from django.db import models
 from simple_history.models import HistoricalRecords
 
 from api.interactions.models import Document
+from api.history.v2 import service as history_service
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -96,17 +97,9 @@ class WTOProfile(models.Model):
     history = HistoricalRecords(bases=[WTOProfileHistoricalModel])
 
     @classmethod
-    def get_history(cls, barrier_id, start_date=None):
+    def get_history(cls, barrier_id):
 
-        # due to circlar import, we need to import here
-        from api.history.v2.service import get_model_history
-
-        if not start_date:
-            qs = cls.history.filter(barrier__id=barrier_id)
-        else:
-            qs = cls.history.filter(
-                barrier__id=barrier_id, history_date__gte=start_date
-            )
+        qs = cls.history.filter(barrier__id=barrier_id)
 
         fields = (
             "case_number",
@@ -119,7 +112,7 @@ class WTOProfile(models.Model):
             "raised_date",
             ["wto_has_been_notified", "wto_should_be_notified"],
         )
-        return get_model_history(
+        return history_service.get_model_history(
             qs,
             model="wto_profile",
             fields=fields,

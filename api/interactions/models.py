@@ -20,6 +20,8 @@ from api.documents.models import AbstractEntityDocumentModel
 from api.metadata.constants import BARRIER_INTERACTION_TYPE
 from api.user import helpers, staff_sso
 
+from api.history.v2 import service as history_service
+
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
 
@@ -209,28 +211,19 @@ class PublicBarrierNote(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         return self._cleansed_username(self.modified_by)
 
     @classmethod
-    def get_history(cls, barrier_id, start_date=None):
-        # due to circlar import, we need to import here
-        from api.history.v2.service import get_model_history
+    def get_history(cls, barrier_id):
 
-        qs = (
-            cls.history.filter(
-                public_barrier__barrier_id=barrier_id, history_date__gte=start_date
-            ).order_by("id", "history_date")
-            if start_date
-            else cls.history.filter(public_barrier__barrier_id=barrier_id).order_by(
-                "id", "history_date"
-            )
-        )
+        qs = cls.history.filter(public_barrier__barrier_id=barrier_id).order_by("id")
 
         fields = (
             "text",
             "archived",
         )
-        return get_model_history(
+        return history_service.get_model_history(
             qs,
             model="public_barrier_note",
             fields=fields,
+            track_first_item=True,
         )
 
 

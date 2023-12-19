@@ -5,6 +5,7 @@ from simple_history.models import HistoricalRecords
 
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ArchivableMixin, BaseModel
+from api.history.v2 import service as history_service
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -52,25 +53,19 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         return self._cleansed_username(self.modified_by)
 
     @classmethod
-    def get_history(cls, barrier_id, start_date=None):
-        # due to circlar import, we need to import here
-        from api.history.v2.service import get_model_history
+    def get_history(cls, barrier_id):
 
         qs = (
-            cls.history.filter(
-                barrier_id=barrier_id, history_date__gte=start_date
-            ).order_by("id")
-            if start_date
-            else cls.history.filter(barrier_id=barrier_id).order_by("id")
+            cls.history.select_related("user")
+            .filter(barrier_id=barrier_id)
+            .order_by("id")
         )
-
-        qs.select_related("user")
 
         fields = [
             "user",
             "role",
         ]
-        return get_model_history(
+        return history_service.get_model_history(
             qs,
             model="team_member",
             fields=fields,
