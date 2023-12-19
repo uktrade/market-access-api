@@ -32,8 +32,9 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
 )
-from api.interactions.models import Interaction, PublicBarrierNote
+from api.interactions.models import PublicBarrierNote
 from api.wto.models import WTOProfile
+from api.interactions.models import Interaction
 
 
 class HistoryManager:
@@ -147,7 +148,14 @@ class HistoryManager:
         v2_public_barrier_notes_history = None
 
         if barrier.has_public_barrier:
-            v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
+            if ignore_creation_items:
+                v2_public_barrier_history = PublicBarrier.get_history(
+                    barrier.pk,
+                    start_date=barrier.public_barrier.created_on
+                    + datetime.timedelta(seconds=1),
+                )
+            else:
+                v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
             v2_public_barrier_notes_history = PublicBarrierNote.get_history(barrier.pk)
 
         v2_history = enrich_full_history(
