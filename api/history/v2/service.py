@@ -56,10 +56,10 @@ from api.history.v2.enrichment import (
     enrich_public_barrier_status,
     enrich_sectors,
     enrich_status,
+    enrich_team_member_user,
     enrich_top_priority_status,
     enrich_trade_category,
     enrich_wto_notified_status,
-    enrich_team_member_user,
 )
 
 FieldMapping = namedtuple("FieldMapping", ["query_name", "name"])

@@ -4,6 +4,8 @@ Enrichments to historical data as done by legacy.
 from datetime import datetime
 from typing import Dict, List, Optional
 
+from django.contrib.auth import get_user_model
+
 from api.metadata.constants import (
     PRIORITY_LEVELS,
     TOP_PRIORITY_BARRIER_STATUS,
@@ -17,8 +19,6 @@ from api.metadata.utils import (
     get_sector,
     get_trading_bloc,
 )
-
-from django.contrib.auth import get_user_model
 
 
 def get_matching_history_item(
