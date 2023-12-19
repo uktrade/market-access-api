@@ -995,6 +995,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
 
+    changed_since_public = models.BooleanField(default=False)
+
     public_barriers = PublicBarrierManager
 
     class Meta:
