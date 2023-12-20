@@ -1339,6 +1339,30 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 
+    @classmethod
+    def get_history(cls, barrier_id):
+
+        qs = cls.history.filter(barrier__id=barrier_id)
+
+        fields = (
+            [
+                "country",
+                "trading_bloc",
+                "caused_by_trading_bloc",
+            ],
+            [
+                "sectors",
+                "all_sectors",
+            ],
+            [
+                "status",
+                "status_date",
+            ],
+        )
+
+        # Get all fields required - raw changes no enrichment
+        return get_model_history(qs, model="public_barrier", fields=fields)
+
 
 class BarrierUserHit(models.Model):
     """Record when a user has most recently seen a barrier."""

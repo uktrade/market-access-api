@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('history', '0003_rename_assessment'),
+        ("history", "0003_rename_assessment"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='CachedHistoryItem',
+            name="CachedHistoryItem",
         ),
     ]

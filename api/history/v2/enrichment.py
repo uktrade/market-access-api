@@ -1,7 +1,10 @@
 """
 Enrichments to historical data as done by legacy.
 """
+from datetime import datetime
 from typing import Dict, List, Optional
+
+from django.contrib.auth import get_user_model
 
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
@@ -12,6 +15,8 @@ from api.metadata.constants import (
     STRATEGIC_ASSESSMENT_SCALE,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
+    BarrierStatus,
+    PublicBarrierStatus,
 )
 from api.metadata.utils import (
     get_country,
@@ -202,6 +207,25 @@ def enrich_commodities(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
+def enrich_committee_raised_in(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("committee_raised_in"):
+            committee_raised_in = value["committee_raised_in"]
+            committee_raised_in = {
+                "id": str(committee_raised_in.get("id")),
+                "name": committee_raised_in.get("name"),
+            }
+            value["committee_raised_in"] = committee_raised_in
+        return value
+
+    for item in history:
+        if item["field"] != "committee_raised_in":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
 def enrich_rating(history: List[Dict]):
     def enrich(value):
         if value:
@@ -210,6 +234,25 @@ def enrich_rating(history: List[Dict]):
     for item in history:
         if item["field"] != "rating":
             continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_committee_notified(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("committee_notified"):
+            committee_notified = value["committee_notified"]
+            committee_notified = {
+                "id": str(committee_notified.get("id")),
+                "name": committee_notified.get("name"),
+            }
+            value["committee_notified"] = committee_notified
+        return value
+
+    for item in history:
+        if item["field"] != "committee_notified":
+            continue
+
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
 
@@ -226,6 +269,25 @@ def enrich_impact(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
+def enrich_meeting_minutes(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("meeting_minutes"):
+            meeting_minutes = value["meeting_minutes"]
+            meeting_minutes = {
+                "id": str(meeting_minutes.get("id")),
+                "name": meeting_minutes.get("original_filename"),
+            }
+            value["meeting_minutes"] = meeting_minutes
+        return value
+
+    for item in history:
+        if item["field"] != "meeting_minutes":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
 def enrich_time_to_resolve(history: List[Dict]):
     def enrich(value):
         if value:
@@ -234,6 +296,34 @@ def enrich_time_to_resolve(history: List[Dict]):
     for item in history:
         if item["field"] != "time_to_resolve":
             continue
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_wto_notified_status(history: List[Dict]):
+
+    for item in history:
+        if item["field"] != "wto_has_been_notified":
+            continue
+
+        item["field"] = "wto_notified_status"
+
+
+def enrich_committee_notification_document(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("committee_notification_document"):
+            committee_notification_document = value["committee_notification_document"]
+            committee_notification_document = {
+                "id": str(committee_notification_document.get("id")),
+                "name": committee_notification_document.get("original_filename"),
+            }
+            value["committee_notification_document"] = committee_notification_document
+        return value
+
+    for item in history:
+        if item["field"] != "committee_notification_document":
+            continue
+
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
 
@@ -250,6 +340,20 @@ def enrich_effort_to_resolve(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
+def enrich_public_barrier_note_archived(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("archived") is not None:
+            value["archived"] = {"archived": value["archived"], "text": value["text"]}
+        return value
+
+    for item in history:
+        if item["field"] != "archived":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
 def enrich_scale_history(history: List[Dict]):
     def enrich(value):
         if value:
@@ -260,6 +364,141 @@ def enrich_scale_history(history: List[Dict]):
             continue
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_categories(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("categories_cache"):
+            value["categories"] = value.get("categories_cache") or []
+        return value
+
+    for item in history:
+        if item["field"] != "categories_cache":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_light_touch_reviews(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("light_touch_reviews_cache"):
+            value["light_touch_reviews"] = value.get("light_touch_reviews_cache")
+        return value
+
+    for item in history:
+        if item["field"] != "light_touch_reviews_cache":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_location(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("location"):
+            value["location"] = get_location_text(
+                country_id=value["country"],
+                trading_bloc=value["trading_bloc"],
+                caused_by_trading_bloc=value["caused_by_trading_bloc"],
+            )
+        return value
+
+    for item in history:
+        if item["field"] != "location":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_sectors(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("sectors"):
+            value["sectors"] = {
+                "sectors": [str(sector) for sector in value["sectors"]],
+                "all_sectors": value["all_sectors"],
+            }
+        return value
+
+    for item in history:
+        if item["field"] != "sectors":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_public_view_status(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("public_view_status"):
+            barrier_record = value["barrier"].history.as_of(
+                value["history_date"] + datetime.timedelta(seconds=1)
+            )
+
+            value["public_view_status"] = {
+                "id": value["public_view_status"],
+                "name": PublicBarrierStatus.choices[value["public_view_status"]],
+            }
+            value["public_eligibility"] = barrier_record.public_eligibility
+            value[
+                "public_eligibility_summary"
+            ] = barrier_record.public_eligibility_summary
+        return value
+
+    for item in history:
+        if item["field"] != "public_view_status":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_public_barrier_status(history: List[Dict]):
+    def enrich(value):
+        if value and value.get("status"):
+            value["status"] = {
+                "status": str(value["status"]),
+                "status_date": value["status_date"],
+                "is_resolved": str(value["status"]) == BarrierStatus.RESOLVED_IN_FULL,
+            }
+        return value
+
+    for item in history:
+        if item["field"] != "status":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
+
+
+def enrich_team_member_user(history: List[Dict]):
+    def enrich(value, matching_item_dict, is_old):
+        key = "old_value" if is_old else "new_value"
+        if value and isinstance(value, int):
+            user_model = get_user_model()
+            user = user_model.objects.get(id=value)
+            new_data = {
+                "user": {
+                    "id": value,
+                    "name": f"{user.first_name} {user.last_name}"
+                    if user
+                    else "Unknown",
+                }
+            }
+            if matching_item_dict["field"] == "role":
+                new_data["role"] = matching_item_dict[key]
+            return new_data
+        return value
+
+    for item in history:
+        if item["field"] != "user":
+            continue
+
+        # search for the nrole value in history
+        matching_item = get_matching_history_item(item, history)
+        item["old_value"] = enrich(item["old_value"], matching_item, is_old=True)
+        item["new_value"] = enrich(item["new_value"], matching_item, is_old=False)
 
 
 def enrich_action_plan(history: List[Dict]):
