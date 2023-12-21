@@ -146,9 +146,8 @@ def enrich_full_history(
         + top_priority_summary_history
         + wto_history
         + team_member_history
-        + public_barrier_history
-        or [] + public_barrier_notes_history
-        or []
+        + (public_barrier_history or [])
+        + (public_barrier_notes_history or [])
         + economic_assessment_history
         + economic_impact_assessment_history
         + resolvability_assessment_history
