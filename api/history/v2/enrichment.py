@@ -457,7 +457,7 @@ def enrich_public_barrier_public_view_status(history: List[Dict]):
 def enrich_public_barrier_status(history: List[Dict]):
     def enrich(value):
         if value and value.get("status"):
-            value["status"] = {
+            value = {
                 "status": str(value["status"]),
                 "status_date": value["status_date"],
                 "is_resolved": str(value["status"]) == BarrierStatus.RESOLVED_IN_FULL,
