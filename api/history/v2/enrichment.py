@@ -25,7 +25,6 @@ from api.metadata.utils import (
     get_sector,
     get_trading_bloc,
 )
-
 from api.wto.models import WTOCommittee
 
 
