@@ -24,6 +24,7 @@ from api.metadata.utils import (
     get_sector,
     get_trading_bloc,
 )
+from api.wto.models import WTOCommittee
 
 
 def get_matching_history_item(
@@ -209,13 +210,12 @@ def enrich_commodities(history: List[Dict]):
 
 def enrich_committee_raised_in(history: List[Dict]):
     def enrich(value):
-        if value and value.get("committee_raised_in"):
-            committee_raised_in = value["committee_raised_in"]
-            committee_raised_in = {
-                "id": str(committee_raised_in.get("id")),
-                "name": committee_raised_in.get("name"),
+        if value:
+            committee = WTOCommittee.objects.get(id=value)
+            return {
+                "id": str(committee.id),
+                "name": committee.name,
             }
-            value["committee_raised_in"] = committee_raised_in
         return value
 
     for item in history:
@@ -240,13 +240,12 @@ def enrich_rating(history: List[Dict]):
 
 def enrich_committee_notified(history: List[Dict]):
     def enrich(value):
-        if value and value.get("committee_notified"):
-            committee_notified = value["committee_notified"]
-            committee_notified = {
-                "id": str(committee_notified.get("id")),
-                "name": committee_notified.get("name"),
+        if value:
+            committee = WTOCommittee.objects.get(id=value)
+            return {
+                "id": str(committee.id),
+                "name": committee.name,
             }
-            value["committee_notified"] = committee_notified
         return value
 
     for item in history:
