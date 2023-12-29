@@ -24,12 +24,12 @@ from api.history.v2.enrichment import (
 )
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
+from api.wto.models import WTOProfile
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
 )
 from tests.metadata.factories import OrganisationFactory
-from api.wto.models import WTOProfile
 
 logger = logging.getLogger(__name__)
 
