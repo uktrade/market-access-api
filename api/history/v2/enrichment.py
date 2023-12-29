@@ -1,7 +1,6 @@
 """
 Enrichments to historical data as done by legacy.
 """
-import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
 
@@ -211,14 +210,13 @@ def enrich_commodities(history: List[Dict]):
 
 def enrich_committee_raised_in(history: List[Dict]):
     def enrich(value):
-        result = value
-        if value and isinstance(value, uuid.UUID):
+        if value:
             committee = WTOCommittee.objects.get(id=value)
-            result = {
+            return {
                 "id": str(committee.id),
                 "name": committee.name,
             }
-        return result
+        return value
 
     for item in history:
         if item["field"] != "committee_raised_in":
@@ -242,14 +240,13 @@ def enrich_rating(history: List[Dict]):
 
 def enrich_committee_notified(history: List[Dict]):
     def enrich(value):
-        result = value
-        if value and isinstance(value, uuid.UUID):
+        if value:
             committee = WTOCommittee.objects.get(id=value)
-            result = {
+            return {
                 "id": str(committee.id),
                 "name": committee.name,
             }
-        return result
+        return value
 
     for item in history:
         if item["field"] != "committee_notified":
