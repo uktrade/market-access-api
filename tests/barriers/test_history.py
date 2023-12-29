@@ -21,15 +21,18 @@ from api.history.v2.enrichment import (
     enrich_sectors,
     enrich_status,
     enrich_wto_notified_status,
+    enrich_committee_notified,
+    enrich_committee_raised_in,
 )
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
-from api.wto.models import WTOProfile
+from api.wto.models import WTOProfile, WTOCommittee
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
 )
 from tests.metadata.factories import OrganisationFactory
+from tests.barriers.factories import WTOProfileFactory, WTOCommitteeFactory
 
 logger = logging.getLogger(__name__)
 
@@ -697,7 +700,7 @@ class TestWTOProfileHistory(APITestMixin, TestCase):
 
     def test_wto_profile_status_history(self):
 
-        _ = WTOProfile.objects.create(
+        WTOProfile.objects.create(
             barrier=self.barrier,
             wto_has_been_notified=False,
             wto_should_be_notified=False,
@@ -722,4 +725,63 @@ class TestWTOProfileHistory(APITestMixin, TestCase):
         assert data["new_value"] == {
             "wto_has_been_notified": True,
             "wto_should_be_notified": True,
+        }
+
+    def test_wto_committee_notified_history(self):
+
+        WTOProfileFactory(
+            barrier=self.barrier,
+        )
+
+        self.barrier.refresh_from_db()
+
+        self.barrier.wto_profile.committee_notified = WTOCommitteeFactory()
+        self.barrier.wto_profile.save()
+
+        v2_history = WTOProfile.get_history(barrier_id=self.barrier.pk)
+        enrich_wto_notified_status(v2_history)
+        enrich_committee_notified(v2_history)
+        data = v2_history[-1]  # last item in history
+
+        assert data["model"] == "wto_profile"
+        assert data["field"] == "committee_notified"
+        assert data["old_value"] == None
+        assert data["new_value"] == {
+            "id": str(self.barrier.wto_profile.committee_notified.id),
+            "name": self.barrier.wto_profile.committee_notified.name,
+        }
+
+    def test_wto_committee_raised_in_history(self):
+
+        WTOProfileFactory(
+            barrier=self.barrier,
+        )
+
+        self.barrier.refresh_from_db()
+
+        prev_committee_raised_in_id = self.barrier.wto_profile.committee_raised_in.id
+        prev_committee_raised_in_name = (
+            self.barrier.wto_profile.committee_raised_in.name
+        )
+
+        self.barrier.wto_profile.committee_raised_in = WTOCommitteeFactory()
+        self.barrier.wto_profile.save()
+
+        self.barrier.wto_profile.refresh_from_db()
+
+        v2_history = WTOProfile.get_history(barrier_id=self.barrier.pk)
+        enrich_wto_notified_status(v2_history)
+        enrich_committee_raised_in(v2_history)
+        data = v2_history[-1]
+
+        assert data["model"] == "wto_profile"
+        assert data["field"] == "committee_raised_in"
+
+        assert data["old_value"] == {
+            "id": str(prev_committee_raised_in_id),
+            "name": prev_committee_raised_in_name,
+        }
+        assert data["new_value"] == {
+            "id": str(self.barrier.wto_profile.committee_raised_in.id),
+            "name": self.barrier.wto_profile.committee_raised_in.name,
         }

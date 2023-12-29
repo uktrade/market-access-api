@@ -211,14 +211,14 @@ def enrich_commodities(history: List[Dict]):
 
 def enrich_committee_raised_in(history: List[Dict]):
     def enrich(value):
+        result = value
         if value and isinstance(value, uuid.UUID):
             committee = WTOCommittee.objects.get(id=value)
-            committee_raised_in = {
+            result = {
                 "id": str(committee.id),
                 "name": committee.name,
             }
-            value["committee_raised_in"] = committee_raised_in
-        return value
+        return result
 
     for item in history:
         if item["field"] != "committee_raised_in":
@@ -242,14 +242,14 @@ def enrich_rating(history: List[Dict]):
 
 def enrich_committee_notified(history: List[Dict]):
     def enrich(value):
-        if value and value.get("committee_notified"):
-            committee_notified = value["committee_notified"]
-            committee_notified = {
-                "id": str(committee_notified.get("id")),
-                "name": committee_notified.get("name"),
+        result = value
+        if value and isinstance(value, uuid.UUID):
+            committee = WTOCommittee.objects.get(id=value)
+            result = {
+                "id": str(committee.id),
+                "name": committee.name,
             }
-            value["committee_notified"] = committee_notified
-        return value
+        return result
 
     for item in history:
         if item["field"] != "committee_notified":
