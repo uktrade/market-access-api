@@ -26,7 +26,7 @@ from api.history.v2.enrichment import (
 )
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
-from api.wto.models import WTOProfile, WTOCommittee
+from api.wto.models import WTOProfile
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
@@ -745,7 +745,7 @@ class TestWTOProfileHistory(APITestMixin, TestCase):
 
         assert data["model"] == "wto_profile"
         assert data["field"] == "committee_notified"
-        assert data["old_value"] == None
+        assert data["old_value"] is None
         assert data["new_value"] == {
             "id": str(self.barrier.wto_profile.committee_notified.id),
             "name": self.barrier.wto_profile.committee_notified.name,
