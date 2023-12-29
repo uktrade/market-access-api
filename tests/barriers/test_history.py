@@ -16,13 +16,13 @@ from api.history.factories import (
     TeamMemberHistoryFactory,
 )
 from api.history.v2.enrichment import (
+    enrich_committee_notified,
+    enrich_committee_raised_in,
     enrich_priority_level,
     enrich_rating,
     enrich_sectors,
     enrich_status,
     enrich_wto_notified_status,
-    enrich_committee_notified,
-    enrich_committee_raised_in,
 )
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
@@ -31,8 +31,8 @@ from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
 )
+from tests.barriers.factories import WTOCommitteeFactory, WTOProfileFactory
 from tests.metadata.factories import OrganisationFactory
-from tests.barriers.factories import WTOProfileFactory, WTOCommitteeFactory
 
 logger = logging.getLogger(__name__)
 
