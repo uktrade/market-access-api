@@ -20,6 +20,7 @@ from api.history.v2.enrichment import (
     enrich_rating,
     enrich_sectors,
     enrich_status,
+    enrich_wto_notified_status,
 )
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
@@ -28,6 +29,7 @@ from tests.action_plans.factories import (
     ActionPlanTaskFactory,
 )
 from tests.metadata.factories import OrganisationFactory
+from api.wto.models import WTOProfile
 
 logger = logging.getLogger(__name__)
 
@@ -683,4 +685,41 @@ class TestActionPlanHistory(APITestMixin, TestCase):
         assert data["new_value"] == {
             "assigned_to__first_name": self.mock_user.first_name,
             "assigned_to__last_name": self.mock_user.last_name,
+        }
+
+
+class TestWTOProfileHistory(APITestMixin, TestCase):
+    fixtures = ["users", "barriers"]
+
+    def setUp(self):
+        super().setUp()
+        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
+
+    def test_wto_profile_status_history(self):
+
+        _ = WTOProfile.objects.create(
+            barrier=self.barrier,
+            wto_has_been_notified=False,
+            wto_should_be_notified=False,
+        )
+
+        self.barrier.refresh_from_db()
+
+        self.barrier.wto_profile.wto_has_been_notified = True
+        self.barrier.wto_profile.wto_should_be_notified = True
+        self.barrier.wto_profile.save()
+
+        v2_history = WTOProfile.get_history(barrier_id=self.barrier.pk)
+        enrich_wto_notified_status(v2_history)
+        data = v2_history[-1]  # last item in history
+
+        assert data["model"] == "wto_profile"
+        assert data["field"] == "wto_notified_status"
+        assert data["old_value"] == {
+            "wto_has_been_notified": False,
+            "wto_should_be_notified": False,
+        }
+        assert data["new_value"] == {
+            "wto_has_been_notified": True,
+            "wto_should_be_notified": True,
         }
