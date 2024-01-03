@@ -1,3 +1,5 @@
+import datetime
+
 from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 from api.assessment.models import (
     EconomicAssessment,
@@ -13,6 +15,7 @@ from api.barriers.models import (
     PublicBarrier,
 )
 from api.collaboration.models import TeamMember
+from api.history.factories import PublicBarrierHistoryFactory
 from api.history.v2.enrichment import (
     enrich_impact,
     enrich_scale_history,
@@ -150,3 +153,19 @@ class HistoryManager:
         history = convert_v2_history_to_legacy_object(v2_history)
 
         return history
+
+    @classmethod
+    def get_public_activity(cls, public_barrier):
+        history_items = HistoryManager.get_public_barrier_history(
+            barrier_id=public_barrier.barrier_id,
+            start_date=public_barrier.created_on + datetime.timedelta(seconds=1),
+        )
+        return history_items
+
+    @classmethod
+    def get_public_barrier_history(cls, barrier_id, fields=(), start_date=None):
+        return PublicBarrierHistoryFactory.get_history_items(
+            barrier_id=barrier_id,
+            fields=fields,
+            start_date=start_date,
+        )
