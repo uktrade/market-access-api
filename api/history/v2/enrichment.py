@@ -396,7 +396,7 @@ def enrich_public_barrier_light_touch_reviews(history: List[Dict]):
 def enrich_public_barrier_location(history: List[Dict]):
     def enrich(value):
         if value:
-            value = get_location_text(
+            return get_location_text(
                 country_id=value["country"],
                 trading_bloc=value["trading_bloc"],
                 caused_by_trading_bloc=value["caused_by_trading_bloc"],
