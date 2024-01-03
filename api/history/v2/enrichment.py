@@ -339,20 +339,6 @@ def enrich_effort_to_resolve(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
-def enrich_public_barrier_note_archived(history: List[Dict]):
-    def enrich(value):
-        if value and value.get("archived") is not None:
-            value["archived"] = {"archived": value["archived"], "text": value["text"]}
-        return value
-
-    for item in history:
-        if item["field"] != "archived":
-            continue
-
-        item["old_value"] = enrich(item["old_value"])
-        item["new_value"] = enrich(item["new_value"])
-
-
 def enrich_scale_history(history: List[Dict]):
     def enrich(value):
         if value:
@@ -567,35 +553,6 @@ def enrich_action_plan_task(history: List[Dict]):
         if item["field"] == "action_type":
             item["old_value"] = enrich_action_type(item["old_value"])
             item["new_value"] = enrich_action_type(item["new_value"])
-
-
-def enrich_notes(history: List[Dict]):
-    def enrich(value):
-        if value != []:
-            return value
-        else:
-            return ""
-
-    cleaned_history = []
-
-    for item in history:
-        if item["field"] == "documents":
-            # Documents field needs to be ignored if Note was created
-            # without an attachment
-            if item["old_value"] is None and item["new_value"] == []:
-                continue
-            else:
-                item["old_value"] = enrich(item["old_value"])
-                item["new_value"] = enrich(item["new_value"])
-                cleaned_history.append(item)
-
-        if item not in cleaned_history:
-            cleaned_history.append(item)
-        else:
-            continue
-
-    # Overwrite the passed history list with the cleaned version
-    history[:] = cleaned_history
 
 
 def enrich_delivery_confidence(history: List[Dict]):

@@ -1,5 +1,3 @@
-import datetime
-
 from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanTask
 from api.assessment.models import (
     EconomicAssessment,
@@ -15,12 +13,6 @@ from api.barriers.models import (
     PublicBarrier,
 )
 from api.collaboration.models import TeamMember
-from api.history.factories import (
-    PublicBarrierHistoryFactory,
-    PublicBarrierNoteHistoryFactory,
-    TeamMemberHistoryFactory,
-    WTOHistoryFactory,
-)
 from api.history.v2.enrichment import (
     enrich_impact,
     enrich_scale_history,
@@ -32,7 +24,6 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
 )
-from api.interactions.models import Interaction, PublicBarrierNote
 from api.wto.models import WTOProfile
 
 
@@ -95,14 +86,6 @@ class HistoryManager:
         return history
 
     @classmethod
-    def get_public_activity(cls, public_barrier):
-        history_items = HistoryManager.get_public_barrier_history(
-            barrier_id=public_barrier.barrier_id,
-            start_date=public_barrier.created_on + datetime.timedelta(seconds=1),
-        )
-        return history_items
-
-    @classmethod
     def get_full_history(cls, barrier, ignore_creation_items=False):
         if ignore_creation_items:
             start_date = barrier.reported_on
@@ -134,7 +117,6 @@ class HistoryManager:
             barrier_id=barrier.pk
         )
 
-        v2_notes_history = Interaction.get_history(barrier_id=barrier.pk)
         v2_delivery_confidence_history = BarrierProgressUpdate.get_history(
             barrier_id=barrier.pk
         )
@@ -144,11 +126,9 @@ class HistoryManager:
         v2_team_member_history = TeamMember.get_history(barrier_id=barrier.pk)
 
         v2_public_barrier_history = None
-        v2_public_barrier_notes_history = None
 
         if barrier.has_public_barrier:
             v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
-            v2_public_barrier_notes_history = PublicBarrierNote.get_history(barrier.pk)
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
@@ -157,7 +137,6 @@ class HistoryManager:
             wto_history=v2_wto_history,
             team_member_history=v2_team_member_history,
             public_barrier_history=v2_public_barrier_history,
-            public_barrier_notes_history=v2_public_barrier_notes_history,
             economic_assessment_history=v2_economic_assessment_history,
             economic_impact_assessment_history=v2_economic_impact_assessment_history,
             resolvability_assessment_history=v2_resolvability_assessment_history,
@@ -165,42 +144,9 @@ class HistoryManager:
             action_plan_history=v2_action_plan_history,
             action_plan_task_history=v2_action_plan_task_history,
             action_plan_milestone_history=v2_action_plan_milestone_history,
-            notes_history=v2_notes_history,
             delivery_confidence_history=v2_delivery_confidence_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
 
         return history
-
-    @classmethod
-    def get_public_barrier_history(cls, barrier_id, fields=(), start_date=None):
-        return PublicBarrierHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_public_barrier_notes_history(cls, barrier_id, fields=(), start_date=None):
-        return PublicBarrierNoteHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_team_history(cls, barrier_id, fields=(), start_date=None):
-        return TeamMemberHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
-
-    @classmethod
-    def get_wto_history(cls, barrier_id, fields=(), start_date=None):
-        return WTOHistoryFactory.get_history_items(
-            barrier_id=barrier_id,
-            fields=fields,
-            start_date=start_date,
-        )
