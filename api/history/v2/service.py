@@ -53,9 +53,8 @@ from api.history.v2.enrichment import (
     enrich_meeting_minutes,
     enrich_priority_level,
     enrich_public_barrier_categories,
-    enrich_public_barrier_light_touch_reviews,
     enrich_public_barrier_location,
-    enrich_public_barrier_public_view_status,
+    enrich_public_barrier_publish_status,
     enrich_public_barrier_sectors,
     enrich_public_barrier_status,
     enrich_rating,
@@ -119,10 +118,9 @@ def enrich_full_history(
 
     if public_barrier_history:
         enrich_public_barrier_categories(public_barrier_history)
-        enrich_public_barrier_light_touch_reviews(public_barrier_history)
         enrich_public_barrier_location(public_barrier_history)
         enrich_public_barrier_sectors(public_barrier_history)
-        enrich_public_barrier_public_view_status(public_barrier_history)
+        enrich_public_barrier_publish_status(public_barrier_history)
         enrich_public_barrier_status(public_barrier_history)
 
     enrich_impact(economic_impact_assessment_history)
