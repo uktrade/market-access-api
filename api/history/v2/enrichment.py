@@ -386,10 +386,10 @@ def enrich_public_barrier_location(history: List[Dict]):
 def enrich_public_barrier_sectors(history: List[Dict]):
     def enrich(value):
         if value and value.get("sectors"):
-            value["sectors"] = {
-                "sectors": [str(sector) for sector in value["sectors"]],
-                "all_sectors": value["all_sectors"],
-            }
+            enriched_sector_list = []
+            for sector in value["sectors"]:
+                enriched_sector_list.append(str(sector))
+            value["sectors"] = enriched_sector_list
         return value
 
     for item in history:
