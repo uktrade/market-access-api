@@ -367,8 +367,8 @@ def enrich_public_barrier_categories(history: List[Dict]):
 
 def enrich_public_barrier_location(history: List[Dict]):
     def enrich(value):
-        if value and value.get("location"):
-            value["location"] = get_location_text(
+        if value:
+            return get_location_text(
                 country_id=value["country"],
                 trading_bloc=value["trading_bloc"],
                 caused_by_trading_bloc=value["caused_by_trading_bloc"],
@@ -376,7 +376,7 @@ def enrich_public_barrier_location(history: List[Dict]):
         return value
 
     for item in history:
-        if item["field"] != "location":
+        if item["field"] != "country":
             continue
 
         item["old_value"] = enrich(item["old_value"])
