@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from django.contrib.auth import get_user_model
+from pytz import UTC
 
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
@@ -15,7 +16,6 @@ from api.metadata.constants import (
     STRATEGIC_ASSESSMENT_SCALE,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_CATEGORIES,
-    BarrierStatus,
     PublicBarrierStatus,
 )
 from api.metadata.utils import (
@@ -339,20 +339,6 @@ def enrich_effort_to_resolve(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
-def enrich_public_barrier_note_archived(history: List[Dict]):
-    def enrich(value):
-        if value and value.get("archived") is not None:
-            value["archived"] = {"archived": value["archived"], "text": value["text"]}
-        return value
-
-    for item in history:
-        if item["field"] != "archived":
-            continue
-
-        item["old_value"] = enrich(item["old_value"])
-        item["new_value"] = enrich(item["new_value"])
-
-
 def enrich_scale_history(history: List[Dict]):
     def enrich(value):
         if value:
@@ -373,20 +359,6 @@ def enrich_public_barrier_categories(history: List[Dict]):
 
     for item in history:
         if item["field"] != "categories_cache":
-            continue
-
-        item["old_value"] = enrich(item["old_value"])
-        item["new_value"] = enrich(item["new_value"])
-
-
-def enrich_public_barrier_light_touch_reviews(history: List[Dict]):
-    def enrich(value):
-        if value and value.get("light_touch_reviews_cache"):
-            value["light_touch_reviews"] = value.get("light_touch_reviews_cache")
-        return value
-
-    for item in history:
-        if item["field"] != "light_touch_reviews_cache":
             continue
 
         item["old_value"] = enrich(item["old_value"])
@@ -428,25 +400,13 @@ def enrich_public_barrier_sectors(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
-def enrich_public_barrier_public_view_status(history: List[Dict]):
+def enrich_public_barrier_publish_status(history: List[Dict]):
     def enrich(value):
-        if value and value.get("public_view_status"):
-            barrier_record = value["barrier"].history.as_of(
-                value["history_date"] + datetime.timedelta(seconds=1)
-            )
-
-            value["public_view_status"] = {
-                "id": value["public_view_status"],
-                "name": PublicBarrierStatus.choices[value["public_view_status"]],
-            }
-            value["public_eligibility"] = barrier_record.public_eligibility
-            value[
-                "public_eligibility_summary"
-            ] = barrier_record.public_eligibility_summary
-        return value
+        status_text = PublicBarrierStatus.choices[value]
+        return status_text
 
     for item in history:
-        if item["field"] != "public_view_status":
+        if item["field"] != "_public_view_status":
             continue
 
         item["old_value"] = enrich(item["old_value"])
@@ -454,21 +414,31 @@ def enrich_public_barrier_public_view_status(history: List[Dict]):
 
 
 def enrich_public_barrier_status(history: List[Dict]):
-    def enrich(value):
-        if value and value.get("status"):
-            value = {
-                "status": str(value["status"]),
-                "status_date": value["status_date"],
-                "is_resolved": str(value["status"]) == BarrierStatus.RESOLVED_IN_FULL,
-            }
+    def enrich(value, set_to_none):
+        value["is_resolved"] = "No"
+        if value["status"] == 4:
+            value["is_resolved"] = "Yes"
+        if set_to_none:
+            value["is_resolved"] = None
         return value
+
+    # the first status history item needs to have None set
+    # for is_resolved, so we need to determine the oldest entry
+    first_status_history_date = datetime.now(UTC)
+    for item in history:
+        if item["field"] == "status" and item["date"] < first_status_history_date:
+            first_status_history_date = item["date"]
 
     for item in history:
         if item["field"] != "status":
             continue
 
-        item["old_value"] = enrich(item["old_value"])
-        item["new_value"] = enrich(item["new_value"])
+        set_to_none = False
+        if item["date"] == first_status_history_date:
+            set_to_none = True
+
+        item["old_value"] = enrich(item["old_value"], set_to_none)
+        item["new_value"] = enrich(item["new_value"], False)
 
 
 def enrich_team_member_user(history: List[Dict]):
@@ -567,35 +537,6 @@ def enrich_action_plan_task(history: List[Dict]):
         if item["field"] == "action_type":
             item["old_value"] = enrich_action_type(item["old_value"])
             item["new_value"] = enrich_action_type(item["new_value"])
-
-
-def enrich_notes(history: List[Dict]):
-    def enrich(value):
-        if value != []:
-            return value
-        else:
-            return ""
-
-    cleaned_history = []
-
-    for item in history:
-        if item["field"] == "documents":
-            # Documents field needs to be ignored if Note was created
-            # without an attachment
-            if item["old_value"] is None and item["new_value"] == []:
-                continue
-            else:
-                item["old_value"] = enrich(item["old_value"])
-                item["new_value"] = enrich(item["new_value"])
-                cleaned_history.append(item)
-
-        if item not in cleaned_history:
-            cleaned_history.append(item)
-        else:
-            continue
-
-    # Overwrite the passed history list with the cleaned version
-    history[:] = cleaned_history
 
 
 def enrich_delivery_confidence(history: List[Dict]):

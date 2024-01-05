@@ -10,11 +10,7 @@ from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import Barrier, BarrierProgressUpdate
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.history.factories import (
-    PublicBarrierHistoryFactory,
-    PublicBarrierNoteHistoryFactory,
-    TeamMemberHistoryFactory,
-)
+from api.history.factories import PublicBarrierHistoryFactory, TeamMemberHistoryFactory
 from api.history.v2.enrichment import (
     enrich_committee_notified,
     enrich_committee_raised_in,
@@ -24,7 +20,6 @@ from api.history.v2.enrichment import (
     enrich_status,
     enrich_wto_notified_status,
 )
-from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import PRIORITY_LEVELS, PublicBarrierStatus
 from api.wto.models import WTOProfile
 from tests.action_plans.factories import (
@@ -328,50 +323,6 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         assert data["old_value"] == ""
         assert data["new_value"] == "New title"
 
-    def test_note_text_history(self):
-        note = PublicBarrierNote.objects.create(
-            public_barrier=self.public_barrier,
-            text="Original note",
-            created_by=self.mock_user,
-        )
-        note.text = "Edited note"
-        note.save()
-
-        items = PublicBarrierNoteHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
-
-        assert data["model"] == "public_barrier_note"
-        assert data["field"] == "text"
-        assert data["old_value"] == "Original note"
-        assert data["new_value"] == "Edited note"
-
-    def test_note_archived_history(self):
-        note = PublicBarrierNote.objects.create(
-            public_barrier=self.public_barrier,
-            text="Original note",
-            created_by=self.mock_user,
-        )
-        note.archived = True
-        note.save()
-
-        items = PublicBarrierNoteHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
-
-        assert data["model"] == "public_barrier_note"
-        assert data["field"] == "archived"
-        assert data["old_value"] == {
-            "archived": False,
-            "text": "Original note",
-        }
-        assert data["new_value"] == {
-            "archived": True,
-            "text": "Original note",
-        }
-
 
 class TestEconomicAssessmentHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "documents", "users"]
@@ -464,49 +415,6 @@ class TestEconomicAssessmentHistory(APITestMixin, TestCase):
         assert data["field"] == "value_to_economy"
         assert data["old_value"] == 10000
         assert data["new_value"] == 4444
-
-
-class TestNoteHistory(APITestMixin, TestCase):
-    fixtures = ["documents", "users", "barriers"]
-
-    def setUp(self):
-        super().setUp()
-        self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
-        self.barrier.save()
-        self.note = Interaction.objects.create(
-            barrier=self.barrier,
-            kind="COMMENT",
-            text="Original note",
-            created_by=self.mock_user,
-        )
-
-    def test_documents_history(self):
-        self.note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
-
-        items = Interaction.get_history(barrier_id=self.barrier.pk)
-        data = items[-1]
-
-        assert data["model"] == "note"
-        assert data["field"] == "documents"
-        assert data["old_value"] == []
-        assert data["new_value"] == [
-            {
-                "id": "eda7ee4e-4786-4507-a0ed-05a10169764b",
-                "name": "cat.jpg",
-            }
-        ]
-
-    def test_text_history(self):
-        self.note.text = "Edited note"
-        self.note.save()
-
-        items = Interaction.get_history(barrier_id=self.barrier.pk)
-        data = items[-1]
-
-        assert data["model"] == "note"
-        assert data["field"] == "text"
-        assert data["old_value"] == "Original note"
-        assert data["new_value"] == "Edited note"
 
 
 class TestTeamMemberHistory(APITestMixin, TestCase):

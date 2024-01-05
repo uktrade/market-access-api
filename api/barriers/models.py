@@ -1358,6 +1358,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
                 "status",
                 "status_date",
             ],
+            "_title",
+            "_summary",
+            "_public_view_status",
+            "categories_cache",
         )
 
         # Get all fields required - raw changes no enrichment
