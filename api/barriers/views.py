@@ -446,7 +446,6 @@ class BarrierListS3EmailFile(generics.ListAPIView):
             "categories",
             "barrier_commodities",
             "public_barrier__notes",
-            "cached_history_items",
             "organisations",
         )
     )
