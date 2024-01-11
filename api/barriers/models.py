@@ -1017,7 +1017,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
 
-    changed_since_public = models.BooleanField(default=False)
+    changed_since_published = models.BooleanField(default=False)
 
     public_barriers = PublicBarrierManager
 
@@ -1797,7 +1797,7 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            public_queryset = queryset.filter(public_barrier__changed_since_public=True)
+            public_queryset = queryset.filter(public_barrier__changed_since_published=True)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
@@ -2046,7 +2046,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            public_queryset = queryset.filter(public_barrier__changed_since_public=True)
+            public_queryset = queryset.filter(public_barrier__changed_since_published=True)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")

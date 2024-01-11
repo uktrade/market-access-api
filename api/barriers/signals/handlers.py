@@ -48,8 +48,8 @@ def barrier_categories_changed(sender, instance, action, **kwargs):
 
         public_barrier, _ = get_or_create_public_barrier(barrier=instance)
 
-        if not public_barrier.changed_since_public and public_barrier.last_published_on:
-            public_barrier.changed_since_public = True
+        if not public_barrier.changed_since_published and public_barrier.last_published_on:
+            public_barrier.changed_since_published = True
             public_barrier.save()
 
 
@@ -354,8 +354,8 @@ def barrier_changed_after_published(sender, instance, **kwargs):
     except sender.DoesNotExist:
         pass  # Object is new, so field hasn't technically changed, but you may want to do something else here.
     else:
-        if not public_barrier.changed_since_public and public_barrier.last_published_on:
-            # Only set changed_since_public if certain barrier elements have been changed.
+        if not public_barrier.changed_since_published and public_barrier.last_published_on:
+            # Only set changed_since_published if certain barrier elements have been changed.
             if any(
                 [
                     obj.status != instance.status,
@@ -366,5 +366,5 @@ def barrier_changed_after_published(sender, instance, **kwargs):
                     [str(s) for s in obj.sectors] != [str(s) for s in instance.sectors],
                 ]
             ):
-                public_barrier.changed_since_public = True
+                public_barrier.changed_since_published = True
                 public_barrier.save()
