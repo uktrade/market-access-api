@@ -8,27 +8,33 @@ def run(barrier_model, public_barrier_model, dry_run: bool = False):
     barriers_to_update = []
 
     for barrier in public_barriers:
-        print(barrier)
         if barrier[1] is not None:
-            barrier_history = barrier_model.history.filter(
-                id=barrier[0], history_date__lt=barrier[1]
-            ).values_list("categories_cache", "title", "summary", "country", "sectors", "status")
-            print(
-                f"Public Barrier {barrier[0]} History Count: {barrier_history.count()}"
+            fields = ["categories_cache", "title", "summary", "country", "sectors", "status"]
+            last_history_before_published = barrier_model.history.filter(
+                id=barrier[0], history_date__lte=barrier[1]
+            ).order_by('-history_date')[:1].values_list(*fields)
+
+            barrier_history = (
+                list(barrier_model.history.filter(id=barrier[0], history_date__gt=barrier[1]).values_list(*fields))
+                + list(last_history_before_published)
             )
 
+            print(
+                f"Public Barrier {barrier[0]} History Count: {len(barrier_history)}"
+            )
+            changed = False
             for i, historical_record in enumerate(barrier_history):
                 if i == len(barrier_history) - 1:
                     break
- 
+
                 if any(
                         [
-                            historical_record[0] == barrier_history[i + 1][0],
-                            historical_record[1] == barrier_history[i + 1][1],
-                            historical_record[2] == barrier_history[i + 1][2],
-                            historical_record[3] == barrier_history[i + 1][3],
-                            historical_record[4] == barrier_history[i + 1][4],
-                            historical_record[5] == barrier_history[i + 1][5],
+                            historical_record[0] != barrier_history[i + 1][0],
+                            historical_record[1] != barrier_history[i + 1][1],
+                            historical_record[2] != barrier_history[i + 1][2],
+                            historical_record[3] != barrier_history[i + 1][3],
+                            historical_record[4] != barrier_history[i + 1][4],
+                            historical_record[5] != barrier_history[i + 1][5],
                         ]
                 ):
                     changed = True
