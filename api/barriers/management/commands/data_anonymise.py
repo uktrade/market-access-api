@@ -705,7 +705,7 @@ class Command(BaseCommand):
                 pass
 
     def handle(self, *args, **options):
-        self.stdout.write("Running management command: Data Anonymise.")
+        self.stdout.write("Running migrations command: Data Anonymise.")
 
         if settings.DJANGO_ENV not in SAFE_ENVIRONMENTS:
             raise IllegalManagementCommandException(

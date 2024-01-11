@@ -62,7 +62,7 @@ class TestDataAnonymise(APITestMixin, TestCase):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier_queryset = Barrier.objects.all()
-        # Set today's date to use as argument for management command for 'barrier_cutoff_date'
+        # Set today's date to use as argument for migrations command for 'barrier_cutoff_date'
         self.today_date_object = datetime.datetime.now()
         self.today_date = self.today_date_object.strftime("%d-%m-%y")
 
