@@ -369,19 +369,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
 
     def get_changed_since_published(self, obj):
         if obj.has_public_barrier and obj.public_barrier.is_currently_published:
-            relevant_changes = (
-                "barrier.categories",
-                "barrier.location",
-                "barrier.sectors",
-                "barrier.status",
-                "barrier.summary",
-                "barrier.title",
-            )
-            for history_item in obj.cached_history_items.all():
-                if history_item.date > obj.public_barrier.last_published_on:
-                    change = f"{history_item.model}.{history_item.field}"
-                    if change in relevant_changes:
-                        return "Yes"
+            if obj.public_barrier.changed_since_public:
+                return "Yes"
             return "No"
 
     def get_public_is_resolved(self, obj):

@@ -210,8 +210,9 @@ class TestMentionNotification(NotificationSetUp):
             pinned=False,
             is_active=True,
         )
+        interaction.save()
 
-        _handle_mention_notification(interaction, self.mock_barrier, self.user)
+        # _handle_mention_notification(interaction, self.mock_barrier, self.user)
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 1
@@ -231,8 +232,7 @@ class TestMentionNotification(NotificationSetUp):
             pinned=False,
             is_active=True,
         )
-
-        _handle_mention_notification(interaction, self.mock_barrier, self.user)
+        interaction.save()
 
         assert Mention.objects.filter().exists() is True
         assert Mention.objects.filter().count() == 3

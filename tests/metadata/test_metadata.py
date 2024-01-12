@@ -153,7 +153,7 @@ class TestCategories(APITestMixin):
             "APPROVAL_PENDING": "Top 100 Approval Pending",
             "REMOVAL_PENDING": "Top 100 Removal Pending",
             "APPROVED": "Top 100 Priority",
-            "RESOLVED": "Resolved Top 100 Priority",
+            "RESOLVED": "Top 100 Priority Resolved",
         }
 
         url = reverse("metadata")
@@ -168,7 +168,6 @@ class TestCategories(APITestMixin):
             "COVID-19",
             "Brexit",
             "NI Protocol",
-            "Asia Pacific Pilot",
             "Programme Fund",
             "International Standards",
             "Clean Growth",
