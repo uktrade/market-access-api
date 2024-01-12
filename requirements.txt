@@ -1,6 +1,6 @@
 # ======
 # DO NOT EDIT - use pyproject.toml instead!
-# Generated: 2024-01-12_15-07
+# Generated: 2024-01-12_16-01
 # ======
 amqp==5.2.0 ; python_version >= "3.8" and python_version < "4.0"
 asgiref==3.7.2 ; python_version >= "3.8" and python_version < "4.0"
