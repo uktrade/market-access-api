@@ -1,7 +1,7 @@
 import datetime
 import logging
-import freezegun
 
+import freezegun
 from django.test import TestCase
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
