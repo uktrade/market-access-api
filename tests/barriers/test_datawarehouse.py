@@ -344,6 +344,17 @@ class TestDataWarehouseExport(TestCase):
         assert "main_sector" in keys
         assert "export_description" in keys
 
+    def test_priority_level_in_dataworkspace(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            status=BarrierStatus.OPEN_IN_PROGRESS,
+            priority_level="NONE",
+            top_priority_status="APPROVED",
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+        assert "priority_level" in serialised_data.keys()
+        assert serialised_data["priority_level"] == "PB100"
+
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):
     def setUp(self):

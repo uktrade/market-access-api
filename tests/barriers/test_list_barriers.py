@@ -12,7 +12,6 @@ from rest_framework.test import APITestCase
 from api.barriers.models import Barrier
 from api.barriers.views import BarrierList
 from api.core.test_utils import APITestMixin, create_test_user
-from api.history.models import CachedHistoryItem
 from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
     BarrierStatus,
@@ -1042,6 +1041,57 @@ class TestListBarriers(APITestMixin, APITestCase):
         removal_pending_serialised_data = removal_pending_response.data
         assert len(removal_pending_serialised_data["results"]) == 1
 
+    def test_combined_top_100_priority_search(self):
+        approved_barrier = BarrierFactory()
+        approved_barrier.top_priority_status = "APPROVED"
+        approved_barrier.save()
+
+        removal_pending_barrier = BarrierFactory()
+        removal_pending_barrier.top_priority_status = "REMOVAL_PENDING"
+        removal_pending_barrier.save()
+
+        overseas_delivery_barrier = BarrierFactory()
+        overseas_delivery_barrier.top_priority_status = "NONE"
+        overseas_delivery_barrier.priority_level = "OVERSEAS"
+        overseas_delivery_barrier.save()
+
+        no_priority_barrier = BarrierFactory()
+        no_priority_barrier.top_priority_status = "NONE"
+        no_priority_barrier.priority_level = "NONE"
+        no_priority_barrier.save()
+
+        approved_url = f'{reverse("list-barriers")}?combined_priority=APPROVED'
+        approved_response = self.api_client.get(approved_url)
+        assert approved_response.status_code == status.HTTP_200_OK
+        approved_serialised_data = approved_response.data
+        assert len(approved_serialised_data["results"]) == 2
+
+        removal_pending_url = (
+            f'{reverse("list-barriers")}?combined_priority=REMOVAL_PENDING'
+        )
+        removal_pending_response = self.api_client.get(removal_pending_url)
+        assert removal_pending_response.status_code == status.HTTP_200_OK
+        removal_pending_serialised_data = removal_pending_response.data
+        assert len(removal_pending_serialised_data["results"]) == 1
+
+        overseas_url = f'{reverse("list-barriers")}?combined_priority=OVERSEAS'
+        overseas_response = self.api_client.get(overseas_url)
+        assert overseas_response.status_code == status.HTTP_200_OK
+        overseas_serialised_data = overseas_response.data
+        assert len(overseas_serialised_data["results"]) == 1
+
+        combined_url = f'{reverse("list-barriers")}?combined_priority=APPROVED,NONE'
+        combined_response = self.api_client.get(combined_url)
+        assert combined_response.status_code == status.HTTP_200_OK
+        combined_serialised_data = combined_response.data
+        assert len(combined_serialised_data["results"]) == 3
+
+        no_priority_url = f'{reverse("list-barriers")}?combined_priority=NONE'
+        no_priority_response = self.api_client.get(no_priority_url)
+        assert no_priority_response.status_code == status.HTTP_200_OK
+        no_priority_serialised_data = no_priority_response.data
+        assert len(no_priority_serialised_data["results"]) == 1
+
     def test_export_types_filter(self):
         barrier = BarrierFactory()
         export_type1 = ExportType.objects.first()
@@ -1176,7 +1226,6 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
             public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
             public_barrier__last_published_on="2020-08-01",
         )
-        CachedHistoryItem.objects.all().delete()
 
         # No barriers should have 'changed' since being published
         response = self.api_client.get(url)
@@ -1188,13 +1237,19 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         barrier1.priority = BarrierPriority.objects.get(code="MEDIUM")
         barrier1.save()
 
+        # assert 0
         # No barriers should have 'changed' since being published
         response = self.api_client.get(url)
         assert status.HTTP_200_OK == response.status_code
         assert 0 == response.data["count"]
 
         # Change a field that does affect the public barrier
-        barrier1.summary = "New summary"
+        # barrier1.summary = "New summary"
+        # barrier1.save()
+
+        c1 = CategoryFactory(title="31", description="311")
+        c2 = CategoryFactory(title="32", description="322")
+        barrier1.categories.add(c1.pk, c2.pk)
         barrier1.save()
 
         # barrier1 should now be in the search results for changed barriers
@@ -1203,6 +1258,15 @@ class PublicViewFilterTest(APITestMixin, APITestCase):
         assert 1 == response.data["count"]
         barrier_ids = set([result["id"] for result in response.data["results"]])
         assert set([str(barrier1.id)]) == barrier_ids
+
+        barrier2.summary = "New summary"
+        barrier2.save()
+
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+        assert 2 == response.data["count"]
+        barrier_ids = set([result["id"] for result in response.data["results"]])
+        assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
 
         # Change a field that does affect the public barrier
         barrier2.sectors = ["9f38cecc-5f95-e211-a939-e4115bead28a"]

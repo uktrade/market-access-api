@@ -31,8 +31,6 @@ from api.core.exceptions import (
     AtomicTransactionException,
     IllegalManagementCommandException,
 )
-from api.history.items.action_plans import AuthUser
-from api.history.models import CachedHistoryItem
 from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.models import BarrierTag, Category, Organisation
 from api.metadata.utils import get_countries, get_sectors
@@ -374,6 +372,7 @@ class Command(BaseCommand):
 
             for note in barrier_notes:
                 note.text = Faker().paragraph(nb_sentences=4)
+                AuthUser = get_user_model()
                 note_user = AuthUser.objects.get(id=_get_dummy_user())
                 note.created_by = note_user
                 note.modified_by = note_user
@@ -687,10 +686,6 @@ class Command(BaseCommand):
         """
         for barrier in barriers:
             barrier.history.all().delete()
-            CachedHistoryItem.objects.filter(
-                barrier_id=barrier.id,
-            ).delete()
-
             BarrierProgressUpdate.history.filter(barrier=barrier.pk).delete()
             ProgrammeFundProgressUpdate.history.filter(barrier=barrier.pk).delete()
             TeamMember.history.filter(barrier=barrier.pk).delete()

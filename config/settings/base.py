@@ -108,6 +108,8 @@ MIDDLEWARE = [
     "simple_history.middleware.HistoryRequestMiddleware",
     "django_audit_log_middleware.AuditLogMiddleware",
     "api.core.middleware.sentry.SentryUserContextMiddleware",
+    "api.core.middleware.policy_headers.DisableClientCachingMiddleware",
+    "api.core.middleware.policy_headers.SetPermittedCrossDomainPolicyHeaderMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -462,8 +464,8 @@ APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS = env.list(
 SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS = env.list(
     "SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS", default=[]
 )
-SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID = env(
-    "SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID", default=[]
+SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID = env.str(
+    "SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID", default=""
 )
 APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME = "Download approved user"
 
