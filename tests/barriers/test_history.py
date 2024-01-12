@@ -473,7 +473,11 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0]["old_value"] == {"status": None, "update": None, "next_steps": None}
+        assert items[0]["old_value"] == {
+            "status": None,
+            "update": None,
+            "next_steps": None,
+        }
         assert items[0]["new_value"] == {
             "status": "ON_TRACK",
             "update": "Nothing Specific",
@@ -507,7 +511,11 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0]["old_value"] == {"status": None, "update": None, "next_steps": None}
+        assert items[0]["old_value"] == {
+            "status": None,
+            "update": None,
+            "next_steps": None,
+        }
         assert items[0]["new_value"] == {
             "status": "ON_TRACK",
             "update": "Nothing Specific",
@@ -546,48 +554,51 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
 
         items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
-        from pprint import pprint
-        pprint(items)
-
-        # Expect (from earliest to latest):
-        # ON_TRACK set, no previous
-        # ON_TRACK changes to DELAYED
-        # ON_TRACK changes to RISK_OF_DELAY
         assert items == [
             {
-                'date': items[0]['date'],
-                'field': 'status',
-                'model': 'progress_update',
-                'new_value': {'next_steps': 'Finish writing these tests.',
-                              'status': 'ON_TRACK',
-                              'update': 'Nothing Specific'},
-                'old_value': {'next_steps': None, 'status': None, 'update': None},
-                'user': None
+                "date": items[0]["date"],
+                "field": "status",
+                "model": "progress_update",
+                "new_value": {
+                    "next_steps": "Finish writing these tests.",
+                    "status": "ON_TRACK",
+                    "update": "Nothing Specific",
+                },
+                "old_value": {"next_steps": None, "status": None, "update": None},
+                "user": None,
             },
             {
-                'date': items[1]['date'],
-                'field': 'status',
-                'model': 'progress_update',
-                'new_value': {'next_steps': 'Get coffee.',
-                              'status': 'DELAYED',
-                              'update': 'Nothing Specific'},
-                'old_value': {'next_steps': 'Finish writing these tests.',
-                              'status': 'ON_TRACK',
-                              'update': 'Nothing Specific'},
-                'user': None
+                "date": items[1]["date"],
+                "field": "status",
+                "model": "progress_update",
+                "new_value": {
+                    "next_steps": "Get coffee.",
+                    "status": "DELAYED",
+                    "update": "Nothing Specific",
+                },
+                "old_value": {
+                    "next_steps": "Finish writing these tests.",
+                    "status": "ON_TRACK",
+                    "update": "Nothing Specific",
+                },
+                "user": None,
             },
             {
-                'date': items[2]['date'],
-                'field': 'status',
-                'model': 'progress_update',
-                'new_value': {'next_steps': 'Finish writing these tests.',
-                              'status': 'RISK_OF_DELAY',
-                              'update': 'Nothing Specific'},
-                'old_value': {'next_steps': 'Get coffee.',
-                              'status': 'DELAYED',
-                              'update': 'Nothing Specific'},
-                'user': None
-            }
+                "date": items[2]["date"],
+                "field": "status",
+                "model": "progress_update",
+                "new_value": {
+                    "next_steps": "Finish writing these tests.",
+                    "status": "RISK_OF_DELAY",
+                    "update": "Nothing Specific",
+                },
+                "old_value": {
+                    "next_steps": "Get coffee.",
+                    "status": "DELAYED",
+                    "update": "Nothing Specific",
+                },
+                "user": None,
+            },
         ]
 
 
