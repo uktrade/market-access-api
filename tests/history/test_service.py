@@ -19,12 +19,13 @@ from datetime import datetime
 
 import pytest
 
-from api.barriers.models import Barrier, ProgrammeFundProgressUpdate
+from api.barriers.models import Barrier, ProgrammeFundProgressUpdate, BarrierNextStepItem, BarrierProgressUpdate
 from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     get_model_history,
 )
-from tests.history.factories import ProgrammeFundProgressUpdateFactory
+from tests.history.factories import ProgrammeFundProgressUpdateFactory, BarrierNextStepItemFactory, \
+    BarrierProgressUpdateFactory
 
 pytestmark = [pytest.mark.django_db]
 
@@ -218,4 +219,50 @@ def test_barrier_status_history(barrier):
             "sub_status_other": "",
         },
         "user": None,
+    }
+
+
+def test_barrier_next_step_item_history(barrier):
+    assert BarrierNextStepItem.objects.filter(barrier=barrier).count() == 0
+
+    obj = BarrierNextStepItemFactory(barrier=barrier, next_step_item='Tests')
+    obj.next_step_item = "Updated Tests"
+    obj.save()
+
+    history = BarrierNextStepItem.get_history(barrier_id=barrier.id)
+
+    assert history == [{
+        'date': history[0]['date'],
+        'field': 'next_step_item',
+        'model': 'barrier_next_step_item',
+        'new_value': 'Updated Tests',
+        'old_value': 'Tests',
+        'user': None
+    }]
+    assert BarrierNextStepItem.objects.filter(barrier=barrier).count() == 1
+
+
+def test_progress_update_next_steps(barrier):
+    # Ensure history returns a "created" progress update and a subsequent edit
+    progress_update = BarrierProgressUpdateFactory(
+        barrier=barrier,
+        update="Nothing Specific",
+        next_steps="First steps",
+    )
+    progress_update.next_steps = "Edited Steps"
+    progress_update.save()
+
+    items = BarrierProgressUpdate.get_history(barrier_id=barrier.id)
+
+    assert items[-1] == {
+        'date': items[-1]['date'],
+        'field': 'status',
+        'model': 'progress_update',
+        'new_value': {'next_steps': 'Edited Steps',
+                      'status': 'ON_TRACK',
+                      'update': 'Nothing Specific'},
+        'old_value': {'next_steps': 'First steps',
+                      'status': 'ON_TRACK',
+                      'update': 'Nothing Specific'},
+        'user': None
     }

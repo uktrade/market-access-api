@@ -252,7 +252,7 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
     @classmethod
     def get_history(cls, barrier_id):
         qs = cls.history.filter(barrier__id=barrier_id)
-        fields = (["status", "update"],)
+        fields = (["status", "update", "next_steps"],)
 
         return get_model_history(
             qs,
@@ -2209,3 +2209,14 @@ class BarrierNextStepItem(BaseModel):
         ordering = ("-completion_date",)
         verbose_name = "Barrier Next Step Item"
         verbose_name_plural = "Barrier Next Step Items"
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("status", "next_step_item")
+
+        return get_model_history(
+            qs,
+            model="barrier_next_step_item",
+            fields=fields,
+        )

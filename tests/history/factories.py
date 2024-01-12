@@ -1,7 +1,7 @@
 import factory
 
-from api.barriers.models import Barrier, ProgrammeFundProgressUpdate
-from api.metadata.constants import BARRIER_TYPE_CATEGORIES
+from api.barriers.models import Barrier, ProgrammeFundProgressUpdate, BarrierNextStepItem, BarrierProgressUpdate
+from api.metadata.constants import BARRIER_TYPE_CATEGORIES, PROGRESS_UPDATE_CHOICES
 from api.metadata.models import Category
 
 
@@ -38,3 +38,15 @@ class ProgrammeFundProgressUpdateFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = ProgrammeFundProgressUpdate
+
+
+class BarrierNextStepItemFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BarrierNextStepItem
+
+
+class BarrierProgressUpdateFactory(factory.django.DjangoModelFactory):
+    status = PROGRESS_UPDATE_CHOICES.ON_TRACK
+
+    class Meta:
+        model = BarrierProgressUpdate
