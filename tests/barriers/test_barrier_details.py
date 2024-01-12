@@ -21,6 +21,8 @@ from tests.metadata.factories import OrganisationFactory
 
 logger = logging.getLogger(__name__)
 
+freezegun.config.configure(extend_ignore_list=["transformers"])
+
 
 class TestBarrierDetails(APITestMixin, APITestCase):
     def setUp(self):

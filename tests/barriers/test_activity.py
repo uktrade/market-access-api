@@ -18,6 +18,8 @@ from ..assessment.factories import (
     StrategicAssessmentFactory,
 )
 
+freezegun.config.configure(extend_ignore_list=["transformers"])
+
 
 class TestActivityView(APITestMixin, TestCase):
     fixtures = ["categories", "documents", "users", "barriers"]
