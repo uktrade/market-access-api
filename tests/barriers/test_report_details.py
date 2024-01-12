@@ -6,8 +6,6 @@ from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from tests.barriers.factories import ReportFactory
 
-freezegun.configure(extend_ignore_list=["transformers"])
-
 
 class TestReportDetail(APITestMixin):
     def test_report_gets_reference_code_generated(self):
