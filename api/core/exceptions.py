@@ -23,6 +23,6 @@ class AtomicTransactionException(Exception):
 
 
 class IllegalManagementCommandException(Exception):
-    """Exception to be used when you try to run a migrations command in an illegal environment"""
+    """Exception to be used when you try to run a management command in an illegal environment"""
 
     pass
