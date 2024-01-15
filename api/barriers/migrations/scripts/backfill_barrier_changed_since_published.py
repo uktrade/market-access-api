@@ -1,21 +1,20 @@
-def run(barrier_model, public_barrier_model, dry_run: bool = False):
+def run(historical_barrier_model, public_barrier_model, dry_run: bool = False):
     public_barriers = public_barrier_model.objects.filter(
         changed_since_published=False
     ).values_list("barrier__id", "last_published_on")
 
     print(f"Public Barrier Count: {public_barriers.count()}")
-
     barriers_to_update = []
 
     for barrier in public_barriers:
         if barrier[1] is not None:
             fields = ["categories_cache", "title", "summary", "country", "sectors", "status"]
-            last_history_before_published = barrier_model.history.filter(
+            last_history_before_published = historical_barrier_model.objects.filter(
                 id=barrier[0], history_date__lte=barrier[1]
             ).order_by('-history_date')[:1].values_list(*fields)
 
             barrier_history = (
-                list(barrier_model.history.filter(id=barrier[0], history_date__gt=barrier[1]).values_list(*fields))
+                list(historical_barrier_model.objects.filter(id=barrier[0], history_date__gt=barrier[1]).values_list(*fields))
                 + list(last_history_before_published)
             )
 

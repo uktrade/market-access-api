@@ -1,4 +1,5 @@
 from django.db.models import signals
+from django.apps import apps
 
 from api.barriers.migrations.scripts import backfill_barrier_changed_since_published
 from api.barriers.models import Barrier, PublicBarrier
@@ -47,7 +48,8 @@ class PublicBarrierBaseTestCase(PublicBarrierBaseTestCase):
         barrier.save()
 
         backfill_barrier_changed_since_published.run(
-            barrier_model=Barrier, public_barrier_model=PublicBarrier
+            historical_barrier_model=apps.get_model('barriers', 'HistoricalBarrier'),
+            public_barrier_model=apps.get_model('barriers', 'PublicBarrier')
         )
 
         public_barrier = self.get_public_barrier(barrier)
@@ -74,7 +76,8 @@ class PublicBarrierBaseTestCase(PublicBarrierBaseTestCase):
         assert barrier.status == 2
 
         backfill_barrier_changed_since_published.run(
-            barrier_model=Barrier, public_barrier_model=PublicBarrier
+            historical_barrier_model=apps.get_model('barriers', 'HistoricalBarrier'),
+            public_barrier_model=apps.get_model('barriers', 'PublicBarrier')
         )
 
         public_barrier = self.get_public_barrier(barrier)
@@ -97,7 +100,8 @@ class PublicBarrierBaseTestCase(PublicBarrierBaseTestCase):
         barrier.save()
 
         backfill_barrier_changed_since_published.run(
-            barrier_model=Barrier, public_barrier_model=PublicBarrier
+            historical_barrier_model=apps.get_model('barriers', 'HistoricalBarrier'),
+            public_barrier_model=apps.get_model('barriers', 'PublicBarrier')
         )
 
         public_barrier = self.get_public_barrier(barrier)
@@ -119,7 +123,8 @@ class PublicBarrierBaseTestCase(PublicBarrierBaseTestCase):
         barrier.save()
 
         backfill_barrier_changed_since_published.run(
-            barrier_model=Barrier, public_barrier_model=PublicBarrier
+            historical_barrier_model=apps.get_model('barriers', 'HistoricalBarrier'),
+            public_barrier_model=apps.get_model('barriers', 'PublicBarrier')
         )
 
         public_barrier = self.get_public_barrier(barrier)
@@ -166,7 +171,8 @@ class PublicBarrierBaseTestCase(PublicBarrierBaseTestCase):
         barrier.save()
 
         backfill_barrier_changed_since_published.run(
-            barrier_model=Barrier, public_barrier_model=PublicBarrier
+            historical_barrier_model=apps.get_model('barriers', 'HistoricalBarrier'),
+            public_barrier_model=apps.get_model('barriers', 'PublicBarrier')
         )
 
         public_barrier = self.get_public_barrier(barrier)
@@ -188,7 +194,8 @@ class PublicBarrierBaseTestCase(PublicBarrierBaseTestCase):
         assert barrier.categories.count() == 1
 
         backfill_barrier_changed_since_published.run(
-            barrier_model=Barrier, public_barrier_model=PublicBarrier
+            historical_barrier_model=apps.get_model('barriers', 'HistoricalBarrier'),
+            public_barrier_model=apps.get_model('barriers', 'PublicBarrier')
         )
 
         public_barrier = self.get_public_barrier(barrier)
@@ -203,7 +210,8 @@ class PublicBarrierBaseTestCase(PublicBarrierBaseTestCase):
         barrier.save()
 
         backfill_barrier_changed_since_published.run(
-            barrier_model=Barrier, public_barrier_model=PublicBarrier
+            historical_barrier_model=apps.get_model('barriers', 'HistoricalBarrier'),
+            public_barrier_model=apps.get_model('barriers', 'PublicBarrier')
         )
 
         public_barrier = self.get_public_barrier(barrier)
