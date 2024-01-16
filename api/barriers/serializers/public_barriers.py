@@ -10,6 +10,7 @@ from api.barriers.fields import (
     ReadOnlySectorsField,
     ReadOnlyStatusField,
     ReadOnlyTradingBlocField,
+    SectorField,
 )
 from api.barriers.helpers import get_published_public_barriers
 from api.barriers.models import PublicBarrier, PublicBarrierLightTouchReviews
@@ -101,6 +102,7 @@ class PublicBarrierSerializer(
     latest_note = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(source="internal_created_on")
     light_touch_reviews = PublicBarrierLightTouchReviewsSerializer()
+    internal_main_sector = SectorField()
 
     class Meta:
         model = PublicBarrier
@@ -154,6 +156,7 @@ class PublicBarrierSerializer(
             "latest_note",
             "reported_on",
             "light_touch_reviews",
+            "internal_main_sector",
         )
         read_only_fields = (
             "id",
@@ -202,6 +205,7 @@ class PublicBarrierSerializer(
             "internal_government_organisations",
             "latest_note",
             "reported_on",
+            "internal_main_sector",
         )
 
     def get_internal_title_changed(self, obj):
