@@ -1,12 +1,13 @@
 """
 Enrichments to historical data as done by legacy.
 """
+from collections import namedtuple
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from django.contrib.auth import get_user_model
 from pytz import UTC
 
+from api.core.utils import cleansed_username
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
     ECONOMIC_ASSESSMENT_RATING,
@@ -442,32 +443,28 @@ def enrich_public_barrier_status(history: List[Dict]):
 
 
 def enrich_team_member_user(history: List[Dict]):
-    def enrich(value, matching_item_dict, is_old):
-        key = "old_value" if is_old else "new_value"
-        if value and isinstance(value, int):
-            user_model = get_user_model()
-            user = user_model.objects.get(id=value)
-            new_data = {
-                "user": {
-                    "id": value,
-                    "name": f"{user.first_name} {user.last_name}"
-                    if user
-                    else "Unknown",
-                }
-            }
-            if matching_item_dict["field"] == "role":
-                new_data["role"] = matching_item_dict[key]
-            return new_data
-        return value
+    def enrich(value) -> Optional[Dict]:
+        if value["user"] is None:
+            return
+
+        User = namedtuple("User", ("first_name", "last_name", "email", "username"))
+        user = User(
+            value["user__first_name"],
+            value["user__last_name"],
+            value["user__email"],
+            value["user__username"],
+        )
+
+        return {
+            "user": {"id": value["user"], "name": cleansed_username(user)},
+            "role": value["role"],
+        }
 
     for item in history:
         if item["field"] != "user":
             continue
-
-        # search for the nrole value in history
-        matching_item = get_matching_history_item(item, history)
-        item["old_value"] = enrich(item["old_value"], matching_item, is_old=True)
-        item["new_value"] = enrich(item["new_value"], matching_item, is_old=False)
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
 
 
 def enrich_action_plan(history: List[Dict]):
