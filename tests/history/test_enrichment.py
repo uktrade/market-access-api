@@ -295,7 +295,7 @@ def test_sectors_enrichment(barrier):
 
 
 def test_team_members_enrichment(barrier, user):
-    team_member = TeamMember.objects.create(
+    TeamMember.objects.create(
         barrier=barrier, user=user, role="Contributor"
     )
 
@@ -334,9 +334,7 @@ def test_team_members_enrichment(barrier, user):
             'field': 'user',
             'model': 'team_member',
             'new_value': {'role': 'Contributor', 'user': {'id': user.id, 'name': 'Hey Siri'}},
-            'old_value': {'role': None, 'user': {'id': None, 'name': None}},
+            'old_value': None,
             'user': None
         }
     ]
-
-

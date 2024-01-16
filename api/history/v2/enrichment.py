@@ -443,9 +443,9 @@ def enrich_public_barrier_status(history: List[Dict]):
 
 
 def enrich_team_member_user(history: List[Dict]):
-    def enrich(value):
+    def enrich(value) -> Optional[Dict]:
         if value['user'] is None:
-            return {}
+            return
 
         User = namedtuple('User', ('first_name', 'last_name', 'email', 'username'))
         user = User(value['user__first_name'], value['user__last_name'], value['user__email'], value['user__username'],)
