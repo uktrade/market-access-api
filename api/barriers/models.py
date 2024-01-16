@@ -1077,11 +1077,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.country = self.internal_country
         self.caused_by_trading_bloc = self.internal_caused_by_trading_bloc
         self.trading_bloc = self.internal_trading_bloc
-        self.sectors = (
-            [self.internal_main_sector] + self.internal_sectors
-            if (self.internal_main_sector)
-            else self.internal_sectors
-        )
+        self.sectors = self.internal_sectors
         self.all_sectors = self.internal_all_sectors
         self.categories.set(self.internal_categories.all())
 
@@ -1264,7 +1260,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_caused_by_trading_bloc_changed(self):
-        # return self.barrier.caused_by_trading_bloc != self.caused_by_country_trading_bloc
         return self.barrier.caused_by_trading_bloc != self.caused_by_trading_bloc
 
     @property
@@ -1293,8 +1288,11 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_sectors_changed(self):
-        # the changes now will have main sector included in the sectors
-        return ([self.barrier.main_sector] + self.barrier.sectors) != self.sectors
+        return self.barrier.sectors != self.sectors
+
+    @property
+    def internal_main_sector_changed(self):
+        return self.barrier.main_sector != self.internal_main_sector
 
     @property
     def internal_all_sectors(self):
@@ -1340,8 +1338,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             or self.internal_status_date_changed
             or self.internal_location_changed
             or self.internal_sectors_changed
+            or self.internal_main_sector_changed
             or self.internal_all_sectors_changed
-            or self.internal_sectors_changed
             or self.internal_categories_changed
         )
 

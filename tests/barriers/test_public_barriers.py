@@ -337,9 +337,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["title"]
         assert not response.data["summary"]
         assert self.barrier.country == response.data["country"]["id"]
-        assert ([self.barrier.main_sector] + self.barrier.sectors) == [
-            s["id"] for s in response.data["sectors"]
-        ]
+        assert self.barrier.sectors == [s["id"] for s in response.data["sectors"]]
         assert not response.data["categories"]
         assert not response.data["last_published_on"]
         assert not response.data["first_published_on"]
@@ -702,7 +700,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert "Some summary" == pb.latest_published_version.summary
         assert self.barrier.status == pb.latest_published_version.status
         assert str(self.barrier.country) == str(pb.latest_published_version.country)
-        assert [self.barrier.main_sector] + [str(s) for s in self.barrier.sectors] == [
+        assert [str(s) for s in self.barrier.sectors] == [
             str(s) for s in pb.latest_published_version.sectors
         ]
         assert False is pb.latest_published_version.all_sectors
@@ -743,7 +741,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert "Some summary" == pb.latest_published_version.summary
         assert expected_status == pb.latest_published_version.status
         assert str(self.barrier.country) == str(pb.latest_published_version.country)
-        assert [self.barrier.main_sector] + [str(s) for s in expected_sectors] == [
+        assert [str(s) for s in expected_sectors] == [
             str(s) for s in pb.latest_published_version.sectors
         ]
         assert False is pb.latest_published_version.all_sectors
@@ -818,7 +816,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         pb, response = self.publish_barrier(pb=pb, user=user)
 
         assert status.HTTP_200_OK == response.status_code
-        assert [self.barrier.main_sector] + self.barrier.sectors == pb.sectors
+        assert self.barrier.sectors == pb.sectors
 
     def test_public_barrier_publish_updates_all_sectors(self):
         response = self.api_client.get(self.url)
