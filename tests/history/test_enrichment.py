@@ -14,8 +14,9 @@ from api.history.v2.enrichment import (
     enrich_main_sector,
     enrich_priority_level,
     enrich_sectors,
+    enrich_team_member_user,
     enrich_top_priority_status,
-    enrich_trade_category, enrich_team_member_user,
+    enrich_trade_category,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
@@ -295,34 +296,32 @@ def test_sectors_enrichment(barrier):
 
 
 def test_team_members_enrichment(barrier, user):
-    TeamMember.objects.create(
-        barrier=barrier, user=user, role="Contributor"
-    )
+    TeamMember.objects.create(barrier=barrier, user=user, role="Contributor")
 
     history = TeamMember.get_history(barrier_id=barrier.pk)
 
     assert history == [
         {
-            'date': history[0]['date'],
-            'field': 'user',
-            'model': 'team_member',
-            'new_value': {
-                'user': user.id,
-                'user__first_name': 'Hey',
-                'user__last_name': 'Siri',
-                'user__email': 'hey@siri.com',
-                'user__username': 'heysiri',
-                "role": "Contributor"
+            "date": history[0]["date"],
+            "field": "user",
+            "model": "team_member",
+            "new_value": {
+                "user": user.id,
+                "user__first_name": "Hey",
+                "user__last_name": "Siri",
+                "user__email": "hey@siri.com",
+                "user__username": "heysiri",
+                "role": "Contributor",
             },
-            'old_value': {
-                'user': None,
-                'user__first_name': None,
-                'user__last_name': None,
-                'user__email': None,
-                'user__username': None,
-                "role": None
+            "old_value": {
+                "user": None,
+                "user__first_name": None,
+                "user__last_name": None,
+                "user__email": None,
+                "user__username": None,
+                "role": None,
             },
-            'user': None,
+            "user": None,
         }
     ]
 
@@ -330,11 +329,14 @@ def test_team_members_enrichment(barrier, user):
 
     assert history == [
         {
-            'date': history[0]['date'],
-            'field': 'user',
-            'model': 'team_member',
-            'new_value': {'role': 'Contributor', 'user': {'id': user.id, 'name': 'Hey Siri'}},
-            'old_value': None,
-            'user': None
+            "date": history[0]["date"],
+            "field": "user",
+            "model": "team_member",
+            "new_value": {
+                "role": "Contributor",
+                "user": {"id": user.id, "name": "Hey Siri"},
+            },
+            "old_value": None,
+            "user": None,
         }
     ]
