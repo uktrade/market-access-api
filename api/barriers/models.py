@@ -1293,7 +1293,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_sectors_changed(self):
-        return self.barrier.sectors != self.sectors
+        # the changes now will have main sector included in the sectors
+        return ([self.barrier.main_sector] + self.barrier.sectors) != self.sectors
 
     @property
     def internal_all_sectors(self):
