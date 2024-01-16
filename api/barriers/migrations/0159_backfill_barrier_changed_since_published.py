@@ -1,4 +1,9 @@
+from logging import getLogger
+
 from django.db import migrations
+
+
+logger = getLogger(__name__)
 
 
 def run(historical_barrier_model, public_barrier_model, dry_run: bool = False):
@@ -6,7 +11,7 @@ def run(historical_barrier_model, public_barrier_model, dry_run: bool = False):
         changed_since_published=False
     ).values_list("barrier__id", "last_published_on")
 
-    print(f"Public Barrier Count: {public_barriers.count()}")
+    logger.info(f"Public Barrier Count: {public_barriers.count()}")
     barriers_to_update = []
 
     for barrier in public_barriers:
@@ -21,7 +26,7 @@ def run(historical_barrier_model, public_barrier_model, dry_run: bool = False):
                 + list(last_history_before_published)
             )
 
-            print(
+            logger.info(
                 f"Public Barrier {barrier[0]} History Count: {len(barrier_history)}"
             )
             changed = False
@@ -43,10 +48,10 @@ def run(historical_barrier_model, public_barrier_model, dry_run: bool = False):
                     break
 
             if changed:
-                print(f"Barrier {barrier[0]} changed")
+                logger.info(f"Barrier {barrier[0]} changed")
                 barriers_to_update.append(barrier[0])
 
-    print('Barriers To Update: ', barriers_to_update)
+    logger.info(f'Barriers To Update: {", ".join(barriers_to_update)}')
     if not dry_run and barriers_to_update:
         qs = public_barrier_model.objects.filter(barrier__in=barriers_to_update)
         qs.update(changed_since_published=True)
