@@ -61,8 +61,7 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
         )
 
         fields = [
-            "user",
-            "role",
+            ["user", "user__first_name", "user__last_name", "user__email", "user__username", "role",]
         ]
 
         from api.history.v2.service import get_model_history

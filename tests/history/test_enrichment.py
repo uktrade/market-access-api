@@ -8,13 +8,14 @@ from uuid import UUID
 import pytest
 
 from api.barriers.models import Barrier, BarrierTopPrioritySummary
+from api.collaboration.models import TeamMember
 from api.history.v2.enrichment import (
     enrich_country,
     enrich_main_sector,
     enrich_priority_level,
     enrich_sectors,
     enrich_top_priority_status,
-    enrich_trade_category,
+    enrich_trade_category, enrich_team_member_user,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
@@ -291,3 +292,51 @@ def test_sectors_enrichment(barrier):
         },
         "user": None,
     }
+
+
+def test_team_members_enrichment(barrier, user):
+    team_member = TeamMember.objects.create(
+        barrier=barrier, user=user, role="Contributor"
+    )
+
+    history = TeamMember.get_history(barrier_id=barrier.pk)
+
+    assert history == [
+        {
+            'date': history[0]['date'],
+            'field': 'user',
+            'model': 'team_member',
+            'new_value': {
+                'user': user.id,
+                'user__first_name': 'Hey',
+                'user__last_name': 'Siri',
+                'user__email': 'hey@siri.com',
+                'user__username': 'heysiri',
+                "role": "Contributor"
+            },
+            'old_value': {
+                'user': None,
+                'user__first_name': None,
+                'user__last_name': None,
+                'user__email': None,
+                'user__username': None,
+                "role": None
+            },
+            'user': None,
+        }
+    ]
+
+    enrich_team_member_user(history)
+
+    assert history == [
+        {
+            'date': history[0]['date'],
+            'field': 'user',
+            'model': 'team_member',
+            'new_value': {'role': 'Contributor', 'user': {'id': user.id, 'name': 'Hey Siri'}},
+            'old_value': {'role': None, 'user': {'id': None, 'name': None}},
+            'user': None
+        }
+    ]
+
+

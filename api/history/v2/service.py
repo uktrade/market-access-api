@@ -204,8 +204,8 @@ def get_model_history(  # noqa: C901
         if previous_item is None:
             if track_first_item:
                 # Render first historical item in a table.
-                change = {"old_value": None, "new_value": {}}
                 for field in fields:
+                    change = {"old_value": None, "new_value": {}}
                     if isinstance(field, list):
                         if change["old_value"] is None:
                             change["old_value"] = {}
