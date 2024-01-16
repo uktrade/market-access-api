@@ -337,7 +337,9 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["title"]
         assert not response.data["summary"]
         assert self.barrier.country == response.data["country"]["id"]
-        assert self.barrier.sectors == [s["id"] for s in response.data["sectors"]]
+        assert (self.barrier.main_sector + self.barrier.sectors) == [
+            s["id"] for s in response.data["sectors"]
+        ]
         assert not response.data["categories"]
         assert not response.data["last_published_on"]
         assert not response.data["first_published_on"]
