@@ -1077,7 +1077,11 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.country = self.internal_country
         self.caused_by_trading_bloc = self.internal_caused_by_trading_bloc
         self.trading_bloc = self.internal_trading_bloc
-        self.sectors = [self.internal_main_sector].extend(self.internal_sectors)
+        self.sectors = (
+            [self.internal_main_sector] + self.internal_sectors
+            if (self.internal_main_sector)
+            else self.internal_sectors
+        )
         self.all_sectors = self.internal_all_sectors
         self.categories.set(self.internal_categories.all())
 
