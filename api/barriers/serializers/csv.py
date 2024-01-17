@@ -369,7 +369,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
 
     def get_changed_since_published(self, obj):
         if obj.has_public_barrier and obj.public_barrier.is_currently_published:
-            if obj.public_barrier.changed_since_public:
+            if obj.public_barrier.changed_since_published:
                 return "Yes"
             return "No"
 
