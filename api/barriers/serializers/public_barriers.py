@@ -322,7 +322,7 @@ class PublicPublishedVersionSerializer(
             # we need to add the main sector into the list as the first field of the array
             sectors = [obj.internal_main_sector] + obj.sectors
             return ReadOnlySectorsField(
-                to_repr_keys=("name",), no_sort=True
+                to_repr_keys=("name",), sort=False
             ).to_representation(sectors)
 
 
