@@ -260,6 +260,7 @@ class PublishedVersionSerializer(
     country = ReadOnlyCountryField()
     location = serializers.CharField()
     sectors = ReadOnlySectorsField()
+    main_sector = SectorField(source="internal_main_sector")
     all_sectors = ReadOnlyAllSectorsField()
     categories = ReadOnlyCategoriesField()
 
@@ -276,6 +277,7 @@ class PublishedVersionSerializer(
             "sectors",
             "all_sectors",
             "categories",
+            "main_sector",
         )
 
 
@@ -283,7 +285,7 @@ class PublicPublishedVersionSerializer(
     LocationFieldMixin, AllowNoneAtToRepresentationMixin, serializers.ModelSerializer
 ):
     """
-    Serializer to be used with gov.uk
+    Serializer to be used with gov.uk (public data)
     """
 
     id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
@@ -304,7 +306,6 @@ class PublicPublishedVersionSerializer(
             "is_resolved",
             "status_date",
             "country",
-            # "caused_by_country_trading_bloc",
             "caused_by_trading_bloc",
             "trading_bloc",
             "location",
