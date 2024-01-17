@@ -321,9 +321,9 @@ class PublicPublishedVersionSerializer(
         else:
             # we need to add the main sector into the list as the first field of the array
             sectors = [obj.internal_main_sector] + obj.sectors
-            return ReadOnlySectorsField(to_repr_keys=("name",)).to_representation(
-                sectors
-            )
+            return ReadOnlySectorsField(
+                to_repr_keys=("name",), no_sort=True
+            ).to_representation(sectors)
 
 
 def public_barriers_to_json(public_barriers=None):
