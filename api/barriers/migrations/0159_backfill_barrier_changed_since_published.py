@@ -51,7 +51,7 @@ def run(historical_barrier_model, public_barrier_model, dry_run: bool = False):
                 logger.info(f"Barrier {barrier[0]} changed")
                 barriers_to_update.append(barrier[0])
 
-    logger.info(f'Barriers To Update: {", ".join(barriers_to_update)}')
+    logger.info(f'Barriers To Update: {", ".join(str(barrier) for barrier in barriers_to_update)}')
     if not dry_run and barriers_to_update:
         qs = public_barrier_model.objects.filter(barrier__in=barriers_to_update)
         qs.update(changed_since_published=True)
