@@ -1,12 +1,7 @@
 import factory
 
-from api.barriers.models import (
-    Barrier,
-    BarrierNextStepItem,
-    BarrierProgressUpdate,
-    ProgrammeFundProgressUpdate,
-)
-from api.metadata.constants import BARRIER_TYPE_CATEGORIES, PROGRESS_UPDATE_CHOICES
+from api.barriers.models import Barrier, ProgrammeFundProgressUpdate
+from api.metadata.constants import BARRIER_TYPE_CATEGORIES
 from api.metadata.models import Category
 
 
