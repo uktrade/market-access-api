@@ -1,7 +1,8 @@
 from unittest import mock
-from rest_framework.test import APITestCase
-from api.core.test_utils import APITestMixin
 
+from rest_framework.test import APITestCase
+
+from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
 
 
