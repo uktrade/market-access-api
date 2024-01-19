@@ -30,9 +30,7 @@ from api.history.v2.service import (
     get_model_history,
 )
 from api.metadata.constants import PROGRESS_UPDATE_CHOICES
-from tests.history.factories import (
-    ProgrammeFundProgressUpdateFactory,
-)
+from tests.history.factories import ProgrammeFundProgressUpdateFactory
 
 pytestmark = [pytest.mark.django_db]
 
