@@ -38,7 +38,7 @@ class Command(createsuperuser.Command):
         except Group.DoesNotExist:
             self.stdout.write(self.style.ERROR("Administrator group does not exist."))
             return
-        if admin_group in user.groups.all():
+        if user.groups.filter(name=admin_group.name).exists():
             self.stdout.write(
                 self.style.SUCCESS(
                     f'User "{email}" is already in the Administrator group.'
