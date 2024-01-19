@@ -29,9 +29,8 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     get_model_history,
 )
+from api.metadata.constants import PROGRESS_UPDATE_CHOICES
 from tests.history.factories import (
-    BarrierNextStepItemFactory,
-    BarrierProgressUpdateFactory,
     ProgrammeFundProgressUpdateFactory,
 )
 
@@ -233,7 +232,7 @@ def test_barrier_status_history(barrier):
 def test_barrier_next_step_item_history(barrier):
     assert BarrierNextStepItem.objects.filter(barrier=barrier).count() == 0
 
-    obj = BarrierNextStepItemFactory(barrier=barrier, next_step_item="Tests")
+    obj = BarrierNextStepItem.objects.create(barrier=barrier, next_step_item="Tests")
     obj.next_step_item = "Updated Tests"
     obj.save()
 
@@ -254,8 +253,9 @@ def test_barrier_next_step_item_history(barrier):
 
 def test_progress_update_next_steps(barrier):
     # Ensure history returns a "created" progress update and a subsequent edit
-    progress_update = BarrierProgressUpdateFactory(
+    progress_update = BarrierProgressUpdate.objects.create(
         barrier=barrier,
+        status=PROGRESS_UPDATE_CHOICES.ON_TRACK,
         update="Nothing Specific",
         next_steps="First steps",
     )

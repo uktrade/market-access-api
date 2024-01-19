@@ -43,15 +43,3 @@ class ProgrammeFundProgressUpdateFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = ProgrammeFundProgressUpdate
-
-
-class BarrierNextStepItemFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = BarrierNextStepItem
-
-
-class BarrierProgressUpdateFactory(factory.django.DjangoModelFactory):
-    status = PROGRESS_UPDATE_CHOICES.ON_TRACK
-
-    class Meta:
-        model = BarrierProgressUpdate
