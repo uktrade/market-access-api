@@ -8,22 +8,26 @@ class Command(createsuperuser.Command):
 
     def handle(self, *args, **options):
 
-        username = options["email"]
+        email = options["email"]
 
         # Check if the user already exists
         # this field USERNAME_FIELD will default to username as we do not have a custom user model
-        if self.UserModel.objects.filter(username=username).exists():
+        # but if we did we would need to change this to the field we use as the username
+        # e.g. email
+        # USERNAME_FIELD = 'email'
+        # https://github.com/django/django/blob/main/django/contrib/auth/management/commands/createsuperuser.py
+        if self.UserModel.objects.filter(email=email).exists():
             self.stdout.write(
                 self.style.WARNING(
-                    f'User "{username}" already exists. Updating permissions...'
+                    f'User "{email}" already exists. Updating permissions...'
                 )
             )
-            user = self.UserModel._default_manager.get(username=username)
+            user = self.UserModel._default_manager.get(email=email)
         else:
             try:
                 # Create the superuser using the original handle method
                 super().handle(*args, **options)
-                user = self.UserModel._default_manager.get(username=username)
+                user = self.UserModel._default_manager.get(email=email)
             except ValidationError as e:
                 self.stdout.write(self.style.ERROR(f"Error creating user: {e}"))
                 return
@@ -37,11 +41,11 @@ class Command(createsuperuser.Command):
         if admin_group in user.groups.all():
             self.stdout.write(
                 self.style.SUCCESS(
-                    f'User "{username}" is already in the Administrator group.'
+                    f'User "{email}" is already in the Administrator group.'
                 )
             )
             return
         user.groups.add(admin_group)
         self.stdout.write(
-            self.style.SUCCESS(f'User "{username}" added to the Administrator group.')
+            self.style.SUCCESS(f'User "{email}" added to the Administrator group.')
         )
