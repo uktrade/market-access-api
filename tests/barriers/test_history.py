@@ -473,18 +473,25 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["old_value"] == {
+            "status": None,
+            "update": None,
+            "next_steps": None,
+        }
         assert items[0]["new_value"] == {
             "status": "ON_TRACK",
             "update": "Nothing Specific",
+            "next_steps": "Finish writing these tests.",
         }
         assert items[1]["old_value"] == {
             "status": "ON_TRACK",
             "update": "Nothing Specific",
+            "next_steps": "Finish writing these tests.",
         }
         assert items[1]["new_value"] == {
             "status": "DELAYED",
             "update": "Nothing Specific",
+            "next_steps": "Get coffee.",
         }
 
     def test_history_edited_progress_updates(self):
@@ -504,18 +511,25 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
         # Expect (from earliest to latest):
         # ON_TRACK set, no previous
         # ON_TRACK changes to DELAYED
-        assert items[0]["old_value"] == {"status": None, "update": None}
+        assert items[0]["old_value"] == {
+            "status": None,
+            "update": None,
+            "next_steps": None,
+        }
         assert items[0]["new_value"] == {
             "status": "ON_TRACK",
             "update": "Nothing Specific",
+            "next_steps": "Finish writing these tests.",
         }
         assert items[1]["old_value"] == {
             "status": "ON_TRACK",
             "update": "Nothing Specific",
+            "next_steps": "Finish writing these tests.",
         }
         assert items[1]["new_value"] == {
             "status": "DELAYED",
             "update": "Nothing Specific",
+            "next_steps": "Finish writing these tests.",
         }
 
     def test_history_non_linear_updates(self):
@@ -540,31 +554,52 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
 
         items = BarrierProgressUpdate.get_history(barrier_id=self.barrier.pk)
 
-        # Expect (from earliest to latest):
-        # ON_TRACK set, no previous
-        # ON_TRACK changes to DELAYED
-        # ON_TRACK changes to RISK_OF_DELAY
-        assert items[0]["old_value"] == {"status": None, "update": None}
-        assert items[0]["new_value"] == {
-            "status": "ON_TRACK",
-            "update": "Nothing Specific",
-        }
-        assert items[1]["old_value"] == {
-            "status": "ON_TRACK",
-            "update": "Nothing Specific",
-        }
-        assert items[1]["new_value"] == {
-            "status": "DELAYED",
-            "update": "Nothing Specific",
-        }
-        assert items[2]["old_value"] == {
-            "status": "DELAYED",
-            "update": "Nothing Specific",
-        }
-        assert items[2]["new_value"] == {
-            "status": "RISK_OF_DELAY",
-            "update": "Nothing Specific",
-        }
+        assert items == [
+            {
+                "date": items[0]["date"],
+                "field": "status",
+                "model": "progress_update",
+                "new_value": {
+                    "next_steps": "Finish writing these tests.",
+                    "status": "ON_TRACK",
+                    "update": "Nothing Specific",
+                },
+                "old_value": {"next_steps": None, "status": None, "update": None},
+                "user": None,
+            },
+            {
+                "date": items[1]["date"],
+                "field": "status",
+                "model": "progress_update",
+                "new_value": {
+                    "next_steps": "Get coffee.",
+                    "status": "DELAYED",
+                    "update": "Nothing Specific",
+                },
+                "old_value": {
+                    "next_steps": "Finish writing these tests.",
+                    "status": "ON_TRACK",
+                    "update": "Nothing Specific",
+                },
+                "user": None,
+            },
+            {
+                "date": items[2]["date"],
+                "field": "status",
+                "model": "progress_update",
+                "new_value": {
+                    "next_steps": "Finish writing these tests.",
+                    "status": "RISK_OF_DELAY",
+                    "update": "Nothing Specific",
+                },
+                "old_value": {
+                    "next_steps": "Get coffee.",
+                    "status": "DELAYED",
+                    "update": "Nothing Specific",
+                },
+                "user": None,
+            },
+        ]
 
 
 class TestActionPlanHistory(APITestMixin, TestCase):
