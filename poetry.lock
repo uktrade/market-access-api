@@ -509,13 +509,13 @@ crt = ["awscrt (==0.11.24)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.34.9"
+version = "1.34.16"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "botocore_stubs-1.34.9-py3-none-any.whl", hash = "sha256:55aed8679dce47b2ee1e35028826037b643b8897419ec4b7c493289ef0fd1bbf"},
-    {file = "botocore_stubs-1.34.9.tar.gz", hash = "sha256:20a3c2ffc19dfa1ded192cafefca855f569f9e80b077ddc6390114432d7560c6"},
+    {file = "botocore_stubs-1.34.16-py3-none-any.whl", hash = "sha256:cd71a578c1d36410e78db39e96b3c90ab88ab2d8079c643b81396c5c8e0c346b"},
+    {file = "botocore_stubs-1.34.16.tar.gz", hash = "sha256:f11369ca8e53c91641390734a4dfce93432e29e5d4d267bcb77ded7d08b18302"},
 ]
 
 [package.dependencies]
@@ -1097,13 +1097,13 @@ Django = ">=2.2"
 
 [[package]]
 name = "django-hashid-field"
-version = "3.3.7"
+version = "3.4.0"
 description = "A Hashids obfuscated Django Model Field"
 optional = false
 python-versions = "*"
 files = [
-    {file = "django-hashid-field-3.3.7.tar.gz", hash = "sha256:8ee54a0d194f598377d42dd7270156e35d4c02501874a68c0733f112bd853841"},
-    {file = "django_hashid_field-3.3.7-py3-none-any.whl", hash = "sha256:7f09f78c72ad35e9544cd8e667870245cdf1754db2a7351935b833cc113462ea"},
+    {file = "django-hashid-field-3.4.0.tar.gz", hash = "sha256:d8981e4506bd6d75bf1f9cc77360770991d77b19a2ef920a878ac85092e84810"},
+    {file = "django_hashid_field-3.4.0-py3-none-any.whl", hash = "sha256:9e06fd3b90274cb37750b1e9538ceab23d8de87a9b600530026d295fb0e23569"},
 ]
 
 [package.dependencies]
@@ -1731,13 +1731,13 @@ testing = ["Django", "attrs", "colorama", "docopt", "pytest (<7.0.0)"]
 
 [[package]]
 name = "jinja2"
-version = "3.1.2"
+version = "3.1.3"
 description = "A very fast and expressive template engine."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
-    {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
+    {file = "Jinja2-3.1.3-py3-none-any.whl", hash = "sha256:7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa"},
+    {file = "Jinja2-3.1.3.tar.gz", hash = "sha256:ac8bd6544d4bb2c9792bf3a159e80bba8fda7f07e81bc3aed565432d5925ba90"},
 ]
 
 [package.dependencies]
@@ -2410,13 +2410,13 @@ pylint = ">=1.7"
 
 [[package]]
 name = "pytest"
-version = "7.4.3"
+version = "7.4.4"
 description = "pytest: simple powerful testing with Python"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-7.4.3-py3-none-any.whl", hash = "sha256:0d009c083ea859a71b76adf7c1d502e4bc170b80a8ef002da5806527b9591fac"},
-    {file = "pytest-7.4.3.tar.gz", hash = "sha256:d989d136982de4e3b29dabcc838ad581c64e8ed52c11fbe86ddebd9da0818cd5"},
+    {file = "pytest-7.4.4-py3-none-any.whl", hash = "sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8"},
+    {file = "pytest-7.4.4.tar.gz", hash = "sha256:2cf0005922c6ace4a3e2ec8b4080eb0d9753fdc93107415332f50ce9e7994280"},
 ]
 
 [package.dependencies]
@@ -3011,13 +3011,13 @@ files = [
 
 [[package]]
 name = "traitlets"
-version = "5.14.0"
+version = "5.14.1"
 description = "Traitlets Python configuration system"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "traitlets-5.14.0-py3-none-any.whl", hash = "sha256:f14949d23829023013c47df20b4a76ccd1a85effb786dc060f34de7948361b33"},
-    {file = "traitlets-5.14.0.tar.gz", hash = "sha256:fcdaa8ac49c04dfa0ed3ee3384ef6dfdb5d6f3741502be247279407679296772"},
+    {file = "traitlets-5.14.1-py3-none-any.whl", hash = "sha256:2e5a030e6eff91737c643231bfcf04a65b0132078dad75e4936700b213652e74"},
+    {file = "traitlets-5.14.1.tar.gz", hash = "sha256:8585105b371a04b8316a43d5ce29c098575c2e477850b62b848b964f1444527e"},
 ]
 
 [package.extras]
@@ -3048,13 +3048,13 @@ files = [
 
 [[package]]
 name = "tzdata"
-version = "2023.3"
+version = "2023.4"
 description = "Provider of IANA time zone data"
 optional = false
 python-versions = ">=2"
 files = [
-    {file = "tzdata-2023.3-py2.py3-none-any.whl", hash = "sha256:7e65763eef3120314099b6939b5546db7adce1e7d6f2e179e3df563c70511eda"},
-    {file = "tzdata-2023.3.tar.gz", hash = "sha256:11ef1e08e54acb0d4f95bdb1be05da659673de4acbd21bf9c69e94cc5e907a3a"},
+    {file = "tzdata-2023.4-py2.py3-none-any.whl", hash = "sha256:aa3ace4329eeacda5b7beb7ea08ece826c28d761cda36e747cfbf97996d39bf3"},
+    {file = "tzdata-2023.4.tar.gz", hash = "sha256:dd54c94f294765522c77399649b4fefd95522479a664a0cec87f41bebc6148c9"},
 ]
 
 [[package]]
@@ -3135,13 +3135,13 @@ watchmedo = ["PyYAML (>=3.10)"]
 
 [[package]]
 name = "wcwidth"
-version = "0.2.12"
+version = "0.2.13"
 description = "Measures the displayed width of unicode strings in a terminal"
 optional = false
 python-versions = "*"
 files = [
-    {file = "wcwidth-0.2.12-py2.py3-none-any.whl", hash = "sha256:f26ec43d96c8cbfed76a5075dac87680124fa84e0855195a6184da9c187f133c"},
-    {file = "wcwidth-0.2.12.tar.gz", hash = "sha256:f01c104efdf57971bcb756f054dd58ddec5204dd15fa31d6503ea57947d97c02"},
+    {file = "wcwidth-0.2.13-py2.py3-none-any.whl", hash = "sha256:3da69048e4540d84af32131829ff948f1e022c1c6bdb8d6102117aac784f6859"},
+    {file = "wcwidth-0.2.13.tar.gz", hash = "sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"},
 ]
 
 [[package]]
@@ -3354,4 +3354,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "407d9120c7448f4568614c40f9ce8f68ec1ea7a78c97daa63337af70fe9d3427"
+content-hash = "776ffa2d01c4e8eb9e08953d703c56b3ca2781aab7f244a8bf84337886381292"

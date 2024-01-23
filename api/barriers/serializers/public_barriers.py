@@ -10,6 +10,7 @@ from api.barriers.fields import (
     ReadOnlySectorsField,
     ReadOnlyStatusField,
     ReadOnlyTradingBlocField,
+    SectorField,
 )
 from api.barriers.helpers import get_published_public_barriers
 from api.barriers.models import PublicBarrier, PublicBarrierLightTouchReviews
@@ -101,6 +102,7 @@ class PublicBarrierSerializer(
     latest_note = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(source="internal_created_on")
     light_touch_reviews = PublicBarrierLightTouchReviewsSerializer()
+    internal_main_sector = SectorField()
 
     class Meta:
         model = PublicBarrier
@@ -154,6 +156,7 @@ class PublicBarrierSerializer(
             "latest_note",
             "reported_on",
             "light_touch_reviews",
+            "internal_main_sector",
         )
         read_only_fields = (
             "id",
@@ -202,6 +205,7 @@ class PublicBarrierSerializer(
             "internal_government_organisations",
             "latest_note",
             "reported_on",
+            "internal_main_sector",
         )
 
     def get_internal_title_changed(self, obj):
@@ -256,6 +260,7 @@ class PublishedVersionSerializer(
     country = ReadOnlyCountryField()
     location = serializers.CharField()
     sectors = ReadOnlySectorsField()
+    main_sector = SectorField(source="internal_main_sector")
     all_sectors = ReadOnlyAllSectorsField()
     categories = ReadOnlyCategoriesField()
 
@@ -272,6 +277,7 @@ class PublishedVersionSerializer(
             "sectors",
             "all_sectors",
             "categories",
+            "main_sector",
         )
 
 
@@ -279,7 +285,7 @@ class PublicPublishedVersionSerializer(
     LocationFieldMixin, AllowNoneAtToRepresentationMixin, serializers.ModelSerializer
 ):
     """
-    Serializer to be used with gov.uk
+    Serializer to be used with gov.uk (public data)
     """
 
     id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
@@ -300,7 +306,6 @@ class PublicPublishedVersionSerializer(
             "is_resolved",
             "status_date",
             "country",
-            # "caused_by_country_trading_bloc",
             "caused_by_trading_bloc",
             "trading_bloc",
             "location",
@@ -314,9 +319,11 @@ class PublicPublishedVersionSerializer(
         if obj.all_sectors:
             return [{"name": "All sectors"}]
         else:
-            return ReadOnlySectorsField(to_repr_keys=("name",)).to_representation(
-                obj.sectors
-            )
+            # we need to add the main sector into the list as the first field of the array
+            sectors = [obj.internal_main_sector] + obj.sectors
+            return ReadOnlySectorsField(
+                to_repr_keys=("name",), sort=False
+            ).to_representation(sectors)
 
 
 def public_barriers_to_json(public_barriers=None):

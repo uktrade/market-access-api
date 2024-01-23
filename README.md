@@ -28,7 +28,7 @@ Market Access API uses Docker compose to setup and run all the necessary compone
 2. Set up git hooks by running - `make git-hooks`
 3. Enter bash within the django container using `docker-compose exec web bash`
 4. Initialise DB by running the migrations using `./manage.py migrate`
-5. Then create a superuser `py3 manage.py createsuperuser --email your@email.here` then `exit` the container
+5. Then create a superuser `py3 manage.py dmas_createsuperuser --email your@email.here` then `exit` the container
 6. To start the dev server run - `make django-run`
 7. The API is now accessible via http://api.market-access.local:8880
 

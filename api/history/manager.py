@@ -9,6 +9,7 @@ from api.assessment.models import (
 )
 from api.barriers.models import (
     Barrier,
+    BarrierNextStepItem,
     BarrierProgressUpdate,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
@@ -128,6 +129,10 @@ class HistoryManager:
 
         v2_team_member_history = TeamMember.get_history(barrier_id=barrier.pk)
 
+        v2_next_step_item_history = BarrierNextStepItem.get_history(
+            barrier_id=barrier.pk
+        )
+
         v2_public_barrier_history = None
 
         if barrier.has_public_barrier:
@@ -148,6 +153,7 @@ class HistoryManager:
             action_plan_task_history=v2_action_plan_task_history,
             action_plan_milestone_history=v2_action_plan_milestone_history,
             delivery_confidence_history=v2_delivery_confidence_history,
+            next_step_item_history=v2_next_step_item_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)

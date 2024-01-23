@@ -409,6 +409,10 @@ class ReadOnlySectorsField(FilterableReadOnlyField):
     Field serializer to be used with read only sectors fields.
     """
 
+    def __init__(self, to_repr_keys=(), sort=True, **kwargs):
+        super().__init__(to_repr_keys, **kwargs)
+        self.sort = sort
+
     def get_data(self, value):
         def sector_name(sid):
             sector = get_sector(str(sid)) or {}
@@ -419,6 +423,9 @@ class ReadOnlySectorsField(FilterableReadOnlyField):
             for sector_id in value
             if sector_name(str(sector_id))
         ]
+        if not self.sort:
+            # this is used to make sure the main sector is always first
+            return sectors
         return sort_list_of_dicts(sectors, "name")
 
 

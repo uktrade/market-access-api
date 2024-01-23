@@ -1157,6 +1157,18 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
         assert expected_categories == data["internal_categories"]
         assert expected_categories == data["latest_published_version"]["categories"]
 
+    def test_internal_main_sector_in_latest_published_version(self):
+        user = self.create_publisher()
+        pb = self.get_public_barrier(self.barrier)
+        pb, response = self.publish_barrier(pb=pb, user=user)
+        assert status.HTTP_200_OK == response.status_code
+
+        data = PublicBarrierSerializer(pb).data
+        assert (
+            data["latest_published_version"]["main_sector"]["name"]
+            == "Consumer and retail"
+        )
+
 
 class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
     def test_status_of_flags_after_public_barrier_creation(self):
@@ -1489,6 +1501,9 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
             barrier["last_published_on"]
         )
         assert pb1.internal_created_on == dateutil.parser.parse(barrier["reported_on"])
+        # as the sector and the main sector in the list of sectors
+        assert len(barrier["sectors"]) == 2
+        assert barrier["sectors"][0]["name"] == "Consumer and retail"
 
     @patch("api.barriers.views.public_release_to_s3")
     def test_publish_calls_public_release(self, mock_release):
