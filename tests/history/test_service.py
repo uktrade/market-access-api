@@ -240,7 +240,7 @@ def test_barrier_next_step_item_history(barrier):
         {
             "date": history[0]["date"],
             "field": "next_step_item",
-            "model": "barrier_next_step_item",
+            "model": "barrier",
             "new_value": "Updated Tests",
             "old_value": "Tests",
             "user": None,
