@@ -2227,6 +2227,6 @@ class BarrierNextStepItem(BaseModel):
 
         return get_model_history(
             qs,
-            model="barrier_next_step_item",
+            model="barrier",
             fields=fields,
         )
