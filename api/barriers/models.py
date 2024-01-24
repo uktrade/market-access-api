@@ -2058,9 +2058,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            public_queryset = queryset.filter(
-                public_barrier__changed_since_published=True
-            )
+            public_queryset = queryset.filter(changed_since_published=True)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
