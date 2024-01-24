@@ -899,6 +899,10 @@ class PublicBarrierHistoricalModel(models.Model):
         )
 
     def update_light_touch_reviews(self):
+        if self.instance._history.history_type == "-":
+            # If the history type is a deletion, do not attempt to
+            # update the light touch reviews as the related barrier will not exist
+            return
         try:
             light_touch_reviews: PublicBarrierLightTouchReviews = (
                 self.instance.light_touch_reviews
