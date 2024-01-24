@@ -44,32 +44,19 @@ class AllRetrieveAndEditorUpdateOnly(BasePermission):
         "retrieve",
     )
     required_groups = (
-        UserRoles.EDITOR,
+        UserRoles.APPROVER,
         UserRoles.PUBLISHER,
         UserRoles.ADMIN,
     )
 
 
-class IsSifter(BasePermission):
+class IsApprover(BasePermission):
     """
-    Roles that have Sifter permissions.
-    """
-
-    required_groups = (
-        UserRoles.SIFTER,
-        UserRoles.EDITOR,
-        UserRoles.PUBLISHER,
-        UserRoles.ADMIN,
-    )
-
-
-class IsEditor(BasePermission):
-    """
-    Roles that have Editor permissions.
+    Roles that have Approver permissions.
     """
 
     required_groups = (
-        UserRoles.EDITOR,
+        UserRoles.APPROVER,
         UserRoles.PUBLISHER,
         UserRoles.ADMIN,
     )
