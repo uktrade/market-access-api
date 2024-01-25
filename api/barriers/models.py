@@ -252,7 +252,7 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
     @classmethod
     def get_history(cls, barrier_id):
         qs = cls.history.filter(barrier__id=barrier_id)
-        fields = (["status", "update"],)
+        fields = (["status", "update", "next_steps"],)
 
         return get_model_history(
             qs,
@@ -1017,7 +1017,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
 
-    changed_since_public = models.BooleanField(default=False)
+    changed_since_published = models.BooleanField(default=False)
 
     public_barriers = PublicBarrierManager
 
@@ -1075,7 +1075,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.status = self.internal_status
         self.status_date = self.internal_status_date
         self.country = self.internal_country
-        # self.caused_by_country_trading_bloc = self.internal_caused_by_trading_bloc
         self.caused_by_trading_bloc = self.internal_caused_by_trading_bloc
         self.trading_bloc = self.internal_trading_bloc
         self.sectors = self.internal_sectors
@@ -1261,7 +1260,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_caused_by_trading_bloc_changed(self):
-        # return self.barrier.caused_by_trading_bloc != self.caused_by_country_trading_bloc
         return self.barrier.caused_by_trading_bloc != self.caused_by_trading_bloc
 
     @property
@@ -1293,8 +1291,16 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return self.barrier.sectors != self.sectors
 
     @property
+    def internal_main_sector_changed(self):
+        return self.barrier.main_sector != self.internal_main_sector
+
+    @property
     def internal_all_sectors(self):
         return self.barrier.all_sectors
+
+    @property
+    def internal_main_sector(self):
+        return self.barrier.main_sector
 
     @property
     def internal_all_sectors_changed(self):
@@ -1332,8 +1338,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             or self.internal_status_date_changed
             or self.internal_location_changed
             or self.internal_sectors_changed
+            or self.internal_main_sector_changed
             or self.internal_all_sectors_changed
-            or self.internal_sectors_changed
             or self.internal_categories_changed
         )
 
@@ -1797,7 +1803,9 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            public_queryset = queryset.filter(public_barrier__changed_since_public=True)
+            public_queryset = queryset.filter(
+                public_barrier__changed_since_published=True
+            )
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
@@ -2046,7 +2054,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            public_queryset = queryset.filter(public_barrier__changed_since_public=True)
+            public_queryset = queryset.filter(changed_since_published=True)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
@@ -2209,3 +2217,14 @@ class BarrierNextStepItem(BaseModel):
         ordering = ("-completion_date",)
         verbose_name = "Barrier Next Step Item"
         verbose_name_plural = "Barrier Next Step Items"
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("status", "next_step_item")
+
+        return get_model_history(
+            qs,
+            model="barrier",
+            fields=fields,
+        )

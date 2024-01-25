@@ -93,6 +93,7 @@ def enrich_full_history(
     action_plan_task_history: List[Dict],
     action_plan_milestone_history: List[Dict],
     delivery_confidence_history: List[Dict],
+    next_step_item_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -146,6 +147,7 @@ def enrich_full_history(
         + action_plan_task_history
         + action_plan_milestone_history
         + delivery_confidence_history
+        + next_step_item_history
     )
     enriched_history.sort(key=operator.itemgetter("date"))
 
@@ -204,8 +206,8 @@ def get_model_history(  # noqa: C901
         if previous_item is None:
             if track_first_item:
                 # Render first historical item in a table.
-                change = {"old_value": None, "new_value": {}}
                 for field in fields:
+                    change = {"old_value": None, "new_value": {}}
                     if isinstance(field, list):
                         if change["old_value"] is None:
                             change["old_value"] = {}
