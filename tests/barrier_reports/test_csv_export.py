@@ -15,8 +15,8 @@ from api.barriers.models import (
     ProgrammeFundProgressUpdate,
 )
 from api.barriers.serializers import BarrierCsvExportSerializer
-from api.barriers.tasks import create_named_temporary_file, write_to_temporary_file
-from api.barriers.views import BarrierListS3EmailFile
+from api.barrier_reports.tasks import create_named_temporary_file, write_to_temporary_file
+from api.barrier_reports.views import BarrierListS3EmailFile
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,

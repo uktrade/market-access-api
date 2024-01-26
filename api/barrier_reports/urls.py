@@ -16,4 +16,9 @@ urlpatterns = router.urls + [
         BarrierListS3EmailFile.as_view(),
         name="barriers-reports",
     ),
+    path(
+        "barriers/s3-email",
+        BarrierListS3EmailFile.as_view(),
+        name="barriers-s3-email",
+    ),
 ]

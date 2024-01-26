@@ -1,4 +1,3 @@
-import csv
 from tempfile import NamedTemporaryFile
 from typing import Dict, List
 
@@ -6,7 +5,8 @@ from celery import shared_task
 from django.conf import settings
 from notifications_python_client import NotificationsAPIClient
 
-from api.barriers.csv import _transform_csv_row
+import csv
+from api.barrier_reports.csv import _transform_csv_row
 from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barriers.serializers import BarrierCsvExportSerializer
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
