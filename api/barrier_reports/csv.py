@@ -25,3 +25,4 @@ def _transform_csv_value(value):
     if isinstance(value, list):
         return "; ".join(str(x) for x in value)
     return value
+
