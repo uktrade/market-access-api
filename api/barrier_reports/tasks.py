@@ -6,11 +6,11 @@ from api.barrier_reports import service
 
 
 @shared_task
-def generate_s3_and_send_email(
+def generate_barrier_report_file(
     barrier_report_id: str,
     barrier_ids: List[str],
 ):
-    return service.generate_s3_and_send_email(
+    return service.generate_barrier_report_file(
         barrier_report_id=barrier_report_id,
         barrier_ids=barrier_ids,
     )

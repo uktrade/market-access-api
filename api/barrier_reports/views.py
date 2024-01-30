@@ -5,11 +5,10 @@ from rest_framework import generics
 from rest_framework.response import Response
 
 from api.barrier_reports.models import BarrierReport
-from api.barrier_reports.serializers import BarrierReportSerializer
-from api.barrier_reports.service import create_barrier_report
+from api.barrier_reports.serializers import BarrierReportSerializer, BarrierReportPresignedUrlSerializer
+from api.barrier_reports.service import create_barrier_report, get_presigned_url
 from api.barriers.models import Barrier, BarrierFilterSet
 from api.barriers.serializers import BarrierCsvExportSerializer
-
 
 class BarrierReportsView(generics.ListCreateAPIView):
     queryset = Barrier.barriers.annotate(team_count=Count("barrier_team")).all()
@@ -20,6 +19,9 @@ class BarrierReportsView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).values_list("id")
         barrier_ids = list(map(str, queryset.values_list("id", flat=True)))
+
+        if not barrier_ids:
+            return JsonResponse({"success": False, "error": "No barriers matching filterset"})
 
         barrier_report = create_barrier_report(user=request.user, barrier_ids=barrier_ids)
 
@@ -46,3 +48,20 @@ class BarrierReportDetailView(generics.RetrieveAPIView):
             self.permission_denied(
                 request, message="Unauthorized"
             )
+
+
+class BarrierReportPresignedUrlView(generics.RetrieveAPIView):
+    lookup_field = "pk"
+    serializer_class = BarrierReportPresignedUrlSerializer
+    queryset = BarrierReport.objects.all()
+
+    def check_object_permissions(self, request, obj):
+        if obj.user != request.user:
+            self.permission_denied(
+                request, message="Unauthorized"
+            )
+
+    def get(self, request, *args, **kwargs):
+        barrier_report = self.get_object()
+        presigned_url = get_presigned_url(barrier_report)
+        return JsonResponse(BarrierReportPresignedUrlSerializer({"presigned_url": presigned_url}).data)

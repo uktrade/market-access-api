@@ -53,7 +53,7 @@ def create_barrier_report(user, barrier_ids) -> BarrierReport:
 
     # Make celery call don't wait for return
     # from api.barrier_reports.tasks import generate_s3_and_send_email
-    tasks.generate_s3_and_send_email.delay(
+    tasks.generate_barrier_report_file.delay(
         barrier_report.id,
         barrier_ids,
     )
@@ -61,7 +61,7 @@ def create_barrier_report(user, barrier_ids) -> BarrierReport:
     return barrier_report
 
 
-def generate_s3_and_send_email(
+def generate_barrier_report_file(
     barrier_report_id: str,
     barrier_ids: List[str],
 ) -> None:
@@ -107,3 +107,12 @@ def generate_s3_and_send_email(
         },
     )
     barrier_report.complete()
+
+
+def get_presigned_url(barrier_report):
+    s3_client, bucket = get_s3_client_and_bucket_name()
+
+    return s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket, "Key": barrier_report.filename},
+    )

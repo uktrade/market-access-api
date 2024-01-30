@@ -8,3 +8,7 @@ class BarrierReportSerializer(serializers.Serializer):
     user = serializers.CharField()
     created_on = serializers.DateTimeField()
     modified_on = serializers.DateTimeField()
+
+
+class BarrierReportPresignedUrlSerializer(serializers.Serializer):
+    presigned_url = serializers.CharField()
