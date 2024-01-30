@@ -9,3 +9,8 @@ class BarrierReportStatusUpdateError(APIException):
 class BarrierReportDoesNotExist(APIException):
     status_code = 404
     default_code = "error"
+
+
+class BarrierReportNotificationError(APIException):
+    status_code = 400
+    default_code = "error"

@@ -1,5 +1,6 @@
 import csv
 import io
+import logging
 from typing import List
 
 from django.conf import settings
@@ -9,13 +10,16 @@ from notifications_python_client import NotificationsAPIClient
 from api.barrier_reports import tasks
 from api.barrier_reports.constants import BARRIER_FIELD_TO_REPORT_TITLE
 from api.barrier_reports.csv import _transform_csv_row
-from api.barrier_reports.exceptions import BarrierReportDoesNotExist
+from api.barrier_reports.exceptions import BarrierReportDoesNotExist, BarrierReportNotificationError
 from api.barrier_reports.models import BarrierReport, BarrierReportStatus
 from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
-from api.barriers.serializers import BarrierCsvExportSerializer
+from api.barrier_reports.serializers import BarrierCsvExportSerializer
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.models import UserActvitiyLog
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_s3_client_and_bucket_name():
@@ -65,6 +69,7 @@ def generate_barrier_report_file(
     barrier_report_id: str,
     barrier_ids: List[str],
 ) -> None:
+    logger.info(f'Generating report for BarrierReport: {barrier_report_id}')
     try:
         barrier_report = BarrierReport.objects.select_related('user').get(id=barrier_report_id)
     except BarrierReport.DoesNotExist:
@@ -91,10 +96,35 @@ def generate_barrier_report_file(
         Key=barrier_report.filename
     )
 
-    presigned_url = s3_client.generate_presigned_url(
+    barrier_report.complete()
+
+    # Notify user task is complete
+    tasks.barrier_report_complete_notification.delay(barrier_report_id=str(barrier_report.id))
+
+
+def get_presigned_url(barrier_report):
+    s3_client, bucket = get_s3_client_and_bucket_name()
+
+    return s3_client.generate_presigned_url(
         "get_object",
         Params={"Bucket": bucket, "Key": barrier_report.filename},
     )
+
+
+def barrier_report_complete_notification(barrier_report_id: str):
+    """
+    Send notification to user with a presigned url that a Barrier Report has been completed.
+    """
+    logger.info(f'Notifying user for BarrierReport: {barrier_report_id}')
+    try:
+        barrier_report = BarrierReport.objects.select_related('user').get(id=barrier_report_id)
+    except BarrierReport.DoesNotExist:
+        raise BarrierReportDoesNotExist(barrier_report_id)
+
+    if barrier_report.status != BarrierReportStatus.COMPLETE:
+        raise BarrierReportNotificationError("Barrier status not Complete")
+
+    presigned_url = get_presigned_url(barrier_report)
 
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     client.send_email_notification(
@@ -105,14 +135,4 @@ def generate_barrier_report_file(
             "file_name": barrier_report.filename,
             "file_url": presigned_url,
         },
-    )
-    barrier_report.complete()
-
-
-def get_presigned_url(barrier_report):
-    s3_client, bucket = get_s3_client_and_bucket_name()
-
-    return s3_client.generate_presigned_url(
-        "get_object",
-        Params={"Bucket": bucket, "Key": barrier_report.filename},
     )

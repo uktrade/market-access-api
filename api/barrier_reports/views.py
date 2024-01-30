@@ -1,14 +1,15 @@
 from django.db.models import Count
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.response import Response
 
 from api.barrier_reports.models import BarrierReport
 from api.barrier_reports.serializers import BarrierReportSerializer, BarrierReportPresignedUrlSerializer
 from api.barrier_reports.service import create_barrier_report, get_presigned_url
 from api.barriers.models import Barrier, BarrierFilterSet
-from api.barriers.serializers import BarrierCsvExportSerializer
+from api.barrier_reports.serializers import BarrierCsvExportSerializer
+
 
 class BarrierReportsView(generics.ListCreateAPIView):
     queryset = Barrier.barriers.annotate(team_count=Count("barrier_team")).all()
@@ -21,15 +22,16 @@ class BarrierReportsView(generics.ListCreateAPIView):
         barrier_ids = list(map(str, queryset.values_list("id", flat=True)))
 
         if not barrier_ids:
-            return JsonResponse({"success": False, "error": "No barriers matching filterset"})
+            return JsonResponse(status=status.HTTP_400_BAD_REQUEST, data={"error": "No barriers matching filterset"})
 
         barrier_report = create_barrier_report(user=request.user, barrier_ids=barrier_ids)
 
-        return JsonResponse({"success": True, "barrier_report_id": barrier_report.id})
+        return JsonResponse(status=status.HTTP_201_CREATED, data={"barrier_report_id": barrier_report.id})
 
     def list(self, request, *args, **kwargs):
-        return Response(
-            BarrierReportSerializer(
+        return JsonResponse(
+            status=status.HTTP_200_OK,
+            data=BarrierReportSerializer(
                 BarrierReport.objects.filter(user=request.user).values(
                     'id', 'name', 'status', 'created_on', 'modified_on', 'user'
                 ),

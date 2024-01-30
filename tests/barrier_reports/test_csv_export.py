@@ -11,7 +11,7 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
 )
-from api.barriers.serializers import BarrierCsvExportSerializer
+from api.barrier_reports.serializers import BarrierCsvExportSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,

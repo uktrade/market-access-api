@@ -14,3 +14,8 @@ def generate_barrier_report_file(
         barrier_report_id=barrier_report_id,
         barrier_ids=barrier_ids,
     )
+
+
+@shared_task
+def barrier_report_complete_notification(barrier_report_id: str):
+    service.barrier_report_complete_notification(barrier_report_id=barrier_report_id)

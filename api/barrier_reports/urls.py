@@ -10,12 +10,12 @@ urlpatterns = router.urls + [
     path(
         "barrier-reports",
         BarrierReportsView.as_view(),
-        name="get-barrier-reports",
+        name="barrier-reports",
     ),
     path("barrier-reports/<uuid:pk>", BarrierReportDetailView.as_view(), name="get-barrier-report"),
     path(
         "barrier-reports/<uuid:pk>/presigned-url",
         BarrierReportPresignedUrlView.as_view(),
-        name="get-barrier-report"
+        name="get-barrier-report-presigned-url"
     ),
 ]
