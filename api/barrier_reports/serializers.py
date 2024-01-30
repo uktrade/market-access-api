@@ -9,9 +9,23 @@ from api.barriers.models import Barrier, BarrierTopPrioritySummary
 from api.barriers.serializers.mixins import AssessmentFieldsMixin
 from api.collaboration.models import TeamMember
 from api.history.factories import PublicBarrierHistoryFactory
-from api.metadata.constants import BARRIER_TERMS, BarrierStatus, BARRIER_PENDING, BARRIER_SOURCE, TRADE_DIRECTION_CHOICES, \
-    PublicBarrierStatus, GOVERNMENT_ORGANISATION_TYPES, TOP_PRIORITY_BARRIER_STATUS
-from api.metadata.utils import get_sector, get_country, get_trading_bloc, get_trading_bloc_overseas_regions, get_admin_area
+from api.metadata.constants import (
+    BARRIER_PENDING,
+    BARRIER_SOURCE,
+    BARRIER_TERMS,
+    GOVERNMENT_ORGANISATION_TYPES,
+    TOP_PRIORITY_BARRIER_STATUS,
+    TRADE_DIRECTION_CHOICES,
+    BarrierStatus,
+    PublicBarrierStatus,
+)
+from api.metadata.utils import (
+    get_admin_area,
+    get_country,
+    get_sector,
+    get_trading_bloc,
+    get_trading_bloc_overseas_regions,
+)
 
 
 class BarrierReportSerializer(serializers.Serializer):

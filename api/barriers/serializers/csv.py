@@ -2,9 +2,7 @@ import logging
 
 from rest_framework import serializers
 
-from api.barriers.models import (
-    BarrierRequestDownloadApproval,
-)
+from api.barriers.models import BarrierRequestDownloadApproval
 
 logger = logging.getLogger(__name__)
 

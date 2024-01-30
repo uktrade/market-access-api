@@ -5,13 +5,13 @@ from django.conf import settings
 from pytz import UTC
 from rest_framework.test import APITestCase
 
+from api.barrier_reports.serializers import BarrierCsvExportSerializer
 from api.barriers.models import (
     Barrier,
     BarrierProgressUpdate,
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
 )
-from api.barrier_reports.serializers import BarrierCsvExportSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,

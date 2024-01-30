@@ -59,6 +59,7 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
+
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 

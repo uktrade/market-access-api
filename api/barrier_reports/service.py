@@ -10,14 +10,16 @@ from notifications_python_client import NotificationsAPIClient
 from api.barrier_reports import tasks
 from api.barrier_reports.constants import BARRIER_FIELD_TO_REPORT_TITLE
 from api.barrier_reports.csv import _transform_csv_row
-from api.barrier_reports.exceptions import BarrierReportDoesNotExist, BarrierReportNotificationError
+from api.barrier_reports.exceptions import (
+    BarrierReportDoesNotExist,
+    BarrierReportNotificationError,
+)
 from api.barrier_reports.models import BarrierReport, BarrierReportStatus
-from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.barrier_reports.serializers import BarrierCsvExportSerializer
+from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.models import UserActvitiyLog
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,7 @@ def serializer_to_csv_bytes(serializer, field_names) -> bytes:
     writer.writerow(field_names)
     for row in serializer.data:
         writer.writerow(_transform_csv_row(row))
-    content = output.getvalue().encode('utf-8')
+    content = output.getvalue().encode("utf-8")
     return content
 
 
@@ -69,9 +71,11 @@ def generate_barrier_report_file(
     barrier_report_id: str,
     barrier_ids: List[str],
 ) -> None:
-    logger.info(f'Generating report for BarrierReport: {barrier_report_id}')
+    logger.info(f"Generating report for BarrierReport: {barrier_report_id}")
     try:
-        barrier_report = BarrierReport.objects.select_related('user').get(id=barrier_report_id)
+        barrier_report = BarrierReport.objects.select_related("user").get(
+            id=barrier_report_id
+        )
     except BarrierReport.DoesNotExist:
         raise BarrierReportDoesNotExist(barrier_report_id)
 
@@ -90,16 +94,14 @@ def generate_barrier_report_file(
     s3_client, bucket = get_s3_client_and_bucket_name()
 
     # Upload file
-    s3_client.put_object(
-        Bucket=bucket,
-        Body=csv_bytes,
-        Key=barrier_report.filename
-    )
+    s3_client.put_object(Bucket=bucket, Body=csv_bytes, Key=barrier_report.filename)
 
     barrier_report.complete()
 
     # Notify user task is complete
-    tasks.barrier_report_complete_notification.delay(barrier_report_id=str(barrier_report.id))
+    tasks.barrier_report_complete_notification.delay(
+        barrier_report_id=str(barrier_report.id)
+    )
 
 
 def get_presigned_url(barrier_report):
@@ -115,9 +117,11 @@ def barrier_report_complete_notification(barrier_report_id: str):
     """
     Send notification to user with a presigned url that a Barrier Report has been completed.
     """
-    logger.info(f'Notifying user for BarrierReport: {barrier_report_id}')
+    logger.info(f"Notifying user for BarrierReport: {barrier_report_id}")
     try:
-        barrier_report = BarrierReport.objects.select_related('user').get(id=barrier_report_id)
+        barrier_report = BarrierReport.objects.select_related("user").get(
+            id=barrier_report_id
+        )
     except BarrierReport.DoesNotExist:
         raise BarrierReportDoesNotExist(barrier_report_id)
 

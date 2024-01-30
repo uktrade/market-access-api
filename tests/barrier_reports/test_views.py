@@ -1,13 +1,14 @@
 import json
 from unittest import TestCase
 
+import mock
 from django.http import JsonResponse
+from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
-from freezegun import freeze_time
-import mock
-from api.core.test_utils import APITestMixin
+
 from api.barrier_reports.models import BarrierReport
+from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
 
 
@@ -32,7 +33,7 @@ class TestBarrierReportViews(APITestMixin, TestCase):
         response = self.api_client.post(url)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.content ==b'{"error": "No barriers matching filterset"}'
+        assert response.content == b'{"error": "No barriers matching filterset"}'
 
     def test_barrier_report_post_endpoint_success(self):
         barrier = BarrierFactory()
