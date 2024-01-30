@@ -49,14 +49,16 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
         assert response.status_code == status.HTTP_201_CREATED
 
-    @mock.patch("api.barrier_reports.service")
-    def test_barrier_report_post_endpoint_success_and_retrieve(self, mock_service):
+    @mock.patch("api.barrier_reports.views.create_barrier_report")
+    def test_barrier_report_post_endpoint_success_and_retrieve(self, mock_create_barrier_report):
         barrier = BarrierFactory()
-        barrier_report = BarrierReport.objects.create()
-        mock_service.create_barrier_report.return_value = barrier_report
+        barrier_report = BarrierReport.objects.create(user=self.user)
+        mock_create_barrier_report.return_value = barrier_report
         url = reverse("barrier-reports")
 
         response = self.api_client.post(url)
+
+        mock_create_barrier_report.assert_called_once_with(user=self.user, barrier_ids=[str(barrier.id)])
 
         assert response.status_code == status.HTTP_201_CREATED
         assert (
@@ -68,4 +70,75 @@ class TestBarrierReportViews(APITestMixin, TestCase):
         response = self.api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.content == ""
+        assert json.loads(response.content)["id"] == str(barrier_report.id)
+
+    def test_get_barrier_report(self):
+        barrier_report = BarrierReport.objects.create(user=self.user)
+
+        url = reverse("get-barrier-report", kwargs={'pk': str(barrier_report.id)})
+
+        response = self.api_client.get(url)
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert data['id'] == str(barrier_report.id)
+
+    def test_get_barrier_report_unauthorized(self):
+        # Request made as self.user
+        assert self.user != self.mock_user
+
+        barrier_report = BarrierReport.objects.create(user=self.mock_user)
+
+        url = reverse("get-barrier-report", kwargs={'pk': str(barrier_report.id)})
+
+        response = self.api_client.get(url)
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert data == {'detail': 'Unauthorized'}
+
+    def test_barrier_report_list(self):
+        assert self.user != self.mock_user
+
+        barrier = BarrierFactory()
+        br1 = BarrierReport.objects.create(user=self.user)
+        br2 = BarrierReport.objects.create(user=self.user)
+
+        # Won't show up
+        br3 = BarrierReport.objects.create(user=self.mock_user)
+
+        url = reverse("barrier-reports")
+
+        response = self.api_client.get(url)
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(data) == 2
+        assert data[0]["id"] == str(br2.id)
+        assert data[1]["id"] == str(br1.id)
+
+    @mock.patch("api.barrier_reports.views.get_presigned_url")
+    def test_get_presigned_url(self, mock_get_presigned_url):
+        mock_get_presigned_url.return_value = 'url.com'
+        barrier_report = BarrierReport.objects.create(user=self.user)
+
+        url = reverse("get-barrier-report-presigned-url", kwargs={'pk': str(barrier_report.id)})
+
+        response = self.api_client.get(url)
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert data == {'presigned_url': 'url.com'}
+
+    @mock.patch("api.barrier_reports.views.get_presigned_url")
+    def test_get_presigned_url_unauthorized(self, mock_get_presigned_url):
+        mock_get_presigned_url.return_value = 'url.com'
+        barrier_report = BarrierReport.objects.create(user=self.mock_user)
+
+        url = reverse("get-barrier-report-presigned-url", kwargs={'pk': str(barrier_report.id)})
+
+        response = self.api_client.get(url)
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert data == {'detail': 'Unauthorized'}

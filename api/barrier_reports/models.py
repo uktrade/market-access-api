@@ -47,10 +47,3 @@ class BarrierReport(ArchivableMixin, BaseModel):
             )
         self.status = BarrierReportStatus.COMPLETE
         self.save()
-
-    def presigned_url(self):
-        """
-        if s3 not exists:
-        """
-        if not self.from_s3():
-            raise Exception

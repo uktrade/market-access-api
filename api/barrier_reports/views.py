@@ -2,6 +2,7 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
+from rest_framework.response import Response
 
 from api.barrier_reports.models import BarrierReport
 from api.barrier_reports.serializers import (
@@ -39,10 +40,10 @@ class BarrierReportsView(generics.ListCreateAPIView):
         )
 
     def list(self, request, *args, **kwargs):
-        return JsonResponse(
+        return Response(
             status=status.HTTP_200_OK,
             data=BarrierReportSerializer(
-                BarrierReport.objects.filter(user=request.user).values(
+                BarrierReport.objects.filter(user=request.user).order_by('-created_on').values(
                     "id", "name", "status", "created_on", "modified_on", "user"
                 ),
                 many=True,
@@ -72,6 +73,7 @@ class BarrierReportPresignedUrlView(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         barrier_report = self.get_object()
         presigned_url = get_presigned_url(barrier_report)
-        return JsonResponse(
-            BarrierReportPresignedUrlSerializer({"presigned_url": presigned_url}).data
+        return Response(
+            status=status.HTTP_200_OK,
+            data=BarrierReportPresignedUrlSerializer({"presigned_url": presigned_url}).data
         )
