@@ -43,9 +43,9 @@ class BarrierReportsView(generics.ListCreateAPIView):
         return Response(
             status=status.HTTP_200_OK,
             data=BarrierReportSerializer(
-                BarrierReport.objects.filter(user=request.user).order_by('-created_on').values(
-                    "id", "name", "status", "created_on", "modified_on", "user"
-                ),
+                BarrierReport.objects.filter(user=request.user)
+                .order_by("-created_on")
+                .values("id", "name", "status", "created_on", "modified_on", "user"),
                 many=True,
             ).data,
         )
@@ -75,5 +75,7 @@ class BarrierReportPresignedUrlView(generics.RetrieveAPIView):
         presigned_url = get_presigned_url(barrier_report)
         return Response(
             status=status.HTTP_200_OK,
-            data=BarrierReportPresignedUrlSerializer({"presigned_url": presigned_url}).data
+            data=BarrierReportPresignedUrlSerializer(
+                {"presigned_url": presigned_url}
+            ).data,
         )

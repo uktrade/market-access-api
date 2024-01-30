@@ -50,7 +50,9 @@ class TestBarrierReportViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_201_CREATED
 
     @mock.patch("api.barrier_reports.views.create_barrier_report")
-    def test_barrier_report_post_endpoint_success_and_retrieve(self, mock_create_barrier_report):
+    def test_barrier_report_post_endpoint_success_and_retrieve(
+        self, mock_create_barrier_report
+    ):
         barrier = BarrierFactory()
         barrier_report = BarrierReport.objects.create(user=self.user)
         mock_create_barrier_report.return_value = barrier_report
@@ -58,7 +60,9 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
         response = self.api_client.post(url)
 
-        mock_create_barrier_report.assert_called_once_with(user=self.user, barrier_ids=[str(barrier.id)])
+        mock_create_barrier_report.assert_called_once_with(
+            user=self.user, barrier_ids=[str(barrier.id)]
+        )
 
         assert response.status_code == status.HTTP_201_CREATED
         assert (
@@ -75,13 +79,13 @@ class TestBarrierReportViews(APITestMixin, TestCase):
     def test_get_barrier_report(self):
         barrier_report = BarrierReport.objects.create(user=self.user)
 
-        url = reverse("get-barrier-report", kwargs={'pk': str(barrier_report.id)})
+        url = reverse("get-barrier-report", kwargs={"pk": str(barrier_report.id)})
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_200_OK
-        assert data['id'] == str(barrier_report.id)
+        assert data["id"] == str(barrier_report.id)
 
     def test_get_barrier_report_unauthorized(self):
         # Request made as self.user
@@ -89,13 +93,13 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
         barrier_report = BarrierReport.objects.create(user=self.mock_user)
 
-        url = reverse("get-barrier-report", kwargs={'pk': str(barrier_report.id)})
+        url = reverse("get-barrier-report", kwargs={"pk": str(barrier_report.id)})
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert data == {'detail': 'Unauthorized'}
+        assert data == {"detail": "Unauthorized"}
 
     def test_barrier_report_list(self):
         assert self.user != self.mock_user
@@ -119,26 +123,30 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
     @mock.patch("api.barrier_reports.views.get_presigned_url")
     def test_get_presigned_url(self, mock_get_presigned_url):
-        mock_get_presigned_url.return_value = 'url.com'
+        mock_get_presigned_url.return_value = "url.com"
         barrier_report = BarrierReport.objects.create(user=self.user)
 
-        url = reverse("get-barrier-report-presigned-url", kwargs={'pk': str(barrier_report.id)})
+        url = reverse(
+            "get-barrier-report-presigned-url", kwargs={"pk": str(barrier_report.id)}
+        )
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_200_OK
-        assert data == {'presigned_url': 'url.com'}
+        assert data == {"presigned_url": "url.com"}
 
     @mock.patch("api.barrier_reports.views.get_presigned_url")
     def test_get_presigned_url_unauthorized(self, mock_get_presigned_url):
-        mock_get_presigned_url.return_value = 'url.com'
+        mock_get_presigned_url.return_value = "url.com"
         barrier_report = BarrierReport.objects.create(user=self.mock_user)
 
-        url = reverse("get-barrier-report-presigned-url", kwargs={'pk': str(barrier_report.id)})
+        url = reverse(
+            "get-barrier-report-presigned-url", kwargs={"pk": str(barrier_report.id)}
+        )
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert data == {'detail': 'Unauthorized'}
+        assert data == {"detail": "Unauthorized"}
