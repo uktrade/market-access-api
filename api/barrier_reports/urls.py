@@ -19,7 +19,7 @@ urlpatterns = router.urls + [
     path(
         "barrier-reports/<uuid:pk>",
         BarrierReportDetailView.as_view(),
-        name="get-barrier-report",
+        name="barrier-report",
     ),
     path(
         "barrier-reports/<uuid:pk>/presigned-url",

@@ -69,7 +69,7 @@ class TestBarrierReportViews(APITestMixin, TestCase):
             str(barrier_report.id) == json.loads(response.content)["barrier_report_id"]
         )
 
-        url = reverse("get-barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
 
         response = self.api_client.get(url)
 
@@ -79,7 +79,7 @@ class TestBarrierReportViews(APITestMixin, TestCase):
     def test_get_barrier_report(self):
         barrier_report = BarrierReport.objects.create(user=self.user)
 
-        url = reverse("get-barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
@@ -93,7 +93,7 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
         barrier_report = BarrierReport.objects.create(user=self.mock_user)
 
-        url = reverse("get-barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
@@ -150,3 +150,52 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert data == {"detail": "Unauthorized"}
+
+    def test_update_report_barrier_name(self):
+        barrier_report = BarrierReport.objects.create(user=self.user)
+
+        assert barrier_report.name is None
+
+        url = reverse(
+            "barrier-report", kwargs={"pk": str(barrier_report.id)}
+        )
+
+        response = self.api_client.patch(url, data={'name': 'New Name'})
+        barrier_report.refresh_from_db()
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert data['id'] == str(barrier_report.id)
+        assert data['name'] == 'New Name'
+
+    def test_update_report_barrier_name_unauthorized(self):
+        barrier_report = BarrierReport.objects.create(user=self.mock_user)
+
+        assert barrier_report.name is None
+
+        url = reverse(
+            "barrier-report", kwargs={"pk": str(barrier_report.id)}
+        )
+
+        response = self.api_client.patch(url, data={'name': 'New Name'})
+        barrier_report.refresh_from_db()
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert data == {"detail": "Unauthorized"}
+
+    def test_update_report_barrier_name_bad_request(self):
+        barrier_report = BarrierReport.objects.create(user=self.user)
+
+        assert barrier_report.name is None
+
+        url = reverse(
+            "barrier-report", kwargs={"pk": str(barrier_report.id)}
+        )
+
+        response = self.api_client.patch(url, data={'bad_field': 'hello'})
+        barrier_report.refresh_from_db()
+        data = json.loads(response.content)
+
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert data == {'name': ['This field is required.']}

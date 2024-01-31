@@ -37,6 +37,10 @@ class BarrierReportSerializer(serializers.Serializer):
     modified_on = serializers.DateTimeField()
 
 
+class BarrierReportPatchSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=256)
+
+
 class BarrierReportPresignedUrlSerializer(serializers.Serializer):
     presigned_url = serializers.CharField()
 

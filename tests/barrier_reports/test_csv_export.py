@@ -1,4 +1,6 @@
+import csv
 import datetime
+from io import StringIO
 from unittest import skip
 
 from django.conf import settings
@@ -20,6 +22,8 @@ from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
 )
 from api.metadata.models import ExportType, Organisation
+from api.barrier_reports.constants import BARRIER_FIELD_TO_REPORT_TITLE
+from api.barrier_reports.service import serializer_to_csv_bytes
 from tests.assessment.factories import (
     EconomicAssessmentFactory,
     EconomicImpactAssessmentFactory,
@@ -372,73 +376,53 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
         assert serializer.data["all_sectors"] is True
 
 
-# class TestBarrierCsvExport(APITestMixin, APITestCase):
-#     def get_content_written_to_csv(self, queryset):
-#         field_titles = BarrierReportsView.field_titles
-#         serializer = BarrierCsvExportSerializer(queryset, many=True)
-#         mocked_open = mock_open()
-#         with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
-#             with create_named_temporary_file() as temporary_file:
-#                 write_to_temporary_file(temporary_file, field_titles, serializer)
-#         mock_handle = mocked_open()
-#         written = "".join([str(call.args[0]) for call in mock_handle.write.mock_calls])
-#         return written
-#
-#     def test_csv_output_uses_encoding_that_works_with_excel(self):
-#         mocked_open = mock_open()
-#         with patch("api.barriers.tasks.NamedTemporaryFile", mocked_open):
-#             with create_named_temporary_file():
-#                 pass
-#
-#         mocked_open.assert_called_with(mode="w+t", encoding="utf-8-sig")
-#
-#     def test_csv_has_midpoint_column(self):
-#         impact_level = 6
-#         barrier = BarrierFactory()
-#         EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
-#         queryset = Barrier.objects.filter(id__in=[barrier.id])
-#
-#         written = self.get_content_written_to_csv(queryset)
-#
-#         expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
-#         io = StringIO(written)
-#         reader = csv.DictReader(io, delimiter=",")
-#         for row in reader:
-#             break
-#         assert "Midpoint value" in row.keys()
-#         assert row["Midpoint value"] == expected_midpoint_value
-#
-#     def test_csv_has_midpoint_column_after_valuation_assessment_column(self):
-#         impact_level = 6
-#         barrier = BarrierFactory()
-#         EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
-#         queryset = Barrier.objects.filter(id__in=[barrier.id])
-#
-#         written = self.get_content_written_to_csv(queryset)
-#
-#         io = StringIO(written)
-#         reader = csv.DictReader(io, delimiter=",")
-#         for row in reader:
-#             break
-#         # indexing the result of a dict's keys() method isn't supported in Python 3
-#         keys_list = list(row.keys())
-#         index_of_midpoint_value_column = keys_list.index("Midpoint value")
-#         preceding_column_key = keys_list[index_of_midpoint_value_column - 1]
-#         assert preceding_column_key == "Valuation assessment rating"
-#
-#     def test_csv_midpoint_column_is_empty_string_for_no_valuation_assessment(self):
-#         barrier = BarrierFactory()
-#         queryset = Barrier.objects.filter(id__in=[barrier.id])
-#
-#         written = self.get_content_written_to_csv(queryset)
-#
-#         expected_midpoint_value = ""
-#         io = StringIO(written)
-#         reader = csv.DictReader(io, delimiter=",")
-#         for row in reader:
-#             break
-#         assert "Midpoint value" in row.keys()
-#         assert row["Midpoint value"] == expected_midpoint_value
+class TestBarrierCsvExport(APITestMixin, APITestCase):
+
+    def test_csv_has_midpoint_column(self):
+        impact_level = 6
+        barrier = BarrierFactory()
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+        serializer = BarrierCsvExportSerializer(queryset, many=True)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
+
+        expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
+
+        assert b"Midpoint value" in data
+        assert expected_midpoint_value.encode('utf-8') in data
+
+    def test_csv_has_midpoint_column_after_valuation_assessment_column(self):
+        impact_level = 6
+        barrier = BarrierFactory()
+        EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+
+        serializer = BarrierCsvExportSerializer(queryset, many=True)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
+
+        str_io = StringIO(data.decode('utf-8'))
+        reader = csv.DictReader(str_io, delimiter=",")
+        for row in reader:
+            break
+        # indexing the result of a dict's keys() method isn't supported in Python 3
+        keys_list = list(row.keys())
+        index_of_midpoint_value_column = keys_list.index("Midpoint value")
+        preceding_column_key = keys_list[index_of_midpoint_value_column - 1]
+        assert preceding_column_key == "Valuation assessment rating"
+
+    def test_csv_midpoint_column_is_empty_string_for_no_valuation_assessment(self):
+        barrier = BarrierFactory()
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+        serializer = BarrierCsvExportSerializer(queryset, many=True)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
+
+        expected_midpoint_value = ""
+        str_io = StringIO(data.decode('utf-8'))
+        reader = csv.DictReader(str_io, delimiter=",")
+        for row in reader:
+            break
+        assert "Midpoint value" in row.keys()
+        assert row["Midpoint value"] == expected_midpoint_value
 
 
 @skip(

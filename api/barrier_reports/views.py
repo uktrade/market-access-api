@@ -8,10 +8,11 @@ from api.barrier_reports.models import BarrierReport
 from api.barrier_reports.serializers import (
     BarrierCsvExportSerializer,
     BarrierReportPresignedUrlSerializer,
-    BarrierReportSerializer,
+    BarrierReportSerializer, BarrierReportPatchSerializer,
 )
 from api.barrier_reports.service import create_barrier_report, get_presigned_url
 from api.barriers.models import Barrier, BarrierFilterSet
+from api.barrier_reports.exceptions import BarrierReportPatchError
 
 
 class BarrierReportsView(generics.ListCreateAPIView):
@@ -51,7 +52,7 @@ class BarrierReportsView(generics.ListCreateAPIView):
         )
 
 
-class BarrierReportDetailView(generics.RetrieveAPIView):
+class BarrierReportDetailView(generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     serializer_class = BarrierReportSerializer
     queryset = BarrierReport.objects.all()
@@ -59,6 +60,15 @@ class BarrierReportDetailView(generics.RetrieveAPIView):
     def check_object_permissions(self, request, obj):
         if obj.user != request.user:
             self.permission_denied(request, message="Unauthorized")
+
+    def patch(self, request, *args, **kwargs):
+        """Only update name"""
+        obj = self.get_object()
+        serializer = BarrierReportPatchSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            obj.name = serializer.data['name']
+            obj.save()
+        return Response(status=status.HTTP_200_OK, data=BarrierReportSerializer(obj).data)
 
 
 class BarrierReportPresignedUrlView(generics.RetrieveAPIView):
