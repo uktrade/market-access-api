@@ -908,6 +908,22 @@ class PublicBarrierViewSet(
     def unprepared(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.ELIGIBLE)
 
+    @action(methods=["post"], detail=True, permission_classes=())
+    def report_public_barrier_title(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.title = request.data.get("values")["title"]
+        public_barrier.save()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(methods=["post"], detail=True, permission_classes=())
+    def report_public_barrier_summary(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.summary = request.data.get("values")["summary"]
+        public_barrier.save()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
     @action(
         methods=["post"],
         detail=True,
