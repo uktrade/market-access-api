@@ -7,12 +7,12 @@ from rest_framework.response import Response
 from api.barrier_reports.models import BarrierReport
 from api.barrier_reports.serializers import (
     BarrierCsvExportSerializer,
+    BarrierReportPatchSerializer,
     BarrierReportPresignedUrlSerializer,
-    BarrierReportSerializer, BarrierReportPatchSerializer,
+    BarrierReportSerializer,
 )
 from api.barrier_reports.service import create_barrier_report, get_presigned_url
 from api.barriers.models import Barrier, BarrierFilterSet
-from api.barrier_reports.exceptions import BarrierReportPatchError
 
 
 class BarrierReportsView(generics.ListCreateAPIView):
@@ -66,9 +66,11 @@ class BarrierReportDetailView(generics.RetrieveUpdateAPIView):
         obj = self.get_object()
         serializer = BarrierReportPatchSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            obj.name = serializer.data['name']
+            obj.name = serializer.data["name"]
             obj.save()
-        return Response(status=status.HTTP_200_OK, data=BarrierReportSerializer(obj).data)
+        return Response(
+            status=status.HTTP_200_OK, data=BarrierReportSerializer(obj).data
+        )
 
 
 class BarrierReportPresignedUrlView(generics.RetrieveAPIView):

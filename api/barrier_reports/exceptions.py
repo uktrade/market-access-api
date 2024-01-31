@@ -14,8 +14,3 @@ class BarrierReportDoesNotExist(APIException):
 class BarrierReportNotificationError(APIException):
     status_code = 400
     default_code = "error"
-
-
-class BarrierReportPatchError(APIException):
-    status_code = 400
-    default_code = "error"

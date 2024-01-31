@@ -156,28 +156,24 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
         assert barrier_report.name is None
 
-        url = reverse(
-            "barrier-report", kwargs={"pk": str(barrier_report.id)}
-        )
+        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
 
-        response = self.api_client.patch(url, data={'name': 'New Name'})
+        response = self.api_client.patch(url, data={"name": "New Name"})
         barrier_report.refresh_from_db()
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_200_OK
-        assert data['id'] == str(barrier_report.id)
-        assert data['name'] == 'New Name'
+        assert data["id"] == str(barrier_report.id)
+        assert data["name"] == "New Name"
 
     def test_update_report_barrier_name_unauthorized(self):
         barrier_report = BarrierReport.objects.create(user=self.mock_user)
 
         assert barrier_report.name is None
 
-        url = reverse(
-            "barrier-report", kwargs={"pk": str(barrier_report.id)}
-        )
+        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
 
-        response = self.api_client.patch(url, data={'name': 'New Name'})
+        response = self.api_client.patch(url, data={"name": "New Name"})
         barrier_report.refresh_from_db()
         data = json.loads(response.content)
 
@@ -189,13 +185,11 @@ class TestBarrierReportViews(APITestMixin, TestCase):
 
         assert barrier_report.name is None
 
-        url = reverse(
-            "barrier-report", kwargs={"pk": str(barrier_report.id)}
-        )
+        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
 
-        response = self.api_client.patch(url, data={'bad_field': 'hello'})
+        response = self.api_client.patch(url, data={"bad_field": "hello"})
         barrier_report.refresh_from_db()
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert data == {'name': ['This field is required.']}
+        assert data == {"name": ["This field is required."]}

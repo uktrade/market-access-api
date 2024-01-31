@@ -7,7 +7,9 @@ from django.conf import settings
 from pytz import UTC
 from rest_framework.test import APITestCase
 
+from api.barrier_reports.constants import BARRIER_FIELD_TO_REPORT_TITLE
 from api.barrier_reports.serializers import BarrierCsvExportSerializer
+from api.barrier_reports.service import serializer_to_csv_bytes
 from api.barriers.models import (
     Barrier,
     BarrierProgressUpdate,
@@ -22,8 +24,6 @@ from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
 )
 from api.metadata.models import ExportType, Organisation
-from api.barrier_reports.constants import BARRIER_FIELD_TO_REPORT_TITLE
-from api.barrier_reports.service import serializer_to_csv_bytes
 from tests.assessment.factories import (
     EconomicAssessmentFactory,
     EconomicImpactAssessmentFactory,
@@ -377,7 +377,6 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
 
 class TestBarrierCsvExport(APITestMixin, APITestCase):
-
     def test_csv_has_midpoint_column(self):
         impact_level = 6
         barrier = BarrierFactory()
@@ -389,7 +388,7 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
 
         assert b"Midpoint value" in data
-        assert expected_midpoint_value.encode('utf-8') in data
+        assert expected_midpoint_value.encode("utf-8") in data
 
     def test_csv_has_midpoint_column_after_valuation_assessment_column(self):
         impact_level = 6
@@ -400,7 +399,7 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         serializer = BarrierCsvExportSerializer(queryset, many=True)
         data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
 
-        str_io = StringIO(data.decode('utf-8'))
+        str_io = StringIO(data.decode("utf-8"))
         reader = csv.DictReader(str_io, delimiter=",")
         for row in reader:
             break
@@ -417,7 +416,7 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
 
         expected_midpoint_value = ""
-        str_io = StringIO(data.decode('utf-8'))
+        str_io = StringIO(data.decode("utf-8"))
         reader = csv.DictReader(str_io, delimiter=",")
         for row in reader:
             break
