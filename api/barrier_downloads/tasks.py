@@ -18,4 +18,6 @@ def generate_barrier_download_file(
 
 @shared_task
 def barrier_download_complete_notification(barrier_download_id: str):
-    service.barrier_download_complete_notification(barrier_download_id=barrier_download_id)
+    service.barrier_download_complete_notification(
+        barrier_download_id=barrier_download_id
+    )

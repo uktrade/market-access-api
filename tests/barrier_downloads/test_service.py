@@ -60,7 +60,9 @@ def test_generate_barrier_download_file(mock_notify, mock_csv_bytes, mock_s3, us
     s3_client.put_object.assert_called_once_with(
         Bucket=bucket, Body=b"test", Key="test_file.csv"
     )
-    mock_notify.delay.assert_called_once_with(barrier_download_id=str(barrier_download.id))
+    mock_notify.delay.assert_called_once_with(
+        barrier_download_id=str(barrier_download.id)
+    )
 
     barrier_download.refresh_from_db()
     assert barrier_download.status == BarrierDownloadStatus.COMPLETE
@@ -88,7 +90,9 @@ def test_barrier_download_complete_notification_complete(
 
     mock_get_presigned_url.return_value = "test-url.com"
 
-    service.barrier_download_complete_notification(barrier_download_id=barrier_download.id)
+    service.barrier_download_complete_notification(
+        barrier_download_id=barrier_download.id
+    )
 
     mock_notify_client.assert_called_once_with(
         email_address="hey@siri.com",

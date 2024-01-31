@@ -66,7 +66,8 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
 
         assert response.status_code == status.HTTP_201_CREATED
         assert (
-            str(barrier_download.id) == json.loads(response.content)["barrier_download_id"]
+            str(barrier_download.id)
+            == json.loads(response.content)["barrier_download_id"]
         )
 
         url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
@@ -127,7 +128,8 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         barrier_download = BarrierDownload.objects.create(user=self.user)
 
         url = reverse(
-            "get-barrier-download-presigned-url", kwargs={"pk": str(barrier_download.id)}
+            "get-barrier-download-presigned-url",
+            kwargs={"pk": str(barrier_download.id)},
         )
 
         response = self.api_client.get(url)
@@ -142,7 +144,8 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         barrier_download = BarrierDownload.objects.create(user=self.mock_user)
 
         url = reverse(
-            "get-barrier-download-presigned-url", kwargs={"pk": str(barrier_download.id)}
+            "get-barrier-download-presigned-url",
+            kwargs={"pk": str(barrier_download.id)},
         )
 
         response = self.api_client.get(url)
