@@ -47,7 +47,7 @@ def test_generate_barrier_download_file(mock_notify, mock_csv_bytes, mock_s3, us
     b2 = BarrierFactory()
 
     barrier_download = BarrierDownload.objects.create(
-        user=user, status=BarrierDownloadStatus.PENDING, filename="test_file.csv"
+        created_by=user, status=BarrierDownloadStatus.PENDING, filename="test_file.csv"
     )
     s3_client, bucket = mock.Mock(), mock.Mock()
     mock_csv_bytes.return_value = b"test"
@@ -68,9 +68,28 @@ def test_generate_barrier_download_file(mock_notify, mock_csv_bytes, mock_s3, us
     assert barrier_download.status == BarrierDownloadStatus.COMPLETE
 
 
+@patch("api.barrier_downloads.service.serializer_to_csv_bytes", side_effect=Exception())
+def test_generate_barrier_download_file_exception_handled(mock_csv_bytes, user):
+    b1 = BarrierFactory()
+    b2 = BarrierFactory()
+
+    barrier_download = BarrierDownload.objects.create(
+        created_by=user, status=BarrierDownloadStatus.PENDING, filename="test_file.csv"
+    )
+    mock_csv_bytes.return_value = b"test"
+
+    with pytest.raises(Exception) as exc:
+        service.generate_barrier_download_file(
+            barrier_download_id=barrier_download.id, barrier_ids=[str(b1.id), str(b2.id)]
+        )
+
+    barrier_download.refresh_from_db()
+    assert barrier_download.status == BarrierDownloadStatus.FAILED
+
+
 def test_barrier_download_complete_notification_not_complete(user):
     barrier_download = BarrierDownload.objects.create(
-        user=user, status=BarrierDownloadStatus.PENDING, filename="test_file.csv"
+        created_by=user, status=BarrierDownloadStatus.PENDING, filename="test_file.csv"
     )
 
     with pytest.raises(BarrierDownloadNotificationError):
@@ -85,7 +104,7 @@ def test_barrier_download_complete_notification_complete(
     mock_get_presigned_url, mock_notify_client, user
 ):
     barrier_download = BarrierDownload.objects.create(
-        user=user, status=BarrierDownloadStatus.COMPLETE, filename="test_file.csv"
+        created_by=user, status=BarrierDownloadStatus.COMPLETE, filename="test_file.csv"
     )
 
     mock_get_presigned_url.return_value = "test-url.com"

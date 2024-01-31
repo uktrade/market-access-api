@@ -54,7 +54,7 @@ def create_barrier_download(user, barrier_ids) -> BarrierDownload:
     )
 
     barrier_download = BarrierDownload.objects.create(
-        user=user, status=BarrierDownloadStatus.PENDING, filename=filename
+        created_by=user, status=BarrierDownloadStatus.PENDING, filename=filename
     )
 
     # Make celery call don't wait for return
@@ -73,7 +73,7 @@ def generate_barrier_download_file(
 ) -> None:
     logger.info(f"Generating file for BarrierDownload: {barrier_download_id}")
     try:
-        barrier_download = BarrierDownload.objects.select_related("user").get(
+        barrier_download = BarrierDownload.objects.select_related("created_by").get(
             id=barrier_download_id
         )
     except BarrierDownload.DoesNotExist:
@@ -84,19 +84,28 @@ def generate_barrier_download_file(
     queryset = Barrier.objects.filter(id__in=barrier_ids)
     serializer = BarrierCsvExportSerializer(queryset, many=True)
 
-    # Save the download event in the database
-    BarrierSearchCSVDownloadEvent.objects.create(
-        email=barrier_download.user.email,
-        barrier_ids=",".join(barrier_ids),
-    )
+    try:
+        csv_bytes = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
+    except Exception:
+        # Check for generic exceptions when creating csv file
+        # Async task so no need to handle gracefully
+        # Log error stack.
+        logger.exception('Failed to create CSV')
+        barrier_download.fail()
+        raise
 
-    csv_bytes = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
     s3_client, bucket = get_s3_client_and_bucket_name()
 
     # Upload file
     s3_client.put_object(Bucket=bucket, Body=csv_bytes, Key=barrier_download.filename)
 
     barrier_download.complete()
+
+    # Save the download event in the database
+    BarrierSearchCSVDownloadEvent.objects.create(
+        email=barrier_download.created_by.email,
+        barrier_ids=",".join(barrier_ids),
+    )
 
     # Notify user task is complete
     tasks.barrier_download_complete_notification.delay(
@@ -119,7 +128,7 @@ def barrier_download_complete_notification(barrier_download_id: str):
     """
     logger.info(f"Notifying user for BarrierDownload: {barrier_download_id}")
     try:
-        barrier_download = BarrierDownload.objects.select_related("user").get(
+        barrier_download = BarrierDownload.objects.select_related("created_by").get(
             id=barrier_download_id
         )
     except BarrierDownload.DoesNotExist:
@@ -132,10 +141,10 @@ def barrier_download_complete_notification(barrier_download_id: str):
 
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     client.send_email_notification(
-        email_address=barrier_download.user.email,
+        email_address=barrier_download.created_by.email,
         template_id=settings.NOTIFY_GENERATED_FILE_ID,
         personalisation={
-            "first_name": barrier_download.user.first_name.capitalize(),
+            "first_name": barrier_download.created_by.first_name.capitalize(),
             "file_name": barrier_download.filename,
             "file_url": presigned_url,
         },

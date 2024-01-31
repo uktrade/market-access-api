@@ -32,7 +32,7 @@ class BarrierDownloadSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     status = serializers.CharField()
-    user = serializers.CharField()
+    created_by = serializers.CharField()
     created_on = serializers.DateTimeField()
     modified_on = serializers.DateTimeField()
 

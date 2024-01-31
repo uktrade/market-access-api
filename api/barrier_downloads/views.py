@@ -44,9 +44,9 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
         return Response(
             status=status.HTTP_200_OK,
             data=BarrierDownloadSerializer(
-                BarrierDownload.objects.filter(user=request.user)
+                BarrierDownload.objects.filter(created_by=request.user)
                 .order_by("-created_on")
-                .values("id", "name", "status", "created_on", "modified_on", "user"),
+                .values("id", "name", "status", "created_on", "modified_on", "created_by"),
                 many=True,
             ).data,
         )
@@ -58,7 +58,7 @@ class BarrierDownloadDetailView(generics.RetrieveUpdateAPIView):
     queryset = BarrierDownload.objects.all()
 
     def check_object_permissions(self, request, obj):
-        if obj.user != request.user:
+        if obj.created_by != request.user:
             self.permission_denied(request, message="Unauthorized")
 
     def patch(self, request, *args, **kwargs):
@@ -79,7 +79,7 @@ class BarrierDownloadPresignedUrlView(generics.RetrieveAPIView):
     queryset = BarrierDownload.objects.all()
 
     def check_object_permissions(self, request, obj):
-        if obj.user != request.user:
+        if obj.created_by != request.user:
             self.permission_denied(request, message="Unauthorized")
 
     def get(self, request, *args, **kwargs):

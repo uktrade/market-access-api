@@ -54,7 +54,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         self, mock_create_barrier_download
     ):
         barrier = BarrierFactory()
-        barrier_download = BarrierDownload.objects.create(user=self.user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.user)
         mock_create_barrier_download.return_value = barrier_download
         url = reverse("barrier-downloads")
 
@@ -78,7 +78,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert json.loads(response.content)["id"] == str(barrier_download.id)
 
     def test_get_barrier_download(self):
-        barrier_download = BarrierDownload.objects.create(user=self.user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.user)
 
         url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
@@ -92,7 +92,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         # Request made as self.user
         assert self.user != self.mock_user
 
-        barrier_download = BarrierDownload.objects.create(user=self.mock_user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.mock_user)
 
         url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
@@ -106,11 +106,11 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert self.user != self.mock_user
 
         barrier = BarrierFactory()
-        br1 = BarrierDownload.objects.create(user=self.user)
-        br2 = BarrierDownload.objects.create(user=self.user)
+        br1 = BarrierDownload.objects.create(created_by=self.user)
+        br2 = BarrierDownload.objects.create(created_by=self.user)
 
         # Won't show up
-        br3 = BarrierDownload.objects.create(user=self.mock_user)
+        br3 = BarrierDownload.objects.create(created_by=self.mock_user)
 
         url = reverse("barrier-downloads")
 
@@ -125,7 +125,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
     @mock.patch("api.barrier_downloads.views.get_presigned_url")
     def test_get_presigned_url(self, mock_get_presigned_url):
         mock_get_presigned_url.return_value = "url.com"
-        barrier_download = BarrierDownload.objects.create(user=self.user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.user)
 
         url = reverse(
             "get-barrier-download-presigned-url",
@@ -141,7 +141,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
     @mock.patch("api.barrier_downloads.views.get_presigned_url")
     def test_get_presigned_url_unauthorized(self, mock_get_presigned_url):
         mock_get_presigned_url.return_value = "url.com"
-        barrier_download = BarrierDownload.objects.create(user=self.mock_user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.mock_user)
 
         url = reverse(
             "get-barrier-download-presigned-url",
@@ -155,7 +155,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert data == {"detail": "Unauthorized"}
 
     def test_update_barrier_download_name(self):
-        barrier_download = BarrierDownload.objects.create(user=self.user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.user)
 
         assert barrier_download.name is None
 
@@ -170,7 +170,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert data["name"] == "New Name"
 
     def test_update_barrier_download_name_unauthorized(self):
-        barrier_download = BarrierDownload.objects.create(user=self.mock_user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.mock_user)
 
         assert barrier_download.name is None
 
@@ -184,7 +184,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert data == {"detail": "Unauthorized"}
 
     def test_update_barrier_download_name_bad_request(self):
-        barrier_download = BarrierDownload.objects.create(user=self.user)
+        barrier_download = BarrierDownload.objects.create(created_by=self.user)
 
         assert barrier_download.name is None
 
