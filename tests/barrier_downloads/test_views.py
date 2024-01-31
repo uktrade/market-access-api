@@ -5,95 +5,95 @@ import mock
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barrier_reports.models import BarrierReport
+from api.barrier_downloads.models import BarrierDownload
 from api.core.test_utils import APITestMixin
 from tests.barriers.factories import BarrierFactory
 
 
-class TestBarrierReportViews(APITestMixin, TestCase):
+class TestBarrierDownloadViews(APITestMixin, TestCase):
     fixtures = ["users"]
 
     def setUp(self):
         super().setUp()
 
-    def test_barrier_report_post_endpoint_no_results(self):
-        url = reverse("barrier-reports")
+    def test_barrier_download_post_endpoint_no_results(self):
+        url = reverse("barrier-downloads")
 
         response = self.api_client.post(url)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.content == b'{"error": "No barriers matching filterset"}'
 
-    def test_barrier_report_post_endpoint_no_results_filter(self):
+    def test_barrier_download_post_endpoint_no_results_filter(self):
         barrier = BarrierFactory()
-        url = f'{reverse("barrier-reports")}?text=wrong-{barrier.title}'
+        url = f'{reverse("barrier-downloads")}?text=wrong-{barrier.title}'
 
         response = self.api_client.post(url)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.content == b'{"error": "No barriers matching filterset"}'
 
-    def test_barrier_report_post_endpoint_success(self):
+    def test_barrier_download_post_endpoint_success(self):
         barrier = BarrierFactory()
-        url = reverse("barrier-reports")
+        url = reverse("barrier-downloads")
 
         response = self.api_client.post(url)
 
         assert response.status_code == status.HTTP_201_CREATED
 
-    def test_barrier_report_post_endpoint_success_with_filter(self):
+    def test_barrier_download_post_endpoint_success_with_filter(self):
         barrier = BarrierFactory()
-        url = f'{reverse("barrier-reports")}?text={barrier.title}'
+        url = f'{reverse("barrier-downloads")}?text={barrier.title}'
 
         response = self.api_client.post(url)
 
         assert response.status_code == status.HTTP_201_CREATED
 
-    @mock.patch("api.barrier_reports.views.create_barrier_report")
-    def test_barrier_report_post_endpoint_success_and_retrieve(
-        self, mock_create_barrier_report
+    @mock.patch("api.barrier_downloads.views.create_barrier_download")
+    def test_barrier_download_post_endpoint_success_and_retrieve(
+        self, mock_create_barrier_download
     ):
         barrier = BarrierFactory()
-        barrier_report = BarrierReport.objects.create(user=self.user)
-        mock_create_barrier_report.return_value = barrier_report
-        url = reverse("barrier-reports")
+        barrier_download = BarrierDownload.objects.create(user=self.user)
+        mock_create_barrier_download.return_value = barrier_download
+        url = reverse("barrier-downloads")
 
         response = self.api_client.post(url)
 
-        mock_create_barrier_report.assert_called_once_with(
+        mock_create_barrier_download.assert_called_once_with(
             user=self.user, barrier_ids=[str(barrier.id)]
         )
 
         assert response.status_code == status.HTTP_201_CREATED
         assert (
-            str(barrier_report.id) == json.loads(response.content)["barrier_report_id"]
+            str(barrier_download.id) == json.loads(response.content)["barrier_download_id"]
         )
 
-        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
         response = self.api_client.get(url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert json.loads(response.content)["id"] == str(barrier_report.id)
+        assert json.loads(response.content)["id"] == str(barrier_download.id)
 
-    def test_get_barrier_report(self):
-        barrier_report = BarrierReport.objects.create(user=self.user)
+    def test_get_barrier_download(self):
+        barrier_download = BarrierDownload.objects.create(user=self.user)
 
-        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_200_OK
-        assert data["id"] == str(barrier_report.id)
+        assert data["id"] == str(barrier_download.id)
 
-    def test_get_barrier_report_unauthorized(self):
+    def test_get_barrier_download_unauthorized(self):
         # Request made as self.user
         assert self.user != self.mock_user
 
-        barrier_report = BarrierReport.objects.create(user=self.mock_user)
+        barrier_download = BarrierDownload.objects.create(user=self.mock_user)
 
-        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
@@ -101,17 +101,17 @@ class TestBarrierReportViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert data == {"detail": "Unauthorized"}
 
-    def test_barrier_report_list(self):
+    def test_barrier_download_list(self):
         assert self.user != self.mock_user
 
         barrier = BarrierFactory()
-        br1 = BarrierReport.objects.create(user=self.user)
-        br2 = BarrierReport.objects.create(user=self.user)
+        br1 = BarrierDownload.objects.create(user=self.user)
+        br2 = BarrierDownload.objects.create(user=self.user)
 
         # Won't show up
-        br3 = BarrierReport.objects.create(user=self.mock_user)
+        br3 = BarrierDownload.objects.create(user=self.mock_user)
 
-        url = reverse("barrier-reports")
+        url = reverse("barrier-downloads")
 
         response = self.api_client.get(url)
         data = json.loads(response.content)
@@ -121,13 +121,13 @@ class TestBarrierReportViews(APITestMixin, TestCase):
         assert data[0]["id"] == str(br2.id)
         assert data[1]["id"] == str(br1.id)
 
-    @mock.patch("api.barrier_reports.views.get_presigned_url")
+    @mock.patch("api.barrier_downloads.views.get_presigned_url")
     def test_get_presigned_url(self, mock_get_presigned_url):
         mock_get_presigned_url.return_value = "url.com"
-        barrier_report = BarrierReport.objects.create(user=self.user)
+        barrier_download = BarrierDownload.objects.create(user=self.user)
 
         url = reverse(
-            "get-barrier-report-presigned-url", kwargs={"pk": str(barrier_report.id)}
+            "get-barrier-download-presigned-url", kwargs={"pk": str(barrier_download.id)}
         )
 
         response = self.api_client.get(url)
@@ -136,13 +136,13 @@ class TestBarrierReportViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_200_OK
         assert data == {"presigned_url": "url.com"}
 
-    @mock.patch("api.barrier_reports.views.get_presigned_url")
+    @mock.patch("api.barrier_downloads.views.get_presigned_url")
     def test_get_presigned_url_unauthorized(self, mock_get_presigned_url):
         mock_get_presigned_url.return_value = "url.com"
-        barrier_report = BarrierReport.objects.create(user=self.mock_user)
+        barrier_download = BarrierDownload.objects.create(user=self.mock_user)
 
         url = reverse(
-            "get-barrier-report-presigned-url", kwargs={"pk": str(barrier_report.id)}
+            "get-barrier-download-presigned-url", kwargs={"pk": str(barrier_download.id)}
         )
 
         response = self.api_client.get(url)
@@ -151,44 +151,44 @@ class TestBarrierReportViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert data == {"detail": "Unauthorized"}
 
-    def test_update_report_barrier_name(self):
-        barrier_report = BarrierReport.objects.create(user=self.user)
+    def test_update_barrier_download_name(self):
+        barrier_download = BarrierDownload.objects.create(user=self.user)
 
-        assert barrier_report.name is None
+        assert barrier_download.name is None
 
-        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
         response = self.api_client.patch(url, data={"name": "New Name"})
-        barrier_report.refresh_from_db()
+        barrier_download.refresh_from_db()
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_200_OK
-        assert data["id"] == str(barrier_report.id)
+        assert data["id"] == str(barrier_download.id)
         assert data["name"] == "New Name"
 
-    def test_update_report_barrier_name_unauthorized(self):
-        barrier_report = BarrierReport.objects.create(user=self.mock_user)
+    def test_update_barrier_download_name_unauthorized(self):
+        barrier_download = BarrierDownload.objects.create(user=self.mock_user)
 
-        assert barrier_report.name is None
+        assert barrier_download.name is None
 
-        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
         response = self.api_client.patch(url, data={"name": "New Name"})
-        barrier_report.refresh_from_db()
+        barrier_download.refresh_from_db()
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert data == {"detail": "Unauthorized"}
 
-    def test_update_report_barrier_name_bad_request(self):
-        barrier_report = BarrierReport.objects.create(user=self.user)
+    def test_update_barrier_download_name_bad_request(self):
+        barrier_download = BarrierDownload.objects.create(user=self.user)
 
-        assert barrier_report.name is None
+        assert barrier_download.name is None
 
-        url = reverse("barrier-report", kwargs={"pk": str(barrier_report.id)})
+        url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
         response = self.api_client.patch(url, data={"bad_field": "hello"})
-        barrier_report.refresh_from_db()
+        barrier_download.refresh_from_db()
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST

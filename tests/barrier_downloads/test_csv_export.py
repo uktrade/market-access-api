@@ -7,9 +7,9 @@ from django.conf import settings
 from pytz import UTC
 from rest_framework.test import APITestCase
 
-from api.barrier_reports.constants import BARRIER_FIELD_TO_REPORT_TITLE
-from api.barrier_reports.serializers import BarrierCsvExportSerializer
-from api.barrier_reports.service import serializer_to_csv_bytes
+from api.barrier_downloads.constants import BARRIER_FIELD_TO_COLUMN_TITLE
+from api.barrier_downloads.serializers import BarrierCsvExportSerializer
+from api.barrier_downloads.service import serializer_to_csv_bytes
 from api.barriers.models import (
     Barrier,
     BarrierProgressUpdate,
@@ -383,7 +383,7 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         EconomicImpactAssessmentFactory(barrier=barrier, impact=impact_level)
         queryset = Barrier.objects.filter(id__in=[barrier.id])
         serializer = BarrierCsvExportSerializer(queryset, many=True)
-        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
 
         expected_midpoint_value = ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS[impact_level]
 
@@ -397,7 +397,7 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         queryset = Barrier.objects.filter(id__in=[barrier.id])
 
         serializer = BarrierCsvExportSerializer(queryset, many=True)
-        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
 
         str_io = StringIO(data.decode("utf-8"))
         reader = csv.DictReader(str_io, delimiter=",")
@@ -413,7 +413,7 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         barrier = BarrierFactory()
         queryset = Barrier.objects.filter(id__in=[barrier.id])
         serializer = BarrierCsvExportSerializer(queryset, many=True)
-        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_REPORT_TITLE)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
 
         expected_midpoint_value = ""
         str_io = StringIO(data.decode("utf-8"))

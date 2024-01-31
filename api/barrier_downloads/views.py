@@ -4,18 +4,18 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from api.barrier_reports.models import BarrierReport
-from api.barrier_reports.serializers import (
+from api.barrier_downloads.models import BarrierDownload
+from api.barrier_downloads.serializers import (
     BarrierCsvExportSerializer,
-    BarrierReportPatchSerializer,
-    BarrierReportPresignedUrlSerializer,
-    BarrierReportSerializer,
+    BarrierDownloadPatchSerializer,
+    BarrierDownloadPresignedUrlSerializer,
+    BarrierDownloadSerializer,
 )
-from api.barrier_reports.service import create_barrier_report, get_presigned_url
+from api.barrier_downloads.service import create_barrier_download, get_presigned_url
 from api.barriers.models import Barrier, BarrierFilterSet
 
 
-class BarrierReportsView(generics.ListCreateAPIView):
+class BarrierDownloadsView(generics.ListCreateAPIView):
     queryset = Barrier.barriers.annotate(team_count=Count("barrier_team")).all()
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
@@ -31,20 +31,20 @@ class BarrierReportsView(generics.ListCreateAPIView):
                 data={"error": "No barriers matching filterset"},
             )
 
-        barrier_report = create_barrier_report(
+        barrier_download = create_barrier_download(
             user=request.user, barrier_ids=barrier_ids
         )
 
         return JsonResponse(
             status=status.HTTP_201_CREATED,
-            data={"barrier_report_id": barrier_report.id},
+            data={"barrier_download_id": barrier_download.id},
         )
 
     def list(self, request, *args, **kwargs):
         return Response(
             status=status.HTTP_200_OK,
-            data=BarrierReportSerializer(
-                BarrierReport.objects.filter(user=request.user)
+            data=BarrierDownloadSerializer(
+                BarrierDownload.objects.filter(user=request.user)
                 .order_by("-created_on")
                 .values("id", "name", "status", "created_on", "modified_on", "user"),
                 many=True,
@@ -52,10 +52,10 @@ class BarrierReportsView(generics.ListCreateAPIView):
         )
 
 
-class BarrierReportDetailView(generics.RetrieveUpdateAPIView):
+class BarrierDownloadDetailView(generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
-    serializer_class = BarrierReportSerializer
-    queryset = BarrierReport.objects.all()
+    serializer_class = BarrierDownloadSerializer
+    queryset = BarrierDownload.objects.all()
 
     def check_object_permissions(self, request, obj):
         if obj.user != request.user:
@@ -64,30 +64,30 @@ class BarrierReportDetailView(generics.RetrieveUpdateAPIView):
     def patch(self, request, *args, **kwargs):
         """Only update name"""
         obj = self.get_object()
-        serializer = BarrierReportPatchSerializer(data=request.data)
+        serializer = BarrierDownloadPatchSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             obj.name = serializer.data["name"]
             obj.save()
         return Response(
-            status=status.HTTP_200_OK, data=BarrierReportSerializer(obj).data
+            status=status.HTTP_200_OK, data=BarrierDownloadSerializer(obj).data
         )
 
 
-class BarrierReportPresignedUrlView(generics.RetrieveAPIView):
+class BarrierDownloadPresignedUrlView(generics.RetrieveAPIView):
     lookup_field = "pk"
-    serializer_class = BarrierReportPresignedUrlSerializer
-    queryset = BarrierReport.objects.all()
+    serializer_class = BarrierDownloadPresignedUrlSerializer
+    queryset = BarrierDownload.objects.all()
 
     def check_object_permissions(self, request, obj):
         if obj.user != request.user:
             self.permission_denied(request, message="Unauthorized")
 
     def get(self, request, *args, **kwargs):
-        barrier_report = self.get_object()
-        presigned_url = get_presigned_url(barrier_report)
+        barrier_download = self.get_object()
+        presigned_url = get_presigned_url(barrier_download)
         return Response(
             status=status.HTTP_200_OK,
-            data=BarrierReportPresignedUrlSerializer(
+            data=BarrierDownloadPresignedUrlSerializer(
                 {"presigned_url": presigned_url}
             ).data,
         )

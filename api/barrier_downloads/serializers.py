@@ -28,7 +28,7 @@ from api.metadata.utils import (
 )
 
 
-class BarrierReportSerializer(serializers.Serializer):
+class BarrierDownloadSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     name = serializers.CharField()
     status = serializers.CharField()
@@ -37,11 +37,11 @@ class BarrierReportSerializer(serializers.Serializer):
     modified_on = serializers.DateTimeField()
 
 
-class BarrierReportPatchSerializer(serializers.Serializer):
+class BarrierDownloadPatchSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=256)
 
 
-class BarrierReportPresignedUrlSerializer(serializers.Serializer):
+class BarrierDownloadPresignedUrlSerializer(serializers.Serializer):
     presigned_url = serializers.CharField()
 
 

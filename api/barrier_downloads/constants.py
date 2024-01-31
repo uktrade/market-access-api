@@ -1,4 +1,4 @@
-BARRIER_FIELD_TO_REPORT_TITLE = {
+BARRIER_FIELD_TO_COLUMN_TITLE = {
     "id": "id",
     "code": "code",
     "title": "Title",

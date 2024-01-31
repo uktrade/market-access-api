@@ -4,7 +4,7 @@ from django.urls import include, path
 
 from api.action_plans.urls import urlpatterns as action_plans_urls
 from api.assessment.urls import urlpatterns as assessment_urls
-from api.barrier_reports.urls import urlpatterns as barrier_report_urls
+from api.barrier_downloads.urls import urlpatterns as barrier_report_urls
 from api.barriers.urls import urlpatterns as barrier_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.commodities.urls import urlpatterns as commodities_urls

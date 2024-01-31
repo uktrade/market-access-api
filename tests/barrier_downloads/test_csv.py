@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from api.barrier_reports.csv import _transform_csv_value
+from api.barrier_downloads.csv import _transform_csv_value
 
 
 @pytest.mark.parametrize(

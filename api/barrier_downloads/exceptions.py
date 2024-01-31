@@ -1,16 +1,16 @@
 from rest_framework.exceptions import APIException
 
 
-class BarrierReportStatusUpdateError(APIException):
+class BarrierDownloadStatusUpdateError(APIException):
     status_code = 400
     default_code = "error"
 
 
-class BarrierReportDoesNotExist(APIException):
+class BarrierDownloadDoesNotExist(APIException):
     status_code = 404
     default_code = "error"
 
 
-class BarrierReportNotificationError(APIException):
+class BarrierDownloadNotificationError(APIException):
     status_code = 400
     default_code = "error"
