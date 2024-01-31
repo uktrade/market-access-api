@@ -80,7 +80,8 @@ def test_generate_barrier_download_file_exception_handled(mock_csv_bytes, user):
 
     with pytest.raises(Exception) as exc:
         service.generate_barrier_download_file(
-            barrier_download_id=barrier_download.id, barrier_ids=[str(b1.id), str(b2.id)]
+            barrier_download_id=barrier_download.id,
+            barrier_ids=[str(b1.id), str(b2.id)],
         )
 
     barrier_download.refresh_from_db()

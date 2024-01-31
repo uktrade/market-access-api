@@ -46,7 +46,9 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
             data=BarrierDownloadSerializer(
                 BarrierDownload.objects.filter(created_by=request.user)
                 .order_by("-created_on")
-                .values("id", "name", "status", "created_on", "modified_on", "created_by"),
+                .values(
+                    "id", "name", "status", "created_on", "modified_on", "created_by"
+                ),
                 many=True,
             ).data,
         )

@@ -90,7 +90,7 @@ def generate_barrier_download_file(
         # Check for generic exceptions when creating csv file
         # Async task so no need to handle gracefully
         # Log error stack.
-        logger.exception('Failed to create CSV')
+        logger.exception("Failed to create CSV")
         barrier_download.fail()
         raise
 
