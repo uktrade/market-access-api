@@ -5,7 +5,11 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, Count, F, Value, When
+from django.db.models import Case, CharField, Count, F
+from django.db.models import Value
+from django.db.models import Value as V
+from django.db.models import When
+from django.db.models.functions import Concat
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -68,6 +72,7 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPub
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .related_barrier import SimilarityScoreMatrix
+from .related_barrier import get_similar_barriers
 from .tasks import generate_s3_and_send_email
 
 logger = logging.getLogger(__name__)
@@ -448,7 +453,6 @@ class BarrierListS3EmailFile(generics.ListAPIView):
             "categories",
             "barrier_commodities",
             "public_barrier__notes",
-            "cached_history_items",
             "organisations",
         )
     )
@@ -633,7 +637,6 @@ class BarrierFullHistory(generics.GenericAPIView):
             # not caching action plans history entries correctly
             barrier=barrier,
             ignore_creation_items=True,
-            use_cache=False,
         )
         response = {
             "barrier_id": str(pk),
@@ -649,7 +652,7 @@ class BarrierActivity(generics.GenericAPIView):
 
     def get(self, request, pk):
         barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
-        history_items = HistoryManager.get_activity(barrier=barrier, use_cache=True)
+        history_items = HistoryManager.get_activity(barrier=barrier)
         response = {
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
@@ -665,7 +668,7 @@ class PublicBarrierActivity(generics.GenericAPIView):
     def get(self, request, pk):
         public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_public_activity(
-            public_barrier=public_barrier, use_cache=False
+            public_barrier=public_barrier
         )
         response = {
             "barrier_id": str(pk),

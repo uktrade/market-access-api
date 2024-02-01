@@ -19,7 +19,7 @@ from tests.barriers.factories import BarrierFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.user.factories import UserFactoryMixin
 
-freezegun.configure(extend_ignore_list=["transformers"])
+freezegun.config.configure(extend_ignore_list=["transformers"])
 
 User = get_user_model()
 

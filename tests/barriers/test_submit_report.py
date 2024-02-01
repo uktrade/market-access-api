@@ -8,8 +8,6 @@ from api.core.test_utils import APITestMixin, create_test_user
 from api.interactions.models import Interaction
 from tests.barriers.factories import MinReportFactory, ReportFactory
 
-freezegun.configure(extend_ignore_list=["transformers"])
-
 
 class TestSubmitReport(APITestMixin, APITestCase):
     def test_reported_as_resolved_in_full(self):

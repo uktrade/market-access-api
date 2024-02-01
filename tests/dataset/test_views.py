@@ -18,8 +18,6 @@ from api.metadata.constants import (
 from api.metadata.models import BarrierTag, Organisation
 from tests.barriers.factories import BarrierFactory
 
-freezegun.configure(extend_ignore_list=["transformers"])
-
 
 class TestBarriersDataset(APITestMixin):
     def test_no_reports(self):

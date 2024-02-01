@@ -3,7 +3,7 @@ import logging
 import operator
 import urllib.parse
 from functools import reduce
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 import django_filters
@@ -15,9 +15,7 @@ from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.core.validators import int_list_validator
 from django.db import models
-from django.db.models import CASCADE, CharField, F, Q, QuerySet
-from django.db.models import Value as V
-from django.db.models.functions import Concat
+from django.db.models import CASCADE, Q, QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
@@ -30,6 +28,7 @@ from api.commodities.models import Commodity
 from api.commodities.utils import format_commodity_code
 from api.core.exceptions import ArchivingException
 from api.core.models import BaseModel, FullyArchivableMixin
+from api.history.v2.service import FieldMapping, get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
@@ -52,7 +51,6 @@ from api.metadata.constants import (
     BarrierStatus,
     PublicBarrierStatus,
 )
-
 from . import validators
 from .report_stages import REPORT_CONDITIONS, report_stage_status
 from .utils import random_barrier_reference
@@ -251,6 +249,18 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
 
     history = HistoricalRecords()
 
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = (["status", "update", "next_steps"],)
+
+        return get_model_history(
+            qs,
+            model="progress_update",
+            fields=fields,
+            track_first_item=True,
+        )
+
     class Meta:
         # order by date descending
         ordering = ("-created_on",)
@@ -285,6 +295,18 @@ class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
         ordering = ("-created_on",)
         verbose_name = "Programme Fund Barrier Progress Update"
         verbose_name_plural = "Programme Fund Barrier Progress Updates"
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("milestones_and_deliverables", "expenditure")
+
+        return get_model_history(
+            qs,
+            model="programme_fund_progress_update",
+            fields=fields,
+            track_first_item=True,
+        )
 
 
 class Barrier(FullyArchivableMixin, BaseModel):
@@ -534,6 +556,79 @@ class Barrier(FullyArchivableMixin, BaseModel):
             ),
             ("download_barriers", "Can download barriers"),
         ]
+
+    @classmethod
+    def get_history(
+        cls,
+        barrier_id,
+        enrich=False,
+        fields: Optional[List] = None,
+        track_first_item: bool = False,
+    ):
+        qs = cls.history.filter(id=barrier_id, draft=False)
+        default_fields = (
+            [
+                "archived",
+                "archived_reason",
+                "archived_explanation",
+                "unarchived_reason",
+            ],
+            [
+                "country",
+                "trading_bloc",
+                "caused_by_trading_bloc",
+                "admin_areas",
+            ],
+            "commercial_value",
+            "commercial_value_explanation",
+            "companies",
+            "economic_assessment_eligibility",
+            "economic_assessment_eligibility_summary",
+            "estimated_resolution_date",
+            "start_date",
+            "is_summary_sensitive",
+            "main_sector",
+            "priority_level",
+            [FieldMapping("priority__code", "priority"), "priority_summary"],
+            "product",
+            "public_eligibility_summary",
+            [
+                "sectors",
+                "all_sectors",
+            ],
+            [
+                "source",
+                "other_source",
+            ],
+            [
+                "status",
+                "status_date",
+                "status_summary",
+                "sub_status",
+                "sub_status_other",
+            ],
+            "summary",
+            "term",
+            "title",
+            "trade_category",
+            "trade_direction",
+            ["top_priority_status", "top_priority_rejection_summary"],
+            "draft",
+            # m2m - seperate
+            "tags_cache",  # needs cache
+            "organisations_cache",  # Needs cache
+            "commodities_cache",  # Needs cache
+            "categories_cache",  # Needs cache
+        )
+
+        if fields is None:
+            # TODO: refactor to parametrize fields better
+            fields = default_fields
+
+        # Get all fields required - raw changes no enrichment
+        return get_model_history(
+            qs, model="barrier", fields=fields, track_first_item=track_first_item
+        )
 
     @property
     def latest_progress_update(self):
@@ -922,6 +1017,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
 
+    changed_since_published = models.BooleanField(default=False)
+
     public_barriers = PublicBarrierManager
 
     class Meta:
@@ -978,7 +1075,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.status = self.internal_status
         self.status_date = self.internal_status_date
         self.country = self.internal_country
-        # self.caused_by_country_trading_bloc = self.internal_caused_by_trading_bloc
         self.caused_by_trading_bloc = self.internal_caused_by_trading_bloc
         self.trading_bloc = self.internal_trading_bloc
         self.sectors = self.internal_sectors
@@ -1164,7 +1260,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def internal_caused_by_trading_bloc_changed(self):
-        # return self.barrier.caused_by_trading_bloc != self.caused_by_country_trading_bloc
         return self.barrier.caused_by_trading_bloc != self.caused_by_trading_bloc
 
     @property
@@ -1196,8 +1291,16 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         return self.barrier.sectors != self.sectors
 
     @property
+    def internal_main_sector_changed(self):
+        return self.barrier.main_sector != self.internal_main_sector
+
+    @property
     def internal_all_sectors(self):
         return self.barrier.all_sectors
+
+    @property
+    def internal_main_sector(self):
+        return self.barrier.main_sector
 
     @property
     def internal_all_sectors_changed(self):
@@ -1235,12 +1338,40 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             or self.internal_status_date_changed
             or self.internal_location_changed
             or self.internal_sectors_changed
+            or self.internal_main_sector_changed
             or self.internal_all_sectors_changed
-            or self.internal_sectors_changed
             or self.internal_categories_changed
         )
 
     history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
+
+    @classmethod
+    def get_history(cls, barrier_id):
+
+        qs = cls.history.filter(barrier__id=barrier_id)
+
+        fields = (
+            [
+                "country",
+                "trading_bloc",
+                "caused_by_trading_bloc",
+            ],
+            [
+                "sectors",
+                "all_sectors",
+            ],
+            [
+                "status",
+                "status_date",
+            ],
+            "_title",
+            "_summary",
+            "_public_view_status",
+            "categories_cache",
+        )
+
+        # Get all fields required - raw changes no enrichment
+        return get_model_history(qs, model="public_barrier", fields=fields)
 
 
 class BarrierUserHit(models.Model):
@@ -1334,6 +1465,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         method="top_priority_status_filter"
     )
     priority_level = django_filters.BaseInFilter(method="priority_level_filter")
+    combined_priority = django_filters.BaseInFilter(method="combined_priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
     admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
     search = django_filters.Filter(method="text_search")
@@ -1461,6 +1593,39 @@ class BarrierFilterSet(django_filters.FilterSet):
         else:
             return queryset.filter(priority__in=priorities)
 
+    def combined_priority_filter(self, queryset, name, value):
+        """
+        customer filter for multi-select of Barrier Priority and Top 100
+        filters
+        """
+
+        if value:
+            # If user is searching for APPROVED top priority barriers, the search must also
+            # include barriers PENDING REMOVAL. So if APPROVED is selected, but PENDING
+            # REMOVAL has not, we need to include it in the search parameter.
+            if "APPROVED" in value and "REMOVAL_PENDING" not in value:
+                value.append("REMOVAL_PENDING")
+
+            if "NONE" in value:
+                if len(value) > 1:
+                    # We have additional filters so need to combine with NONE query
+                    value.remove("NONE")
+                    queryset = queryset.filter(
+                        Q(top_priority_status__in=value)
+                        | Q(priority_level__in=value)
+                        | (Q(top_priority_status="NONE") & Q(priority_level="NONE")),
+                    )
+                else:
+                    queryset = queryset.filter(
+                        (Q(top_priority_status="NONE") & Q(priority_level="NONE")),
+                    )
+            else:
+                queryset = queryset.filter(
+                    Q(top_priority_status__in=value) | Q(priority_level__in=value)
+                )
+
+        return queryset
+
     def progress_status_filter(self, queryset, name, value):
         # First query to run will filter out each unique Barriers historical updates, leaving the latest entries
         # the query wrapping it will cut out all the progress_status's that don't match the search query
@@ -1524,7 +1689,7 @@ class BarrierFilterSet(django_filters.FilterSet):
         if "wider_europe" in location_values:
             location_values.remove("wider_europe")
 
-        # Return cleaned value arrarys
+        # Return cleaned value arrays
         return {
             "countries": [
                 location
@@ -1638,31 +1803,9 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            changed_ids = (
-                queryset.annotate(
-                    change=Concat(
-                        "cached_history_items__model",
-                        V("."),
-                        "cached_history_items__field",
-                        output_field=CharField(),
-                    ),
-                    change_date=F("cached_history_items__date"),
-                )
-                .filter(
-                    public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
-                    change_date__gt=F("public_barrier__last_published_on"),
-                    change__in=(
-                        "barrier.categories",
-                        "barrier.location",
-                        "barrier.sectors",
-                        "barrier.status",
-                        "barrier.summary",
-                        "barrier.title",
-                    ),
-                )
-                .values_list("id", flat=True)
+            public_queryset = queryset.filter(
+                public_barrier__changed_since_published=True
             )
-            public_queryset = queryset.filter(id__in=changed_ids)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
@@ -1911,31 +2054,7 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
 
         if "changed" in value:
             value.remove("changed")
-            changed_ids = (
-                queryset.annotate(
-                    change=Concat(
-                        "barrier__cached_history_items__model",
-                        V("."),
-                        "barrier__cached_history_items__field",
-                        output_field=CharField(),
-                    ),
-                    change_date=F("barrier__cached_history_items__date"),
-                )
-                .filter(
-                    _public_view_status=PublicBarrierStatus.PUBLISHED,
-                    change_date__gt=F("last_published_on"),
-                    change__in=(
-                        "barrier.categories",
-                        "barrier.location",
-                        "barrier.sectors",
-                        "barrier.status",
-                        "barrier.summary",
-                        "barrier.title",
-                    ),
-                )
-                .values_list("id", flat=True)
-            )
-            public_queryset = queryset.filter(id__in=changed_ids)
+            public_queryset = queryset.filter(changed_since_published=True)
 
         if "not_yet_sifted" in value:
             value.remove("not_yet_sifted")
@@ -2060,6 +2179,18 @@ class BarrierTopPrioritySummary(models.Model):
     )
     history = HistoricalRecords()
 
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("top_priority_summary_text",)
+
+        return get_model_history(
+            qs,
+            model="barrier_top_priority_summary",  # TODO: Update frontend, legacy history marked this as barrier item
+            fields=fields,
+            track_first_item=True,
+        )
+
 
 class BarrierNextStepItem(BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
@@ -2086,3 +2217,14 @@ class BarrierNextStepItem(BaseModel):
         ordering = ("-completion_date",)
         verbose_name = "Barrier Next Step Item"
         verbose_name_plural = "Barrier Next Step Items"
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = ("status", "next_step_item")
+
+        return get_model_history(
+            qs,
+            model="barrier",
+            fields=fields,
+        )

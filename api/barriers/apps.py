@@ -12,6 +12,7 @@ class BarriersConfig(AppConfig):
         from .models import Barrier, PublicBarrier, PublicBarrierLightTouchReviews
         from .signals.handlers import (
             barrier_categories_changed,
+            barrier_changed_after_published,
             barrier_completion_percentage_changed,
             barrier_completion_top_priority_barrier_resolved,
             barrier_organisations_changed,
@@ -34,6 +35,8 @@ class BarriersConfig(AppConfig):
         )
 
         pre_save.connect(public_barrier_content_update, sender=PublicBarrier)
+
+        pre_save.connect(barrier_changed_after_published, sender=Barrier)
 
         post_save.connect(barrier_completion_percentage_changed, sender=Barrier)
 

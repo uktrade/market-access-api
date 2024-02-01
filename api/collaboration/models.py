@@ -50,3 +50,32 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     @property
     def modified_user(self):
         return self._cleansed_username(self.modified_by)
+
+    @classmethod
+    def get_history(cls, barrier_id):
+
+        qs = (
+            cls.history.select_related("user")
+            .filter(barrier_id=barrier_id)
+            .order_by("id")
+        )
+
+        fields = [
+            [
+                "user",
+                "user__first_name",
+                "user__last_name",
+                "user__email",
+                "user__username",
+                "role",
+            ]
+        ]
+
+        from api.history.v2.service import get_model_history
+
+        return get_model_history(
+            qs,
+            model="team_member",
+            fields=fields,
+            track_first_item=True,
+        )
