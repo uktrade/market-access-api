@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 from api.barrier_downloads.models import BarrierDownload
 from api.barrier_downloads.serializers import (
@@ -20,6 +21,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
     serializer_class = BarrierCsvExportSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend,)
+    pagination_class = PageNumberPagination
 
     def post(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).values_list("id")
@@ -41,17 +43,19 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
         )
 
     def list(self, request, *args, **kwargs):
-        return Response(
-            status=status.HTTP_200_OK,
-            data=BarrierDownloadSerializer(
-                BarrierDownload.objects.filter(created_by=request.user)
-                .order_by("-created_on")
-                .values(
-                    "id", "name", "status", "created_on", "modified_on", "created_by"
-                ),
-                many=True,
-            ).data,
+
+        queryset = (
+            BarrierDownload.objects.filter(created_by=request.user)
+            .order_by("-created_on")
+            .values("id", "name", "status", "created_on", "modified_on", "created_by")
         )
+        page = self.paginate_queryset(queryset)
+
+        serializer = BarrierDownloadSerializer(
+            page,
+            many=True,
+        )
+        return self.get_paginated_response(serializer.data)
 
 
 class BarrierDownloadDetailView(generics.RetrieveUpdateAPIView):
