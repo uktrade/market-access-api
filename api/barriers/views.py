@@ -7,9 +7,7 @@ from dateutil.parser import parse
 from django.db import transaction
 from django.db.models import Case, CharField, Count, F
 from django.db.models import Value
-from django.db.models import Value as V
 from django.db.models import When
-from django.db.models.functions import Concat
 from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -68,11 +66,9 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
-
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .related_barrier import SimilarityScoreMatrix
-from .related_barrier import get_similar_barriers
 from .tasks import generate_s3_and_send_email
 
 logger = logging.getLogger(__name__)
