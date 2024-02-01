@@ -38,7 +38,7 @@ class BarrierDownloadSerializer(serializers.Serializer):
 
 
 class BarrierDownloadPatchSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=256)
+    name = serializers.CharField(max_length=256, required=True)
 
 
 class BarrierDownloadPresignedUrlSerializer(serializers.Serializer):
