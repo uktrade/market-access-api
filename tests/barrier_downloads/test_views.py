@@ -118,9 +118,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_200_OK
-        assert len(data) == 2
-        assert data[0]["id"] == str(br2.id)
-        assert data[1]["id"] == str(br1.id)
+        assert data["count"] == 2
+        assert data["results"][0]["id"] == str(br2.id)
+        assert data["results"][1]["id"] == str(br1.id)
 
     @mock.patch("api.barrier_downloads.views.get_presigned_url")
     def test_get_presigned_url(self, mock_get_presigned_url):
