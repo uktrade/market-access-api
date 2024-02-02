@@ -5,6 +5,7 @@ from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from api.barrier_downloads.exceptions import BarrierDeleteError
 from api.barrier_downloads.models import BarrierDownload
 from api.barrier_downloads.serializers import (
     BarrierCsvExportSerializer,
@@ -12,7 +13,7 @@ from api.barrier_downloads.serializers import (
     BarrierDownloadPresignedUrlSerializer,
     BarrierDownloadSerializer,
 )
-from api.barrier_downloads.service import create_barrier_download, get_presigned_url
+from api.barrier_downloads.service import create_barrier_download, get_presigned_url, delete_barrier_download
 from api.barriers.models import Barrier, BarrierFilterSet
 
 
@@ -58,7 +59,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
         return self.get_paginated_response(serializer.data)
 
 
-class BarrierDownloadDetailView(generics.RetrieveUpdateAPIView):
+class BarrierDownloadDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = "pk"
     serializer_class = BarrierDownloadSerializer
     queryset = BarrierDownload.objects.all()
@@ -77,6 +78,10 @@ class BarrierDownloadDetailView(generics.RetrieveUpdateAPIView):
         return Response(
             status=status.HTTP_200_OK, data=BarrierDownloadSerializer(obj).data
         )
+
+    def delete(self, request, *args, **kwargs):
+        delete_barrier_download(self.get_object())
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class BarrierDownloadPresignedUrlView(generics.RetrieveAPIView):

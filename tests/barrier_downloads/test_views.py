@@ -196,3 +196,19 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert data == {"name": ["This field is required."]}
+
+    @mock.patch("api.barrier_downloads.service.get_s3_client_and_bucket_name")
+    def test_delete_barrier_download(self, mock_get_s3_client_and_bucket_name):
+        s3_client, bucket = mock.Mock(), mock.Mock()
+        mock_get_s3_client_and_bucket_name.return_value = s3_client, bucket
+        barrier_download = BarrierDownload.objects.create(created_by=self.user)
+
+        assert barrier_download.name is None
+
+        url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
+
+        response = self.api_client.delete(url)
+
+        assert BarrierDownload.objects.filter(id=barrier_download.id).count() == 0
+        mock_get_s3_client_and_bucket_name.assert_called_once_with()
+        assert response.status_code == status.HTTP_204_NO_CONTENT

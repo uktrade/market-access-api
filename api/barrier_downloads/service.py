@@ -45,7 +45,7 @@ def serializer_to_csv_bytes(serializer, field_names) -> bytes:
 
 
 def create_barrier_download(user, barrier_ids) -> BarrierDownload:
-    filename = f"csv/{user.id}/Data_Hub_Market_Access_Barriers_{now().strftime('%Y-%m-%d-%H-%M-%S')}.csv"
+    filename = f"csv/{user.id}/DMAS_{now().strftime('%Y-%m-%d-%H-%M-%S')}.csv"
 
     UserActvitiyLog.objects.create(
         user=user,
@@ -111,6 +111,12 @@ def generate_barrier_download_file(
     tasks.barrier_download_complete_notification.delay(
         barrier_download_id=str(barrier_download.id)
     )
+
+
+def delete_barrier_download(barrier_download: BarrierDownload):
+    s3_client, bucket = get_s3_client_and_bucket_name()
+    s3_client.delete_object(Bucket=bucket, Key=barrier_download.filename)
+    barrier_download.delete()
 
 
 def get_presigned_url(barrier_download):

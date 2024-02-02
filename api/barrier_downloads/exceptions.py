@@ -14,3 +14,8 @@ class BarrierDownloadDoesNotExist(APIException):
 class BarrierDownloadNotificationError(APIException):
     status_code = 400
     default_code = "error"
+
+
+class BarrierDeleteError(APIException):
+    status_code = 400
+    default_code = "error"
