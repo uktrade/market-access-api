@@ -54,7 +54,10 @@ def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDo
     )
 
     barrier_download = BarrierDownload.objects.create(
-        created_by=user, status=BarrierDownloadStatus.PENDING, filters=filters, filename=filename
+        created_by=user,
+        status=BarrierDownloadStatus.PENDING,
+        filters=filters,
+        filename=filename,
     )
 
     # Make celery call don't wait for return

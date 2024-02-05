@@ -13,7 +13,11 @@ from api.barrier_downloads.serializers import (
     BarrierDownloadPresignedUrlSerializer,
     BarrierDownloadSerializer,
 )
-from api.barrier_downloads.service import create_barrier_download, get_presigned_url, delete_barrier_download
+from api.barrier_downloads.service import (
+    create_barrier_download,
+    delete_barrier_download,
+    get_presigned_url,
+)
 from api.barriers.models import Barrier, BarrierFilterSet
 
 

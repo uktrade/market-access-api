@@ -47,7 +47,10 @@ def test_generate_barrier_download_file(mock_notify, mock_csv_bytes, mock_s3, us
     b2 = BarrierFactory()
 
     barrier_download = BarrierDownload.objects.create(
-        created_by=user, status=BarrierDownloadStatus.PENDING, filters={}, filename="test_file.csv"
+        created_by=user,
+        status=BarrierDownloadStatus.PENDING,
+        filters={},
+        filename="test_file.csv",
     )
     s3_client, bucket = mock.Mock(), mock.Mock()
     mock_csv_bytes.return_value = b"test"
@@ -74,7 +77,10 @@ def test_generate_barrier_download_file_exception_handled(mock_csv_bytes, user):
     b2 = BarrierFactory()
 
     barrier_download = BarrierDownload.objects.create(
-        created_by=user, status=BarrierDownloadStatus.PENDING, filters={}, filename="test_file.csv"
+        created_by=user,
+        status=BarrierDownloadStatus.PENDING,
+        filters={},
+        filename="test_file.csv",
     )
     mock_csv_bytes.return_value = b"test"
 
@@ -90,7 +96,10 @@ def test_generate_barrier_download_file_exception_handled(mock_csv_bytes, user):
 
 def test_barrier_download_complete_notification_not_complete(user):
     barrier_download = BarrierDownload.objects.create(
-        created_by=user, status=BarrierDownloadStatus.PENDING, filters={}, filename="test_file.csv"
+        created_by=user,
+        status=BarrierDownloadStatus.PENDING,
+        filters={},
+        filename="test_file.csv",
     )
 
     with pytest.raises(BarrierDownloadNotificationError):
@@ -105,7 +114,10 @@ def test_barrier_download_complete_notification_complete(
     mock_get_presigned_url, mock_notify_client, user
 ):
     barrier_download = BarrierDownload.objects.create(
-        created_by=user, status=BarrierDownloadStatus.COMPLETE, filters={}, filename="test_file.csv"
+        created_by=user,
+        status=BarrierDownloadStatus.COMPLETE,
+        filters={},
+        filename="test_file.csv",
     )
 
     mock_get_presigned_url.return_value = "test-url.com"

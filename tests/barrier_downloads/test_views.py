@@ -47,16 +47,20 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
 
         response = self.api_client.post(url)
 
-        barrier_download = BarrierDownload.objects.get(id=json.loads(response.content)['barrier_download_id'])
+        barrier_download = BarrierDownload.objects.get(
+            id=json.loads(response.content)["barrier_download_id"]
+        )
         assert response.status_code == status.HTTP_201_CREATED
-        assert barrier_download.filters == {{'text': barrier.title}}
+        assert barrier_download.filters == {{"text": barrier.title}}
 
     @mock.patch("api.barrier_downloads.views.create_barrier_download")
     def test_barrier_download_post_endpoint_success_and_retrieve(
         self, mock_create_barrier_download
     ):
         barrier = BarrierFactory()
-        barrier_download = BarrierDownload.objects.create(created_by=self.user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.user, filters={}
+        )
         mock_create_barrier_download.return_value = barrier_download
         url = reverse("barrier-downloads")
 
@@ -80,7 +84,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert json.loads(response.content)["id"] == str(barrier_download.id)
 
     def test_get_barrier_download(self):
-        barrier_download = BarrierDownload.objects.create(created_by=self.user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.user, filters={}
+        )
 
         url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
@@ -94,7 +100,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         # Request made as self.user
         assert self.user != self.mock_user
 
-        barrier_download = BarrierDownload.objects.create(created_by=self.mock_user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.mock_user, filters={}
+        )
 
         url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
@@ -127,7 +135,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
     @mock.patch("api.barrier_downloads.views.get_presigned_url")
     def test_get_presigned_url(self, mock_get_presigned_url):
         mock_get_presigned_url.return_value = "url.com"
-        barrier_download = BarrierDownload.objects.create(created_by=self.user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.user, filters={}
+        )
 
         url = reverse(
             "get-barrier-download-presigned-url",
@@ -143,7 +153,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
     @mock.patch("api.barrier_downloads.views.get_presigned_url")
     def test_get_presigned_url_unauthorized(self, mock_get_presigned_url):
         mock_get_presigned_url.return_value = "url.com"
-        barrier_download = BarrierDownload.objects.create(created_by=self.mock_user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.mock_user, filters={}
+        )
 
         url = reverse(
             "get-barrier-download-presigned-url",
@@ -157,7 +169,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert data == {"detail": "Unauthorized"}
 
     def test_update_barrier_download_name(self):
-        barrier_download = BarrierDownload.objects.create(created_by=self.user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.user, filters={}
+        )
 
         assert barrier_download.name is None
 
@@ -172,7 +186,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert data["name"] == "New Name"
 
     def test_update_barrier_download_name_unauthorized(self):
-        barrier_download = BarrierDownload.objects.create(created_by=self.mock_user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.mock_user, filters={}
+        )
 
         assert barrier_download.name is None
 
@@ -186,7 +202,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert data == {"detail": "Unauthorized"}
 
     def test_update_barrier_download_name_bad_request(self):
-        barrier_download = BarrierDownload.objects.create(created_by=self.user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.user, filters={}
+        )
 
         assert barrier_download.name is None
 
@@ -203,7 +221,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
     def test_delete_barrier_download(self, mock_get_s3_client_and_bucket_name):
         s3_client, bucket = mock.Mock(), mock.Mock()
         mock_get_s3_client_and_bucket_name.return_value = s3_client, bucket
-        barrier_download = BarrierDownload.objects.create(created_by=self.user, filters={})
+        barrier_download = BarrierDownload.objects.create(
+            created_by=self.user, filters={}
+        )
 
         assert barrier_download.name is None
 
