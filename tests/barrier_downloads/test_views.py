@@ -51,7 +51,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
             id=json.loads(response.content)["barrier_download_id"]
         )
         assert response.status_code == status.HTTP_201_CREATED
-        assert barrier_download.filters == {{"text": barrier.title}}
+        assert barrier_download.filters == {"text": barrier.title}
 
     @mock.patch("api.barrier_downloads.views.create_barrier_download")
     def test_barrier_download_post_endpoint_success_and_retrieve(
