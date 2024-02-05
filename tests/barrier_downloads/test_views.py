@@ -48,7 +48,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         response = self.api_client.post(url)
 
         barrier_download = BarrierDownload.objects.get(
-            id=json.loads(response.content)["barrier_download_id"]
+            id=json.loads(response.content)["id"]
         )
         assert response.status_code == status.HTTP_201_CREATED
         assert barrier_download.filters == {"text": barrier.title}
@@ -73,7 +73,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_201_CREATED
         assert (
             str(barrier_download.id)
-            == json.loads(response.content)["barrier_download_id"]
+            == json.loads(response.content)["id"]
         )
 
         url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})

@@ -44,7 +44,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
 
         return JsonResponse(
             status=status.HTTP_201_CREATED,
-            data={"barrier_download_id": barrier_download.id},
+            data={"id": barrier_download.id},
         )
 
     def list(self, request, *args, **kwargs):
