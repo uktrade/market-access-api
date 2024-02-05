@@ -5,7 +5,6 @@ from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from api.barrier_downloads.exceptions import BarrierDeleteError
 from api.barrier_downloads.models import BarrierDownload
 from api.barrier_downloads.serializers import (
     BarrierCsvExportSerializer,
