@@ -26,6 +26,7 @@ class BarrierDownload(ArchivableMixin, BaseModel):
         choices=BarrierDownloadStatus.choices, default=BarrierDownloadStatus.PENDING
     )
     filename = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH)
+    filters = models.JSONField(help_text="Filters used to generate Download Report")
 
     def processing(self):
         if self.status != BarrierDownloadStatus.PENDING:

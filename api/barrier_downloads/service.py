@@ -44,7 +44,7 @@ def serializer_to_csv_bytes(serializer, field_names) -> bytes:
     return content
 
 
-def create_barrier_download(user, barrier_ids) -> BarrierDownload:
+def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDownload:
     filename = f"csv/{user.id}/DMAS_{now().strftime('%Y-%m-%d-%H-%M-%S')}.csv"
 
     UserActvitiyLog.objects.create(
@@ -54,7 +54,7 @@ def create_barrier_download(user, barrier_ids) -> BarrierDownload:
     )
 
     barrier_download = BarrierDownload.objects.create(
-        created_by=user, status=BarrierDownloadStatus.PENDING, filename=filename
+        created_by=user, status=BarrierDownloadStatus.PENDING, filters=filters, filename=filename
     )
 
     # Make celery call don't wait for return

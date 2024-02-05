@@ -27,6 +27,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).values_list("id")
         barrier_ids = list(map(str, queryset.values_list("id", flat=True)))
+        filters = self.request.query_params.dict()
 
         if not barrier_ids:
             return JsonResponse(
@@ -35,7 +36,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
             )
 
         barrier_download = create_barrier_download(
-            user=request.user, barrier_ids=barrier_ids
+            user=request.user, filters=filters, barrier_ids=barrier_ids
         )
 
         return JsonResponse(
