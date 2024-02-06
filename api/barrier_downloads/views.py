@@ -7,7 +7,6 @@ from rest_framework.response import Response
 
 from api.barrier_downloads.models import BarrierDownload
 from api.barrier_downloads.serializers import (
-    BarrierCsvExportSerializer,
     BarrierDownloadPatchSerializer,
     BarrierDownloadPresignedUrlSerializer,
     BarrierDownloadSerializer,
@@ -22,7 +21,7 @@ from api.barriers.models import Barrier, BarrierFilterSet
 
 class BarrierDownloadsView(generics.ListCreateAPIView):
     queryset = Barrier.barriers.annotate(team_count=Count("barrier_team")).all()
-    serializer_class = BarrierCsvExportSerializer
+    serializer_class = BarrierDownloadSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend,)
     pagination_class = PageNumberPagination
@@ -52,11 +51,21 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
         queryset = (
             BarrierDownload.objects.filter(created_by=request.user)
             .order_by("-created_on")
-            .values("id", "name", "status", "created_on", "modified_on", "created_by")
+            .values(
+                "id",
+                "name",
+                "status",
+                "created_on",
+                "count",
+                "filename",
+                "filters",
+                "modified_on",
+                "created_by",
+            )
         )
         page = self.paginate_queryset(queryset)
 
-        serializer = BarrierDownloadSerializer(
+        serializer = self.serializer_class(
             page,
             many=True,
         )

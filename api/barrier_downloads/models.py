@@ -27,6 +27,9 @@ class BarrierDownload(ArchivableMixin, BaseModel):
     )
     filename = models.CharField(max_length=settings.CHAR_FIELD_MAX_LENGTH)
     filters = models.JSONField(help_text="Filters used to generate Download Report")
+    count = models.IntegerField(
+        help_text="Number of barriers in the report", null=True, blank=True
+    )
 
     def processing(self):
         if self.status != BarrierDownloadStatus.PENDING:

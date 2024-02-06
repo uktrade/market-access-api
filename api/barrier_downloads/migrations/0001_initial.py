@@ -60,6 +60,14 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
+                    "count",
+                    models.IntegerField(
+                        blank=True,
+                        help_text="Number of barriers in the report",
+                        null=True,
+                    ),
+                ),
+                (
                     "archived_by",
                     models.ForeignKey(
                         blank=True,

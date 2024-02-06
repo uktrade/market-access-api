@@ -58,6 +58,7 @@ def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDo
         status=BarrierDownloadStatus.PENDING,
         filters=filters,
         filename=filename,
+        count=len(barrier_ids),
     )
 
     # Make celery call don't wait for return
