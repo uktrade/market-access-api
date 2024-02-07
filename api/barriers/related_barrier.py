@@ -108,24 +108,34 @@ class SimilarityScoreMatrix(pd.DataFrame):
     def update_matrix(self, barrier_object) -> Self:
         """Given a barrier, update the similarity scores matrix column for that barrier.
 
-        Similarity scores are computed using cosine similarity between the barrier embeddings."""
+        Similarity scores are computed using cosine similarity between the barrier embeddings.
+        """
         barrier_id = str(barrier_object.id)
 
         if barrier_id not in self.columns:
             return self.add_barrier(barrier_object)
 
         barrier_ids = self.index.tolist()
+        print("************ barrier ids :", barrier_ids)
         annotated_barrier_queryset = self.get_annotated_barrier_queryset(barrier_ids)
         barrier_corpuses = [
             barrier["barrier_corpus"] for barrier in annotated_barrier_queryset
         ]
-        barrier_embeddings = transformer_model.encode(
+        barrier_corpus = barrier_object.title + ". " + barrier_object.summary
+        this_barrier_embedding = transformer_model.encode(
+            barrier_corpus, convert_to_tensor=True
+        )
+        # TODO: We should store the barrier embeddings rather then regenerate on every update
+        # potential race/load conditions here where multiple barriers are updated at the same time
+        all_barrier_embeddings = transformer_model.encode(
             barrier_corpuses, convert_to_tensor=True
         )
-        this_barrier_embedding = annotated_barrier_queryset.get(id=barrier_id)[
-            "barrier_corpus"
-        ]
-        similarity_scores = util.cos_sim(this_barrier_embedding, barrier_embeddings)
+        # print("barrier embeddings : ", barrier_embeddings)
+        # # this_barrier_embedding = annotated_barrier_queryset.get(id=barrier_id)[
+        # #     "barrier_corpus"
+        # # ]
+        # print("++++++++ barrier embedding :", this_barrier_embedding)
+        similarity_scores = util.cos_sim(this_barrier_embedding, all_barrier_embeddings)
         self[barrier_id] = similarity_scores.numpy()[0]
 
         return self.save_matrix()
