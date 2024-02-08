@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from api.barriers.related_barrier import SimilarityScoreMatrix
+from api.related_barriers.service import SimilarityScoreMatrix
 
 
 class Command(BaseCommand):
