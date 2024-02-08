@@ -1042,6 +1042,38 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
                     == response.data["public_view_status"]
                 ), f"Failed at Case {params['case_id']}"
 
+    def test_report_public_barrier_title_as_standard_user(self):
+        user = self.create_standard_user()
+        client = self.create_api_client(user=user)
+        public_title = "New public facing title!"
+        payload = {"values": {"title": public_title}}
+
+        url = reverse(
+            "public-barriers-report-public-barrier-title",
+            kwargs={"pk": self.barrier.id},
+        )
+        client = self.create_api_client(user=user)
+        response = client.post(url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert public_title == response.data["title"]
+
+    def test_report_public_barrier_summary_as_standard_user(self):
+        user = self.create_standard_user()
+        client = self.create_api_client(user=user)
+        public_summary = "New public facing summary!"
+        payload = {"values": {"summary": public_summary}}
+
+        url = reverse(
+            "public-barriers-report-public-barrier-summary",
+            kwargs={"pk": self.barrier.id},
+        )
+        client = self.create_api_client(user=user)
+        response = client.post(url, format="json", data=payload)
+
+        assert status.HTTP_200_OK == response.status_code
+        assert public_summary == response.data["summary"]
+
 
 class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
     def setUp(self):
