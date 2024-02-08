@@ -1,4 +1,3 @@
-import json
 import os
 
 import numpy as np
@@ -92,18 +91,18 @@ class SimilarityScoreMatrix(pd.DataFrame):
             settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY
         ):
             return cls(pd.read_json(similarity_score_json))  # retrieving from cache
+        # else:
+        #     if os.path.isfile(cls.similarity_score_df_path):
+        #         with open(cls.similarity_score_df_path, "r") as f:
+        #             dataframe_json = json.load(f)
+        #             cache.set(  # caching the matrix, so it can be retrieved from the cache next time
+        #                 settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY,
+        #                 dataframe_json,
+        #                 timeout=None,
+        #             )
+        #             return cls(pd.read_json(dataframe_json))
         else:
-            if os.path.isfile(cls.similarity_score_df_path):
-                with open(cls.similarity_score_df_path, "r") as f:
-                    dataframe_json = json.load(f)
-                    cache.set(  # caching the matrix, so it can be retrieved from the cache next time
-                        settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY,
-                        dataframe_json,
-                        timeout=None,
-                    )
-                    return cls(pd.read_json(dataframe_json))
-            else:
-                return cls.create_matrix()  # creating the matrix if it doesn't exist
+            return cls.create_matrix()  # creating the matrix if it doesn't exist
 
     def update_matrix(self, barrier_object) -> Self:
         """Given a barrier, update the similarity scores matrix column for that barrier.
@@ -148,8 +147,8 @@ class SimilarityScoreMatrix(pd.DataFrame):
         cache.set(
             settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY, dataframe_json, timeout=None
         )
-        with open(self.similarity_score_df_path, "w") as f:
-            json.dump(dataframe_json, f)
+        # with open(self.similarity_score_df_path, "w") as f:
+        #     json.dump(dataframe_json, f)
 
         return self
 
