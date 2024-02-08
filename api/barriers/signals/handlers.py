@@ -20,7 +20,7 @@ from api.barriers.models import (
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
-from api.barriers.related_barrier import RELEVANT_BARRIER_FIELDS, SimilarityScoreMatrix
+from api.related_barriers import service as related_barrier_service
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 logger = logging.getLogger(__name__)
@@ -360,10 +360,10 @@ def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
     else:
         changed = any(
             getattr(current_barrier_object, field) != getattr(instance, field)
-            for field in RELEVANT_BARRIER_FIELDS
+            for field in related_barrier_service.RELEVANT_BARRIER_FIELDS
         )
         if changed and not current_barrier_object.draft:
-            similarity_score_matrix = SimilarityScoreMatrix.retrieve_matrix()
+            similarity_score_matrix = related_barrier_service.SimilarityScoreMatrix.retrieve_matrix()
             similarity_score_matrix.update_matrix(instance)
 
 

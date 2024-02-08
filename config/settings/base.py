@@ -86,6 +86,7 @@ LOCAL_APPS = [
     "api.wto",
     "api.action_plans",
     "api.feedback",
+    "api.related_barriers",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
