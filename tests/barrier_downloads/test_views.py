@@ -54,9 +54,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert barrier_download.filters == {"text": barrier.title}
 
     @mock.patch("api.barrier_downloads.views.service")
-    def test_barrier_download_post_endpoint_success_and_retrieve(
-        self, mock_service
-    ):
+    def test_barrier_download_post_endpoint_success_and_retrieve(self, mock_service):
         barrier = BarrierFactory()
         barrier_download = BarrierDownload.objects.create(
             created_by=self.user, filters={}

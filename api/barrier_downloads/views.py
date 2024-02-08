@@ -5,13 +5,13 @@ from rest_framework import generics, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from api.barrier_downloads import service
 from api.barrier_downloads.models import BarrierDownload
 from api.barrier_downloads.serializers import (
     BarrierDownloadPatchSerializer,
     BarrierDownloadPresignedUrlSerializer,
     BarrierDownloadSerializer,
 )
-from api.barrier_downloads import service
 from api.barriers.models import Barrier, BarrierFilterSet
 
 
