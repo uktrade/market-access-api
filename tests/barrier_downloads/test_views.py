@@ -53,28 +53,25 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_201_CREATED
         assert barrier_download.filters == {"text": barrier.title}
 
-    @mock.patch("api.barrier_downloads.views.create_barrier_download")
+    @mock.patch("api.barrier_downloads.views.service")
     def test_barrier_download_post_endpoint_success_and_retrieve(
-        self, mock_create_barrier_download
+        self, mock_service
     ):
         barrier = BarrierFactory()
         barrier_download = BarrierDownload.objects.create(
             created_by=self.user, filters={}
         )
-        mock_create_barrier_download.return_value = barrier_download
+        mock_service.create_barrier_download.return_value = barrier_download
         url = reverse("barrier-downloads")
 
         response = self.api_client.post(url, kwargs={"hello": "WPR:D"})
 
-        mock_create_barrier_download.assert_called_once_with(
+        mock_service.create_barrier_download.assert_called_once_with(
             user=self.user, filters={}, barrier_ids=[str(barrier.id)]
         )
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert (
-            str(barrier_download.id)
-            == json.loads(response.content)["id"]
-        )
+        assert str(barrier_download.id) == json.loads(response.content)["id"]
 
         url = reverse("barrier-download", kwargs={"pk": str(barrier_download.id)})
 
@@ -132,9 +129,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert data["results"][0]["id"] == str(br2.id)
         assert data["results"][1]["id"] == str(br1.id)
 
-    @mock.patch("api.barrier_downloads.views.get_presigned_url")
-    def test_get_presigned_url(self, mock_get_presigned_url):
-        mock_get_presigned_url.return_value = "url.com"
+    @mock.patch("api.barrier_downloads.views.service")
+    def test_get_presigned_url(self, mock_service):
+        mock_service.get_presigned_url.return_value = "url.com"
         barrier_download = BarrierDownload.objects.create(
             created_by=self.user, filters={}
         )
@@ -150,9 +147,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_200_OK
         assert data == {"presigned_url": "url.com"}
 
-    @mock.patch("api.barrier_downloads.views.get_presigned_url")
-    def test_get_presigned_url_unauthorized(self, mock_get_presigned_url):
-        mock_get_presigned_url.return_value = "url.com"
+    @mock.patch("api.barrier_downloads.views.service")
+    def test_get_presigned_url_unauthorized(self, mock_service):
+        mock_service.get_presigned_url.return_value = "url.com"
         barrier_download = BarrierDownload.objects.create(
             created_by=self.mock_user, filters={}
         )

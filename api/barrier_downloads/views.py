@@ -11,11 +11,7 @@ from api.barrier_downloads.serializers import (
     BarrierDownloadPresignedUrlSerializer,
     BarrierDownloadSerializer,
 )
-from api.barrier_downloads.service import (
-    create_barrier_download,
-    delete_barrier_download,
-    get_presigned_url,
-)
+from api.barrier_downloads import service
 from api.barriers.models import Barrier, BarrierFilterSet
 
 
@@ -37,7 +33,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
                 data={"error": "No barriers matching filterset"},
             )
 
-        barrier_download = create_barrier_download(
+        barrier_download = service.create_barrier_download(
             user=request.user, filters=filters, barrier_ids=barrier_ids
         )
 
@@ -93,7 +89,7 @@ class BarrierDownloadDetailView(generics.RetrieveUpdateDestroyAPIView):
         )
 
     def delete(self, request, *args, **kwargs):
-        delete_barrier_download(self.get_object())
+        service.delete_barrier_download(self.get_object())
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -108,7 +104,7 @@ class BarrierDownloadPresignedUrlView(generics.RetrieveAPIView):
 
     def get(self, request, *args, **kwargs):
         barrier_download = self.get_object()
-        presigned_url = get_presigned_url(barrier_download)
+        presigned_url = service.get_presigned_url(barrier_download)
         return Response(
             status=status.HTTP_200_OK,
             data=BarrierDownloadPresignedUrlSerializer(
