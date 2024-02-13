@@ -103,7 +103,7 @@ def undo_recategorisation(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("barriers", "0160_merge_20240124_0922"),
+        ("barriers", "0159_backfill_barrier_changed_since_published"),
     ]
 
     operations = [
