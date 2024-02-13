@@ -16,7 +16,28 @@ from api.barriers.models import Barrier, BarrierFilterSet
 
 
 class BarrierDownloadsView(generics.ListCreateAPIView):
-    queryset = Barrier.barriers.annotate(team_count=Count("barrier_team")).all()
+    queryset = (
+        Barrier.barriers.annotate(
+            team_count=Count("barrier_team"),
+        )
+        .all()
+        .select_related(
+            "wto_profile__committee_notified",
+            "wto_profile__committee_raised_in",
+            "priority",
+            "public_barrier",
+        )
+        .prefetch_related(
+            "economic_assessments",
+            "resolvability_assessments",
+            "strategic_assessments",
+            "tags",
+            "categories",
+            "barrier_commodities",
+            "public_barrier__notes",
+            "organisations",
+        )
+    )
     serializer_class = BarrierDownloadSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (DjangoFilterBackend,)
