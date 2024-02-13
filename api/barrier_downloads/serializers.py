@@ -35,7 +35,6 @@ class BarrierDownloadSerializer(serializers.Serializer):
     created_by = serializers.CharField()
     created_on = serializers.DateTimeField()
     modified_on = serializers.DateTimeField()
-    filename = serializers.CharField(read_only=True)
     filters = serializers.JSONField(read_only=True)
     count = serializers.IntegerField(read_only=True)
 

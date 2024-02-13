@@ -34,12 +34,22 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert response.content == b'{"error": "No barriers matching filterset"}'
 
     def test_barrier_download_post_endpoint_success(self):
+        assert BarrierDownload.objects.count() == 0
+
         barrier = BarrierFactory()
         url = reverse("barrier-downloads")
 
         response = self.api_client.post(url)
+        data = json.loads(response.content)
 
         assert response.status_code == status.HTTP_201_CREATED
+        assert "id" in data
+        assert BarrierDownload.objects.count() == 1
+
+        obj = BarrierDownload.objects.get(id=data["id"])
+
+        # default filename
+        assert obj.name == f"DMAS_{obj.created_on.strftime('%Y-%m-%d-%H-%M-%S')}.csv"
 
     def test_barrier_download_post_endpoint_success_with_filter(self):
         barrier = BarrierFactory()

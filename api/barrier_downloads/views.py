@@ -74,7 +74,6 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
                 "status",
                 "created_on",
                 "count",
-                "filename",
                 "filters",
                 "modified_on",
                 "created_by",

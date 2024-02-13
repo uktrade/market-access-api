@@ -46,6 +46,7 @@ def serializer_to_csv_bytes(serializer, field_names) -> bytes:
 
 def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDownload:
     filename = f"csv/{user.id}/DMAS_{now().strftime('%Y-%m-%d-%H-%M-%S')}.csv"
+    default_name = filename.split('/')[2]
 
     UserActvitiyLog.objects.create(
         user=user,
@@ -58,6 +59,7 @@ def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDo
         status=BarrierDownloadStatus.PENDING,
         filters=filters,
         filename=filename,
+        name=default_name,
         count=len(barrier_ids),
     )
 
