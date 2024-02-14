@@ -900,13 +900,42 @@ class PublicBarrierViewSet(
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
+    # can delete once references in frontend are refactored
     @action(methods=["post"], detail=True, permission_classes=(IsApprover,))
     def ready(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.PUBLISHING_PENDING)
 
+    # can delete once references in frontend are refactored
     @action(methods=["post"], detail=True, permission_classes=(IsApprover,))
     def unprepared(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.ALLOWED)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(),
+        url_path="ready-for-approval",
+    )
+    def ready_for_approval(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.APPROVAL_PENDING)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(),
+        url_path="allow-for-publishing-process",
+    )
+    def allow_for_publishing_process(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.ALLOWED)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsApprover),
+        url_path="ready-for-publishing",
+    )
+    def ready_for_publishing(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.PUBLISHING_PENDING)
 
     @action(methods=["post"], detail=True, permission_classes=())
     def report_public_barrier_title(self, request, *args, **kwargs):

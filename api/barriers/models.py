@@ -1812,8 +1812,8 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         status_lookup = {
             "unknown": PublicBarrierStatus.UNKNOWN,
-            "ineligible": PublicBarrierStatus.NOT_ALLOWED,
-            "eligible": PublicBarrierStatus.ALLOWED,
+            "not_allowed": PublicBarrierStatus.NOT_ALLOWED,
+            "allowed": PublicBarrierStatus.ALLOWED,
             "awaiting_approval": PublicBarrierStatus.APPROVAL_PENDING,
             "ready_for_publishing": PublicBarrierStatus.PUBLISHING_PENDING,
             "published": PublicBarrierStatus.PUBLISHED,
