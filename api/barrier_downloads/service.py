@@ -1,8 +1,10 @@
 import csv
 import io
 import logging
+from functools import wraps
 from typing import List
 
+import sentry_sdk
 from django.conf import settings
 from django.utils.timezone import now
 from notifications_python_client import NotificationsAPIClient
@@ -29,7 +31,17 @@ def get_s3_client_and_bucket_name():
     return get_s3_client_for_bucket(bucket_id), get_bucket_name(bucket_id)
 
 
-def serializer_to_csv_bytes(serializer, field_names) -> bytes:
+def timing(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        with sentry_sdk.metrics.timing(key=f"api.barrier_downloads.service.{f.__name__}"):
+            return f(*args, **kwargs)
+
+    return wrap
+
+
+@timing
+def serializer_to_csv_bytes(data, field_names) -> bytes:
     output = io.StringIO()
     writer = csv.DictWriter(
         output,
@@ -38,12 +50,13 @@ def serializer_to_csv_bytes(serializer, field_names) -> bytes:
         quoting=csv.QUOTE_MINIMAL,
     )
     writer.writerow(field_names)
-    for row in serializer.data:
+    for row in data:
         writer.writerow(_transform_csv_row(row))
     content = output.getvalue().encode("utf-8")
     return content
 
 
+@timing
 def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDownload:
     filename = f"csv/{user.id}/DMAS_{now().strftime('%Y-%m-%d-%H-%M-%S')}.csv"
     default_name = filename.split("/")[2]
@@ -73,6 +86,13 @@ def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDo
     return barrier_download
 
 
+@timing
+def get_serializer_data(queryset):
+    serializer = BarrierCsvExportSerializer(queryset, many=True)
+    return serializer.data
+
+
+@timing
 def generate_barrier_download_file(
     barrier_download_id: str,
     barrier_ids: List[str],
@@ -88,10 +108,11 @@ def generate_barrier_download_file(
     barrier_download.processing()
 
     queryset = Barrier.objects.filter(id__in=barrier_ids)
-    serializer = BarrierCsvExportSerializer(queryset, many=True)
+
+    data = get_serializer_data(queryset)
 
     try:
-        csv_bytes = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
+        csv_bytes = serializer_to_csv_bytes(data, BARRIER_FIELD_TO_COLUMN_TITLE)
     except Exception:
         # Check for generic exceptions when creating csv file
         # Async task so no need to handle gracefully
@@ -100,10 +121,13 @@ def generate_barrier_download_file(
         barrier_download.fail()
         raise
 
-    s3_client, bucket = get_s3_client_and_bucket_name()
+    @timing
+    def upload_to_s3():
+        s3_client, bucket = get_s3_client_and_bucket_name()
+        # Upload file
+        s3_client.put_object(Bucket=bucket, Body=csv_bytes, Key=barrier_download.filename)
 
-    # Upload file
-    s3_client.put_object(Bucket=bucket, Body=csv_bytes, Key=barrier_download.filename)
+    upload_to_s3()
 
     barrier_download.complete()
 
@@ -134,6 +158,7 @@ def get_presigned_url(barrier_download):
     )
 
 
+@timing
 def barrier_download_complete_notification(barrier_download_id: str):
     """
     Send notification to user with a presigned url that a Barrier Download has been completed.
