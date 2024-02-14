@@ -1,10 +1,9 @@
 import csv
 import io
 import logging
-from functools import wraps
+import time
 from typing import List
 
-import sentry_sdk
 from django.conf import settings
 from django.utils.timezone import now
 from notifications_python_client import NotificationsAPIClient
@@ -32,14 +31,14 @@ def get_s3_client_and_bucket_name():
 
 
 def timing(f):
-    @wraps(f)
-    def wrap(*args, **kwargs):
-        with sentry_sdk.metrics.timing(
-            key=f"api.barrier_downloads.service.{f.__name__}"
-        ):
-            return f(*args, **kwargs)
+    def wrapper(*args, **kw):
+        ts = time.time()
+        result = f(*args, **kw)
+        te = time.time()
+        logging.critical('%r %2.2f sec' % (f.__name__, te-ts))
+        return result
 
-    return wrap
+    return wrapper
 
 
 @timing
@@ -91,7 +90,9 @@ def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDo
 @timing
 def get_serializer_data(queryset):
     serializer = BarrierCsvExportSerializer(queryset, many=True)
-    return serializer.data
+    data = serializer.data
+    logger.critical(f"Number of barriers: {len(data)}")
+    return data
 
 
 @timing
