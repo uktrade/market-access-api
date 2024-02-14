@@ -34,7 +34,9 @@ def get_s3_client_and_bucket_name():
 def timing(f):
     @wraps(f)
     def wrap(*args, **kwargs):
-        with sentry_sdk.metrics.timing(key=f"api.barrier_downloads.service.{f.__name__}"):
+        with sentry_sdk.metrics.timing(
+            key=f"api.barrier_downloads.service.{f.__name__}"
+        ):
             return f(*args, **kwargs)
 
     return wrap
@@ -125,7 +127,9 @@ def generate_barrier_download_file(
     def upload_to_s3():
         s3_client, bucket = get_s3_client_and_bucket_name()
         # Upload file
-        s3_client.put_object(Bucket=bucket, Body=csv_bytes, Key=barrier_download.filename)
+        s3_client.put_object(
+            Bucket=bucket, Body=csv_bytes, Key=barrier_download.filename
+        )
 
     upload_to_s3()
 
