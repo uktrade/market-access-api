@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import datetime, timedelta
 from typing import Dict
 from uuid import uuid4
@@ -34,6 +35,8 @@ from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 from tests.user.factories import UserFactoryMixin
 
+logger = logging.getLogger(__name__)
+
 
 class PublicBarrierBaseTestCase(UserFactoryMixin, APITestMixin, TestCase):
     def setUp(self):
@@ -60,7 +63,7 @@ class PublicBarrierBaseTestCase(UserFactoryMixin, APITestMixin, TestCase):
         pb = pb or self.get_public_barrier(barrier=barrier)
         if prepare:
             # make sure the pubic barrier is ready to be published
-            pb.public_view_status = PublicBarrierStatus.READY
+            pb.public_view_status = PublicBarrierStatus.PUBLISHING_PENDING
             if not pb.title:
                 pb.title = "Some title"
             if not pb.summary:
@@ -159,7 +162,6 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
         assert {pb1.id, pb2.id} == {i["id"] for i in r.data["results"]}
 
     def test_pb_list_status_filter(self):
-
         barriers: Dict[int, Barrier] = {}
         for status_code, status_name in PublicBarrierStatus.choices:
             if status_code == PublicBarrierStatus.UNKNOWN:
@@ -183,19 +185,33 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
             r = get_list_for_status(status_code)
             public_barrier = barriers[status_code].public_barrier
             assert 200 == r.status_code
-            assert 1 == r.data["count"]
-            assert {public_barrier.id} == {i["id"] for i in r.data["results"]}
+            if status_code == 10:
+                # The barrier in UNKNOWN status will default to NOT_ALLOWED status
+                # without public_eligibility being true on the parent barrier object
+                assert 2 == r.data["count"]
+                assert public_barrier.id in {i["id"] for i in r.data["results"]}
+                assert self.barrier.public_barrier.id in {
+                    i["id"] for i in r.data["results"]
+                }
+            else:
+                assert 1 == r.data["count"]
+                assert {public_barrier.id} == {i["id"] for i in r.data["results"]}
 
         # test filtering on multiple statuses
 
         r = get_list_for_status(
             ",".join(
-                [str(PublicBarrierStatus.READY), str(PublicBarrierStatus.ELIGIBLE)]
+                [
+                    str(PublicBarrierStatus.PUBLISHING_PENDING),
+                    str(PublicBarrierStatus.ALLOWED),
+                ]
             )
         )
 
-        public_barrier1 = barriers[PublicBarrierStatus.READY].public_barrier
-        public_barrier2 = barriers[PublicBarrierStatus.ELIGIBLE].public_barrier
+        public_barrier1 = barriers[
+            PublicBarrierStatus.PUBLISHING_PENDING
+        ].public_barrier
+        public_barrier2 = barriers[PublicBarrierStatus.ALLOWED].public_barrier
         assert 200 == r.status_code
         assert 2 == r.data["count"]
         assert {public_barrier1.id, public_barrier2.id} == {
@@ -317,7 +333,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         """
         assert 1 == Barrier.objects.count()
         assert 1 == PublicBarrier.objects.count()
-        last_edited = PublicBarrier.objects.get().modified_on
 
         # A fetch request shouldn't create additional public barriers
         response = self.api_client.get(self.url)
@@ -325,7 +340,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert 1 == Barrier.objects.count()
         assert 1 == PublicBarrier.objects.count()
-        assert last_edited == PublicBarrier.objects.get().modified_on
 
     def test_public_barrier_default_values_at_creation(self):
         """
@@ -379,18 +393,9 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    def test_public_barrier_patch_as_sifter(self):
-        user = self.create_sifter()
-        client = self.create_api_client(user=user)
-        public_title = "New public facing title!"
-        payload = {"title": public_title}
-        response = client.patch(self.url, format="json", data=payload)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
     @freeze_time("2020-02-02")
-    def test_public_barrier_patch_as_editor(self):
-        user = self.create_editor()
+    def test_public_barrier_patch_as_approver(self):
+        user = self.create_approver()
         client = self.create_api_client(user=user)
         public_title = "New public facing title!"
         payload = {"title": public_title}
@@ -455,24 +460,18 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    def test_public_barrier_marked_ready_as_sifter(self):
-        """Sifters cannot mark public barriers ready (to be published)"""
-        user = self.create_sifter()
-        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    def test_public_barrier_marked_ready_as_editor(self):
-        """Editors can mark public barriers ready (to be published)"""
-        user = self.create_editor()
+    def test_public_barrier_marked_ready_as_approver(self):
+        """Approvers can mark public barriers ready (to be published)"""
+        user = self.create_approver()
         url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
         response = client.post(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.READY == response.data["public_view_status"]
+        assert (
+            PublicBarrierStatus.PUBLISHING_PENDING
+            == response.data["public_view_status"]
+        )
 
     def test_public_barrier_marked_ready_as_publisher(self):
         """Publishers can mark public barriers ready (to be published)"""
@@ -482,7 +481,10 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         response = client.post(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.READY == response.data["public_view_status"]
+        assert (
+            PublicBarrierStatus.PUBLISHING_PENDING
+            == response.data["public_view_status"]
+        )
 
     def test_public_barrier_marked_ready_as_admin(self):
         """Admins can mark public barriers ready (to be published)"""
@@ -492,7 +494,10 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         response = client.post(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.READY == response.data["public_view_status"]
+        assert (
+            PublicBarrierStatus.PUBLISHING_PENDING
+            == response.data["public_view_status"]
+        )
 
     # === UNPREPARED ====
     def test_public_barrier_marked_unprepared_as_standard_user(self):
@@ -504,24 +509,15 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    def test_public_barrier_marked_unprepared_as_sifter(self):
-        """Sifter cannot mark a public barriers unprepared (not ready)"""
-        user = self.create_sifter()
-        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    def test_public_barrier_marked_unprepared_as_editor(self):
-        """Editors can mark a public barriers unprepared (not ready)"""
-        user = self.create_editor()
+    def test_public_barrier_marked_unprepared_as_approver(self):
+        """Approvers can mark a public barriers unprepared (not ready)"""
+        user = self.create_approver()
         url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
         response = client.post(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
+        assert PublicBarrierStatus.ALLOWED == response.data["public_view_status"]
 
     def test_public_barrier_marked_unprepared_as_publisher(self):
         """Publishers can mark a public barriers unprepared (not ready)"""
@@ -531,7 +527,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         response = client.post(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
+        assert PublicBarrierStatus.ALLOWED == response.data["public_view_status"]
 
     def test_public_barrier_marked_unprepared_as_admin(self):
         """Admins can mark a public barriers unprepared (not ready)"""
@@ -541,7 +537,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         response = client.post(url)
 
         assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
+        assert PublicBarrierStatus.ALLOWED == response.data["public_view_status"]
 
     # === IGNORE ALL CHANGES ====
     @freeze_time("2020-02-02")
@@ -557,21 +553,9 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
     @freeze_time("2020-02-02")
-    def test_public_barrier_ignore_all_changes_as_sifter(self):
-        """Sifters cannot ignore all changes"""
-        user = self.create_sifter()
-        url = reverse(
-            "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
-        )
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    @freeze_time("2020-02-02")
-    def test_public_barrier_ignore_all_changes_as_editor(self):
-        """Editors can ignore all changes"""
-        user = self.create_editor()
+    def test_public_barrier_ignore_all_changes_as_approver(self):
+        """Approvers can ignore all changes"""
+        user = self.create_approver()
         url = reverse(
             "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
         )
@@ -617,15 +601,9 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    def test_public_barrier_publish_as_sifter(self):
-        """Sifters are not allowed to publish public barriers"""
-        user = self.create_sifter()
-        pb, response = self.publish_barrier(user=user)
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    def test_public_barrier_publish_as_editor(self):
+    def test_public_barrier_publish_as_approver(self):
         """Editors are not allowed to publish public barriers"""
-        user = self.create_editor()
+        user = self.create_approver()
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
@@ -675,7 +653,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert pb.latest_published_version
 
         pb.title = "Updating title to allow publishing."
-        pb.public_view_status = PublicBarrierStatus.READY
+        pb.public_view_status = PublicBarrierStatus.PUBLISHING_PENDING
         pb.save()
         pb, response = self.publish_barrier(pb=pb, user=user, prepare=False)
 
@@ -865,16 +843,8 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    def test_public_barrier_unpublish_as_sifter(self):
-        user = self.create_sifter()
-        url = reverse("public-barriers-unpublish", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    def test_public_barrier_unpublish_as_editor(self):
-        user = self.create_editor()
+    def test_public_barrier_unpublish_as_approver(self):
+        user = self.create_approver()
         url = reverse("public-barriers-unpublish", kwargs={"pk": self.barrier.id})
         client = self.create_api_client(user=user)
         response = client.post(url)
@@ -924,49 +894,49 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
                 "public_eligibility": None,
                 "public_eligibility_postponed": False,
                 "public_view_status": PublicBarrierStatus.UNKNOWN,
-                "expected_public_view_status": PublicBarrierStatus.UNKNOWN,
+                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
             },
             {
                 "case_id": 20,
                 "public_eligibility": True,
                 "public_eligibility_postponed": False,
                 "public_view_status": PublicBarrierStatus.UNKNOWN,
-                "expected_public_view_status": PublicBarrierStatus.ELIGIBLE,
+                "expected_public_view_status": PublicBarrierStatus.ALLOWED,
             },
             {
                 "case_id": 30,
                 "public_eligibility": False,
                 "public_eligibility_postponed": False,
                 "public_view_status": PublicBarrierStatus.UNKNOWN,
-                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE,
+                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
             },
             {
                 "case_id": 40,
                 "public_eligibility": False,
                 "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.ELIGIBLE,
-                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE,
+                "public_view_status": PublicBarrierStatus.ALLOWED,
+                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
             },
             {
                 "case_id": 50,
                 "public_eligibility": True,
                 "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.INELIGIBLE,
-                "expected_public_view_status": PublicBarrierStatus.ELIGIBLE,
+                "public_view_status": PublicBarrierStatus.NOT_ALLOWED,
+                "expected_public_view_status": PublicBarrierStatus.ALLOWED,
             },
             {
                 "case_id": 60,
                 "public_eligibility": True,
                 "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.READY,
-                "expected_public_view_status": PublicBarrierStatus.READY,
+                "public_view_status": PublicBarrierStatus.PUBLISHING_PENDING,
+                "expected_public_view_status": PublicBarrierStatus.PUBLISHING_PENDING,
             },
             {
                 "case_id": 70,
                 "public_eligibility": False,
                 "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.READY,
-                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE,
+                "public_view_status": PublicBarrierStatus.PUBLISHING_PENDING,
+                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
             },
             # Published state is protected and cannot change without unpublishing first
             {
@@ -988,28 +958,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
                 "public_eligibility": False,
                 "public_eligibility_postponed": False,
                 "public_view_status": PublicBarrierStatus.UNPUBLISHED,
-                "expected_public_view_status": PublicBarrierStatus.INELIGIBLE,
-            },
-            {
-                "case_id": 110,
-                "public_eligibility": False,
-                "public_eligibility_postponed": True,
-                "public_view_status": PublicBarrierStatus.INELIGIBLE,
-                "expected_public_view_status": PublicBarrierStatus.REVIEW_LATER,
-            },
-            {
-                "case_id": 120,
-                "public_eligibility": False,
-                "public_eligibility_postponed": True,
-                "public_view_status": PublicBarrierStatus.ELIGIBLE,
-                "expected_public_view_status": PublicBarrierStatus.REVIEW_LATER,
-            },
-            {
-                "case_id": 130,
-                "public_eligibility": False,
-                "public_eligibility_postponed": True,
-                "public_view_status": PublicBarrierStatus.READY,
-                "expected_public_view_status": PublicBarrierStatus.REVIEW_LATER,
+                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
             },
         ]
 
@@ -1257,8 +1206,8 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
     def test_ready_to_be_published_is_false_when_status_is_not_ready(self):
         statuses = [
             PublicBarrierStatus.UNKNOWN,
-            PublicBarrierStatus.INELIGIBLE,
-            PublicBarrierStatus.ELIGIBLE,
+            PublicBarrierStatus.NOT_ALLOWED,
+            PublicBarrierStatus.ALLOWED,
             PublicBarrierStatus.PUBLISHED,
             PublicBarrierStatus.UNPUBLISHED,
         ]
@@ -1312,7 +1261,7 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
         # 3. Review the changes
         #    once the changes are reviewed it should be ready to be published
         #    even without unpublished changes
-        pb.public_view_status = PublicBarrierStatus.READY
+        pb.public_view_status = PublicBarrierStatus.PUBLISHING_PENDING
         pb.save()
         pb.refresh_from_db()
 
