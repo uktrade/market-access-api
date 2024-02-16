@@ -112,7 +112,7 @@ class Migration(migrations.Migration):
             name="_public_view_status",
             field=models.PositiveIntegerField(
                 choices=[
-                    (0, "Not yet sifted"),
+                    (0, "Unknown"),
                     (10, "Not allowed"),
                     (20, "Allowed"),
                     (70, "Awaiting approval"),
@@ -129,7 +129,7 @@ class Migration(migrations.Migration):
             name="_public_view_status",
             field=models.PositiveIntegerField(
                 choices=[
-                    (0, "Not yet sifted"),
+                    (0, "Unknown"),
                     (10, "Not allowed"),
                     (20, "Allowed"),
                     (70, "Awaiting approval"),

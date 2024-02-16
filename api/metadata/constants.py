@@ -83,7 +83,7 @@ class PublicBarrierStatus(StatusNameMixin):
     REVIEW_LATER = 60
 
     choices = Choices(
-        (UNKNOWN, "Not yet sifted"),
+        (UNKNOWN, "Unknown"),
         (NOT_ALLOWED, "Not allowed"),
         (ALLOWED, "Allowed"),
         (APPROVAL_PENDING, "Awaiting approval"),
@@ -92,60 +92,6 @@ class PublicBarrierStatus(StatusNameMixin):
         (UNPUBLISHED, "Unpublished"),
         (REVIEW_LATER, "Review later (Depricated)"),
     )
-
-    # Current options;
-    #   UNKNOWN
-    #   INELIGIBLE
-    #   ELIGIBLE
-    #   READY
-    #   PUBLISHED
-    #   UNPUBLISHED
-    #   REVIEW_LATER
-
-    # Proposed new statuses and where existing barriers get moved to:
-    # UNKNOWN - all barriers currently in "UNKNOWN" status
-    # NOT_ALLOWED - all barriers currently in "INELIGIBLE" status
-    # ALLOWED - all barriers in "REVIEW_LATER" or "ELIGIBLE" status that are missing either title or summary
-    # APPROVAL_PENDING = all barriers in "REVIEW_LATER" or "ELIGIBLE" status that have title and summary set
-    # PUBLISHING_PENDING = all barriers in "READY" status
-    # PUBLISHED - all barriers in "PUBLISHED" status
-    # UNPUBLISHED - all barriers in "UNPUBLISHED" status
-
-    # live data counts;
-    #   UNKNOWN 2838
-    #   INELIGIBLE 1564
-    #   ELIGIBLE 43
-    #   READY 11
-    #   PUBLISHED 483
-    #   UNPUBLISHED 24
-    #   REVIEW_LATER 43
-
-    # expected new category counts:
-    #   UNKNOWN 2838
-    #   NOT_ALLOWED 1564
-    #   ALLOWED 8+13 = 21
-    #   APPROVAL_PENDING 35+30 = 65
-    #   PUBLISHING_PENDING 11
-    #   PUBLISHED 483
-    #   UNPUBLISHED 43
-
-    #   UNKNOWN = 0
-    #   INELIGIBLE = 10
-    #   ELIGIBLE = 20
-    #   READY = 30
-    #   PUBLISHED = 40
-    #   UNPUBLISHED = 50
-    #   REVIEW_LATER = 60
-
-    # choices = Choices(
-    #    (UNKNOWN, "Not yet sifted"),
-    #    (INELIGIBLE, "Not allowed"),
-    #    (ELIGIBLE, "Allowed"),
-    #    (READY, "Ready"),
-    #    (PUBLISHED, "Published"),
-    #    (UNPUBLISHED, "Unpublished"),
-    #    (REVIEW_LATER, "Review later"),
-    # )
 
 
 BARRIER_PENDING = Choices(
