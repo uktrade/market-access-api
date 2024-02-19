@@ -55,7 +55,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         barrier = BarrierFactory()
         url = f'{reverse("barrier-downloads")}?text={barrier.title}'
 
-        response = self.api_client.post(url)
+        response = self.api_client.post(
+            url, data={"filters": {"text": barrier.title}}, format="json"
+        )
 
         barrier_download = BarrierDownload.objects.get(
             id=json.loads(response.content)["id"]
