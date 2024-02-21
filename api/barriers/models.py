@@ -1147,8 +1147,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
         # set default if eligibility is avail on the internal barrier
         if self._public_view_status == PublicBarrierStatus.UNKNOWN:
-            # if self.barrier.public_eligibility_postponed is True:
-            #    self._public_view_status = PublicBarrierStatus.REVIEW_LATER
             if self.barrier.public_eligibility is True:
                 self._public_view_status = PublicBarrierStatus.ALLOWED
             else:
@@ -1161,9 +1159,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         # Note: cannot automatically change from published
         #       the public barrier would need to be unpublished first
         if self._public_view_status != PublicBarrierStatus.PUBLISHED:
-            # if self.barrier.public_eligibility_postponed is True:
-            #    self._public_view_status = PublicBarrierStatus.REVIEW_LATER
-
             # Marking the public barrier ineligible
             if self.barrier.public_eligibility is False:
                 self._public_view_status = PublicBarrierStatus.NOT_ALLOWED
