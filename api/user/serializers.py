@@ -16,6 +16,15 @@ UserModel = get_user_model()
 logger = getLogger(__name__)
 
 
+class NestedGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "name",
+        ]
+
+
 class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
@@ -29,6 +38,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     permitted_applications = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
     has_approved_digital_trade_email = serializers.SerializerMethodField()
+    groups = NestedGroupSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = UserModel
@@ -47,6 +57,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "permissions",
             "is_active",
             "is_superuser",
+            "groups",
         )
 
     def get_email(self, obj):
@@ -125,15 +136,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ["sso_user_id"]
-
-
-class NestedGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = [
-            "id",
-            "name",
-        ]
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
