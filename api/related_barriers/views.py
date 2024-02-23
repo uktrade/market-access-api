@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from api.barriers.models import Barrier
-from api.related_barriers.model import barrier_to_corpus, get_similar_barriers
+from api.related_barriers import model
 from api.related_barriers.serializers import BarrierRelatedListSerializer
 
 
@@ -15,10 +15,14 @@ def related_barriers(request, pk) -> Response:
     Return a list of related barriers
     """
 
-    barrier = get_object_or_404(Barrier, pk=pk)
-    barrier = {'id': str(barrier.id), 'barrier_corpus': barrier_to_corpus(barrier)}
+    if model.db is None:
+        db = model.create_db()
+        model.set_db(database=db)
 
-    similar_barrier_ids = get_similar_barriers(barrier)
+    barrier = get_object_or_404(Barrier, pk=pk)
+    barrier = {'id': str(barrier.id), 'barrier_corpus': model.barrier_to_corpus(barrier)}
+
+    similar_barrier_ids = model.get_similar_barriers(barrier)
 
     return Response(
         BarrierRelatedListSerializer(
