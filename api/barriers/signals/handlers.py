@@ -22,6 +22,7 @@ from api.barriers.models import (
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from api.related_barriers import service as related_barrier_service
+from api.related_barriers import model
 
 logger = logging.getLogger(__name__)
 
@@ -352,7 +353,7 @@ def barrier_completion_top_priority_barrier_resolved(
 
 
 @receiver(pre_save, sender=Barrier)
-def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
+def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
     try:
         current_barrier_object = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
@@ -363,10 +364,12 @@ def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
             for field in related_barrier_service.RELEVANT_BARRIER_FIELDS
         )
         if changed and not current_barrier_object.draft:
-            similarity_score_matrix = (
-                related_barrier_service.SimilarityScoreMatrix.retrieve_matrix()
+            model.db.update_barrier(
+                {
+                    'id': str(current_barrier_object.id),
+                    'barrier_corpus': model.barrier_to_corpus(current_barrier_object)
+                }
             )
-            similarity_score_matrix.update_matrix(instance)
 
 
 def barrier_changed_after_published(sender, instance, **kwargs):
