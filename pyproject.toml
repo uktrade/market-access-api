@@ -86,7 +86,6 @@ pytest-circleci-parallelized = "^0.1.0"
 sentence-transformers = "2.2.2"
 torch = "2.0.0"
 torchvision = "0.15.1"
-pandas = "2.0.3"
 
 [build-system]
 requires = ["poetry~=1.6.1"]
