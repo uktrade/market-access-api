@@ -4,7 +4,7 @@ async-timeout==4.0.3 ; python_version >= "3.8" and python_full_version <= "3.11.
 backports-zoneinfo==0.2.1 ; python_version >= "3.8" and python_version < "3.9"
 backports-zoneinfo[tzdata]==0.2.1 ; python_version >= "3.8" and python_version < "3.9"
 billiard==4.2.0 ; python_version >= "3.8" and python_version < "4.0"
-boto3==1.17.112 ; python_version >= "3.8" and python_version < "4.0"
+boto3==1.34.49; python_version >= "3.8" and python_version < "4.0"
 botocore==1.20.112 ; python_version >= "3.8" and python_version < "4.0"
 celery==5.3.6 ; python_version >= "3.8" and python_version < "4.0"
 certifi==2023.7.22 ; python_version >= "3.8" and python_version < "4.0"
