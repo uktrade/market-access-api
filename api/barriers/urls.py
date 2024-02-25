@@ -24,7 +24,6 @@ from api.barriers.views import (
     PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count,
-    related_barriers,
 )
 
 app_name = "barriers"
@@ -175,9 +174,6 @@ urlpatterns = router.urls + [
         "barriers/<uuid:pk>/unknown",
         BarrierStatusChangeUnknown.as_view(),
         name="unknown-barrier",
-    ),
-    path(
-        "barriers/<uuid:pk>/related-barriers", related_barriers, name="related-barriers"
     ),
     path("counts", barrier_count, name="barrier-count"),
     path("reports", BarrierReportList.as_view(), name="list-reports"),

@@ -34,7 +34,6 @@ from api.barriers.serializers import (
     BarrierCsvExportSerializer,
     BarrierDetailSerializer,
     BarrierListSerializer,
-    BarrierRelatedListSerializer,
     BarrierReportSerializer,
     PublicBarrierSerializer,
 )
@@ -64,10 +63,8 @@ from api.user.models import (
     get_team_barriers_saved_search,
 )
 from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
-
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
-from .related_barrier import SimilarityScoreMatrix
 from .tasks import generate_s3_and_send_email
 
 logger = logging.getLogger(__name__)
@@ -1201,15 +1198,3 @@ class BarrierNextStepItemViewSet(ModelViewSet):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
-
-
-@api_view(["GET"])
-def related_barriers(request, pk) -> Response:
-    """
-    Return a list of related barriers
-    """
-    barrier_object = get_object_or_404(Barrier, pk=pk)
-    similarity_score_matrix = SimilarityScoreMatrix.retrieve_matrix()
-    barriers = similarity_score_matrix.retrieve_similar_barriers(barrier_object)
-    serializer = BarrierRelatedListSerializer(barriers, many=True)
-    return Response(serializer.data)
