@@ -6,8 +6,8 @@ from api.barriers.models import Barrier
 from api.related_barriers import model
 from api.related_barriers.serializers import BarrierRelatedListSerializer
 
-
 # Use celery Queue to manage race conditions when updating
+
 
 @api_view(["GET"])
 def related_barriers(request, pk) -> Response:
@@ -19,13 +19,15 @@ def related_barriers(request, pk) -> Response:
         model.set_db(database=db)
 
     barrier = get_object_or_404(Barrier, pk=pk)
-    barrier = {'id': str(barrier.id), 'barrier_corpus': model.barrier_to_corpus(barrier)}
+    barrier = {
+        "id": str(barrier.id),
+        "barrier_corpus": model.barrier_to_corpus(barrier),
+    }
 
     similar_barrier_ids = model.get_similar_barriers(barrier)
 
     return Response(
         BarrierRelatedListSerializer(
-            Barrier.objects.filter(id__in=similar_barrier_ids),
-            many=True
+            Barrier.objects.filter(id__in=similar_barrier_ids), many=True
         ).data
     )

@@ -1,7 +1,7 @@
+import logging
 import time
 from functools import wraps
-from typing import List, Dict, Optional
-import logging
+from typing import Dict, List, Optional
 
 import numpy
 import pandas
@@ -10,7 +10,6 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from sentence_transformers import SentenceTransformer, util
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +21,11 @@ def timing(f):
         result = f(*args, **kwargs)
         end = time.perf_counter()
         total_time = end - start
-        logger.info(f'({__name__}): Function {f.__name__}{args} {kwargs} Took {total_time:.4f} seconds')
+        logger.info(
+            f"({__name__}): Function {f.__name__}{args} {kwargs} Took {total_time:.4f} seconds"
+        )
         return result
+
     return wrapper
 
 
@@ -36,8 +38,8 @@ SIMILARITY_THRESHOLD = 0.19
 SIMILAR_BARRIERS_LIMIT = 5
 
 
-EMBEDDINGS_CACHE_KEY = 'EMBEDDINGS_CACHE_KEY'
-BARRIER_IDS_CACHE_KEY = 'BARRIER_IDS_CACHE_KEY'
+EMBEDDINGS_CACHE_KEY = "EMBEDDINGS_CACHE_KEY"
+BARRIER_IDS_CACHE_KEY = "BARRIER_IDS_CACHE_KEY"
 
 
 class RelatedBarrierModelWarehouse:
@@ -48,14 +50,16 @@ class RelatedBarrierModelWarehouse:
 
         @timing
         def set_data():
-            barrier_ids = [str(d['id']) for d in data]
-            barrier_data = [d['barrier_corpus'] for d in data]
+            barrier_ids = [str(d["id"]) for d in data]
+            barrier_data = [d["barrier_corpus"] for d in data]
             embeddings = self.__model.encode(barrier_data, convert_to_tensor=True)
 
             self.set_embeddings(embeddings.numpy())
             self.set_barrier_ids(barrier_ids)
 
-        if not self.get_barrier_ids() or not isinstance(self.get_embeddings(), numpy.ndarray):
+        if not self.get_barrier_ids() or not isinstance(
+            self.get_embeddings(), numpy.ndarray
+        ):
             set_data()
 
     @staticmethod
@@ -95,11 +99,13 @@ class RelatedBarrierModelWarehouse:
 
         @timing
         def encode_barrier_corpus():
-            return self.model.encode(barrier['barrier_corpus'], convert_to_tensor=True).numpy()
+            return self.model.encode(
+                barrier["barrier_corpus"], convert_to_tensor=True
+            ).numpy()
 
         new_embedding = encode_barrier_corpus()
         new_embeddings = numpy.vstack([embeddings, new_embedding])  # append embedding
-        new_barrier_ids = barrier_ids + [barrier['id']]  # append barrier_id
+        new_barrier_ids = barrier_ids + [barrier["id"]]  # append barrier_id
 
         self.set_embeddings(new_embeddings)
         self.set_barrier_ids(new_barrier_ids)
@@ -111,7 +117,7 @@ class RelatedBarrierModelWarehouse:
 
         index = None
         for i in range(len(barrier_ids)):
-            if barrier_ids[i] == barrier['id']:
+            if barrier_ids[i] == barrier["id"]:
                 index = i
                 break
 
@@ -125,7 +131,7 @@ class RelatedBarrierModelWarehouse:
 
     @timing
     def update_barrier(self, barrier):
-        if barrier['id'] in db.get_barrier_ids():
+        if barrier["id"] in db.get_barrier_ids():
             self.remove_barrier(barrier)
         self.add_barrier(barrier)
 
@@ -137,7 +143,7 @@ def set_db(database: RelatedBarrierModelWarehouse):
     global db
 
     if db:
-        raise Exception('DB already set, please stop db or restart application')
+        raise Exception("DB already set, please stop db or restart application")
 
     db = database
 
@@ -146,11 +152,10 @@ def get_data() -> List[Dict]:
     from api.barriers.models import Barrier
 
     return (
-        Barrier.objects.filter(archived=False).exclude(draft=True)
+        Barrier.objects.filter(archived=False)
+        .exclude(draft=True)
         .annotate(
-            barrier_corpus=Concat(
-                "title", V(". "), "summary", output_field=CharField()
-            )
+            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
         )
         .values("id", "barrier_corpus")
     )
@@ -165,16 +170,20 @@ def create_db() -> RelatedBarrierModelWarehouse:
 @timing
 def get_similar_barriers(barrier: Dict):
     if not db:
-        raise Exception('Related Barrier DB not set')
+        raise Exception("Related Barrier DB not set")
 
-    if barrier['id'] not in db.get_barrier_ids():
+    if barrier["id"] not in db.get_barrier_ids():
         db.add_barrier(barrier)
 
     # db.update_barrier(barrier)
 
     df = db.get_cosine_sim()
 
-    scores = df[barrier['id']].sort_values(ascending=False)[:SIMILAR_BARRIERS_LIMIT].drop(barrier['id'])
+    scores = (
+        df[barrier["id"]]
+        .sort_values(ascending=False)[:SIMILAR_BARRIERS_LIMIT]
+        .drop(barrier["id"])
+    )
     barrier_ids = scores[scores > SIMILARITY_THRESHOLD].index
 
     return barrier_ids
