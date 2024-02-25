@@ -5,13 +5,13 @@ from unittest.mock import patch
 
 import freezegun
 from django.test import TestCase
-from interactions.models import Interaction
 from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.barriers.models import Barrier, BarrierTopPrioritySummary
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
+from api.interactions.models import Interaction
 from api.metadata.constants import (
     BARRIER_SOURCE,
     TOP_PRIORITY_BARRIER_STATUS,
