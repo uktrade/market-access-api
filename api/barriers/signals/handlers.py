@@ -21,8 +21,6 @@ from api.barriers.models import (
     PublicBarrierLightTouchReviews,
 )
 from api.barriers.related_barrier import RELEVANT_BARRIER_FIELDS, SimilarityScoreMatrix
-from api.history.factories import HistoryItemFactory
-from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 logger = logging.getLogger(__name__)

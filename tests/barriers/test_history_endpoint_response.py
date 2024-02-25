@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 import freezegun
 from django.test import TestCase
+from interactions.models import Interaction
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -24,7 +25,6 @@ from tests.assessment.factories import (
     StrategicAssessmentFactory,
 )
 from tests.barriers.factories import CommodityFactory
-from tests.history.factories import ProgrammeFundProgressUpdateFactory
 from tests.metadata.factories import BarrierTagFactory
 
 freezegun.configure(extend_ignore_list=["transformers"])
@@ -410,7 +410,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         } in history
 
     @freezegun.freeze_time("2020-04-01")
->>>>>>> feature/tss-1158/related-barrier-caching
     def test_history_endpoint_has_organisations(self):
         # ensure no organisations for previous history entry
         self.barrier.organisations.clear()

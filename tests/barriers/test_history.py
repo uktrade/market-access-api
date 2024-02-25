@@ -3,8 +3,6 @@ import logging
 
 import freezegun
 from django.test import TestCase
-from freezegun import freeze_time
-from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.assessment.models import EconomicAssessment
@@ -606,7 +604,6 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
 
 class TestActionPlanHistory(APITestMixin, TestCase):
     fixtures = ["users", "barriers"]
-
 
     @freezegun.freeze_time("2020-03-02")
     def setUp(self):
