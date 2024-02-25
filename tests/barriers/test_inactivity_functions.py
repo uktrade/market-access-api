@@ -1,11 +1,11 @@
 from datetime import timedelta
 from unittest.mock import patch
 
+import freezegun
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.utils import timezone
-from freezegun import freeze_time
 from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.models import Barrier
@@ -18,6 +18,8 @@ from api.core.test_utils import create_test_user
 from tests.barriers.factories import BarrierFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.user.factories import UserFactoryMixin
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 User = get_user_model()
 
@@ -825,27 +827,27 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
 
     def test_barriers_inactivity_end_to_end(self):
         # Create a barrier, it won't trigger any status updates
-        with freeze_time("2020-01-01"):
+        with freezegun.freeze_time("2020-01-01"):
             time_frozen_barrier = BarrierFactory()
             auto_update_inactive_barrier_status()
             time_frozen_barrier.refresh_from_db()
             assert time_frozen_barrier.status == 1
 
         # Barrier has passed the 6 month mark for general inactivity reminder
-        with freeze_time("2020-07-01"):
+        with freezegun.freeze_time("2020-07-01"):
             send_barrier_inactivity_reminders()
             auto_update_inactive_barrier_status()
             time_frozen_barrier.refresh_from_db()
             assert time_frozen_barrier.status == 1
 
         # Barrier has passed the 18 month mark for auto dormancy
-        with freeze_time("2021-07-01"):
+        with freezegun.freeze_time("2021-07-01"):
             auto_update_inactive_barrier_status()
             time_frozen_barrier.refresh_from_db()
             assert time_frozen_barrier.status == 5
 
         # Barrier has passed the (further) 18 month mark for auto archival
-        with freeze_time("2023-01-02"):
+        with freezegun.freeze_time("2023-01-02"):
             auto_update_inactive_barrier_status()
             time_frozen_barrier.refresh_from_db()
             assert time_frozen_barrier.status == 6

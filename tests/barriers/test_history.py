@@ -1,8 +1,10 @@
 import datetime
 import logging
 
+import freezegun
 from django.test import TestCase
 from freezegun import freeze_time
+from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.assessment.models import EconomicAssessment
@@ -190,7 +192,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
 class TestPublicBarrierHistory(APITestMixin, TestCase):
     fixtures = ["barriers", "categories", "users"]
 
-    @freeze_time("2020-03-02")
+    @freezegun.freeze_time("2020-03-02")
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
@@ -605,6 +607,8 @@ class TestProgressUpdateHistory(APITestMixin, TestCase):
 class TestActionPlanHistory(APITestMixin, TestCase):
     fixtures = ["users", "barriers"]
 
+
+    @freezegun.freeze_time("2020-03-02")
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
@@ -613,10 +617,6 @@ class TestActionPlanHistory(APITestMixin, TestCase):
         action_plan = ActionPlan.objects.get(barrier=self.barrier)
         milestone = ActionPlanMilestoneFactory(action_plan=action_plan)
         action_plan_task = ActionPlanTaskFactory(milestone=milestone, assigned_to=None)
-
-        action_plan.assigned_to = self.mock_user
-        action_plan.save()
-
         action_plan_task.assigned_to = self.mock_user
         action_plan_task.save()
 

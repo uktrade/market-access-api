@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
+import freezegun
 from django.test import TestCase
-from freezegun import freeze_time
 from notifications_python_client.notifications import NotificationsAPIClient
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -18,11 +18,13 @@ from ..assessment.factories import (
     StrategicAssessmentFactory,
 )
 
+freezegun.configure(extend_ignore_list=["transformers"])
+
 
 class TestActivityView(APITestMixin, TestCase):
     fixtures = ["categories", "documents", "users", "barriers"]
 
-    @freeze_time("2020-03-01")
+    @freezegun.freeze_time("2020-03-01")
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
@@ -36,7 +38,7 @@ class TestActivityView(APITestMixin, TestCase):
             created_by=self.mock_user,
         )
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_activity_endpoint(self):
         url = reverse("activity", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
@@ -59,7 +61,7 @@ class TestActivityView(APITestMixin, TestCase):
         self.barrier.title = "New title"
         self.barrier.save()
 
-        with freeze_time("2020-04-02"):
+        with freezegun.freeze_time("2020-04-02"):
             self.barrier.archive(
                 user=self.user, reason="DUPLICATE", explanation="It was a duplicate"
             )

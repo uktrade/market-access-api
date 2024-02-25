@@ -1,4 +1,6 @@
 from django.apps import AppConfig
+from django.conf import settings
+from django.core.cache import cache
 
 
 class BarriersConfig(AppConfig):
@@ -48,3 +50,5 @@ class BarriersConfig(AppConfig):
             public_barrier_light_touch_reviews_changed,
             sender=PublicBarrierLightTouchReviews,
         )
+
+        cache.delete(settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY)

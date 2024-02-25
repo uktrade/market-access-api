@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from notifications_python_client.notifications import NotificationsAPIClient
 
@@ -20,6 +20,9 @@ from api.barriers.models import (
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
+from api.barriers.related_barrier import RELEVANT_BARRIER_FIELDS, SimilarityScoreMatrix
+from api.history.factories import HistoryItemFactory
+from api.history.models import CachedHistoryItem
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 logger = logging.getLogger(__name__)
@@ -374,3 +377,19 @@ def barrier_changed_after_published(sender, instance, **kwargs):
             ):
                 public_barrier.changed_since_published = True
                 public_barrier.save()
+
+
+@receiver(pre_save, sender=Barrier)
+def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
+    try:
+        current_barrier_object = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        pass  # the barrier is new, we handle this elsewhere
+    else:
+        changed = any(
+            getattr(current_barrier_object, field) != getattr(instance, field)
+            for field in RELEVANT_BARRIER_FIELDS
+        )
+        if changed and not current_barrier_object.draft:
+            similarity_score_matrix = SimilarityScoreMatrix.retrieve_matrix()
+            similarity_score_matrix.update_matrix(instance)

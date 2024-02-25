@@ -1,8 +1,8 @@
 from datetime import datetime
 
+import freezegun
 import time_machine
 from django.contrib.auth.models import Permission
-from freezegun import freeze_time
 from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -17,6 +17,8 @@ from api.metadata.constants import (
 )
 from api.metadata.models import BarrierTag, Organisation
 from tests.barriers.factories import BarrierFactory
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestBarriersDataset(APITestMixin):
@@ -38,7 +40,7 @@ class TestBarriersDataset(APITestMixin):
         assert status.HTTP_200_OK == response.status_code
         assert count == len(response.data["results"])
 
-    @freeze_time("2020-01-25")
+    @freezegun.freeze_time("2020-01-25")
     def test_list_barriers(self):
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         adv_engineering = "af959812-6095-e211-a939-e4115bead28a"
