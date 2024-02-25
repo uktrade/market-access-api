@@ -4,8 +4,6 @@ from django.conf import settings
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from notifications_python_client.notifications import NotificationsAPIClient
-from related_barriers import model
-from related_barriers.model import BARRIER_UPDATE_FIELDS
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -23,6 +21,8 @@ from api.barriers.models import (
     PublicBarrierLightTouchReviews,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
+from api.related_barriers import model
+from api.related_barriers.model import BARRIER_UPDATE_FIELDS
 
 logger = logging.getLogger(__name__)
 
