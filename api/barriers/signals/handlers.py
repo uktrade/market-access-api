@@ -4,6 +4,8 @@ from django.conf import settings
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from notifications_python_client.notifications import NotificationsAPIClient
+from related_barriers import model
+from related_barriers.model import BARRIER_UPDATE_FIELDS
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -20,7 +22,6 @@ from api.barriers.models import (
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
-from api.barriers.related_barrier import RELEVANT_BARRIER_FIELDS, SimilarityScoreMatrix
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 
 logger = logging.getLogger(__name__)
@@ -378,16 +379,25 @@ def barrier_changed_after_published(sender, instance, **kwargs):
 
 
 @receiver(pre_save, sender=Barrier)
-def barrier_update_similarity_scores(sender, instance, *args, **kwargs):
+def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
     try:
         current_barrier_object = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
-        pass  # the barrier is new, we handle this elsewhere
-    else:
-        changed = any(
-            getattr(current_barrier_object, field) != getattr(instance, field)
-            for field in RELEVANT_BARRIER_FIELDS
-        )
-        if changed and not current_barrier_object.draft:
-            similarity_score_matrix = SimilarityScoreMatrix.retrieve_matrix()
-            similarity_score_matrix.update_matrix(instance)
+        logger.info(f"No Barrier found: {instance.pk}")
+        return
+
+    changed = any(
+        getattr(current_barrier_object, field) != getattr(instance, field)
+        for field in BARRIER_UPDATE_FIELDS
+    )
+    if changed and not current_barrier_object.draft:
+        try:
+            model.db.update_barrier(
+                {
+                    "id": str(current_barrier_object.id),
+                    "barrier_corpus": model.barrier_to_corpus(current_barrier_object),
+                }
+            )
+        except Exception as e:
+            # We don't want barrier embedding updates to break worker so just log error
+            logger.critical(str(e))
