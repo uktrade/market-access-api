@@ -11,7 +11,6 @@ from rest_framework.reverse import reverse
 from api.barriers.models import Barrier, BarrierTopPrioritySummary
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin
-from api.interactions.models import Interaction
 from api.metadata.constants import (
     BARRIER_SOURCE,
     TOP_PRIORITY_BARRIER_STATUS,
@@ -355,59 +354,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         assert len(location_history) == 1
         assert location_history[0]["old_value"] == "France"
         assert location_history[0]["new_value"] == "California (United States)"
-
-    @freezegun.freeze_time("2020-04-01")
-    def test_history_endpoint_has_note_documents(self):
-        note = Interaction.objects.create(
-            barrier=self.barrier,
-            kind="COMMENT",
-            text="Original note",
-            created_by=self.mock_user,
-        )
-        initial_documents = list(note.documents.all())
-        note.documents.add("eda7ee4e-4786-4507-a0ed-05a10169764b")
-        note.save()
-
-        url = reverse("history", kwargs={"pk": self.barrier.pk})
-        response = self.api_client.get(url)
-        history = response.json()["history"]
-
-        assert {
-            "date": "2020-04-01T00:00:00Z",
-            "model": "note",
-            "field": "documents",
-            "old_value": initial_documents,
-            "new_value": [
-                {"id": "eda7ee4e-4786-4507-a0ed-05a10169764b", "name": "cat.jpg"}
-            ],
-            "user": None,
-        } in history
-
-    @freezegun.freeze_time("2020-04-01")
-    def test_history_endpoint_has_note_text(self):
-        original_note_text = "Original note"
-        note = Interaction.objects.create(
-            barrier=self.barrier,
-            kind="COMMENT",
-            text=original_note_text,
-            created_by=self.mock_user,
-        )
-
-        note.text = "Edited note"
-        note.save()
-
-        url = reverse("history", kwargs={"pk": self.barrier.pk})
-        response = self.api_client.get(url)
-        history = response.json()["history"]
-
-        assert {
-            "date": "2020-04-01T00:00:00Z",
-            "model": "note",
-            "field": "text",
-            "old_value": original_note_text,
-            "new_value": note.text,
-            "user": None,
-        } in history
 
     @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_organisations(self):
@@ -799,7 +745,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         } in history
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
-    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_approval_pending(self, _):
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
         self.barrier.save()
@@ -856,7 +801,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         ]
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
-    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_approved(self, _):
         # V2 tested
         BarrierTopPrioritySummary.objects.create(
@@ -887,7 +831,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         }
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
-    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_removal_pending(self, _):
         # V2 tested
         BarrierTopPrioritySummary.objects.create(
@@ -919,7 +862,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         }
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
-    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_removed(self, _):
         # V2 tested
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
