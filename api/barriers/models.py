@@ -989,6 +989,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     _summary = models.TextField(blank=True)
     summary_updated_on = models.DateTimeField(null=True, blank=True)
     internal_summary_at_update = models.TextField(blank=True, max_length=MAX_LENGTH)
+    approvers_summary = models.TextField(blank=True, max_length=500)
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
