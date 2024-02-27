@@ -16,7 +16,7 @@ UserModel = get_user_model()
 logger = getLogger(__name__)
 
 
-class NestedGroupSerializer(serializers.ModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = [
@@ -38,7 +38,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     permitted_applications = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
     has_approved_digital_trade_email = serializers.SerializerMethodField()
-    groups = NestedGroupSerializer(many=True, required=False, read_only=True)
+    groups = GroupSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = UserModel
@@ -142,7 +142,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
-    groups = NestedGroupSerializer(many=True, required=False)
+    groups = GroupSerializer(many=True, required=False)
 
     class Meta:
         model = UserModel
@@ -229,7 +229,7 @@ class UserMinimalDetailSerializer(UserDetailSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
-    groups = NestedGroupSerializer(many=True, required=False, read_only=True)
+    groups = GroupSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = UserModel
