@@ -19,7 +19,7 @@ class BarriersConfig(AppConfig):
             public_barrier_categories_changed,
             public_barrier_content_update,
             public_barrier_light_touch_reviews_changed,
-            related_barrier_update_embeddings
+            related_barrier_update_embeddings,
         )
 
         m2m_changed.connect(

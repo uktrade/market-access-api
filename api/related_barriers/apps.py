@@ -12,7 +12,9 @@ class RelatedBarriersConfig(AppConfig):
     name = "api.related_barriers"
 
     def ready(self):
-        logger.info(f"Init Related Barrier Manager: {settings.RELATED_BARRIER_DB_ON and manager.manager is None}")
+        logger.info(
+            f"Init Related Barrier Manager: {settings.RELATED_BARRIER_DB_ON and manager.manager is None}"
+        )
 
         if settings.RELATED_BARRIER_DB_ON and manager.manager is None:
             # Note: This can get called multiple times during lifetime of Django application. (startup and when

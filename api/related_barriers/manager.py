@@ -47,6 +47,7 @@ class RelatedBarrierManager:
 
     def __init__(self, data: List[Dict]):
         self.__transformer = load_transformer()
+
         @timing
         def set_data():
             barrier_ids = [str(d["id"]) for d in data]
@@ -67,7 +68,6 @@ class RelatedBarrierManager:
     @staticmethod
     def set_barrier_ids(barrier_ids):
         cache.set(BARRIER_IDS_CACHE_KEY, barrier_ids, timeout=None)
-
 
     @staticmethod
     def get_embeddings():
@@ -169,14 +169,20 @@ def get_similar_barriers(barrier: Dict):
 
     index = None
     for i, barrier_id in enumerate(barrier_ids):
-        if barrier_id == barrier['id']:
+        if barrier_id == barrier["id"]:
             index = i
             break
 
     scores = cosine_sim[index]
     barrier_scores = dict(zip(barrier_ids, scores))
-    barrier_scores = {k: v for k, v in barrier_scores.items() if v > SIMILARITY_THRESHOLD and k != barrier['id']}
-    barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[-SIMILAR_BARRIERS_LIMIT:]
+    barrier_scores = {
+        k: v
+        for k, v in barrier_scores.items()
+        if v > SIMILARITY_THRESHOLD and k != barrier["id"]
+    }
+    barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[
+        -SIMILAR_BARRIERS_LIMIT:
+    ]
 
     return [b[0] for b in barrier_scores]
 
