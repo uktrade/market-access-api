@@ -931,7 +931,7 @@ class PublicBarrierViewSet(
     @action(
         methods=["post"],
         detail=True,
-        permission_classes=(IsApprover),
+        permission_classes=(IsApprover,),
         url_path="ready-for-publishing",
     )
     def ready_for_publishing(self, request, *args, **kwargs):
