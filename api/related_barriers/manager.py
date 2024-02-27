@@ -4,7 +4,6 @@ from functools import wraps
 from typing import Dict, List, Optional
 
 import numpy
-import pandas
 from django.core.cache import cache
 from django.db.models import CharField
 from django.db.models import Value as V
@@ -85,12 +84,7 @@ class RelatedBarrierManager:
     @timing
     def get_cosine_sim(self):
         embeddings = self.get_embeddings()
-        barrier_ids = self.get_barrier_ids()
-        return pandas.DataFrame(
-            util.cos_sim(embeddings, embeddings),
-            index=barrier_ids,
-            columns=barrier_ids,
-        )
+        return util.cos_sim(embeddings, embeddings)
 
     @timing
     def add_barrier(self, barrier):
@@ -170,18 +164,21 @@ def get_similar_barriers(barrier: Dict):
     if barrier["id"] not in manager.get_barrier_ids():
         manager.add_barrier(barrier)
 
-    # db.update_barrier(barrier)
+    barrier_ids = manager.get_barrier_ids()
+    cosine_sim = manager.get_cosine_sim()
 
-    df = manager.get_cosine_sim()
+    index = None
+    for i, barrier_id in enumerate(barrier_ids):
+        if barrier_id == barrier['id']:
+            index = i
+            break
 
-    scores = (
-        df[barrier["id"]]
-        .sort_values(ascending=False)[:SIMILAR_BARRIERS_LIMIT]
-        .drop(barrier["id"])
-    )
-    barrier_ids = scores[scores > SIMILARITY_THRESHOLD].index
+    scores = cosine_sim[index]
+    barrier_scores = dict(zip(barrier_ids, scores))
+    barrier_scores = {k: v for k, v in barrier_scores.items() if v > SIMILARITY_THRESHOLD and k != barrier['id']}
+    barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[-SIMILAR_BARRIERS_LIMIT:]
 
-    return barrier_ids
+    return [b[0] for b in barrier_scores]
 
 
 def barrier_to_corpus(barrier):
