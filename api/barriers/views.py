@@ -62,7 +62,7 @@ from api.user.models import (
     get_my_barriers_saved_search,
     get_team_barriers_saved_search,
 )
-from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsEditor, IsPublisher
+from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsApprover, IsPublisher
 
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
@@ -900,13 +900,15 @@ class PublicBarrierViewSet(
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-    @action(methods=["post"], detail=True, permission_classes=(IsEditor,))
+    # can delete once references in frontend are refactored
+    @action(methods=["post"], detail=True, permission_classes=(IsApprover,))
     def ready(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.READY)
+        return self.update_status_action(PublicBarrierStatus.PUBLISHING_PENDING)
 
-    @action(methods=["post"], detail=True, permission_classes=(IsEditor,))
+    # can delete once references in frontend are refactored
+    @action(methods=["post"], detail=True, permission_classes=(IsApprover,))
     def unprepared(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.ELIGIBLE)
+        return self.update_status_action(PublicBarrierStatus.ALLOWED)
 
     @action(methods=["post"], detail=True, permission_classes=())
     def report_public_barrier_title(self, request, *args, **kwargs):
@@ -927,7 +929,50 @@ class PublicBarrierViewSet(
     @action(
         methods=["post"],
         detail=True,
-        permission_classes=(IsEditor,),
+        permission_classes=(),
+        url_path="ready-for-approval",
+    )
+    def ready_for_approval(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.APPROVAL_PENDING)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(),
+        url_path="allow-for-publishing-process",
+    )
+    def allow_for_publishing_process(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.ALLOWED)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsApprover,),
+        url_path="ready-for-publishing",
+    )
+    def ready_for_publishing(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.PUBLISHING_PENDING)
+
+    @action(methods=["post"], detail=True, permission_classes=())
+    def report_public_barrier_title(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.title = request.data.get("values")["title"]
+        public_barrier.save()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(methods=["post"], detail=True, permission_classes=())
+    def report_public_barrier_summary(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.summary = request.data.get("values")["summary"]
+        public_barrier.save()
+        serializer = PublicBarrierSerializer(public_barrier)
+        return Response(status=status.HTTP_200_OK, data=serializer.data)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsApprover,),
         url_path="ignore-all-changes",
     )
     def ignore_all_changes(self, request, *args, **kwargs):
