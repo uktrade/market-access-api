@@ -43,18 +43,16 @@ EMBEDDINGS_CACHE_KEY = "EMBEDDINGS_CACHE_KEY"
 BARRIER_IDS_CACHE_KEY = "BARRIER_IDS_CACHE_KEY"
 
 
-class RelatedBarrierModelWarehouse:
-    __model: Optional[SentenceTransformer] = None
+class RelatedBarrierManager:
+    __transformer: Optional[SentenceTransformer] = None
 
     def __init__(self, data: List[Dict]):
-        self.__model = load_transformer()
-
+        self.__transformer = load_transformer()
         @timing
         def set_data():
             barrier_ids = [str(d["id"]) for d in data]
             barrier_data = [d["barrier_corpus"] for d in data]
-            embeddings = self.__model.encode(barrier_data, convert_to_tensor=True)
-
+            embeddings = self.__transformer.encode(barrier_data, convert_to_tensor=True)
             self.set_embeddings(embeddings.numpy())
             self.set_barrier_ids(barrier_ids)
 
@@ -71,6 +69,7 @@ class RelatedBarrierModelWarehouse:
     def set_barrier_ids(barrier_ids):
         cache.set(BARRIER_IDS_CACHE_KEY, barrier_ids, timeout=None)
 
+
     @staticmethod
     def get_embeddings():
         return cache.get(EMBEDDINGS_CACHE_KEY)
@@ -81,7 +80,7 @@ class RelatedBarrierModelWarehouse:
 
     @property
     def model(self):
-        return self.__model
+        return self.__transformer
 
     @timing
     def get_cosine_sim(self):
@@ -132,21 +131,12 @@ class RelatedBarrierModelWarehouse:
 
     @timing
     def update_barrier(self, barrier):
-        if barrier["id"] in db.get_barrier_ids():
+        if barrier["id"] in manager.get_barrier_ids():
             self.remove_barrier(barrier)
         self.add_barrier(barrier)
 
 
-db: Optional[RelatedBarrierModelWarehouse] = None
-
-
-def set_db(database: RelatedBarrierModelWarehouse):
-    global db
-
-    if db:
-        raise Exception("DB already set, please stop db or restart application")
-
-    db = database
+manager: Optional[RelatedBarrierManager] = None
 
 
 def get_data() -> List[Dict]:
@@ -162,23 +152,27 @@ def get_data() -> List[Dict]:
     )
 
 
-def create_db() -> RelatedBarrierModelWarehouse:
-    data = get_data()  # List[Dict]
+def init():
+    global manager
 
-    return RelatedBarrierModelWarehouse(data)
+    if manager:
+        raise Exception("DB already set, please stop db or restart application")
+
+    data = get_data()  # List[Dict]
+    manager = RelatedBarrierManager(data)
 
 
 @timing
 def get_similar_barriers(barrier: Dict):
-    if not db:
+    if not manager:
         raise Exception("Related Barrier DB not set")
 
-    if barrier["id"] not in db.get_barrier_ids():
-        db.add_barrier(barrier)
+    if barrier["id"] not in manager.get_barrier_ids():
+        manager.add_barrier(barrier)
 
     # db.update_barrier(barrier)
 
-    df = db.get_cosine_sim()
+    df = manager.get_cosine_sim()
 
     scores = (
         df[barrier["id"]]

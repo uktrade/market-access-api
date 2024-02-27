@@ -1,6 +1,4 @@
 from django.apps import AppConfig
-from django.conf import settings
-from django.core.cache import cache
 
 
 class BarriersConfig(AppConfig):
@@ -21,6 +19,7 @@ class BarriersConfig(AppConfig):
             public_barrier_categories_changed,
             public_barrier_content_update,
             public_barrier_light_touch_reviews_changed,
+            related_barrier_update_embeddings
         )
 
         m2m_changed.connect(
@@ -38,6 +37,8 @@ class BarriersConfig(AppConfig):
 
         pre_save.connect(barrier_changed_after_published, sender=Barrier)
 
+        pre_save.connect(related_barrier_update_embeddings, sender=Barrier)
+
         post_save.connect(barrier_completion_percentage_changed, sender=Barrier)
 
         post_save.connect(
@@ -50,5 +51,3 @@ class BarriersConfig(AppConfig):
             public_barrier_light_touch_reviews_changed,
             sender=PublicBarrierLightTouchReviews,
         )
-
-        cache.delete(settings.BARRIER_SIMILARITY_MATRIX_CACHE_KEY)

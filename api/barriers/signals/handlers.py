@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from notifications_python_client.notifications import NotificationsAPIClient
 
@@ -21,8 +21,8 @@ from api.barriers.models import (
     PublicBarrierLightTouchReviews,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
-from api.related_barriers import model
-from api.related_barriers.model import BARRIER_UPDATE_FIELDS
+from api.related_barriers import manager
+from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
 
 logger = logging.getLogger(__name__)
 
@@ -378,7 +378,6 @@ def barrier_changed_after_published(sender, instance, **kwargs):
                 public_barrier.save()
 
 
-@receiver(pre_save, sender=Barrier)
 def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
     try:
         current_barrier_object = sender.objects.get(pk=instance.pk)
@@ -392,10 +391,10 @@ def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
     )
     if changed and not current_barrier_object.draft:
         try:
-            model.db.update_barrier(
+            manager.manager.update_barrier(
                 {
                     "id": str(current_barrier_object.id),
-                    "barrier_corpus": model.barrier_to_corpus(current_barrier_object),
+                    "barrier_corpus": manager.barrier_to_corpus(current_barrier_object),
                 }
             )
         except Exception as e:

@@ -43,5 +43,3 @@ def hawk_authenticate(self, request):
 
 
 HawkAuthentication.authenticate = hawk_authenticate
-
-RELATED_BARRIER_DB_ON = False
