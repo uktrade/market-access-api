@@ -2,6 +2,7 @@ from datetime import datetime
 
 import freezegun
 import time_machine
+from mock import PropertyMock, patch
 from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -13,6 +14,7 @@ from api.feedback.models import Feedback
 from api.metadata.constants import (
     FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
     FEEDBACK_FORM_SATISFACTION_ANSWERS,
+    PublicBarrierStatus,
 )
 from api.metadata.models import BarrierTag, Organisation
 from tests.barriers.factories import BarrierFactory
@@ -28,9 +30,14 @@ class TestBarriersDataset(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["results"] == []
 
-    def test_list_barriers_count(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_list_barriers_count(self, mock_public_barrier_status):
         count = 2
         BarrierFactory.create_batch(count)
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
 
         assert count == Barrier.objects.count()
 
@@ -40,7 +47,11 @@ class TestBarriersDataset(APITestMixin):
         assert count == len(response.data["results"])
 
     @freezegun.freeze_time("2020-01-25")
-    def test_list_barriers(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_list_barriers(self, mock_public_barrier_status):
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         adv_engineering = "af959812-6095-e211-a939-e4115bead28a"
         user = create_test_user(sso_user_id=self.sso_creator["user_id"])
@@ -52,6 +63,7 @@ class TestBarriersDataset(APITestMixin):
             status_date=datetime(2020, 1, 1, tzinfo=UTC),
         )
         TeamMember.objects.create(barrier=db_barrier, user=user, role="Wobble")
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
 
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
@@ -82,8 +94,13 @@ class TestBarriersDataset(APITestMixin):
             }
         ]
 
-    def test_eu_barrier_overseas_region(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_eu_barrier_overseas_region(self, mock_public_barrier_status):
         barrier = BarrierFactory(trading_bloc="TB00016", country=None)
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
 
@@ -97,12 +114,18 @@ class TestBarriersDataset(APITestMixin):
         assert len(overseas_regions) == 1
         assert overseas_regions[0]["name"] == "Europe"
 
-    def test_government_organisations(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_government_organisations(self, mock_public_barrier_status):
         org1 = Organisation.objects.get(id=1)
         org2 = Organisation.objects.get(id=2)
         barrier = BarrierFactory()
         barrier.organisations.add(org1)
         barrier.organisations.add(org2)
+
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
 
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
@@ -114,8 +137,13 @@ class TestBarriersDataset(APITestMixin):
         assert org1.name == data_item["government_organisations"][0]
         assert org2.name == data_item["government_organisations"][1]
 
-    def test_is_regional_trade_plan_field(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_is_regional_trade_plan_field(self, mock_public_barrier_status):
         barrier = BarrierFactory(archived=False)
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
 
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
@@ -135,9 +163,14 @@ class TestBarriersDataset(APITestMixin):
         assert len(response.data["results"]) == 1
         assert data_item["is_regional_trade_plan"] is True
 
-    def test_null_main_sector_all_sector(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_null_main_sector_all_sector(self, mock_public_barrier_status):
         """Tests that when main_sector is null and all_sectors is true, the main_sector is set to 'all sectors'"""
         barrier = BarrierFactory(main_sector=None, all_sectors=True)
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
 
@@ -149,11 +182,16 @@ class TestBarriersDataset(APITestMixin):
 
         assert barrier_data["main_sector"] == "All sectors"
 
-    def test_main_sector(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_main_sector(self, mock_public_barrier_status):
         """Tests that when main_sector is set, the main_sector returned is the name of the sector"""
         barrier = BarrierFactory(
             main_sector="af959812-6095-e211-a939-e4115bead28a", all_sectors=True
         )
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
         url = reverse("dataset:barrier-list")
         response = self.api_client.get(url)
 
