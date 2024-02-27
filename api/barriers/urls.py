@@ -7,7 +7,6 @@ from api.barriers.views import (
     BarrierFullHistory,
     BarrierHibernate,
     BarrierList,
-    BarrierListS3EmailFile,
     BarrierNextStepItemViewSet,
     BarrierOpenActionRequired,
     BarrierOpenInProgress,
@@ -35,11 +34,6 @@ router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barri
 
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
-    path(
-        "barriers/s3-email",
-        BarrierListS3EmailFile.as_view(),
-        name="barriers-s3-email",
-    ),
     path(
         "barriers/request-download-approval",
         BarrierRequestDownloadApproval.as_view(),

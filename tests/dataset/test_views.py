@@ -235,10 +235,11 @@ class TestUserActivityLogDataset(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 1
 
-        csv_download_url = reverse("barriers-s3-email")
+        csv_download_url = reverse("barrier-downloads")
+        BarrierFactory()
 
-        response = self.api_client.get(csv_download_url)
-        assert response.status_code == status.HTTP_200_OK
+        response = self.api_client.post(csv_download_url)
+        assert response.status_code == status.HTTP_201_CREATED
 
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
