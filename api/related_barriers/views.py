@@ -4,9 +4,13 @@ from rest_framework.response import Response
 
 from api.barriers.models import Barrier
 from api.related_barriers import manager
-from api.related_barriers.serializers import BarrierRelatedListSerializer
-from api.related_barriers.constants import SIMILARITY_THRESHOLD, SIMILAR_BARRIERS_LIMIT, BarrierEntry
+from api.related_barriers.constants import (
+    SIMILAR_BARRIERS_LIMIT,
+    SIMILARITY_THRESHOLD,
+    BarrierEntry,
+)
 from api.related_barriers.manager import RelatedBarrierManager
+from api.related_barriers.serializers import BarrierRelatedListSerializer
 
 
 @api_view(["GET"])
@@ -21,7 +25,7 @@ def related_barriers(request, pk) -> Response:
             barrier_corpus=manager.barrier_to_corpus(barrier),
         ),
         similarity_threshold=SIMILARITY_THRESHOLD,
-        quantity=SIMILAR_BARRIERS_LIMIT
+        quantity=SIMILAR_BARRIERS_LIMIT,
     )
 
     data = manager.get_data()

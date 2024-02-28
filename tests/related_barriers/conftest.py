@@ -21,6 +21,8 @@ def related_barrier_manager_context():
         )
         .values("id", "barrier_corpus")
     )
-    with mock.patch('api.related_barriers.manager.cache') as mock_cache:
-        with mock.patch('api.related_barriers.manager.get_transformer') as mock_get_transformer:
+    with mock.patch("api.related_barriers.manager.cache") as mock_cache:
+        with mock.patch(
+            "api.related_barriers.manager.get_transformer"
+        ) as mock_get_transformer:
             yield RelatedBarrierManager(data), mock_cache, mock_get_transformer

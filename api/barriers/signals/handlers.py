@@ -22,8 +22,8 @@ from api.barriers.models import (
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from api.related_barriers import manager
-from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
 from api.related_barriers.constants import BarrierEntry
+from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
 
 logger = logging.getLogger(__name__)
 

@@ -22,9 +22,7 @@ def timing(f):
         result = f(*args, **kwargs)
         end = time.perf_counter()
         total_time = end - start
-        logger.info(
-            f"({__name__}{f.__name__}): {total_time:.4f} seconds"
-        )
+        logger.info(f"({__name__}{f.__name__}): {total_time:.4f} seconds")
         return result
 
     return wrapper
@@ -47,6 +45,7 @@ class SingletonMeta(type):
     Related Barrier Manager is a Singleton class to manage a ~30MB
     transformer and it's application use case for DMAS.
     """
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -60,7 +59,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     __transformer: Optional[SentenceTransformer] = None
 
     def __str__(self):
-        return 'Related Barrier Manager'
+        return "Related Barrier Manager"
 
     def __init__(self, data: List[Dict]):
         """
@@ -116,12 +115,12 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @timing
     def encode_barrier_corpus(self, barrier: BarrierEntry):
-        return self.model.encode(
-            barrier.barrier_corpus, convert_to_tensor=True
-        ).numpy()
+        return self.model.encode(barrier.barrier_corpus, convert_to_tensor=True).numpy()
 
     @timing
-    def add_barrier(self, barrier: BarrierEntry, barrier_ids: Optional[List[str]] = None):
+    def add_barrier(
+        self, barrier: BarrierEntry, barrier_ids: Optional[List[str]] = None
+    ):
         """barrier_ids: optimisation flag to avoid multiple cache requests"""
         if barrier_ids is None:
             barrier_ids = self.get_barrier_ids()
@@ -162,7 +161,9 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         self.add_barrier(barrier, barrier_ids)
 
     @timing
-    def get_similar_barriers(self, barrier: BarrierEntry, similarity_threshold: float, quantity: int):
+    def get_similar_barriers(
+        self, barrier: BarrierEntry, similarity_threshold: float, quantity: int
+    ):
         barrier_ids = self.get_barrier_ids()
 
         if barrier.id not in barrier_ids:
