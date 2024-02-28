@@ -994,6 +994,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     summary_updated_on = models.DateTimeField(null=True, blank=True)
     internal_summary_at_update = models.TextField(blank=True, max_length=MAX_LENGTH)
     approvers_summary = models.TextField(blank=True, max_length=500)
+    publishers_summary = models.TextField(blank=True, max_length=500)
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
@@ -1320,7 +1321,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def ready_to_be_published(self):
-        is_ready = self.public_view_status == PublicBarrierStatus.PUBLISHING_PENDING
+        is_ready = (
+            self.public_view_status == PublicBarrierStatus.PUBLISHING_PENDING
+            or PublicBarrierStatus.UNPUBLISHED
+        )
         is_republish = self.unpublished_on is not None
         has_changes = self.unpublished_changes
         has_title_and_summary = bool(self.title and self.summary)

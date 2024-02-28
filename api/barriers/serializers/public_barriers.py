@@ -119,6 +119,7 @@ class PublicBarrierSerializer(
             "internal_summary_changed",
             "internal_summary_at_update",
             "approvers_summary",
+            "publishers_summary",
             "status",
             "internal_status",
             "internal_status_changed",
