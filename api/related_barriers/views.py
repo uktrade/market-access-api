@@ -28,9 +28,6 @@ def related_barriers(request, pk) -> Response:
         quantity=SIMILAR_BARRIERS_LIMIT,
     )
 
-    data = manager.get_data()
-    RelatedBarrierManager(data)
-
     return Response(
         BarrierRelatedListSerializer(
             Barrier.objects.filter(id__in=similar_barrier_ids), many=True

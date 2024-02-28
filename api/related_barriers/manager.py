@@ -210,7 +210,7 @@ def init():
     global manager
 
     if manager:
-        raise Exception("DB already set, please stop db or restart application")
+        raise Exception("Related Barrier Manager already set")
 
     data = get_data()  # List[Dict]
     manager = RelatedBarrierManager(data)
