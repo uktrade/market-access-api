@@ -83,7 +83,7 @@ def test_add_barrier(related_barrier_manager_context):
 
         manager.add_barrier(barrier)
 
-        cache.set.call_count == 2
+        assert cache.set.call_count == 2
 
 
 def test_remove_barrier(related_barrier_manager_context):
@@ -102,4 +102,4 @@ def test_remove_barrier(related_barrier_manager_context):
 
         manager.remove_barrier(barrier=barrier)
 
-        cache.set.call_count == 2
+        assert cache.set.call_count == 2
