@@ -1,3 +1,4 @@
+import mock
 import pytest
 from django.db.models import CharField
 from django.db.models import Value as V
@@ -9,9 +10,8 @@ from tests.barriers.factories import BarrierFactory
 
 
 @pytest.fixture
-def related_barrier_manager():
+def related_barrier_manager_context():
     # BarrierFactory(title='title 1')
-    print(BarrierFactory(title="title 1").pk)
     BarrierFactory(title="title 2")
     data = (
         Barrier.objects.filter(archived=False)
@@ -21,4 +21,6 @@ def related_barrier_manager():
         )
         .values("id", "barrier_corpus")
     )
-    return RelatedBarrierManager(data)
+    with mock.patch('api.related_barriers.manager.cache') as mock_cache:
+        with mock.patch('api.related_barriers.manager.get_transformer') as mock_get_transformer:
+            yield RelatedBarrierManager(data), mock_cache, mock_get_transformer

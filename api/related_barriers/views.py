@@ -5,8 +5,8 @@ from rest_framework.response import Response
 from api.barriers.models import Barrier
 from api.related_barriers import manager
 from api.related_barriers.serializers import BarrierRelatedListSerializer
-
-# Use celery Queue to manage race conditions when updating
+from api.related_barriers.constants import SIMILARITY_THRESHOLD, SIMILAR_BARRIERS_LIMIT, BarrierEntry
+from api.related_barriers.manager import RelatedBarrierManager
 
 
 @api_view(["GET"])
@@ -14,17 +14,18 @@ def related_barriers(request, pk) -> Response:
     """
     Return a list of related barriers
     """
-    # if model.db is None:
-    #     db = model.create_db()
-    #     model.set_manager(database=db)
-
     barrier = get_object_or_404(Barrier, pk=pk)
-    barrier = {
-        "id": str(barrier.id),
-        "barrier_corpus": manager.barrier_to_corpus(barrier),
-    }
+    similar_barrier_ids = manager.manager.get_similar_barriers(
+        barrier=BarrierEntry(
+            id=str(barrier.id),
+            barrier_corpus=manager.barrier_to_corpus(barrier),
+        ),
+        similarity_threshold=SIMILARITY_THRESHOLD,
+        quantity=SIMILAR_BARRIERS_LIMIT
+    )
 
-    similar_barrier_ids = manager.get_similar_barriers(barrier)
+    data = manager.get_data()
+    RelatedBarrierManager(data)
 
     return Response(
         BarrierRelatedListSerializer(
