@@ -1323,7 +1323,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     def ready_to_be_published(self):
         is_ready = (
             self.public_view_status == PublicBarrierStatus.PUBLISHING_PENDING
-            or PublicBarrierStatus.UNPUBLISHED
+            or self.public_view_status == PublicBarrierStatus.UNPUBLISHED
         )
         is_republish = self.unpublished_on is not None
         has_changes = self.unpublished_changes
