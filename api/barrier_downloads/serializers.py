@@ -68,6 +68,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     priority_level = serializers.CharField()
+    # reported_by = serializers.SerializerMethodField()
+    # barrier_owner = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     commercial_value = serializers.IntegerField()
@@ -169,6 +171,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "source",
             "team_count",
             "term",
+            # "reported_by",
+            # "barrier_owner",
             "reported_on",
             "modified_on",
             "economic_assessment_rating",
@@ -432,11 +436,14 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         return None
 
     def get_progress_update_author(self, obj):
-        if obj.latest_progress_update:
-            return (
-                f"{obj.latest_progress_update.created_by.first_name} "
-                + obj.latest_progress_update.created_by.last_name
+        if hasattr(obj.latest_progress_update, "created_by"):
+            first_name = getattr(
+                obj.latest_progress_update.created_by, "first_name", None
             )
+            last_name = getattr(
+                obj.latest_progress_update.created_by, "last_name", None
+            )
+            return f"{first_name} {last_name}" if first_name and last_name else None
 
         return None
 
@@ -476,11 +483,14 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         return None
 
     def get_programme_fund_progress_update_author(self, obj):
-        if obj.latest_programme_fund_progress_update:
-            return (
-                f"{obj.latest_programme_fund_progress_update.created_by.first_name} "
-                + obj.latest_programme_fund_progress_update.created_by.last_name
+        if hasattr(obj.latest_programme_fund_progress_update, "created_by"):
+            first_name = getattr(
+                obj.latest_programme_fund_progress_update.created_by, "first_name", None
             )
+            last_name = getattr(
+                obj.latest_programme_fund_progress_update.created_by, "last_name", None
+            )
+            return f"{first_name} {last_name}" if first_name and last_name else None
 
         return None
 
@@ -546,3 +556,26 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         if main_sector:
             return main_sector["name"]
         return None
+
+    def get_reported_by(self, obj):
+        reported_by = None
+        if hasattr(obj, "created_by"):
+            first_name = getattr(obj.created_by, "first_name", None)
+            last_name = getattr(obj.created_by, "last_name", None)
+            reported_by = (
+                f"{first_name} {last_name}" if first_name and last_name else None
+            )
+
+        return reported_by
+
+    def get_barrier_owner(self, obj):
+        barrier_owner = None
+        if hasattr(obj, "barrier_team"):
+            owner = obj.barrier_team.filter(role="Owner").first()
+            first_name = getattr(owner.created_by, "first_name", None)
+            last_name = getattr(owner.created_by, "last_name", None)
+            barrier_owner = (
+                f"{first_name} {last_name}" if first_name and last_name else None
+            )
+
+        return barrier_owner
