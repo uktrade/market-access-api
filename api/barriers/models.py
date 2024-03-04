@@ -1810,10 +1810,6 @@ class BarrierFilterSet(django_filters.FilterSet):
                 public_barrier__changed_since_published=True
             )
 
-        if "not_yet_sifted" in value:
-            value.remove("not_yet_sifted")
-            public_queryset = queryset.filter(public_eligibility=None)
-
         status_lookup = {
             "unknown": PublicBarrierStatus.UNKNOWN,
             "not_allowed": PublicBarrierStatus.NOT_ALLOWED,
