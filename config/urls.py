@@ -9,6 +9,7 @@ from api.barriers.urls import urlpatterns as barrier_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.commodities.urls import urlpatterns as commodities_urls
 from api.core.views import admin_override
+from api.feature_flags.urls import urlpatterns as feature_flags_urls
 from api.feedback import urls as feedback_urls
 from api.interactions.urls import urlpatterns as interaction_urls
 from api.metadata.views import MetadataView
@@ -43,4 +44,5 @@ urlpatterns += (
     + assessment_urls
     + user_urls
     + action_plans_urls
+    + feature_flags_urls
 )

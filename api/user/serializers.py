@@ -8,6 +8,8 @@ from rest_framework import serializers
 from sentry_sdk import push_scope
 
 from api.core.utils import cleansed_username
+from api.feature_flags.models import FlagStatus
+from api.feature_flags.serializers import FlagSerializer
 from api.user.helpers import get_username
 from api.user.models import Profile, SavedSearch, UserActvitiyLog
 from api.user.staff_sso import sso
@@ -140,6 +142,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
+    flags = serializers.SerializerMethodField()
     groups = NestedGroupSerializer(many=True, required=False)
 
     class Meta:
@@ -155,7 +158,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "groups",
             "is_active",
             "is_superuser",
+            "flags"
         )
+
+    def get_flags(self, obj):
+        return FlagSerializer(obj.flags.filter(status=FlagStatus.ACTIVE), many=True)
 
     def get_full_name(self, obj):
         return cleansed_username(obj)
