@@ -9,7 +9,10 @@ class UserFeatureFlagView(viewsets.ModelViewSet):
     """
     A simple ViewSet for viewing and editing accounts.
     """
+
     serializer_class = FlagSerializer
 
     def get_queryset(self):
-        return self.request.user.flags.filter(flag__status=FlagStatus.ACTIVE).values(name=F("flag__name"))
+        return self.request.user.flags.filter(flag__status=FlagStatus.ACTIVE).values(
+            name=F("flag__name")
+        )

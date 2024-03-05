@@ -16,7 +16,9 @@ class Flag(BaseModel):
 
 class UserFlag(BaseModel):
     flag = models.ForeignKey(Flag, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='flags')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="flags"
+    )
 
     class Meta:
-        unique_together = ('flag', 'user')
+        unique_together = ("flag", "user")

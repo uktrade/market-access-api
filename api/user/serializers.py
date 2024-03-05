@@ -158,7 +158,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "groups",
             "is_active",
             "is_superuser",
-            "flags"
+            "flags",
         )
 
     def get_flags(self, obj):
