@@ -87,7 +87,28 @@ def generate_barrier_download_file(
 
     barrier_download.processing()
 
-    queryset = Barrier.objects.filter(id__in=barrier_ids)
+    queryset = (
+        Barrier.objects.filter(id__in=barrier_ids)
+        .select_related(
+            "priority",
+            "public_barrier",
+        )
+        .prefetch_related(
+            "barrier_commodities",
+            "categories",
+            "economic_assessments",
+            "organisations",
+            "tags",
+            "barrier_team",
+            "progress_updates",
+            "programme_fund_progress_updates",
+            "resolvability_assessments",
+            "strategic_assessments",
+            "valuation_assessments",
+            "economic_assessments",
+            "next_steps_items",
+        )
+    )
     serializer = BarrierCsvExportSerializer(queryset, many=True)
 
     try:
@@ -114,9 +135,9 @@ def generate_barrier_download_file(
     )
 
     # Notify user task is complete
-    tasks.barrier_download_complete_notification.delay(
-        barrier_download_id=str(barrier_download.id)
-    )
+    # tasks.barrier_download_complete_notification.delay(
+    #     barrier_download_id=str(barrier_download.id)
+    # )
 
 
 def delete_barrier_download(barrier_download: BarrierDownload):

@@ -191,6 +191,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     export_description = LineBreakCharField(required=False)
     tags = serializers.SerializerMethodField()
     priority_level = serializers.SerializerMethodField()
+    reported_by = serializers.SerializerMethodField()
+    barrier_owner = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -226,6 +228,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "is_top_priority",
             "latest_progress_update",
             "location",
+            "reported_by",
+            "barrier_owner",
             "modified_by",
             "modified_on",
             "other_source",
@@ -519,3 +523,27 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         ):
             return "PB100"
         return instance.priority_level
+
+    def get_reported_by(self, obj):
+        reported_by = None
+        if hasattr(obj, "created_by"):
+            first_name = getattr(obj.created_by, "first_name", None)
+            last_name = getattr(obj.created_by, "last_name", None)
+            reported_by = (
+                f"{first_name} {last_name}" if first_name and last_name else None
+            )
+
+        return reported_by
+
+    def get_barrier_owner(self, obj):
+        barrier_owner = None
+        if hasattr(obj, "barrier_team"):
+            owner = obj.barrier_team.filter(role="Owner").first()
+            print("getting owner", owner.user)
+            first_name = getattr(owner.user, "first_name", None)
+            last_name = getattr(owner.user, "last_name", None)
+            barrier_owner = (
+                f"{first_name} {last_name}" if first_name and last_name else None
+            )
+
+        return barrier_owner

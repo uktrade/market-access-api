@@ -68,8 +68,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     source = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     priority_level = serializers.CharField()
-    # reported_by = serializers.SerializerMethodField()
-    # barrier_owner = serializers.SerializerMethodField()
+    reported_by = serializers.SerializerMethodField()
+    barrier_owner = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     commercial_value = serializers.IntegerField()
@@ -171,8 +171,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
             "source",
             "team_count",
             "term",
-            # "reported_by",
-            # "barrier_owner",
+            "reported_by",
+            "barrier_owner",
             "reported_on",
             "modified_on",
             "economic_assessment_rating",
@@ -543,6 +543,7 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
     def get_is_resolved_top_priority(self, obj):
         return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
 
+    # TODO: The following looks inefficient explore optimization
     def get_top_priority_summary(self, obj):
         priority_summary = BarrierTopPrioritySummary.objects.filter(barrier=obj.id)
         if priority_summary:
@@ -572,8 +573,8 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
         barrier_owner = None
         if hasattr(obj, "barrier_team"):
             owner = obj.barrier_team.filter(role="Owner").first()
-            first_name = getattr(owner.created_by, "first_name", None)
-            last_name = getattr(owner.created_by, "last_name", None)
+            first_name = getattr(owner.user, "first_name", None)
+            last_name = getattr(owner.user, "last_name", None)
             barrier_owner = (
                 f"{first_name} {last_name}" if first_name and last_name else None
             )
