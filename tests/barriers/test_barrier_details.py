@@ -1,8 +1,8 @@
 import logging
 from datetime import date, datetime, timedelta
 
+import freezegun
 from django.test import TestCase
-from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
@@ -20,6 +20,8 @@ from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
 
 logger = logging.getLogger(__name__)
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestBarrierDetails(APITestMixin, APITestCase):
@@ -59,7 +61,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert status_date == self.barrier.status_date.strftime("%Y-%m-%d")
         assert status_summary == self.barrier.status_summary
 
-    @freeze_time("2020-02-22")
+    @freezegun.freeze_time("2020-02-22")
     def test_unknown_barrier_endpoint_sets_status_to_unknown(self):
         assert 1 == self.barrier.status
         status_summary = "some status summary"
@@ -77,7 +79,7 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert "2020-02-22" == self.barrier.status_date.strftime("%Y-%m-%d")
         assert status_summary == self.barrier.status_summary
 
-    @freeze_time("2020-02-22")
+    @freezegun.freeze_time("2020-02-22")
     def test_open_in_progress_endpoint_sets_status_to_open_in_progress(self):
         assert 1 == self.barrier.status
         status_summary = "some status summary"
@@ -415,7 +417,7 @@ class TestHibernateEndpoint(APITestMixin, TestCase):
         self.barrier = BarrierFactory()
         self.url = reverse("hibernate-barrier", kwargs={"pk": self.barrier.id})
 
-    @freeze_time("2020-02-22")
+    @freezegun.freeze_time("2020-02-22")
     def test_hibernate_barrier_endpoint_sets_status_to_dormant(self):
         """
         Barrier status should be set to DORMANT when it gets hibernated.

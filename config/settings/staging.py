@@ -1,0 +1,1 @@
+RELATED_BARRIER_DB_ON = True

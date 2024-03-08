@@ -21,6 +21,9 @@ from api.barriers.models import (
     PublicBarrierLightTouchReviews,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
+from api.related_barriers import manager
+from api.related_barriers.constants import BarrierEntry
+from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
 
 logger = logging.getLogger(__name__)
 
@@ -374,3 +377,27 @@ def barrier_changed_after_published(sender, instance, **kwargs):
             ):
                 public_barrier.changed_since_published = True
                 public_barrier.save()
+
+
+def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
+    try:
+        current_barrier_object = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        logger.info(f"No Barrier found: {instance.pk}")
+        return
+
+    changed = any(
+        getattr(current_barrier_object, field) != getattr(instance, field)
+        for field in BARRIER_UPDATE_FIELDS
+    )
+    if changed and not current_barrier_object.draft:
+        try:
+            manager.manager.update_barrier(
+                BarrierEntry(
+                    id=str(current_barrier_object.id),
+                    barrier_corpus=manager.barrier_to_corpus(current_barrier_object),
+                )
+            )
+        except Exception as e:
+            # We don't want barrier embedding updates to break worker so just log error
+            logger.critical(str(e))

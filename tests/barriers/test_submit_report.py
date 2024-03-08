@@ -1,5 +1,5 @@
+import freezegun
 from django.urls import reverse
-from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -7,6 +7,8 @@ from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from api.interactions.models import Interaction
 from tests.barriers.factories import MinReportFactory, ReportFactory
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestSubmitReport(APITestMixin, APITestCase):
@@ -61,7 +63,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert user.last_name == member["user"]["last_name"]
         assert owner == member["role"]
 
-    @freeze_time("2020-02-22")
+    @freezegun.freeze_time("2020-02-22")
     def test_submit_report_as_half_baked_user(self):
         user1 = create_test_user(
             first_name="", last_name="", email="billy@wibble.com", username=""
@@ -121,7 +123,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
 
         assert not Interaction.objects.filter(barrier=report)
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_check_all_fields_after_report_submit_1(self):
         report = MinReportFactory(
             **{
@@ -197,7 +199,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert 0 == len(response.data["categories"])
         assert response.data["created_on"]
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_report_submit_for_eu_barrier(self):
         report = MinReportFactory(
             **{
@@ -223,7 +225,7 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert "TB00016" == response.data["trading_bloc"]["code"]
         assert response.data["country"] is None
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_report_submit_for_country_within_eu_barrier(self):
         report = MinReportFactory(
             **{
