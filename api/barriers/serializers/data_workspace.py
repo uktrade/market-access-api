@@ -193,6 +193,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     priority_level = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     barrier_owner = serializers.SerializerMethodField()
+    first_published_on = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -241,6 +242,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "public_eligibility",
             "public_eligibility_summary",
             "public_eligibility_postponed",
+            "first_published_on",
             "resolvability_assessments",
             "sectors",
             "sectors_affected",
@@ -539,7 +541,6 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         barrier_owner = None
         if hasattr(obj, "barrier_team"):
             owner = obj.barrier_team.filter(role="Owner").first()
-            print("getting owner", owner.user)
             first_name = getattr(owner.user, "first_name", None)
             last_name = getattr(owner.user, "last_name", None)
             barrier_owner = (
@@ -547,3 +548,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             )
 
         return barrier_owner
+
+    def get_first_published_on(self, obj):
+        if hasattr(obj, "public_barrier"):
+            return obj.public_barrier.first_published_on
