@@ -16,6 +16,7 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
 )
+from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
@@ -34,7 +35,7 @@ from tests.metadata.factories import OrganisationFactory
 
 class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
     def test_summary_is_not_official_sensitive(self):
-        barrier = BarrierFactory(is_summary_sensitive=False)
+        barrier = BarrierFactory(is_summary_sensitive=False, created_by=self.mock_user)
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert barrier.summary == serializer.data["summary"]
@@ -374,6 +375,17 @@ class TestBarrierCsvExportSerializer(APITestMixin, APITestCase):
 
         serializer = BarrierCsvExportSerializer(barrier)
         assert serializer.data["all_sectors"] is True
+
+    def test_barrier_owner(self):
+        barrier = BarrierFactory(created_by=self.mock_user)
+        TeamMember.objects.create(barrier=barrier, user=self.mock_user, role="Owner")
+        barrier.save()
+
+        serializer = BarrierCsvExportSerializer(barrier)
+        assert (
+            serializer.data["barrier_owner"]
+            == f"{self.mock_user.first_name} {self.mock_user.last_name}"
+        )
 
 
 class TestBarrierCsvExport(APITestMixin, APITestCase):
