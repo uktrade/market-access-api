@@ -39,11 +39,8 @@ class UserFactoryMixin:
     def create_standard_user(self, **kwargs):
         return self.__create_user(**kwargs)
 
-    def create_sifter(self, **kwargs):
-        return self.__create_user(role=UserRoles.SIFTER, **kwargs)
-
-    def create_editor(self, **kwargs):
-        return self.__create_user(role=UserRoles.EDITOR, **kwargs)
+    def create_approver(self, **kwargs):
+        return self.__create_user(role=UserRoles.APPROVER, **kwargs)
 
     def create_publisher(self, **kwargs):
         return self.__create_user(role=UserRoles.PUBLISHER, **kwargs)

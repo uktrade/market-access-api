@@ -15,7 +15,7 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
         self.admin_group = Group.objects.get(name="Administrator")
         self.publisher_group = Group.objects.get(name="Publisher")
         self.analyst_group = Group.objects.get(name="Analyst")
-        self.editor_group = Group.objects.get(name="Editor")
+        self.approver_group = Group.objects.get(name="Public barrier approver")
 
     @patch("logging.Logger.critical")
     def test_administrator_granted_critical_log(self, patched_logger):
@@ -49,7 +49,7 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
 
     @patch("logging.Logger.info")
     def test_group_modifications_logged(self, patched_logger):
-        admin_user = self.create_editor()
+        admin_user = self.create_approver()
 
         serializer = UserDetailSerializer(
             instance=admin_user,
@@ -64,5 +64,5 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
             "User 5 has been added to the following groups: {'Publisher'}"
         )
         assert patched_logger.called_with(
-            "User 5 has been removed from the following groups: {'Editor'}"
+            "User 5 has been removed from the following groups: {'Public barrier approver'}"
         )

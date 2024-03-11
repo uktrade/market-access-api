@@ -1,9 +1,11 @@
+import logging
 from unittest.mock import patch
 
 import pytest
 from django.contrib.postgres.search import SearchVector
 from django.db.models import Q
 from django.test import RequestFactory
+from mock import PropertyMock
 from notifications_python_client.notifications import NotificationsAPIClient
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -26,6 +28,8 @@ from tests.action_plans.factories import (
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: consider removing this test case.
@@ -839,11 +843,18 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert 1 == response.data["count"]
         assert str(barrier1.id) == response.data["results"][0]["id"]
 
-    def test_dataset_barrier_list_returns_without_error(self):
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_dataset_barrier_list_returns_without_error(
+        self, mock_public_barrier_status
+    ):
         BarrierFactory(status=1, status_summary="it wobbles!", status_date="2020-02-02")
         BarrierFactory(status=2, status_summary="it wobbles!", status_date="2020-02-02")
         BarrierFactory(status=3, status_summary="it wobbles!", status_date="2020-02-02")
         BarrierFactory(status=4, status_summary="it wobbles!", status_date="2020-02-02")
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
         creator = create_test_user(sso_user_id=self.sso_creator["user_id"])
         client = self.create_api_client(user=creator)
 

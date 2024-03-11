@@ -25,6 +25,8 @@ class BarrierReportSerializer(BarrierSerializerBase):
             "other_source",
             "product",
             "progress",
+            "public_eligibility",
+            "public_eligibility_summary",
             "sectors",
             "main_sector",
             "sectors_affected",

@@ -72,22 +72,25 @@ class BarrierStatus(StatusNameMixin):
 
 
 class PublicBarrierStatus(StatusNameMixin):
+
     UNKNOWN = 0
-    INELIGIBLE = 10
-    ELIGIBLE = 20
-    READY = 30
+    NOT_ALLOWED = 10
+    ALLOWED = 20
+    APPROVAL_PENDING = 70
+    PUBLISHING_PENDING = 30
     PUBLISHED = 40
     UNPUBLISHED = 50
     REVIEW_LATER = 60
 
     choices = Choices(
-        (UNKNOWN, "Not yet sifted"),
-        (INELIGIBLE, "Not allowed"),
-        (ELIGIBLE, "Allowed"),
-        (READY, "Ready"),
+        (UNKNOWN, "Unknown"),
+        (NOT_ALLOWED, "Not allowed"),
+        (ALLOWED, "Allowed"),
+        (APPROVAL_PENDING, "Awaiting approval"),
+        (PUBLISHING_PENDING, "Awaiting publishing"),
         (PUBLISHED, "Published"),
         (UNPUBLISHED, "Unpublished"),
-        (REVIEW_LATER, "Review later"),
+        (REVIEW_LATER, "Review later (Depricated)"),
     )
 
 
