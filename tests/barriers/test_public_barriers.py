@@ -1203,13 +1203,14 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
         pb = self.get_public_barrier()
         assert False is pb.ready_to_be_published
 
-    def test_ready_to_be_published_is_false_when_status_is_not_ready(self):
+    def test_ready_to_be_published_is_false_when_status_is_not_ready_or_unpublished(
+        self,
+    ):
         statuses = [
             PublicBarrierStatus.UNKNOWN,
             PublicBarrierStatus.NOT_ALLOWED,
             PublicBarrierStatus.ALLOWED,
             PublicBarrierStatus.PUBLISHED,
-            PublicBarrierStatus.UNPUBLISHED,
         ]
 
         for s in statuses:
