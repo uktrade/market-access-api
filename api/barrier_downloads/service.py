@@ -135,9 +135,9 @@ def generate_barrier_download_file(
     )
 
     # Notify user task is complete
-    # tasks.barrier_download_complete_notification.delay(
-    #     barrier_download_id=str(barrier_download.id)
-    # )
+    tasks.barrier_download_complete_notification.delay(
+        barrier_download_id=str(barrier_download.id)
+    )
 
 
 def delete_barrier_download(barrier_download: BarrierDownload):

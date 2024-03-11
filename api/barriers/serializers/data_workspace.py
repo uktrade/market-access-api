@@ -541,11 +541,12 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         barrier_owner = None
         if hasattr(obj, "barrier_team"):
             owner = obj.barrier_team.filter(role="Owner").first()
-            first_name = getattr(owner.user, "first_name", None)
-            last_name = getattr(owner.user, "last_name", None)
-            barrier_owner = (
-                f"{first_name} {last_name}" if first_name and last_name else None
-            )
+            if owner:
+                first_name = getattr(owner.user, "first_name", None)
+                last_name = getattr(owner.user, "last_name", None)
+                barrier_owner = (
+                    f"{first_name} {last_name}" if first_name and last_name else None
+                )
 
         return barrier_owner
 
