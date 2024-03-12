@@ -42,12 +42,13 @@ class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
         barrier_record = record.barrier.history.as_of(
             record.history_date + datetime.timedelta(seconds=1)
         )
+        name = None
+
+        if record.public_view_status in PublicBarrierStatus.choices:
+            name = PublicBarrierStatus.choices[record.public_view_status]
 
         return {
-            "public_view_status": {
-                "id": record.public_view_status,
-                "name": PublicBarrierStatus.choices[record.public_view_status],
-            },
+            "public_view_status": {"id": record.public_view_status, "name": name},
             "public_eligibility": barrier_record.public_eligibility,
             "public_eligibility_summary": barrier_record.public_eligibility_summary,
         }

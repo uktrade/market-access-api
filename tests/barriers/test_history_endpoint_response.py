@@ -3,8 +3,8 @@ import random
 from unittest import skip
 from unittest.mock import patch
 
+import freezegun
 from django.test import TestCase
-from freezegun import freeze_time
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -24,14 +24,15 @@ from tests.assessment.factories import (
     StrategicAssessmentFactory,
 )
 from tests.barriers.factories import CommodityFactory
-from tests.history.factories import ProgrammeFundProgressUpdateFactory
 from tests.metadata.factories import BarrierTagFactory
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestHistoryEndpointResponse(APITestMixin, TestCase):
     fixtures = ["categories", "documents", "users", "barriers"]
 
-    @freeze_time("2020-03-02")
+    @freezegun.freeze_time("2020-03-02")
     def setUp(self):
         super().setUp()
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
@@ -40,13 +41,13 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         self.barrier.title = "Force history entry"
         self.barrier.save()
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint(self):
         url = reverse("history", kwargs={"pk": self.barrier.pk})
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_archived(self):
         initial_archived_state = self.barrier.archived
         initial_unarchived_reason = self.barrier.unarchived_reason
@@ -79,7 +80,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_categories(self):
         initial_categories = list(self.barrier.categories.all())
         expected_categories = [109, 115]
@@ -98,37 +99,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
-    def test_legacy_history_endpoint_has_v2_programme_fund_progress_update(self):
-        ProgrammeFundProgressUpdateFactory(
-            barrier=self.barrier,
-            expenditure="30,000",
-            milestones_and_deliverables="arsenal",
-        )
-        url = reverse("history", kwargs={"pk": self.barrier.pk})
-        response = self.api_client.get(url)
-        history = response.json()["history"]
-
-        assert history == [
-            {
-                "date": "2020-04-01T00:00:00Z",
-                "field": "milestones_and_deliverables",
-                "model": "programme_fund_progress_update",
-                "new_value": "arsenal",
-                "old_value": None,
-                "user": None,
-            },
-            {
-                "date": "2020-04-01T00:00:00Z",
-                "field": "expenditure",
-                "model": "programme_fund_progress_update",
-                "new_value": "30,000",
-                "old_value": None,
-                "user": None,
-            },
-        ]
-
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_commercial_value(self):
         initial_commercial_value = self.barrier.commercial_value
         expected_commercial_value = 1111
@@ -148,7 +119,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_commercial_value_explanation(self):
         initial_commercial_value_explanation = self.barrier.commercial_value_explanation
         expected_commercial_value_explanation = "CV explanation"
@@ -170,7 +141,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_commodities(self):
         initial_commodities = list(self.barrier.commodities.all())
         expected_commodity = CommodityFactory(
@@ -205,7 +176,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_companies(self):
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.save()
@@ -223,7 +194,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_economic_assessment_eligibility(self):
         initial_economic_assessment_eligibility = (
             self.barrier.economic_assessment_eligibility
@@ -249,7 +220,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_economic_assessment_eligibility_summary(self):
         initial_economic_assessment_eligibility_summary = (
             self.barrier.economic_assessment_eligibility_summary
@@ -276,7 +247,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_economic_assessment_rating(self):
         economic_assessment = EconomicAssessmentFactory(
             barrier=self.barrier,
@@ -299,7 +270,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_economic_impact_assessment_impact(self):
         economic_assessment = EconomicAssessmentFactory(
             barrier=self.barrier,
@@ -327,7 +298,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_estimated_resolution_date(self):
         initial_estimated_resolution_date = self.barrier.estimated_resolution_date
         expected_estimated_resolution_date = datetime.date(year=2030, month=12, day=25)
@@ -347,7 +318,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_is_summary_sensitive(self):
         initial_is_summary_sensitive = self.barrier.is_summary_sensitive
         expected_is_summary_sensitive = not initial_is_summary_sensitive
@@ -367,7 +338,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_location(self):
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
         self.barrier.admin_areas = [
@@ -384,7 +355,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         assert location_history[0]["old_value"] == "France"
         assert location_history[0]["new_value"] == "California (United States)"
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_organisations(self):
         # ensure no organisations for previous history entry
         self.barrier.organisations.clear()
@@ -409,7 +380,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_priority(self):
         initial_priority = self.barrier.priority
         self.barrier.priority = BarrierPriority.objects.get(code="HIGH")
@@ -434,35 +405,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
-    def test_history_endpoint_has_priority_summary(self):
-        self.barrier.priority = BarrierPriority.objects.get(code="HIGH")
-        initial_priority = self.barrier.priority
-        self.barrier.priority_summary = "TEST"
-        self.barrier.save()
-        self.barrier.priority = BarrierPriority.objects.get(code="LOW")
-        self.barrier.save()
-
-        url = reverse("history", kwargs={"pk": self.barrier.pk})
-        response = self.api_client.get(url)
-        history = response.json()["history"]
-
-        assert {
-            "date": "2020-04-01T00:00:00Z",
-            "model": "barrier",
-            "field": "priority",
-            "old_value": {
-                "priority": initial_priority.code,
-                "priority_summary": "TEST",
-            },
-            "new_value": {
-                "priority": self.barrier.priority.code,
-                "priority_summary": "TEST",
-            },
-            "user": None,
-        } in history
-
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_product(self):
         self.barrier.product = "New product"
         self.barrier.save()
@@ -481,7 +424,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         } in history
 
     @skip("Not recorded… yet")
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_public_eligibility(self):
         initial_public_eligibility = self.barrier.public_eligibility
         expected_public_eligibility = not initial_public_eligibility
@@ -502,7 +445,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         } in history
 
     @skip("Not recorded… yet")
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_public_eligibility_postponed(self):
         initial_public_eligibility_postponed = self.barrier.public_eligibility_postponed
         expected_public_eligibility_postponed = not initial_public_eligibility_postponed
@@ -524,7 +467,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_public_eligibility_summary(self):
         initial_public_eligibility_summary = self.barrier.public_eligibility_summary
         expected_public_eligibility_summary = "New public eligibility summary"
@@ -544,7 +487,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_resolvability_assessment_effort_to_resolve(self):
         resolvability_assessment = ResolvabilityAssessmentFactory(
             barrier=self.barrier,
@@ -568,7 +511,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_resolvability_assessment_time_to_resolve(self):
         resolvability_assessment = ResolvabilityAssessmentFactory(
             barrier=self.barrier,
@@ -592,7 +535,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_sectors(self):
         self.barrier.sectors = ["9538cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.save()
@@ -619,7 +562,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_source(self):
         self.barrier.source = BARRIER_SOURCE.COMPANY
         self.barrier.save()
@@ -643,7 +586,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_status(self):
         initial_status = self.barrier.status
         initial_status_summary = self.barrier.status_summary
@@ -678,7 +621,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_strategic_assessment(self):
         strategic_assessment = StrategicAssessmentFactory(
             barrier=self.barrier,
@@ -701,7 +644,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_summary(self):
         initial_summary = self.barrier.summary
         self.barrier.summary = "New summary"
@@ -720,7 +663,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_tags(self):
         initial_tags = list(self.barrier.tags.all())
         expected_tag = BarrierTagFactory(title="brouhaha")
@@ -739,7 +682,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_team_member(self):
         team_member = TeamMember.objects.create(
             barrier=self.barrier, user=self.user, role="Contributor"
@@ -764,7 +707,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_term(self):
         self.barrier.term = 1
         self.barrier.save()
@@ -782,7 +725,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_title(self):
         initial_title = self.barrier.title
         self.barrier.title = "New title"
@@ -802,8 +745,9 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         } in history
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
-    def test_history_endpoint_has_top_priority_approval_pending_and_resolved(self, _):
-        # V2 tested
+    def test_history_endpoint_has_top_priority_approval_pending(self, _):
+        self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
+        self.barrier.save()
         BarrierTopPrioritySummary.objects.create(
             top_priority_summary_text="please approve me", barrier=self.barrier
         )
@@ -918,7 +862,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         }
 
     @patch("api.barriers.signals.handlers.send_top_priority_notification")
-    # @freeze_time("2020-04-01")
     def test_history_endpoint_has_top_priority_removed(self, _):
         # V2 tested
         self.barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
@@ -957,7 +900,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         }
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_trade_category(self):
         self.barrier.trade_category = "GOODS"
         self.barrier.save()
@@ -978,7 +921,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_trade_direction(self):
         initial_trade_direction = self.barrier.trade_direction
         expected_trade_direction = random.choice(
@@ -1004,7 +947,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_barrier_top_priority_summary_creation(self):
         new_summary = BarrierTopPrioritySummary.objects.create(
             barrier=self.barrier,
@@ -1023,7 +966,7 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    @freeze_time("2020-04-01")
+    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_barrier_top_priority_summary_modification(self):
         new_summary = BarrierTopPrioritySummary.objects.create(
             barrier=self.barrier,

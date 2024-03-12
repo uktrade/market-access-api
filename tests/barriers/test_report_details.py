@@ -1,4 +1,4 @@
-from freezegun import freeze_time
+import freezegun
 from rest_framework import status
 from rest_framework.reverse import reverse
 
@@ -6,13 +6,15 @@ from api.barriers.models import Barrier
 from api.core.test_utils import APITestMixin, create_test_user
 from tests.barriers.factories import ReportFactory
 
+freezegun.configure(extend_ignore_list=["transformers"])
+
 
 class TestReportDetail(APITestMixin):
     def test_report_gets_reference_code_generated(self):
         report = ReportFactory()
         assert report.code not in ("", None)
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_delete_request_archives_report(self):
         creator = create_test_user(sso_user_id=self.sso_creator["user_id"])
         report = ReportFactory(created_by=creator)

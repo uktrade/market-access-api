@@ -5,11 +5,11 @@ from uuid import uuid4
 
 import boto3
 import dateutil.parser
+import freezegun
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from freezegun import freeze_time
 from mock import patch
 from moto import mock_s3
 from rest_framework import status
@@ -33,6 +33,8 @@ from api.metadata.models import Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import CategoryFactory
 from tests.user.factories import UserFactoryMixin
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class PublicBarrierBaseTestCase(UserFactoryMixin, APITestMixin, TestCase):
@@ -283,11 +285,11 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
         url = reverse("public-barriers-list")
         pb1, _ = self.publish_barrier(barrier=self.barrier)
 
-        with freeze_time("2020-02-02"):
+        with freezegun.freeze_time("2020-02-02"):
             _note1 = PublicBarrierNote.objects.create(
                 public_barrier=pb1, text="wibble", created_by=self.mock_user
             )
-        with freeze_time("2020-02-03"):
+        with freezegun.freeze_time("2020-02-03"):
             note2 = PublicBarrierNote.objects.create(
                 public_barrier=pb1, text="wobble", created_by=self.mock_user
             )
@@ -388,7 +390,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_patch_as_editor(self):
         user = self.create_editor()
         client = self.create_api_client(user=user)
@@ -400,7 +402,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert public_title == response.data["title"]
         assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_patch_as_publisher(self):
         """Publishers can patch public barriers"""
         user = self.create_publisher()
@@ -415,7 +417,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["summary"]
         assert not response.data["summary_updated_on"]
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_patch_as_admin(self):
         """Admins can patch public barriers"""
         user = self.create_admin()
@@ -430,7 +432,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["summary"]
         assert not response.data["summary_updated_on"]
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_patch_summary_as_publisher(self):
         """Publishers can patch public barriers"""
         user = self.create_publisher()
@@ -544,7 +546,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert PublicBarrierStatus.ELIGIBLE == response.data["public_view_status"]
 
     # === IGNORE ALL CHANGES ====
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_standard_user(self):
         """Standard users cannot ignore all changes"""
         user = self.create_standard_user()
@@ -556,7 +558,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_sifter(self):
         """Sifters cannot ignore all changes"""
         user = self.create_sifter()
@@ -568,7 +570,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_editor(self):
         """Editors can ignore all changes"""
         user = self.create_editor()
@@ -582,7 +584,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
         assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_publisher(self):
         """Publishers can ignore all changes"""
         user = self.create_publisher()
@@ -596,7 +598,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
         assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
 
-    @freeze_time("2020-02-02")
+    @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_ignore_all_changes_as_admin(self):
         """Admins can ignore all changes"""
         user = self.create_admin()
@@ -1487,7 +1489,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         assert "barriers" in data.keys()
         assert 2 == len(data["barriers"])
 
-    @freeze_time("2020-05-20")
+    @freezegun.freeze_time("2020-05-20")
     def test_public_serializer(self):
         pb1, _ = self.publish_barrier(user=self.publisher)
         barrier = public_barriers_to_json()[0]
