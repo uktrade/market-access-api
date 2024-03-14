@@ -8,10 +8,9 @@ echo "---- Installing Related Barrier ML Packages ------"
 /tmp/lifecycle/shell
 
 function test() {
-    echo "---- TESTING FUNCTION2 ----"
+    echo "---- TESTING FUNCTION!!! ----"
     echo "$TEST_ENV_VAR"
     echo "TEST123"
-    if [ 1 == 1 ] ; then echo "1 == 1"
 }
 
 test
