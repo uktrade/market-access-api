@@ -10,6 +10,8 @@ echo "---- Installing Related Barrier ML Packages ------"
 function test() {
     echo "---- TESTING FUNCTION2 ----"
     echo "$TEST_ENV_VAR"
+    echo "TEST123"
+    if [ 1 == 1 ] ; then echo "1 == 1"
 }
 
 test
