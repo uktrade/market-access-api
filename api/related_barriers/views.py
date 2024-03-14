@@ -18,9 +18,6 @@ def related_barriers(request, pk) -> Response:
     Return a list of related barriers
     """
     barrier = get_object_or_404(Barrier, pk=pk)
-    if not manager.manager:
-        manager.init()
-
     similar_barrier_ids = manager.manager.get_similar_barriers(
         barrier=BarrierEntry(
             id=str(barrier.id),
