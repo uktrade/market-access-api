@@ -8,7 +8,8 @@ echo "---- Installing Related Barrier ML Packages ------"
 /tmp/lifecycle/shell
 
 function test() {
-    echo "---- TESTING FUNCTION ----"
+    echo "---- TESTING FUNCTION2 ----"
+    echo "$TEST_ENV_VAR"
 }
 
 test
