@@ -30,4 +30,4 @@ RUN pip install --upgrade pip \
     && pip install -r requirements-dev.txt
 
 # install sentence-transformers model for similarity search
-RUN python -c 'from sentence_transformers import SentenceTransformer; model = SentenceTransformer("paraphrase-MiniLM-L3-v2"); model.save(".models")'
+#RUN python -c 'from sentence_transformers import SentenceTransformer; model = SentenceTransformer("paraphrase-MiniLM-L3-v2"); model.save(".models")'
