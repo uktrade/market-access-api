@@ -50,12 +50,20 @@ pytest = "^7.2.0"
 certifi = "2023.07.22"
 sqlparse = "0.4.4"
 cryptography = "~=42.0.0"
+tqdm = "*"
+transformers = "4.25.1"
+numpy = "1.24.4"
+scikit-learn = "*"
+scipy = "*"
+nltk = "*"
+sentencepiece = "*"
+huggingface-hub = ">=0.4.0"
 
 [tool.poetry.dev-dependencies]
 black = "~=22.3.0"
 boto3-stubs = "~=1.17.86"
 flake8 = "~=3.8.2"
-freezegun = "~=1.0.0"
+freezegun = "~=1.2.2"
 ipython = "8.10.0"
 mock = "~=4.0.1"
 moto = "==2.2.16"
@@ -71,6 +79,12 @@ time-machine = "^2.8.2"
 greenlet = "==3.0.3"
 coverage = "^7.2.7"
 pytest-circleci-parallelized = "^0.1.0"
+# Below are the packages required for the ML models, we keep them in dev-dependencies so they are not put into the
+# requirements.txt file and installed in production - trying to do so causes ALL sorts of issues.
+# instead we install them as part of the .profile script that is ran on the server during deployment.
+sentence-transformers = "2.2.2"
+torch = "2.0.0"
+torchvision = "0.15.1"
 
 [build-system]
 requires = ["poetry~=1.6.1"]

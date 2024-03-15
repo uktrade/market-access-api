@@ -7,3 +7,5 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DJANGO_ENV = "dev"
 SSO_ENABLED = True
+
+RELATED_BARRIER_DB_ON = True

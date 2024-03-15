@@ -86,6 +86,7 @@ LOCAL_APPS = [
     "api.wto",
     "api.action_plans",
     "api.feedback",
+    "api.related_barriers",
     "api.barrier_downloads",
 ]
 
@@ -514,3 +515,5 @@ ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID = env(
 )
 
 BARRIER_LIST_DEFAULT_SORT = env.str("BARRIER_LIST_DEFAULT_SORT", default="-reported_on")
+
+RELATED_BARRIER_DB_ON = False
