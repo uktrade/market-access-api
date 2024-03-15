@@ -85,7 +85,7 @@ pytest-circleci-parallelized = "^0.1.0"
 
 
 [[tool.poetry.source]]
-name = "pytorch"
+name = "torch==2.0.0"
 url = "https://download.pytorch.org/whl/cpu"
 priority = "explicit"
 
