@@ -36,9 +36,9 @@ jobs:
           run: poetry lock
 
         - name: Generate new requirements.txt file
-          run: poetry export --without-hashes -f requirements.txt -o requirements.txt
+          run: poetry export --without-hashes -f requirements-app.txt -o requirements-app.txt
 
         - name: Committing the changes back to the branch
           uses: stefanzweifel/git-auto-commit-action@v5
           with:
-            commit_message: Regenerating requirements.txt file
+            commit_message: Regenerating requirements-app.txt file
