@@ -71,7 +71,7 @@ class EchoUTF8:
 
 def s3_client():
     if is_copilot():
-        return boto3.client('s3')
+        return boto3.client("s3")
     else:
         return boto3.client(
             "s3",
@@ -96,7 +96,7 @@ def read_file_from_s3(filename):
 
 def s3_resource():
     if is_copilot():
-        return boto3.resource('s3')
+        return boto3.resource("s3")
     else:
         return boto3.resource(
             "s3",
