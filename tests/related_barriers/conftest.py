@@ -25,4 +25,6 @@ def related_barrier_manager_context():
         with mock.patch(
             "api.related_barriers.manager.get_transformer"
         ) as mock_get_transformer:
-            yield RelatedBarrierManager(data), mock_cache, mock_get_transformer
+            manager = RelatedBarrierManager()
+            manager.set_data(data)
+            yield manager, mock_cache, mock_get_transformer

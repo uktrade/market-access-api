@@ -61,27 +61,23 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     def __str__(self):
         return "Related Barrier Manager"
 
-    def __init__(self, data: List[Dict]):
+    def __init__(self):
         """
         Only called once in a execution lifecycle
         """
         self.__transformer = get_transformer()
 
-        @timing
-        def set_data():
-            """
-            Load data into memory.
-            """
-            barrier_ids = [str(d["id"]) for d in data]
-            barrier_data = [d["barrier_corpus"] for d in data]
-            embeddings = self.__transformer.encode(barrier_data, convert_to_tensor=True)
-            self.set_embeddings(embeddings.numpy())
-            self.set_barrier_ids(barrier_ids)
-
-        if not self.get_barrier_ids() or not isinstance(
-            self.get_embeddings(), numpy.ndarray
-        ):
-            set_data()
+    @timing
+    def set_data(self, data: List[Dict]):
+        """
+        Load data into memory.
+        """
+        self.flush()
+        barrier_ids = [str(d["id"]) for d in data]
+        barrier_data = [d["barrier_corpus"] for d in data]
+        embeddings = self.__transformer.encode(barrier_data, convert_to_tensor=True)
+        self.set_embeddings(embeddings.numpy())
+        self.set_barrier_ids(barrier_ids)
 
     @staticmethod
     def flush():
@@ -98,11 +94,11 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @staticmethod
     def get_embeddings():
-        return cache.get(EMBEDDINGS_CACHE_KEY)
+        return cache.get(EMBEDDINGS_CACHE_KEY, [])
 
     @staticmethod
     def get_barrier_ids():
-        return cache.get(BARRIER_IDS_CACHE_KEY)
+        return cache.get(BARRIER_IDS_CACHE_KEY, [])
 
     @property
     def model(self):
@@ -166,9 +162,15 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     ):
         barrier_ids = self.get_barrier_ids()
 
+        if not barrier_ids:
+            self.set_data(get_data())
+
+        barrier_ids = self.get_barrier_ids()
+
         if barrier.id not in barrier_ids:
             self.add_barrier(barrier, barrier_ids)
 
+        barrier_ids = self.get_barrier_ids()
         cosine_sim = self.get_cosine_sim()
 
         index = None
@@ -212,8 +214,10 @@ def init():
     if manager:
         raise Exception("Related Barrier Manager already set")
 
-    data = get_data()  # List[Dict]
-    manager = RelatedBarrierManager(data)
+    manager = RelatedBarrierManager()
+    if not manager.get_barrier_ids():
+        data = get_data()
+        manager.set_data(data)
 
 
 def barrier_to_corpus(barrier):
