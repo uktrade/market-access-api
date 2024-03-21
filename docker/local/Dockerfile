@@ -23,11 +23,8 @@ WORKDIR /usr/src/app
 
 # Poetry commands reference https://python-poetry.org/docs/cli/#run
 COPY pyproject.toml poetry.lock ./
-RUN pip install --upgrade pip \
-    && pip install poetry==$POETRY_VERSION \
-    && poetry export --without-hashes -f requirements-app.txt -o requirements-app.txt \
-    && poetry export --dev --without-hashes -f requirements-app.txt -o requirements-dev.txt \
-    && pip install -r requirements-dev.txt
-
-# install sentence-transformers model for similarity search
-RUN python -c 'from sentence_transformers import SentenceTransformer; model = SentenceTransformer("paraphrase-MiniLM-L3-v2"); model.save(".models")'
+RUN pip install --upgrade pip
+RUN pip install poetry==$POETRY_VERSION
+RUN poetry export --without-hashes -f requirements.txt -o requirements-app.txt
+RUN poetry export --with dev --without-hashes -f requirements.txt -o requirements-dev.txt
+RUN pip install -r requirements-dev.txt
