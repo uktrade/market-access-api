@@ -8,4 +8,3 @@ from .base import *
 DEBUG = False
 DJANGO_ENV = "prod"
 SSO_ENABLED = True
-RELATED_BARRIER_DB_ON = True
