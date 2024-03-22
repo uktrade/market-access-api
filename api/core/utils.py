@@ -1,15 +1,10 @@
 import operator
-import os
 
 import boto3
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
 
 from api.core.exceptions import S3UploadException
-
-
-def is_copilot():
-    return "COPILOT_ENVIRONMENT_NAME" in os.environ
 
 
 def is_not_blank(s):
@@ -70,14 +65,11 @@ class EchoUTF8:
 
 
 def s3_client():
-    if is_copilot():
-        return boto3.client("s3")
-    else:
-        return boto3.client(
-            "s3",
-            aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
-        )
+    return boto3.client(
+        "s3",
+        aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
+    )
 
 
 def upload_to_s3(local_file, bucket, s3_file=None):
@@ -95,15 +87,12 @@ def read_file_from_s3(filename):
 
 
 def s3_resource():
-    if is_copilot():
-        return boto3.resource("s3")
-    else:
-        return boto3.resource(
-            "s3",
-            region_name=settings.PUBLIC_DATA_BUCKET_REGION,
-            aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
-        )
+    return boto3.resource(
+        "s3",
+        region_name=settings.PUBLIC_DATA_BUCKET_REGION,
+        aws_access_key_id=settings.PUBLIC_DATA_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.PUBLIC_DATA_AWS_SECRET_ACCESS_KEY,
+    )
 
 
 def list_s3_public_data_files(client=None):
