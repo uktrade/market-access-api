@@ -391,6 +391,8 @@ def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
         for field in BARRIER_UPDATE_FIELDS
     )
     if changed and not current_barrier_object.draft:
+        if not manager.manager:
+            manager.init()
         try:
             manager.manager.update_barrier(
                 BarrierEntry(
