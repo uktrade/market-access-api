@@ -4,5 +4,5 @@ from .views import pingdom
 
 
 urlpatterns = [
-    path("ping.xml", pingdom, name="pingdom"),
+    path("pingdom/ping.xml", pingdom, name="pingdom"),
 ]
