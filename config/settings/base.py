@@ -88,6 +88,7 @@ LOCAL_APPS = [
     "api.feedback",
     "api.related_barriers",
     "api.barrier_downloads",
+    "api.pingdom"
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
