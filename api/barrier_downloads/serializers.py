@@ -590,7 +590,7 @@ class CsvDownloadSerializer(serializers.Serializer):
     summary = serializers.SerializerMethodField()
     link = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
-    priority = serializers.SerializerMethodField()
+    priority_level = serializers.CharField()
     overseas_region = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
@@ -623,11 +623,11 @@ class CsvDownloadSerializer(serializers.Serializer):
     changed_since_published = serializers.SerializerMethodField()
     public_title = serializers.CharField(source="public_barrier.title")
     public_summary = serializers.CharField(source="public_barrier.summary")
-    # economic_assessment_rating = serializers.SerializerMethodField()
-    # value_to_economy = serializers.SerializerMethodField()
-    # valuation_assessment_rating = serializers.SerializerMethodField()
-    # valuation_assessment_midpoint = serializers.SerializerMethodField()
-    # valuation_assessment_explanation = serializers.SerializerMethodField()
+    economic_assessment_rating = serializers.SerializerMethodField()
+    value_to_economy = serializers.SerializerMethodField()
+    valuation_assessment_rating = serializers.SerializerMethodField()
+    valuation_assessment_midpoint = serializers.SerializerMethodField()
+    valuation_assessment_explanation = serializers.SerializerMethodField()
     commercial_value = serializers.IntegerField()
 
     def get_is_resolved_top_priority(self, obj):
@@ -702,10 +702,6 @@ class CsvDownloadSerializer(serializers.Serializer):
         if status == "Open: Pending action":
             status = f"{status} ({sub_status_dict.get(barrier.sub_status, 'Unknown')})"
         return status
-
-    def get_priority(self, barrier):
-        """Custom Serializer Method Field for exposing barrier priority"""
-        return barrier.priority.name if barrier.priority else 'Unknown'
 
     def get_reported_by(self, barrier):
         reported_by = None
