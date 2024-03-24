@@ -581,3 +581,160 @@ class BarrierCsvExportSerializer(AssessmentFieldsMixin, serializers.Serializer):
                 )
 
         return barrier_owner
+
+
+class CsvDownloadSerializer(serializers.Serializer):
+    id = serializers.UUIDField()
+    code = serializers.CharField()
+    title = serializers.CharField()
+    summary = serializers.SerializerMethodField()
+    status_summary = serializers.SerializerMethodField()
+    link = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
+    overseas_region = serializers.SerializerMethodField()
+    modified_on = serializers.DateTimeField(format="%Y-%m-%d")
+    location = serializers.SerializerMethodField()
+    admin_areas = serializers.SerializerMethodField()
+    sectors = serializers.SerializerMethodField()
+    product = serializers.CharField()
+    categories = serializers.SerializerMethodField()
+    reported_by = serializers.SerializerMethodField()
+    reported_on = serializers.DateTimeField(format="%Y-%m-%d")
+    barrier_owner = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
+    trade_direction = serializers.CharField(source='get_trade_direction_display')
+    is_resolved_top_priority = serializers.SerializerMethodField()
+    government_organisations = serializers.SerializerMethodField()
+    progress_update_status = serializers.SerializerMethodField()
+    progress_update_message = serializers.SerializerMethodField()
+    progress_update_date = serializers.SerializerMethodField()
+
+
+    def get_is_resolved_top_priority(self, obj):
+        return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+
+    def get_link(self, obj):
+        return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
+
+    def get_categories(self, barrier):
+        return [category.title for category in barrier.categories.all()]
+
+    def get_location(self, barrier):
+        if barrier.country:
+            country = get_country(str(barrier.country))
+            if country:
+                return country.get("name")
+        elif barrier.trading_bloc:
+            trading_bloc = get_trading_bloc(barrier.trading_bloc)
+            if trading_bloc:
+                return trading_bloc.get("name")
+
+    def get_overseas_region(self, barrier):
+        if barrier.country:
+            country = get_country(str(barrier.country))
+            if country:
+                overseas_region = country.get("overseas_region")
+                if overseas_region:
+                    return overseas_region.get("name")
+        elif barrier.trading_bloc:
+            overseas_regions = get_trading_bloc_overseas_regions(barrier.trading_bloc)
+            return [region["name"] for region in overseas_regions]
+
+    def get_admin_areas(self, barrier):
+        admin_area_names = []
+        for admin_area in barrier.admin_areas:
+            admin_area = get_admin_area(str(admin_area))
+            if admin_area and admin_area.get("name"):
+                admin_area_names.append(admin_area.get("name"))
+        return admin_area_names
+
+    def get_sectors(self, barrier):
+        if barrier.sectors_affected:
+            if barrier.all_sectors:
+                return "All"
+            else:
+                sector_names = []
+                for sector_id in barrier.sectors:
+                    sector = get_sector(str(sector_id))
+                    if sector and sector.get("name"):
+                        sector_names.append(sector.get("name"))
+                return sector_names
+        else:
+            return "N/A"
+
+    def get_summary(self, barrier):
+        return (
+            barrier.summary if not barrier.is_summary_sensitive
+            else "OFFICIAL-SENSITIVE (see it on DMAS)"
+        )
+
+    def get_status_summary(self, barrier):
+        return (
+            barrier.status_summary if not barrier.is_summary_sensitive
+            else "OFFICIAL-SENSITIVE (see it on DMAS)"
+        )
+
+    def get_status(self, barrier):
+        """Custom Serializer Method Field for exposing current status display value"""
+        status_dict = dict(BarrierStatus.choices)
+        sub_status_dict = dict(BARRIER_PENDING)
+        status = status_dict.get(barrier.status, "Unknown")
+        if status == "Open: Pending action":
+            status = f"{status} ({sub_status_dict.get(barrier.sub_status, 'Unknown')})"
+        return status
+
+    def get_priority(self, barrier):
+        """Custom Serializer Method Field for exposing barrier priority"""
+        return barrier.priority.name if barrier.priority else 'Unknown'
+
+    def get_reported_by(self, barrier):
+        reported_by = None
+        if barrier.created_by:
+            first_name = barrier.created_by.first_name
+            last_name = barrier.created_by.last_name
+            reported_by = (
+                f"{first_name} {last_name}" if first_name and last_name else None
+            )
+        return reported_by
+
+    def get_barrier_owner(self, barrier):
+        barrier_owner = None
+        barrier_team = barrier.barrier_team.all()
+        if barrier_team:
+            first_barrier_owner = barrier_team[0]
+            first_name = first_barrier_owner.user.first_name
+            last_name = first_barrier_owner.user.last_name
+            barrier_owner = (
+                f"{first_name} {last_name}" if first_name and last_name else None
+            )
+
+        return barrier_owner
+
+    def get_tags(self, barrier):
+        return [tag.title for tag in barrier.tags.all()]
+
+    def get_government_organisations(self, obj):
+        return [
+            org.name
+            for org in obj.organisations.all()
+            if org.organisation_type in GOVERNMENT_ORGANISATION_TYPES
+        ]
+
+    def get_progress_update_status(self, barrier):
+        latest_progress_updates = barrier.progress_updates.all()
+        if latest_progress_updates.exists():
+            return latest_progress_updates.first().get_status_display()
+        return None
+
+    def get_progress_update_message(self, barrier):
+        latest_progress_updates = barrier.progress_updates.all()
+        if latest_progress_updates.exists():
+            return latest_progress_updates.first().update
+        return None
+
+    def get_progress_update_date(self, barrier):
+        latest_progress_updates = barrier.progress_updates.all()
+        if latest_progress_updates.exists():
+            return latest_progress_updates.first().created_on
+        return None
