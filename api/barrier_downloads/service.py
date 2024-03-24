@@ -115,7 +115,6 @@ def generate_barrier_download_file(
     queryset = (
         Barrier.objects.filter(id__in=barrier_ids)
         .select_related(
-            'priority',
             'created_by',
         )
         .prefetch_related(
@@ -153,8 +152,7 @@ def generate_barrier_download_file(
             'code',  # link
             'status',  # resolved_date
             'sub_status',  # used for status
-            'priority',
-            'priority__name',
+            'priority_level',
             "progress_updates",
             'country',  # 'overseas_region', "location"
             'trading_bloc',  # 'overseas_region', "location
