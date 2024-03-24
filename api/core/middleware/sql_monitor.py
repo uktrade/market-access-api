@@ -1,9 +1,6 @@
-import logging
 import time
 
 from django.db import connection
-
-logger = logging.getLogger(__name__)
 
 
 class SqlMonitor:
@@ -30,8 +27,8 @@ class SqlMonitorMiddleware:
         with connection.execute_wrapper(sql_monitor):
             response = self.get_response(request)
 
-        logger.info(f"sql.endpoint: {request.path}")
-        logger.info(f"sql.query_count: {sql_monitor.query_count}")
-        logger.info(f"sql.query_time: {sql_monitor.query_time}")
+        print(f"sql.endpoint: {request.path}")
+        print(f"sql.query_count: {sql_monitor.query_count}")
+        print(f"sql.query_time: {sql_monitor.query_time}")
 
         return response

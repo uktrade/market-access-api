@@ -199,10 +199,17 @@ def generate_barrier_download_file(
         )
     )
 
-    serializer = CsvDownloadSerializer(queryset, many=True)
-
     try:
+        from django.db import connection
+        import time
+        start = time.time()
+        before = len(connection.queries)
+        serializer = CsvDownloadSerializer(queryset, many=True)
         csv_bytes = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
+        after = len(connection.queries)
+        end = time.time()
+        logger.info(f'[RBSQL]: {after - before} queries run')
+        logger.info(f'[RBSQL]: {end - start}s')
     except Exception:
         # Check for generic exceptions when creating csv file
         # Async task so no need to handle gracefully
