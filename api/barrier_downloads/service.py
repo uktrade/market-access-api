@@ -17,7 +17,8 @@ from api.barrier_downloads.exceptions import (
 )
 from api.barrier_downloads.models import BarrierDownload, BarrierDownloadStatus
 from api.barrier_downloads.serializers import BarrierCsvExportSerializer, CsvDownloadSerializer
-from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent, BarrierProgressUpdate
+from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent, BarrierProgressUpdate, \
+    ProgrammeFundProgressUpdate, BarrierNextStepItem
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.models import UserActvitiyLog
@@ -125,13 +126,23 @@ def generate_barrier_download_file(
             'organisations',  # government_organisations
             Prefetch(
                 'progress_updates',
-                queryset=BarrierProgressUpdate.objects.order_by("created_on").all()
+                queryset=BarrierProgressUpdate.objects.order_by("-created_on").all()
+            ),
+            Prefetch(
+                'programme_fund_progress_updates',
+                queryset=ProgrammeFundProgressUpdate.objects.select_related('created_by').order_by("-created_on").all()
             ),
             # "progress_updates",  # latest_progress_update, progress_update_message, progress_update_next_steps
-            "programme_fund_progress_updates",  # programme_fund_progress_update_[milestones|eexpenditure|date|author
             "barrier_commodities",  # commodity_codes
             "public_barrier",
-            "economic_assessments",  # value_to_economy, valuation_assessment_rating, valuation_assessment_midpoint', valuation_assessment_explanation, commercial_value
+            "economic_assessments",
+            "valuation_assessments",
+            Prefetch(
+                "next_steps_items",
+                queryset=BarrierNextStepItem.objects.filter(
+                    status="IN_PROGRESS"
+                ).order_by("-completion_date")
+            )
         )
         .only(
             'id',
@@ -184,6 +195,7 @@ def generate_barrier_download_file(
             # 'valuation_assessment_midpoint',
             # 'valuation_assessment_explanation',
             # 'commercial_value',
+            "commercial_value"
         )
     )
 

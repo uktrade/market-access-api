@@ -588,12 +588,10 @@ class CsvDownloadSerializer(serializers.Serializer):
     code = serializers.CharField()
     title = serializers.CharField()
     summary = serializers.SerializerMethodField()
-    status_summary = serializers.SerializerMethodField()
     link = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     priority = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
-    modified_on = serializers.DateTimeField(format="%Y-%m-%d")
     location = serializers.SerializerMethodField()
     admin_areas = serializers.SerializerMethodField()
     sectors = serializers.SerializerMethodField()
@@ -602,14 +600,35 @@ class CsvDownloadSerializer(serializers.Serializer):
     reported_by = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     barrier_owner = serializers.SerializerMethodField()
+    status_date = serializers.SerializerMethodField()
+    resolved_date = serializers.SerializerMethodField()
+    status_summary = serializers.SerializerMethodField()
+    modified_on = serializers.DateTimeField(format="%Y-%m-%d", allow_null=True)
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.CharField(source='get_trade_direction_display')
     is_resolved_top_priority = serializers.SerializerMethodField()
     government_organisations = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
     progress_update_message = serializers.SerializerMethodField()
-    progress_update_date = serializers.SerializerMethodField()
-
+    progress_update_next_steps = serializers.SerializerMethodField()
+    next_steps_items = serializers.SerializerMethodField()
+    programme_fund_progress_update_milestones = serializers.SerializerMethodField()
+    programme_fund_progress_update_expenditure = serializers.SerializerMethodField()
+    programme_fund_progress_update_date = serializers.SerializerMethodField()
+    programme_fund_progress_update_author = serializers.SerializerMethodField()
+    estimated_resolution_date = serializers.DateField(format="%b-%y")
+    proposed_estimated_resolution_date = serializers.SerializerMethodField()
+    commodity_codes = serializers.SerializerMethodField()
+    public_view_status = serializers.SerializerMethodField()
+    changed_since_published = serializers.SerializerMethodField()
+    public_title = serializers.CharField(source="public_barrier.title")
+    public_summary = serializers.CharField(source="public_barrier.summary")
+    # economic_assessment_rating = serializers.SerializerMethodField()
+    # value_to_economy = serializers.SerializerMethodField()
+    # valuation_assessment_rating = serializers.SerializerMethodField()
+    # valuation_assessment_midpoint = serializers.SerializerMethodField()
+    # valuation_assessment_explanation = serializers.SerializerMethodField()
+    commercial_value = serializers.IntegerField()
 
     def get_is_resolved_top_priority(self, obj):
         return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
@@ -733,8 +752,104 @@ class CsvDownloadSerializer(serializers.Serializer):
             return latest_progress_updates.first().update
         return None
 
-    def get_progress_update_date(self, barrier):
+    def get_progress_update_next_steps(self, barrier):
         latest_progress_updates = barrier.progress_updates.all()
         if latest_progress_updates.exists():
-            return latest_progress_updates.first().created_on
-        return None
+            return latest_progress_updates.first().next_steps
+
+    def get_next_steps_items(self, barrier):
+        item_summary = []
+        for item in barrier.next_steps_items.all():
+            # Add item to list if still pending
+            item_summary.append(
+                f"{item.completion_date.strftime('%b %Y')}: {item.next_step_owner}, {item.next_step_item}"
+            )
+        if not item_summary:
+            return
+
+        return "\u2022\u00A0" + "\n\u2022\u00A0".join(item_summary)
+
+    def get_resolved_date(self, barrier):
+        if barrier.status_date and (barrier.status == 4 or barrier.status == 3):
+            return barrier.status_date.strftime("%Y-%m-%d")
+
+    def get_status_date(self, barrier):
+        if barrier.status_date:
+            return barrier.status_date.strftime("%Y-%m-%d")
+
+    def get_programme_fund_progress_update_milestones(self, barrier):
+        qs = barrier.programme_fund_progress_updates.all()
+        if qs.exists():
+            return qs.first().milestones_and_deliverables
+
+    def get_programme_fund_progress_update_expenditure(self, barrier):
+        qs = barrier.programme_fund_progress_updates.all()
+        if qs.exists():
+            return qs.first().expenditure
+
+    def get_programme_fund_progress_update_date(self, barrier):
+        qs = barrier.programme_fund_progress_updates.all()
+        if qs.exists():
+            return qs.first().created_on.strftime("%Y-%m-%d")
+
+    def get_programme_fund_progress_update_author(self, barrier):
+        qs = barrier.programme_fund_progress_updates.all()
+        if qs.exists():
+            first_name = qs.first().created_by.first_name
+            last_name = qs.first().created_by.last_name
+            return f"{first_name} {last_name}" if first_name and last_name else None
+
+    def get_proposed_estimated_resolution_date(self, barrier):
+        # only show the proposed date if it is different to the current date
+        if not barrier.proposed_estimated_resolution_date:
+            return None
+
+        # compare to estimated_resolution_date
+        if barrier.proposed_estimated_resolution_date == barrier.estimated_resolution_date:
+            return None
+
+        return barrier.proposed_estimated_resolution_date.strftime("%b-%y")
+
+    def get_commodity_codes(self, barrier):
+        return "; ".join(
+            [
+                str(barrier_commodity.simple_formatted_code)
+                for barrier_commodity in barrier.barrier_commodities.all()
+            ]
+        ) + ";"
+
+    def get_public_view_status(self, barrier):
+        if barrier.has_public_barrier:
+            return barrier.public_barrier.get__public_view_status_display()
+        return PublicBarrierStatus.choices[PublicBarrierStatus.UNKNOWN]
+
+    def get_changed_since_published(self, barrier):
+        if barrier.has_public_barrier and barrier.public_barrier.is_currently_published:
+            if barrier.public_barrier.changed_since_published:
+                return "Yes"
+            return "No"
+
+    def get_economic_assessment_rating(self, barrier):
+        assessment = barrier.current_economic_assessment
+        if assessment:
+            return assessment.get_rating_display()
+
+    def get_value_to_economy(self, barrier):
+        assessment = barrier.current_economic_assessment
+        if assessment:
+            return assessment.export_potential.get("uk_exports_affected")
+
+    def get_valuation_assessment_midpoint(self, barrier):
+        latest_valuation_assessment = barrier.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.midpoint
+
+    def get_valuation_assessment_rating(self, barrier):
+        latest_valuation_assessment = barrier.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.rating
+
+    def get_valuation_assessment_explanation(self, barrier):
+        latest_valuation_assessment = barrier.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.explanation
