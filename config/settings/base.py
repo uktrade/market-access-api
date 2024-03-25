@@ -13,7 +13,7 @@ from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
-from api.core.utils import is_copilot, database_url_from_env
+from api.core.utils import database_url_from_env, is_copilot
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = Path(__file__).parents[2]
@@ -148,7 +148,11 @@ if SENTRY_DSN:
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 if is_copilot():
-    DATABASES = {'default': dj_database_url.config(default=database_url_from_env("DATABASE_ENV_VAR_KEY"))}
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=database_url_from_env("DATABASE_ENV_VAR_KEY")
+        )
+    }
 else:
     DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
 
