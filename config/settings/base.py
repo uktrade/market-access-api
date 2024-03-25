@@ -13,6 +13,8 @@ from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
+from api.core.utils import is_copilot, database_url_from_env
+
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = Path(__file__).parents[2]
 
@@ -145,7 +147,10 @@ if SENTRY_DSN:
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
+if is_copilot():
+    DATABASES = {'default': dj_database_url.config(default=database_url_from_env("DATABASE_ENV_VAR_KEY"))}
+else:
+    DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
 
 HASHID_FIELD_SALT = env("DJANGO_HASHID_FIELD_SALT")
 HASHID_FIELD_ALLOW_INT_LOOKUP = False
