@@ -554,7 +554,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
                 "change_barrier_public_eligibility",
                 "Can change barrier public eligibility",
             ),
-            ("download_barriers", "Can download barriers"),
         ]
 
     @classmethod
