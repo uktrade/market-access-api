@@ -7,14 +7,13 @@ import dj_database_url
 import environ
 import sentry_sdk
 from celery.schedules import crontab
+from dbt_copilot_python.database import database_url_from_env
+from dbt_copilot_python.utility import is_copilot
 from django.core.exceptions import ImproperlyConfigured
-from django_log_formatter_ecs import ECSFormatter
+from django_log_formatter_asim import ASIMFormatter
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
-from django_log_formatter_asim import ASIMFormatter
-
-from api.core.utils import database_url_from_env, is_copilot
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = Path(__file__).parents[2]

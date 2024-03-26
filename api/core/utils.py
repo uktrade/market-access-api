@@ -1,32 +1,10 @@
-import json
 import operator
-import os
 
 import boto3
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
 
 from api.core.exceptions import S3UploadException
-
-
-def is_copilot():
-    # TODO: Deprecate when python version 3.9 and we can use the copilot lib
-    return "COPILOT_ENVIRONMENT_NAME" in os.environ
-
-
-def database_url_from_env(environment_key):
-    # TODO: Deprecate when python version 3.9 and we can use the copilot lib
-    """
-    Set up the default database URL from a Copilot database environment
-    variable.
-
-    Usage in settings.py:
-
-    DATABASES = { 'default': dj_database_url.config(default=database_url_from_env("MY_DATABASE")) }
-    """
-    config = json.loads(os.environ[environment_key])
-
-    return "{engine}://{username}:{password}@{host}:{port}/{dbname}".format(**config)
 
 
 def is_not_blank(s):
