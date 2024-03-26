@@ -2,6 +2,7 @@ import operator
 
 import boto3
 from botocore.exceptions import NoCredentialsError
+from dbt_copilot_python.utility import is_copilot
 from django.conf import settings
 
 from api.core.exceptions import S3UploadException
