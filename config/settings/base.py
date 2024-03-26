@@ -12,6 +12,7 @@ from django_log_formatter_ecs import ECSFormatter
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
+from django_log_formatter_asim import ASIMFormatter
 
 from api.core.utils import database_url_from_env, is_copilot
 
@@ -356,8 +357,8 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "ecs_formatter": {
-            "()": ECSFormatter,
+        "asim_formatter": {
+            "()": ASIMFormatter,
         },
         "simple": {
             "format": "{asctime} {levelname} {message}",
@@ -365,10 +366,10 @@ LOGGING = {
         },
     },
     "handlers": {
-        "ecs": {
+        "asim": {
             "class": "logging.StreamHandler",
             "stream": sys.stdout,  # noqa F405
-            "formatter": "ecs_formatter",
+            "formatter": "asim_formatter",
         },
         "stdout": {
             "class": "logging.StreamHandler",
@@ -377,27 +378,31 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ENABLED_HANDLERS,
+        "handlers": ["asim"],
         "level": os.getenv("ROOT_LOG_LEVEL", "INFO"),  # noqa F405
     },
     "loggers": {
         "django": {
-            "handlers": ENABLED_HANDLERS,
+            "handlers": ["asim"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa F405
             "propagate": False,
         },
         "django.server": {
-            "handlers": ENABLED_HANDLERS,
+            "handlers": ["asim"],
             "level": os.getenv("DJANGO_SERVER_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ENABLED_HANDLERS,
+            "handlers": ["asim"],
             "level": os.getenv("DJANGO_DB_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
     },
 }
+
+# Django Log Formatter ASIM settings
+if is_copilot():
+    DLFA_TRACE_HEADERS = ("X-B3-TraceId", "X-B3-SpanId")
 
 CELERY_BEAT_SCHEDULE = {}
 
