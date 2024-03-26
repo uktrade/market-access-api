@@ -15,6 +15,8 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from django_log_formatter_asim import ASIMFormatter
 
 
+from api.core.utils import database_url_from_env, is_copilot
+
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = Path(__file__).parents[2]
 
@@ -147,7 +149,14 @@ if SENTRY_DSN:
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
+if is_copilot():
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=database_url_from_env("DATABASE_ENV_VAR_KEY")
+        )
+    }
+else:
+    DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
 
 HASHID_FIELD_SALT = env("DJANGO_HASHID_FIELD_SALT")
 HASHID_FIELD_ALLOW_INT_LOOKUP = False
