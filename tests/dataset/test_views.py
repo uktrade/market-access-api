@@ -2,7 +2,6 @@ from datetime import datetime
 
 import freezegun
 import time_machine
-from django.contrib.auth.models import Permission
 from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -214,8 +213,6 @@ class TestUserActivityLogDataset(APITestMixin):
     def test_logs(self):
         # perform user login
         assert datetime.now() == datetime(2022, 10, 15, 12, 0, 1)
-        csv_downd_permission_codename = "download_barriers"
-        permission = Permission.objects.get(codename=csv_downd_permission_codename)
         user = create_test_user(sso_user_id=self.sso_creator["user_id"])
         user.is_superuser = True
         user.is_enabled = True
@@ -227,8 +224,6 @@ class TestUserActivityLogDataset(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 0
 
-        # user = create_test_user(sso_user_id=self.sso_creator["user_id"])
-        # client = Client()
         self.api_client.force_login(user)
 
         response = self.api_client.get(url)
