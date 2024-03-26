@@ -1,6 +1,5 @@
 from logging import getLogger
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
@@ -28,7 +27,6 @@ class WhoAmISerializer(serializers.ModelSerializer):
     user_profile = serializers.SerializerMethodField()
     permitted_applications = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
-    has_approved_digital_trade_email = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
@@ -43,7 +41,6 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "internal",
             "user_profile",
             "permitted_applications",
-            "has_approved_digital_trade_email",
             "permissions",
             "is_active",
             "is_superuser",
@@ -108,10 +105,6 @@ class WhoAmISerializer(serializers.ModelSerializer):
         if sso_me is not None:
             return sso_me.get("permitted_applications", None)
         return None
-
-    def get_has_approved_digital_trade_email(self, obj):
-        email_domain = obj.email.split("@")[-1].lower()
-        return email_domain in settings.APPROVED_DIGITAL_TRADE_EMAIL_DOMAINS
 
     def get_permissions(self, obj):
         return (

@@ -51,7 +51,7 @@ To list all available commands with help text type `make help` in terminal and h
 
 Dependencies:
 
--   Python 3.8
+-   Python 3.9
 -   PostgreSQL 10
 -   redis 3.2
 
@@ -62,14 +62,14 @@ Dependencies:
     cd market-access-api
     ```
 
-2.  Install Python 3.8
+2.  Install Python 3.9
 
     [See this guide](https://docs.python-guide.org/starting/installation/) for detailed instructions for different platforms.
 
 3.  Create and activate the virtualenv:
 
     ```shell
-    python3.8 -m venv env
+    python3.9 -m venv env
     source env/bin/activate
     pip install -U pip
     ```
