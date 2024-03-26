@@ -16,9 +16,14 @@ from api.barrier_downloads.exceptions import (
     BarrierDownloadNotificationError,
 )
 from api.barrier_downloads.models import BarrierDownload, BarrierDownloadStatus
-from api.barrier_downloads.serializers import BarrierCsvExportSerializer, CsvDownloadSerializer
-from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent, BarrierProgressUpdate, \
-    ProgrammeFundProgressUpdate, BarrierNextStepItem
+from api.barrier_downloads.serializers import CsvDownloadSerializer
+from api.barriers.models import (
+    Barrier,
+    BarrierSearchCSVDownloadEvent,
+    BarrierProgressUpdate,
+    ProgrammeFundProgressUpdate,
+    BarrierNextStepItem
+)
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.models import UserActvitiyLog
@@ -89,29 +94,6 @@ def generate_barrier_download_file(
 
     barrier_download.processing()
 
-    # queryset = (
-    #     Barrier.objects.filter(id__in=barrier_ids)
-    #     .select_related(
-    #         "priority",
-    #         "public_barrier",
-    #     )
-    #     .prefetch_related(
-    #         "barrier_commodities",
-    #         "categories",
-    #         "economic_assessments",
-    #         "organisations",
-    #         "tags",
-    #         "barrier_team",
-    #         "progress_updates",
-    #         "programme_fund_progress_updates",
-    #         "resolvability_assessments",
-    #         "strategic_assessments",
-    #         "valuation_assessments",
-    #         "economic_assessments",
-    #         "next_steps_items",
-    #     )
-    # )
-
     queryset = (
         Barrier.objects.filter(id__in=barrier_ids)
         .select_related(
@@ -120,9 +102,9 @@ def generate_barrier_download_file(
         .prefetch_related(
             'tags',
             'categories',
-            'barrier_team',  # barrier_owner
-            'barrier_team__user',  # barrier_owner
-            'organisations',  # government_organisations
+            'barrier_team',
+            'barrier_team__user',
+            'organisations',
             Prefetch(
                 'progress_updates',
                 queryset=BarrierProgressUpdate.objects.order_by("-created_on").all()
@@ -131,8 +113,7 @@ def generate_barrier_download_file(
                 'programme_fund_progress_updates',
                 queryset=ProgrammeFundProgressUpdate.objects.select_related('created_by').order_by("-created_on").all()
             ),
-            # "progress_updates",  # latest_progress_update, progress_update_message, progress_update_next_steps
-            "barrier_commodities",  # commodity_codes
+            "barrier_commodities",
             "public_barrier",
             "economic_assessments",
             "valuation_assessments",
@@ -147,52 +128,35 @@ def generate_barrier_download_file(
             'id',
             'code',
             'title',
-            'is_summary_sensitive',  # used for summary
+            'is_summary_sensitive',
             'summary',
-            'code',  # link
-            'status',  # resolved_date
-            'sub_status',  # used for status
+            'code',
+            'status',
+            'sub_status',
             'priority_level',
             "progress_updates",
-            'country',  # 'overseas_region', "location"
-            'trading_bloc',  # 'overseas_region', "location
+            'country',
+            'trading_bloc',
             'admin_areas',
             'sectors',
             'sectors_affected',
             'all_sectors',
             'product',
             'created_by',
-            # 'created_by__first_name',  # reported_by
-            # 'created_by__last_name',  # reported_by
             'reported_on',
-            # 'barrier_owner',  prefetch_related
-            'status_date',  # resolved_date
+            'status_date',
             'status_summary',
             'modified_on',
             'tags',
             'trade_direction',
-            'top_priority_status',  # 'is_resolved_top_priority',
-            # 'government_organisations',
-            # 'progress_update_message',
-            # 'progress_update_next_steps',
+            'top_priority_status',
             'next_steps_items',
-            # 'programme_fund_progress_update_milestones',
-            # 'programme_fund_progress_update_expenditure',
-            # 'programme_fund_progress_update_date',
-            # 'programme_fund_progress_update_author',
             'estimated_resolution_date',
             'proposed_estimated_resolution_date',
-            # 'commodity_codes',
-            "public_barrier___public_view_status",  # 'public_view_status',
+            "public_barrier___public_view_status",
             'public_barrier__changed_since_published',
             'public_barrier___title',
             'public_barrier___summary',
-            # 'economic_assessment_rating',  # TODO
-            # 'value_to_economy',
-            # 'valuation_assessment_rating',
-            # 'valuation_assessment_midpoint',
-            # 'valuation_assessment_explanation',
-            # 'commercial_value',
             "commercial_value"
         )
     )

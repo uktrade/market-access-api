@@ -7,7 +7,7 @@ from notifications_python_client import NotificationsAPIClient
 from api.barrier_downloads import service
 from api.barrier_downloads.exceptions import BarrierDownloadNotificationError
 from api.barrier_downloads.models import BarrierDownload, BarrierDownloadStatus
-from api.barrier_downloads.serializers import BarrierCsvExportSerializer
+from api.barrier_downloads.serializers import CsvDownloadSerializer
 from api.barriers.models import Barrier
 from tests.barriers.factories import BarrierFactory
 
@@ -25,7 +25,7 @@ def test_serializer_to_csv_bytes():
         "title": "Title",
         "status": "Status",
     }
-    serializer = BarrierCsvExportSerializer(queryset, many=True)
+    serializer = CsvDownloadSerializer(queryset, many=True)
 
     content = service.serializer_to_csv_bytes(
         serializer=serializer, field_names=field_names
