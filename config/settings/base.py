@@ -11,6 +11,7 @@ from dbt_copilot_python.database import database_url_from_env
 from dbt_copilot_python.utility import is_copilot
 from django.core.exceptions import ImproperlyConfigured
 from django_log_formatter_asim import ASIMFormatter
+from django_log_formatter_ecs import ECSFormatter
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
@@ -356,20 +357,12 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "asim_formatter": {
-            "()": ASIMFormatter,
-        },
         "simple": {
             "format": "{asctime} {levelname} {message}",
             "style": "{",
         },
     },
     "handlers": {
-        "asim": {
-            "class": "logging.StreamHandler",
-            "stream": sys.stdout,  # noqa F405
-            "formatter": "asim_formatter",
-        },
         "stdout": {
             "class": "logging.StreamHandler",
             "stream": sys.stdout,  # noqa F405
@@ -377,27 +370,47 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ["asim"],
         "level": os.getenv("ROOT_LOG_LEVEL", "INFO"),  # noqa F405
     },
     "loggers": {
         "django": {
-            "handlers": ["asim"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa F405
             "propagate": False,
         },
         "django.server": {
-            "handlers": ["asim"],
             "level": os.getenv("DJANGO_SERVER_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ["asim"],
             "level": os.getenv("DJANGO_DB_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
     },
 }
+
+# Switch logging based on gov paas vs dbt platform.
+if is_copilot():
+    LOGGING['formatters']['asim_formatter'] = {"()": ASIMFormatter}
+    LOGGING['handlers']['asim'] = {
+        "class": "logging.StreamHandler",
+        "stream": sys.stdout,  # noqa F405
+        "formatter": "asim_formatter",
+    }
+    LOGGING['root'] = {"handlers": ["asim"]}
+    LOGGING['loggers']['django']['handlers'] = ["asim"]
+    LOGGING['loggers']['django.server']['handlers'] = ["asim"]
+    LOGGING['loggers']['django.db.backends']['handlers'] = ["asim"]
+else:
+    LOGGING['formatters']['ecs_formatter'] = {"()": ECSFormatter}
+    LOGGING['handlers']['ecs'] = {
+        "class": "logging.StreamHandler",
+        "stream": sys.stdout,  # noqa F405
+        "formatter": "ecs_formatter",
+    }
+    LOGGING['root'] = {"handlers": ENABLED_HANDLERS}
+    LOGGING['loggers']['django']['handlers'] = ENABLED_HANDLERS
+    LOGGING['loggers']['django.server']['handlers'] = ENABLED_HANDLERS
+    LOGGING['loggers']['django.db.backends']['handlers'] = ENABLED_HANDLERS
 
 # Django Log Formatter ASIM settings
 if is_copilot():
