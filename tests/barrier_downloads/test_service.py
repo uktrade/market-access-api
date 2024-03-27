@@ -82,7 +82,6 @@ def test_generate_barrier_download_file_exception_handled(mock_csv_bytes, user):
         filters={},
         filename="test_file.csv",
     )
-    mock_csv_bytes.return_value = b"test"
 
     with pytest.raises(Exception) as exc:
         service.generate_barrier_download_file(

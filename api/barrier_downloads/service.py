@@ -4,7 +4,7 @@ import logging
 from typing import List
 
 from django.conf import settings
-from django.db.models import Prefetch
+from django.db.models import Prefetch, QuerySet
 from django.utils.timezone import now
 from notifications_python_client import NotificationsAPIClient
 
@@ -73,28 +73,15 @@ def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDo
     # Make celery call don't wait for return
     # from api.barrier_downloads.tasks import generate_s3_and_send_email
     tasks.generate_barrier_download_file.delay(
-        barrier_download.id,
-        barrier_ids,
+        barrier_download_id=barrier_download.id,
+        barrier_ids=barrier_ids,
     )
 
     return barrier_download
 
 
-def generate_barrier_download_file(
-    barrier_download_id: str,
-    barrier_ids: List[str],
-) -> None:
-    logger.info(f"Generating file for BarrierDownload: {barrier_download_id}")
-    try:
-        barrier_download = BarrierDownload.objects.select_related("created_by").get(
-            id=barrier_download_id
-        )
-    except BarrierDownload.DoesNotExist:
-        raise BarrierDownloadDoesNotExist(barrier_download_id)
-
-    barrier_download.processing()
-
-    queryset = (
+def get_queryset(barrier_ids: List[str]) -> QuerySet:
+    return (
         Barrier.objects.filter(id__in=barrier_ids)
         .select_related(
             'created_by',
@@ -161,24 +148,33 @@ def generate_barrier_download_file(
         )
     )
 
+
+def generate_barrier_download_file(
+    barrier_download_id: str,
+    barrier_ids: List[str],
+) -> None:
+    logger.info(f"Generating file for BarrierDownload: {barrier_download_id}")
     try:
-        from django.db import connection
-        import time
-        start = time.time()
-        before = len(connection.queries)
-        serializer = CsvDownloadSerializer(queryset, many=True)
+        barrier_download = BarrierDownload.objects.select_related("created_by").get(
+            id=barrier_download_id
+        )
+    except BarrierDownload.DoesNotExist:
+        raise BarrierDownloadDoesNotExist(barrier_download_id)
+
+    barrier_download.processing()
+
+    qs = get_queryset(barrier_ids)
+    serializer = CsvDownloadSerializer(qs, many=True)
+
+    try:
         csv_bytes = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
-        after = len(connection.queries)
-        end = time.time()
-        logger.info(f'[RBSQL]: {after - before} queries run')
-        logger.info(f'[RBSQL]: {end - start}s')
     except Exception:
         # Check for generic exceptions when creating csv file
         # Async task so no need to handle gracefully
         # Log error stack.
         logger.exception("Failed to create CSV")
         barrier_download.fail()
-        return
+        raise
 
     s3_client, bucket = get_s3_client_and_bucket_name()
 
