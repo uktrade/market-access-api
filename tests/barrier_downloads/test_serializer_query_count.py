@@ -16,12 +16,6 @@ from tests.barriers.factories import BarrierFactory, CommodityFactory
 from tests.history.factories import ProgrammeFundProgressUpdateFactory
 from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 
-"""
-NOTES:
-
-WHy have sectors_affected: bool + sectors: Array in DB? redundant field
-"""
-
 pytestmark = [pytest.mark.django_db]
 
 
