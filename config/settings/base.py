@@ -390,27 +390,27 @@ LOGGING = {
 
 # Switch logging based on gov paas vs dbt platform.
 if is_copilot():
-    LOGGING['formatters']['asim_formatter'] = {"()": ASIMFormatter}
-    LOGGING['handlers']['asim'] = {
+    LOGGING["formatters"]["asim_formatter"] = {"()": ASIMFormatter}
+    LOGGING["handlers"]["asim"] = {
         "class": "logging.StreamHandler",
         "stream": sys.stdout,  # noqa F405
         "formatter": "asim_formatter",
     }
-    LOGGING['root'] = {"handlers": ["asim"]}
-    LOGGING['loggers']['django']['handlers'] = ["asim"]
-    LOGGING['loggers']['django.server']['handlers'] = ["asim"]
-    LOGGING['loggers']['django.db.backends']['handlers'] = ["asim"]
+    LOGGING["root"] = {"handlers": ["asim"]}
+    LOGGING["loggers"]["django"]["handlers"] = ["asim"]
+    LOGGING["loggers"]["django.server"]["handlers"] = ["asim"]
+    LOGGING["loggers"]["django.db.backends"]["handlers"] = ["asim"]
 else:
-    LOGGING['formatters']['ecs_formatter'] = {"()": ECSFormatter}
-    LOGGING['handlers']['ecs'] = {
+    LOGGING["formatters"]["ecs_formatter"] = {"()": ECSFormatter}
+    LOGGING["handlers"]["ecs"] = {
         "class": "logging.StreamHandler",
         "stream": sys.stdout,  # noqa F405
         "formatter": "ecs_formatter",
     }
-    LOGGING['root'] = {"handlers": ENABLED_HANDLERS}
-    LOGGING['loggers']['django']['handlers'] = ENABLED_HANDLERS
-    LOGGING['loggers']['django.server']['handlers'] = ENABLED_HANDLERS
-    LOGGING['loggers']['django.db.backends']['handlers'] = ENABLED_HANDLERS
+    LOGGING["root"] = {"handlers": ENABLED_HANDLERS}
+    LOGGING["loggers"]["django"]["handlers"] = ENABLED_HANDLERS
+    LOGGING["loggers"]["django.server"]["handlers"] = ENABLED_HANDLERS
+    LOGGING["loggers"]["django.db.backends"]["handlers"] = ENABLED_HANDLERS
 
 # Django Log Formatter ASIM settings
 if is_copilot():
