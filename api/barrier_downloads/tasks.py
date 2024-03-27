@@ -13,8 +13,10 @@ def generate_barrier_download_file(
     barrier_download_id: str,
     barrier_ids: List[str],
 ):
-    from django.db import connection
     import time
+
+    from django.db import connection
+
     start = time.time()
     before = len(connection.queries)
     service.generate_barrier_download_file(
@@ -23,8 +25,8 @@ def generate_barrier_download_file(
     )
     after = len(connection.queries)
     end = time.time()
-    logger.info(f'[RBSQL]: {after - before} queries run')
-    logger.info(f'[RBSQL]: {end - start}s')
+    logger.info(f"[RBSQL]: {after - before} queries run")
+    logger.info(f"[RBSQL]: {end - start}s")
 
 
 @shared_task

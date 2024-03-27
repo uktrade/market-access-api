@@ -23,9 +23,7 @@ from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
 )
 from api.metadata.models import Organisation
-from tests.assessment.factories import (
-    EconomicImpactAssessmentFactory,
-)
+from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
 

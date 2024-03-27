@@ -19,10 +19,10 @@ from api.barrier_downloads.models import BarrierDownload, BarrierDownloadStatus
 from api.barrier_downloads.serializers import CsvDownloadSerializer
 from api.barriers.models import (
     Barrier,
-    BarrierSearchCSVDownloadEvent,
+    BarrierNextStepItem,
     BarrierProgressUpdate,
+    BarrierSearchCSVDownloadEvent,
     ProgrammeFundProgressUpdate,
-    BarrierNextStepItem
 )
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
@@ -84,21 +84,25 @@ def get_queryset(barrier_ids: List[str]) -> QuerySet:
     return (
         Barrier.objects.filter(id__in=barrier_ids)
         .select_related(
-            'created_by',
+            "created_by",
         )
         .prefetch_related(
-            'tags',
-            'categories',
-            'barrier_team',
-            'barrier_team__user',
-            'organisations',
+            "tags",
+            "categories",
+            "barrier_team",
+            "barrier_team__user",
+            "organisations",
             Prefetch(
-                'progress_updates',
-                queryset=BarrierProgressUpdate.objects.order_by("-created_on").all()
+                "progress_updates",
+                queryset=BarrierProgressUpdate.objects.order_by("-created_on").all(),
             ),
             Prefetch(
-                'programme_fund_progress_updates',
-                queryset=ProgrammeFundProgressUpdate.objects.select_related('created_by').order_by("-created_on").all()
+                "programme_fund_progress_updates",
+                queryset=ProgrammeFundProgressUpdate.objects.select_related(
+                    "created_by"
+                )
+                .order_by("-created_on")
+                .all(),
             ),
             "barrier_commodities",
             "public_barrier",
@@ -108,43 +112,43 @@ def get_queryset(barrier_ids: List[str]) -> QuerySet:
                 "next_steps_items",
                 queryset=BarrierNextStepItem.objects.filter(
                     status="IN_PROGRESS"
-                ).order_by("-completion_date")
-            )
+                ).order_by("-completion_date"),
+            ),
         )
         .only(
-            'id',
-            'code',
-            'title',
-            'is_summary_sensitive',
-            'summary',
-            'code',
-            'status',
-            'sub_status',
-            'priority_level',
+            "id",
+            "code",
+            "title",
+            "is_summary_sensitive",
+            "summary",
+            "code",
+            "status",
+            "sub_status",
+            "priority_level",
             "progress_updates",
-            'country',
-            'trading_bloc',
-            'admin_areas',
-            'sectors',
-            'sectors_affected',
-            'all_sectors',
-            'product',
-            'created_by',
-            'reported_on',
-            'status_date',
-            'status_summary',
-            'modified_on',
-            'tags',
-            'trade_direction',
-            'top_priority_status',
-            'next_steps_items',
-            'estimated_resolution_date',
-            'proposed_estimated_resolution_date',
+            "country",
+            "trading_bloc",
+            "admin_areas",
+            "sectors",
+            "sectors_affected",
+            "all_sectors",
+            "product",
+            "created_by",
+            "reported_on",
+            "status_date",
+            "status_summary",
+            "modified_on",
+            "tags",
+            "trade_direction",
+            "top_priority_status",
+            "next_steps_items",
+            "estimated_resolution_date",
+            "proposed_estimated_resolution_date",
             "public_barrier___public_view_status",
-            'public_barrier__changed_since_published',
-            'public_barrier___title',
-            'public_barrier___summary',
-            "commercial_value"
+            "public_barrier__changed_since_published",
+            "public_barrier___title",
+            "public_barrier___summary",
+            "commercial_value",
         )
     )
 

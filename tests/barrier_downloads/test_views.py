@@ -37,7 +37,9 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
     @patch("api.barrier_downloads.service.get_s3_client_and_bucket_name")
     @patch("api.barrier_downloads.service.serializer_to_csv_bytes")
     @patch("api.barrier_downloads.tasks.barrier_download_complete_notification")
-    def test_barrier_download_post_endpoint_success(self, mock_notify, mock_csv_bytes, mock_s3):
+    def test_barrier_download_post_endpoint_success(
+        self, mock_notify, mock_csv_bytes, mock_s3
+    ):
         assert BarrierDownload.objects.count() == 0
 
         barrier = BarrierFactory()
@@ -71,8 +73,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_201_CREATED
         assert barrier_download.filters == {"text": barrier.title}
         mock_generate.delay.assert_called_once_with(
-            barrier_download_id=barrier_download.id,
-            barrier_ids=[str(barrier.id)]
+            barrier_download_id=barrier_download.id, barrier_ids=[str(barrier.id)]
         )
 
     @mock.patch("api.barrier_downloads.views.service")

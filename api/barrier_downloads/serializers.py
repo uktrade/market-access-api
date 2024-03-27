@@ -58,7 +58,7 @@ class CsvDownloadSerializer(serializers.Serializer):
     status_summary = serializers.SerializerMethodField()
     modified_on = serializers.DateTimeField(format="%Y-%m-%d", allow_null=True)
     tags = serializers.SerializerMethodField()
-    trade_direction = serializers.CharField(source='get_trade_direction_display')
+    trade_direction = serializers.CharField(source="get_trade_direction_display")
     is_resolved_top_priority = serializers.SerializerMethodField()
     government_organisations = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
@@ -137,13 +137,15 @@ class CsvDownloadSerializer(serializers.Serializer):
 
     def get_summary(self, barrier):
         return (
-            barrier.summary if not barrier.is_summary_sensitive
+            barrier.summary
+            if not barrier.is_summary_sensitive
             else "OFFICIAL-SENSITIVE (see it on DMAS)"
         )
 
     def get_status_summary(self, barrier):
         return (
-            barrier.status_summary if not barrier.is_summary_sensitive
+            barrier.status_summary
+            if not barrier.is_summary_sensitive
             else "OFFICIAL-SENSITIVE (see it on DMAS)"
         )
 
@@ -254,18 +256,24 @@ class CsvDownloadSerializer(serializers.Serializer):
             return None
 
         # compare to estimated_resolution_date
-        if barrier.proposed_estimated_resolution_date == barrier.estimated_resolution_date:
+        if (
+            barrier.proposed_estimated_resolution_date
+            == barrier.estimated_resolution_date
+        ):
             return None
 
         return barrier.proposed_estimated_resolution_date.strftime("%b-%y")
 
     def get_commodity_codes(self, barrier):
-        return "; ".join(
-            [
-                str(barrier_commodity.simple_formatted_code)
-                for barrier_commodity in barrier.barrier_commodities.all()
-            ]
-        ) + ";"
+        return (
+            "; ".join(
+                [
+                    str(barrier_commodity.simple_formatted_code)
+                    for barrier_commodity in barrier.barrier_commodities.all()
+                ]
+            )
+            + ";"
+        )
 
     def get_public_view_status(self, barrier):
         if barrier.has_public_barrier:

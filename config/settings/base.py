@@ -112,7 +112,6 @@ MIDDLEWARE = [
     "api.core.middleware.sentry.SentryUserContextMiddleware",
     "api.core.middleware.policy_headers.DisableClientCachingMiddleware",
     "api.core.middleware.policy_headers.SetPermittedCrossDomainPolicyHeaderMiddleware",
-    "api.core.middleware.sql_monitor.SqlMonitorMiddleware"
 ]
 
 ROOT_URLCONF = "config.urls"
