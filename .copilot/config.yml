@@ -1,4 +1,4 @@
 repository: dmas/dmas-backend
 builder:
   name: paketobuildpacks/builder-jammy-full
-  version: 0.4.240
+  version: 0.3.339
