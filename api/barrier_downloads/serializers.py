@@ -170,14 +170,15 @@ class CsvDownloadSerializer(serializers.Serializer):
 
     def get_barrier_owner(self, barrier):
         barrier_owner = None
-        barrier_team = barrier.barrier_team.all()
-        if barrier_team:
-            first_barrier_owner = barrier_team[0]
-            first_name = first_barrier_owner.user.first_name
-            last_name = first_barrier_owner.user.last_name
-            barrier_owner = (
-                f"{first_name} {last_name}" if first_name and last_name else None
-            )
+
+        if hasattr(barrier, "barrier_team"):
+            owner = barrier.barrier_team.filter(role="Owner").first()
+            if owner:
+                first_name = getattr(owner.user, "first_name", None)
+                last_name = getattr(owner.user, "last_name", None)
+                barrier_owner = (
+                    f"{first_name} {last_name}" if first_name and last_name else None
+                )
 
         return barrier_owner
 
@@ -246,8 +247,9 @@ class CsvDownloadSerializer(serializers.Serializer):
     def get_programme_fund_progress_update_author(self, barrier):
         qs = barrier.programme_fund_progress_updates.all()
         if qs.exists():
-            first_name = qs.first().created_by.first_name
-            last_name = qs.first().created_by.last_name
+            author = qs.first().created_by
+            first_name = getattr(author, "first_name", None)
+            last_name = getattr(author, "last_name", None)
             return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_proposed_estimated_resolution_date(self, barrier):
