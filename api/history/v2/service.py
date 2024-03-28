@@ -38,6 +38,7 @@ from typing import Dict, List, Tuple, Union
 
 from django.db.models import QuerySet
 
+from api.core.utils import pretty_sso_name
 from api.history.v2.enrichment import (
     enrich_action_plan,
     enrich_action_plan_task,
@@ -238,7 +239,7 @@ def get_model_history(  # noqa: C901
                             ).replace("_cache", ""),
                             "user": {
                                 "id": item["history_user__id"],
-                                "name": item["history_user__username"],
+                                "name": pretty_sso_name(item["history_user__username"]),
                             }
                             if item["history_user__id"]
                             else None,

@@ -17,6 +17,14 @@ def pretty_name(name):
     return name
 
 
+def pretty_sso_name(sso_username):
+    if is_not_blank(sso_username):
+        sso_name_and_id = sso_username.split("@")[0]
+        sso_name = sso_name_and_id.split("-")[0]
+        return " ".join(map(str, [x.capitalize() for x in sso_name.split(".")]))
+    return sso_username
+
+
 def cleansed_username(user):
     if user is not None:
         if is_not_blank(user.first_name) and is_not_blank(user.last_name):

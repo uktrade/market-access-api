@@ -4,6 +4,7 @@ import logging
 from typing import List
 
 from django.conf import settings
+from django.db.models import Prefetch, QuerySet
 from django.utils.timezone import now
 from notifications_python_client import NotificationsAPIClient
 
@@ -15,8 +16,14 @@ from api.barrier_downloads.exceptions import (
     BarrierDownloadNotificationError,
 )
 from api.barrier_downloads.models import BarrierDownload, BarrierDownloadStatus
-from api.barrier_downloads.serializers import BarrierCsvExportSerializer
-from api.barriers.models import Barrier, BarrierSearchCSVDownloadEvent
+from api.barrier_downloads.serializers import CsvDownloadSerializer
+from api.barriers.models import (
+    Barrier,
+    BarrierNextStepItem,
+    BarrierProgressUpdate,
+    BarrierSearchCSVDownloadEvent,
+    ProgrammeFundProgressUpdate,
+)
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.models import UserActvitiyLog
@@ -66,11 +73,84 @@ def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDo
     # Make celery call don't wait for return
     # from api.barrier_downloads.tasks import generate_s3_and_send_email
     tasks.generate_barrier_download_file.delay(
-        barrier_download.id,
-        barrier_ids,
+        barrier_download_id=barrier_download.id,
+        barrier_ids=barrier_ids,
     )
 
     return barrier_download
+
+
+def get_queryset(barrier_ids: List[str]) -> QuerySet:
+    return (
+        Barrier.objects.filter(id__in=barrier_ids)
+        .select_related(
+            "created_by",
+        )
+        .prefetch_related(
+            "tags",
+            "categories",
+            "barrier_team",
+            "barrier_team__user",
+            "organisations",
+            Prefetch(
+                "progress_updates",
+                queryset=BarrierProgressUpdate.objects.order_by("-created_on").all(),
+            ),
+            Prefetch(
+                "programme_fund_progress_updates",
+                queryset=ProgrammeFundProgressUpdate.objects.select_related(
+                    "created_by"
+                )
+                .order_by("-created_on")
+                .all(),
+            ),
+            "barrier_commodities",
+            "public_barrier",
+            "economic_assessments",
+            "valuation_assessments",
+            Prefetch(
+                "next_steps_items",
+                queryset=BarrierNextStepItem.objects.filter(
+                    status="IN_PROGRESS"
+                ).order_by("-completion_date"),
+            ),
+        )
+        .only(
+            "id",
+            "code",
+            "title",
+            "is_summary_sensitive",
+            "summary",
+            "code",
+            "status",
+            "sub_status",
+            "priority_level",
+            "progress_updates",
+            "country",
+            "trading_bloc",
+            "admin_areas",
+            "sectors",
+            "sectors_affected",
+            "all_sectors",
+            "product",
+            "created_by",
+            "reported_on",
+            "status_date",
+            "status_summary",
+            "modified_on",
+            "tags",
+            "trade_direction",
+            "top_priority_status",
+            "next_steps_items",
+            "estimated_resolution_date",
+            "proposed_estimated_resolution_date",
+            "public_barrier___public_view_status",
+            "public_barrier__changed_since_published",
+            "public_barrier___title",
+            "public_barrier___summary",
+            "commercial_value",
+        )
+    )
 
 
 def generate_barrier_download_file(
@@ -87,29 +167,8 @@ def generate_barrier_download_file(
 
     barrier_download.processing()
 
-    queryset = (
-        Barrier.objects.filter(id__in=barrier_ids)
-        .select_related(
-            "priority",
-            "public_barrier",
-        )
-        .prefetch_related(
-            "barrier_commodities",
-            "categories",
-            "economic_assessments",
-            "organisations",
-            "tags",
-            "barrier_team",
-            "progress_updates",
-            "programme_fund_progress_updates",
-            "resolvability_assessments",
-            "strategic_assessments",
-            "valuation_assessments",
-            "economic_assessments",
-            "next_steps_items",
-        )
-    )
-    serializer = BarrierCsvExportSerializer(queryset, many=True)
+    qs = get_queryset(barrier_ids)
+    serializer = CsvDownloadSerializer(qs, many=True)
 
     try:
         csv_bytes = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
