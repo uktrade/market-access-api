@@ -17,7 +17,7 @@ jobs:
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
-      - image: postgres:13
+      - image: postgres:16
         environment:
           POSTGRES_DB: market_access
           POSTGRES_USER: postgres # pragma: allowlist secret
