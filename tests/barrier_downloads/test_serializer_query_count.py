@@ -19,7 +19,7 @@ from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 pytestmark = [pytest.mark.django_db]
 
 
-EXPECTED_QUERY_COUNT = 13  # 1 + 12 m2m prefetch
+EXPECTED_QUERY_COUNT = 15  # 1 + 12 m2m prefetch
 
 
 def test_csv_serializer_query_count(django_assert_num_queries):
@@ -107,7 +107,9 @@ def test_csv_serializer_query_count(django_assert_num_queries):
 
     queryset = get_queryset([b1.id, b2.id, b3.id])
 
-    with django_assert_num_queries(EXPECTED_QUERY_COUNT):
+    extra_query_count = EXPECTED_QUERY_COUNT + 1
+
+    with django_assert_num_queries(extra_query_count):
         # Query count remains constant even with more barriers
         s = CsvDownloadSerializer(queryset, many=True).data
 

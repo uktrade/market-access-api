@@ -43,4 +43,5 @@ BARRIER_FIELD_TO_COLUMN_TITLE = {
     "programme_fund_progress_update_milestones": "Programme fund milestones",
     "programme_fund_progress_update_expenditure": "Programme fund expenditure",
     "programme_fund_progress_update_date": "Programme fund date",
+    "programme_fund_progress_update_author": "Programme fund author",
 }
