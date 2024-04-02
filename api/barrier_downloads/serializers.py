@@ -170,15 +170,15 @@ class CsvDownloadSerializer(serializers.Serializer):
 
     def get_barrier_owner(self, barrier):
         barrier_owner = None
+        barrier_team = barrier.barrier_team.all()
 
-        if hasattr(barrier, "barrier_team"):
-            owner = barrier.barrier_team.filter(role="Owner").first()
-            if owner:
-                first_name = getattr(owner.user, "first_name", None)
-                last_name = getattr(owner.user, "last_name", None)
-                barrier_owner = (
-                    f"{first_name} {last_name}" if first_name and last_name else None
-                )
+        if barrier_team:
+            first_barrier_owner = barrier_team[0]
+            first_name = first_barrier_owner.user.first_name
+            last_name = first_barrier_owner.user.last_name
+            barrier_owner = (
+                f"{first_name} {last_name}" if first_name and last_name else None
+            )
 
         return barrier_owner
 
