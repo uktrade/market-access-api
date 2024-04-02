@@ -1,9 +1,12 @@
 import datetime
+import logging
 
 from api.metadata.constants import BarrierStatus, PublicBarrierStatus
 from api.metadata.utils import get_location_text
 
 from .base import BaseHistoryItem
+
+logger = logging.getLogger(__name__)
 
 
 class BasePublicBarrierHistoryItem(BaseHistoryItem):
@@ -50,6 +53,7 @@ class PublicViewStatusHistoryItem(BasePublicBarrierHistoryItem):
             },
             "public_eligibility": barrier_record.public_eligibility,
             "public_eligibility_summary": barrier_record.public_eligibility_summary,
+            "approvers_summary": record.approvers_summary,
         }
 
 
