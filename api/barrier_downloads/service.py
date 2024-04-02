@@ -24,6 +24,7 @@ from api.barriers.models import (
     BarrierSearchCSVDownloadEvent,
     ProgrammeFundProgressUpdate,
 )
+from api.collaboration.models import TeamMember
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.models import UserActvitiyLog
@@ -89,8 +90,12 @@ def get_queryset(barrier_ids: List[str]) -> QuerySet:
         .prefetch_related(
             "tags",
             "categories",
-            "barrier_team",
-            "barrier_team__user",
+            Prefetch(
+                "barrier_team",
+                queryset=TeamMember.objects.select_related("user")
+                .filter(role="Owner")
+                .all(),
+            ),
             "organisations",
             Prefetch(
                 "progress_updates",

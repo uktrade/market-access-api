@@ -19,7 +19,7 @@ from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 pytestmark = [pytest.mark.django_db]
 
 
-EXPECTED_QUERY_COUNT = 15  # 1 + 12 m2m prefetch
+EXPECTED_QUERY_COUNT = 12  # 1 + 11 m2m prefetch
 
 
 def test_csv_serializer_query_count(django_assert_num_queries):
@@ -56,7 +56,7 @@ def test_csv_serializer_query_count(django_assert_num_queries):
     b2.tags.add(tag1)
     b2.tags.add(tag2)
     b1.tags.add(tag1)
-    TeamMember.objects.create(barrier=b2, user=user, role="Contributor")
+    TeamMember.objects.create(barrier=b2, user=user, role="Owner")
     TeamMember.objects.create(barrier=b2, user=user2, role="Contributor")
     b2.categories.add(category1)
 
@@ -107,10 +107,12 @@ def test_csv_serializer_query_count(django_assert_num_queries):
 
     queryset = get_queryset([b1.id, b2.id, b3.id])
 
-    extra_query_count = EXPECTED_QUERY_COUNT + 1
-
-    with django_assert_num_queries(extra_query_count):
+    with django_assert_num_queries(EXPECTED_QUERY_COUNT):
         # Query count remains constant even with more barriers
         s = CsvDownloadSerializer(queryset, many=True).data
 
     assert len(s) == 3
+    assert s[0]["barrier_owner"] is None
+    assert s[1]["barrier_owner"] == "Hey Siri"
+    assert s[1]["progress_update_next_steps"] == "This next step"
+    assert s[2]["barrier_owner"] is None
