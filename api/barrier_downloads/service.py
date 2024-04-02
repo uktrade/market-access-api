@@ -92,7 +92,9 @@ def get_queryset(barrier_ids: List[str]) -> QuerySet:
             "categories",
             Prefetch(
                 "barrier_team",
-                queryset=TeamMember.objects.select_related('user').filter(role='Owner').all()
+                queryset=TeamMember.objects.select_related("user")
+                .filter(role="Owner")
+                .all(),
             ),
             "organisations",
             Prefetch(

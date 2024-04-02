@@ -111,7 +111,7 @@ def test_csv_serializer_query_count(django_assert_num_queries):
         # Query count remains constant even with more barriers
         s = CsvDownloadSerializer(queryset, many=True).data
 
-    assert s[0]['barrier_owner'] is None
-    assert s[1]['barrier_owner'] == 'Hey Siri'
-    assert s[1]['progress_update_next_steps'] == 'This next step'
-    assert s[2]['barrier_owner'] is None
+    assert s[0]["barrier_owner"] is None
+    assert s[1]["barrier_owner"] == "Hey Siri"
+    assert s[1]["progress_update_next_steps"] == "This next step"
+    assert s[2]["barrier_owner"] is None
