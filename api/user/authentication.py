@@ -30,22 +30,26 @@ class SSOAuthValidator(OAuth2Validator):
 
         return headers
 
-    def _handle_auth_uaer(self, content):
+    def _handle_auth_user(self, content):
         user, created = USER_MODEL.objects.get_or_create(
             username=content["email_user_id"],
         )
 
+        sso_user = sso.get_user_details_by_email_user_id(
+            content["email_user_id"],
+        )
+
         if created:
-            sso_user = sso.get_user_details_by_email_user_id(
-                content["email_user_id"],
-            )
             user.email = sso_user["email"]
             user.first_name = sso_user["first_name"]
             user.last_name = sso_user["last_name"]
             user.profile.sso_email_user_id = sso_user["email_user_id"]
             user.profile.sso_user_id = sso_user["user_id"]
-
             user.save()
+        else:
+            if sso_user and user.email != sso_user["email"]:
+                user.email = sso_user["email"]
+                user.save()
 
         return user
 
@@ -95,7 +99,7 @@ class SSOAuthValidator(OAuth2Validator):
 
         scope = content.get("scope", "")
         expires = make_aware(expires)
-        user = self._handle_auth_uaer(content)
+        user = self._handle_auth_user(content)
 
         access_token, _created = AccessToken.objects.update_or_create(
             token=token,
