@@ -3,6 +3,8 @@ import os
 from celery import Celery
 from raven import Client
 from raven.contrib.celery import register_logger_signal, register_signal
+from dbt_copilot_python.celery_health_check import healthcheck
+
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
@@ -17,6 +19,8 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
+
+app = healthcheck.setup(app)
 
 # config sentry
 client = Client(
