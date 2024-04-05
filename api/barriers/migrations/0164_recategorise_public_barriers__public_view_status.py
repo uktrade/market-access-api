@@ -105,7 +105,7 @@ class Migration(migrations.Migration):
     dependencies = [
         (
             "barriers",
-            "0163_historicalpublicbarrier__publishers_summary_and_more",
+            "0163_historicalpublicbarrier_publishers_summary_and_more",
         ),
     ]
 
