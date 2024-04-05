@@ -58,6 +58,7 @@ def test_csv_serializer_query_count(django_assert_num_queries):
     b1.tags.add(tag1)
     TeamMember.objects.create(barrier=b2, user=user, role="Owner")
     TeamMember.objects.create(barrier=b2, user=user2, role="Contributor")
+    TeamMember.objects.create(barrier=b1, role="Owner")
     b2.categories.add(category1)
 
     BarrierProgressUpdate.objects.create(

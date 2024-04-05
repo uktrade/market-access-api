@@ -169,18 +169,19 @@ class CsvDownloadSerializer(serializers.Serializer):
         return reported_by
 
     def get_barrier_owner(self, barrier):
-        barrier_owner = None
         barrier_team = barrier.barrier_team.all()
 
-        if barrier_team:
-            first_barrier_owner = barrier_team[0]
-            first_name = first_barrier_owner.user.first_name
-            last_name = first_barrier_owner.user.last_name
-            barrier_owner = (
-                f"{first_name} {last_name}" if first_name and last_name else None
-            )
+        if not barrier_team:
+            return
 
-        return barrier_owner
+        owner = barrier_team[0].user
+
+        if not owner:
+            return
+
+        first_name = owner.first_name
+        last_name = owner.last_name
+        return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_tags(self, barrier):
         return [tag.title for tag in barrier.tags.all()]
