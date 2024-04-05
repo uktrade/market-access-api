@@ -6,7 +6,10 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("barriers", "0161_recategorise_public_barriers__public_view_status"),
+        (
+            "barriers",
+            "0161_alter_historicalpublicbarrier__public_view_status_additions",
+        ),
     ]
 
     operations = [
