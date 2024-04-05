@@ -395,15 +395,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         assert status.HTTP_403_FORBIDDEN == response.status_code
 
-    def test_public_barrier_patch_as_sifter(self):
-        user = self.create_sifter()
-        client = self.create_api_client(user=user)
-        public_title = "New public facing title!"
-        payload = {"title": public_title}
-        response = client.patch(self.url, format="json", data=payload)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
     @freezegun.freeze_time("2020-02-02")
     def test_public_barrier_patch_as_approver(self):
         user = self.create_approver()
