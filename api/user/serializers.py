@@ -36,7 +36,6 @@ class WhoAmISerializer(serializers.ModelSerializer):
     user_profile = serializers.SerializerMethodField()
     permitted_applications = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
-    has_approved_digital_trade_email = serializers.SerializerMethodField()
     groups = GroupSerializer(many=True, required=False, read_only=True)
 
     class Meta:
