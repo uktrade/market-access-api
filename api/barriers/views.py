@@ -813,7 +813,13 @@ class PublicBarrierViewSet(
     @action(methods=["post"], detail=True, permission_classes=(IsPublisher,))
     def publish(self, request, *args, **kwargs):
         public_barrier = self.get_object()
-        published = public_barrier.publish()
+        if (
+            public_barrier.public_view_status == PublicBarrierStatus.PUBLISHING_PENDING
+            or public_barrier.public_view_status == PublicBarrierStatus.UNPUBLISHED
+        ):
+            published = public_barrier.publish()
+        else:
+            published = False
         if published:
             self.update_contributors(public_barrier.barrier)
             serializer = PublicBarrierSerializer(public_barrier)
