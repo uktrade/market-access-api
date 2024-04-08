@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("barriers", "0159_backfill_barrier_changed_since_published"),
+        ("barriers", "0160_alter_barrier_options"),
     ]
 
     operations = [

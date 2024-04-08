@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("barriers", "0162_historicalpublicbarrier_approvers_summary_and_more"),
+        ("barriers", "0163_historicalpublicbarrier_approvers_summary_and_more"),
     ]
 
     operations = [

@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 def add_permission_group(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
     Permission = apps.get_model("auth", "Permission")
@@ -22,16 +23,19 @@ def add_permission_group(apps, schema_editor):
         mark_barrier_as_ready_for_publishing,
     )
 
+
 def delete_permission_groups(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
-    for group_name in ["Sifter","Editor"]:
+    for group_name in ["Sifter", "Editor"]:
         group_to_delete = Group.objects.filter(name=group_name)
         group_to_delete.delete()
+
 
 def reverse_role_addition(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
     approver_group = Group.objects.get(name="Public barrier approver")
     approver_group.delete()
+
 
 def reverse_group_deletion(apps, schema_editor):
     Group = apps.get_model("auth", "Group")
@@ -66,14 +70,12 @@ def reverse_group_deletion(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("user", "0033_auto_20231122_1312"),
+        ("user", "0035_delete_download_approval_permission"),
     ]
 
     operations = [
         migrations.RunPython(
             delete_permission_groups, reverse_code=reverse_group_deletion
         ),
-        migrations.RunPython(
-            add_permission_group, reverse_code=reverse_role_addition
-        ),
+        migrations.RunPython(add_permission_group, reverse_code=reverse_role_addition),
     ]
