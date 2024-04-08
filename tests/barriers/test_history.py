@@ -285,6 +285,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
             },
             "public_eligibility": None,
             "public_eligibility_summary": "",
+            "approvers_summary": "",
         }
         assert data["new_value"] == {
             "public_view_status": {
@@ -293,6 +294,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
             },
             "public_eligibility": True,
             "public_eligibility_summary": "Allowed summary",
+            "approvers_summary": "",
         }
 
     def test_summary_history(self):
