@@ -771,4 +771,14 @@ class Command(BaseCommand):
         self.anonymise_wto_profiles(barriers)
         self.stdout.write("Completed anonymising WTO profile.")
 
+        # DEVELOPER NOTE #
+        # This script needs a final step to anonymise historical barrier data
+        # as this information would be visible on the history tab. We originally
+        # deleted the history instead, but this caused multiple testing
+        # errors across various areas of the application that require some history
+        # items to exist. If this script is to be used as a data anonymiser
+        # again, this will need to be implemented. As an extension to create_mock_barriers
+        # leaving history intact is safe.
+        # DEVELOPER NOTE #
+
         self.stdout.write("Finished anonymising barrier data.")
