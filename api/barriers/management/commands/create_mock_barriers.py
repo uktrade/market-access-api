@@ -15,7 +15,7 @@ from .data_anonymise import Command as AnonymiseCommand
 
 
 class Command(BaseCommand):
-    help = "Publish fake barriers"
+    help = "Build a set of fake barriers"
 
     def add_arguments(self, parser):
         parser.add_argument("--quantity", type=int, help="Number of barriers to create")
