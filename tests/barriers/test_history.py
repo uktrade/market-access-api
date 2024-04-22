@@ -268,7 +268,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.barrier.public_eligibility = True
         self.barrier.public_eligibility_summary = "Allowed summary"
         self.barrier.save()
-        self.public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
+        self.public_barrier.public_view_status = PublicBarrierStatus.ALLOWED
         self.public_barrier.save()
 
         items = PublicBarrierHistoryFactory.get_history_items(
@@ -285,14 +285,16 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
             },
             "public_eligibility": None,
             "public_eligibility_summary": "",
+            "approvers_summary": "",
         }
         assert data["new_value"] == {
             "public_view_status": {
-                "id": PublicBarrierStatus.ELIGIBLE,
-                "name": PublicBarrierStatus.choices[PublicBarrierStatus.ELIGIBLE],
+                "id": PublicBarrierStatus.ALLOWED,
+                "name": PublicBarrierStatus.choices[PublicBarrierStatus.ALLOWED],
             },
             "public_eligibility": True,
             "public_eligibility_summary": "Allowed summary",
+            "approvers_summary": "",
         }
 
     def test_summary_history(self):
