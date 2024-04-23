@@ -768,6 +768,10 @@ class PublicBarrierViewSet(
         url_path="allow-for-publishing-process",
     )
     def allow_for_publishing_process(self, request, *args, **kwargs):
+        public_barrier = self.get_object()
+        public_barrier.set_to_allowed_on = datetime.now()
+        public_barrier.save()
+
         return self.update_status_action(PublicBarrierStatus.ALLOWED)
 
     @action(
