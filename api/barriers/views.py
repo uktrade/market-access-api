@@ -737,6 +737,8 @@ class PublicBarrierViewSet(
         """
         public_barrier = self.get_object()
         public_barrier.public_view_status = public_view_status
+        if public_view_status is PublicBarrierStatus.ALLOWED:
+            public_barrier.set_to_allowed_on = datetime.now()
         public_barrier.save()
         self.update_contributors(public_barrier.barrier)
         serializer = PublicBarrierSerializer(public_barrier)

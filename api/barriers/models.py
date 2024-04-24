@@ -1021,6 +1021,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
+    set_to_allowed_on = models.DateTimeField(null=True, blank=True)
 
     changed_since_published = models.BooleanField(default=False)
 
