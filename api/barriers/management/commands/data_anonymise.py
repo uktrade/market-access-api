@@ -83,9 +83,7 @@ def _randomise_date(date):
     """
     if date:
         days_change = random.randint(1, 100)
-        if random.randint(0, 1) == 0:
-            # minus days 50/50 chance
-            days_change = days_change * -1
+        days_change = days_change * -1
         return date + timedelta(days=days_change)
     return None
 
@@ -455,14 +453,6 @@ class Command(BaseCommand):
                     public_barrier.summary_updated_on
                 )
 
-                # marking it as unpublished so people can't see it
-                public_barrier._public_view_status = 0
-
-                if public_barrier.published_versions != {}:
-                    public_barrier.published_versions = {}
-                    public_barrier.title = ""
-                    public_barrier.summary = ""
-
                 # Save the public barrier
                 public_barrier.save()
 
@@ -679,31 +669,6 @@ class Command(BaseCommand):
 
                 profile.save()
 
-    @staticmethod
-    def purge_barrier_history(barriers):
-        """
-        Function to purge all barrier histories, and their related DB objects histories.
-        """
-        for barrier in barriers:
-            barrier.history.all().delete()
-            BarrierProgressUpdate.history.filter(barrier=barrier.pk).delete()
-            ProgrammeFundProgressUpdate.history.filter(barrier=barrier.pk).delete()
-            TeamMember.history.filter(barrier=barrier.pk).delete()
-            Interaction.history.filter(barrier=barrier.pk).delete()
-            EconomicAssessment.history.filter(barrier=barrier.pk).delete()
-            EconomicImpactAssessment.history.filter(barrier=barrier.pk).delete()
-            ResolvabilityAssessment.history.filter(barrier=barrier.pk).delete()
-            StrategicAssessment.history.filter(barrier=barrier.pk).delete()
-            WTOProfile.history.filter(barrier=barrier.pk).delete()
-            try:
-                public_barrier = PublicBarrier.objects.get(barrier=barrier.id)
-                public_barrier.history.all().delete()
-                PublicBarrierNote.history.filter(
-                    public_barrier=public_barrier.pk
-                ).delete()
-            except PublicBarrier.DoesNotExist:
-                pass
-
     def handle(self, *args, **options):
         self.stdout.write("Running management command: Data Anonymise.")
 
@@ -806,8 +771,14 @@ class Command(BaseCommand):
         self.anonymise_wto_profiles(barriers)
         self.stdout.write("Completed anonymising WTO profile.")
 
-        self.stdout.write("Deleting barrier history")
-        self.purge_barrier_history(barriers)
-        self.stdout.write("Finished deleting barrier histories.")
+        # DEVELOPER NOTE #
+        # This script needs a final step to anonymise historical barrier data
+        # as this information would be visible on the history tab. We originally
+        # deleted the history instead, but this caused multiple testing
+        # errors across various areas of the application that require some history
+        # items to exist. If this script is to be used as a data anonymiser
+        # again, this will need to be implemented. As an extension to create_mock_barriers
+        # leaving history intact is safe.
+        # DEVELOPER NOTE #
 
         self.stdout.write("Finished anonymising barrier data.")
