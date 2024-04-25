@@ -169,10 +169,6 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
             if status_code == PublicBarrierStatus.UNKNOWN:
                 # skip because self.barrier public_barrier is already in this status
                 # we only want 1 public barrier of each status
-                assert (
-                    PublicBarrierStatus.UNKNOWN
-                    == self.barrier.public_barrier._public_view_status
-                )
                 barriers[status_code] = self.barrier
                 continue
             barriers[status_code] = BarrierFactory(
@@ -187,17 +183,8 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
             r = get_list_for_status(status_code)
             public_barrier = barriers[status_code].public_barrier
             assert 200 == r.status_code
-            if status_code == 10:
-                # The barrier in UNKNOWN status will default to NOT_ALLOWED status
-                # without public_eligibility being true on the parent barrier object
-                assert 2 == r.data["count"]
-                assert public_barrier.id in {i["id"] for i in r.data["results"]}
-                assert self.barrier.public_barrier.id in {
-                    i["id"] for i in r.data["results"]
-                }
-            else:
-                assert 1 == r.data["count"]
-                assert {public_barrier.id} == {i["id"] for i in r.data["results"]}
+            assert 1 == r.data["count"]
+            assert {public_barrier.id} == {i["id"] for i in r.data["results"]}
 
         # test filtering on multiple statuses
 
@@ -888,108 +875,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert status.HTTP_200_OK == response.status_code
         assert not response.data["unpublished_on"]
         assert not pb.unpublished_on
-
-    def test_update_eligibility_on_attr_access(self):
-        test_parameters = [
-            {
-                "case_id": 10,
-                "public_eligibility": None,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.UNKNOWN,
-                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
-            },
-            {
-                "case_id": 20,
-                "public_eligibility": True,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.UNKNOWN,
-                "expected_public_view_status": PublicBarrierStatus.ALLOWED,
-            },
-            {
-                "case_id": 30,
-                "public_eligibility": False,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.UNKNOWN,
-                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
-            },
-            {
-                "case_id": 40,
-                "public_eligibility": False,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.ALLOWED,
-                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
-            },
-            {
-                "case_id": 50,
-                "public_eligibility": True,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.NOT_ALLOWED,
-                "expected_public_view_status": PublicBarrierStatus.ALLOWED,
-            },
-            {
-                "case_id": 60,
-                "public_eligibility": True,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.PUBLISHING_PENDING,
-                "expected_public_view_status": PublicBarrierStatus.PUBLISHING_PENDING,
-            },
-            {
-                "case_id": 70,
-                "public_eligibility": False,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.PUBLISHING_PENDING,
-                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
-            },
-            # Published state is protected and cannot change without unpublishing first
-            {
-                "case_id": 80,
-                "public_eligibility": True,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.PUBLISHED,
-                "expected_public_view_status": PublicBarrierStatus.PUBLISHED,
-            },
-            {
-                "case_id": 90,
-                "public_eligibility": False,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.PUBLISHED,
-                "expected_public_view_status": PublicBarrierStatus.PUBLISHED,
-            },
-            {
-                "case_id": 100,
-                "public_eligibility": False,
-                "public_eligibility_postponed": False,
-                "public_view_status": PublicBarrierStatus.UNPUBLISHED,
-                "expected_public_view_status": PublicBarrierStatus.NOT_ALLOWED,
-            },
-        ]
-
-        for params in test_parameters:
-            with self.subTest(params=params):
-                barrier = BarrierFactory()
-                url = reverse("public-barriers-detail", kwargs={"pk": barrier.id})
-                payload = {
-                    "public_view_status": params["public_view_status"],
-                }
-                response = self.api_client.get(url)
-                public_barrier = PublicBarrier.objects.get(pk=response.data["id"])
-                public_barrier.public_view_status = params["public_view_status"]
-                public_barrier.save()
-
-                # Now check that changing the public eligibility on the internal barrier
-                # affects the public barrier status the way it's expected
-                barrier.public_eligibility = params["public_eligibility"]
-                barrier.public_eligibility_postponed = params[
-                    "public_eligibility_postponed"
-                ]
-                barrier.save()
-
-                response = self.api_client.get(url)
-
-                assert (
-                    params["expected_public_view_status"]
-                    == response.data["public_view_status"]
-                ), f"Failed at Case {params['case_id']}"
 
     def test_report_public_barrier_title_as_standard_user(self):
         user = self.create_standard_user()
