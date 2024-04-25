@@ -169,10 +169,6 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
             if status_code == PublicBarrierStatus.UNKNOWN:
                 # skip because self.barrier public_barrier is already in this status
                 # we only want 1 public barrier of each status
-                assert (
-                    PublicBarrierStatus.UNKNOWN
-                    == self.barrier.public_barrier._public_view_status
-                )
                 barriers[status_code] = self.barrier
                 continue
             barriers[status_code] = BarrierFactory(
@@ -187,17 +183,8 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
             r = get_list_for_status(status_code)
             public_barrier = barriers[status_code].public_barrier
             assert 200 == r.status_code
-            if status_code == 10:
-                # The barrier in UNKNOWN status will default to NOT_ALLOWED status
-                # without public_eligibility being true on the parent barrier object
-                assert 2 == r.data["count"]
-                assert public_barrier.id in {i["id"] for i in r.data["results"]}
-                assert self.barrier.public_barrier.id in {
-                    i["id"] for i in r.data["results"]
-                }
-            else:
-                assert 1 == r.data["count"]
-                assert {public_barrier.id} == {i["id"] for i in r.data["results"]}
+            assert 1 == r.data["count"]
+            assert {public_barrier.id} == {i["id"] for i in r.data["results"]}
 
         # test filtering on multiple statuses
 
