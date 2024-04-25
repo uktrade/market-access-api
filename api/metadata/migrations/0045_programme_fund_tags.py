@@ -3,17 +3,15 @@
 from django.db import migrations
 
 REGULATOR = {
-    "Programme Fund - Regulator": {
-        "description": "",
-        "show_at_reporting": True,
-    },
+    "title": "Programme Fund - Regulator",
+    "description": "",
+    "show_at_reporting": True,
 }
 
 REGIONAL = {
-    "Programme Fund - Facilitative Regional": {
-        "description": "",
-        "show_at_reporting": True,
-    },
+    "title": "Programme Fund - Facilitative Regional",
+    "description": "",
+    "show_at_reporting": True,
 }
 
 
@@ -24,12 +22,7 @@ def create_new_tags(apps, schema_editor):
 
     for tag in [REGIONAL, REGULATOR]:
         order += 1
-        title, defaults = tag.popitem()
-        BarrierTag.objects.create(
-            title=title,
-            order=order,
-            **defaults
-        )
+        BarrierTag.objects.create(order=order, **tag)
 
 
 def destroy_new_tags(apps, schema_editor):
