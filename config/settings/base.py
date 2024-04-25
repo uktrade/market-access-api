@@ -227,6 +227,11 @@ if "aws-s3-bucket" in VCAP_SERVICES:
         "aws_secret_access_key": bucket_credentials["aws_secret_access_key"],
         "aws_region": bucket_credentials["aws_region"],
     }
+elif is_copilot:
+    default_bucket = {
+        "bucket_name": env("DEFAULT_BUCKET", default=""),
+        "aws_region": env("AWS_DEFAULT_REGION", default=""),
+    }
 else:
     default_bucket = {
         "bucket_name": env("DEFAULT_BUCKET", default=""),

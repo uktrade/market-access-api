@@ -5,6 +5,7 @@ import boto3
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from dbt_copilot_python.utility import is_copilot
 
 from api.core.exceptions import MarketAccessException
 from api.documents.exceptions import DocumentDeleteException
@@ -44,13 +45,20 @@ def get_bucket_name(bucket_id):
 def get_s3_client_for_bucket(bucket_id):
     """Get S3 client for bucket id."""
     credentials = get_bucket_credentials(bucket_id)
-    return boto3.client(
-        "s3",
-        aws_access_key_id=credentials["aws_access_key_id"],
-        aws_secret_access_key=credentials["aws_secret_access_key"],
-        region_name=credentials["aws_region"],
-        config=boto3.session.Config(signature_version="s3v4"),
-    )
+
+    if is_copilot():
+        return boto3.client(
+            "s3",
+            region_name=credentials["aws_region"],
+        )
+    else:
+        return boto3.client(
+            "s3",
+            aws_access_key_id=credentials["aws_access_key_id"],
+            aws_secret_access_key=credentials["aws_secret_access_key"],
+            region_name=credentials["aws_region"],
+            config=boto3.session.Config(signature_version="s3v4"),
+        )
 
 
 def sign_s3_url(bucket_id, key, method="get_object", expires=3600):
