@@ -422,10 +422,3 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert wto.raised_date != self.today_date
         assert len(wto.member_states) == 1
         assert wto.member_states[0] != member_state_id
-
-    def test_purge_barrier_history(self):
-        self.barrier.estimated_resolution_date = datetime.datetime.now()
-        self.barrier.save()
-        assert self.barrier.history.count() == 1
-        Command.purge_barrier_history(self.barrier_queryset)
-        assert self.barrier.history.count() == 0

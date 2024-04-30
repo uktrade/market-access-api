@@ -1021,6 +1021,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
+    set_to_allowed_on = models.DateTimeField(null=True, blank=True)
 
     changed_since_published = models.BooleanField(default=False)
 
@@ -1148,36 +1149,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def public_view_status(self):
-        _old_public_view_status = self._public_view_status
-
-        # set default if eligibility is avail on the internal barrier
-        if self._public_view_status == PublicBarrierStatus.UNKNOWN:
-            if self.barrier.public_eligibility is True:
-                self._public_view_status = PublicBarrierStatus.ALLOWED
-            else:
-                self._public_view_status = PublicBarrierStatus.NOT_ALLOWED
-
-        # The internal barrier might get withdrawn from the public domain
-        # in which case it will be marked as ineligible for public view
-        # and the public barrier view status should update as well
-        #
-        # Note: cannot automatically change from published
-        #       the public barrier would need to be unpublished first
-        if self._public_view_status != PublicBarrierStatus.PUBLISHED:
-            # Marking the public barrier ineligible
-            if self.barrier.public_eligibility is False:
-                self._public_view_status = PublicBarrierStatus.NOT_ALLOWED
-
-            # Marking the public barrier eligible
-            elif (
-                self.barrier.public_eligibility is True
-                and self._public_view_status == PublicBarrierStatus.NOT_ALLOWED
-            ):
-                self._public_view_status = PublicBarrierStatus.ALLOWED
-
-        if _old_public_view_status != self._public_view_status:
-            # only save when the public view status changes
-            self.save()
         return self._public_view_status
 
     @public_view_status.setter
