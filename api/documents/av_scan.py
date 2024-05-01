@@ -78,6 +78,9 @@ def perform_virus_scan(document_pk: str, download_url: str):
 
 def _download_and_scan_file(document_pk: str, download_url: str):
     """Virus scans a file stored on remote server."""
+    print("something something")
+    print(download_url)
+    print("something something")
     with requests.get(download_url, stream=True) as response:
         try:
             response.raise_for_status()
