@@ -50,6 +50,7 @@ def get_s3_client_for_bucket(bucket_id):
         return boto3.client(
             "s3",
             region_name=credentials["aws_region"],
+            config=boto3.session.Config(signature_version="s3v4")
         )
     else:
         return boto3.client(
