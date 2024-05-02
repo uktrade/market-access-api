@@ -46,16 +46,20 @@ def perform_virus_scan(document_pk: str, download_url: str):
         - file couldn't be downloaded
         - unknown response returned by the AV service
     """
+    print("xxx: inside virus scan")
     if not settings.AV_V2_SERVICE_URL:
+        print("xxx: not settings.AV_V2_SERVICE_URL")
         raise VirusScanException(
             f"Cannot scan document with ID {document_pk}; AV V2 service "
             f"URL not configured"
         )
 
+    print("xxx: virus scanning started")
     logger.info(f"Virus scanning of Document with ID {document_pk} started.")
 
     document = get_document_by_pk(document_pk)
     if not document or document.scanned_on or document.scan_initiated_on:
+        print("xxx: early returning")
         return
 
     document.mark_scan_initiated()
@@ -78,9 +82,8 @@ def perform_virus_scan(document_pk: str, download_url: str):
 
 def _download_and_scan_file(document_pk: str, download_url: str):
     """Virus scans a file stored on remote server."""
-    print("something something")
+    print("xxx")
     print(download_url)
-    print("something something")
     with requests.get(download_url, stream=True) as response:
         try:
             response.raise_for_status()
