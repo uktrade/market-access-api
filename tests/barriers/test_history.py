@@ -29,6 +29,8 @@ from tests.action_plans.factories import (
 from tests.barriers.factories import WTOCommitteeFactory, WTOProfileFactory
 from tests.metadata.factories import OrganisationFactory
 
+freezegun.configure(extend_ignore_list=["transformers"])
+
 logger = logging.getLogger(__name__)
 
 
@@ -199,6 +201,7 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
 
     def test_categories_history(self):
         self.public_barrier.categories.add("109", "115")
+        self.public_barrier.save()
 
         items = PublicBarrierHistoryFactory.get_history_items(
             barrier_id=self.barrier.pk
@@ -283,8 +286,8 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
                 "id": PublicBarrierStatus.UNKNOWN,
                 "name": PublicBarrierStatus.choices[PublicBarrierStatus.UNKNOWN],
             },
-            "public_eligibility": None,
-            "public_eligibility_summary": "",
+            "public_eligibility": True,
+            "public_eligibility_summary": "Allowed summary",
             "approvers_summary": "",
         }
         assert data["new_value"] == {
