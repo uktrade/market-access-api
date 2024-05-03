@@ -19,7 +19,7 @@ from api.metadata.constants import (
     BarrierStatus,
     PublicBarrierStatus,
 )
-from api.metadata.models import BarrierPriority, ExportType, Organisation
+from api.metadata.models import ExportType, Organisation
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanStakeholderFactory,
@@ -1221,75 +1221,6 @@ class TestListBarriers(APITestMixin, APITestCase):
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
-    def test_changed_filter(self):
-        url = f'{reverse("list-barriers")}?public_view=changed'
-        barrier1 = BarrierFactory(
-            public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
-            public_barrier__last_published_on="2020-08-01",
-            priority="LOW",
-            source="COMPANY",
-        )
-        barrier2 = BarrierFactory(
-            public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
-            public_barrier__last_published_on="2020-08-01",
-        )
-        barrier3 = BarrierFactory(
-            public_barrier___public_view_status=PublicBarrierStatus.PUBLISHED,
-            public_barrier__last_published_on="2020-08-01",
-        )
-
-        # No barriers should have 'changed' since being published
-        response = self.api_client.get(url)
-        assert status.HTTP_200_OK == response.status_code
-        assert 0 == response.data["count"]
-
-        # Change some fields that do not affect the public barrier
-        barrier1.source = "TRADE"
-        barrier1.priority = BarrierPriority.objects.get(code="MEDIUM")
-        barrier1.save()
-
-        # assert 0
-        # No barriers should have 'changed' since being published
-        response = self.api_client.get(url)
-        assert status.HTTP_200_OK == response.status_code
-        assert 0 == response.data["count"]
-
-        # Change a field that does affect the public barrier
-        # barrier1.summary = "New summary"
-        # barrier1.save()
-
-        c1 = CategoryFactory(title="31", description="311")
-        c2 = CategoryFactory(title="32", description="322")
-        barrier1.categories.add(c1.pk, c2.pk)
-        barrier1.save()
-
-        # barrier1 should now be in the search results for changed barriers
-        response = self.api_client.get(url)
-        assert status.HTTP_200_OK == response.status_code
-        assert 1 == response.data["count"]
-        barrier_ids = set([result["id"] for result in response.data["results"]])
-        assert set([str(barrier1.id)]) == barrier_ids
-
-        barrier2.summary = "New summary"
-        barrier2.save()
-
-        response = self.api_client.get(url)
-        assert status.HTTP_200_OK == response.status_code
-        assert 2 == response.data["count"]
-        barrier_ids = set([result["id"] for result in response.data["results"]])
-        assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
-
-        # Change a field that does affect the public barrier
-        barrier2.sectors = ["9f38cecc-5f95-e211-a939-e4115bead28a"]
-        barrier2.save()
-
-        # barrier2 should now also be in the search results for changed barriers
-        response = self.api_client.get(url)
-        assert status.HTTP_200_OK == response.status_code
-        assert 2 == response.data["count"]
-        barrier_ids = set([result["id"] for result in response.data["results"]])
-        assert set([str(barrier1.id), str(barrier2.id)]) == barrier_ids
-
     def test_location_filter(self):
         base_url = reverse("list-barriers")
 

@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from rest_framework import serializers
 
@@ -15,6 +17,8 @@ from api.metadata.utils import (
     get_trading_bloc,
     get_trading_bloc_overseas_regions,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class BarrierDownloadSerializer(serializers.Serializer):
@@ -284,7 +288,10 @@ class CsvDownloadSerializer(serializers.Serializer):
         return PublicBarrierStatus.choices[PublicBarrierStatus.UNKNOWN]
 
     def get_changed_since_published(self, barrier):
-        if barrier.has_public_barrier and barrier.public_barrier.is_currently_published:
+        if (
+            barrier.has_public_barrier
+            and barrier.public_barrier.status == PublicBarrierStatus.PUBLISHED
+        ):
             if barrier.public_barrier.changed_since_published:
                 return "Yes"
             return "No"
