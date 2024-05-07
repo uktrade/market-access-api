@@ -15,6 +15,15 @@ UserModel = get_user_model()
 logger = getLogger(__name__)
 
 
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "name",
+        ]
+
+
 class WhoAmISerializer(serializers.ModelSerializer):
     """User serializer"""
 
@@ -27,6 +36,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     user_profile = serializers.SerializerMethodField()
     permitted_applications = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
+    groups = GroupSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = UserModel
@@ -44,6 +54,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "permissions",
             "is_active",
             "is_superuser",
+            "groups",
         )
 
     def get_email(self, obj):
@@ -120,20 +131,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["sso_user_id"]
 
 
-class NestedGroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = [
-            "id",
-            "name",
-        ]
-
-
 class UserDetailSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
-    groups = NestedGroupSerializer(many=True, required=False)
+    groups = GroupSerializer(many=True, required=False)
 
     class Meta:
         model = UserModel
@@ -220,7 +222,7 @@ class UserMinimalDetailSerializer(UserDetailSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
-    groups = NestedGroupSerializer(many=True, required=False, read_only=True)
+    groups = GroupSerializer(many=True, required=False, read_only=True)
 
     class Meta:
         model = UserModel

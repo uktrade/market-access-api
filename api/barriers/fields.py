@@ -141,17 +141,14 @@ class PublicEligibilityField(serializers.BooleanField):
         )
         public_barrier, created = get_or_create_public_barrier(self.parent.instance)
 
-        if public_eligibility_postponed is True:
-            public_barrier.public_view_status = PublicBarrierStatus.REVIEW_LATER
-            public_barrier.save()
-        elif public_eligibility is True and public_barrier._public_view_status in (
-            PublicBarrierStatus.INELIGIBLE,
+        if public_eligibility is True and public_barrier._public_view_status in (
+            PublicBarrierStatus.NOT_ALLOWED,
             PublicBarrierStatus.UNKNOWN,
         ):
-            public_barrier.public_view_status = PublicBarrierStatus.ELIGIBLE
+            public_barrier.public_view_status = PublicBarrierStatus.ALLOWED
             public_barrier.save()
-        elif public_eligibility is False:
-            public_barrier.public_view_status = PublicBarrierStatus.INELIGIBLE
+        else:
+            public_barrier.public_view_status = PublicBarrierStatus.NOT_ALLOWED
             public_barrier.save()
 
         if "public_eligibility_summary" not in validated_data:

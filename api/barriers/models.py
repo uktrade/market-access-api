@@ -898,6 +898,10 @@ class PublicBarrierHistoricalModel(models.Model):
         )
 
     def update_light_touch_reviews(self):
+        if self.instance._history.history_type == "-":
+            # If the history type is a deletion, do not attempt to
+            # update the light touch reviews as the related barrier will not exist
+            return
         try:
             light_touch_reviews: PublicBarrierLightTouchReviews = (
                 self.instance.light_touch_reviews
@@ -988,6 +992,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     _summary = models.TextField(blank=True)
     summary_updated_on = models.DateTimeField(null=True, blank=True)
     internal_summary_at_update = models.TextField(blank=True, max_length=MAX_LENGTH)
+    approvers_summary = models.TextField(blank=True, max_length=500)
+    publishers_summary = models.TextField(blank=True, max_length=500)
 
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
@@ -1015,6 +1021,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     first_published_on = models.DateTimeField(null=True, blank=True)
     last_published_on = models.DateTimeField(null=True, blank=True)
     unpublished_on = models.DateTimeField(null=True, blank=True)
+    set_to_allowed_on = models.DateTimeField(null=True, blank=True)
 
     changed_since_published = models.BooleanField(default=False)
 
@@ -1142,42 +1149,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def public_view_status(self):
-        _old_public_view_status = self._public_view_status
-
-        # set default if eligibility is avail on the internal barrier
-        if self._public_view_status == PublicBarrierStatus.UNKNOWN:
-            if self.barrier.public_eligibility_postponed is True:
-                self._public_view_status = PublicBarrierStatus.REVIEW_LATER
-            elif self.barrier.public_eligibility is True:
-                self._public_view_status = PublicBarrierStatus.ELIGIBLE
-            elif self.barrier.public_eligibility is False:
-                self._public_view_status = PublicBarrierStatus.INELIGIBLE
-
-        # The internal barrier might get withdrawn from the public domain
-        # in which case it will be marked as ineligible for public view
-        # and the public barrier view status should update as well
-        #
-        # Note: cannot automatically change from published
-        #       the public barrier would need to be unpublished first
-        if self._public_view_status != PublicBarrierStatus.PUBLISHED:
-            if self.barrier.public_eligibility_postponed is True:
-                self._public_view_status = PublicBarrierStatus.REVIEW_LATER
-
-            # Marking the public barrier ineligible
-            elif self.barrier.public_eligibility is False:
-                self._public_view_status = PublicBarrierStatus.INELIGIBLE
-
-            # Marking the public barrier eligible
-            elif (
-                self.barrier.public_eligibility is True
-                and self._public_view_status
-                in [PublicBarrierStatus.INELIGIBLE, PublicBarrierStatus.REVIEW_LATER]
-            ):
-                self._public_view_status = PublicBarrierStatus.ELIGIBLE
-
-        if _old_public_view_status != self._public_view_status:
-            # only save when the public view status changes
-            self.save()
         return self._public_view_status
 
     @public_view_status.setter
@@ -1320,7 +1291,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     @property
     def ready_to_be_published(self):
-        is_ready = self.public_view_status == PublicBarrierStatus.READY
+        is_ready = (
+            self.public_view_status == PublicBarrierStatus.PUBLISHING_PENDING
+            or self.public_view_status == PublicBarrierStatus.UNPUBLISHED
+        )
         is_republish = self.unpublished_on is not None
         has_changes = self.unpublished_changes
         has_title_and_summary = bool(self.title and self.summary)
@@ -1806,18 +1780,14 @@ class BarrierFilterSet(django_filters.FilterSet):
                 public_barrier__changed_since_published=True
             )
 
-        if "not_yet_sifted" in value:
-            value.remove("not_yet_sifted")
-            public_queryset = queryset.filter(public_eligibility=None)
-
         status_lookup = {
             "unknown": PublicBarrierStatus.UNKNOWN,
-            "ineligible": PublicBarrierStatus.INELIGIBLE,
-            "eligible": PublicBarrierStatus.ELIGIBLE,
-            "ready": PublicBarrierStatus.READY,
+            "not_allowed": PublicBarrierStatus.NOT_ALLOWED,
+            "allowed": PublicBarrierStatus.ALLOWED,
+            "awaiting_approval": PublicBarrierStatus.APPROVAL_PENDING,
+            "ready_for_publishing": PublicBarrierStatus.PUBLISHING_PENDING,
             "published": PublicBarrierStatus.PUBLISHED,
             "unpublished": PublicBarrierStatus.UNPUBLISHED,
-            "review_later": PublicBarrierStatus.REVIEW_LATER,
         }
         statuses = [
             status_lookup.get(status)

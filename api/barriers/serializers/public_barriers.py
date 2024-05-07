@@ -101,6 +101,7 @@ class PublicBarrierSerializer(
     internal_id = serializers.SerializerMethodField()
     latest_note = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(source="internal_created_on")
+    set_to_allowed_on = serializers.DateTimeField()
     light_touch_reviews = PublicBarrierLightTouchReviewsSerializer()
     internal_main_sector = SectorField()
 
@@ -118,6 +119,8 @@ class PublicBarrierSerializer(
             "summary_updated_on",
             "internal_summary_changed",
             "internal_summary_at_update",
+            "approvers_summary",
+            "publishers_summary",
             "status",
             "internal_status",
             "internal_status_changed",
@@ -149,6 +152,7 @@ class PublicBarrierSerializer(
             "first_published_on",
             "last_published_on",
             "unpublished_on",
+            "set_to_allowed_on",
             "latest_published_version",
             "unpublished_changes",
             "ready_to_be_published",
