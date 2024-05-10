@@ -14,6 +14,7 @@ logger = getLogger(__name__)
 @transaction.atomic
 def delete_document(document_pk):
     """Handle document delete."""
+    logger.info(f'Deleting document {document_pk}')
     try:
         perform_delete_document(document_pk)
     except Exception:
@@ -29,6 +30,7 @@ def virus_scan_document(document_pk: str):
 
     Any errors are logged and sent to Sentry.
     """
+    logger.info(f'Virus scanning document {document_pk}')
     with advisory_lock(f"av-scan-{document_pk}"):
         document = get_document_by_pk(document_pk)
         if document:

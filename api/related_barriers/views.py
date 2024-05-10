@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -11,12 +13,15 @@ from api.related_barriers.constants import (
 )
 from api.related_barriers.serializers import BarrierRelatedListSerializer
 
+logger = logging.getLogger(__name__)
+
 
 @api_view(["GET"])
 def related_barriers(request, pk) -> Response:
     """
     Return a list of related barriers
     """
+    logger.info(f'Getting related barriers for {pk}')
     barrier = get_object_or_404(Barrier, pk=pk)
 
     if manager.manager is None:
