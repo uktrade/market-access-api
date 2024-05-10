@@ -72,7 +72,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         """
         Load data into memory.
         """
-        logger.info(f"(Related Barriers): set_data")
+        logger.info("(Related Barriers): set_data")
         self.flush()
         barrier_ids = [str(d["id"]) for d in data]
         barrier_data = [d["barrier_corpus"] for d in data]
@@ -82,28 +82,28 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @staticmethod
     def flush():
-        logger.info(f"(Related Barriers): flush cache")
+        logger.info("(Related Barriers): flush cache")
         cache.delete(EMBEDDINGS_CACHE_KEY)
         cache.delete(BARRIER_IDS_CACHE_KEY)
 
     @staticmethod
     def set_embeddings(embeddings):
-        logger.info(f"(Related Barriers): set_embeddings")
+        logger.info("(Related Barriers): set_embeddings")
         cache.set(EMBEDDINGS_CACHE_KEY, embeddings, timeout=None)
 
     @staticmethod
     def set_barrier_ids(barrier_ids):
-        logger.info(f"(Related Barriers): barrier_ids")
+        logger.info("(Related Barriers): barrier_ids")
         cache.set(BARRIER_IDS_CACHE_KEY, barrier_ids, timeout=None)
 
     @staticmethod
     def get_embeddings():
-        logger.info(f"(Related Barriers): get_embeddings")
+        logger.info("(Related Barriers): get_embeddings")
         return cache.get(EMBEDDINGS_CACHE_KEY, [])
 
     @staticmethod
     def get_barrier_ids():
-        logger.info(f"(Related Barriers): get_barrier_ids")
+        logger.info("(Related Barriers): get_barrier_ids")
         return cache.get(BARRIER_IDS_CACHE_KEY, [])
 
     @property
@@ -112,7 +112,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @timing
     def get_cosine_sim(self):
-        logger.info(f"(Related Barriers): get_cosine_sim")
+        logger.info("(Related Barriers): get_cosine_sim")
         embeddings = self.get_embeddings()
         return util.cos_sim(embeddings, embeddings)
 
@@ -227,7 +227,7 @@ def init():
 
     manager = RelatedBarrierManager()
     if not manager.get_barrier_ids():
-        logger.info(f"(Related Barriers): Initialising)")
+        logger.info("(Related Barriers): Initialising)")
         data = get_data()
         manager.set_data(data)
 
