@@ -2,7 +2,6 @@ from django.utils.log import DEFAULT_LOGGING
 
 from .base import *
 
-
 DJANGO_ENV = "local"
 
 LOGGING = DEFAULT_LOGGING  # we don't care about comprehensive ECS logging for local

@@ -13,7 +13,7 @@ def generate_barrier_download_file(
     barrier_download_id: str,
     barrier_ids: List[str],
 ):
-    logger.info('Running generate_barrier_download_file() task')
+    logger.info("Running generate_barrier_download_file() task")
 
     import time
 
@@ -33,7 +33,7 @@ def generate_barrier_download_file(
 
 @shared_task
 def barrier_download_complete_notification(barrier_download_id: str):
-    logger.info('Running barrier_download_complete_notification() task')
+    logger.info("Running barrier_download_complete_notification() task")
     service.barrier_download_complete_notification(
         barrier_download_id=barrier_download_id
     )

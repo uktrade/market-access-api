@@ -143,7 +143,7 @@ def auto_update_inactive_barrier_status():
     Take a list of barriers with modifed_on dates older than X months and X months
     for each barrier, update their status to "Dormant" and "Archived" respectively
     """
-    logger.info('Running auto_update_inactive_barrier_status() task')
+    logger.info("Running auto_update_inactive_barrier_status() task")
     barriers_to_update = get_barriers_to_update_this_month()
 
     for barrier in barriers_to_update["barriers_to_be_archived"]:
@@ -168,7 +168,7 @@ def send_auto_update_inactive_barrier_notification():
     Get a list of barriers that will, in the next month, pass the threshold for automatic
     status change to dormancy and archival. Send an email to relevant regional leads.
     """
-    logger.info('Running send_auto_update_inactive_barrier_notification() task')
+    logger.info("Running send_auto_update_inactive_barrier_notification() task")
     # Get the barriers that are scheduled for auto-updating this month
     barriers_to_update = get_barriers_to_update_this_month()
 
@@ -241,7 +241,7 @@ def send_barrier_inactivity_reminders():
     Get list of all barriers with modified_on and activity_reminder_sent dates older than 6 months
     For each barrier sent a reminder notification to the barrier owner
     """
-    logger.info('Running send_barrier_inactivity_reminders() task')
+    logger.info("Running send_barrier_inactivity_reminders() task")
 
     threshold_dates = get_inactivty_threshold_dates()
 

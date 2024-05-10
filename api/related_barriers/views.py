@@ -21,7 +21,7 @@ def related_barriers(request, pk) -> Response:
     """
     Return a list of related barriers
     """
-    logger.info(f'Getting related barriers for {pk}')
+    logger.info(f"Getting related barriers for {pk}")
     barrier = get_object_or_404(Barrier, pk=pk)
 
     if manager.manager is None:
