@@ -380,6 +380,7 @@ def barrier_changed_after_published(sender, instance, **kwargs):
 
 
 def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
+    logger.info(f"(Handler) Updating related barrier embeddings for {instance.pk}")
     try:
         current_barrier_object = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
