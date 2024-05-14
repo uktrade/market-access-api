@@ -13,7 +13,7 @@ Market Access API uses Docker compose to setup and run all the necessary compone
 
         # Market Access API
         127.0.0.1               api.market-access.local
-        
+
         # Mock SSO
         127.0.0.1               mocksso
 3. Clone the repository:
