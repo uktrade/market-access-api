@@ -72,6 +72,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         """
         Load data into memory.
         """
+        logger.info("(Related Barriers): set_data")
         self.flush()
         barrier_ids = [str(d["id"]) for d in data]
         barrier_data = [d["barrier_corpus"] for d in data]
@@ -81,23 +82,28 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @staticmethod
     def flush():
+        logger.info("(Related Barriers): flush cache")
         cache.delete(EMBEDDINGS_CACHE_KEY)
         cache.delete(BARRIER_IDS_CACHE_KEY)
 
     @staticmethod
     def set_embeddings(embeddings):
+        logger.info("(Related Barriers): set_embeddings")
         cache.set(EMBEDDINGS_CACHE_KEY, embeddings, timeout=None)
 
     @staticmethod
     def set_barrier_ids(barrier_ids):
+        logger.info("(Related Barriers): barrier_ids")
         cache.set(BARRIER_IDS_CACHE_KEY, barrier_ids, timeout=None)
 
     @staticmethod
     def get_embeddings():
+        logger.info("(Related Barriers): get_embeddings")
         return cache.get(EMBEDDINGS_CACHE_KEY, [])
 
     @staticmethod
     def get_barrier_ids():
+        logger.info("(Related Barriers): get_barrier_ids")
         return cache.get(BARRIER_IDS_CACHE_KEY, [])
 
     @property
@@ -106,6 +112,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @timing
     def get_cosine_sim(self):
+        logger.info("(Related Barriers): get_cosine_sim")
         embeddings = self.get_embeddings()
         return util.cos_sim(embeddings, embeddings)
 
@@ -117,6 +124,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     def add_barrier(
         self, barrier: BarrierEntry, barrier_ids: Optional[List[str]] = None
     ):
+        logger.info(f"(Related Barriers): add_barrier {barrier.id}")
         """barrier_ids: optimisation flag to avoid multiple cache requests"""
         if barrier_ids is None:
             barrier_ids = self.get_barrier_ids()
@@ -131,6 +139,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @timing
     def remove_barrier(self, barrier: BarrierEntry, barrier_ids=None):
+        logger.info(f"(Related Barriers): remove_barrier {barrier.id}")
         embeddings = self.get_embeddings()
         if not barrier_ids:
             barrier_ids = self.get_barrier_ids()
@@ -151,6 +160,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
     @timing
     def update_barrier(self, barrier: BarrierEntry):
+        logger.info(f"(Related Barriers): update_barrier {barrier.id}")
         barrier_ids = manager.get_barrier_ids()
         if barrier.id in barrier_ids:
             self.remove_barrier(barrier, barrier_ids)
@@ -160,6 +170,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     def get_similar_barriers(
         self, barrier: BarrierEntry, similarity_threshold: float, quantity: int
     ):
+        logger.info(f"(Related Barriers): get_similar_barriers {barrier.id}")
         barrier_ids = self.get_barrier_ids()
 
         if not barrier_ids:
@@ -216,6 +227,7 @@ def init():
 
     manager = RelatedBarrierManager()
     if not manager.get_barrier_ids():
+        logger.info("(Related Barriers): Initialising)")
         data = get_data()
         manager.set_data(data)
 
