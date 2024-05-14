@@ -194,6 +194,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     reported_by = serializers.SerializerMethodField()
     barrier_owner = serializers.SerializerMethodField()
     first_published_on = serializers.SerializerMethodField()
+    set_to_allowed_on = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
