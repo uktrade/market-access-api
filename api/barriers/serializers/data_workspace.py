@@ -243,6 +243,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "public_eligibility_summary",
             "public_eligibility_postponed",
             "first_published_on",
+            "set_to_allowed_on",
             "resolvability_assessments",
             "sectors",
             "sectors_affected",
@@ -553,3 +554,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     def get_first_published_on(self, obj):
         if hasattr(obj, "public_barrier"):
             return obj.public_barrier.first_published_on
+
+    def get_set_to_allowed_on(self, obj):
+        if hasattr(obj, "public_barrier"):
+            return obj.public_barrier.set_to_allowed_on
