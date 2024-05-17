@@ -101,6 +101,8 @@ def get_saved_searches_for_notification(user):
 
 @shared_task
 def send_notification_emails():
+    logger.info("Running send_notification_emails() task")
+
     User = get_user_model()
     count = 0
 
