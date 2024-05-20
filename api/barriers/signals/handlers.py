@@ -1,8 +1,8 @@
 import logging
 
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.db import transaction
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -19,15 +19,14 @@ from api.barriers.models import (
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
-from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
-from api.related_barriers import manager
-from api.related_barriers.constants import BarrierEntry
-from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
-
 from api.barriers.signals.tasks import (
     send_new_valuation_notification,
     send_top_priority_notification,
 )
+from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
+from api.related_barriers import manager
+from api.related_barriers.constants import BarrierEntry
+from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
 
 logger = logging.getLogger(__name__)
 
