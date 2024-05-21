@@ -1061,15 +1061,27 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.published_versions["versions"].setdefault(new_version, entry)
 
     def get_published_version(self, version):
+        """
+        Whole publish flow needs to be cleaned up, optimised, simplified.
+
+        ie When publishing a barrier this function is called ~20 times and it is querying db.
+        """
         version = str(version)
+
         if self.published_versions:
+            logger.info(
+                f'self.published_versions: type({type(self.published_versions)}) value({self.published_versions})'
+            )
+            if not self.history.exists():
+                logger.warning(f"(PublicBarrier): No history {self.id}")
+                return
+
             timestamp = self.published_versions["versions"][version]["published_on"]
             historic_public_barrier = self.history.as_of(
                 datetime.datetime.fromisoformat(timestamp)
             )
+
             return historic_public_barrier
-        else:
-            return None
 
     @property
     def latest_published_version(self):
