@@ -76,15 +76,15 @@ def send_top_priority_notification(email_type: str, barrier_id: int):
     personalisation_items["barrier_id"] = str(barrier.code)
 
     # Build URL to the barrier
-    personalisation_items["barrier_url"] = (
-        f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/"
-    )
+    personalisation_items[
+        "barrier_url"
+    ] = f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/"
 
     # If its a rejection, we need to also get the reason for rejection
     if email_type == "REJECTION":
-        personalisation_items["decision_reason"] = (
-            barrier.top_priority_rejection_summary
-        )
+        personalisation_items[
+            "decision_reason"
+        ] = barrier.top_priority_rejection_summary
 
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     client.send_email_notification(
