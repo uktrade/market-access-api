@@ -1072,9 +1072,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             logger.info(
                 f'self.published_versions: type({type(self.published_versions)}) value({self.published_versions})'
             )
-            if not self.history.exists():
-                logger.warning(f"(PublicBarrier): No history {self.id}")
-                return
+            logger.info(f"(PublicBarrier): history exists - {self.history.exists()}")
 
             timestamp = self.published_versions["versions"][version]["published_on"]
             historic_public_barrier = self.history.as_of(
