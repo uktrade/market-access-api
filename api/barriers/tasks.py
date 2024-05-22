@@ -300,9 +300,6 @@ def send_new_valuation_notification(barrier_id: int):
     Create the email client and send the new valuation notification email
     """
 
-    # avoid circular import
-    from api.barriers.models import Barrier
-
     barrier = Barrier.objects.get(id=barrier_id)
     template_id = settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID
 
@@ -335,9 +332,6 @@ def send_top_priority_notification(email_type: str, barrier_id: int):
     """
     Create the email client and send the top_priority notification email
     """
-
-    # avoid circular import
-    from api.barriers.models import Barrier
 
     barrier = Barrier.objects.get(id=barrier_id)
 
