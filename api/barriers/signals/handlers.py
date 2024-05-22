@@ -19,7 +19,7 @@ from api.barriers.models import (
     PublicBarrier,
     PublicBarrierLightTouchReviews,
 )
-from api.barriers.signals.tasks import (
+from api.barriers.tasks import (
     send_new_valuation_notification,
     send_top_priority_notification,
 )
