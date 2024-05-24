@@ -9,7 +9,7 @@ from rest_framework.test import APITestCase
 
 from api.barrier_downloads.constants import BARRIER_FIELD_TO_COLUMN_TITLE
 from api.barrier_downloads.serializers import CsvDownloadSerializer
-from api.barrier_downloads.service import serializer_to_csv_bytes
+from api.core.utils import serializer_to_csv_bytes
 from api.barriers.models import (
     Barrier,
     BarrierProgressUpdate,
