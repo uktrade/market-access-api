@@ -5,8 +5,10 @@ from django.conf import settings
 from django.core.files.temp import NamedTemporaryFile
 from django.utils import timezone
 
-from api.barriers.serializers.public_barriers import public_barriers_to_json
-from api.core.utils import list_s3_public_data_files, upload_to_s3
+from api.barrier_downloads.service import serializer_to_csv_bytes
+from api.barriers.helpers import get_published_public_barriers
+from api.barriers.serializers.public_barriers import public_barriers_to_json, PublicPublishedVersionSerializer
+from api.core.utils import list_s3_public_data_files, upload_to_s3, s3_client
 
 logger = logging.getLogger(__name__)
 
@@ -114,14 +116,38 @@ def public_release_to_s3(public_barriers=None, force_publish=False):
     # To make sure all files use the same version
     next_version = latest_file().next_version
 
-    with NamedTemporaryFile(mode="w+t") as tf:
-        json.dump(public_barrier_data_json_file_content(public_barriers), tf, indent=4)
-        tf.flush()
-        s3_filename = f"{versioned_folder(next_version)}/data.json"
-        upload_to_s3(tf.name, settings.PUBLIC_DATA_BUCKET, s3_filename)
+    logger.info('Attempting S3 publish')
+    public_barriers = [
+        pb.latest_published_version for pb in get_published_public_barriers()
+    ]
+    logger.info(f'Public Barrier Count: {len(public_barriers)}')
+    serializer = PublicPublishedVersionSerializer(public_barriers, many=True)
 
-    with NamedTemporaryFile(mode="w+t") as tf:
-        json.dump(metadata_json_file_content(), tf, indent=4)
-        tf.flush()
-        s3_filename = f"{versioned_folder(next_version)}/metadata.json"
-        upload_to_s3(tf.name, settings.PUBLIC_DATA_BUCKET, s3_filename)
+    csv_bytes = serializer_to_csv_bytes(
+        serializer, field_names={
+            'id': 'id', 'title': 'title', 'summary': 'summary', "is_resolved": "is_resolved",
+            'status_date': 'status_date', 'country': 'country', 'caused_by_trading_bloc': 'caused_by_trading_bloc',
+            'location': 'location', 'sectors': 'sectors', 'categories': 'categories',
+            'last_published_on': 'last_published_on', 'reported_on': 'reported_on'
+        }
+    )
+
+
+    s3 = s3_client()
+
+    s3_filename = f"{versioned_folder(next_version)}/test-data.json"
+
+    logger.info('uploading to s3')
+    s3.put_object(Bucket=settings.PUBLIC_DATA_BUCKET, Body=csv_bytes, Key=s3_filename)
+
+    # with NamedTemporaryFile(mode="w+t") as tf:
+    #     json.dump(public_barrier_data_json_file_content(public_barriers), tf, indent=4)
+    #     tf.flush()
+    #     s3_filename = f"{versioned_folder(next_version)}/data.json"
+    #     upload_to_s3(tf.name, settings.PUBLIC_DATA_BUCKET, s3_filename)
+    #
+    # with NamedTemporaryFile(mode="w+t") as tf:
+    #     json.dump(metadata_json_file_content(), tf, indent=4)
+    #     tf.flush()
+    #     s3_filename = f"{versioned_folder(next_version)}/metadata.json"
+    #     upload_to_s3(tf.name, settings.PUBLIC_DATA_BUCKET, s3_filename)
