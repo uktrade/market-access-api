@@ -1,5 +1,3 @@
-import csv
-import io
 import logging
 from typing import List
 
@@ -10,7 +8,6 @@ from notifications_python_client import NotificationsAPIClient
 
 from api.barrier_downloads import tasks
 from api.barrier_downloads.constants import BARRIER_FIELD_TO_COLUMN_TITLE
-from api.barrier_downloads.csv import _transform_csv_row
 from api.barrier_downloads.exceptions import (
     BarrierDownloadDoesNotExist,
     BarrierDownloadNotificationError,
@@ -25,6 +22,7 @@ from api.barriers.models import (
     ProgrammeFundProgressUpdate,
 )
 from api.collaboration.models import TeamMember
+from api.core.utils import serializer_to_csv_bytes
 from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 from api.user.models import UserActvitiyLog
@@ -35,21 +33,6 @@ logger = logging.getLogger(__name__)
 def get_s3_client_and_bucket_name():
     bucket_id = "default"
     return get_s3_client_for_bucket(bucket_id), get_bucket_name(bucket_id)
-
-
-def serializer_to_csv_bytes(serializer, field_names) -> bytes:
-    output = io.StringIO()
-    writer = csv.DictWriter(
-        output,
-        extrasaction="ignore",
-        fieldnames=field_names.keys(),
-        quoting=csv.QUOTE_MINIMAL,
-    )
-    writer.writerow(field_names)
-    for row in serializer.data:
-        writer.writerow(_transform_csv_row(row))
-    content = output.getvalue().encode("utf-8")
-    return content
 
 
 def create_barrier_download(user, filters: dict, barrier_ids: List) -> BarrierDownload:
