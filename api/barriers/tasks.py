@@ -30,18 +30,18 @@ def get_inactivty_threshold_dates():
     last_day_of_month = calendar.monthrange(current_date.year, current_date.month)[1]
     target_date = current_date.replace(day=last_day_of_month)
 
-    inactivity_threshold_dates[
-        "archive_inactivity_threshold_date"
-    ] = target_date - timedelta(days=settings.BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS)
-    inactivity_threshold_dates[
-        "dormant_inactivity_threshold_date"
-    ] = target_date - timedelta(days=settings.BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS)
+    inactivity_threshold_dates["archive_inactivity_threshold_date"] = (
+        target_date - timedelta(days=settings.BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS)
+    )
+    inactivity_threshold_dates["dormant_inactivity_threshold_date"] = (
+        target_date - timedelta(days=settings.BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS)
+    )
     inactivity_threshold_dates["inactivity_threshold_date"] = current_date - timedelta(
         days=settings.BARRIER_INACTIVITY_THRESHOLD_DAYS
     )
-    inactivity_threshold_dates[
-        "repeat_reminder_threshold_date"
-    ] = current_date - timedelta(days=settings.BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS)
+    inactivity_threshold_dates["repeat_reminder_threshold_date"] = (
+        current_date - timedelta(days=settings.BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS)
+    )
 
     return inactivity_threshold_dates
 
@@ -143,7 +143,7 @@ def auto_update_inactive_barrier_status():
     Take a list of barriers with modifed_on dates older than X months and X months
     for each barrier, update their status to "Dormant" and "Archived" respectively
     """
-
+    logger.info("Running auto_update_inactive_barrier_status() task")
     barriers_to_update = get_barriers_to_update_this_month()
 
     for barrier in barriers_to_update["barriers_to_be_archived"]:
@@ -168,7 +168,7 @@ def send_auto_update_inactive_barrier_notification():
     Get a list of barriers that will, in the next month, pass the threshold for automatic
     status change to dormancy and archival. Send an email to relevant regional leads.
     """
-
+    logger.info("Running send_auto_update_inactive_barrier_notification() task")
     # Get the barriers that are scheduled for auto-updating this month
     barriers_to_update = get_barriers_to_update_this_month()
 
@@ -241,6 +241,7 @@ def send_barrier_inactivity_reminders():
     Get list of all barriers with modified_on and activity_reminder_sent dates older than 6 months
     For each barrier sent a reminder notification to the barrier owner
     """
+    logger.info("Running send_barrier_inactivity_reminders() task")
 
     threshold_dates = get_inactivty_threshold_dates()
 
@@ -291,3 +292,86 @@ def send_barrier_inactivity_reminders():
         )
         barrier.activity_reminder_sent = timezone.now()
         barrier.save()
+
+
+@shared_task
+def send_new_valuation_notification(barrier_id: int):
+    """
+    Create the email client and send the new valuation notification email
+    """
+
+    barrier = Barrier.objects.get(id=barrier_id)
+    template_id = settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID
+
+    barrier_team_list = barrier.barrier_team.all()
+    for team_recipient in barrier_team_list:
+        if team_recipient.role in ["Owner", "Contributor"]:
+            recipient = team_recipient.user
+
+            personalisation_items = {}
+            try:
+                personalisation_items["first_name"] = recipient.first_name
+            except AttributeError:
+                logger.warning("User has no first_name attribute")
+                continue
+            personalisation_items["barrier_id"] = str(barrier.id)
+            personalisation_items["barrier_code"] = str(barrier.code)
+
+            client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+            client.send_email_notification(
+                email_address=recipient.email,
+                template_id=template_id,
+                personalisation=personalisation_items,
+            )
+            # log the email sent
+            logger.info(f"Email sent to {recipient.email} for barrier {barrier.id}")
+
+
+@shared_task
+def send_top_priority_notification(email_type: str, barrier_id: int):
+    """
+    Create the email client and send the top_priority notification email
+    """
+
+    barrier = Barrier.objects.get(id=barrier_id)
+
+    # Choose accepted or rejected template
+    template_id = ""
+    if email_type == "APPROVAL":
+        template_id = settings.BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID
+    elif email_type == "REJECTION":
+        template_id = settings.BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID
+
+    personalisation_items = {}
+
+    # Get barrier owner
+    recipient = barrier.barrier_team.filter(role="Owner").first()
+    if not recipient:
+        logger.warning(f"Barrier {barrier.id} has no owner")
+        return
+
+    recipient = recipient.user
+    personalisation_items["first_name"] = recipient.first_name
+
+    # Seperate the barrier ID
+    personalisation_items["barrier_id"] = str(barrier.code)
+
+    # Build URL to the barrier
+    personalisation_items["barrier_url"] = (
+        f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/"
+    )
+
+    # If its a rejection, we need to also get the reason for rejection
+    if email_type == "REJECTION":
+        personalisation_items["decision_reason"] = (
+            barrier.top_priority_rejection_summary
+        )
+
+    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
+    client.send_email_notification(
+        email_address=recipient.email,
+        template_id=template_id,
+        personalisation=personalisation_items,
+    )
+    # log the email sent
+    logger.info(f"Email sent to {recipient.email} for barrier {barrier.id}")
