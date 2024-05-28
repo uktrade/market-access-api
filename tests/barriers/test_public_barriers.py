@@ -19,9 +19,9 @@ from api.barriers.helpers import get_team_member_user_ids
 from api.barriers.models import Barrier, PublicBarrier
 from api.barriers.public_data import (
     VersionedFile,
+    get_public_data_content,
     latest_file,
     versioned_folder,
-    get_public_data_content,
 )
 from api.barriers.serializers import PublicBarrierSerializer
 from api.barriers.serializers.public_barriers import PublicPublishedVersionSerializer
