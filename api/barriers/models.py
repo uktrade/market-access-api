@@ -1070,7 +1070,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
         if self.published_versions:
             logger.info(
-                f'self.published_versions: type({type(self.published_versions)}) value({self.published_versions})'
+                f"self.published_versions: type({type(self.published_versions)}) value({self.published_versions})"
             )
             logger.info(f"(PublicBarrier): history exists - {self.history.exists()}")
 

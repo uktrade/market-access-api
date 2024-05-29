@@ -92,8 +92,12 @@ def metadata_json_file_content():
 
 
 def get_public_data_content():
-    public_barriers = [pb.latest_published_version for pb in get_published_public_barriers()]
-    return {"barriers": PublicPublishedVersionSerializer(public_barriers, many=True).data}
+    public_barriers = [
+        pb.latest_published_version for pb in get_published_public_barriers()
+    ]
+    return {
+        "barriers": PublicPublishedVersionSerializer(public_barriers, many=True).data
+    }
 
 
 def public_release_to_s3(public_barriers=None, force_publish=False):
@@ -121,5 +125,9 @@ def public_release_to_s3(public_barriers=None, force_publish=False):
 
     s3 = s3_client()
 
-    s3.put_object(Bucket=settings.PUBLIC_DATA_BUCKET, Body=barrier_json, Key=s3_filename)
-    s3.put_object(Bucket=settings.PUBLIC_DATA_BUCKET, Body=metadata_json, Key=metadata_filename)
+    s3.put_object(
+        Bucket=settings.PUBLIC_DATA_BUCKET, Body=barrier_json, Key=s3_filename
+    )
+    s3.put_object(
+        Bucket=settings.PUBLIC_DATA_BUCKET, Body=metadata_json, Key=metadata_filename
+    )

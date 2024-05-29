@@ -1,9 +1,8 @@
 import logging
 
-from django.conf import settings
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -19,6 +18,10 @@ from api.barriers.models import (
     HistoricalPublicBarrier,
     PublicBarrier,
     PublicBarrierLightTouchReviews,
+)
+from api.barriers.tasks import (
+    send_new_valuation_notification,
+    send_top_priority_notification,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from api.related_barriers import manager
@@ -39,24 +42,25 @@ def barrier_categories_changed(sender, instance, action, **kwargs):
     """
 
     if action in ("post_add", "post_remove"):
-        if hasattr(instance, "categories_history_saved"):
-            historical_instance = HistoricalBarrier.objects.filter(
-                id=instance.pk
-            ).latest("history_date")
-            historical_instance.update_categories()
-            historical_instance.save()
-        else:
-            instance.categories_history_saved = True
-            instance.save()
+        with transaction.atomic():
+            if hasattr(instance, "categories_history_saved"):
+                historical_instance = HistoricalBarrier.objects.filter(
+                    id=instance.pk
+                ).latest("history_date")
+                historical_instance.update_categories()
+                historical_instance.save()
+            else:
+                instance.categories_history_saved = True
+                instance.save()
 
-        public_barrier, _ = get_or_create_public_barrier(barrier=instance)
+            public_barrier, _ = get_or_create_public_barrier(barrier=instance)
 
-        if (
-            not public_barrier.changed_since_published
-            and public_barrier.last_published_on
-        ):
-            public_barrier.changed_since_published = True
-            public_barrier.save()
+            if (
+                not public_barrier.changed_since_published
+                and public_barrier.last_published_on
+            ):
+                public_barrier.changed_since_published = True
+                public_barrier.save()
 
 
 def barrier_organisations_changed(sender, instance, action, **kwargs):
@@ -137,20 +141,21 @@ def public_barrier_content_update(
     if not has_public_content_changed:
         return
 
-    try:
-        light_touch_reviews: PublicBarrierLightTouchReviews = (
-            instance.light_touch_reviews
-        )
-    except PublicBarrier.light_touch_reviews.RelatedObjectDoesNotExist:
-        light_touch_reviews = PublicBarrierLightTouchReviews.objects.create(
-            public_barrier=instance
-        )
-    if not light_touch_reviews.content_team_approval:
-        return
+    with transaction.atomic():
+        try:
+            light_touch_reviews: PublicBarrierLightTouchReviews = (
+                instance.light_touch_reviews
+            )
+        except PublicBarrier.light_touch_reviews.RelatedObjectDoesNotExist:
+            light_touch_reviews = PublicBarrierLightTouchReviews.objects.create(
+                public_barrier=instance
+            )
+        if not light_touch_reviews.content_team_approval:
+            return
 
-    light_touch_reviews.content_team_approval = False
-    light_touch_reviews.has_content_changed_since_approval = True
-    light_touch_reviews.save()
+        light_touch_reviews.content_team_approval = False
+        light_touch_reviews.has_content_changed_since_approval = True
+        light_touch_reviews.save()
 
 
 def barrier_completion_percentage_changed(sender, instance: Barrier, **kwargs):
@@ -204,40 +209,11 @@ def barrier_new_valuation_email_notification(sender, instance, created, **kwargs
             if (old_commercial_value != new_commercial_value) | (
                 old_commercial_value_explanation != new_commercial_value_explanation
             ):
-                send_new_valuation_notification(instance)
+                send_new_valuation_notification.delay(instance.id)
     else:
         if created:
             # Get the barrier and pass to the notification function
-            barrier = Barrier.objects.filter(id=instance.barrier_id).first()
-            send_new_valuation_notification(barrier)
-
-
-def send_new_valuation_notification(barrier):
-    """
-    Create the email client and send the new valuation notification email
-    """
-    template_id = settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID
-
-    barrier_team_list = barrier.barrier_team.all()
-    for team_recipient in barrier_team_list:
-        if team_recipient.role in ["Owner", "Contributor"]:
-            recipient = team_recipient.user
-
-            personalisation_items = {}
-            try:
-                personalisation_items["first_name"] = recipient.first_name
-            except AttributeError:
-                logger.warning("User has no first_name attribute")
-                continue
-            personalisation_items["barrier_id"] = str(barrier.id)
-            personalisation_items["barrier_code"] = str(barrier.code)
-
-            client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-            client.send_email_notification(
-                email_address=recipient.email,
-                template_id=template_id,
-                personalisation=personalisation_items,
-            )
+            send_new_valuation_notification.delay(instance.barrier_id)
 
 
 def barrier_priority_approval_email_notification(sender, instance: Barrier, **kwargs):
@@ -260,7 +236,7 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
         if new_top_priority_status != old_top_priority_status:
             if new_top_priority_status == "APPROVED":
                 # If status has changed to APPROVED, no matter what it was, it has now been approved
-                send_top_priority_notification("APPROVAL", instance)
+                send_top_priority_notification.delay("APPROVAL", instance.id)
             elif (
                 new_top_priority_status == "NONE"
                 and old_top_priority_status == "APPROVAL_PENDING"
@@ -273,7 +249,7 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
                 if instance.priority_level == "WATCHLIST":
                     return
                 else:
-                    send_top_priority_notification("REJECTION", instance)
+                    send_top_priority_notification.delay("REJECTION", instance.id)
             else:
                 # Status change indicates barrier has neither been rejected or accepted in this save operation
                 return
@@ -282,57 +258,13 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
             return
 
 
-def send_top_priority_notification(email_type, barrier):
-    """
-    Create the email client and send the top_priority notification email
-    """
-
-    # Choose accepted or rejected template
-    template_id = ""
-    if email_type == "APPROVAL":
-        template_id = settings.BARRIER_PB100_ACCEPTED_EMAIL_TEMPLATE_ID
-    elif email_type == "REJECTION":
-        template_id = settings.BARRIER_PB100_REJECTED_EMAIL_TEMPLATE_ID
-
-    personalisation_items = {}
-
-    # Get barrier owner
-    recipient = barrier.barrier_team.filter(role="Owner").first()
-    if not recipient:
-        logger.warning(f"Barrier {barrier.id} has no owner")
-        return
-
-    recipient = recipient.user
-    personalisation_items["first_name"] = recipient.first_name
-
-    # Seperate the barrier ID
-    personalisation_items["barrier_id"] = str(barrier.code)
-
-    # Build URL to the barrier
-    personalisation_items[
-        "barrier_url"
-    ] = f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/"
-
-    # If its a rejection, we need to also get the reason for rejection
-    if email_type == "REJECTION":
-        personalisation_items[
-            "decision_reason"
-        ] = barrier.top_priority_rejection_summary
-
-    client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-    client.send_email_notification(
-        email_address=recipient.email,
-        template_id=template_id,
-        personalisation=personalisation_items,
-    )
-
-
 @receiver(post_save, sender=BarrierRequestDownloadApproval)
 def send_barrier_download_request_notification(sender, instance, created, **kwargs):
     if created:
         instance.send_notification()
 
 
+@transaction.atomic
 def barrier_completion_top_priority_barrier_resolved(
     sender, instance: Barrier, **kwargs
 ):
@@ -353,6 +285,7 @@ def barrier_completion_top_priority_barrier_resolved(
         )
 
 
+@transaction.atomic
 def barrier_changed_after_published(sender, instance, **kwargs):
     try:
         obj = sender.objects.get(pk=instance.pk)
@@ -379,7 +312,11 @@ def barrier_changed_after_published(sender, instance, **kwargs):
                 public_barrier.save()
 
 
+@transaction.atomic
 def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
+    logger.info(
+        f"(Handler) Running related_barrier_update_embeddings() handler for {instance.pk}"
+    )
     try:
         current_barrier_object = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
@@ -390,6 +327,10 @@ def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
         getattr(current_barrier_object, field) != getattr(instance, field)
         for field in BARRIER_UPDATE_FIELDS
     )
+    logger.info(
+        f"(Handler) Updating related barrier embeddings for {instance.pk}: {changed}"
+    )
+
     if changed and not current_barrier_object.draft:
         if not manager.manager:
             manager.init()

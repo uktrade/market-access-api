@@ -1,11 +1,10 @@
-from functools import lru_cache
 from logging import getLogger
 
 import boto3
+from dbt_copilot_python.utility import is_copilot
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from dbt_copilot_python.utility import is_copilot
 
 from api.core.exceptions import MarketAccessException
 from api.documents.exceptions import DocumentDeleteException
@@ -41,7 +40,6 @@ def get_bucket_name(bucket_id):
     return get_bucket_credentials(bucket_id)["bucket_name"]
 
 
-@lru_cache()
 def get_s3_client_for_bucket(bucket_id):
     """Get S3 client for bucket id."""
     credentials = get_bucket_credentials(bucket_id)
@@ -50,7 +48,7 @@ def get_s3_client_for_bucket(bucket_id):
         return boto3.client(
             "s3",
             region_name=credentials["aws_region"],
-            config=boto3.session.Config(signature_version="s3v4")
+            config=boto3.session.Config(signature_version="s3v4"),
         )
     else:
         return boto3.client(

@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
@@ -29,6 +30,7 @@ from api.user.serializers import (
 )
 
 UserModel = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET", "POST", "PATCH"])
@@ -38,8 +40,10 @@ def who_am_i(request):
     try:
         token = request.auth.token
     except AttributeError:
-        print(request.auth)
-        return HttpResponse("Unauthorized", status=HTTPStatus.UNAUTHORIZED)
+        logger.info(f"Unauthorized missing or invalid token: {request.auth}")
+        return HttpResponse(
+            "Unauthorized missing or invalid token", status=HTTPStatus.UNAUTHORIZED
+        )
 
     context = {"token": token}
     serializer = WhoAmISerializer(request.user, context=context)

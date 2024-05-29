@@ -12,7 +12,6 @@ from api.barriers.fields import (
     ReadOnlyTradingBlocField,
     SectorField,
 )
-from api.barriers.helpers import get_published_public_barriers
 from api.barriers.models import PublicBarrier, PublicBarrierLightTouchReviews
 from api.barriers.serializers.mixins import LocationFieldMixin
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
