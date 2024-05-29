@@ -1,6 +1,6 @@
+import mock
 import pytest
 from django.utils.timezone import now
-import mock
 
 from api.documents.tasks import delete_document
 
@@ -10,12 +10,11 @@ from .my_entity_document.models import MyEntityDocument
 pytestmark = pytest.mark.django_db
 
 
-
 @mock.patch("api.documents.utils.get_bucket_name")
 @mock.patch("api.documents.utils.get_s3_client_for_bucket")
 def test_delete_document(mock_get_s3_client_for_bucket, mock_get_bucket_name):
     mock_get_s3_client_for_bucket.return_value = mock.Mock()
-    mock_get_bucket_name.return_value = 'Test Name'
+    mock_get_bucket_name.return_value = "Test Name"
 
     """Tests if delete_document task deletes s3 document."""
     entity_document = MyEntityDocument.objects.create(
@@ -36,7 +35,9 @@ def test_delete_document(mock_get_s3_client_for_bucket, mock_get_bucket_name):
 
 @mock.patch("api.documents.utils.get_bucket_name")
 @mock.patch("api.documents.utils.get_s3_client_for_bucket")
-def test_delete_document_s3_failure(mock_get_s3_client_for_bucket, mock_get_bucket_name):
+def test_delete_document_s3_failure(
+    mock_get_s3_client_for_bucket, mock_get_bucket_name
+):
     """
     Tests if delete_document task won't delete document from the
     database if deletion from S3 fails.
@@ -44,7 +45,7 @@ def test_delete_document_s3_failure(mock_get_s3_client_for_bucket, mock_get_buck
     s3_client = mock.Mock()
     s3_client.delete_object.side_effect = Exception
     mock_get_s3_client_for_bucket.return_value = s3_client
-    mock_get_bucket_name.return_value = 'Test Name'
+    mock_get_bucket_name.return_value = "Test Name"
 
     entity_document = MyEntityDocument.objects.create(
         original_filename="test.txt", my_field="lions"
