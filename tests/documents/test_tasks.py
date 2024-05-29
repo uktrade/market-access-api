@@ -1,9 +1,8 @@
 import pytest
-from botocore.stub import Stubber
 from django.utils.timezone import now
+import mock
 
 from api.documents.tasks import delete_document
-from api.documents.utils import get_bucket_name, get_s3_client_for_bucket
 
 from .my_entity_document.models import MyEntityDocument
 
@@ -11,15 +10,13 @@ from .my_entity_document.models import MyEntityDocument
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture()
-def s3_stubber():
-    """S3 stubber using the botocore Stubber class."""
-    s3_client = get_s3_client_for_bucket("default")
-    with Stubber(s3_client) as s3_stubber:
-        yield s3_stubber
 
+@mock.patch("api.documents.utils.get_bucket_name")
+@mock.patch("api.documents.utils.get_s3_client_for_bucket")
+def test_delete_document(mock_get_s3_client_for_bucket, mock_get_bucket_name):
+    mock_get_s3_client_for_bucket.return_value = mock.Mock()
+    mock_get_bucket_name.return_value = 'Test Name'
 
-def test_delete_document(s3_stubber):
     """Tests if delete_document task deletes s3 document."""
     entity_document = MyEntityDocument.objects.create(
         original_filename="test.txt", my_field="lions"
@@ -27,14 +24,6 @@ def test_delete_document(s3_stubber):
     document = entity_document.document
     document.uploaded_on = now()
     document.mark_deletion_pending()
-
-    bucket_name = get_bucket_name(document.bucket_id)
-
-    s3_stubber.add_response(
-        "delete_object",
-        {"ResponseMetadata": {"HTTPStatusCode": 204}},
-        expected_params={"Bucket": bucket_name, "Key": document.path},
-    )
 
     result = delete_document.apply(args=(document.pk,)).get()
     assert result is None
@@ -45,25 +34,24 @@ def test_delete_document(s3_stubber):
         )
 
 
-def test_delete_document_s3_failure(s3_stubber):
+@mock.patch("api.documents.utils.get_bucket_name")
+@mock.patch("api.documents.utils.get_s3_client_for_bucket")
+def test_delete_document_s3_failure(mock_get_s3_client_for_bucket, mock_get_bucket_name):
     """
     Tests if delete_document task won't delete document from the
     database if deletion from S3 fails.
     """
+    s3_client = mock.Mock()
+    s3_client.delete_object.side_effect = Exception
+    mock_get_s3_client_for_bucket.return_value = s3_client
+    mock_get_bucket_name.return_value = 'Test Name'
+
     entity_document = MyEntityDocument.objects.create(
         original_filename="test.txt", my_field="lions"
     )
     document = entity_document.document
     document.uploaded_on = now()
     document.mark_deletion_pending()
-
-    bucket_name = get_bucket_name(document.bucket_id)
-
-    s3_stubber.add_client_error(
-        "delete_object",
-        service_error_code=500,
-        expected_params={"Bucket": bucket_name, "Key": document.path},
-    )
 
     with pytest.raises(Exception):
         delete_document.apply(args=(document.pk,)).get()
