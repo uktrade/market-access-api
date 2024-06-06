@@ -228,7 +228,7 @@ def get_trading_bloc_overseas_regions(trading_bloc_code):
 
 def get_wto_committee_groups():
     committee_groups = []
-    for group in wto_models.WTOCommitteeGroup.objects.prefetch_related('committees'):
+    for group in wto_models.WTOCommitteeGroup.objects.prefetch_related("committees"):
         committee_groups.append(
             {
                 "id": str(group.id),
