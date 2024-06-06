@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, F, Value, When
+from django.db.models import Case, CharField, F, Value, When, Prefetch
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -270,6 +270,7 @@ class BarrierList(generics.ListAPIView):
             "tags",
             "organisations",
             "progress_updates",
+            "valuation_assessments"
         )
     )
     serializer_class = BarrierListSerializer
@@ -292,7 +293,7 @@ class BarrierList(generics.ListAPIView):
         return ordering_config
 
     def get_queryset(self):
-        queryset = super().get_queryset().prefetch_related("valuation_assessments")
+        queryset = super().get_queryset()
 
         ordering_config = self.get_ordering_config()
         if ordering_config:
@@ -424,14 +425,39 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     queryset = (
         Barrier.barriers.all()
-        .select_related("priority")
+        .select_related("priority", "created_by", "modified_by", "proposed_estimated_resolution_date_user")
         .prefetch_related(
-            "barrier_commodities",
+            "tags",
             "categories",
+            Prefetch(
+                "barrier_team",
+                queryset=TeamMember.objects.select_related("user")
+                .filter(role="Owner")
+                .all(),
+            ),
+            "organisations",
+            Prefetch(
+                "progress_updates",
+                queryset=BarrierProgressUpdate.objects.order_by("-created_on").all(),
+            ),
+            Prefetch(
+                "programme_fund_progress_updates",
+                queryset=ProgrammeFundProgressUpdate.objects.select_related(
+                    "created_by", "modified_by"
+                )
+                .order_by("-created_on")
+                .all(),
+            ),
+            "barrier_commodities",
+            "public_barrier",
             "economic_assessments",
             "valuation_assessments",
-            "organisations",
-            "tags",
+            Prefetch(
+                "next_steps_items",
+                queryset=BarrierNextStepItem.objects.filter(
+                    status="IN_PROGRESS"
+                ).order_by("-completion_date"),
+            ),
         )
     )
 
