@@ -292,7 +292,8 @@ class BarrierList(generics.ListAPIView):
         return ordering_config
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = super().get_queryset().prefetch_related('valuation_assessments')
+
         ordering_config = self.get_ordering_config()
         if ordering_config:
             order_by = ordering_config["order_on"]

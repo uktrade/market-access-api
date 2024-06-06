@@ -84,7 +84,6 @@ class MetadataView(generics.GenericAPIView):
         barrier_tags = get_barrier_tags()
         trade_direction = dict((str(x), y) for x, y in TRADE_DIRECTION_CHOICES)
         wto_committee_groups = get_wto_committee_groups()
-
         government_organisations = get_government_organisations()
 
         results = {
