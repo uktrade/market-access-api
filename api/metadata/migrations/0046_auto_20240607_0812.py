@@ -11,6 +11,14 @@ def remove_brexit_and_nip_tags(apps, schema_editor):
     BarrierTag.objects.filter(title="NI Protocol").delete()
 
 
+def create_brexit_and_nip_tags(apps, schema_editor):
+    """Creating Brexit and NIP tags."""
+    BarrierTag = apps.get_model("metadata", "BarrierTag")
+
+    BarrierTag.objects.create(title="Brexit")
+    BarrierTag.objects.create(title="NI Protocol")
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -18,5 +26,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(remove_brexit_and_nip_tags),
+        migrations.RunPython(
+            remove_brexit_and_nip_tags, reverse_code=create_brexit_and_nip_tags
+        ),
     ]
