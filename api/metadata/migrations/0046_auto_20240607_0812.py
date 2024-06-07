@@ -3,10 +3,20 @@
 from django.db import migrations
 
 
+def remove_brexit_and_nip_tags(apps, schema_editor):
+    """Removing Brexit and NIP tags to avoid confusion to users because they are no longer relevant."""
+    BarrierTag = apps.get_model("metadata", "BarrierTag")
+
+    BarrierTag.objects.filter(title="Brexit").delete()
+    BarrierTag.objects.filter(title="NI Protocol").delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
         ("metadata", "0045_programme_fund_tags"),
     ]
 
-    operations = []
+    operations = [
+        migrations.RunPython(remove_brexit_and_nip_tags),
+    ]
