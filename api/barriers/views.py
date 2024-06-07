@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, F, Value, When, Prefetch
+from django.db.models import Case, CharField, F, Prefetch, Value, When
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -267,10 +267,7 @@ class BarrierList(generics.ListAPIView):
         Barrier.barriers.all()
         .select_related("priority")
         .prefetch_related(
-            "tags",
-            "organisations",
-            "progress_updates",
-            "valuation_assessments"
+            "tags", "organisations", "progress_updates", "valuation_assessments"
         )
     )
     serializer_class = BarrierListSerializer
@@ -425,7 +422,12 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     queryset = (
         Barrier.barriers.all()
-        .select_related("priority", "created_by", "modified_by", "proposed_estimated_resolution_date_user")
+        .select_related(
+            "priority",
+            "created_by",
+            "modified_by",
+            "proposed_estimated_resolution_date_user",
+        )
         .prefetch_related(
             "tags",
             "categories",
