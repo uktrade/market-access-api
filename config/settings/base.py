@@ -38,7 +38,7 @@ ALLOWED_HOSTS = ["*"]
 DEBUG = env.bool("DEBUG", False)
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
-ELASTIC_APM_ENABLED = env("ELASTIC_APM_ENABLED", default=not DEBUG)
+ELASTIC_APM_ENABLED = env.bool("ELASTIC_APM_ENABLED", default=not DEBUG)
 
 if ELASTIC_APM_ENABLED:
     ELASTIC_APM = {
