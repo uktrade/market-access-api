@@ -467,7 +467,11 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        pk = self.kwargs[lookup_url_kwarg]
+        try:
+            pk = self.kwargs[lookup_url_kwarg]
+        except KeyError:
+            """If view with `code` lookup (throws KeyError), don't cache"""
+            return super().retrieve(request, *args, **kwargs)
 
         data = cache.get_item(pk)
         if data:
