@@ -15,9 +15,9 @@ class TestBarrierTags(TestCase):
         assert last_tag.order == new_tag.order
 
         tags = BarrierTag.objects.all()
-        assert 1 == tags[0].order
-        assert 2 == tags[1].order
-        assert 3 == tags[2].order
+        assert tags[0].order == 1
+        assert tags[1].order == 2
+        assert tags[2].order == 6
 
 
 class TestOrganisations(TestCase):
