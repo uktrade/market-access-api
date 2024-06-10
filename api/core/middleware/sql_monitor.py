@@ -27,8 +27,8 @@ class SqlMonitorMiddleware:
         with connection.execute_wrapper(sql_monitor):
             response = self.get_response(request)
 
-        # print(f"sql.endpoint: {request.path}")
-        # print(f"sql.query_count: {sql_monitor.query_count}")
-        # print(f"sql.query_time: {sql_monitor.query_time}")
+        print(f"sql.endpoint: {request.path}")
+        print(f"sql.query_count: {sql_monitor.query_count}")
+        print(f"sql.query_time: {sql_monitor.query_time}")
 
         return response
