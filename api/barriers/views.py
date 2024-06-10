@@ -2,6 +2,7 @@ import csv
 import logging
 from collections import defaultdict
 from datetime import datetime
+from api.barriers import cache
 
 from dateutil.parser import parse
 from django.db import transaction
@@ -449,6 +450,11 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
         barrier = serializer.save(modified_by=self.request.user)
         self.update_metadata_for_proposed_estimated_date(barrier)
 
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        pk = self.kwargs[lookup_url_kwarg]
+
+        cache.delete_item(pk)
+
     def update_metadata_for_proposed_estimated_date(self, barrier):
         # get patched data from request
         patch_data = self.request.data
@@ -458,6 +464,20 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
             barrier.proposed_estimated_resolution_date_user = self.request.user
             barrier.proposed_estimated_resolution_date_created = datetime.now()
             barrier.save()
+
+    def retrieve(self, request, *args, **kwargs):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        pk = self.kwargs[lookup_url_kwarg]
+
+        data = cache.get_item(pk)
+        if data:
+            return Response(data)
+
+        response = super().retrieve(request, *args, **kwargs)
+
+        cache.set_item(pk, response.data)
+
+        return response
 
 
 class BarrierFullHistory(generics.GenericAPIView):
@@ -964,6 +984,9 @@ class ProgrammeFundProgressUpdateViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer, request.user)
         headers = self.get_success_headers(serializer.data)
+
+        cache.delete_item(serializer.data['barrier'])
+
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
