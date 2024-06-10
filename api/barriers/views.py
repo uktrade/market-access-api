@@ -2,7 +2,6 @@ import csv
 import logging
 from collections import defaultdict
 from datetime import datetime
-from api.barriers import cache
 
 from dateutil.parser import parse
 from django.db import transaction
@@ -19,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from simple_history.utils import bulk_create_with_history
 
+from api.barriers import cache
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import (
@@ -985,7 +985,7 @@ class ProgrammeFundProgressUpdateViewSet(ModelViewSet):
         self.perform_create(serializer, request.user)
         headers = self.get_success_headers(serializer.data)
 
-        cache.delete_item(serializer.data['barrier'])
+        cache.delete_item(serializer.data["barrier"])
 
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
