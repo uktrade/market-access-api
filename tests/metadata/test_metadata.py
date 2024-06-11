@@ -166,8 +166,6 @@ class TestCategories(APITestMixin):
         expected = [
             "Scoping (Top 100 priority barrier)",
             "COVID-19",
-            "Brexit",
-            "NI Protocol",
             "Programme Fund",
             "International Standards",
             "Clean Growth",
