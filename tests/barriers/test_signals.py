@@ -457,7 +457,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
                         "barrier_id": str(barrier.id),
                         "barrier_code": str(barrier.code),
                     },
-                    template_id="",
+                    template_id=settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID,
                 ),
                 call(
                     email_address=test_contributor.email,
@@ -466,7 +466,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
                         "barrier_id": str(barrier.id),
                         "barrier_code": str(barrier.code),
                     },
-                    template_id="",
+                    template_id=settings.ASSESSMENT_ADDED_EMAIL_TEMPLATE_ID,
                 ),
             ]
             mock.assert_has_calls(calls, any_order=True)
