@@ -231,6 +231,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "latest_progress_update",
             "location",
             "reported_by",
+            "reported_on",
             "barrier_owner",
             "modified_by",
             "modified_on",
