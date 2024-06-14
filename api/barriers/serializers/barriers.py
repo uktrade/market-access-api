@@ -131,8 +131,6 @@ class BarrierListSerializer(serializers.Serializer):
             ]
             rating = rating.split(":")[1]
             return f"{rating}"
-        else:
-            return None
 
 
 # TODO : standard list serialiser may suffice and the following not required base on final designs
