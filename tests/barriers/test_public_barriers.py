@@ -19,12 +19,12 @@ from api.barriers.helpers import get_team_member_user_ids
 from api.barriers.models import Barrier, PublicBarrier
 from api.barriers.public_data import (
     VersionedFile,
+    get_public_data_content,
     latest_file,
-    public_barrier_data_json_file_content,
     versioned_folder,
 )
 from api.barriers.serializers import PublicBarrierSerializer
-from api.barriers.serializers.public_barriers import public_barriers_to_json
+from api.barriers.serializers.public_barriers import PublicPublishedVersionSerializer
 from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
 from api.core.utils import list_s3_public_data_files, read_file_from_s3
@@ -1351,7 +1351,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         pb1, _ = self.publish_barrier(user=self.publisher)
         pb2, _ = self.publish_barrier(user=self.publisher)
 
-        data = public_barrier_data_json_file_content()
+        data = get_public_data_content()
 
         assert "barriers" in data.keys()
         assert 2 == len(data["barriers"])
@@ -1359,7 +1359,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
     @freezegun.freeze_time("2020-05-20")
     def test_public_serializer(self):
         pb1, _ = self.publish_barrier(user=self.publisher)
-        barrier = public_barriers_to_json()[0]
+        barrier = PublicPublishedVersionSerializer(pb1).data
 
         assert pb1.id == barrier["id"]
         assert pb1.title == barrier["title"]

@@ -232,6 +232,7 @@ class TestAutoBarrierStatusUpdates(TestCase, UserFactoryMixin):
                 assert str(china_barrier) in archive_email_markup
 
             assert "1 barrier will be archived" in archive_email_markup
+
             assert (
                 "No barriers will be made dormant in your region this month"
                 in dormant_email_markup

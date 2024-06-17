@@ -7,7 +7,10 @@ import dj_database_url
 import environ
 import sentry_sdk
 from celery.schedules import crontab
+from dbt_copilot_python.database import database_url_from_env
+from dbt_copilot_python.utility import is_copilot
 from django.core.exceptions import ImproperlyConfigured
+from django_log_formatter_asim import ASIMFormatter
 from django_log_formatter_ecs import ECSFormatter
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -35,7 +38,7 @@ ALLOWED_HOSTS = ["*"]
 DEBUG = env.bool("DEBUG", False)
 SSO_ENABLED = env.bool("SSO_ENABLED", True)
 
-ELASTIC_APM_ENABLED = env("ELASTIC_APM_ENABLED", default=not DEBUG)
+ELASTIC_APM_ENABLED = env.bool("ELASTIC_APM_ENABLED", default=not DEBUG)
 
 if ELASTIC_APM_ENABLED:
     ELASTIC_APM = {
@@ -88,6 +91,7 @@ LOCAL_APPS = [
     "api.feedback",
     "api.related_barriers",
     "api.barrier_downloads",
+    "api.pingdom",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -140,12 +144,20 @@ if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         environment=SENTRY_ENVIRONMENT,
+        traces_sample_rate=1.0,
         integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
     )
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
+if is_copilot():
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=database_url_from_env("DATABASE_ENV_VAR_KEY")
+        )
+    }
+else:
+    DATABASES = {"default": dj_database_url.config(env="DATABASE_URL", default="")}
 
 HASHID_FIELD_SALT = env("DJANGO_HASHID_FIELD_SALT")
 HASHID_FIELD_ALLOW_INT_LOOKUP = False
@@ -214,6 +226,11 @@ if "aws-s3-bucket" in VCAP_SERVICES:
         "aws_access_key_id": bucket_credentials["aws_access_key_id"],
         "aws_secret_access_key": bucket_credentials["aws_secret_access_key"],
         "aws_region": bucket_credentials["aws_region"],
+    }
+elif is_copilot():
+    default_bucket = {
+        "bucket_name": env("DEFAULT_BUCKET", default=""),
+        "aws_region": env("AWS_DEFAULT_REGION", default=""),
     }
 else:
     default_bucket = {
@@ -341,21 +358,23 @@ STATIC_URL = "/static/"
 # ============================================
 DJANGO_LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="info").upper()
 
-ENABLED_HANDLERS = env.list("ENABLED_LOGGING_HANDLERS", default=["ecs", "stdout"])
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "ecs_formatter": {
-            "()": ECSFormatter,
-        },
+        "asim_formatter": {"()": ASIMFormatter},
+        "ecs_formatter": {"()": ECSFormatter},
         "simple": {
             "format": "{asctime} {levelname} {message}",
             "style": "{",
         },
     },
     "handlers": {
+        "asim": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,  # noqa F405
+            "formatter": "asim_formatter",
+        },
         "ecs": {
             "class": "logging.StreamHandler",
             "stream": sys.stdout,  # noqa F405
@@ -368,27 +387,31 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ENABLED_HANDLERS,
+        "handlers": ["asim", "ecs", "stdout"],
         "level": os.getenv("ROOT_LOG_LEVEL", "INFO"),  # noqa F405
     },
     "loggers": {
         "django": {
-            "handlers": ENABLED_HANDLERS,
+            "handlers": ["asim", "ecs", "stdout"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa F405
             "propagate": False,
         },
         "django.server": {
-            "handlers": ENABLED_HANDLERS,
+            "handlers": ["asim", "ecs", "stdout"],
             "level": os.getenv("DJANGO_SERVER_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ENABLED_HANDLERS,
+            "handlers": ["asim", "ecs", "stdout"],
             "level": os.getenv("DJANGO_DB_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
     },
 }
+
+# Django Log Formatter ASIM settings
+if is_copilot():
+    DLFA_TRACE_HEADERS = ("X-B3-TraceId", "X-B3-SpanId")
 
 CELERY_BEAT_SCHEDULE = {}
 

@@ -2,11 +2,11 @@ import json
 import logging
 
 from django.conf import settings
-from django.core.files.temp import NamedTemporaryFile
 from django.utils import timezone
 
-from api.barriers.serializers.public_barriers import public_barriers_to_json
-from api.core.utils import list_s3_public_data_files, upload_to_s3
+from api.barriers.helpers import get_published_public_barriers
+from api.barriers.serializers.public_barriers import PublicPublishedVersionSerializer
+from api.core.utils import list_s3_public_data_files, s3_client
 
 logger = logging.getLogger(__name__)
 
@@ -86,14 +86,18 @@ def versioned_folder(version=None):
     return f"{settings.PUBLIC_DATA_KEY_PREFIX}{version}"
 
 
-def public_barrier_data_json_file_content(public_barriers=None):
-    data = {"barriers": public_barriers_to_json(public_barriers)}
-    return data
-
-
 def metadata_json_file_content():
     data = {"release_date": str(timezone.now().date())}
     return data
+
+
+def get_public_data_content():
+    public_barriers = [
+        pb.latest_published_version for pb in get_published_public_barriers()
+    ]
+    return {
+        "barriers": PublicPublishedVersionSerializer(public_barriers, many=True).data
+    }
 
 
 def public_release_to_s3(public_barriers=None, force_publish=False):
@@ -114,14 +118,16 @@ def public_release_to_s3(public_barriers=None, force_publish=False):
     # To make sure all files use the same version
     next_version = latest_file().next_version
 
-    with NamedTemporaryFile(mode="w+t") as tf:
-        json.dump(public_barrier_data_json_file_content(public_barriers), tf, indent=4)
-        tf.flush()
-        s3_filename = f"{versioned_folder(next_version)}/data.json"
-        upload_to_s3(tf.name, settings.PUBLIC_DATA_BUCKET, s3_filename)
+    barrier_json = json.dumps(get_public_data_content())
+    metadata_json = json.dumps(metadata_json_file_content())
+    s3_filename = f"{versioned_folder(next_version)}/data.json"
+    metadata_filename = f"{versioned_folder(next_version)}/metadata.json"
 
-    with NamedTemporaryFile(mode="w+t") as tf:
-        json.dump(metadata_json_file_content(), tf, indent=4)
-        tf.flush()
-        s3_filename = f"{versioned_folder(next_version)}/metadata.json"
-        upload_to_s3(tf.name, settings.PUBLIC_DATA_BUCKET, s3_filename)
+    s3 = s3_client()
+
+    s3.put_object(
+        Bucket=settings.PUBLIC_DATA_BUCKET, Body=barrier_json, Key=s3_filename
+    )
+    s3.put_object(
+        Bucket=settings.PUBLIC_DATA_BUCKET, Body=metadata_json, Key=metadata_filename
+    )

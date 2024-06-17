@@ -1,9 +1,12 @@
+import csv
+import io
 import operator
 
 import boto3
 from botocore.exceptions import NoCredentialsError
 from django.conf import settings
 
+from api.barrier_downloads.csv import _transform_csv_row
 from api.core.exceptions import S3UploadException
 
 
@@ -115,3 +118,18 @@ def list_s3_public_data_files(client=None):
     )
     for content in response.get("Contents", []):
         yield content.get("Key")
+
+
+def serializer_to_csv_bytes(serializer, field_names) -> bytes:
+    output = io.StringIO()
+    writer = csv.DictWriter(
+        output,
+        extrasaction="ignore",
+        fieldnames=field_names.keys(),
+        quoting=csv.QUOTE_MINIMAL,
+    )
+    writer.writerow(field_names)
+    for row in serializer.data:
+        writer.writerow(_transform_csv_row(row))
+    content = output.getvalue().encode("utf-8")
+    return content
