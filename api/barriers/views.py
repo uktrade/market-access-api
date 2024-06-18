@@ -742,7 +742,9 @@ class PublicBarrierViewSet(
         public_barrier.save()
         if public_view_status == PublicBarrierStatus.PUBLISHING_PENDING:
             TeamMember.objects.create(
-                user=self.request.user, barrier=self.get_object().barrier, role=TeamMember.PUBLIC_APPROVER
+                user=self.request.user,
+                barrier=self.get_object().barrier,
+                role=TeamMember.PUBLIC_APPROVER,
             )
         else:
             self.update_contributors(public_barrier.barrier)

@@ -457,9 +457,12 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         client = self.create_api_client(user=user)
         response = client.post(url)
 
-        assert TeamMember.objects.filter(
-            user=user, barrier=self.barrier, role=TeamMember.PUBLIC_APPROVER
-        ).count() == 1
+        assert (
+            TeamMember.objects.filter(
+                user=user, barrier=self.barrier, role=TeamMember.PUBLIC_APPROVER
+            ).count()
+            == 1
+        )
 
         assert status.HTTP_200_OK == response.status_code
         assert (
@@ -606,7 +609,12 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         user = self.create_publisher()
         pb, response = self.publish_barrier(user=user)
 
-        assert TeamMember.objects.filter(user=user, barrier=pb.barrier, role=TeamMember.PUBLIC_PUBLISHER).count() == 1
+        assert (
+            TeamMember.objects.filter(
+                user=user, barrier=pb.barrier, role=TeamMember.PUBLIC_PUBLISHER
+            ).count()
+            == 1
+        )
         assert status.HTTP_200_OK == response.status_code
         assert PublicBarrierStatus.PUBLISHED == response.data["public_view_status"]
         assert response.data["first_published_on"]
@@ -787,7 +795,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
 
         user = self.create_publisher()
         pb, response = self.publish_barrier(pb=pb, user=user)
-
 
         assert status.HTTP_200_OK == response.status_code
         assert self.barrier.sectors == pb.sectors
