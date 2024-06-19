@@ -5,6 +5,7 @@ from django.db import migrations
 MARKET_DISTORTING_PRACTICES_TAG = {
     "title": "Market Distorting Practices (MDP)",
     "description": "",
+    "order": 15,
     "show_at_reporting": True,
 }
 
@@ -14,9 +15,9 @@ def create_market_distorting_practices_tag(apps, schema_editor):
 
     # current_max_order = BarrierTag.objects.order_by("-order")[:1].order
     # order = current_max_order + 1
-    order = 15
+    # order = 15
 
-    BarrierTag.objects.create(order=order, **MARKET_DISTORTING_PRACTICES_TAG)
+    BarrierTag.objects.create(MARKET_DISTORTING_PRACTICES_TAG)
 
 
 def destroy_market_distorting_practices_tag(apps, schema_editor):
