@@ -12,8 +12,9 @@ MARKET_DISTORTING_PRACTICES_TAG = {
 def create_market_distorting_practices_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
 
-    current_max_order = BarrierTag.objects.order_by("-order")[:1].order
-    order = current_max_order + 1
+    # current_max_order = BarrierTag.objects.order_by("-order")[:1].order
+    # order = current_max_order + 1
+    order = 15
 
     BarrierTag.objects.create(order=order, **MARKET_DISTORTING_PRACTICES_TAG)
 
