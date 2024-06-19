@@ -3,21 +3,22 @@
 from django.db import migrations
 
 MARKET_DISTORTING_PRACTICES_TAG = {
-    "title": "Market Distorting Practices (MDP)",
-    "description": "",
-    "order": 15,
-    "show_at_reporting": True,
+    "Market Distorting Practices (MDP)": {
+        "description": "",
+        "order": 15,
+        "show_at_reporting": True,
+    }
 }
 
 
 def create_market_distorting_practices_tag(apps, schema_editor):
     BarrierTag = apps.get_model("metadata", "BarrierTag")
 
-    # current_max_order = BarrierTag.objects.order_by("-order")[:1].order
-    # order = current_max_order + 1
-    # order = 15
-
-    BarrierTag.objects.create(MARKET_DISTORTING_PRACTICES_TAG)
+    title, defaults = MARKET_DISTORTING_PRACTICES_TAG.popitem()
+    BarrierTag.objects.update_or_create(
+        title=title,
+        defaults=defaults,
+    )
 
 
 def destroy_market_distorting_practices_tag(apps, schema_editor):
