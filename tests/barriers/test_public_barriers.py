@@ -25,6 +25,7 @@ from api.barriers.public_data import (
 )
 from api.barriers.serializers import PublicBarrierSerializer
 from api.barriers.serializers.public_barriers import PublicPublishedVersionSerializer
+from api.collaboration.models import TeamMember
 from api.core.exceptions import ArchivingException
 from api.core.test_utils import APITestMixin
 from api.core.utils import list_s3_public_data_files, read_file_from_s3
@@ -456,6 +457,13 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         client = self.create_api_client(user=user)
         response = client.post(url)
 
+        assert (
+            TeamMember.objects.filter(
+                user=user, barrier=self.barrier, role=TeamMember.PUBLIC_APPROVER
+            ).count()
+            == 1
+        )
+
         assert status.HTTP_200_OK == response.status_code
         assert (
             PublicBarrierStatus.PUBLISHING_PENDING
@@ -601,6 +609,12 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         user = self.create_publisher()
         pb, response = self.publish_barrier(user=user)
 
+        assert (
+            TeamMember.objects.filter(
+                user=user, barrier=pb.barrier, role=TeamMember.PUBLIC_PUBLISHER
+            ).count()
+            == 1
+        )
         assert status.HTTP_200_OK == response.status_code
         assert PublicBarrierStatus.PUBLISHED == response.data["public_view_status"]
         assert response.data["first_published_on"]

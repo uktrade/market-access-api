@@ -24,6 +24,8 @@ class TeamMember(ArchivableMixin, BarrierRelatedMixin, BaseModel):
     REPORTER = "Reporter"
     OWNER = "Owner"
     CONTRIBUTOR = "Contributor"
+    PUBLIC_APPROVER = "Public Barrier Approver"
+    PUBLIC_PUBLISHER = "Public Barrier Publisher"
 
     barrier = models.ForeignKey(
         "barriers.Barrier", related_name="barrier_team", on_delete=models.CASCADE
