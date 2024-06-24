@@ -5,6 +5,7 @@ BARRIER_FIELD_TO_COLUMN_TITLE = {
     "summary": "Summary",
     "link": "Link",
     "status": "Status",
+    "is_top_priority": "Is Top 100 Priority",
     "is_resolved_top_priority": "Is Resolved Top Priority",
     "priority_level": "Priority",
     "overseas_region": "Overseas Region",
