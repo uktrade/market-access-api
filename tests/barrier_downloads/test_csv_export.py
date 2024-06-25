@@ -227,6 +227,14 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
         assert b"Midpoint value" in data
         assert expected_midpoint_value.encode("utf-8") in data
 
+    def test_csv_has_is_top_priority(self):
+        barrier = BarrierFactory()
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+        serializer = CsvDownloadSerializer(queryset, many=True)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
+
+        assert b"Is Top 100 Priority" in data
+
     def test_csv_has_midpoint_column_after_valuation_assessment_column(self):
         impact_level = 6
         barrier = BarrierFactory()
