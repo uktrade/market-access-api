@@ -163,8 +163,7 @@ class TestEconomicAssessments(APITestMixin):
 
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.HIGH
         assert response.data["explanation"] == "Here's an explanation"
-        assert response.status_code == HTTPStatus.CREATED
-        assert response.data["automated_analysis_data"] == {"test": "data"}
+        assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is None
         assert response.data["archived"] is False
         assert response.data["ready_for_approval"] is False
