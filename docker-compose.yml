@@ -1,17 +1,4 @@
-version: "3.8"
-
 services:
-  comtrade_test_db:
-    image: postgres
-    environment:
-      - POSTGRES_DB=comtrade
-      - POSTGRES_USER=comtrade
-      - POSTGRES_PASSWORD=password
-    networks:
-      - webnet
-    volumes:
-      - ./docker/local/comtrade_test_db:/docker-entrypoint-initdb.d:delegated
-
   db:
     image: postgres:13
     volumes:
@@ -28,7 +15,7 @@ services:
     build:
       context: .
       dockerfile: docker/local/Dockerfile
-    entrypoint: dockerize -wait tcp://db:5432 -wait tcp://comtrade_test_db:5432 -timeout 60s docker/local/entrypoint.sh
+    entrypoint: docker/local/entrypoint.sh
     volumes:
       - .:/usr/src/app:delegated
     env_file: docker-compose.env
@@ -39,7 +26,7 @@ services:
       - "8882:22"
     depends_on:
       - db
-      - comtrade_test_db
+      # - comtrade_test_db
     networks:
       - webnet
 

@@ -1,9 +1,6 @@
-import decimal
 from collections import Counter
 from itertools import groupby
 from operator import itemgetter
-
-from api.assessment.automate.countries import get_comtrade_country_name
 
 
 def trade_df(x, df_input, products):
@@ -62,52 +59,6 @@ def trade_df_ind(x, df_input):
         item["products"] = commodity_lookup.get(item["commodity_code"])
 
     return df_filt
-
-
-def avgtrade(df, partner_input, direction, reporter_input=None, num_years=3):
-    """
-    Calculates average trade flow between two trade partners
-    """
-    # Country inputs need to be normalised
-    partner_input = get_comtrade_country_name(partner_input)
-    reporter_input = get_comtrade_country_name(reporter_input)
-
-    if reporter_input:
-        df_filt = [
-            item
-            for item in df
-            if item["partner"] == partner_input
-            and item["reporter"] == reporter_input
-            and item["trade_flow"] == direction
-        ]
-    else:
-        df_filt = [
-            item
-            for item in df
-            if item["partner"] == partner_input and item["trade_flow"] == direction
-        ]
-
-    df_filt = group_and_sum(
-        data=df_filt, sum_field="trade_value_gbp", group_by=("year",)
-    )
-
-    count = 0
-    total = decimal.Decimal(0)
-    for item in df_filt:
-        total += item["total"]
-        count += 1
-
-    if num_years:
-        # Some years may have missing data for a trade_direction
-        # if the number of data years is provided we need to make sure
-        # the average is calculated on the number of years and not on the
-        # number of data rows
-        count = num_years
-
-    if count == 0:
-        return 0
-
-    return total / count
 
 
 def group_and_sum(data, sum_field, group_by):
