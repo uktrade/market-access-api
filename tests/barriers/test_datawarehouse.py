@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
-from api.barriers.models import BarrierProgressUpdate
+from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
@@ -174,6 +174,23 @@ class TestDataWarehouseExport(TestCase):
         barrier = BarrierFactory(status_date=date.today())
         serialised_data = DataWorkspaceSerializer(barrier).data
         assert "is_top_priority" in serialised_data.keys()
+
+    def test_has_value_for_proposed_top_priority_change_user(self):
+        user = create_test_user()
+        barrier = BarrierFactory(status_date=date.today())
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["proposed_top_priority_change_user"] is None
+
+        BarrierTopPrioritySummary.objects.create(
+            barrier=barrier,
+            top_priority_summary_text="test",
+            modified_by=user,
+            created_by=user,
+        )
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["proposed_top_priority_change_user"] == f"{user.first_name} {user.last_name}"
 
     def test_value_for_is_top_priority_is_bool(self):
         barrier = BarrierFactory(status_date=date.today())

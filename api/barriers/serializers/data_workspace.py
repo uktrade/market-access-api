@@ -183,6 +183,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     progress_update_status = serializers.SerializerMethodField()
     top_priority_summary = serializers.SerializerMethodField()
     top_priority_date = serializers.SerializerMethodField()
+    proposed_top_priority_change_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
@@ -295,6 +296,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "progress_update_status",
             "top_priority_summary",
             "top_priority_date",
+            "proposed_top_priority_change_user",
             "next_steps_items",
             "proposed_estimated_resolution_date",
             "proposed_estimated_resolution_date_user",
@@ -463,8 +465,15 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         if priority_summary:
             latest_summary = priority_summary.latest("modified_on")
             return latest_summary.top_priority_summary_text
-        else:
-            return None
+
+    def get_proposed_top_priority_change_user(self, instance):
+        try:
+            top_priority_summary = instance.top_priority_summary.latest("modified_on")
+        except BarrierTopPrioritySummary.DoesNotExist:
+            return
+
+        user = top_priority_summary.created_by
+        return f"{user.first_name} {user.last_name}"
 
     def get_top_priority_date(self, instance):
         if instance.top_priority_status in [TOP_PRIORITY_BARRIER_STATUS.APPROVED, TOP_PRIORITY_BARRIER_STATUS.RESOLVED]:
