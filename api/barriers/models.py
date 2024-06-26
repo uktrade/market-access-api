@@ -1083,6 +1083,9 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             self.last_published_on = now
         if status == PublicBarrierStatus.UNPUBLISHED:
             self.unpublished_on = now
+        if status in [PublicBarrierStatus.NOT_ALLOWED, PublicBarrierStatus.UNKNOWN]:
+            # If the barrier is no longer allowed to be published, set_to_allowed_on must be null.
+            self.set_to_allowed_on = None
 
     @property
     def is_resolved(self):

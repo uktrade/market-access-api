@@ -63,6 +63,7 @@ class CsvDownloadSerializer(serializers.Serializer):
     modified_on = serializers.DateTimeField(format="%Y-%m-%d", allow_null=True)
     tags = serializers.SerializerMethodField()
     trade_direction = serializers.CharField(source="get_trade_direction_display")
+    is_top_priority = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
     government_organisations = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
@@ -86,6 +87,9 @@ class CsvDownloadSerializer(serializers.Serializer):
     valuation_assessment_midpoint = serializers.SerializerMethodField()
     valuation_assessment_explanation = serializers.SerializerMethodField()
     commercial_value = serializers.IntegerField()
+
+    def get_is_top_priority(self, obj):
+        return obj.is_top_priority
 
     def get_is_resolved_top_priority(self, obj):
         return obj.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
