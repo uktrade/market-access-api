@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("barriers", "0165_historicalpublicbarrier_set_to_allowed_on_and_more"),
+        ("barriers", "0166_set_to_allowed_on"),
     ]
 
     operations = [
