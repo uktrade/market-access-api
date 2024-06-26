@@ -2,10 +2,12 @@ from django.db import migrations
 from django.db import transaction
 
 from api.metadata.constants import PublicBarrierStatus
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def update_set_to_allowed_on(apps, schema_editor):
-    Barrier = apps.get_model("barriers", "Barrier")
     PublicBarrier = apps.get_model("barriers", "PublicBarrier")
     HistoricalPublicBarrier = apps.get_model("barriers", "HistoricalPublicBarrier")
 
@@ -25,9 +27,12 @@ def update_set_to_allowed_on(apps, schema_editor):
                 barrier_date_mapping[barrier_id] = barriers[i].history_date
                 break
 
+    logger.info(f'Updating set_to_allowed_on for {len(barrier_date_mapping)} barriers')
     with transaction.atomic():
-        for barrier_id, history_date in barrier_date_mapping:
-            Barrier.objects.filter(id=barrier_id).update(set_to_allowed_on=history_date)
+        for barrier_id, history_date in barrier_date_mapping.items():
+            PublicBarrier.objects.filter(barrier_id=barrier_id).update(set_to_allowed_on=history_date)
+
+    logger.info(f'Barrier set_to_allowed_on updated for: {list(barrier_date_mapping.keys())}')
 
 
 class Migration(migrations.Migration):
