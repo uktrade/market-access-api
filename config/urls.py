@@ -12,6 +12,7 @@ from api.core.views import admin_override
 from api.feedback import urls as feedback_urls
 from api.interactions.urls import urlpatterns as interaction_urls
 from api.metadata.views import MetadataView
+from api.pingdom.urls import urlpatterns as pingdom_urls
 from api.related_barriers.urls import urlpatterns as related_barriers_urls
 from api.user.urls import urlpatterns as user_urls
 from api.user.views import UserDetail, who_am_i
@@ -45,4 +46,5 @@ urlpatterns += (
     + user_urls
     + action_plans_urls
     + related_barriers_urls
+    + pingdom_urls
 )

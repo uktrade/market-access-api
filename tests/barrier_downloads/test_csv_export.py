@@ -9,7 +9,6 @@ from rest_framework.test import APITestCase
 
 from api.barrier_downloads.constants import BARRIER_FIELD_TO_COLUMN_TITLE
 from api.barrier_downloads.serializers import CsvDownloadSerializer
-from api.barrier_downloads.service import serializer_to_csv_bytes
 from api.barriers.models import (
     Barrier,
     BarrierProgressUpdate,
@@ -17,6 +16,7 @@ from api.barriers.models import (
 )
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin, create_test_user
+from api.core.utils import serializer_to_csv_bytes
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
     PROGRESS_UPDATE_CHOICES,
@@ -226,6 +226,14 @@ class TestBarrierCsvExport(APITestMixin, APITestCase):
 
         assert b"Midpoint value" in data
         assert expected_midpoint_value.encode("utf-8") in data
+
+    def test_csv_has_is_top_priority(self):
+        barrier = BarrierFactory()
+        queryset = Barrier.objects.filter(id__in=[barrier.id])
+        serializer = CsvDownloadSerializer(queryset, many=True)
+        data = serializer_to_csv_bytes(serializer, BARRIER_FIELD_TO_COLUMN_TITLE)
+
+        assert b"Is Top 100 Priority" in data
 
     def test_csv_has_midpoint_column_after_valuation_assessment_column(self):
         impact_level = 6

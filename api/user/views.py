@@ -133,7 +133,7 @@ class UserList(generics.ListAPIView):
             .annotate(role=F("groups__name"))
             .distinct("last_name", "first_name", "email")
             # distinct needs to match ordering values
-            # because Postgres says so 🤪
+            # because Postgres says so
         )
 
 

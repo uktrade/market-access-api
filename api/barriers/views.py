@@ -764,7 +764,14 @@ class PublicBarrierViewSet(
         if public_view_status is PublicBarrierStatus.ALLOWED:
             public_barrier.set_to_allowed_on = datetime.now()
         public_barrier.save()
-        self.update_contributors(public_barrier.barrier)
+        if public_view_status == PublicBarrierStatus.PUBLISHING_PENDING:
+            TeamMember.objects.create(
+                user=self.request.user,
+                barrier=self.get_object().barrier,
+                role=TeamMember.PUBLIC_APPROVER,
+            )
+        else:
+            self.update_contributors(public_barrier.barrier)
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
@@ -844,6 +851,11 @@ class PublicBarrierViewSet(
             or public_barrier.public_view_status == PublicBarrierStatus.UNPUBLISHED
         ):
             published = public_barrier.publish()
+            TeamMember.objects.create(
+                barrier=public_barrier.barrier,
+                user=request.user,
+                role=TeamMember.PUBLIC_PUBLISHER,
+            )
         else:
             published = False
         if published:

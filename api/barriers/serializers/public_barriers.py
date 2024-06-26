@@ -12,7 +12,6 @@ from api.barriers.fields import (
     ReadOnlyTradingBlocField,
     SectorField,
 )
-from api.barriers.helpers import get_published_public_barriers
 from api.barriers.models import PublicBarrier, PublicBarrierLightTouchReviews
 from api.barriers.serializers.mixins import LocationFieldMixin
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
@@ -328,40 +327,3 @@ class PublicPublishedVersionSerializer(
             return ReadOnlySectorsField(
                 to_repr_keys=("name",), sort=False
             ).to_representation(sectors)
-
-
-def public_barriers_to_json(public_barriers=None):
-    """
-    Helper to serialize latest published version of published barriers.
-    Public Barriers in the flat file should look similar.
-    {
-        "barriers": [
-            {
-                "id": "kjdfhkzx",
-                "title": "Belgian chocolate...",
-                "summary": "Lorem ipsum",
-                "status": {"name": "Open",}
-                "country": {"name": "Belgium",}
-                "caused_by_trading_bloc": false,
-                "trading_bloc": null,
-                "location": "Belgium"
-                "sectors: [
-                    {"name": "Automotive"}
-                ],
-                "categories": [
-                    {"name": "Goods and Services"}
-                ],
-                "last_published_on: "date",
-                "reported_on": "date"
-            }
-        ]
-    }
-    If all sectors is true, use the sectors key to represent that as follows:
-        "sectors: [{"name": "All sectors"}],
-    """
-    if public_barriers is None:
-        public_barriers = (
-            pb.latest_published_version for pb in get_published_public_barriers()
-        )
-    serializer = PublicPublishedVersionSerializer(public_barriers, many=True)
-    return serializer.data

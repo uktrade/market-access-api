@@ -4,6 +4,7 @@ from django.conf import settings
 from mock import patch
 from notifications_python_client import NotificationsAPIClient
 
+import api.core.utils
 from api.barrier_downloads import service
 from api.barrier_downloads.exceptions import BarrierDownloadNotificationError
 from api.barrier_downloads.models import BarrierDownload, BarrierDownloadStatus
@@ -27,7 +28,7 @@ def test_serializer_to_csv_bytes():
     }
     serializer = CsvDownloadSerializer(queryset, many=True)
 
-    content = service.serializer_to_csv_bytes(
+    content = api.core.utils.serializer_to_csv_bytes(
         serializer=serializer, field_names=field_names
     )
 

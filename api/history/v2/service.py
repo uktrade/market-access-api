@@ -32,6 +32,7 @@ FieldMapping
 List[str, FieldMapping]
     A collection of history fields in 1 item.
 """
+
 import operator
 from collections import namedtuple
 from typing import Dict, List, Tuple, Union
@@ -229,20 +230,26 @@ def get_model_history(  # noqa: C901
                             "field": (
                                 field
                                 if isinstance(field, str)
-                                else field.name
-                                if isinstance(field, FieldMapping)
-                                else field[0].name
-                                if isinstance(field[0], FieldMapping)
-                                else field[
-                                    0
-                                ]  # field[0] - First field defined is the primary field name
+                                else (
+                                    field.name
+                                    if isinstance(field, FieldMapping)
+                                    else (
+                                        field[0].name
+                                        if isinstance(field[0], FieldMapping)
+                                        else field[0]
+                                    )
+                                )  # field[0] - First field defined is the primary field name
                             ).replace("_cache", ""),
-                            "user": {
-                                "id": item["history_user__id"],
-                                "name": pretty_sso_name(item["history_user__username"]),
-                            }
-                            if item["history_user__id"]
-                            else None,
+                            "user": (
+                                {
+                                    "id": item["history_user__id"],
+                                    "name": pretty_sso_name(
+                                        item["history_user__username"]
+                                    ),
+                                }
+                                if item["history_user__id"]
+                                else None
+                            ),
                             **change,
                         }
                     )
@@ -283,20 +290,24 @@ def get_model_history(  # noqa: C901
                         "field": (
                             field
                             if isinstance(field, str)
-                            else field.name
-                            if isinstance(field, FieldMapping)
-                            else field[0].name
-                            if isinstance(field[0], FieldMapping)
-                            else field[
-                                0
-                            ]  # field[0] - First field defined is the primary field name
+                            else (
+                                field.name
+                                if isinstance(field, FieldMapping)
+                                else (
+                                    field[0].name
+                                    if isinstance(field[0], FieldMapping)
+                                    else field[0]
+                                )
+                            )  # field[0] - First field defined is the primary field name
                         ).replace("_cache", ""),
-                        "user": {
-                            "id": item["history_user__id"],
-                            "name": item["history_user__username"],
-                        }
-                        if item["history_user__id"]
-                        else None,
+                        "user": (
+                            {
+                                "id": item["history_user__id"],
+                                "name": item["history_user__username"],
+                            }
+                            if item["history_user__id"]
+                            else None
+                        ),
                         **change,
                     }
                 )
