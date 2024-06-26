@@ -182,6 +182,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     progress_update_next_steps = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
     top_priority_summary = serializers.SerializerMethodField()
+    top_priority_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
@@ -293,6 +294,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "progress_update_next_steps",
             "progress_update_status",
             "top_priority_summary",
+            "top_priority_date",
             "next_steps_items",
             "proposed_estimated_resolution_date",
             "proposed_estimated_resolution_date_user",
@@ -463,6 +465,18 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             return latest_summary.top_priority_summary_text
         else:
             return None
+
+    def get_top_priority_date(self, instance):
+        if instance.top_priority_status in [TOP_PRIORITY_BARRIER_STATUS.APPROVED, TOP_PRIORITY_BARRIER_STATUS.RESOLVED]:
+            history = instance.history.order_by("-history_date").values_list("top_priority_status", "history_date")
+            for i, (top_priority_status, history_date) in enumerate(history):
+                if i == len(history) - 1:
+                    return
+                if (
+                    top_priority_status == TOP_PRIORITY_BARRIER_STATUS.APPROVED and
+                    history[i+1][0] != TOP_PRIORITY_BARRIER_STATUS.APPROVED
+                ):
+                    return history_date
 
     def get_proposed_estimated_resolution_date(self, instance):
         # only show the proposed date if it is different to the current date
