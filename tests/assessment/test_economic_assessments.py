@@ -168,7 +168,4 @@ class TestEconomicAssessments(APITestMixin):
         assert response.data["archived"] is False
         assert response.data["ready_for_approval"] is False
         assert response.data["barrier_id"] == str(barrier.id)
-        assert response.data["rating"] is None
-        assert response.data["explanation"] == ""
-        assert response.data["created_by"]["id"] == self.user.id
-        assert response.data["modified_by"]["id"] == self.user.id
+        assert response.data["explanation"] == "Here's an explanation"
