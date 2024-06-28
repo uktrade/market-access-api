@@ -2,15 +2,11 @@
 
 from django.db import migrations, models
 
-
+from api.barriers.models import Barrier, PublicBarrier
 
 
 def update_public_barrier_fields(apps, schema_editor):
-
-    PublicBarrier = apps.get_model("barriers", "PublicBarrier")
-    Barrier = apps.get_model("barriers", "Barrier")
-
-    barrier_ids = PublicBarrier.objects.all().values_list('barrier_id', flat=True)
+    barriers = Barrier.objects.all()
 
     non_editable_public_fields = [
         "status",
@@ -24,8 +20,8 @@ def update_public_barrier_fields(apps, schema_editor):
         "all_sectors",
     ]
 
-    for barrier in barrier_ids:
-        public_barrier, _ = PublicBarrier.public_barriers.get(barrier=barrier)
+    for barrier in barriers:
+        public_barrier = PublicBarrier.objects.get(barrier_id=barrier)
 
         if public_barrier:
             for field in non_editable_public_fields:
@@ -39,7 +35,10 @@ def update_public_barrier_fields(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("barriers", "0167_remove_historicalpublicbarrier_light_touch_reviews_cache_and_more"),
+        (
+            "barriers",
+            "0167_remove_historicalpublicbarrier_light_touch_reviews_cache_and_more",
+        ),
     ]
 
     operations = [
