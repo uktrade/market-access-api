@@ -28,6 +28,7 @@ from tests.action_plans.factories import (
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory
+from tests.assessment.factories import  EconomicImpactAssessmentFactory
 
 logger = logging.getLogger(__name__)
 
@@ -1218,6 +1219,14 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.data["results"][1]["id"] == str(barrier.id)
         assert response.data["results"][2]["id"] == str(barrier_4.id)
         assert response.data["results"][3]["id"] == str(barrier_3.id)
+
+    def test_valuation_assessment_filter(self):
+        barrier = BarrierFactory()
+        EconomicImpactAssessmentFactory(barrier=barrier, archived=False)
+        url = f'{reverse("list-barriers")}?valuation_assessment=with'
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 1
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
