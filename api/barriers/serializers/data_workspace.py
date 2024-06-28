@@ -478,7 +478,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     def get_top_priority_date(self, instance):
         pending_states = [
             TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
-            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
         ]
         if instance.top_priority_status in [
             *pending_states,
