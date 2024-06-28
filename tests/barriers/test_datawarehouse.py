@@ -2,6 +2,7 @@ import datetime
 from datetime import date
 
 import django.db.models
+import freezegun
 import pytest
 from django.test import TestCase
 from rest_framework.test import APITestCase
@@ -25,6 +26,9 @@ from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
+
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestDataWarehouseExport(TestCase):
@@ -312,6 +316,25 @@ class TestDataWarehouseExport(TestCase):
         assert (
             serialised_data["valuation_assessment_midpoint"] == expected_midpoint_value
         )
+
+    def test_date_valuation_first_added(self):
+        date_today = date.today()
+        barrier = BarrierFactory(
+            status_date=date_today, status=BarrierStatus.OPEN_IN_PROGRESS
+        )
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts1):
+            eia = EconomicImpactAssessmentFactory(barrier=barrier, impact=6)
+
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts2):
+            eia.impact = 7
+            eia.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert ts2 > ts1
+        assert data["date_valuation_first_added"] == ts2
 
     def test_valuation_assessment_midpoint_value(self):
         date_today = date.today()

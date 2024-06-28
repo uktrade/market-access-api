@@ -20,7 +20,6 @@ from api.metadata.constants import (
 
 from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
-from .mixins import AssessmentFieldsMixin
 
 
 class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
@@ -159,7 +158,7 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
         return None
 
 
-class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
+class DataWorkspaceSerializer(BarrierSerializerBase):
     status_history = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     action_plan_added = serializers.SerializerMethodField()
@@ -195,6 +194,15 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     barrier_owner = serializers.SerializerMethodField()
     first_published_on = serializers.SerializerMethodField()
     set_to_allowed_on = serializers.SerializerMethodField()
+    valuation_assessment_explanation = serializers.SerializerMethodField()
+    valuation_assessment_midpoint = serializers.SerializerMethodField()
+    valuation_assessment_midpoint_value = serializers.SerializerMethodField()
+    valuation_assessment_rating = serializers.SerializerMethodField()
+    date_valuation_first_added = serializers.SerializerMethodField()
+    import_market_size = serializers.SerializerMethodField()
+    value_to_economy = serializers.SerializerMethodField()
+    economic_assessment_explanation = serializers.SerializerMethodField()
+    economic_assessment_rating = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -273,6 +281,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "valuation_assessment_rating",
             "valuation_assessment_midpoint",
             "valuation_assessment_midpoint_value",
+            "date_valuation_first_added",
             "value_to_economy",
             "wto_profile",
             "action_plan_added",
@@ -560,3 +569,48 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     def get_set_to_allowed_on(self, obj):
         if hasattr(obj, "public_barrier"):
             return obj.public_barrier.set_to_allowed_on
+    def get_economic_assessment_rating(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.get_rating_display()
+
+    def get_economic_assessment_explanation(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.explanation
+
+    def get_value_to_economy(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.export_potential.get("uk_exports_affected")
+
+    def get_import_market_size(self, obj):
+        """Size of import market for affected product(s)"""
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.export_potential.get("import_market_size")
+
+    def get_valuation_assessment_rating(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.rating
+
+    def get_valuation_assessment_midpoint(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.midpoint
+
+    def get_valuation_assessment_midpoint_value(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.midpoint_value
+
+    def get_valuation_assessment_explanation(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.explanation
+
+    def get_date_valuation_first_added(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.modified_on
