@@ -25,10 +25,10 @@ from tests.action_plans.factories import (
     ActionPlanStakeholderFactory,
     ActionPlanTaskFactory,
 )
+from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory
-from tests.assessment.factories import  EconomicImpactAssessmentFactory
 
 logger = logging.getLogger(__name__)
 
