@@ -2,6 +2,7 @@ import datetime
 from datetime import date
 
 import django.db.models
+import freezegun
 import pytest
 from django.test import TestCase
 from rest_framework.test import APITestCase
@@ -25,6 +26,8 @@ from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestDataWarehouseExport(TestCase):
@@ -191,6 +194,54 @@ class TestDataWarehouseExport(TestCase):
         data = DataWorkspaceSerializer(barrier).data
 
         assert data["proposed_top_priority_change_user"] == f"{user.first_name} {user.last_name}"
+
+    def test_get_top_priority_date_no_date(self):
+        barrier = BarrierFactory(status_date=date.today())
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["top_priority_date"] is None
+
+    def test_get_top_priority_date_has_date(self):
+        barrier = BarrierFactory(status_date=date.today())
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        ts = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        with freezegun.freeze_time(ts):
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["top_priority_date"] == ts
+
+    def test_get_top_priority_date_uses_last_date_of_approval(self):
+        barrier = BarrierFactory(status_date=date.today())
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts1):
+            barrier.save()
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts2):
+            barrier.save()
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        ts3 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts3):
+            barrier.save()
+
+        # Test being resolved doesn't affect the top_priority_date
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+        ts4 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts4):
+            barrier.save()
+
+        assert ts4 > ts3 > ts2 > ts1
+
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["top_priority_date"] == ts3
 
     def test_value_for_is_top_priority_is_bool(self):
         barrier = BarrierFactory(status_date=date.today())

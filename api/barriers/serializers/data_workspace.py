@@ -480,7 +480,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             history = instance.history.order_by("-history_date").values_list("top_priority_status", "history_date")
             for i, (top_priority_status, history_date) in enumerate(history):
                 if i == len(history) - 1:
-                    return
+                    return history_date
                 if (
                     top_priority_status == TOP_PRIORITY_BARRIER_STATUS.APPROVED and
                     history[i+1][0] != TOP_PRIORITY_BARRIER_STATUS.APPROVED
