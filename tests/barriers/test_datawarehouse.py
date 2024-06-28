@@ -378,6 +378,36 @@ class TestDataWarehouseExport(TestCase):
         assert "priority_level" in serialised_data.keys()
         assert serialised_data["priority_level"] == "PB100"
 
+    def test_estimated_resolution_date_first_added_none(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=None,
+        )
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_estimated_resolution_date_first_added"] is None
+
+    def test_estimated_resolution_date_first_added(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=None,
+        )
+        ts1 = date.today()
+        with freezegun.freeze_time(ts1):
+            barrier.estimated_resolution_date = ts1
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime("%Y-%m-%d")
+
+        ts2 = ts1 + datetime.timedelta(days=1)
+        with freezegun.freeze_time(ts2):
+            barrier.estimated_resolution_date = ts2
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        # Set as the first time ERD set (ts1, not ts2)
+        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime("%Y-%m-%d")
+
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):
     def setUp(self):

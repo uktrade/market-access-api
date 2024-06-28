@@ -169,6 +169,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
+    date_estimated_resolution_date_first_added = serializers.SerializerMethodField()
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
     programme_fund_progress_update_author = serializers.SerializerMethodField()
@@ -290,6 +291,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "resolved_date",
             "is_regional_trade_plan",
             "estimated_resolution_updated_date",
+            "date_estimated_resolution_date_first_added",
             "previous_estimated_resolution_date",
             "overseas_region",
             "programme_fund_progress_update_author",
@@ -398,6 +400,16 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             return history.estimated_resolution_date.strftime("%Y-%m-%d")
         else:
             return None
+
+    def get_date_estimated_resolution_date_first_added(self, instance):
+        history = instance.history.filter(estimated_resolution_date__isnull=False).order_by('history_date')
+
+        first = history.values('estimated_resolution_date').first()
+
+        if not first:
+            return
+
+        return first['estimated_resolution_date'].strftime("%Y-%m-%d")
 
     def get_overseas_region(self, instance) -> typing.List[str]:
         if instance.country:
