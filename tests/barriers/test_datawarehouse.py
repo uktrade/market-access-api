@@ -206,7 +206,7 @@ class TestDataWarehouseExport(TestCase):
 
     def test_get_top_priority_date_has_date(self):
         barrier = BarrierFactory(status_date=date.today())
-        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
         ts = datetime.datetime.now(tz=datetime.timezone.utc)
 
         with freezegun.freeze_time(ts):
@@ -216,10 +216,10 @@ class TestDataWarehouseExport(TestCase):
 
         assert data["top_priority_date"] == ts
 
-    def test_get_top_priority_date_uses_last_date_of_approval(self):
+    def test_get_top_priority_date_uses_last_date_of_pending_state(self):
         barrier = BarrierFactory(status_date=date.today())
 
-        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
         ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
         with freezegun.freeze_time(ts1):
             barrier.save()
@@ -229,7 +229,7 @@ class TestDataWarehouseExport(TestCase):
         with freezegun.freeze_time(ts2):
             barrier.save()
 
-        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
         ts3 = datetime.datetime.now(tz=datetime.timezone.utc)
         with freezegun.freeze_time(ts3):
             barrier.save()

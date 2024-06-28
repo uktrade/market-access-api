@@ -476,7 +476,12 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return f"{user.first_name} {user.last_name}"
 
     def get_top_priority_date(self, instance):
+        pending_states = [
+            TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
+        ]
         if instance.top_priority_status in [
+            *pending_states,
             TOP_PRIORITY_BARRIER_STATUS.APPROVED,
             TOP_PRIORITY_BARRIER_STATUS.RESOLVED,
         ]:
@@ -487,8 +492,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
                 if i == len(history) - 1:
                     return history_date
                 if (
-                    top_priority_status == TOP_PRIORITY_BARRIER_STATUS.APPROVED
-                    and history[i + 1][0] != TOP_PRIORITY_BARRIER_STATUS.APPROVED
+                    top_priority_status in pending_states
+                    and history[i + 1][0] != pending_states
                 ):
                     return history_date
 
