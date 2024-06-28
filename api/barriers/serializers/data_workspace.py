@@ -476,14 +476,19 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         return f"{user.first_name} {user.last_name}"
 
     def get_top_priority_date(self, instance):
-        if instance.top_priority_status in [TOP_PRIORITY_BARRIER_STATUS.APPROVED, TOP_PRIORITY_BARRIER_STATUS.RESOLVED]:
-            history = instance.history.order_by("-history_date").values_list("top_priority_status", "history_date")
+        if instance.top_priority_status in [
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+            TOP_PRIORITY_BARRIER_STATUS.RESOLVED,
+        ]:
+            history = instance.history.order_by("-history_date").values_list(
+                "top_priority_status", "history_date"
+            )
             for i, (top_priority_status, history_date) in enumerate(history):
                 if i == len(history) - 1:
                     return history_date
                 if (
-                    top_priority_status == TOP_PRIORITY_BARRIER_STATUS.APPROVED and
-                    history[i+1][0] != TOP_PRIORITY_BARRIER_STATUS.APPROVED
+                    top_priority_status == TOP_PRIORITY_BARRIER_STATUS.APPROVED
+                    and history[i + 1][0] != TOP_PRIORITY_BARRIER_STATUS.APPROVED
                 ):
                     return history_date
 

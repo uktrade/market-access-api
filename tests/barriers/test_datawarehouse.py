@@ -193,7 +193,10 @@ class TestDataWarehouseExport(TestCase):
         )
         data = DataWorkspaceSerializer(barrier).data
 
-        assert data["proposed_top_priority_change_user"] == f"{user.first_name} {user.last_name}"
+        assert (
+            data["proposed_top_priority_change_user"]
+            == f"{user.first_name} {user.last_name}"
+        )
 
     def test_get_top_priority_date_no_date(self):
         barrier = BarrierFactory(status_date=date.today())
