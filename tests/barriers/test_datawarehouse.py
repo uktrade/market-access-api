@@ -397,7 +397,9 @@ class TestDataWarehouseExport(TestCase):
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime("%Y-%m-%d")
+        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime(
+            "%Y-%m-%d"
+        )
 
         ts2 = ts1 + datetime.timedelta(days=1)
         with freezegun.freeze_time(ts2):
@@ -406,7 +408,9 @@ class TestDataWarehouseExport(TestCase):
 
         data = DataWorkspaceSerializer(barrier).data
         # Set as the first time ERD set (ts1, not ts2)
-        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime("%Y-%m-%d")
+        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime(
+            "%Y-%m-%d"
+        )
 
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):

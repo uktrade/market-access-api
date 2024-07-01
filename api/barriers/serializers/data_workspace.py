@@ -402,14 +402,16 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             return None
 
     def get_date_estimated_resolution_date_first_added(self, instance):
-        history = instance.history.filter(estimated_resolution_date__isnull=False).order_by('history_date')
+        history = instance.history.filter(
+            estimated_resolution_date__isnull=False
+        ).order_by("history_date")
 
-        first = history.values('estimated_resolution_date').first()
+        first = history.values("estimated_resolution_date").first()
 
         if not first:
             return
 
-        return first['estimated_resolution_date'].strftime("%Y-%m-%d")
+        return first["estimated_resolution_date"].strftime("%Y-%m-%d")
 
     def get_overseas_region(self, instance) -> typing.List[str]:
         if instance.country:
@@ -581,6 +583,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     def get_set_to_allowed_on(self, obj):
         if hasattr(obj, "public_barrier"):
             return obj.public_barrier.set_to_allowed_on
+
     def get_economic_assessment_rating(self, obj):
         assessment = obj.current_economic_assessment
         if assessment:
