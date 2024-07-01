@@ -32,12 +32,6 @@ pytestmark = [pytest.mark.django_db]
 freezegun.configure(extend_ignore_list=["transformers"])
 
 
-freezegun.configure(extend_ignore_list=["transformers"])
-
-
-freezegun.configure(extend_ignore_list=["transformers"])
-
-
 class TestDataWarehouseExport(TestCase):
     def test_datawarehouse_action_plans_values(self):
 

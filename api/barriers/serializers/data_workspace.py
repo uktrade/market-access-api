@@ -8,6 +8,12 @@ from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.barriers.fields import ExportTypeReportField, LineBreakCharField
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    BarrierTopPrioritySummary,
+)
+from api.barriers.serializers.base import BarrierSerializerBase
 from api.collaboration.models import TeamMember
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
@@ -18,10 +24,7 @@ from api.metadata.constants import (
     TRADE_DIRECTION_CHOICES,
     BarrierStatus,
 )
-
-from ...metadata.utils import get_barrier_tag_from_title, get_barrier_tags
-from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
-from .base import BarrierSerializerBase
+from api.metadata.utils import get_barrier_tag_from_title
 
 
 class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
