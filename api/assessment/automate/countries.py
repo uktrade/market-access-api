@@ -41,5 +41,5 @@ country_mapping = {
 }
 
 
-def get_comtrade_country_name(country_name: str):
-    return country_mapping.get(country_name, country_name)
+# def get_comtrade_country_name(country_name: str):
+#     return country_mapping.get(country_name, country_name)
