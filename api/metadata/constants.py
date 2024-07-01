@@ -393,14 +393,6 @@ GOVERNMENT_ORGANISATION_TYPES = (
 )
 
 
-AWAITING_REVIEW_FROM = Choices(
-    ("0", "CONTENT", "Content"),
-    ("10", "CONTENT_AFTER_CHANGES", "Content (edited since last review)"),
-    ("20", "HM_TRADE_COMMISSION", "HM Trade Commission"),
-    ("30", "GOVERNMENT_ORGANISATION", "Government organisation"),
-)
-
-
 TOP_PRIORITY_BARRIER_STATUS = Choices(
     ("NONE", ""),
     ("APPROVAL_PENDING", "Top 100 Approval Pending"),
