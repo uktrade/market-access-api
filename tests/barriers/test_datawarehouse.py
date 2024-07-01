@@ -16,8 +16,9 @@ from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
-    BarrierStatus,
+    BarrierStatus, PRIORITY_LEVELS,
 )
+from api.metadata.models import BarrierTag
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
@@ -377,6 +378,81 @@ class TestDataWarehouseExport(TestCase):
         serialised_data = DataWorkspaceSerializer(barrier).data
         assert "priority_level" in serialised_data.keys()
         assert serialised_data["priority_level"] == "PB100"
+
+    def test_date_of_priority_level_none(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            priority_level=PRIORITY_LEVELS.NONE,
+        )
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_of_priority_level"] is None
+
+        barrier.priority_level = PRIORITY_LEVELS.COUNTRY
+        barrier.save()
+        barrier.priority_level = PRIORITY_LEVELS.NONE
+        barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_of_priority_level"] is None
+
+    def test_date_of_priority_level(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            priority_level=PRIORITY_LEVELS.NONE,
+        )
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts1):
+            barrier.priority_level = PRIORITY_LEVELS.COUNTRY
+            barrier.save()
+
+        # Make random change
+        barrier.title = 'test'
+        barrier.save()
+        barrier.summary = 'summary'
+        barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_of_priority_level"] == ts1
+
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts2):
+            barrier.priority_level = PRIORITY_LEVELS.WATCHLIST
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_of_priority_level"] == ts2
+
+    def test_date_of_top_priority_scoping_none(self):
+        priority_tag = BarrierTag.objects.get(title="Scoping (Top 100 priority barrier)")
+        barrier = BarrierFactory(status_date=date.today())
+
+        barrier.tags.add(priority_tag)
+        barrier.tags.remove(priority_tag)
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_of_top_priority_scoping"] is None
+
+    def test_date_of_top_priority_scoping(self):
+        priority_tag = BarrierTag.objects.get(title="Scoping (Top 100 priority barrier)")
+        barrier = BarrierFactory(status_date=date.today())
+
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts1):
+            barrier.tags.add(priority_tag)
+
+        barrier.title = 'test'
+        barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_of_top_priority_scoping"] is ts1
+
+        barrier.tags.remove(priority_tag)
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts2):
+            barrier.tags.add(priority_tag)
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_of_top_priority_scoping"] is ts2
 
     def test_estimated_resolution_date_first_added_none(self):
         barrier = BarrierFactory(

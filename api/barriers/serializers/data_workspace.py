@@ -15,11 +15,12 @@ from api.metadata.constants import (
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_DIRECTION_CHOICES,
-    BarrierStatus,
+    BarrierStatus, PRIORITY_LEVELS,
 )
 
 from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
+from ...metadata.utils import get_barrier_tags, get_barrier_tag_from_title
 
 
 class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
@@ -169,6 +170,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
+    date_of_priority_level = serializers.SerializerMethodField()
+    date_of_top_priority_scoping = serializers.SerializerMethodField()
     date_estimated_resolution_date_first_added = serializers.SerializerMethodField()
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
@@ -291,6 +294,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "resolved_date",
             "is_regional_trade_plan",
             "estimated_resolution_updated_date",
+            "date_of_priority_level",
+            "date_of_top_priority_scoping",
             "date_estimated_resolution_date_first_added",
             "previous_estimated_resolution_date",
             "overseas_region",
@@ -400,6 +405,33 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             return history.estimated_resolution_date.strftime("%Y-%m-%d")
         else:
             return None
+
+    def get_date_of_priority_level(self, instance):
+        if instance.priority_level == PRIORITY_LEVELS.NONE:
+            return
+
+        history = instance.history.order_by('-history_date').values('history_date', 'priority_level')
+
+        for i, history_item in enumerate(history):
+            if i == len(history) - 1:
+                return history_item['history_date']
+            if history[i + 1]['priority_level'] != instance.priority_level:
+                return history_item['history_date']
+
+    def get_date_of_top_priority_scoping(self, instance):
+        priority_tag = get_barrier_tag_from_title("Scoping (Top 100 priority barrier)")
+        priority_tag_id = priority_tag["id"]
+
+        if not instance.tags.filter(id=priority_tag_id).exists():
+            return
+
+        history = instance.history.order_by('-history_date').values('history_date', 'tags_cache')
+
+        for i, history_item in enumerate(history):
+            if i == len(history) - 1:
+                return history_item['history_date']
+            if priority_tag_id not in history[i + 1]['tags_cache']:
+                return history_item['history_date']
 
     def get_date_estimated_resolution_date_first_added(self, instance):
         history = instance.history.filter(
