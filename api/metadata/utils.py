@@ -179,7 +179,6 @@ def get_barrier_tag_from_title(title: str):
             return tag
 
 
-
 def get_barrier_priorities():
     return [
         {"code": priority.code, "name": priority.name, "order": priority.order}

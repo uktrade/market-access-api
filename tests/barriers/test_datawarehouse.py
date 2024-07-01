@@ -14,9 +14,10 @@ from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS,
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC,
+    PRIORITY_LEVELS,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
-    BarrierStatus, PRIORITY_LEVELS,
+    BarrierStatus,
 )
 from api.metadata.models import BarrierTag
 from tests.action_plans.factories import (
@@ -406,9 +407,9 @@ class TestDataWarehouseExport(TestCase):
             barrier.save()
 
         # Make random change
-        barrier.title = 'test'
+        barrier.title = "test"
         barrier.save()
-        barrier.summary = 'summary'
+        barrier.summary = "summary"
         barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
@@ -423,7 +424,9 @@ class TestDataWarehouseExport(TestCase):
         assert data["date_of_priority_level"] == ts2
 
     def test_date_of_top_priority_scoping_none(self):
-        priority_tag = BarrierTag.objects.get(title="Scoping (Top 100 priority barrier)")
+        priority_tag = BarrierTag.objects.get(
+            title="Scoping (Top 100 priority barrier)"
+        )
         barrier = BarrierFactory(status_date=date.today())
 
         barrier.tags.add(priority_tag)
@@ -433,14 +436,16 @@ class TestDataWarehouseExport(TestCase):
         assert data["date_of_top_priority_scoping"] is None
 
     def test_date_of_top_priority_scoping(self):
-        priority_tag = BarrierTag.objects.get(title="Scoping (Top 100 priority barrier)")
+        priority_tag = BarrierTag.objects.get(
+            title="Scoping (Top 100 priority barrier)"
+        )
         barrier = BarrierFactory(status_date=date.today())
 
         ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
         with freezegun.freeze_time(ts1):
             barrier.tags.add(priority_tag)
 
-        barrier.title = 'test'
+        barrier.title = "test"
         barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data

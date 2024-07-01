@@ -12,15 +12,16 @@ from api.collaboration.models import TeamMember
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
+    PRIORITY_LEVELS,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_DIRECTION_CHOICES,
-    BarrierStatus, PRIORITY_LEVELS,
+    BarrierStatus,
 )
 
+from ...metadata.utils import get_barrier_tag_from_title, get_barrier_tags
 from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
-from ...metadata.utils import get_barrier_tags, get_barrier_tag_from_title
 
 
 class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
@@ -410,13 +411,15 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
         if instance.priority_level == PRIORITY_LEVELS.NONE:
             return
 
-        history = instance.history.order_by('-history_date').values('history_date', 'priority_level')
+        history = instance.history.order_by("-history_date").values(
+            "history_date", "priority_level"
+        )
 
         for i, history_item in enumerate(history):
             if i == len(history) - 1:
-                return history_item['history_date']
-            if history[i + 1]['priority_level'] != instance.priority_level:
-                return history_item['history_date']
+                return history_item["history_date"]
+            if history[i + 1]["priority_level"] != instance.priority_level:
+                return history_item["history_date"]
 
     def get_date_of_top_priority_scoping(self, instance):
         priority_tag = get_barrier_tag_from_title("Scoping (Top 100 priority barrier)")
@@ -425,13 +428,15 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
         if not instance.tags.filter(id=priority_tag_id).exists():
             return
 
-        history = instance.history.order_by('-history_date').values('history_date', 'tags_cache')
+        history = instance.history.order_by("-history_date").values(
+            "history_date", "tags_cache"
+        )
 
         for i, history_item in enumerate(history):
             if i == len(history) - 1:
-                return history_item['history_date']
-            if priority_tag_id not in history[i + 1]['tags_cache']:
-                return history_item['history_date']
+                return history_item["history_date"]
+            if priority_tag_id not in history[i + 1]["tags_cache"]:
+                return history_item["history_date"]
 
     def get_date_estimated_resolution_date_first_added(self, instance):
         history = instance.history.filter(
