@@ -28,6 +28,7 @@ class BarrierList(generics.ListAPIView):
             "economic_assessments",
             "organisations",
             "tags",
+            "top_priority_summary",
         )
         .order_by("reported_on")
     )
