@@ -209,18 +209,32 @@ class TestPublicBarrierListViewset(PublicBarrierBaseTestCase):
         }
 
         # Test special status 'changed'
+        published_barrier = barriers[PublicBarrierStatus.PUBLISHING_PENDING]
 
-        published_barrier = barriers[PublicBarrierStatus.PUBLISHED]
-
+        published_barrier.sectors = ["8a38cecc-5f95-e211-a939-e4115bead28a"]
+        published_barrier.save()
+        published_barrier.refresh_from_db()
         published_barrier.public_barrier.publish()
         published_barrier.public_barrier.last_published_on = datetime.now() - timedelta(
             days=30
         )
+        published_barrier.public_barrier.published_versions = {
+            "versions": {
+                "0": {
+                    "published_on": f"{ datetime.now()}",
+                }
+            }
+        }
         published_barrier.public_barrier.save()
         published_barrier.refresh_from_db()
-        published_barrier.summary = "New summary!"
+        published_barrier.sectors = ["9b38cecc-5f95-e211-a939-e4115bead28a"]
         published_barrier.save()
         published_barrier.refresh_from_db()
+
+        r = get_list_for_status("changed")
+        assert 200 == r.status_code
+        assert 1 == r.data["count"]
+        assert {published_barrier.id} == {i["internal_id"] for i in r.data["results"]}
 
     def test_pb_list_country_filter(self):
         country_id = "9f5f66a0-5d95-e211-a939-e4115bead28a"
@@ -348,7 +362,7 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["unpublished_on"]
         assert not response.data["unpublished_changes"]
         assert not response.data["ready_to_be_published"]
-        assert self.barrier.created_on == dateutil.parser.parse(
+        assert self.barrier.reported_on == dateutil.parser.parse(
             response.data["reported_on"]
         )
 
@@ -439,157 +453,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
         assert not response.data["title"]
         assert not response.data["title_updated_on"]
-
-    # === READY ====
-    def test_public_barrier_marked_ready_as_standard_user(self):
-        """Standard users cannot mark public barriers ready (to be published)"""
-        user = self.create_standard_user()
-        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    def test_public_barrier_marked_ready_as_approver(self):
-        """Approvers can mark public barriers ready (to be published)"""
-        user = self.create_approver()
-        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert (
-            TeamMember.objects.filter(
-                user=user, barrier=self.barrier, role=TeamMember.PUBLIC_APPROVER
-            ).count()
-            == 1
-        )
-
-        assert status.HTTP_200_OK == response.status_code
-        assert (
-            PublicBarrierStatus.PUBLISHING_PENDING
-            == response.data["public_view_status"]
-        )
-
-    def test_public_barrier_marked_ready_as_publisher(self):
-        """Publishers can mark public barriers ready (to be published)"""
-        user = self.create_publisher()
-        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert (
-            PublicBarrierStatus.PUBLISHING_PENDING
-            == response.data["public_view_status"]
-        )
-
-    def test_public_barrier_marked_ready_as_admin(self):
-        """Admins can mark public barriers ready (to be published)"""
-        user = self.create_admin()
-        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert (
-            PublicBarrierStatus.PUBLISHING_PENDING
-            == response.data["public_view_status"]
-        )
-
-    # === UNPREPARED ====
-    def test_public_barrier_marked_unprepared_as_standard_user(self):
-        """Standard users cannot mark a public barriers unprepared (not ready)"""
-        user = self.create_standard_user()
-        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    def test_public_barrier_marked_unprepared_as_approver(self):
-        """Approvers can mark a public barriers unprepared (not ready)"""
-        user = self.create_approver()
-        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.ALLOWED == response.data["public_view_status"]
-
-    def test_public_barrier_marked_unprepared_as_publisher(self):
-        """Publishers can mark a public barriers unprepared (not ready)"""
-        user = self.create_publisher()
-        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.ALLOWED == response.data["public_view_status"]
-
-    def test_public_barrier_marked_unprepared_as_admin(self):
-        """Admins can mark a public barriers unprepared (not ready)"""
-        user = self.create_admin()
-        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert PublicBarrierStatus.ALLOWED == response.data["public_view_status"]
-
-    # === IGNORE ALL CHANGES ====
-    @freezegun.freeze_time("2020-02-02")
-    def test_public_barrier_ignore_all_changes_as_standard_user(self):
-        """Standard users cannot ignore all changes"""
-        user = self.create_standard_user()
-        url = reverse(
-            "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
-        )
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_403_FORBIDDEN == response.status_code
-
-    @freezegun.freeze_time("2020-02-02")
-    def test_public_barrier_ignore_all_changes_as_approver(self):
-        """Approvers can ignore all changes"""
-        user = self.create_approver()
-        url = reverse(
-            "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
-        )
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
-        assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
-
-    @freezegun.freeze_time("2020-02-02")
-    def test_public_barrier_ignore_all_changes_as_publisher(self):
-        """Publishers can ignore all changes"""
-        user = self.create_publisher()
-        url = reverse(
-            "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
-        )
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
-        assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
-
-    @freezegun.freeze_time("2020-02-02")
-    def test_public_barrier_ignore_all_changes_as_admin(self):
-        """Admins can ignore all changes"""
-        user = self.create_admin()
-        url = reverse(
-            "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
-        )
-        client = self.create_api_client(user=user)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert "2020-02-02" == response.data["summary_updated_on"].split("T")[0]
-        assert "2020-02-02" == response.data["title_updated_on"].split("T")[0]
 
     # === PUBLISH ====
     def test_public_barrier_publish_as_standard_user(self):
@@ -729,113 +592,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert list(self.barrier.categories.all()) == list(
             pb.latest_published_version.categories.all()
         )
-
-    def test_public_barrier_publish_updates_status(self):
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-
-        assert self.barrier.status == pb.status
-
-        # Change barrier status
-        self.barrier.status = BarrierStatus.OPEN_IN_PROGRESS
-        self.barrier.save()
-        self.barrier.refresh_from_db()
-
-        assert self.barrier.status != pb.status
-        assert True is pb.internal_status_changed
-
-        user = self.create_publisher()
-        pb, response = self.publish_barrier(pb=pb, user=user)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert self.barrier.status == pb.status
-
-    def test_public_barrier_publish_updates_country(self):
-        angola_uuid = "985f66a0-5d95-e211-a939-e4115bead28a"
-        singapore_uuid = "1f0be5c4-5d95-e211-a939-e4115bead28a"
-        self.barrier.country = angola_uuid
-        self.barrier.save()
-
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-
-        self.barrier.refresh_from_db()
-        assert self.barrier.country == pb.country
-
-        # Change barrier country
-        self.barrier.country = singapore_uuid
-        self.barrier.save()
-        self.barrier.refresh_from_db()
-
-        assert self.barrier.country != pb.country
-        assert True is pb.internal_country_changed
-
-        user = self.create_publisher()
-        pb, response = self.publish_barrier(pb=pb, user=user)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert self.barrier.country == pb.country
-
-    def test_public_barrier_publish_updates_sectors(self):
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-
-        assert pb.barrier.sectors == pb.sectors
-
-        self.barrier.sectors = [
-            "9538cecc-5f95-e211-a939-e4115bead28a",  # Aerospace
-            "9b38cecc-5f95-e211-a939-e4115bead28a",  # Chemicals
-        ]
-        self.barrier.save()
-        self.barrier.refresh_from_db()
-        pb.refresh_from_db()
-
-        assert self.barrier.sectors != pb.sectors
-        assert True is pb.internal_sectors_changed
-
-        user = self.create_publisher()
-        pb, response = self.publish_barrier(pb=pb, user=user)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert self.barrier.sectors == pb.sectors
-
-    def test_public_barrier_publish_updates_all_sectors(self):
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-
-        assert self.barrier.all_sectors == pb.all_sectors
-
-        # Change barrier status
-        self.barrier.all_sectors = True
-        self.barrier.save()
-
-        assert self.barrier.all_sectors != pb.all_sectors
-        assert True is pb.internal_all_sectors_changed
-
-        user = self.create_publisher()
-        pb, response = self.publish_barrier(pb=pb, user=user)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert self.barrier.all_sectors == pb.all_sectors
-
-    def test_public_barrier_publish_updates_categories(self):
-        response = self.api_client.get(self.url)
-        pb = PublicBarrier.objects.get(pk=response.data["id"])
-
-        assert not pb.categories.all()
-
-        category = CategoryFactory()
-        self.barrier.categories.add(category)
-        self.barrier.save()
-
-        assert True is pb.internal_categories_changed
-
-        user = self.create_publisher()
-        pb, response = self.publish_barrier(pb=pb, user=user)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert pb.categories.first()
-        assert category.id == pb.categories.first().id
 
     # === UNPUBLISH ===
     def test_public_barrier_unpublish_as_standard_user(self):
@@ -979,7 +735,6 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
         data = PublicBarrierSerializer(pb).data
         assert data["is_resolved"] is False
-        assert data["internal_is_resolved"] is False
         assert data["latest_published_version"]["is_resolved"] is False
 
     def test_country_is_serialized_consistently(self):
@@ -996,7 +751,6 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
         data = PublicBarrierSerializer(pb).data
         assert expected_country == data["country"]
-        assert expected_country == data["internal_country"]
         assert expected_country == data["latest_published_version"]["country"]
 
     def test_sectors_is_serialized_consistently(self):
@@ -1011,7 +765,6 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
         data = PublicBarrierSerializer(pb).data
         assert expected_sectors == data["sectors"]
-        assert expected_sectors == data["internal_sectors"]
         assert expected_sectors == data["latest_published_version"]["sectors"]
 
     def test_all_sectors_is_serialized_consistently(self):
@@ -1023,7 +776,6 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
         data = PublicBarrierSerializer(pb).data
         assert expected_all_sectors == data["all_sectors"]
-        assert expected_all_sectors == data["internal_all_sectors"]
         assert expected_all_sectors == data["latest_published_version"]["all_sectors"]
 
     def test_categories_is_serialized_consistently(self):
@@ -1036,7 +788,6 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
         data = PublicBarrierSerializer(pb).data
         assert expected_categories == data["categories"]
-        assert expected_categories == data["internal_categories"]
         assert expected_categories == data["latest_published_version"]["categories"]
 
     def test_internal_main_sector_in_latest_published_version(self):
@@ -1055,54 +806,7 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
     def test_status_of_flags_after_public_barrier_creation(self):
         pb = self.get_public_barrier()
-
-        assert False is pb.internal_title_changed
-        assert False is pb.title_changed
-        assert False is pb.internal_summary_changed
-        assert False is pb.summary_changed
-        assert False is pb.internal_status_changed
-        assert False is pb.internal_country_changed
-        assert False is pb.internal_sectors_changed
-        assert False is pb.internal_all_sectors_changed
-        assert False is pb.internal_sectors_changed
-        assert False is pb.internal_categories_changed
-        assert False is pb.ready_to_be_published
-
-    def test_title_changed_flag_returns_false(self):
-        # There's no change to the title after publishing
-        user = self.create_publisher()
-        pb, response = self.publish_barrier(user=user)
-        assert status.HTTP_200_OK == response.status_code
-        assert False is pb.title_changed
-
-    def test_title_changed_flag_returns_true(self):
-        # There's an update to the title after publishing
-        pb, _response = self.publish_barrier()
-        pb.title = "New title!!"
-        pb.save()
-        pb.refresh_from_db()
-
-        assert True is pb.title_changed
-
-    def test_summary_changed_flag_returns_false(self):
-        # There's no change to the summary after publishing
-        user = self.create_publisher()
-        pb, response = self.publish_barrier(user=user)
-        assert status.HTTP_200_OK == response.status_code
-        assert False is pb.summary_changed
-
-    def test_summary_changed_flag_returns_true(self):
-        # There's an update to the summary after publishing
-        pb, _response = self.publish_barrier()
-        pb.summary = "New summary!!"
-        pb.save()
-        pb.refresh_from_db()
-
-        assert True is pb.summary_changed
-
-    def test_ready_to_be_published_after_init(self):
-        pb = self.get_public_barrier()
-        assert False is pb.ready_to_be_published
+        assert pb.ready_to_be_published is False
 
     def test_ready_to_be_published_is_false_when_status_is_not_ready_or_unpublished(
         self,
@@ -1136,8 +840,8 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
         user = self.create_publisher()
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_200_OK == response.status_code
-        assert False is pb.unpublished_changes
-        assert False is pb.ready_to_be_published
+        assert not pb.unpublished_changes
+        assert not pb.ready_to_be_published
 
     def test_ready_to_be_published_is_true_for_republish(self):
         """
@@ -1148,8 +852,8 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
         pb, response = self.publish_barrier(user=user)
         assert status.HTTP_200_OK == response.status_code
 
-        assert False is pb.unpublished_changes
-        assert False is pb.ready_to_be_published
+        assert not pb.unpublished_changes
+        assert not pb.ready_to_be_published
 
         # 2. Unpublish the barrier
         url = reverse("public-barriers-unpublish", kwargs={"pk": pb.barrier.id})
@@ -1167,8 +871,28 @@ class TestPublicBarrierFlags(PublicBarrierBaseTestCase):
         pb.save()
         pb.refresh_from_db()
 
-        assert False is pb.unpublished_changes
-        assert True is pb.ready_to_be_published
+        assert not pb.unpublished_changes
+        assert pb.ready_to_be_published
+
+    def test_changed_since_published(self):
+        """
+        The case when the public barrier gets published and has a field changed
+        """
+        # 1. Publish the barrier
+        user = self.create_publisher()
+        pb, response = self.publish_barrier(user=user)
+        assert status.HTTP_200_OK == response.status_code
+
+        assert not pb.unpublished_changes
+        assert not pb.changed_since_published
+
+        # 2. Change a field that will trigger changed_since_published
+        pb.barrier.sectors = []
+        pb.barrier.save()
+
+        assert "sectors" in pb.unpublished_changes
+        pb.refresh_from_db()
+        assert pb.changed_since_published
 
 
 class TestPublicBarrierContributors(PublicBarrierBaseTestCase):
@@ -1198,35 +922,6 @@ class TestPublicBarrierContributors(PublicBarrierBaseTestCase):
         public_title = "New public facing title!"
         payload = {"title": public_title}
         response = self.client.patch(self.url, format="json", data=payload)
-
-        assert status.HTTP_200_OK == response.status_code
-        members = get_team_member_user_ids(self.barrier.id)
-        assert 1 == members.count()
-        assert self.publisher.id == members.first()
-
-    def test_public_barrier_marked_ready_adds_user_as_contributor(self):
-        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
-        response = self.client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        members = get_team_member_user_ids(self.barrier.id)
-        assert 1 == members.count()
-        assert self.publisher.id == members.first()
-
-    def test_public_barrier_marked_unprepared_adds_user_as_contributor(self):
-        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
-        response = self.client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        members = get_team_member_user_ids(self.barrier.id)
-        assert 1 == members.count()
-        assert self.publisher.id == members.first()
-
-    def test_public_barrier_ignore_all_changes_adds_user_as_contributor(self):
-        url = reverse(
-            "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
-        )
-        response = self.client.post(url)
 
         assert status.HTTP_200_OK == response.status_code
         members = get_team_member_user_ids(self.barrier.id)
@@ -1383,7 +1078,7 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
         assert pb1.last_published_on == dateutil.parser.parse(
             barrier["last_published_on"]
         )
-        assert pb1.internal_created_on == dateutil.parser.parse(barrier["reported_on"])
+        assert pb1.reported_on == dateutil.parser.parse(barrier["reported_on"])
         # as the sector and the main sector in the list of sectors
         assert len(barrier["sectors"]) == 2
         assert barrier["sectors"][0]["name"] == "Consumer and retail"
@@ -1403,41 +1098,6 @@ class TestPublicBarriersToPublicData(PublicBarrierBaseTestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert mock_release.called is True
-
-    @patch("api.barriers.views.public_release_to_s3")
-    def test_ready_does_not_call_public_release(self, mock_release):
-        _pb = self.get_public_barrier(self.barrier)
-        url = reverse("public-barriers-ready", kwargs={"pk": self.barrier.id})
-
-        client = self.create_api_client(user=self.publisher)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert mock_release.called is False
-
-    @patch("api.barriers.views.public_release_to_s3")
-    def test_unprepared_does_not_call_public_release(self, mock_release):
-        _pb = self.get_public_barrier(self.barrier)
-        url = reverse("public-barriers-unprepared", kwargs={"pk": self.barrier.id})
-
-        client = self.create_api_client(user=self.publisher)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert mock_release.called is False
-
-    @patch("api.barriers.views.public_release_to_s3")
-    def test_ignore_all_changes_does_not_call_public_release(self, mock_release):
-        _pb = self.get_public_barrier(self.barrier)
-        url = reverse(
-            "public-barriers-ignore-all-changes", kwargs={"pk": self.barrier.id}
-        )
-
-        client = self.create_api_client(user=self.publisher)
-        response = client.post(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert mock_release.called is False
 
     @patch("api.barriers.views.public_release_to_s3")
     def test_get_details_does_not_call_public_release(self, mock_release):
