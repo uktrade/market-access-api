@@ -35,7 +35,6 @@ from api.history.v2.service import FieldMapping, get_model_history
 from api.metadata import models as metadata_models
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
-    AWAITING_REVIEW_FROM,
     BARRIER_ARCHIVED_REASON,
     BARRIER_PENDING,
     BARRIER_SOURCE,
@@ -835,7 +834,27 @@ class Barrier(FullyArchivableMixin, BaseModel):
         super().save(force_insert, force_update, using, update_fields)
 
         # Ensure that a PublicBarrier for this Barrier exists
-        PublicBarrier.public_barriers.get_or_create_for_barrier(barrier=self)
+        # Update its non-editable fields to match any updated values
+        public_barrier, _ = PublicBarrier.public_barriers.get_or_create_for_barrier(
+            barrier=self
+        )
+        non_editable_public_fields = [
+            "status",
+            "status_date",
+            "reported_on",
+            "country",
+            "caused_by_trading_bloc",
+            "trading_bloc",
+            "sectors",
+            "main_sector",
+            "all_sectors",
+        ]
+        for field in non_editable_public_fields:
+            internal_value = getattr(self, field)
+            setattr(public_barrier, field, internal_value)
+        public_barrier.categories.set(self.categories.all())
+        public_barrier.save()
+        public_barrier.update_changed_since_published()
 
 
 class PublicBarrierHistoricalModel(models.Model):
@@ -849,18 +868,11 @@ class PublicBarrierHistoricalModel(models.Model):
         default=list,
     )
 
-    light_touch_reviews_cache = models.JSONField(default=dict)
-
     def get_changed_fields(self, old_history):  # noqa: C901, E261
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
-
-        if (self.light_touch_reviews_cache or {}) != (
-            old_history.light_touch_reviews_cache or {}
-        ):
-            changed_fields.add("light_touch_reviews")
 
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
@@ -897,27 +909,6 @@ class PublicBarrierHistoricalModel(models.Model):
             self.instance.categories.values_list("id", flat=True)
         )
 
-    def update_light_touch_reviews(self):
-        if self.instance._history.history_type == "-":
-            # If the history type is a deletion, do not attempt to
-            # update the light touch reviews as the related barrier will not exist
-            return
-        try:
-            light_touch_reviews: PublicBarrierLightTouchReviews = (
-                self.instance.light_touch_reviews
-            )
-        except PublicBarrier.light_touch_reviews.RelatedObjectDoesNotExist:
-            light_touch_reviews = PublicBarrierLightTouchReviews.objects.create(
-                public_barrier=self.instance
-            )
-        self.light_touch_reviews_cache = {
-            "content_team_approval": light_touch_reviews.content_team_approval,
-            "has_content_changed_since_approval": light_touch_reviews.has_content_changed_since_approval,
-            "hm_trade_commissioner_approval": light_touch_reviews.hm_trade_commissioner_approval,
-            "hm_trade_commissioner_approval_enabled": light_touch_reviews.hm_trade_commissioner_approval_enabled,
-            "government_organisation_approvals": light_touch_reviews.government_organisation_approvals,
-        }
-
     @property
     def public_view_status(self):
         return self._public_view_status
@@ -932,41 +923,10 @@ class PublicBarrierHistoricalModel(models.Model):
 
     def save(self, *args, **kwargs):
         self.update_categories()
-        self.update_light_touch_reviews()
         super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
-
-
-class PublicBarrierLightTouchReviews(FullyArchivableMixin, BaseModel):
-    public_barrier = models.OneToOneField(
-        "PublicBarrier", related_name="light_touch_reviews", on_delete=models.CASCADE
-    )
-
-    content_team_approval = models.BooleanField(default=False, blank=True)
-    has_content_changed_since_approval = models.BooleanField(default=False, blank=True)
-    hm_trade_commissioner_approval = models.BooleanField(default=False, blank=True)
-    hm_trade_commissioner_approval_enabled = models.BooleanField(
-        default=True, blank=True
-    )
-    government_organisation_approvals = ArrayField(
-        models.IntegerField(blank=True), blank=True, null=False, default=list
-    )
-    missing_government_organisation_approvals = ArrayField(
-        models.IntegerField(blank=True), blank=True, null=False, default=list
-    )
-    enabled = models.BooleanField(default=False)
-
-    def save(self, *args, **kwargs):
-        organisation_approval_ids = self.government_organisation_approvals
-        all_organisation_ids = (
-            self.public_barrier.barrier.organisations.all().values_list("id", flat=True)
-        )
-        self.missing_government_organisation_approvals = list(
-            set(all_organisation_ids) - set(organisation_approval_ids)
-        )
-        super().save(*args, **kwargs)
 
 
 class PublicBarrier(FullyArchivableMixin, BaseModel):
@@ -998,8 +958,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     # === Non editable fields ====
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
     status_date = models.DateField(blank=True, null=True)
+    reported_on = models.DateTimeField(blank=True, null=True)
     country = models.UUIDField(blank=True, null=True)
-    # caused_by_country_trading_bloc = models.BooleanField(null=True)
     caused_by_trading_bloc = models.BooleanField(blank=True, null=True)
     trading_bloc = models.CharField(
         choices=TRADING_BLOC_CHOICES,
@@ -1007,6 +967,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         blank=True,
     )
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
+    main_sector = models.UUIDField(blank=True, null=True)
     all_sectors = models.BooleanField(blank=True, null=True)
     categories = models.ManyToManyField(
         metadata_models.Category, related_name="public_barriers"
@@ -1038,15 +999,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        # ensure public barrier has light touch reviews
-        (
-            light_touch_reviews,
-            created,
-        ) = PublicBarrierLightTouchReviews.objects.get_or_create(public_barrier=self)
-        if not light_touch_reviews.enabled:
-            if self._title and self._summary:
-                light_touch_reviews.enabled = True
-                light_touch_reviews.save()
 
     def add_new_version(self):
         latest_version = self.published_versions.get("latest_version", "0")
@@ -1061,24 +1013,12 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.published_versions["versions"].setdefault(new_version, entry)
 
     def get_published_version(self, version):
-        """
-        Whole publish flow needs to be cleaned up, optimised, simplified.
-
-        ie When publishing a barrier this function is called ~20 times and it is querying db.
-        """
         version = str(version)
-
         if self.published_versions:
-            logger.info(
-                f"self.published_versions: type({type(self.published_versions)}) value({self.published_versions})"
-            )
-            logger.info(f"(PublicBarrier): history exists - {self.history.exists()}")
-
             timestamp = self.published_versions["versions"][version]["published_on"]
             historic_public_barrier = self.history.as_of(
                 datetime.datetime.fromisoformat(timestamp)
             )
-
             return historic_public_barrier
 
     @property
@@ -1087,24 +1027,14 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             self.published_versions.get("latest_version", 0)
         )
 
-    def update_non_editable_fields(self):
-        self.status = self.internal_status
-        self.status_date = self.internal_status_date
-        self.country = self.internal_country
-        self.caused_by_trading_bloc = self.internal_caused_by_trading_bloc
-        self.trading_bloc = self.internal_trading_bloc
-        self.sectors = self.internal_sectors
-        self.all_sectors = self.internal_all_sectors
-        self.categories.set(self.internal_categories.all())
-
     def publish(self):
         if self.ready_to_be_published:
-            self.update_non_editable_fields()
             self.unpublished_on = None
             self.public_view_status = PublicBarrierStatus.PUBLISHED
             self.add_new_version()
             self._history_date = self.last_published_on
             self.save()
+            self.update_changed_since_published()
             return True
         else:
             return False
@@ -1120,16 +1050,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self.title_updated_on = timezone.now()
 
     @property
-    def title_changed(self):
-        if self.title:
-            if self.latest_published_version:
-                return self.title != self.latest_published_version.title
-            else:
-                return True
-        else:
-            return False
-
-    @property
     def summary(self):
         return self._summary
 
@@ -1138,16 +1058,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
         self._summary = value
         self.internal_summary_at_update = self.barrier.summary
         self.summary_updated_on = timezone.now()
-
-    @property
-    def summary_changed(self):
-        if self.summary:
-            if self.latest_published_version:
-                return self.summary != self.latest_published_version.summary
-            else:
-                return True
-        else:
-            return False
 
     @property
     def location(self):
@@ -1173,131 +1083,13 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             self.last_published_on = now
         if status == PublicBarrierStatus.UNPUBLISHED:
             self.unpublished_on = now
-
-    @property
-    def is_currently_published(self):
-        """
-        Is this barrier currently visible on the public frontend?
-        """
-        return self.first_published_on and not self.unpublished_on
-
-    @property
-    def internal_title_changed(self):
-        if self.internal_title_at_update:
-            return self.barrier.title != self.internal_title_at_update
-        else:
-            return False
-
-    @property
-    def internal_summary_changed(self):
-        if self.internal_summary_at_update:
-            return self.barrier.summary != self.internal_summary_at_update
-        else:
-            return False
-
-    @property
-    def internal_status(self):
-        return self.barrier.status
-
-    @property
-    def internal_status_changed(self):
-        return self.barrier.status != self.status
-
-    @property
-    def internal_status_date(self):
-        return self.barrier.status_date
-
-    @property
-    def internal_status_date_changed(self):
-        # Change in status date is only relevant if the barrier is resolved
-        return (self.internal_is_resolved or self.is_resolved) and (
-            self.internal_status_date != self.status_date
-        )
+        if status in [PublicBarrierStatus.NOT_ALLOWED, PublicBarrierStatus.UNKNOWN]:
+            # If the barrier is no longer allowed to be published, set_to_allowed_on must be null.
+            self.set_to_allowed_on = None
 
     @property
     def is_resolved(self):
         return self.status == BarrierStatus.RESOLVED_IN_FULL
-
-    @property
-    def internal_is_resolved(self):
-        return self.barrier.is_resolved
-
-    @property
-    def internal_is_resolved_changed(self):
-        return self.barrier.is_resolved != self.is_resolved
-
-    @property
-    def internal_country(self):
-        return self.barrier.country
-
-    @property
-    def internal_country_changed(self):
-        return self.barrier.country != self.country
-
-    @property
-    def internal_caused_by_trading_bloc(self):
-        return self.barrier.caused_by_trading_bloc
-
-    @property
-    def internal_caused_by_trading_bloc_changed(self):
-        return self.barrier.caused_by_trading_bloc != self.caused_by_trading_bloc
-
-    @property
-    def internal_trading_bloc(self):
-        return self.barrier.trading_bloc
-
-    @property
-    def internal_trading_bloc_changed(self):
-        return self.barrier.trading_bloc != self.trading_bloc
-
-    @property
-    def internal_location(self):
-        return metadata_utils.get_location_text(
-            country_id=self.barrier.country,
-            trading_bloc=self.barrier.trading_bloc,
-            caused_by_trading_bloc=self.barrier.caused_by_trading_bloc,
-        )
-
-    @property
-    def internal_location_changed(self):
-        return self.internal_location != self.location
-
-    @property
-    def internal_sectors(self):
-        return self.barrier.sectors
-
-    @property
-    def internal_sectors_changed(self):
-        return self.barrier.sectors != self.sectors
-
-    @property
-    def internal_main_sector_changed(self):
-        return self.barrier.main_sector != self.internal_main_sector
-
-    @property
-    def internal_all_sectors(self):
-        return self.barrier.all_sectors
-
-    @property
-    def internal_main_sector(self):
-        return self.barrier.main_sector
-
-    @property
-    def internal_all_sectors_changed(self):
-        return self.barrier.all_sectors != self.all_sectors
-
-    @property
-    def internal_categories(self):
-        return self.barrier.categories
-
-    @property
-    def internal_categories_changed(self):
-        # TODO: consider other options
-        return set(self.barrier.categories.all()) != set(self.categories.all())
-
-    @property
-    def internal_created_on(self):
-        return self.barrier.created_on
 
     @property
     def ready_to_be_published(self):
@@ -1305,26 +1097,48 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             self.public_view_status == PublicBarrierStatus.PUBLISHING_PENDING
             or self.public_view_status == PublicBarrierStatus.UNPUBLISHED
         )
-        is_republish = self.unpublished_on is not None
-        has_changes = self.unpublished_changes
-        has_title_and_summary = bool(self.title and self.summary)
-        return is_ready and has_title_and_summary and (is_republish or has_changes)
+        return is_ready
 
     @property
     def unpublished_changes(self):
-        return (
-            self.title_changed
-            or self.summary_changed
-            or self.internal_title_changed
-            or self.internal_summary_changed
-            or self.internal_is_resolved_changed
-            or self.internal_status_date_changed
-            or self.internal_location_changed
-            or self.internal_sectors_changed
-            or self.internal_main_sector_changed
-            or self.internal_all_sectors_changed
-            or self.internal_categories_changed
-        )
+        change_alert_fields = [
+            "is_resolved",
+            "status_date",
+            "location",
+            "sectors",
+            "main_sector",
+            "all_sectors",
+            "categories",
+        ]
+
+        changed_list = []
+        if self._public_view_status == PublicBarrierStatus.PUBLISHED:
+            latest_version = self.latest_published_version
+            if latest_version:
+                for field in change_alert_fields:
+                    if field != "categories":
+                        if getattr(self.barrier, field) != getattr(
+                            latest_version, field
+                        ):
+                            changed_list.append(field)
+                    else:
+                        if set(self.barrier.categories.all()) != set(
+                            latest_version.categories.all()
+                        ):
+                            changed_list.append(field)
+
+        return changed_list
+
+    def update_changed_since_published(self):
+        if self.unpublished_changes:
+            # Seperate if statement as we don't want to update if we don't have to
+            if not self.changed_since_published:
+                self.changed_since_published = True
+                self.save()
+        else:
+            if self.changed_since_published:
+                self.changed_since_published = False
+                self.save()
 
     history = HistoricalRecords(bases=[PublicBarrierHistoricalModel])
 
@@ -1480,6 +1294,10 @@ class BarrierFilterSet(django_filters.FilterSet):
     )
     export_types = django_filters.BaseInFilter(method="export_types_filter")
     start_date = django_filters.Filter(method="start_date_filter")
+
+    valuation_assessment = django_filters.BaseInFilter(
+        method="valuation_assessments_filter"
+    )
 
     class Meta:
         model = Barrier
@@ -1783,13 +1601,6 @@ class BarrierFilterSet(django_filters.FilterSet):
 
     def public_view_filter(self, queryset, name, value):
         public_queryset = queryset.none()
-
-        if "changed" in value:
-            value.remove("changed")
-            public_queryset = queryset.filter(
-                public_barrier__changed_since_published=True
-            )
-
         status_lookup = {
             "unknown": PublicBarrierStatus.UNKNOWN,
             "not_allowed": PublicBarrierStatus.NOT_ALLOWED,
@@ -1953,6 +1764,20 @@ class BarrierFilterSet(django_filters.FilterSet):
         # Filtering the queryset based on the start_date range
         return queryset.filter(start_date__range=(start_date, end_date))
 
+    def valuation_assessments_filter(self, queryset, name, value):
+        assessment_queryset = queryset.none()
+
+        if "with" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                valuation_assessments__archived=False,
+            )
+        if "without" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                valuation_assessments__isnull=True,
+            )
+
+        return queryset & assessment_queryset
+
 
 class PublicBarrierFilterSet(django_filters.FilterSet):
     """
@@ -1965,9 +1790,6 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
     region = django_filters.BaseInFilter(method="region_filter")
     sector = django_filters.BaseInFilter(method="sector_filter")
     organisation = django_filters.BaseInFilter(method="organisation_filter")
-    awaiting_review_from = django_filters.BaseInFilter(
-        method="awaiting_review_from_filter"
-    )
 
     def sector_filter(self, queryset, name, value):
         """
@@ -1977,36 +1799,6 @@ class PublicBarrierFilterSet(django_filters.FilterSet):
         return queryset.filter(
             Q(barrier__all_sectors=True) | Q(barrier__sectors__overlap=value)
         )
-
-    def awaiting_review_from_filter(self, queryset, name, value):
-        AWAITING_REVIEW_FROM_MAP = AWAITING_REVIEW_FROM._identifier_map
-        q_filters = Q()
-        if AWAITING_REVIEW_FROM_MAP["CONTENT"] in value:
-            q_filters = q_filters | Q(
-                light_touch_reviews__enabled=True,
-                light_touch_reviews__content_team_approval=False,
-            )
-
-        if AWAITING_REVIEW_FROM_MAP["CONTENT_AFTER_CHANGES"] in value:
-            q_filters = q_filters | Q(
-                light_touch_reviews__enabled=True,
-                light_touch_reviews__has_content_changed_since_approval=True,
-            )
-
-        if AWAITING_REVIEW_FROM_MAP["HM_TRADE_COMMISSION"] in value:
-            q_filters = q_filters | Q(
-                light_touch_reviews__enabled=True,
-                light_touch_reviews__hm_trade_commissioner_approval=False,
-                light_touch_reviews__hm_trade_commissioner_approval_enabled=True,
-            )
-
-        if AWAITING_REVIEW_FROM_MAP["GOVERNMENT_ORGANISATION"] in value:
-            q_filters = q_filters | Q(
-                light_touch_reviews__enabled=True,
-                light_touch_reviews__missing_government_organisation_approvals__len__gt=0,
-            )
-
-        return queryset.filter(q_filters)
 
     def organisation_filter(self, queryset, name, value):
         """

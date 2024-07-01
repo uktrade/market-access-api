@@ -2,12 +2,13 @@ import datetime
 from datetime import date
 
 import django.db.models
+import freezegun
 import pytest
 from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
-from api.barriers.models import BarrierProgressUpdate
+from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
@@ -25,6 +26,11 @@ from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
+
+freezegun.configure(extend_ignore_list=["transformers"])
+
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestDataWarehouseExport(TestCase):
@@ -175,6 +181,74 @@ class TestDataWarehouseExport(TestCase):
         serialised_data = DataWorkspaceSerializer(barrier).data
         assert "is_top_priority" in serialised_data.keys()
 
+    def test_has_value_for_proposed_top_priority_change_user(self):
+        user = create_test_user()
+        barrier = BarrierFactory(status_date=date.today())
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["proposed_top_priority_change_user"] is None
+
+        BarrierTopPrioritySummary.objects.create(
+            barrier=barrier,
+            top_priority_summary_text="test",
+            modified_by=user,
+            created_by=user,
+        )
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert (
+            data["proposed_top_priority_change_user"]
+            == f"{user.first_name} {user.last_name}"
+        )
+
+    def test_get_top_priority_date_no_date(self):
+        barrier = BarrierFactory(status_date=date.today())
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["top_priority_date"] is None
+
+    def test_get_top_priority_date_has_date(self):
+        barrier = BarrierFactory(status_date=date.today())
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
+        ts = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        with freezegun.freeze_time(ts):
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["top_priority_date"] == ts
+
+    def test_get_top_priority_date_uses_last_date_of_pending_state(self):
+        barrier = BarrierFactory(status_date=date.today())
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts1):
+            barrier.save()
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.NONE
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts2):
+            barrier.save()
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
+        ts3 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts3):
+            barrier.save()
+
+        # Test being resolved doesn't affect the top_priority_date
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+        ts4 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts4):
+            barrier.save()
+
+        assert ts4 > ts3 > ts2 > ts1
+
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["top_priority_date"] == ts3
+
     def test_value_for_is_top_priority_is_bool(self):
         barrier = BarrierFactory(status_date=date.today())
         serialised_data = DataWorkspaceSerializer(barrier).data
@@ -313,6 +387,25 @@ class TestDataWarehouseExport(TestCase):
             serialised_data["valuation_assessment_midpoint"] == expected_midpoint_value
         )
 
+    def test_date_valuation_first_added(self):
+        date_today = date.today()
+        barrier = BarrierFactory(
+            status_date=date_today, status=BarrierStatus.OPEN_IN_PROGRESS
+        )
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts1):
+            eia = EconomicImpactAssessmentFactory(barrier=barrier, impact=6)
+
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts2):
+            eia.impact = 7
+            eia.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert ts2 > ts1
+        assert data["date_valuation_first_added"] == ts2
+
     def test_valuation_assessment_midpoint_value(self):
         date_today = date.today()
         barrier = BarrierFactory(
@@ -354,6 +447,40 @@ class TestDataWarehouseExport(TestCase):
         serialised_data = DataWorkspaceSerializer(barrier).data
         assert "priority_level" in serialised_data.keys()
         assert serialised_data["priority_level"] == "PB100"
+
+    def test_estimated_resolution_date_first_added_none(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=None,
+        )
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_estimated_resolution_date_first_added"] is None
+
+    def test_estimated_resolution_date_first_added(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=None,
+        )
+        ts1 = date.today()
+        with freezegun.freeze_time(ts1):
+            barrier.estimated_resolution_date = ts1
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime(
+            "%Y-%m-%d"
+        )
+
+        ts2 = ts1 + datetime.timedelta(days=1)
+        with freezegun.freeze_time(ts2):
+            barrier.estimated_resolution_date = ts2
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        # Set as the first time ERD set (ts1, not ts2)
+        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime(
+            "%Y-%m-%d"
+        )
 
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):

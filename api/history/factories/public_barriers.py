@@ -2,7 +2,6 @@ from api.barriers.models import PublicBarrier
 
 from ..items.public_barriers import (
     CategoriesHistoryItem,
-    LightTouchReviewsHistoryItem,
     LocationHistoryItem,
     PublicViewStatusHistoryItem,
     SectorsHistoryItem,
@@ -17,7 +16,6 @@ class PublicBarrierHistoryFactory(HistoryItemFactoryBase):
     class_lookup = {}
     history_item_classes = (
         CategoriesHistoryItem,
-        LightTouchReviewsHistoryItem,
         LocationHistoryItem,
         PublicViewStatusHistoryItem,
         SectorsHistoryItem,

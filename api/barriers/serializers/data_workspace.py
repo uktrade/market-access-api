@@ -20,7 +20,6 @@ from api.metadata.constants import (
 
 from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
 from .base import BarrierSerializerBase
-from .mixins import AssessmentFieldsMixin
 
 
 class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
@@ -159,7 +158,7 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
         return None
 
 
-class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
+class DataWorkspaceSerializer(BarrierSerializerBase):
     status_history = serializers.SerializerMethodField()
     team_count = serializers.SerializerMethodField()
     action_plan_added = serializers.SerializerMethodField()
@@ -170,6 +169,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
+    date_estimated_resolution_date_first_added = serializers.SerializerMethodField()
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
     programme_fund_progress_update_author = serializers.SerializerMethodField()
@@ -182,6 +182,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     progress_update_next_steps = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
     top_priority_summary = serializers.SerializerMethodField()
+    top_priority_date = serializers.SerializerMethodField()
+    proposed_top_priority_change_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_created = serializers.SerializerMethodField()
@@ -195,6 +197,15 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     barrier_owner = serializers.SerializerMethodField()
     first_published_on = serializers.SerializerMethodField()
     set_to_allowed_on = serializers.SerializerMethodField()
+    valuation_assessment_explanation = serializers.SerializerMethodField()
+    valuation_assessment_midpoint = serializers.SerializerMethodField()
+    valuation_assessment_midpoint_value = serializers.SerializerMethodField()
+    valuation_assessment_rating = serializers.SerializerMethodField()
+    date_valuation_first_added = serializers.SerializerMethodField()
+    import_market_size = serializers.SerializerMethodField()
+    value_to_economy = serializers.SerializerMethodField()
+    economic_assessment_explanation = serializers.SerializerMethodField()
+    economic_assessment_rating = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -273,6 +284,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "valuation_assessment_rating",
             "valuation_assessment_midpoint",
             "valuation_assessment_midpoint_value",
+            "date_valuation_first_added",
             "value_to_economy",
             "wto_profile",
             "action_plan_added",
@@ -281,6 +293,7 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "resolved_date",
             "is_regional_trade_plan",
             "estimated_resolution_updated_date",
+            "date_estimated_resolution_date_first_added",
             "previous_estimated_resolution_date",
             "overseas_region",
             "programme_fund_progress_update_author",
@@ -293,6 +306,8 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
             "progress_update_next_steps",
             "progress_update_status",
             "top_priority_summary",
+            "top_priority_date",
+            "proposed_top_priority_change_user",
             "next_steps_items",
             "proposed_estimated_resolution_date",
             "proposed_estimated_resolution_date_user",
@@ -390,6 +405,18 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         else:
             return None
 
+    def get_date_estimated_resolution_date_first_added(self, instance):
+        history = instance.history.filter(
+            estimated_resolution_date__isnull=False
+        ).order_by("history_date")
+
+        first = history.values("estimated_resolution_date").first()
+
+        if not first:
+            return
+
+        return first["estimated_resolution_date"].strftime("%Y-%m-%d")
+
     def get_overseas_region(self, instance) -> typing.List[str]:
         if instance.country:
             country = metadata_utils.get_country(str(instance.country))
@@ -461,8 +488,37 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
         if priority_summary:
             latest_summary = priority_summary.latest("modified_on")
             return latest_summary.top_priority_summary_text
-        else:
-            return None
+
+    def get_proposed_top_priority_change_user(self, instance):
+        try:
+            top_priority_summary = instance.top_priority_summary.latest("modified_on")
+        except BarrierTopPrioritySummary.DoesNotExist:
+            return
+
+        user = top_priority_summary.created_by
+        return f"{user.first_name} {user.last_name}"
+
+    def get_top_priority_date(self, instance):
+        pending_states = [
+            TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+        ]
+        if instance.top_priority_status in [
+            *pending_states,
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+            TOP_PRIORITY_BARRIER_STATUS.RESOLVED,
+        ]:
+            history = instance.history.order_by("-history_date").values_list(
+                "top_priority_status", "history_date"
+            )
+            for i, (top_priority_status, history_date) in enumerate(history):
+                if i == len(history) - 1:
+                    return history_date
+                if (
+                    top_priority_status in pending_states
+                    and history[i + 1][0] != pending_states
+                ):
+                    return history_date
 
     def get_proposed_estimated_resolution_date(self, instance):
         # only show the proposed date if it is different to the current date
@@ -560,3 +616,49 @@ class DataWorkspaceSerializer(AssessmentFieldsMixin, BarrierSerializerBase):
     def get_set_to_allowed_on(self, obj):
         if hasattr(obj, "public_barrier"):
             return obj.public_barrier.set_to_allowed_on
+
+    def get_economic_assessment_rating(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.get_rating_display()
+
+    def get_economic_assessment_explanation(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.explanation
+
+    def get_value_to_economy(self, obj):
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.export_potential.get("uk_exports_affected")
+
+    def get_import_market_size(self, obj):
+        """Size of import market for affected product(s)"""
+        assessment = obj.current_economic_assessment
+        if assessment:
+            return assessment.export_potential.get("import_market_size")
+
+    def get_valuation_assessment_rating(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.rating
+
+    def get_valuation_assessment_midpoint(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.midpoint
+
+    def get_valuation_assessment_midpoint_value(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.midpoint_value
+
+    def get_valuation_assessment_explanation(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.explanation
+
+    def get_date_valuation_first_added(self, obj):
+        latest_valuation_assessment = obj.current_valuation_assessment
+        if latest_valuation_assessment:
+            return latest_valuation_assessment.modified_on
