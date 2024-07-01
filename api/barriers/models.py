@@ -1295,6 +1295,10 @@ class BarrierFilterSet(django_filters.FilterSet):
     export_types = django_filters.BaseInFilter(method="export_types_filter")
     start_date = django_filters.Filter(method="start_date_filter")
 
+    valuation_assessment = django_filters.BaseInFilter(
+        method="valuation_assessments_filter"
+    )
+
     class Meta:
         model = Barrier
         fields = [
@@ -1759,6 +1763,20 @@ class BarrierFilterSet(django_filters.FilterSet):
         end_date = dates_list[1]
         # Filtering the queryset based on the start_date range
         return queryset.filter(start_date__range=(start_date, end_date))
+
+    def valuation_assessments_filter(self, queryset, name, value):
+        assessment_queryset = queryset.none()
+
+        if "with" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                valuation_assessments__archived=False,
+            )
+        if "without" in value:
+            assessment_queryset = assessment_queryset | queryset.filter(
+                valuation_assessments__isnull=True,
+            )
+
+        return queryset & assessment_queryset
 
 
 class PublicBarrierFilterSet(django_filters.FilterSet):
