@@ -2,8 +2,6 @@ from collections import Counter
 from itertools import groupby
 from operator import itemgetter
 
-# from api.assessment.automate.countries import get_comtrade_country_name
-
 
 def trade_df(x, df_input, products):
     if len(x) == 2:

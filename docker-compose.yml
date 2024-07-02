@@ -1,15 +1,4 @@
 services:
-  # comtrade_test_db:
-  #   image: postgres
-  #   environment:
-  #     - POSTGRES_DB=comtrade
-  #     - POSTGRES_USER=comtrade
-  #     - POSTGRES_PASSWORD=password
-  #   networks:
-  #     - webnet
-  #   volumes:
-  #     - ./docker/local/comtrade_test_db:/docker-entrypoint-initdb.d:delegated
-
   db:
     image: postgres:13
     volumes:
