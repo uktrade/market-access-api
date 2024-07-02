@@ -216,7 +216,7 @@ class TestDataWarehouseExport(TestCase):
 
         data = DataWorkspaceSerializer(barrier).data
 
-        assert data["top_priority_date"] == ts
+        assert data["top_priority_date"] == ts.strftime("%Y-%m-%d")
 
     def test_get_top_priority_date_uses_last_date_of_pending_state(self):
         barrier = BarrierFactory(status_date=date.today())
@@ -246,7 +246,31 @@ class TestDataWarehouseExport(TestCase):
 
         data = DataWorkspaceSerializer(barrier).data
 
-        assert data["top_priority_date"] == ts3
+        assert data["top_priority_date"] == ts3.strftime("%Y-%m-%d")
+
+    def test_date_barrier_prioritised(self):
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=2)
+        with freezegun.freeze_time(ts1):
+            barrier = BarrierFactory(status_date=date.today())
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_barrier_prioritised"] == ts1.strftime("%Y-%m-%d")
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=1)
+        with freezegun.freeze_time(ts2):
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_barrier_prioritised"] == ts2.strftime("%Y-%m-%d")
+
+        ts3 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts3):
+            barrier.priority_level = PRIORITY_LEVELS.COUNTRY
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_barrier_prioritised"] == ts3.strftime("%Y-%m-%d")
 
     def test_value_for_is_top_priority_is_bool(self):
         barrier = BarrierFactory(status_date=date.today())
@@ -480,7 +504,7 @@ class TestDataWarehouseExport(TestCase):
         barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_of_priority_level"] == ts1
+        assert data["date_of_priority_level"] == ts1.strftime("%Y-%m-%d")
 
         ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
         with freezegun.freeze_time(ts2):
@@ -488,7 +512,7 @@ class TestDataWarehouseExport(TestCase):
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_of_priority_level"] == ts2
+        assert data["date_of_priority_level"] == ts2.strftime("%Y-%m-%d")
 
     def test_date_of_top_priority_scoping_none(self):
         priority_tag = BarrierTag.objects.get(
@@ -516,7 +540,7 @@ class TestDataWarehouseExport(TestCase):
         barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_of_top_priority_scoping"] is ts1
+        assert data["date_of_top_priority_scoping"] == ts1.strftime("%Y-%m-%d")
 
         barrier.tags.remove(priority_tag)
         ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
@@ -524,7 +548,7 @@ class TestDataWarehouseExport(TestCase):
             barrier.tags.add(priority_tag)
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_of_top_priority_scoping"] is ts2
+        assert data["date_of_top_priority_scoping"] == ts2.strftime("%Y-%m-%d")
 
     def test_estimated_resolution_date_first_added_none(self):
         barrier = BarrierFactory(

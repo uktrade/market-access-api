@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 from django.conf import settings
@@ -331,6 +332,20 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "tags",
         )
 
+    def to_representation(self, instance):
+        data = super(DataWorkspaceSerializer, self).to_representation(instance)
+        date_values = [
+            data["date_of_top_priority_scoping"],
+            data["date_of_priority_level"],
+            data["top_priority_date"],
+            datetime.datetime.strptime(data["reported_on"], "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d")
+        ]
+        date_values = [datetime.datetime.strptime(d, "%Y-%m-%d") for d in date_values if d is not None]
+        date = max(date_values)
+        date = date.strftime("%Y-%m-%d") if date else None
+        data["date_barrier_prioritised"] = date
+        return data
+
     @staticmethod
     def get_tags(obj):
         return [tag.title for tag in obj.tags.all()]
@@ -424,9 +439,9 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
 
         for i, history_item in enumerate(history):
             if i == len(history) - 1:
-                return history_item["history_date"]
+                return history_item["history_date"].strftime("%Y-%m-%d")
             if history[i + 1]["priority_level"] != instance.priority_level:
-                return history_item["history_date"]
+                return history_item["history_date"].strftime("%Y-%m-%d")
 
     def get_date_of_top_priority_scoping(self, instance):
         priority_tag = get_barrier_tag_from_title("Scoping (Top 100 priority barrier)")
@@ -441,9 +456,9 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
 
         for i, history_item in enumerate(history):
             if i == len(history) - 1:
-                return history_item["history_date"]
+                return history_item["history_date"].strftime("%Y-%m-%d")
             if priority_tag_id not in history[i + 1]["tags_cache"]:
-                return history_item["history_date"]
+                return history_item["history_date"].strftime("%Y-%m-%d")
 
     def get_date_estimated_resolution_date_first_added(self, instance):
         history = instance.history.filter(
@@ -553,12 +568,12 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             )
             for i, (top_priority_status, history_date) in enumerate(history):
                 if i == len(history) - 1:
-                    return history_date
+                    return history_date.strftime("%Y-%m-%d")
                 if (
                     top_priority_status in pending_states
                     and history[i + 1][0] != pending_states
                 ):
-                    return history_date
+                    return history_date.strftime("%Y-%m-%d")
 
     def get_proposed_estimated_resolution_date(self, instance):
         # only show the proposed date if it is different to the current date
