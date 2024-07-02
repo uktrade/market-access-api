@@ -190,7 +190,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     progress_update_next_steps = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
     top_priority_summary = serializers.SerializerMethodField()
-    top_priority_date = serializers.SerializerMethodField()
+    top_priority_requested_date = serializers.SerializerMethodField()
     proposed_top_priority_change_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
@@ -316,7 +316,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "progress_update_next_steps",
             "progress_update_status",
             "top_priority_summary",
-            "top_priority_date",
+            "top_priority_requested_date",
             "proposed_top_priority_change_user",
             "next_steps_items",
             "proposed_estimated_resolution_date",
@@ -337,7 +337,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
         date_values = [
             data["date_of_top_priority_scoping"],
             data["date_of_priority_level"],
-            data["top_priority_date"],
+            data["top_priority_requested_date"],
             datetime.datetime.strptime(data["reported_on"], "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d")
         ]
         date_values = [datetime.datetime.strptime(d, "%Y-%m-%d") for d in date_values if d is not None]
@@ -553,7 +553,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
         user = top_priority_summary.created_by
         return f"{user.first_name} {user.last_name}"
 
-    def get_top_priority_date(self, instance):
+    def get_top_priority_requested_date(self, instance):
         pending_states = [
             TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
             TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,

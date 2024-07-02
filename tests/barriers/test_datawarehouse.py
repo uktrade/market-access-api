@@ -200,13 +200,13 @@ class TestDataWarehouseExport(TestCase):
             == f"{user.first_name} {user.last_name}"
         )
 
-    def test_get_top_priority_date_no_date(self):
+    def test_get_top_priority_requested_date_no_date(self):
         barrier = BarrierFactory(status_date=date.today())
         data = DataWorkspaceSerializer(barrier).data
 
-        assert data["top_priority_date"] is None
+        assert data["top_priority_requested_date"] is None
 
-    def test_get_top_priority_date_has_date(self):
+    def test_get_top_priority_requested_date_has_date(self):
         barrier = BarrierFactory(status_date=date.today())
         barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING
         ts = datetime.datetime.now(tz=datetime.timezone.utc)
@@ -216,9 +216,9 @@ class TestDataWarehouseExport(TestCase):
 
         data = DataWorkspaceSerializer(barrier).data
 
-        assert data["top_priority_date"] == ts.strftime("%Y-%m-%d")
+        assert data["top_priority_requested_date"] == ts.strftime("%Y-%m-%d")
 
-    def test_get_top_priority_date_uses_last_date_of_pending_state(self):
+    def test_get_top_priority_requested_date_uses_last_date_of_pending_state(self):
         barrier = BarrierFactory(status_date=date.today())
 
         barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
@@ -236,7 +236,7 @@ class TestDataWarehouseExport(TestCase):
         with freezegun.freeze_time(ts3):
             barrier.save()
 
-        # Test being resolved doesn't affect the top_priority_date
+        # Test being resolved doesn't affect the top_priority_requested_date
         barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.RESOLVED
         ts4 = datetime.datetime.now(tz=datetime.timezone.utc)
         with freezegun.freeze_time(ts4):
@@ -246,7 +246,7 @@ class TestDataWarehouseExport(TestCase):
 
         data = DataWorkspaceSerializer(barrier).data
 
-        assert data["top_priority_date"] == ts3.strftime("%Y-%m-%d")
+        assert data["top_priority_requested_date"] == ts3.strftime("%Y-%m-%d")
 
     def test_date_barrier_prioritised(self):
         ts1 = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=2)
