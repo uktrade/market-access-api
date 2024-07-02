@@ -15,7 +15,6 @@ services:
     build:
       context: .
       dockerfile: docker/local/Dockerfile
-    #entrypoint: dockerize -wait tcp://db:5432 -wait tcp://comtrade_test_db:5432 -timeout 60s docker/local/entrypoint.sh
     entrypoint: docker/local/entrypoint.sh
     volumes:
       - .:/usr/src/app:delegated
