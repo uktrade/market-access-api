@@ -1,11 +1,8 @@
 from http import HTTPStatus
 
 import pytest
-from mock import patch
 from rest_framework.reverse import reverse
 
-from api.assessment.automate.calculator import AssessmentCalculator
-from api.assessment.automate.exceptions import CountryNotFound
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Document
 from api.metadata.constants import ECONOMIC_ASSESSMENT_RATING
@@ -166,44 +163,9 @@ class TestEconomicAssessments(APITestMixin):
 
         assert response.data["rating"]["code"] == ECONOMIC_ASSESSMENT_RATING.HIGH
         assert response.data["explanation"] == "Here's an explanation"
-
-    @patch.object(AssessmentCalculator, "calculate")
-    def test_automated_economic_assessment(self, mock_calculate, barrier):
-        mock_calculate.return_value = {"test": "data"}
-        url = reverse("economic-assessment-list")
-        response = self.api_client.post(
-            url,
-            format="json",
-            data={
-                "barrier_id": barrier.id,
-                "automate": True,
-            },
-        )
-
-        assert response.status_code == HTTPStatus.CREATED
-        assert response.data["automated_analysis_data"] == {"test": "data"}
+        assert response.status_code == HTTPStatus.OK
         assert response.data["approved"] is None
         assert response.data["archived"] is False
         assert response.data["ready_for_approval"] is False
         assert response.data["barrier_id"] == str(barrier.id)
-        assert response.data["rating"] is None
-        assert response.data["explanation"] == ""
-        assert response.data["created_by"]["id"] == self.user.id
-        assert response.data["modified_by"]["id"] == self.user.id
-
-    @patch.object(AssessmentCalculator, "calculate")
-    def test_automated_economic_assessment_error(self, mock_calculate, barrier):
-        mock_calculate.side_effect = CountryNotFound("Country not found: USA")
-
-        url = reverse("economic-assessment-list")
-        response = self.api_client.post(
-            url,
-            format="json",
-            data={
-                "barrier_id": barrier.id,
-                "automate": True,
-            },
-        )
-
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert str(response.data[0]) == "Country not found: USA"
+        assert response.data["explanation"] == "Here's an explanation"

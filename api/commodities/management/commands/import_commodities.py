@@ -10,11 +10,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--file", type=str, help="CSV file")
-        parser.add_argument("--version-date", type=str, help="Version (ISO-8601 date)")
+        parser.add_argument("--version_date", type=str, help="Version (ISO-8601 date)")
 
     def handle(self, *args, **options):
-        self.import_commodities(options["file"], options["version-date"])
-        self.add_parents(options["file"], options["version-date"])
+        self.import_commodities(options["file"], options["version_date"])
+        self.add_parents(options["file"], options["version_date"])
 
     def import_commodities(self, csv_file, version):
         self.stdout.write("Importing commodities...")
