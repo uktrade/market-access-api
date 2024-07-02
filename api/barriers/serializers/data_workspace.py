@@ -338,9 +338,15 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             data["date_of_top_priority_scoping"],
             data["date_of_priority_level"],
             data["top_priority_requested_date"],
-            datetime.datetime.strptime(data["reported_on"], "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d")
+            datetime.datetime.strptime(
+                data["reported_on"], "%Y-%m-%dT%H:%M:%S.%f%z"
+            ).strftime("%Y-%m-%d"),
         ]
-        date_values = [datetime.datetime.strptime(d, "%Y-%m-%d") for d in date_values if d is not None]
+        date_values = [
+            datetime.datetime.strptime(d, "%Y-%m-%d")
+            for d in date_values
+            if d is not None
+        ]
         date = max(date_values)
         date = date.strftime("%Y-%m-%d") if date else None
         data["date_barrier_prioritised"] = date
