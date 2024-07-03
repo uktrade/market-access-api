@@ -26,7 +26,6 @@ services:
       - "8882:22"
     depends_on:
       - db
-      # - comtrade_test_db
     networks:
       - webnet
 
