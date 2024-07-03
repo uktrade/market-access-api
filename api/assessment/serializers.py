@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -7,13 +6,11 @@ from api.assessment.models import (
     ResolvabilityAssessment,
     StrategicAssessment,
 )
-from api.assessment.utils import calculate_barrier_economic_assessment
 from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 from api.documents.fields import DocumentsField
 
-from .automate.exceptions import ComtradeError
 from .fields import (
     EffortToResolveField,
     ImpactField,
@@ -117,18 +114,6 @@ class EconomicAssessmentSerializer(
             "reviewed_on",
             "is_current",
         )
-
-    def create(self, validated_data):
-        if self.initial_data.get("automate") is True:
-            try:
-                data = calculate_barrier_economic_assessment(
-                    validated_data["barrier_id"]
-                )
-            except ComtradeError as e:
-                raise ValidationError(e)
-            validated_data["automated_analysis_data"] = data
-
-        return super().create(validated_data)
 
     def get_is_current(self, obj):
         return (

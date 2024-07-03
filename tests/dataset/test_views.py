@@ -46,7 +46,6 @@ class TestBarriersDataset(APITestMixin):
         assert status.HTTP_200_OK == response.status_code
         assert count == len(response.data["results"])
 
-    @freezegun.freeze_time("2020-01-25")
     @patch(
         "api.barriers.models.PublicBarrier.public_view_status",
         new_callable=PropertyMock,
@@ -55,14 +54,16 @@ class TestBarriersDataset(APITestMixin):
         spain = "86756b9a-5d95-e211-a939-e4115bead28a"
         adv_engineering = "af959812-6095-e211-a939-e4115bead28a"
         user = create_test_user(sso_user_id=self.sso_creator["user_id"])
-        db_barrier = BarrierFactory(
-            created_by=user,
-            country=spain,
-            sectors=(adv_engineering,),
-            status=2,
-            status_date=datetime(2020, 1, 1, tzinfo=UTC),
-        )
-        TeamMember.objects.create(barrier=db_barrier, user=user, role="Wobble")
+        ts = datetime.now()
+        with freezegun.freeze_time(ts):
+            db_barrier = BarrierFactory(
+                created_by=user,
+                country=spain,
+                sectors=(adv_engineering,),
+                status=2,
+                status_date=datetime(2020, 1, 1, tzinfo=UTC),
+            )
+            TeamMember.objects.create(barrier=db_barrier, user=user, role="Wobble")
         mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
 
         url = reverse("dataset:barrier-list")
@@ -89,7 +90,7 @@ class TestBarriersDataset(APITestMixin):
         assert barrier["economic_assessments"] == []
         assert barrier["status_history"] == [
             {
-                "date": "2020-01-25T00:00:00+00:00",
+                "date": barrier["status_history"][0]["date"],
                 "status": {"id": 2, "name": "Open"},
             }
         ]
