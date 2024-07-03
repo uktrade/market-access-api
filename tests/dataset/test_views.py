@@ -46,7 +46,6 @@ class TestBarriersDataset(APITestMixin):
         assert status.HTTP_200_OK == response.status_code
         assert count == len(response.data["results"])
 
-
     @patch(
         "api.barriers.models.PublicBarrier.public_view_status",
         new_callable=PropertyMock,
