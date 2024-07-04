@@ -557,7 +557,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             return
 
         user = top_priority_summary.created_by
-        return f"{user.first_name} {user.last_name}"
+        if user:
+            return f"{user.first_name} {user.last_name}"
 
     def get_top_priority_requested_date(self, instance):
         pending_states = [
