@@ -56,7 +56,7 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
         )
 
     def get_unpublished_changes(self, obj):
-        return obj.unpublished_changes
+        return bool(obj.unpublished_changes)
 
     def get_changed_since_published(self, obj):
         return obj.changed_since_published
