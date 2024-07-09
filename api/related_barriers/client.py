@@ -1,4 +1,5 @@
 import os
+
 import requests
 
 
@@ -6,6 +7,7 @@ def seed_data():
     from django.db.models import CharField
     from django.db.models import Value as V
     from django.db.models.functions import Concat
+
     from api.barriers.models import Barrier
 
     return (
