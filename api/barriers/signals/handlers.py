@@ -230,8 +230,8 @@ def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
             # Fail gracefully
             client.get_related_barriers(
                 pk=str(current_barrier_object.id),
-                title=current_barrier_object.title,
-                summary=current_barrier_object.summary,
+                title=instance.title,
+                summary=instance.summary,
             )
         except Exception as e:
             # We don't want barrier embedding updates to break worker so just log error
