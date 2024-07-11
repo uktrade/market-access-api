@@ -1,5 +1,6 @@
 import json
 import os
+from functools import lru_cache
 
 import requests
 import sentry_sdk
@@ -168,6 +169,14 @@ def get_barrier_tags():
             "id", "title", "description", "show_at_reporting", "order"
         )
     )
+
+
+@lru_cache
+def get_barrier_tag_from_title(title: str):
+    tags = get_barrier_tags()
+    for tag in tags:
+        if tag["title"] == title:
+            return tag
 
 
 def get_barrier_priorities():

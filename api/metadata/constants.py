@@ -279,6 +279,25 @@ TRADE_DIRECTION_CHOICES = Choices(
 )
 
 TRADING_BLOCS = {
+    "TB00003": {
+        "code": "TB00003",
+        "name": "Association of Southeast Asian Nations (ASEAN)",
+        "short_name": "the ASEAN",
+        "regional_name": "Asia Pacific",
+        "country_ids": [
+            "56af72a6-5d95-e211-a939-e4115bead28a",  # Brunei
+            "5baf72a6-5d95-e211-a939-e4115bead28a",  # Cambodia
+            "706a9ab2-5d95-e211-a939-e4115bead28a",  # Indonesia
+            "7f6a9ab2-5d95-e211-a939-e4115bead28a",  # Laos
+            "0550bdb8-5d95-e211-a939-e4115bead28a",  # Malaysia
+            "59af72a6-5d95-e211-a939-e4115bead28a",  # Myanmar
+            "5161b8be-5d95-e211-a939-e4115bead28a",  # Philippines
+            "1f0be5c4-5d95-e211-a939-e4115bead28a",  # Singapore
+            "a86ee1ca-5d95-e211-a939-e4115bead28a",  # Thailand
+            "ba6ee1ca-5d95-e211-a939-e4115bead28a",  # Vietnam
+        ],
+        "overseas_regions": ["04a7cff0-03dd-4677-aa3c-12dd8426f0d7"],  # Asia Pacific
+    },
     "TB00016": {
         "code": "TB00016",
         "name": "European Union (EU)",
@@ -390,14 +409,6 @@ GOVERNMENT_ORGANISATION_TYPES = (
     OrganisationType.DEVOLVED_ADMINISTRATIONS,
     OrganisationType.NON_MINISTERIAL_DEPARTMENTS,
     OrganisationType.AGENCIES_AND_OTHER_PUBLIC_BODIES,
-)
-
-
-AWAITING_REVIEW_FROM = Choices(
-    ("0", "CONTENT", "Content"),
-    ("10", "CONTENT_AFTER_CHANGES", "Content (edited since last review)"),
-    ("20", "HM_TRADE_COMMISSION", "HM Trade Commission"),
-    ("30", "GOVERNMENT_ORGANISATION", "Government organisation"),
 )
 
 

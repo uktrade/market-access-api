@@ -1,3 +1,5 @@
+import logging
+
 from hashid_field.rest import HashidSerializerCharField
 from rest_framework import serializers
 
@@ -12,7 +14,7 @@ from api.barriers.fields import (
     ReadOnlyTradingBlocField,
     SectorField,
 )
-from api.barriers.models import PublicBarrier, PublicBarrierLightTouchReviews
+from api.barriers.models import PublicBarrier
 from api.barriers.serializers.mixins import LocationFieldMixin
 from api.core.serializers.mixins import AllowNoneAtToRepresentationMixin
 from api.interactions.models import PublicBarrierNote
@@ -21,22 +23,9 @@ from api.metadata.constants import PublicBarrierStatus
 from api.metadata.fields import TradingBlocField
 from api.metadata.serializers import OrganisationSerializer
 
+logger = logging.getLogger(__name__)
+
 PUBLIC_ID = "barriers.PublicBarrier.id"
-
-
-class PublicBarrierLightTouchReviewsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PublicBarrierLightTouchReviews
-        fields = (
-            "content_team_approval",
-            "has_content_changed_since_approval",
-            "hm_trade_commissioner_approval",
-            "hm_trade_commissioner_approval_enabled",
-            "government_organisation_approvals",
-            "missing_government_organisation_approvals",
-            "enabled",
-        )
-        read_only_fields = ("missing_government_organisation_approvals", "enabled")
 
 
 class NestedPublicBarrierSerializer(serializers.ModelSerializer):
@@ -48,6 +37,7 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
     title = NoneToBlankCharField()
     summary = NoneToBlankCharField()
     unpublished_changes = serializers.SerializerMethodField()
+    changed_since_published = serializers.SerializerMethodField()
     public_view_status_display = DisplayChoiceField(
         source="public_view_status", choices=PublicBarrierStatus.choices
     )
@@ -61,11 +51,15 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
             "title",
             "summary",
             "unpublished_changes",
+            "changed_since_published",
             "last_published_on",
         )
 
     def get_unpublished_changes(self, obj):
-        return obj.unpublished_changes
+        return bool(obj.unpublished_changes)
+
+    def get_changed_since_published(self, obj):
+        return obj.changed_since_published
 
 
 class PublicBarrierSerializer(
@@ -78,31 +72,22 @@ class PublicBarrierSerializer(
     id = HashidSerializerCharField(source_field=PUBLIC_ID, read_only=True)
     title = NoneToBlankCharField()
     summary = NoneToBlankCharField()
-    internal_title_changed = serializers.SerializerMethodField()
-    internal_summary_changed = serializers.SerializerMethodField()
     internal_government_organisations = serializers.SerializerMethodField()
     status = ReadOnlyStatusField()
-    internal_status = ReadOnlyStatusField()
     country = ReadOnlyCountryField()
-    internal_country = ReadOnlyCountryField()
     trading_bloc = TradingBlocField()
-    internal_trading_bloc = TradingBlocField()
     sectors = ReadOnlySectorsField()
-    internal_sectors = ReadOnlySectorsField()
+    main_sector = SectorField()
     all_sectors = ReadOnlyAllSectorsField()
-    internal_all_sectors = ReadOnlyAllSectorsField()
     categories = ReadOnlyCategoriesField()
-    internal_categories = ReadOnlyCategoriesField()
     latest_published_version = serializers.SerializerMethodField()
     unpublished_changes = serializers.SerializerMethodField()
     ready_to_be_published = serializers.SerializerMethodField()
     internal_code = serializers.SerializerMethodField()
     internal_id = serializers.SerializerMethodField()
     latest_note = serializers.SerializerMethodField()
-    reported_on = serializers.DateTimeField(source="internal_created_on")
+    reported_on = serializers.DateTimeField()
     set_to_allowed_on = serializers.DateTimeField()
-    light_touch_reviews = PublicBarrierLightTouchReviewsSerializer()
-    internal_main_sector = SectorField()
 
     class Meta:
         model = PublicBarrier
@@ -112,41 +97,22 @@ class PublicBarrierSerializer(
             "internal_id",
             "title",
             "title_updated_on",
-            "internal_title_changed",
             "internal_title_at_update",
             "summary",
             "summary_updated_on",
-            "internal_summary_changed",
             "internal_summary_at_update",
             "approvers_summary",
             "publishers_summary",
             "status",
-            "internal_status",
-            "internal_status_changed",
             "status_date",
-            "internal_status_date",
-            "internal_status_date_changed",
             "is_resolved",
-            "internal_is_resolved",
-            "internal_is_resolved_changed",
             "country",
-            "internal_country",
-            "internal_country_changed",
             "trading_bloc",
-            "internal_trading_bloc",
-            "internal_trading_bloc_changed",
             "location",
-            "internal_location",
-            "internal_location_changed",
             "sectors",
-            "internal_sectors",
-            "internal_sectors_changed",
+            "main_sector",
             "all_sectors",
-            "internal_all_sectors",
-            "internal_all_sectors_changed",
             "categories",
-            "internal_categories",
-            "internal_categories_changed",
             "public_view_status",
             "first_published_on",
             "last_published_on",
@@ -158,46 +124,25 @@ class PublicBarrierSerializer(
             "internal_government_organisations",
             "latest_note",
             "reported_on",
-            "light_touch_reviews",
-            "internal_main_sector",
         )
         read_only_fields = (
             "id",
             "internal_code",
             "internal_id",
             "title_updated_on",
-            "internal_title_changed",
             "internal_title_at_update",
             "summary_updated_on",
-            "internal_summary_changed",
             "internal_summary_at_update",
             "status",
-            "internal_status",
-            "internal_status_changed",
             "status_date",
-            "internal_status_date",
-            "internal_status_date_changed",
             "is_resolved",
-            "internal_is_resolved",
-            "internal_is_resolved_changed",
             "country",
-            "internal_country",
-            "internal_country_changed",
             "trading_bloc",
-            "internal_trading_bloc",
-            "internal_trading_bloc_changed",
             "location",
-            "internal_location",
-            "internal_location_changed",
             "sectors",
-            "internal_sectors",
-            "internal_sectors_changed",
+            "main_sector",
             "all_sectors",
-            "internal_all_sectors",
-            "internal_all_sectors_changed",
             "categories",
-            "internal_categories",
-            "internal_categories_changed",
             "public_view_status",
             "first_published_on",
             "last_published_on",
@@ -208,14 +153,7 @@ class PublicBarrierSerializer(
             "internal_government_organisations",
             "latest_note",
             "reported_on",
-            "internal_main_sector",
         )
-
-    def get_internal_title_changed(self, obj):
-        return obj.internal_title_changed
-
-    def get_internal_summary_changed(self, obj):
-        return obj.internal_summary_changed
 
     def get_latest_published_version(self, obj):
         return PublishedVersionSerializer(obj.latest_published_version).data
@@ -263,7 +201,7 @@ class PublishedVersionSerializer(
     country = ReadOnlyCountryField()
     location = serializers.CharField()
     sectors = ReadOnlySectorsField()
-    main_sector = SectorField(source="internal_main_sector")
+    main_sector = SectorField()
     all_sectors = ReadOnlyAllSectorsField()
     categories = ReadOnlyCategoriesField()
 
@@ -298,7 +236,7 @@ class PublicPublishedVersionSerializer(
     trading_bloc = ReadOnlyTradingBlocField()
     sectors = serializers.SerializerMethodField()
     categories = ReadOnlyCategoriesField(to_repr_keys=("name",))
-    reported_on = serializers.DateTimeField(source="internal_created_on")
+    reported_on = serializers.DateTimeField()
 
     class Meta:
         model = PublicBarrier
@@ -323,7 +261,7 @@ class PublicPublishedVersionSerializer(
             return [{"name": "All sectors"}]
         else:
             # we need to add the main sector into the list as the first field of the array
-            sectors = [obj.internal_main_sector] + obj.sectors
+            sectors = [obj.main_sector] + obj.sectors
             return ReadOnlySectorsField(
                 to_repr_keys=("name",), sort=False
             ).to_representation(sectors)

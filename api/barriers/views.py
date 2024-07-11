@@ -28,7 +28,6 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
-    PublicBarrierLightTouchReviews,
 )
 from api.barriers.serializers import (
     BarrierDetailSerializer,
@@ -721,7 +720,6 @@ class PublicBarrierViewSet(
             "organisations",
         )
     )
-    http_method_names = ["get", "post", "patch", "head", "options"]
     permission_classes = (AllRetrieveAndEditorUpdateOnly,)
     serializer_class = PublicBarrierSerializer
     filter_backends = (DjangoFilterBackend, OrderingFilter)
@@ -738,7 +736,6 @@ class PublicBarrierViewSet(
             "barrier__organisations",
             "barrier__categories",
             "barrier__priority",
-            "light_touch_reviews",
         )
 
         return qs.distinct("id")
@@ -775,25 +772,6 @@ class PublicBarrierViewSet(
         serializer = PublicBarrierSerializer(public_barrier)
         return Response(status=status.HTTP_200_OK, data=serializer.data)
 
-    # can delete once references in frontend are refactored
-    @action(methods=["post"], detail=True, permission_classes=(IsApprover,))
-    def ready(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.PUBLISHING_PENDING)
-
-    # can delete once references in frontend are refactored
-    @action(methods=["post"], detail=True, permission_classes=(IsApprover,))
-    def unprepared(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.ALLOWED)
-
-    @action(
-        methods=["post"],
-        detail=True,
-        permission_classes=(),
-        url_path="ready-for-approval",
-    )
-    def ready_for_approval(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.APPROVAL_PENDING)
-
     @action(
         methods=["post"],
         detail=True,
@@ -802,15 +780,6 @@ class PublicBarrierViewSet(
     )
     def allow_for_publishing_process(self, request, *args, **kwargs):
         return self.update_status_action(PublicBarrierStatus.ALLOWED)
-
-    @action(
-        methods=["post"],
-        detail=True,
-        permission_classes=(IsApprover,),
-        url_path="ready-for-publishing",
-    )
-    def ready_for_publishing(self, request, *args, **kwargs):
-        return self.update_status_action(PublicBarrierStatus.PUBLISHING_PENDING)
 
     @action(methods=["post"], detail=True, permission_classes=())
     def report_public_barrier_title(self, request, *args, **kwargs):
@@ -831,17 +800,20 @@ class PublicBarrierViewSet(
     @action(
         methods=["post"],
         detail=True,
-        permission_classes=(IsApprover,),
-        url_path="ignore-all-changes",
+        permission_classes=(),
+        url_path="ready-for-approval",
     )
-    def ignore_all_changes(self, request, *args, **kwargs):
-        public_barrier = self.get_object()
-        public_barrier.title = public_barrier.title
-        public_barrier.summary = public_barrier.summary
-        public_barrier.save()
-        self.update_contributors(public_barrier.barrier)
-        serializer = PublicBarrierSerializer(public_barrier)
-        return Response(status=status.HTTP_200_OK, data=serializer.data)
+    def ready_for_approval(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.APPROVAL_PENDING)
+
+    @action(
+        methods=["post"],
+        detail=True,
+        permission_classes=(IsApprover,),
+        url_path="ready-for-publishing",
+    )
+    def ready_for_publishing(self, request, *args, **kwargs):
+        return self.update_status_action(PublicBarrierStatus.PUBLISHING_PENDING)
 
     @action(methods=["post"], detail=True, permission_classes=(IsPublisher,))
     def publish(self, request, *args, **kwargs):
@@ -871,69 +843,6 @@ class PublicBarrierViewSet(
         r = self.update_status_action(PublicBarrierStatus.UNPUBLISHED)
         public_release_to_s3()
         return r
-
-    @action(methods=["post"], detail=True, permission_classes=())
-    def mark_approvals(self, request, *args, **kwargs):
-        public_barrier = self.get_object()
-        light_touch_reviews: PublicBarrierLightTouchReviews = (
-            public_barrier.light_touch_reviews
-        )
-        serializer = LightTouchApprovalSerializer(data=request.data.get("approvals"))
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        data = serializer.validated_data
-
-        approved_organisation_ids = []
-        for organisation_approval in data["organisations"]:
-            if organisation_approval["approval"]:
-                approved_organisation_ids.append(
-                    organisation_approval["organisation_id"]
-                )
-        light_touch_reviews.government_organisation_approvals = (
-            approved_organisation_ids
-        )
-        light_touch_reviews.content_team_approval = data.get("content", False)
-        if light_touch_reviews.content_team_approval is True:
-            light_touch_reviews.has_content_changed_since_approval = False
-        light_touch_reviews.hm_trade_commissioner_approval = data.get(
-            "hm_commissioner", False
-        )
-        light_touch_reviews.save()
-
-        return Response({"status": "success"})
-
-    @action(methods=["post"], detail=True, permission_classes=())
-    def enable_hm_trade_commissioner_approvals(self, request, *Args, **kwargs):
-        public_barrier = self.get_object()
-        light_touch_reviews: PublicBarrierLightTouchReviews = (
-            public_barrier.light_touch_reviews
-        )
-
-        serializer = LightTouchReviewsEnableHMTradeCommissionerSerializer(
-            data=request.data
-        )
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        data = serializer.validated_data
-        light_touch_reviews.hm_trade_commissioner_approval_enabled = data["enabled"]
-        light_touch_reviews.hm_trade_commissioner_approval = False
-        light_touch_reviews.save()
-        return Response({"status": "success"})
-
-
-class LightTouchOrganisationApprovalSerializer(serializers.Serializer):
-    organisation_id = serializers.CharField()
-    approval = serializers.BooleanField()
-
-
-class LightTouchApprovalSerializer(serializers.Serializer):
-    organisations = LightTouchOrganisationApprovalSerializer(many=True)
-    content = serializers.BooleanField()
-    hm_commissioner = serializers.BooleanField()
-
-
-class LightTouchReviewsEnableHMTradeCommissionerSerializer(serializers.Serializer):
-    enabled = serializers.BooleanField()
 
 
 class BarrierProgressUpdateViewSet(ModelViewSet):

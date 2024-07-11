@@ -39,7 +39,3 @@ country_mapping = {
     "Vatican City": "Holy See (Vatican City State)",
     "Vietnam": "Viet Nam",
 }
-
-
-def get_comtrade_country_name(country_name: str):
-    return country_mapping.get(country_name, country_name)
