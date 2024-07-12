@@ -145,7 +145,7 @@ if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         environment=SENTRY_ENVIRONMENT,
-        traces_sample_rate=0.1,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
         integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
     )
 
