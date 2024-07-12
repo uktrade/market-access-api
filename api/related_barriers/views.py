@@ -5,12 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from api.barriers.models import Barrier
-from api.related_barriers import manager
-from api.related_barriers.constants import (
-    SIMILAR_BARRIERS_LIMIT,
-    SIMILARITY_THRESHOLD,
-    BarrierEntry,
-)
+from api.related_barriers import client
 from api.related_barriers.serializers import BarrierRelatedListSerializer
 
 logger = logging.getLogger(__name__)
@@ -24,20 +19,14 @@ def related_barriers(request, pk) -> Response:
     logger.info(f"Getting related barriers for {pk}")
     barrier = get_object_or_404(Barrier, pk=pk)
 
-    if manager.manager is None:
-        manager.init()
+    # client.seed()
 
-    similar_barrier_ids = manager.manager.get_similar_barriers(
-        barrier=BarrierEntry(
-            id=str(barrier.id),
-            barrier_corpus=manager.barrier_to_corpus(barrier),
-        ),
-        similarity_threshold=SIMILARITY_THRESHOLD,
-        quantity=SIMILAR_BARRIERS_LIMIT,
+    barrier_ids = client.get_related_barriers(
+        pk=str(barrier.pk), title=barrier.title, summary=barrier.summary
     )
 
     return Response(
         BarrierRelatedListSerializer(
-            Barrier.objects.filter(id__in=similar_barrier_ids), many=True
+            Barrier.objects.filter(id__in=barrier_ids), many=True
         ).data
     )
