@@ -140,6 +140,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 SENTRY_DSN = env.str("SENTRY_DSN", "")
 SENTRY_ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", "")
+SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", 0.0)
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
