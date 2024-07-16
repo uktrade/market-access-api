@@ -41,3 +41,27 @@ def related_barriers(request, pk) -> Response:
             Barrier.objects.filter(id__in=similar_barrier_ids), many=True
         ).data
     )
+
+#@api_view(["GET"])
+def related_barriers_search(request, search_term, log_score) -> Response:
+    """
+    Return a list of related barriers given a search term/phrase
+    """
+
+    if manager.manager is None:
+        manager.init()
+
+    similar_barrier_ids = manager.manager.get_similar_barriers_searched(
+        search_term=search_term,
+        similarity_threshold=SIMILARITY_THRESHOLD,
+        quantity=SIMILAR_BARRIERS_LIMIT,
+        log_score=log_score
+    )
+
+    return similar_barrier_ids
+
+    return Response(
+        BarrierRelatedListSerializer(
+            Barrier.objects.filter(id__in=similar_barrier_ids), many=True
+        ).data
+    )

@@ -10,7 +10,11 @@ from django.db.models import Value as V
 from django.db.models.functions import Concat
 from sentence_transformers import SentenceTransformer, util
 
+from api.barriers.tasks import get_barriers_overseas_region
+from api.interactions.models import Interaction
 from api.related_barriers.constants import BarrierEntry
+
+from api.metadata.utils import (get_sector)
 
 logger = logging.getLogger(__name__)
 
@@ -201,6 +205,48 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
         barrier_ids = [b[0] for b in barrier_scores]
         return barrier_ids
+    
+
+    @timing
+    def get_similar_barriers_searched(
+        self, search_term: str, similarity_threshold: float, quantity: int, log_score: bool,
+    ):
+
+        logger.info(f"(Related Barriers): get_similar_barriers_seaarched")
+        barrier_ids = self.get_barrier_ids()
+
+        # RESTORE THESE 2 LINES BEFORE COMMITTING - CACHING NEEDS TO GO FOR TESTING PURPOSESES
+        #if not barrier_ids:
+        #    self.set_data(get_data())
+        # DELETE THIS LINE BEFORE COMMITTING - CACHING SHOULD COME BACK FOR REAL
+        self.set_data(get_data())
+
+        barrier_ids = self.get_barrier_ids()
+
+        embedded_index = "search_term"
+        search_term_embedding = self.model.encode(search_term, convert_to_tensor=True).numpy()
+        embeddings = self.get_embeddings()
+        new_embeddings = numpy.vstack([embeddings, search_term_embedding])  # append embedding
+        new_barrier_ids = barrier_ids + [embedded_index]  # append barrier_id
+
+        cosine_sim = util.cos_sim(new_embeddings, new_embeddings)
+
+        index = len(embeddings)
+
+        scores = cosine_sim[index]
+        barrier_scores = dict(zip(new_barrier_ids, scores))
+
+        barrier_scores = {
+            k: v
+            for k, v in barrier_scores.items()
+            if v > similarity_threshold
+        }
+
+        barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
+        if log_score:
+            logger.critical(barrier_scores)
+        barrier_ids = [b[0] for b in barrier_scores]
+        return barrier_ids
 
 
 manager: Optional[RelatedBarrierManager] = None
@@ -209,15 +255,117 @@ manager: Optional[RelatedBarrierManager] = None
 def get_data() -> List[Dict]:
     from api.barriers.models import Barrier
 
-    return (
-        Barrier.objects.filter(archived=False)
-        .exclude(draft=True)
-        .annotate(
-            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
-        )
-        .values("id", "barrier_corpus")
-    )
+    # ./manage.py run_test
 
+    data_dictionary = []
+    barriers = Barrier.objects.filter(archived=False).exclude(draft=True)
+    for barrier in barriers:
+        corpus_object = {}
+
+        # Companies tests - 
+        # 
+        # "Barriers that affect barclays bank"
+        # WITH Additional sentence text
+        #('dde42f8f-b02b-41a6-b794-3cb6e1cdade5', tensor(0.3390))
+        # WITHOUT Additional sentence text
+        #('dde42f8f-b02b-41a6-b794-3cb6e1cdade5', tensor(0.2761))
+        # (Barrier with Barclays PLC not the highest match)
+        #
+        # "Barclays bank"
+        # No results - one word match results in too low a threshold for result
+        #
+        # "show me barriers that are related to Barclays bank"
+        # WITH Additional sentence text
+        # ('dde42f8f-b02b-41a6-b794-3cb6e1cdade5', tensor(0.4561))
+        # barrier with Barlays under companies comes 2nd in matching - the highest
+        # has a export description of "Deal account account tough" - which could be words
+        # related to the query word "bank"
+        # WITHOUT Additional sentence text
+        # Expected barrier did not appear
+
+        companies_affected_list = ""
+        if barrier.companies:
+            for company in barrier.companies:
+                company_affected_corpus = (
+                    "The company called " + company["name"] + " is affected by this barrier."
+                )
+                companies_affected_list = companies_affected_list + company_affected_corpus
+                #companies_affected_list = companies_affected_list + str(company) + " "
+
+        other_organisations_affected_list = ""
+        if barrier.related_organisations:
+            for company in barrier.related_organisations:
+                other_organisations_affected_corpus = (
+                    "The company called " + company["name"] + " is affected by this barrier."
+                )
+                other_organisations_affected_list = other_organisations_affected_list + other_organisations_affected_corpus
+                #other_organisations_affected_list = other_organisations_affected_list + str(company) + " "
+
+        notes_text_list = ""
+        for note in barrier.interactions_documents.all():
+            notes_text_list = notes_text_list + note.text + " "
+
+        sectors_list = [get_sector(str(sector_id))["name"] for sector_id in barrier.sectors]
+        sectors_list.append(get_sector(barrier.main_sector)["name"])
+        sectors_text = ""
+        if len(sectors_list) > 0:
+            for sector_name in sectors_list:
+                sectors_text = sectors_text + f" This barrier affects the {sector_name} sector. This barrier is related to the {sector_name} sector."
+
+        overseas_region_name = get_barriers_overseas_region(barrier.country, barrier.trading_bloc)
+        overseas_region_text = f"This barrier belongs to the {overseas_region_name} regional team. This barrier affects the {overseas_region_name} region."
+
+        # ERD tests - 
+        #
+        # "Barriers which are estimated to be resolved on 23 June 2024"
+        # Expected result not returned, but did get results back
+        #
+        # "barrier is estimated to be resolved on 23 June 2024"
+        # Expected result not returned, but did get results back
+
+        estimated_resolution_date_text = ""
+        date_formats = [
+	        "%d-%m-%Y",
+            "%d/%m/%Y",
+            "%d %m %Y",
+	        "%d-%m-%y",
+            "%d/%m/%y",
+            "%d %m %y",
+            "%d %b %Y",
+            "%d %B %Y",
+            "%x",
+            "%M %y",
+            "%M %Y",
+            "%M %d %y",
+            "%M %d %Y"
+        ]
+        for date_format in date_formats:
+            formatted_date = barrier.estimated_resolution_date.strftime(date_format)
+            #if formatted_date == "23 June 2024":
+            #    logger.critical("======================")
+            #    logger.critical(barrier.id)
+            #    logger.critical("======================")
+            estimated_resolution_date_text = estimated_resolution_date_text + f"This barrier is estimated to be resolved on {formatted_date}. "
+        #estimated_resolution_date_text = str(barrier.estimated_resolution_date)
+
+        corpus_object["id"] = barrier.id
+        corpus_object["barrier_corpus"] = (
+            f"{barrier.title}. "
+            f"{barrier.summary}. "
+            f"{sectors_text}. "
+            f"{barrier.country_name}. "
+            f"{overseas_region_text}. "
+            f"{companies_affected_list} "
+            f"{other_organisations_affected_list} "
+            f"{notes_text_list}. "
+            f"{barrier.status_summary}. "
+            f"{estimated_resolution_date_text}. "
+            f"{barrier.export_description}."
+        )
+
+        data_dictionary.append(corpus_object)
+
+    return data_dictionary
 
 def init():
     global manager
