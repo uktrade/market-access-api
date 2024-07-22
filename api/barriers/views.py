@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, F, Value, When
+from django.db.models import Case, CharField, F, Sum, Value, When
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -151,6 +151,64 @@ def barrier_count(request):
     return Response(counts)
 
 
+@api_view(["GET"])
+def barrier_dashboard_summary(request):
+    """
+    View the return highlevel stats to the dashboard
+    """
+    current_user = request.user
+    user_count = None
+    barriers = Barrier.barriers.all()
+    # reports = Barrier.reports.all()
+    if not current_user.is_anonymous:
+        user_barrier_count = Barrier.barriers.filter(created_by=current_user).count()
+        user_report_count = Barrier.reports.filter(created_by=current_user).count()
+        user_open_barrier_count = Barrier.barriers.filter(
+            created_by=current_user, status=2
+        ).count()
+        # user_count = {"barriers": user_barrier_count, "reports": user_report_count}
+    # if has_profile(current_user) and current_user.profile.location:
+    #     country = current_user.profile.location
+    #     country_barriers = barriers.filter(country=country)
+    #     country_count = {
+    #         "barriers": {
+    #             "total": country_barriers.count(),
+    #             "open": country_barriers.filter(status=2).count(),
+    #             "paused": country_barriers.filter(status=5).count(),
+    #             "resolved": country_barriers.filter(status=4).count(),
+    #         },
+    #         "reports": reports.filter(country=country).count(),
+    #     }
+    #     user_count["country"] = country_count
+
+    total_value_current_year = Barrier.barriers.filter().aggregate(
+        Sum("commercial_value")
+    )
+    counts = {
+        "barriers": {
+            "total": Barrier.barriers.count(),
+            "open": Barrier.barriers.filter(status=2).count(),
+            "paused": Barrier.barriers.filter(status=5).count(),
+            "resolved": Barrier.barriers.filter(status=4).count(),
+            # TODO filter for current year
+            "pb100_current_year": Barrier.barriers.filter(
+                top_priority_status="Approved"
+            ).count(),
+            # TODO : change to valuation midpiont
+            "total_value_current_year": total_value_current_year,
+        },
+        "user_counts": {
+            "user_barrier_count": user_barrier_count,
+            "user_report_count": user_report_count,
+            "user_open_barrier_count": user_open_barrier_count,
+        },
+        "reports": Barrier.reports.count(),
+    }
+
+    return Response(counts)
+
+
+# TODO - These report views may now be redundant
 class BarrierReportBase(object):
     def _update_stages(self, serializer, user):
         report_id = serializer.data.get("id")
