@@ -23,6 +23,7 @@ from api.barriers.views import (
     PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count,
+    barrier_dashboard_summary,
 )
 
 app_name = "barriers"
@@ -170,6 +171,7 @@ urlpatterns = router.urls + [
         name="unknown-barrier",
     ),
     path("counts", barrier_count, name="barrier-count"),
+    path("dashboard-summary", barrier_dashboard_summary, name="barrier-summary"),
     path("reports", BarrierReportList.as_view(), name="list-reports"),
     path("reports/<uuid:pk>", BarrierReportDetail.as_view(), name="get-report"),
     path(
