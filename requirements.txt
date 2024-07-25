@@ -2,6 +2,10 @@
 # DO NOT EDIT - use pyproject.toml instead!
 # Generated: $(__timestamp)
 # ======
+# ======
+# DO NOT EDIT - use pyproject.toml instead!
+# Generated: $(__timestamp)
+# ======
 amqp==5.2.0 ; python_version >= "3.9" and python_version < "4.0"
 asgiref==3.8.1 ; python_version >= "3.9" and python_version < "4.0"
 async-timeout==4.0.3 ; python_version >= "3.9" and python_full_version < "3.11.3"
