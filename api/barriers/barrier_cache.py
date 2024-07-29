@@ -1,7 +1,6 @@
 from django.core.cache import cache
 
-
-BARRIERS_PREFIX = 'barriers/'
+BARRIERS_PREFIX = "barriers/"
 
 
 def get(pk):
