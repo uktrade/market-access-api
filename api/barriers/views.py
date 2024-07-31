@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, F, Value, When
+from django.db.models import Case, CharField, F, Value, When, Prefetch
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -270,6 +270,7 @@ class BarrierList(generics.ListAPIView):
             "tags",
             "organisations",
             "progress_updates",
+            "valuation_assessments"
         )
     )
     serializer_class = BarrierListSerializer
@@ -423,14 +424,44 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     lookup_field = "pk"
     queryset = (
         Barrier.barriers.all()
-        .select_related("priority")
+        .select_related(
+            "priority",
+            "created_by",
+            "modified_by",
+            "proposed_estimated_resolution_date_user",
+        )
         .prefetch_related(
+            "tags",
+            Prefetch(
+                "barrier_team",
+                queryset=TeamMember.objects.select_related("user")
+                .filter(role="Owner")
+                .all(),
+            ),
+            "organisations",
+            Prefetch(
+                "progress_updates",
+                queryset=BarrierProgressUpdate.objects.order_by("-created_on").all(),
+            ),
+            Prefetch(
+                "programme_fund_progress_updates",
+                queryset=ProgrammeFundProgressUpdate.objects.select_related(
+                    "created_by", "modified_by"
+                )
+                .order_by("-created_on")
+                .all(),
+            ),
             "barrier_commodities",
+            "public_barrier",
             "categories",
             "economic_assessments",
             "valuation_assessments",
-            "organisations",
-            "tags",
+            Prefetch(
+                "next_steps_items",
+                queryset=BarrierNextStepItem.objects.filter(
+                    status="IN_PROGRESS"
+                ).order_by("-completion_date"),
+            ),
         )
     )
 
@@ -471,13 +502,13 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
             """If view with `code` lookup (throws KeyError), don't cache"""
             return super().retrieve(request, *args, **kwargs)
 
-        data = barrier_cache.get(pk)
-        if data:
-            return Response(data)
+        # data = barrier_cache.get(pk)
+        # if data:
+        #     return Response(data)
 
         response = super().retrieve(request, *args, **kwargs)
 
-        barrier_cache.set(pk, response.data)
+        # barrier_cache.set(pk, response.data)
 
         return response
 
