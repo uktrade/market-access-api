@@ -499,13 +499,13 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
             """If view with `code` lookup (throws KeyError), don't cache"""
             return super().retrieve(request, *args, **kwargs)
 
-        # data = barrier_cache.get(pk)
-        # if data:
-        #     return Response(data)
+        data = barrier_cache.get(pk)
+        if data:
+            return Response(data)
 
         response = super().retrieve(request, *args, **kwargs)
 
-        # barrier_cache.set(pk, response.data)
+        barrier_cache.set(pk, response.data)
 
         return response
 
