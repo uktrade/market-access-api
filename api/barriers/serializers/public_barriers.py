@@ -236,7 +236,7 @@ class PublicPublishedVersionSerializer(
     trading_bloc = ReadOnlyTradingBlocField()
     sectors = serializers.SerializerMethodField()
     categories = ReadOnlyCategoriesField(to_repr_keys=("name",))
-    reported_on = serializers.DateTimeField()
+    reported_on = serializers.DateTimeField(source="barrier.created_on")
 
     class Meta:
         model = PublicBarrier
