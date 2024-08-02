@@ -568,8 +568,9 @@ class TestDataWarehouseExport(TestCase):
             estimated_resolution_date=None,
         )
         ts1 = date.today()
+        ts2 = datetime.timedelta(days=10) + ts1
         with freezegun.freeze_time(ts1):
-            barrier.estimated_resolution_date = ts1
+            barrier.estimated_resolution_date = ts2
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
@@ -577,9 +578,9 @@ class TestDataWarehouseExport(TestCase):
             "%Y-%m-%d"
         )
 
-        ts2 = ts1 + datetime.timedelta(days=1)
+        ts3 = ts2 + datetime.timedelta(days=12)
         with freezegun.freeze_time(ts2):
-            barrier.estimated_resolution_date = ts2
+            barrier.estimated_resolution_date = ts3
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
