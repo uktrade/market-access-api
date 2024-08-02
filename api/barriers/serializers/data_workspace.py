@@ -471,12 +471,12 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             estimated_resolution_date__isnull=False
         ).order_by("history_date")
 
-        first = history.values("estimated_resolution_date").first()
+        first = history.values("history_date").first()
 
         if not first:
             return
 
-        return first["estimated_resolution_date"].strftime("%Y-%m-%d")
+        return first["history_date"].strftime("%Y-%m-%d")
 
     def get_overseas_region(self, instance) -> typing.List[str]:
         if instance.country:
