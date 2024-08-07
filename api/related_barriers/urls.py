@@ -12,7 +12,5 @@ urlpatterns = router.urls + [
     path(
         "barriers/<uuid:pk>/related-barriers", related_barriers, name="related-barriers"
     ),
-    path(
-        "related-barriers", related_barriers_search, name="related-barriers-search"
-    ),
+    path("related-barriers", related_barriers_search, name="related-barriers-search"),
 ]

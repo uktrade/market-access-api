@@ -56,7 +56,7 @@ def related_barriers_search(request) -> Response:
         manager.init()
 
     barrier_scores = manager.manager.get_similar_barriers_searched(
-        search_term=serializer.data['search_term'],
+        search_term=serializer.data["search_term"],
         similarity_threshold=SIMILARITY_THRESHOLD,
         quantity=SIMILAR_BARRIERS_LIMIT,
     )

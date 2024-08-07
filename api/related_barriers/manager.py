@@ -4,18 +4,17 @@ from functools import wraps
 from typing import Dict, List, Optional
 
 import numpy
+import torch
 from django.core.cache import cache
 from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from sentence_transformers import SentenceTransformer, util
-import torch
 
 from api.barriers.tasks import get_barriers_overseas_region
 from api.interactions.models import Interaction
+from api.metadata.utils import get_sector
 from api.related_barriers.constants import BarrierEntry
-
-from api.metadata.utils import (get_sector)
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +77,6 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         """
         Load data into memory.
         """
-        print('Setting data')
         logger.info("(Related Barriers): set_data")
         self.flush()
         barrier_ids = [str(d["id"]) for d in data]
@@ -208,25 +206,32 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
 
         barrier_ids = [b[0] for b in barrier_scores]
         return barrier_ids
-    
 
     @timing
     def get_similar_barriers_searched(
-        self, search_term: str, similarity_threshold: float, quantity: int=None, log_score=None
+        self,
+        search_term: str,
+        similarity_threshold: float,
+        quantity: int = None,
+        log_score=None,
     ):
 
         logger.info(f"(Related Barriers): get_similar_barriers_seaarched")
         barrier_ids = self.get_barrier_ids()
 
         if not barrier_ids:
-           self.set_data(get_data())
+            self.set_data(get_data())
 
         barrier_ids = self.get_barrier_ids()
 
         embedded_index = "search_term"
-        search_term_embedding = self.model.encode(search_term, convert_to_tensor=True).numpy()
+        search_term_embedding = self.model.encode(
+            search_term, convert_to_tensor=True
+        ).numpy()
         embeddings = self.get_embeddings()
-        new_embeddings = numpy.vstack([embeddings, search_term_embedding])  # append embedding
+        new_embeddings = numpy.vstack(
+            [embeddings, search_term_embedding]
+        )  # append embedding
         new_barrier_ids = barrier_ids + [embedded_index]  # append barrier_id
 
         cosine_sim = util.cos_sim(new_embeddings, new_embeddings)
@@ -265,21 +270,31 @@ def get_data_2() -> List[Dict]:
 
         companies_affected_list = ""
         if barrier.companies:
-            companies_affected_list = ", ".join([company['name'] for company in barrier.companies])
+            companies_affected_list = ", ".join(
+                [company["name"] for company in barrier.companies]
+            )
 
         other_organisations_affected_list = ""
         if barrier.related_organisations:
-            other_organisations_affected_list = ", ".join([company['name'] for company in barrier.related_organisations])
+            other_organisations_affected_list = ", ".join(
+                [company["name"] for company in barrier.related_organisations]
+            )
 
-        notes_text_list = ", ".join([note.text for note in barrier.interactions_documents.all()])
+        notes_text_list = ", ".join(
+            [note.text for note in barrier.interactions_documents.all()]
+        )
 
-        sectors_list = [get_sector(str(sector_id))["name"] for sector_id in barrier.sectors]
+        sectors_list = [
+            get_sector(str(sector_id))["name"] for sector_id in barrier.sectors
+        ]
         sectors_list.append(get_sector(barrier.main_sector)["name"])
         sectors_text = ", ".join(sectors_list)
 
-        overseas_region_text = get_barriers_overseas_region(barrier.country, barrier.trading_bloc)
+        overseas_region_text = get_barriers_overseas_region(
+            barrier.country, barrier.trading_bloc
+        )
 
-        estimated_resolution_date_text = ''
+        estimated_resolution_date_text = ""
         if barrier.estimated_resolution_date:
             date = barrier.estimated_resolution_date.strftime("%d-%m-%Y")
             estimated_resolution_date_text = f"Estimated to be resolved on {date}."
