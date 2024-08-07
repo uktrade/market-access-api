@@ -11,7 +11,7 @@ from api.related_barriers.constants import (
     SIMILARITY_THRESHOLD,
     BarrierEntry,
 )
-from api.related_barriers.serializers import BarrierRelatedListSerializer
+from api.related_barriers.serializers import BarrierRelatedListSerializer, SearchRequest
 
 logger = logging.getLogger(__name__)
 
@@ -39,5 +39,32 @@ def related_barriers(request, pk) -> Response:
     return Response(
         BarrierRelatedListSerializer(
             Barrier.objects.filter(id__in=similar_barrier_ids), many=True
+        ).data
+    )
+
+
+@api_view(["GET"])
+def related_barriers_search(request) -> Response:
+    """
+    Return a list of related barriers given a search term/phrase
+    """
+
+    serializer = SearchRequest(data=request.GET)
+    serializer.is_valid(raise_exception=True)
+
+    if manager.manager is None:
+        manager.init()
+
+    barrier_scores = manager.manager.get_similar_barriers_searched(
+        search_term=serializer.data["search_term"],
+        similarity_threshold=SIMILARITY_THRESHOLD,
+        quantity=SIMILAR_BARRIERS_LIMIT,
+    )
+
+    barrier_ids = [b[0] for b in barrier_scores]
+
+    return Response(
+        BarrierRelatedListSerializer(
+            Barrier.objects.filter(id__in=barrier_ids), many=True
         ).data
     )
