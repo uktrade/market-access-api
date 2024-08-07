@@ -13,3 +13,7 @@ class BarrierRelatedListSerializer(serializers.Serializer):
     status = StatusField(required=False)
     location = serializers.CharField(read_only=True)
     similarity = serializers.FloatField(read_only=True)
+
+
+class SearchRequest(serializers.Serializer):
+    search_term = serializers.CharField(required=True)
