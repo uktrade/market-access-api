@@ -4,15 +4,10 @@ from functools import wraps
 from typing import Dict, List, Optional
 
 import numpy
-import torch
 from django.core.cache import cache
-from django.db.models import CharField
-from django.db.models import Value as V
-from django.db.models.functions import Concat
 from sentence_transformers import SentenceTransformer, util
 
 from api.barriers.tasks import get_barriers_overseas_region
-from api.interactions.models import Interaction
 from api.metadata.utils import get_sector
 from api.related_barriers.constants import BarrierEntry
 
@@ -216,7 +211,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         log_score=None,
     ):
 
-        logger.info(f"(Related Barriers): get_similar_barriers_seaarched")
+        logger.info("(Related Barriers): get_similar_barriers_searched")
         barrier_ids = self.get_barrier_ids()
 
         if not barrier_ids:

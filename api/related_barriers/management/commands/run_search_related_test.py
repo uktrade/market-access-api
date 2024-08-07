@@ -4,9 +4,8 @@ from django.core.management import BaseCommand
 
 from api.barriers.models import Barrier
 from api.barriers.tasks import get_barriers_overseas_region
-from api.interactions.models import Interaction
 from api.metadata.utils import get_sector
-from api.related_barriers.views import related_barriers, related_barriers_search
+from api.related_barriers.views import related_barriers_search
 
 logger = logging.getLogger(__name__)
 
