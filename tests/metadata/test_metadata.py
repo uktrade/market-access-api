@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin
+from api.metadata.models import PolicyTeam
+from api.metadata.serializers import PolicyTeamSerializer
 
 
 class TestCategories(APITestMixin):
@@ -45,6 +47,18 @@ class TestCategories(APITestMixin):
         assert response.status_code == status.HTTP_200_OK
         assert response.data["stage_status"] is not None
         assert json.dumps(response.data["stage_status"]) == json.dumps(expected)
+
+    def test_policy_teams(self):
+        pt = PolicyTeam.objects.create(title="test", description="testd")
+        url = reverse("metadata")
+
+        response = self.api_client.get(url)
+
+        assert PolicyTeam.objects.count() == 1
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["policy_teams"] == [
+            {"id": pt.id, "title": pt.title, "description": pt.description}
+        ]
 
     def test_govt_response(self):
         expected = {

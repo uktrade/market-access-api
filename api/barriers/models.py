@@ -403,6 +403,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
+    policy_teams = models.ManyToManyField(
+        metadata_models.PolicyTeam, through="BarrierPolicyTeam"
+    )
+
     # Barrier status
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
     sub_status = models.CharField(
@@ -1218,6 +1222,13 @@ class BarrierCommodity(models.Model):
     @property
     def simple_formatted_code(self):
         return format_commodity_code(self.code, separator="")
+
+
+class BarrierPolicyTeam(BaseModel):
+    barrier = models.ForeignKey(Barrier, on_delete=models.CASCADE)
+    policy_team = models.ForeignKey(metadata_models.PolicyTeam, on_delete=models.CASCADE)
+
+    history = HistoricalRecords()
 
 
 class BarrierFilterSet(django_filters.FilterSet):

@@ -37,7 +37,7 @@ from .utils import (
     get_os_regions_and_countries,
     get_reporting_stages,
     get_sectors,
-    get_wto_committee_groups,
+    get_wto_committee_groups, get_policy_teams,
 )
 
 
@@ -79,6 +79,7 @@ class MetadataView(generics.GenericAPIView):
 
         report_stages = get_reporting_stages()
         categories = get_categories()
+        policy_teams = get_policy_teams()
         barrier_type_cat = get_barrier_type_categories()
         barrier_priorities = get_barrier_priorities()
         barrier_tags = get_barrier_tags()
@@ -98,6 +99,7 @@ class MetadataView(generics.GenericAPIView):
             "support_type": support_type,
             "barrier_types": categories,
             "categories": categories,
+            "policy_teams": policy_teams,
             "overseas_regions": dh_os_regions,
             "countries": dh_countries,
             "admin_areas": dh_admin_areas,

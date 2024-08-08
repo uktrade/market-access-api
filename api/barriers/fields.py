@@ -22,14 +22,14 @@ from api.metadata.models import (
     BarrierTag,
     Category,
     ExportType,
-    Organisation,
+    Organisation, PolicyTeam,
 )
 from api.metadata.serializers import (
     BarrierPrioritySerializer,
     BarrierTagSerializer,
     CategorySerializer,
     ExportTypeSerializer,
-    OrganisationSerializer,
+    OrganisationSerializer, PolicyTeamSerializer,
 )
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
 from api.wto.models import WTOProfile
@@ -77,6 +77,15 @@ class BarrierPriorityField(serializers.Field):
             return BarrierPriority.objects.get(code=data)
         except BarrierPriority.DoesNotExist:
             raise serializers.ValidationError("Priority not found")
+
+
+class PolicyTeamsField(serializers.ListField):
+    def to_representation(self, value):
+        serializer = PolicyTeamSerializer(value.all(), many=True)
+        return serializer.data
+
+    def to_internal_value(self, data):
+        return PolicyTeam.objects.filter(id__in=data)
 
 
 class CategoriesField(serializers.ListField):
