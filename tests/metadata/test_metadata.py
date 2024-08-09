@@ -5,7 +5,6 @@ from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin
 from api.metadata.models import PolicyTeam
-from api.metadata.serializers import PolicyTeamSerializer
 
 
 class TestCategories(APITestMixin):

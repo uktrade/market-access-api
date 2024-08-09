@@ -1226,7 +1226,9 @@ class BarrierCommodity(models.Model):
 
 class BarrierPolicyTeam(BaseModel):
     barrier = models.ForeignKey(Barrier, on_delete=models.CASCADE)
-    policy_team = models.ForeignKey(metadata_models.PolicyTeam, on_delete=models.CASCADE)
+    policy_team = models.ForeignKey(
+        metadata_models.PolicyTeam, on_delete=models.CASCADE
+    )
 
     history = HistoricalRecords()
 

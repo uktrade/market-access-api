@@ -20,7 +20,6 @@ from .constants import (
     TRADING_BLOCS,
 )
 from .models import BarrierPriority, BarrierTag, Category, Organisation, PolicyTeam
-from .serializers import PolicyTeamSerializer
 
 
 def import_api_results(endpoint):
@@ -166,6 +165,8 @@ def get_categories():
 
 
 def get_policy_teams() -> List[Dict]:
+    from api.metadata.serializers import PolicyTeamSerializer
+
     return PolicyTeamSerializer(PolicyTeam.objects.all(), many=True).data
 
 

@@ -17,6 +17,7 @@ from api.barriers.fields import (
     CommoditiesField,
     ExportTypesField,
     OrganisationsField,
+    PolicyTeamsField,
     PublicEligibilityField,
     SectorField,
     SectorsField,
@@ -28,7 +29,7 @@ from api.barriers.fields import (
     TradeCategoryField,
     TradeDirectionField,
     UserField,
-    WTOProfileField, PolicyTeamsField,
+    WTOProfileField,
 )
 from api.barriers.models import Barrier, BarrierUserHit
 from api.barriers.serializers.progress_updates import (

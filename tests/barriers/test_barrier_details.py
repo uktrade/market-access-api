@@ -180,22 +180,36 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         ]
 
     def test_policy_team_management(self):
-        policy_team1 = PolicyTeam.objects.create(title='Test Title', description='Test Description')
-        policy_team2 = PolicyTeam.objects.create(title='Test Title', description='Test Description')
+        policy_team1 = PolicyTeam.objects.create(
+            title="Test Title", description="Test Description"
+        )
+        policy_team2 = PolicyTeam.objects.create(
+            title="Test Title", description="Test Description"
+        )
 
         assert self.barrier.policy_teams.count() == 0
 
-        response = self.api_client.patch(self.url, format="json", data={"policy_teams": [policy_team1.id]})
-
-        assert status.HTTP_200_OK == response.status_code
-        assert response.data["policy_teams"] == PolicyTeamSerializer([policy_team1], many=True).data
-
         response = self.api_client.patch(
-            self.url, format="json", data={"policy_teams": [policy_team1.id, policy_team2.id]}
+            self.url, format="json", data={"policy_teams": [policy_team1.id]}
         )
 
         assert status.HTTP_200_OK == response.status_code
-        assert response.data["policy_teams"] == PolicyTeamSerializer([policy_team1, policy_team2], many=True).data
+        assert (
+            response.data["policy_teams"]
+            == PolicyTeamSerializer([policy_team1], many=True).data
+        )
+
+        response = self.api_client.patch(
+            self.url,
+            format="json",
+            data={"policy_teams": [policy_team1.id, policy_team2.id]},
+        )
+
+        assert status.HTTP_200_OK == response.status_code
+        assert (
+            response.data["policy_teams"]
+            == PolicyTeamSerializer([policy_team1, policy_team2], many=True).data
+        )
 
         response = self.api_client.patch(
             self.url, format="json", data={"policy_teams": []}

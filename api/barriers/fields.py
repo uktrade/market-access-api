@@ -22,14 +22,16 @@ from api.metadata.models import (
     BarrierTag,
     Category,
     ExportType,
-    Organisation, PolicyTeam,
+    Organisation,
+    PolicyTeam,
 )
 from api.metadata.serializers import (
     BarrierPrioritySerializer,
     BarrierTagSerializer,
     CategorySerializer,
     ExportTypeSerializer,
-    OrganisationSerializer, PolicyTeamSerializer,
+    OrganisationSerializer,
+    PolicyTeamSerializer,
 )
 from api.metadata.utils import get_country, get_sector, get_trading_bloc
 from api.wto.models import WTOProfile
