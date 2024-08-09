@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from .constants import BARRIER_TYPE_CATEGORIES
-from .utils import get_admin_area, get_country, get_trading_bloc
+from api.metadata.constants import BARRIER_TYPE_CATEGORIES
+from api.metadata.utils import get_admin_area, get_country, get_trading_bloc
 
 
 class AdminAreasField(serializers.ListField):

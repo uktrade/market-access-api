@@ -17,6 +17,7 @@ from api.barriers.fields import (
     CommoditiesField,
     ExportTypesField,
     OrganisationsField,
+    PolicyTeamsField,
     PublicEligibilityField,
     SectorField,
     SectorsField,
@@ -64,6 +65,7 @@ class BarrierSerializerBase(
     )
     strategic_assessments = StrategicAssessmentSerializer(required=False, many=True)
     categories = CategoriesField(required=False)
+    policy_teams = PolicyTeamsField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
     country = CountryField(required=False, allow_null=True)
     created_by = UserField(required=False)

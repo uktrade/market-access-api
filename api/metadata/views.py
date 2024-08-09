@@ -3,7 +3,7 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .constants import (
+from api.metadata.constants import (
     BARRIER_CHANCE_OF_SUCCESS,
     BARRIER_INTERACTION_TYPE,
     BARRIER_PENDING,
@@ -26,7 +26,7 @@ from .constants import (
     TRADING_BLOCS,
     BarrierStatus,
 )
-from .utils import (
+from api.metadata.utils import (
     get_admin_areas,
     get_barrier_priorities,
     get_barrier_search_ordering_choices,
@@ -35,6 +35,7 @@ from .utils import (
     get_categories,
     get_government_organisations,
     get_os_regions_and_countries,
+    get_policy_teams,
     get_reporting_stages,
     get_sectors,
     get_wto_committee_groups,
@@ -79,6 +80,7 @@ class MetadataView(generics.GenericAPIView):
 
         report_stages = get_reporting_stages()
         categories = get_categories()
+        policy_teams = get_policy_teams()
         barrier_type_cat = get_barrier_type_categories()
         barrier_priorities = get_barrier_priorities()
         barrier_tags = get_barrier_tags()
@@ -98,6 +100,7 @@ class MetadataView(generics.GenericAPIView):
             "support_type": support_type,
             "barrier_types": categories,
             "categories": categories,
+            "policy_teams": policy_teams,
             "overseas_regions": dh_os_regions,
             "countries": dh_countries,
             "admin_areas": dh_admin_areas,
