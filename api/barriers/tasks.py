@@ -30,18 +30,18 @@ def get_inactivty_threshold_dates():
     last_day_of_month = calendar.monthrange(current_date.year, current_date.month)[1]
     target_date = current_date.replace(day=last_day_of_month)
 
-    inactivity_threshold_dates[
-        "archive_inactivity_threshold_date"
-    ] = target_date - timedelta(days=settings.BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS)
-    inactivity_threshold_dates[
-        "dormant_inactivity_threshold_date"
-    ] = target_date - timedelta(days=settings.BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS)
+    inactivity_threshold_dates["archive_inactivity_threshold_date"] = (
+        target_date - timedelta(days=settings.BARRIER_INACTIVITY_ARCHIVE_THRESHOLD_DAYS)
+    )
+    inactivity_threshold_dates["dormant_inactivity_threshold_date"] = (
+        target_date - timedelta(days=settings.BARRIER_INACTIVITY_DORMANT_THRESHOLD_DAYS)
+    )
     inactivity_threshold_dates["inactivity_threshold_date"] = current_date - timedelta(
         days=settings.BARRIER_INACTIVITY_THRESHOLD_DAYS
     )
-    inactivity_threshold_dates[
-        "repeat_reminder_threshold_date"
-    ] = current_date - timedelta(days=settings.BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS)
+    inactivity_threshold_dates["repeat_reminder_threshold_date"] = (
+        current_date - timedelta(days=settings.BARRIER_REPEAT_REMINDER_THRESHOLD_DAYS)
+    )
 
     return inactivity_threshold_dates
 
@@ -61,6 +61,7 @@ def get_barriers_to_update_this_month():
             archived=False,
         )
         .exclude(draft=True)
+        .exclude(archived=True)
         .order_by("modified_on")[:20]
     )
 
@@ -73,6 +74,7 @@ def get_barriers_to_update_this_month():
             archived=False,
         )
         .exclude(draft=True)
+        .exclude(archived=True)
         .order_by("modified_on")[:20]
     )
 
@@ -244,7 +246,6 @@ def send_barrier_inactivity_reminders():
     logger.info("Running send_barrier_inactivity_reminders() task")
 
     threshold_dates = get_inactivty_threshold_dates()
-
     barriers_needing_reminder = (
         Barrier.objects.filter(
             modified_on__lt=threshold_dates["inactivity_threshold_date"],
@@ -259,6 +260,7 @@ def send_barrier_inactivity_reminders():
             )
         )
         .exclude(draft=True)
+        .exclude(archived=True)
     )
 
     for barrier in barriers_needing_reminder:
@@ -357,15 +359,15 @@ def send_top_priority_notification(email_type: str, barrier_id: int):
     personalisation_items["barrier_id"] = str(barrier.code)
 
     # Build URL to the barrier
-    personalisation_items[
-        "barrier_url"
-    ] = f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/"
+    personalisation_items["barrier_url"] = (
+        f"{settings.DMAS_BASE_URL}/barriers/{barrier.id}/"
+    )
 
     # If its a rejection, we need to also get the reason for rejection
     if email_type == "REJECTION":
-        personalisation_items[
-            "decision_reason"
-        ] = barrier.top_priority_rejection_summary
+        personalisation_items["decision_reason"] = (
+            barrier.top_priority_rejection_summary
+        )
 
     client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
     client.send_email_notification(
