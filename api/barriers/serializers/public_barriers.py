@@ -54,7 +54,7 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
             "unpublished_changes",
             "changed_since_published",
             "last_published_on",
-            "set_to_allowed_on"
+            "set_to_allowed_on",
         )
 
     def get_set_to_allowed_on(self, obj):
