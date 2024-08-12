@@ -562,6 +562,20 @@ class TestDataWarehouseExport(TestCase):
         data = DataWorkspaceSerializer(barrier).data
         assert data["date_estimated_resolution_date_first_added"] is None
 
+    def test_public_barrier_set_to_allowed_on(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=None,
+        )
+
+        ts = datetime.datetime.now(tz=datetime.timezone.utc)
+        barrier.public_barrier.set_to_allowed_on = ts
+        barrier.public_barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+
+        assert data["public_barrier"]["set_to_allowed_on"] == ts.strftime("%Y-%m-%d")
+
     def test_estimated_resolution_date_first_added(self):
         barrier = BarrierFactory(
             status_date=date.today(),

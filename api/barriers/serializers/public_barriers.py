@@ -41,6 +41,7 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
     public_view_status_display = DisplayChoiceField(
         source="public_view_status", choices=PublicBarrierStatus.choices
     )
+    set_to_allowed_on = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrier
@@ -53,7 +54,12 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
             "unpublished_changes",
             "changed_since_published",
             "last_published_on",
+            "set_to_allowed_on"
         )
+
+    def get_set_to_allowed_on(self, obj):
+        if obj.set_to_allowed_on:
+            return obj.set_to_allowed_on.strftime("%Y-%m-%d")
 
     def get_unpublished_changes(self, obj):
         return bool(obj.unpublished_changes)

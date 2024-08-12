@@ -204,7 +204,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     reported_by = serializers.SerializerMethodField()
     barrier_owner = serializers.SerializerMethodField()
     first_published_on = serializers.SerializerMethodField()
-    set_to_allowed_on = serializers.SerializerMethodField()
     valuation_assessment_explanation = serializers.SerializerMethodField()
     valuation_assessment_midpoint = serializers.SerializerMethodField()
     valuation_assessment_midpoint_value = serializers.SerializerMethodField()
@@ -264,7 +263,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "public_eligibility_summary",
             "public_eligibility_postponed",
             "first_published_on",
-            "set_to_allowed_on",
             "resolvability_assessments",
             "sectors",
             "sectors_affected",
@@ -674,10 +672,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     def get_first_published_on(self, obj):
         if hasattr(obj, "public_barrier"):
             return obj.public_barrier.first_published_on
-
-    def get_set_to_allowed_on(self, obj):
-        if hasattr(obj, "public_barrier"):
-            return obj.public_barrier.set_to_allowed_on
 
     def get_economic_assessment_rating(self, obj):
         assessment = obj.current_economic_assessment
