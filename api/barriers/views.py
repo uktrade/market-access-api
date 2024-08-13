@@ -586,6 +586,7 @@ class BarrierStatusBase(generics.UpdateAPIView):
             status_date=status_date,
             modified_by=self.request.user,
         )
+        barrier_cache.delete(barrier_id)
 
 
 class BarrierResolveInFull(BarrierStatusBase):
