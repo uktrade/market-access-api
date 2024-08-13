@@ -1045,6 +1045,9 @@ class BarrierNextStepItemViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer, request.user)
         headers = self.get_success_headers(serializer.data)
+
+        barrier_cache.delete(serializer.data["barrier"])
+
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
@@ -1067,5 +1070,7 @@ class BarrierNextStepItemViewSet(ModelViewSet):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
+
+        barrier_cache.delete(serializer.data["barrier"])
 
         return Response(serializer.data)
