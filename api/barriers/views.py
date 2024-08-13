@@ -616,6 +616,7 @@ class BarrierResolveInFull(BarrierStatusBase):
             summary=self.request.data.get("status_summary", ""),
             status_date=self.request.data.get("status_date"),
         )
+        barrier_cache.delete(self.kwargs.get("pk"))
 
 
 class BarrierResolveInPart(BarrierStatusBase):
@@ -646,6 +647,7 @@ class BarrierResolveInPart(BarrierStatusBase):
             summary=self.request.data.get("status_summary", ""),
             status_date=self.request.data.get("status_date"),
         )
+        barrier_cache.delete(self.kwargs.get("pk"))
 
 
 class BarrierHibernate(BarrierStatusBase):
@@ -662,6 +664,7 @@ class BarrierHibernate(BarrierStatusBase):
             status=5,
             summary=self.request.data.get("status_summary", ""),
         )
+        barrier_cache.delete(self.kwargs.get("pk"))
 
 
 class BarrierStatusChangeUnknown(BarrierStatusBase):
@@ -678,6 +681,7 @@ class BarrierStatusChangeUnknown(BarrierStatusBase):
             status=7,
             summary=self.request.data.get("status_summary", ""),
         )
+        barrier_cache.delete(self.kwargs.get("pk"))
 
 
 class BarrierOpenInProgress(BarrierStatusBase):
@@ -694,6 +698,7 @@ class BarrierOpenInProgress(BarrierStatusBase):
             status=2,
             summary=self.request.data.get("status_summary", ""),
         )
+        barrier_cache.delete(self.kwargs.get("pk"))
 
 
 class BarrierOpenActionRequired(BarrierStatusBase):
@@ -726,6 +731,7 @@ class BarrierOpenActionRequired(BarrierStatusBase):
             summary=self.request.data.get("status_summary", ""),
             status_date=self.request.data.get("status_date"),
         )
+        barrier_cache.delete(self.kwargs.get("pk"))
 
 
 class PublicBarrierViewSet(
