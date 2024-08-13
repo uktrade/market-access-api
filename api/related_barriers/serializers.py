@@ -1,5 +1,3 @@
-import uuid
-
 from rest_framework import serializers
 
 from api.barriers.fields import StatusField
@@ -18,7 +16,7 @@ class BarrierRelatedListSerializer(serializers.Serializer):
     def get_location(self, obj):
         try:
             return obj.location or ""
-        except:
+        except Exception:
             return ""
 
 

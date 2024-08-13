@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models import CharField, TextField
+from django.db.models import CharField
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
