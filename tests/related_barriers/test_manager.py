@@ -50,19 +50,19 @@ def test_get_similar_barriers(related_barrier_manager_context):
             barrier=barrier, similarity_threshold=0.15, quantity=3
         )
 
-        assert response == ["c"]
+        assert response == [("c", 0.3)]
 
         response = manager.get_similar_barriers(
             barrier=barrier, similarity_threshold=0.09, quantity=3
         )
 
-        assert response == ["b", "c"]
+        assert response == [('b', 0.1), ('c', 0.3)]
 
         response = manager.get_similar_barriers(
             barrier=barrier, similarity_threshold=0.09, quantity=1
         )
 
-        assert response == ["c"]
+        assert response == [("c", 0.3)]
 
 
 def test_add_barrier(related_barrier_manager_context):

@@ -197,10 +197,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
             for k, v in barrier_scores.items()
             if v > similarity_threshold and k != barrier.id
         }
-        barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
-
-        barrier_ids = [b[0] for b in barrier_scores]
-        return barrier_ids
+        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
     @timing
     def get_similar_barriers_searched(
@@ -239,8 +236,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
             for k, v in barrier_scores.items()
             if v > similarity_threshold and k != embedded_index
         }
-        barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
-        return barrier_scores
+        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
 
 manager: Optional[RelatedBarrierManager] = None
