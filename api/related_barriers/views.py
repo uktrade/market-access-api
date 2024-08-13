@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models import TextField, CharField
+from django.db.models import CharField, TextField
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -40,9 +40,8 @@ def related_barriers(request, pk) -> Response:
 
     barrier_ids = [b[0] for b in barrier_scores]
 
-    barriers = (
-        Barrier.objects.filter(id__in=barrier_ids)
-        .annotate(barrier_id=Cast('id', output_field=CharField()))
+    barriers = Barrier.objects.filter(id__in=barrier_ids).annotate(
+        barrier_id=Cast("id", output_field=CharField())
     )
     barriers = {b.barrier_id: b for b in barriers}
 
@@ -74,9 +73,8 @@ def related_barriers_search(request) -> Response:
 
     barrier_ids = [b[0] for b in barrier_scores]
 
-    barriers = (
-        Barrier.objects.filter(id__in=barrier_ids)
-        .annotate(barrier_id=Cast('id', output_field=CharField()))
+    barriers = Barrier.objects.filter(id__in=barrier_ids).annotate(
+        barrier_id=Cast("id", output_field=CharField())
     )
     barriers = {b.barrier_id: b for b in barriers}
 
