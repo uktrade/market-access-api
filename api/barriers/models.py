@@ -509,6 +509,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Organisations that are related to the barrier",
     )
 
+    policy_teams = models.ManyToManyField(
+        metadata_models.PolicyTeam
+    )
+
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
     tags = models.ManyToManyField(metadata_models.BarrierTag, blank=True)
@@ -1999,9 +2003,3 @@ class BarrierNextStepItem(BaseModel):
             model="barrier",
             fields=fields,
         )
-
-
-class BarrierPolicyTeam(BaseModel):
-    policy_team = models.ForeignKey(
-        metadata_models.PolicyTeam, on_delete=models.PROTECT
-    )
