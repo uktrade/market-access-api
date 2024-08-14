@@ -11,6 +11,7 @@ BARRIER_FIELD_TO_COLUMN_TITLE = {
     "overseas_region": "Overseas Region",
     "location": "Location",
     "sectors": "Sectors",
+    "policy_teams": "Policy Teams",
     "product": "Product",
     "categories": "Barrier categories",
     "admin_areas": "Admin areas",
