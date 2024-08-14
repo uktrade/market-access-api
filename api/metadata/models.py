@@ -108,3 +108,9 @@ class ExportType(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.__class__} {self.name}"
+
+
+class PolicyTeam(BaseModel):
+    """Injected into environment using fixture"""
+    title = models.CharField(max_length=256)
+    description = models.TextField()
