@@ -509,6 +509,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Organisations that are related to the barrier",
     )
 
+    organisations_two = models.ManyToManyField(
+        metadata_models.Organisation, related_name="orgs"
+    )
+
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
     tags = models.ManyToManyField(metadata_models.BarrierTag, blank=True)
