@@ -509,7 +509,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         help_text="Organisations that are related to the barrier",
     )
 
-    organisations_two = models.CharField(null=True)
+    draft_test = models.BooleanField(default=True)
 
     history = HistoricalRecords(bases=[BarrierHistoricalModel])
 
