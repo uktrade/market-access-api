@@ -36,7 +36,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
             "barrier_commodities",
             "public_barrier__notes",
             "organisations",
-            "policy_teams"
+            "policy_teams",
         )
     )
     serializer_class = BarrierDownloadSerializer

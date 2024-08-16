@@ -328,7 +328,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "main_sector",
             "export_description",
             "tags",
-            "policy_teams"
+            "policy_teams",
         )
 
     def to_representation(self, instance):

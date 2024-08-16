@@ -113,6 +113,7 @@ class ExportType(BaseModel):
 
 class PolicyTeam(BaseModel):
     """Injected into environment using fixture"""
+
     title = models.CharField(max_length=256)
     description = models.TextField()
 

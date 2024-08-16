@@ -191,7 +191,9 @@ class TestDataWarehouseExport(TestCase):
         barrier.policy_teams.add(pt)
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["policy_teams"] == [{'description': pt.description, 'id': pt.id, 'title': pt.title}]
+        assert data["policy_teams"] == [
+            {"description": pt.description, "id": pt.id, "title": pt.title}
+        ]
 
     def test_has_value_for_proposed_top_priority_change_user(self):
         user = create_test_user()
