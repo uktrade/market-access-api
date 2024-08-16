@@ -1,6 +1,7 @@
 import json
 import os
 from functools import lru_cache
+from typing import Dict, List
 
 import requests
 import sentry_sdk
@@ -18,7 +19,7 @@ from .constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     TRADING_BLOCS,
 )
-from .models import BarrierPriority, BarrierTag, Category, Organisation
+from .models import BarrierPriority, BarrierTag, Category, Organisation, PolicyTeam
 
 
 def import_api_results(endpoint):
@@ -161,6 +162,12 @@ def get_categories():
         for category in Category.services.all()
     ]
     return barrier_goods + barrier_services
+
+
+def get_policy_teams() -> List[Dict]:
+    from api.metadata.serializers import PolicyTeamSerializer
+
+    return PolicyTeamSerializer(PolicyTeam.objects.all(), many=True).data
 
 
 def get_barrier_tags():
