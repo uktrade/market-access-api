@@ -15,11 +15,11 @@ from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.core.validators import int_list_validator
 from django.db import models
-from django.db.models import CASCADE, Q, QuerySet, CharField
+from django.db.models import CASCADE, CharField, Q, QuerySet
+from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
-from django.db.models.functions import Cast
 from hashid_field import HashidAutoField
 from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
