@@ -19,7 +19,7 @@ from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
     BarrierStatus,
 )
-from api.metadata.models import BarrierTag
+from api.metadata.models import BarrierTag, PolicyTeam
 from tests.action_plans.factories import (
     ActionPlanMilestoneFactory,
     ActionPlanTaskFactory,
@@ -179,6 +179,21 @@ class TestDataWarehouseExport(TestCase):
         barrier = BarrierFactory(status_date=date.today())
         serialised_data = DataWorkspaceSerializer(barrier).data
         assert "is_top_priority" in serialised_data.keys()
+
+    def test_policy_teams(self):
+        barrier = BarrierFactory(status_date=date.today())
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["policy_teams"] == []
+
+        pt = PolicyTeam.objects.create(
+            title="Test Title", description="Test Description"
+        )
+        barrier.policy_teams.add(pt)
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["policy_teams"] == [
+            {"description": pt.description, "id": pt.id, "title": pt.title}
+        ]
 
     def test_has_value_for_proposed_top_priority_change_user(self):
         user = create_test_user()

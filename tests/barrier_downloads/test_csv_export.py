@@ -22,7 +22,7 @@ from api.metadata.constants import (
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
 )
-from api.metadata.models import Organisation
+from api.metadata.models import Organisation, PolicyTeam
 from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
@@ -88,6 +88,16 @@ class TestCsvDownloadSerializer(APITestMixin, APITestCase):
 
         serializer = CsvDownloadSerializer(barrier)
         assert serializer.data["resolved_date"] is None
+
+    def test_policy_teams(self):
+        barrier = BarrierFactory()
+        pt = PolicyTeam.objects.create(
+            title="Test Title2", description="Test Description2"
+        )
+        barrier.policy_teams.add(pt)
+
+        serializer = CsvDownloadSerializer(barrier)
+        assert serializer.data["policy_teams"] == [pt.title]
 
     def test_eu_overseas_region(self):
         barrier = BarrierFactory(trading_bloc="TB00016", country=None)

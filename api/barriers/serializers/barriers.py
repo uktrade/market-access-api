@@ -53,6 +53,7 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "modified_by",
             "modified_on",
             "other_source",
+            "policy_teams",
             "priority_level",
             "priority_summary",
             "product",
