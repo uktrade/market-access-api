@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from django.core.management import BaseCommand
 
+from api.barriers import barrier_cache
 from api.barriers.models import Barrier
 
 
@@ -48,5 +49,6 @@ class Command(BaseCommand):
                 if dryrun:
                     print(f"{barrier_id}: {policy_team_ids}")
                 else:
+                    barrier_cache.delete(barrier_id)
                     for pid in policy_team_ids:
                         barrier.policy_teams.add(pid)
