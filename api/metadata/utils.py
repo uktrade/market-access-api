@@ -13,13 +13,13 @@ from urlobject import URLObject
 
 from api.wto import models as wto_models
 
-from .constants import (
+from api.metadata.constants import (
     BARRIER_SEARCH_ORDERING_CHOICES,
     BARRIER_TYPE_CATEGORIES,
     GOVERNMENT_ORGANISATION_TYPES,
     TRADING_BLOCS,
 )
-from .models import BarrierPriority, BarrierTag, Category, Organisation, PolicyTeam
+from api.metadata.models import BarrierPriority, BarrierTag, Category, Organisation, PolicyTeam
 
 
 def import_api_results(endpoint):
