@@ -28,6 +28,7 @@ from api.history.v2.service import (
     convert_v2_history_to_legacy_object,
     enrich_full_history,
 )
+from api.metadata.models import PolicyTeam
 from api.wto.models import WTOProfile
 
 
@@ -135,6 +136,10 @@ class HistoryManager:
 
         v2_public_barrier_history = None
 
+        v2_policy_team_history = PolicyTeam.get_history(
+            barrier_id=barrier.pk
+        )
+
         if barrier.has_public_barrier:
             v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
 
@@ -154,6 +159,7 @@ class HistoryManager:
             action_plan_milestone_history=v2_action_plan_milestone_history,
             delivery_confidence_history=v2_delivery_confidence_history,
             next_step_item_history=v2_next_step_item_history,
+            policy_team_history=v2_policy_team_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)
