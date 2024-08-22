@@ -1,4 +1,5 @@
 import json
+from typing import List, Optional
 
 from django.db import models
 from django.db.models import Q
@@ -6,6 +7,7 @@ from ordered_model.models import OrderedModel
 from simple_history.models import HistoricalRecords
 
 from api.core.models import BaseModel
+from api.history.v2.service import get_model_history
 from api.metadata.constants import BARRIER_TYPE_CATEGORIES, OrganisationType
 
 
@@ -118,3 +120,15 @@ class PolicyTeam(BaseModel):
     description = models.TextField()
 
     history = HistoricalRecords()
+
+    @classmethod
+    def get_history(cls, barrier_id: str, fields: Optional[List] = None):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        default_fields = ("title", "description")
+
+        return get_model_history(
+            qs,
+            model="policy_team",
+            fields=fields,
+            track_first_item=True,
+        )
