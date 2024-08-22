@@ -559,3 +559,16 @@ def enrich_delivery_confidence(history: List[Dict]):
 
     # Overwrite the passed history list with the cleaned version
     history[:] = cleaned_history
+
+def enrich_policy_team(history: List[Dict]):
+    def enrich(value):
+        if not value:
+            return
+        return {"id": value, "name": value}
+
+    for item in history:
+        if item["field"] != "trade_category":
+            continue
+
+        item["old_value"] = enrich(item["old_value"])
+        item["new_value"] = enrich(item["new_value"])
