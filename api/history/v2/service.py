@@ -68,6 +68,7 @@ from api.history.v2.enrichment import (
     enrich_top_priority_status,
     enrich_trade_category,
     enrich_wto_notified_status,
+    enrich_policy_team,
 )
 
 FieldMapping = namedtuple("FieldMapping", ["query_name", "name"])
@@ -107,6 +108,7 @@ def enrich_full_history(
     enrich_sectors(barrier_history)
     enrich_status(barrier_history)
     enrich_commodities(barrier_history)
+    enrich_policy_team(barrier_history)
     enrich_rating(economic_assessment_history)
     enrich_top_priority_status(
         barrier_history=barrier_history,
