@@ -5,11 +5,10 @@ from typing import Dict, List, Optional
 
 import numpy
 from django.core.cache import cache
-from django.db.models import CharField
-from django.db.models import Value as V
-from django.db.models.functions import Concat
 from sentence_transformers import SentenceTransformer, util
 
+from api.barriers.tasks import get_barriers_overseas_region
+from api.metadata.utils import get_sector
 from api.related_barriers.constants import BarrierEntry
 
 logger = logging.getLogger(__name__)
@@ -30,6 +29,7 @@ def timing(f):
 
 @timing
 def get_transformer():
+    # SentenceTransformer("all-MiniLM-L6-v2")
     return SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
 
@@ -197,10 +197,46 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
             for k, v in barrier_scores.items()
             if v > similarity_threshold and k != barrier.id
         }
-        barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
+        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
-        barrier_ids = [b[0] for b in barrier_scores]
-        return barrier_ids
+    @timing
+    def get_similar_barriers_searched(
+        self,
+        search_term: str,
+        similarity_threshold: float,
+        quantity: int = None,
+        log_score=None,
+    ):
+
+        logger.info("(Related Barriers): get_similar_barriers_searched")
+        barrier_ids = self.get_barrier_ids()
+
+        if not barrier_ids:
+            self.set_data(get_data())
+
+        barrier_ids = self.get_barrier_ids()
+
+        embedded_index = "search_term"
+        search_term_embedding = self.model.encode(
+            search_term, convert_to_tensor=True
+        ).numpy()
+        embeddings = self.get_embeddings()
+        new_embeddings = numpy.vstack(
+            [embeddings, search_term_embedding]
+        )  # append embedding
+        new_barrier_ids = barrier_ids + [embedded_index]  # append barrier_id
+
+        cosine_sim = util.cos_sim(new_embeddings, new_embeddings)
+
+        index_search_term_embedding = len(new_embeddings) - 1
+        scores = cosine_sim[index_search_term_embedding]
+        barrier_scores = dict(zip(new_barrier_ids, scores))
+        barrier_scores = {
+            k: v
+            for k, v in barrier_scores.items()
+            if v > similarity_threshold and k != embedded_index
+        }
+        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
 
 manager: Optional[RelatedBarrierManager] = None
@@ -209,14 +245,69 @@ manager: Optional[RelatedBarrierManager] = None
 def get_data() -> List[Dict]:
     from api.barriers.models import Barrier
 
-    return (
-        Barrier.objects.filter(archived=False)
-        .exclude(draft=True)
-        .annotate(
-            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
+    return [
+        {"id": barrier.id, "barrier_corpus": f"{barrier.title} . {barrier.summary}"}
+        for barrier in Barrier.objects.filter(archived=False).exclude(draft=True)
+    ]
+
+
+def get_data_2() -> List[Dict]:
+    from api.barriers.models import Barrier
+
+    data_dictionary = []
+    barriers = Barrier.objects.filter(archived=False).exclude(draft=True)
+    for barrier in barriers:
+        corpus_object = {}
+
+        companies_affected_list = ""
+        if barrier.companies:
+            companies_affected_list = ", ".join(
+                [company["name"] for company in barrier.companies]
+            )
+
+        other_organisations_affected_list = ""
+        if barrier.related_organisations:
+            other_organisations_affected_list = ", ".join(
+                [company["name"] for company in barrier.related_organisations]
+            )
+
+        notes_text_list = ", ".join(
+            [note.text for note in barrier.interactions_documents.all()]
         )
-        .values("id", "barrier_corpus")
-    )
+
+        sectors_list = [
+            get_sector(str(sector_id))["name"] for sector_id in barrier.sectors
+        ]
+        sectors_list.append(get_sector(barrier.main_sector)["name"])
+        sectors_text = ", ".join(sectors_list)
+
+        overseas_region_text = get_barriers_overseas_region(
+            barrier.country, barrier.trading_bloc
+        )
+
+        estimated_resolution_date_text = ""
+        if barrier.estimated_resolution_date:
+            date = barrier.estimated_resolution_date.strftime("%d-%m-%Y")
+            estimated_resolution_date_text = f"Estimated to be resolved on {date}."
+
+        corpus_object["id"] = barrier.id
+        corpus_object["barrier_corpus"] = (
+            f"{barrier.title}. "
+            f"{barrier.summary}. "
+            f"{sectors_text} "
+            f"{barrier.country_name}. "
+            f"{overseas_region_text}. "
+            f"{companies_affected_list} "
+            f"{other_organisations_affected_list} "
+            f"{notes_text_list}. "
+            f"{barrier.status_summary}. "
+            f"{estimated_resolution_date_text}. "
+            f"{barrier.export_description}."
+        )
+
+        data_dictionary.append(corpus_object)
+
+    return data_dictionary
 
 
 def init():
@@ -226,6 +317,7 @@ def init():
         raise Exception("Related Barrier Manager already set")
 
     manager = RelatedBarrierManager()
+
     if not manager.get_barrier_ids():
         logger.info("(Related Barriers): Initialising)")
         data = get_data()
