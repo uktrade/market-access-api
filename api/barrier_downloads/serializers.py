@@ -87,6 +87,10 @@ class CsvDownloadSerializer(serializers.Serializer):
     valuation_assessment_midpoint = serializers.SerializerMethodField()
     valuation_assessment_explanation = serializers.SerializerMethodField()
     commercial_value = serializers.IntegerField()
+    policy_teams = serializers.SerializerMethodField()
+
+    def get_policy_teams(self, obj):
+        return [p.title for p in obj.policy_teams.all()]
 
     def get_is_top_priority(self, obj):
         return obj.is_top_priority

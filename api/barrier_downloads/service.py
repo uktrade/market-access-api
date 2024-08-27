@@ -96,6 +96,7 @@ def get_queryset(barrier_ids: List[str]) -> QuerySet:
             "public_barrier",
             "economic_assessments",
             "valuation_assessments",
+            "policy_teams",
             Prefetch(
                 "next_steps_items",
                 queryset=BarrierNextStepItem.objects.filter(

@@ -15,7 +15,8 @@ from api.barriers.models import (
 )
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER_STATUS
-from api.metadata.models import Category, Organisation
+from api.metadata.models import Category, Organisation, PolicyTeam
+from api.metadata.serializers import PolicyTeamSerializer
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
 
@@ -177,6 +178,45 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert self.barrier.sectors == [
             sector["id"] for sector in response.data["sectors"]
         ]
+
+    def test_policy_team_management(self):
+        policy_team1 = PolicyTeam.objects.create(
+            title="Test Title", description="Test Description"
+        )
+        policy_team2 = PolicyTeam.objects.create(
+            title="Test Title", description="Test Description"
+        )
+
+        assert self.barrier.policy_teams.count() == 0
+
+        response = self.api_client.patch(
+            self.url, format="json", data={"policy_teams": [policy_team1.id]}
+        )
+
+        assert status.HTTP_200_OK == response.status_code
+        assert (
+            response.data["policy_teams"]
+            == PolicyTeamSerializer([policy_team1], many=True).data
+        )
+
+        response = self.api_client.patch(
+            self.url,
+            format="json",
+            data={"policy_teams": [policy_team1.id, policy_team2.id]},
+        )
+
+        assert status.HTTP_200_OK == response.status_code
+        assert (
+            response.data["policy_teams"]
+            == PolicyTeamSerializer([policy_team1, policy_team2], many=True).data
+        )
+
+        response = self.api_client.patch(
+            self.url, format="json", data={"policy_teams": []}
+        )
+
+        assert status.HTTP_200_OK == response.status_code
+        assert response.data["policy_teams"] == []
 
     def test_add_barrier_categories(self):
         categories = Category.objects.all()

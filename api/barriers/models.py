@@ -404,6 +404,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
     )
     reported_on = models.DateTimeField(db_index=True, auto_now_add=True)
 
+    policy_teams = models.ManyToManyField(
+        metadata_models.PolicyTeam, through="BarrierPolicyTeam"
+    )
+
     # Barrier status
     status = models.PositiveIntegerField(choices=BarrierStatus.choices, default=0)
     sub_status = models.CharField(
@@ -1221,6 +1225,15 @@ class BarrierCommodity(models.Model):
         return format_commodity_code(self.code, separator="")
 
 
+class BarrierPolicyTeam(BaseModel):
+    barrier = models.ForeignKey(Barrier, on_delete=models.CASCADE)
+    policy_team = models.ForeignKey(
+        metadata_models.PolicyTeam, on_delete=models.CASCADE
+    )
+
+    history = HistoricalRecords()
+
+
 class BarrierFilterSet(django_filters.FilterSet):
     """
     Custom FilterSet to handle all necessary filters on Barriers
@@ -1257,6 +1270,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     status_date_resolved_in_full = django_filters.Filter(method="resolved_date_filter")
     delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
     category = django_filters.BaseInFilter("categories", distinct=True)
+    policy_team = django_filters.BaseInFilter("policy_teams", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
     top_priority_status = django_filters.BaseInFilter(
