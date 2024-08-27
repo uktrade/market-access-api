@@ -13,6 +13,7 @@ class BarriersConfig(AppConfig):
             barrier_completion_top_priority_barrier_resolved,
             barrier_priority_approval_email_notification,
             barrier_tags_changed,
+            barrier_policy_teams_changed,
             related_barrier_update_embeddings,
         )
 
@@ -20,6 +21,7 @@ class BarriersConfig(AppConfig):
             barrier_categories_changed, sender=Barrier.categories.through
         )
         m2m_changed.connect(barrier_tags_changed, sender=Barrier.tags.through)
+        m2m_changed.connect(barrier_policy_teams_changed, sender=Barrier.policy_teams.through)
 
         pre_save.connect(related_barrier_update_embeddings, sender=Barrier)
 
