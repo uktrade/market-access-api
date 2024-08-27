@@ -568,6 +568,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
         track_first_item: bool = False,
     ):
         qs = cls.history.filter(id=barrier_id, draft=False)
+        print('HELLO')
+        # for o in qs:
+        #     print(o.modified_on)
+        # length = len(qs)
+        # print(dir(qs[length - 1]))
+        print(dir(qs[0]))
+        print(type(qs[0]))
+        print(qs[0].modified_on)
         default_fields = (
             [
                 "archived",
@@ -590,6 +598,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "start_date",
             "is_summary_sensitive",
             "main_sector",
+            # "policy_teams",
             "priority_level",
             [FieldMapping("priority__code", "priority"), "priority_summary"],
             "product",
