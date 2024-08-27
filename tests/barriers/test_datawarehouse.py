@@ -263,7 +263,7 @@ class TestDataWarehouseExport(TestCase):
 
         assert data["top_priority_requested_date"] == ts3.strftime("%Y-%m-%d")
 
-    def test_date_barrier_prioritised(self):
+    def test_date_barrier_first_prioritised(self):
         ts1 = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(
             days=2
         )
@@ -271,7 +271,7 @@ class TestDataWarehouseExport(TestCase):
             barrier = BarrierFactory(status_date=date.today())
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_barrier_prioritised"] == ts1.strftime("%Y-%m-%d")
+        assert data["date_barrier_first_prioritised"] == ts1.strftime("%Y-%m-%d")
 
         barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
         ts2 = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(
@@ -281,7 +281,7 @@ class TestDataWarehouseExport(TestCase):
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_barrier_prioritised"] == ts2.strftime("%Y-%m-%d")
+        assert data["date_barrier_first_prioritised"] == ts2.strftime("%Y-%m-%d")
 
         ts3 = datetime.datetime.now(tz=datetime.timezone.utc)
         with freezegun.freeze_time(ts3):
@@ -289,7 +289,36 @@ class TestDataWarehouseExport(TestCase):
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_barrier_prioritised"] == ts3.strftime("%Y-%m-%d")
+        assert data["date_barrier_first_prioritised"] == ts2.strftime("%Y-%m-%d")
+
+    def test_date_barrier_first_prioritised_2(self):
+        ts1 = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(
+            days=2
+        )
+        with freezegun.freeze_time(ts1):
+            barrier = BarrierFactory(status_date=date.today())
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_barrier_first_prioritised"] == ts1.strftime("%Y-%m-%d")
+
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(
+            days=1
+        )
+        with freezegun.freeze_time(ts2):
+            barrier.priority_level = PRIORITY_LEVELS.COUNTRY
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_barrier_first_prioritised"] == ts2.strftime("%Y-%m-%d")
+
+        barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING
+        ts3 = datetime.datetime.now(tz=datetime.timezone.utc)
+        with freezegun.freeze_time(ts3):
+            barrier.save()
+
+        data = DataWorkspaceSerializer(barrier).data
+        assert data["date_barrier_first_prioritised"] == ts2.strftime("%Y-%m-%d")
+
 
     def test_value_for_is_top_priority_is_bool(self):
         barrier = BarrierFactory(status_date=date.today())
@@ -575,7 +604,7 @@ class TestDataWarehouseExport(TestCase):
             estimated_resolution_date=None,
         )
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_estimated_resolution_date_first_added"] is None
+        assert data["first_estimated_resolution_date"] is None
 
     def test_public_barrier_set_to_allowed_on(self):
         barrier = BarrierFactory(
@@ -591,7 +620,7 @@ class TestDataWarehouseExport(TestCase):
 
         assert data["public_barrier"]["set_to_allowed_on"] == ts.strftime("%Y-%m-%d")
 
-    def test_estimated_resolution_date_first_added(self):
+    def test_first_estimated_resolution_date(self):
         barrier = BarrierFactory(
             status_date=date.today(),
             estimated_resolution_date=None,
@@ -603,7 +632,7 @@ class TestDataWarehouseExport(TestCase):
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime(
+        assert data["first_estimated_resolution_date"] == ts2.strftime(
             "%Y-%m-%d"
         )
 
@@ -614,7 +643,7 @@ class TestDataWarehouseExport(TestCase):
 
         data = DataWorkspaceSerializer(barrier).data
         # Set as the first time ERD set (ts1, not ts2)
-        assert data["date_estimated_resolution_date_first_added"] == ts1.strftime(
+        assert data["first_estimated_resolution_date"] == ts2.strftime(
             "%Y-%m-%d"
         )
 

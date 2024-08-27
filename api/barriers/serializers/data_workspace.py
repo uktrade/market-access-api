@@ -177,7 +177,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     estimated_resolution_updated_date = serializers.SerializerMethodField()
     date_of_priority_level = serializers.SerializerMethodField()
     date_of_top_priority_scoping = serializers.SerializerMethodField()
-    date_estimated_resolution_date_first_added = serializers.SerializerMethodField()
+    first_estimated_resolution_date = serializers.SerializerMethodField()
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
     programme_fund_progress_update_author = serializers.SerializerMethodField()
@@ -301,7 +301,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "estimated_resolution_updated_date",
             "date_of_priority_level",
             "date_of_top_priority_scoping",
-            "date_estimated_resolution_date_first_added",
+            "first_estimated_resolution_date",
             "previous_estimated_resolution_date",
             "overseas_region",
             "programme_fund_progress_update_author",
@@ -337,18 +337,23 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             data["date_of_top_priority_scoping"],
             data["date_of_priority_level"],
             data["top_priority_requested_date"],
-            datetime.datetime.strptime(
-                data["reported_on"], "%Y-%m-%dT%H:%M:%S.%f%z"
-            ).strftime("%Y-%m-%d"),
         ]
+        date_values = [d for d in date_values if d is not None]
+        if not date_values:
+            date_values.append(
+                datetime.datetime.strptime(
+                    data["reported_on"], "%Y-%m-%dT%H:%M:%S.%f%z"
+                ).strftime("%Y-%m-%d")
+            )
         date_values = [
             datetime.datetime.strptime(d, "%Y-%m-%d")
             for d in date_values
             if d is not None
         ]
-        date = max(date_values)
+
+        date = min(date_values)
         date = date.strftime("%Y-%m-%d") if date else None
-        data["date_barrier_prioritised"] = date
+        data["date_barrier_first_prioritised"] = date
         return data
 
     @staticmethod
@@ -465,17 +470,17 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             if priority_tag_id not in history[i + 1]["tags_cache"]:
                 return history_item["history_date"].strftime("%Y-%m-%d")
 
-    def get_date_estimated_resolution_date_first_added(self, instance):
+    def get_first_estimated_resolution_date(self, instance):
         history = instance.history.filter(
             estimated_resolution_date__isnull=False
         ).order_by("history_date")
 
-        first = history.values("history_date").first()
+        first = history.values("estimated_resolution_date").first()
 
         if not first:
             return
 
-        return first["history_date"].strftime("%Y-%m-%d")
+        return first["estimated_resolution_date"].strftime("%Y-%m-%d")
 
     def get_overseas_region(self, instance) -> typing.List[str]:
         if instance.country:
@@ -577,7 +582,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
                     return history_date.strftime("%Y-%m-%d")
                 if (
                     top_priority_status in pending_states
-                    and history[i + 1][0] != pending_states
+                    and history[i + 1][0] not in pending_states
                 ):
                     return history_date.strftime("%Y-%m-%d")
 
