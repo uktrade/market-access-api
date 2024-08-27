@@ -138,6 +138,11 @@ class BarrierHistoricalModel(models.Model):
         blank=True,
         default=list,
     )
+    policy_teams_cache = ArrayField(
+        models.IntegerField(),
+        blank=True,
+        default=list,
+    )
 
     def get_changed_fields(self, old_history):
         changed_fields = set(self.diff_against(old_history).changed_fields)
@@ -157,6 +162,11 @@ class BarrierHistoricalModel(models.Model):
             old_history.organisations_cache or []
         ):
             changed_fields.add("organisations")
+
+        if set(self.policy_teams_cache or []) != set(
+            old_history.policy_teams_cache or []
+        ):
+            changed_fields.add("policy_teams")
 
         if changed_fields.intersection(("country", "admin_areas")):
             changed_fields.discard("country")
@@ -204,17 +214,27 @@ class BarrierHistoricalModel(models.Model):
 
     def update_tags(self):
         self.tags_cache = list(self.instance.tags.values_list("id", flat=True))
+        print("SAVING TAGS")
+        print(self.tags_cache)
 
     def update_organisations(self):
         self.organisations_cache = list(
             self.instance.organisations.values_list("id", flat=True)
         )
 
+    def update_policy_teams(self):
+        self.policy_teams_cache = list(
+            self.instance.policy_teams.values_list("id", flat=True)
+        )
+        print("SAVING POLICY TEAMS")
+        print(self.policy_teams_cache)
+
     def save(self, *args, **kwargs):
         self.update_categories()
         self.update_commodities()
         self.update_tags()
         self.update_organisations()
+        self.update_policy_teams()
         super().save(*args, **kwargs)
 
     class Meta:
@@ -568,14 +588,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
         track_first_item: bool = False,
     ):
         qs = cls.history.filter(id=barrier_id, draft=False)
-        print('HELLO')
-        # for o in qs:
-        #     print(o.modified_on)
-        # length = len(qs)
-        # print(dir(qs[length - 1]))
-        print(dir(qs[0]))
-        print(type(qs[0]))
-        print(qs[0].modified_on)
+        # print('HELLO')
+        # # for o in qs:
+        # #     print(o.modified_on)
+        # # length = len(qs)
+        # # print(dir(qs[length - 1]))
+        # print(dir(qs[0]))
+        # print(type(qs[0]))
+        # print(qs[0].modified_on)
         default_fields = (
             [
                 "archived",
@@ -598,7 +618,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "start_date",
             "is_summary_sensitive",
             "main_sector",
-            # "policy_teams",
             "priority_level",
             [FieldMapping("priority__code", "priority"), "priority_summary"],
             "product",
@@ -630,6 +649,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "organisations_cache",  # Needs cache
             "commodities_cache",  # Needs cache
             "categories_cache",  # Needs cache
+            "policy_teams_cache",  # Needs cache
         )
 
         if fields is None:
