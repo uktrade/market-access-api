@@ -319,7 +319,6 @@ class TestDataWarehouseExport(TestCase):
         data = DataWorkspaceSerializer(barrier).data
         assert data["date_barrier_first_prioritised"] == ts2.strftime("%Y-%m-%d")
 
-
     def test_value_for_is_top_priority_is_bool(self):
         barrier = BarrierFactory(status_date=date.today())
         serialised_data = DataWorkspaceSerializer(barrier).data
@@ -632,9 +631,7 @@ class TestDataWarehouseExport(TestCase):
             barrier.save()
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["first_estimated_resolution_date"] == ts2.strftime(
-            "%Y-%m-%d"
-        )
+        assert data["first_estimated_resolution_date"] == ts2.strftime("%Y-%m-%d")
 
         ts3 = ts2 + datetime.timedelta(days=12)
         with freezegun.freeze_time(ts2):
@@ -643,9 +640,7 @@ class TestDataWarehouseExport(TestCase):
 
         data = DataWorkspaceSerializer(barrier).data
         # Set as the first time ERD set (ts1, not ts2)
-        assert data["first_estimated_resolution_date"] == ts2.strftime(
-            "%Y-%m-%d"
-        )
+        assert data["first_estimated_resolution_date"] == ts2.strftime("%Y-%m-%d")
 
 
 class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITestCase):
