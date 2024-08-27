@@ -67,6 +67,7 @@ def barrier_tags_changed(sender, instance, action, **kwargs):
             instance.tags_history_saved = True
             instance.save()
 
+
 def barrier_policy_teams_changed(sender, instance, action, **kwargs):
     """
     Triggered when barriers.policy_teams (m2m field) is changed
