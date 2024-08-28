@@ -147,22 +147,29 @@ class BarrierHistoricalModel(models.Model):
     def get_cached_fields(self, old_history, changed_fields):
         fields = [
             {"categories": [self.categories_cache, old_history.categories_cache]},
+            {"commodities": [self.commodities_cache, old_history.commodities_cache]},
             {"organisations": [self.organisations_cache, old_history.organisations_cache]},
             {"policy_teams": [self.policy_teams_cache, old_history.policy_teams_cache]},
             {"tags": [self.tags_cache, old_history.tags_cache]},
         ]
         
         for field in fields:
-            if set(field.values()[0] or []) != set(field.values()[1] or []):
-                changed_fields.add(field.keys()[0])
+            if field.keys()[0] == "commodities":
+                commodity_codes = [c.get("code") for c in field.values()[0]]
+                old_commodity_codes = [c.get("code") for c in field.values()[1]]
+                if set(commodity_codes) != set(old_commodity_codes):
+                    changed_fields.add(field.keys()[0])
+            else:
+                if set(field.values()[0] or []) != set(field.values()[1] or []):
+                    changed_fields.add(field.keys()[0])
 
         # if set(self.categories_cache or []) != set(old_history.categories_cache or []):
         #     changed_fields.add("categories")
 
-        commodity_codes = [c.get("code") for c in self.commodities_cache]
-        old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
-        if set(commodity_codes) != set(old_commodity_codes):
-            changed_fields.add("commodities")
+        # commodity_codes = [c.get("code") for c in self.commodities_cache]
+        # old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
+        # if set(commodity_codes) != set(old_commodity_codes):
+        #     changed_fields.add("commodities")
 
         # if set(self.tags_cache or []) != set(old_history.tags_cache or []):
         #     changed_fields.add("tags")
