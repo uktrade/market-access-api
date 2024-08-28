@@ -288,7 +288,7 @@ if SSO_ENABLED:
 REST_FRAMEWORK = {
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 400,
+    "PAGE_SIZE": 200,
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
     ],
