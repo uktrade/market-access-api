@@ -527,6 +527,7 @@ class BarrierFullHistory(generics.GenericAPIView):
             "barrier_id": str(pk),
             "history": [item.data for item in history_items],
         }
+        print(response)
         return Response(response, status=status.HTTP_200_OK)
 
 

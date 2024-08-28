@@ -97,7 +97,6 @@ class HistoryManager:
             start_date = None
 
         v2_barrier_history = Barrier.get_history(barrier_id=barrier.pk)
-        print("IS THIS COPACETIC?")
 
         v2_programme_fund_history = ProgrammeFundProgressUpdate.get_history(
             barrier_id=barrier.pk

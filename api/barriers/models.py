@@ -214,8 +214,6 @@ class BarrierHistoricalModel(models.Model):
 
     def update_tags(self):
         self.tags_cache = list(self.instance.tags.values_list("id", flat=True))
-        print("SAVING TAGS")
-        print(self.tags_cache)
 
     def update_organisations(self):
         self.organisations_cache = list(
@@ -226,8 +224,6 @@ class BarrierHistoricalModel(models.Model):
         self.policy_teams_cache = list(
             self.instance.policy_teams.values_list("id", flat=True)
         )
-        print("SAVING POLICY TEAMS")
-        print(self.policy_teams_cache)
 
     def save(self, *args, **kwargs):
         self.update_categories()
@@ -588,14 +584,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
         track_first_item: bool = False,
     ):
         qs = cls.history.filter(id=barrier_id, draft=False)
-        # print('HELLO')
-        # # for o in qs:
-        # #     print(o.modified_on)
-        # # length = len(qs)
-        # # print(dir(qs[length - 1]))
-        # print(dir(qs[0]))
-        # print(type(qs[0]))
-        # print(qs[0].modified_on)
+
         default_fields = (
             [
                 "archived",
