@@ -148,7 +148,12 @@ class BarrierHistoricalModel(models.Model):
         fields = [
             {"categories": [self.categories_cache, old_history.categories_cache]},
             {"commodities": [self.commodities_cache, old_history.commodities_cache]},
-            {"organisations": [self.organisations_cache, old_history.organisations_cache]},
+            {
+                "organisations": [
+                    self.organisations_cache,
+                    old_history.organisations_cache,
+                ]
+            },
             {"policy_teams": [self.policy_teams_cache, old_history.policy_teams_cache]},
             {"tags": [self.tags_cache, old_history.tags_cache]},
         ]
