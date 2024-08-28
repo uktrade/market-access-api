@@ -24,7 +24,7 @@ from tests.assessment.factories import (
     StrategicAssessmentFactory,
 )
 from tests.barriers.factories import CommodityFactory
-from tests.metadata.factories import BarrierTagFactory, BarrierPolicyTeamFactory
+from tests.metadata.factories import BarrierPolicyTeamFactory, BarrierTagFactory
 
 freezegun.configure(extend_ignore_list=["transformers"])
 
