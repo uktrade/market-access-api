@@ -584,7 +584,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         track_first_item: bool = False,
     ):
         qs = cls.history.filter(id=barrier_id, draft=False)
-
         default_fields = (
             [
                 "archived",
