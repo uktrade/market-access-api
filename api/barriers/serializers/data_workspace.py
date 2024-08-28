@@ -332,7 +332,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "tags",
             "policy_teams",
             "reporter_top_priority_rationale",
-            "date_top_priority_rationale_added"
+            "date_top_priority_rationale_added",
         )
 
     def to_representation(self, instance):

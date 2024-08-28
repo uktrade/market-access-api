@@ -235,10 +235,7 @@ class TestDataWarehouseExport(TestCase):
             data["reporter_top_priority_rationale"]
             == f"{user.first_name} {user.last_name}"
         )
-        assert (
-            data["date_top_priority_rationale_added"]
-            == ts.strftime("%Y-%m-%d")
-        )
+        assert data["date_top_priority_rationale_added"] == ts.strftime("%Y-%m-%d")
 
     def test_get_top_priority_requested_date_no_date(self):
         barrier = BarrierFactory(status_date=date.today())
