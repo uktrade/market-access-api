@@ -144,30 +144,40 @@ class BarrierHistoricalModel(models.Model):
         default=list,
     )
 
-    def get_changed_fields(self, old_history):
-        changed_fields = set(self.diff_against(old_history).changed_fields)
+    def get_cached_fields(self, old_history, changed_fields):
+        fields = [
+            {"categories": [self.categories_cache, old_history.categories_cache]},
+            {"organisations": [self.organisations_cache, old_history.organisations_cache]},
+            {"policy_teams": [self.policy_teams_cache, old_history.policy_teams_cache]},
+            {"tags": [self.tags_cache, old_history.tags_cache]},
+        ]
+        
+        for field in fields:
+            if set(field.values()[0] or []) != set(field.values()[1] or []):
+                changed_fields.add(field.keys()[0])
 
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
+        # if set(self.categories_cache or []) != set(old_history.categories_cache or []):
+        #     changed_fields.add("categories")
 
         commodity_codes = [c.get("code") for c in self.commodities_cache]
         old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
         if set(commodity_codes) != set(old_commodity_codes):
             changed_fields.add("commodities")
 
-        if set(self.tags_cache or []) != set(old_history.tags_cache or []):
-            changed_fields.add("tags")
+        # if set(self.tags_cache or []) != set(old_history.tags_cache or []):
+        #     changed_fields.add("tags")
 
-        if set(self.organisations_cache or []) != set(
-            old_history.organisations_cache or []
-        ):
-            changed_fields.add("organisations")
+        # if set(self.organisations_cache or []) != set(
+        #     old_history.organisations_cache or []
+        # ):
+        #     changed_fields.add("organisations")
 
-        if set(self.policy_teams_cache or []) != set(
-            old_history.policy_teams_cache or []
-        ):
-            changed_fields.add("policy_teams")
+        # if set(self.policy_teams_cache or []) != set(
+        #     old_history.policy_teams_cache or []
+        # ):
+        #     changed_fields.add("policy_teams")
 
+    def update_old_fields(self, old_history, changed_fields):
         if changed_fields.intersection(("country", "admin_areas")):
             changed_fields.discard("country")
             changed_fields.discard("admin_areas")
@@ -184,6 +194,12 @@ class BarrierHistoricalModel(models.Model):
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
             changed_fields.add("sectors")
+
+    def get_changed_fields(self, old_history):
+        changed_fields = set(self.diff_against(old_history).changed_fields)
+
+        self.get_cached_fields(old_history, changed_fields)
+        self.update_old_fields(old_history, changed_fields)
 
         return list(changed_fields)
 
