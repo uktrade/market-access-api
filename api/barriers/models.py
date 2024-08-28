@@ -163,27 +163,6 @@ class BarrierHistoricalModel(models.Model):
                 if set(field.values()[0] or []) != set(field.values()[1] or []):
                     changed_fields.add(field.keys()[0])
 
-        # if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-        #     changed_fields.add("categories")
-
-        # commodity_codes = [c.get("code") for c in self.commodities_cache]
-        # old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
-        # if set(commodity_codes) != set(old_commodity_codes):
-        #     changed_fields.add("commodities")
-
-        # if set(self.tags_cache or []) != set(old_history.tags_cache or []):
-        #     changed_fields.add("tags")
-
-        # if set(self.organisations_cache or []) != set(
-        #     old_history.organisations_cache or []
-        # ):
-        #     changed_fields.add("organisations")
-
-        # if set(self.policy_teams_cache or []) != set(
-        #     old_history.policy_teams_cache or []
-        # ):
-        #     changed_fields.add("policy_teams")
-
     def update_old_fields(self, old_history, changed_fields):
         if changed_fields.intersection(("country", "admin_areas")):
             changed_fields.discard("country")
