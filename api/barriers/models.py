@@ -152,7 +152,7 @@ class BarrierHistoricalModel(models.Model):
             {"policy_teams": [self.policy_teams_cache, old_history.policy_teams_cache]},
             {"tags": [self.tags_cache, old_history.tags_cache]},
         ]
-        
+
         for field in fields:
             if field.keys()[0] == "commodities":
                 commodity_codes = [c.get("code") for c in field.values()[0]]
