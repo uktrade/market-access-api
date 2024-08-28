@@ -151,7 +151,7 @@ class BarrierHistoricalModel(models.Model):
             {"organisations": [self.organisations_cache, old_history.organisations_cache]},
             {"policy_teams": [self.policy_teams_cache, old_history.policy_teams_cache]},
             {"tags": [self.tags_cache, old_history.tags_cache]},
-        ]
+            ]
         
         for field in fields:
             if field.keys()[0] == "commodities":
