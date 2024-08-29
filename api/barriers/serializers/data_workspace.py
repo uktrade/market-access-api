@@ -213,7 +213,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     value_to_economy = serializers.SerializerMethodField()
     economic_assessment_explanation = serializers.SerializerMethodField()
     economic_assessment_rating = serializers.SerializerMethodField()
-    reporter_top_priority_rationale = serializers.SerializerMethodField()
     date_top_priority_rationale_added = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
@@ -331,7 +330,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "export_description",
             "tags",
             "policy_teams",
-            "reporter_top_priority_rationale",
             "date_top_priority_rationale_added",
         )
 
@@ -485,16 +483,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             return
 
         return first["estimated_resolution_date"].strftime("%Y-%m-%d")
-
-    def get_reporter_top_priority_rationale(self, instance):
-        try:
-            top_priority_summary = instance.top_priority_summary.latest("modified_on")
-        except BarrierTopPrioritySummary.DoesNotExist:
-            return
-
-        user = top_priority_summary.created_by
-        if user:
-            return f"{user.first_name} {user.last_name or ''}"
 
     def get_date_top_priority_rationale_added(self, instance):
         try:

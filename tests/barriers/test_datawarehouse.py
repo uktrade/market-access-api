@@ -217,7 +217,7 @@ class TestDataWarehouseExport(TestCase):
             == f"{user.first_name} {user.last_name}"
         )
 
-    def test_pb100_date_and_reporter(self):
+    def test_pb100_date(self):
         user = create_test_user()
         barrier = BarrierFactory(status_date=date.today())
         ts = datetime.datetime.now()
@@ -231,10 +231,6 @@ class TestDataWarehouseExport(TestCase):
         )
         data = DataWorkspaceSerializer(barrier).data
 
-        assert (
-            data["reporter_top_priority_rationale"]
-            == f"{user.first_name} {user.last_name}"
-        )
         assert data["date_top_priority_rationale_added"] == ts.strftime("%Y-%m-%d")
 
     def test_get_top_priority_requested_date_no_date(self):
