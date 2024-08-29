@@ -7,3 +7,4 @@ class MarketAccessDatasetViewCursorPagination(CursorPagination):
     """
 
     ordering = ("created_on", "pk")
+    page_size = 200
