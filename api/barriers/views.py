@@ -171,7 +171,7 @@ def barrier_dashboard_summary(request):
     region = request.GET.get("overseas_region", None)
     sector = request.GET.get("sector", None)
     country = request.GET.get("country", None)
-    policy_team = request.GET.get("policy)_team", None)
+    policy_teams = request.GET.get("policy_teams", None)
 
     # reports = Barrier.reports.all()
     if not current_user.is_anonymous:
@@ -196,11 +196,13 @@ def barrier_dashboard_summary(request):
     #     }
     #     user_count["country"] = country_count
 
+    # TODO : Need to translate region into list of countries and see if barrier.country is in that list
+
     filtered_queryset = Barrier.barriers.filter(
-        sector=sector,
-        region=region,
+        sectors=[sector],
+        # region=country,
         country=country,
-        policy_team=policy_team,
+        policy_teams=policy_teams,
     )
 
     # total_value = filtered_queryset.filter().aggregate(Sum("commercial_value"))
