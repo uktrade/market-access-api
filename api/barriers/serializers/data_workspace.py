@@ -214,6 +214,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     economic_assessment_explanation = serializers.SerializerMethodField()
     economic_assessment_rating = serializers.SerializerMethodField()
     date_top_priority_rationale_added = serializers.SerializerMethodField()
+    policy_teams = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -361,6 +362,9 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     @staticmethod
     def get_tags(obj):
         return [tag.title for tag in obj.tags.all()]
+
+    def get_policy_teams(self, obj):
+        return ",".join([p.title for p in obj.policy_teams.all()])
 
     def get_status_history(self, obj):
         history = Barrier.get_history(

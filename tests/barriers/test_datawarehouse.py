@@ -183,17 +183,15 @@ class TestDataWarehouseExport(TestCase):
     def test_policy_teams(self):
         barrier = BarrierFactory(status_date=date.today())
         data = DataWorkspaceSerializer(barrier).data
-        assert data["policy_teams"] == []
+        assert data["policy_teams"] == ''
 
-        pt = PolicyTeam.objects.create(
-            title="Test Title", description="Test Description"
-        )
+        pt = PolicyTeam.objects.get(pk=1)
+        pt2 = PolicyTeam.objects.get(pk=2)
         barrier.policy_teams.add(pt)
+        barrier.policy_teams.add(pt2)
 
         data = DataWorkspaceSerializer(barrier).data
-        assert data["policy_teams"] == [
-            {"description": pt.description, "id": pt.id, "title": pt.title}
-        ]
+        assert data["policy_teams"] == f"{pt.title},{pt2.title}"
 
     def test_has_value_for_proposed_top_priority_change_user(self):
         user = create_test_user()
