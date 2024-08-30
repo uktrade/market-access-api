@@ -1,5 +1,7 @@
 import json
 import os
+from functools import lru_cache
+from typing import Dict, List
 
 import requests
 import sentry_sdk
@@ -17,7 +19,7 @@ from .constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     TRADING_BLOCS,
 )
-from .models import BarrierPriority, BarrierTag, Category, Organisation
+from .models import BarrierPriority, BarrierTag, Category, Organisation, PolicyTeam
 
 
 def import_api_results(endpoint):
@@ -162,12 +164,26 @@ def get_categories():
     return barrier_goods + barrier_services
 
 
+def get_policy_teams() -> List[Dict]:
+    from api.metadata.serializers import PolicyTeamSerializer
+
+    return PolicyTeamSerializer(PolicyTeam.objects.all(), many=True).data
+
+
 def get_barrier_tags():
     return list(
         BarrierTag.objects.values(
             "id", "title", "description", "show_at_reporting", "order"
         )
     )
+
+
+@lru_cache
+def get_barrier_tag_from_title(title: str):
+    tags = get_barrier_tags()
+    for tag in tags:
+        if tag["title"] == title:
+            return tag
 
 
 def get_barrier_priorities():
@@ -228,7 +244,7 @@ def get_trading_bloc_overseas_regions(trading_bloc_code):
 
 def get_wto_committee_groups():
     committee_groups = []
-    for group in wto_models.WTOCommitteeGroup.objects.all():
+    for group in wto_models.WTOCommitteeGroup.objects.prefetch_related("committees"):
         committee_groups.append(
             {
                 "id": str(group.id),

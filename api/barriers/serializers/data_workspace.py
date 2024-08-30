@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 from django.conf import settings
@@ -8,18 +9,23 @@ from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
 from api.barriers.fields import ExportTypeReportField, LineBreakCharField
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    BarrierTopPrioritySummary,
+)
+from api.barriers.serializers.base import BarrierSerializerBase
 from api.collaboration.models import TeamMember
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
+    PRIORITY_LEVELS,
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_DIRECTION_CHOICES,
     BarrierStatus,
 )
-
-from ..models import Barrier, BarrierProgressUpdate, BarrierTopPrioritySummary
-from .base import BarrierSerializerBase
+from api.metadata.utils import get_barrier_tag_from_title
 
 
 class DataworkspaceActionPlanSerializer(serializers.ModelSerializer):
@@ -169,6 +175,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     is_regional_trade_plan = serializers.SerializerMethodField()
     is_resolved_top_priority = serializers.SerializerMethodField()
     estimated_resolution_updated_date = serializers.SerializerMethodField()
+    date_of_priority_level = serializers.SerializerMethodField()
+    date_of_top_priority_scoping = serializers.SerializerMethodField()
     date_estimated_resolution_date_first_added = serializers.SerializerMethodField()
     previous_estimated_resolution_date = serializers.SerializerMethodField()
     overseas_region = serializers.SerializerMethodField()
@@ -182,7 +190,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     progress_update_next_steps = serializers.SerializerMethodField()
     progress_update_status = serializers.SerializerMethodField()
     top_priority_summary = serializers.SerializerMethodField()
-    top_priority_date = serializers.SerializerMethodField()
+    top_priority_requested_date = serializers.SerializerMethodField()
     proposed_top_priority_change_user = serializers.SerializerMethodField()
     proposed_estimated_resolution_date = serializers.SerializerMethodField()
     proposed_estimated_resolution_date_user = serializers.SerializerMethodField()
@@ -196,7 +204,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     reported_by = serializers.SerializerMethodField()
     barrier_owner = serializers.SerializerMethodField()
     first_published_on = serializers.SerializerMethodField()
-    set_to_allowed_on = serializers.SerializerMethodField()
     valuation_assessment_explanation = serializers.SerializerMethodField()
     valuation_assessment_midpoint = serializers.SerializerMethodField()
     valuation_assessment_midpoint_value = serializers.SerializerMethodField()
@@ -256,7 +263,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "public_eligibility_summary",
             "public_eligibility_postponed",
             "first_published_on",
-            "set_to_allowed_on",
             "resolvability_assessments",
             "sectors",
             "sectors_affected",
@@ -293,6 +299,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "resolved_date",
             "is_regional_trade_plan",
             "estimated_resolution_updated_date",
+            "date_of_priority_level",
+            "date_of_top_priority_scoping",
             "date_estimated_resolution_date_first_added",
             "previous_estimated_resolution_date",
             "overseas_region",
@@ -306,7 +314,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "progress_update_next_steps",
             "progress_update_status",
             "top_priority_summary",
-            "top_priority_date",
+            "top_priority_requested_date",
             "proposed_top_priority_change_user",
             "next_steps_items",
             "proposed_estimated_resolution_date",
@@ -320,7 +328,28 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "main_sector",
             "export_description",
             "tags",
+            "policy_teams",
         )
+
+    def to_representation(self, instance):
+        data = super(DataWorkspaceSerializer, self).to_representation(instance)
+        date_values = [
+            data["date_of_top_priority_scoping"],
+            data["date_of_priority_level"],
+            data["top_priority_requested_date"],
+            datetime.datetime.strptime(
+                data["reported_on"], "%Y-%m-%dT%H:%M:%S.%f%z"
+            ).strftime("%Y-%m-%d"),
+        ]
+        date_values = [
+            datetime.datetime.strptime(d, "%Y-%m-%d")
+            for d in date_values
+            if d is not None
+        ]
+        date = max(date_values)
+        date = date.strftime("%Y-%m-%d") if date else None
+        data["date_barrier_prioritised"] = date
+        return data
 
     @staticmethod
     def get_tags(obj):
@@ -405,17 +434,48 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
         else:
             return None
 
+    def get_date_of_priority_level(self, instance):
+        if instance.priority_level == PRIORITY_LEVELS.NONE:
+            return
+
+        history = instance.history.order_by("-history_date").values(
+            "history_date", "priority_level"
+        )
+
+        for i, history_item in enumerate(history):
+            if i == len(history) - 1:
+                return history_item["history_date"].strftime("%Y-%m-%d")
+            if history[i + 1]["priority_level"] != instance.priority_level:
+                return history_item["history_date"].strftime("%Y-%m-%d")
+
+    def get_date_of_top_priority_scoping(self, instance):
+        priority_tag = get_barrier_tag_from_title("Scoping (Top 100 priority barrier)")
+        priority_tag_id = priority_tag["id"]
+
+        if not instance.tags.filter(id=priority_tag_id).exists():
+            return
+
+        history = instance.history.order_by("-history_date").values(
+            "history_date", "tags_cache"
+        )
+
+        for i, history_item in enumerate(history):
+            if i == len(history) - 1:
+                return history_item["history_date"].strftime("%Y-%m-%d")
+            if priority_tag_id not in history[i + 1]["tags_cache"]:
+                return history_item["history_date"].strftime("%Y-%m-%d")
+
     def get_date_estimated_resolution_date_first_added(self, instance):
         history = instance.history.filter(
             estimated_resolution_date__isnull=False
         ).order_by("history_date")
 
-        first = history.values("estimated_resolution_date").first()
+        first = history.values("history_date").first()
 
         if not first:
             return
 
-        return first["estimated_resolution_date"].strftime("%Y-%m-%d")
+        return first["history_date"].strftime("%Y-%m-%d")
 
     def get_overseas_region(self, instance) -> typing.List[str]:
         if instance.country:
@@ -496,9 +556,10 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             return
 
         user = top_priority_summary.created_by
-        return f"{user.first_name} {user.last_name}"
+        if user:
+            return f"{user.first_name} {user.last_name or ''}"
 
-    def get_top_priority_date(self, instance):
+    def get_top_priority_requested_date(self, instance):
         pending_states = [
             TOP_PRIORITY_BARRIER_STATUS.APPROVAL_PENDING,
             TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
@@ -513,12 +574,12 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             )
             for i, (top_priority_status, history_date) in enumerate(history):
                 if i == len(history) - 1:
-                    return history_date
+                    return history_date.strftime("%Y-%m-%d")
                 if (
                     top_priority_status in pending_states
                     and history[i + 1][0] != pending_states
                 ):
-                    return history_date
+                    return history_date.strftime("%Y-%m-%d")
 
     def get_proposed_estimated_resolution_date(self, instance):
         # only show the proposed date if it is different to the current date
@@ -612,10 +673,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     def get_first_published_on(self, obj):
         if hasattr(obj, "public_barrier"):
             return obj.public_barrier.first_published_on
-
-    def get_set_to_allowed_on(self, obj):
-        if hasattr(obj, "public_barrier"):
-            return obj.public_barrier.set_to_allowed_on
 
     def get_economic_assessment_rating(self, obj):
         assessment = obj.current_economic_assessment

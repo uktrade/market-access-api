@@ -140,11 +140,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 SENTRY_DSN = env.str("SENTRY_DSN", "")
 SENTRY_ENVIRONMENT = env.str("SENTRY_ENVIRONMENT", "")
+SENTRY_TRACES_SAMPLE_RATE = env.float("SENTRY_TRACES_SAMPLE_RATE", 0.0)
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         environment=SENTRY_ENVIRONMENT,
-        traces_sample_rate=1.0,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
         integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
     )
 
@@ -279,9 +280,9 @@ if SSO_ENABLED:
     OAUTH2_PROVIDER["RESOURCE_SERVER_USER_INTROSPECT_URL"] = env(
         "RESOURCE_SERVER_USER_INTROSPECT_URL"
     )
-    OAUTH2_PROVIDER[
-        "OAUTH2_VALIDATOR_CLASS"
-    ] = "api.user.authentication.SSOAuthValidator"
+    OAUTH2_PROVIDER["OAUTH2_VALIDATOR_CLASS"] = (
+        "api.user.authentication.SSOAuthValidator"
+    )
 
 # DRF
 REST_FRAMEWORK = {
@@ -465,20 +466,6 @@ PUBLIC_DATA_BUCKET_REGION = env("PUBLIC_DATA_BUCKET_REGION")
 PUBLIC_DATA_KEY_PREFIX = env("PUBLIC_DATA_KEY_PREFIX")
 
 FRONTEND_DOMAIN = env("FRONTEND_DOMAIN", default="http://localhost:9880")
-
-COMTRADE_DB_HOST = env("COMTRADE_DB_HOST", default="comtrade_test_db")
-COMTRADE_DB_PORT = env("COMTRADE_DB_PORT", default=5432)
-COMTRADE_DB_NAME = env("COMTRADE_DB_NAME", default="comtrade")
-COMTRADE_DB_USER = env("COMTRADE_DB_USER", default="comtrade")
-COMTRADE_DB_PWORD = env("COMTRADE_DB_PWORD", default="password")
-COMTRADE_DB_OPTIONS = env("COMTRADE_DB_OPTIONS", default="")
-
-COMTRADE_TEST_DB_HOST = env("COMTRADE_TEST_DB_HOST", default="comtrade_test_db")
-COMTRADE_TEST_DB_PORT = env("COMTRADE_TEST_DB_PORT", default=5432)
-COMTRADE_TEST_DB_NAME = env("COMTRADE_TEST_DB_NAME", default="comtrade")
-COMTRADE_TEST_DB_USER = env("COMTRADE_TEST_DB_USER", default="comtrade")
-COMTRADE_TEST_DB_PWORD = env("COMTRADE_TEST_DB_PWORD", default="password")
-COMTRADE_TEST_DB_OPTIONS = env("COMTRADE_TEST_DB_OPTIONS", default="")
 
 DEFAULT_EXPORT_DATE_FORMAT = "%Y-%m-%d"
 

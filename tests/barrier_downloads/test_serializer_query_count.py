@@ -19,7 +19,7 @@ from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 pytestmark = [pytest.mark.django_db]
 
 
-EXPECTED_QUERY_COUNT = 12  # 1 + 11 m2m prefetch
+EXPECTED_QUERY_COUNT = 13  # 1 + 12 m2m prefetch
 
 
 def test_csv_serializer_query_count(django_assert_num_queries):

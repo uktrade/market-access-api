@@ -683,7 +683,7 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
     def setUp(self):
         super().setUp()
         self.barrier = BarrierFactory(
-            country="1f0be5c4-5d95-e211-a939-e4115bead28a",  # Singapore
+            country="37afd8d0-5d95-e211-a939-e4115bead28a",  # Yemen
             sectors=["9b38cecc-5f95-e211-a939-e4115bead28a"],  # Chemicals
             status=BarrierStatus.OPEN_PENDING,
         )
@@ -739,8 +739,8 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
 
     def test_country_is_serialized_consistently(self):
         expected_country = {
-            "id": "1f0be5c4-5d95-e211-a939-e4115bead28a",
-            "name": "Singapore",
+            "id": "37afd8d0-5d95-e211-a939-e4115bead28a",
+            "name": "Yemen",
             "trading_bloc": None,
         }
 

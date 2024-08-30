@@ -41,6 +41,7 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
     public_view_status_display = DisplayChoiceField(
         source="public_view_status", choices=PublicBarrierStatus.choices
     )
+    set_to_allowed_on = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrier
@@ -53,13 +54,15 @@ class NestedPublicBarrierSerializer(serializers.ModelSerializer):
             "unpublished_changes",
             "changed_since_published",
             "last_published_on",
+            "set_to_allowed_on",
         )
+
+    def get_set_to_allowed_on(self, obj):
+        if obj.set_to_allowed_on:
+            return obj.set_to_allowed_on.strftime("%Y-%m-%d")
 
     def get_unpublished_changes(self, obj):
         return obj.unpublished_changes
-
-    def get_changed_since_published(self, obj):
-        return obj.changed_since_published
 
 
 class PublicBarrierSerializer(
@@ -236,7 +239,7 @@ class PublicPublishedVersionSerializer(
     trading_bloc = ReadOnlyTradingBlocField()
     sectors = serializers.SerializerMethodField()
     categories = ReadOnlyCategoriesField(to_repr_keys=("name",))
-    reported_on = serializers.DateTimeField()
+    reported_on = serializers.DateTimeField(source="barrier.created_on")
 
     class Meta:
         model = PublicBarrier
