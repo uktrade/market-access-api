@@ -183,7 +183,7 @@ class TestDataWarehouseExport(TestCase):
     def test_policy_teams(self):
         barrier = BarrierFactory(status_date=date.today())
         data = DataWorkspaceSerializer(barrier).data
-        assert data["policy_teams"] == ''
+        assert data["policy_teams"] == ""
 
         pt = PolicyTeam.objects.get(pk=1)
         pt2 = PolicyTeam.objects.get(pk=2)
