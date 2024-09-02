@@ -187,6 +187,7 @@ class TestDataWarehouseExport(TestCase):
 
         pt = PolicyTeam.objects.create(pk=1000, title="title1", description="desc1")
         pt2 = PolicyTeam.objects.create(pk=2000, title="title2", description="desc2")
+
         barrier.policy_teams.add(pt)
         barrier.policy_teams.add(pt2)
 

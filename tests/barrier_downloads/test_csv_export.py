@@ -91,9 +91,7 @@ class TestCsvDownloadSerializer(APITestMixin, APITestCase):
 
     def test_policy_teams(self):
         barrier = BarrierFactory()
-        pt = PolicyTeam.objects.create(
-            title="Test Title2", description="Test Description2"
-        )
+        pt = PolicyTeam.objects.get(pk=1)
         barrier.policy_teams.add(pt)
 
         serializer = CsvDownloadSerializer(barrier)
