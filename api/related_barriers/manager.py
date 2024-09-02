@@ -209,12 +209,13 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     ):
 
         logger.info("(Related Barriers): get_similar_barriers_searched")
-        barrier_ids = self.get_barrier_ids()
+
+        if not (barrier_ids := self.get_barrier_ids()):
+            self.set_data(get_data())
+            barrier_ids = self.get_barrier_ids() or []
 
         if not barrier_ids:
-            self.set_data(get_data())
-
-        barrier_ids = self.get_barrier_ids()
+            return []
 
         embedded_index = "search_term"
         search_term_embedding = self.model.encode(
