@@ -183,9 +183,8 @@ class BarrierDashboardSummary(generics.GenericAPIView):
     View to return high level stats to the dashboard
     """
 
-    queryset = Barrier.barriers.filter(archived=False)
-
-    # serializer_class = BarrierListSerializer
+    # queryset = Barrier.barriers.filter(archived=False)
+    serializer_class = BarrierListSerializer
     filterset_class = BarrierFilterSet
 
     filter_backends = (DjangoFilterBackend,)
@@ -224,9 +223,13 @@ class BarrierDashboardSummary(generics.GenericAPIView):
     # )
 
     # filtered_queryset = Barrier.barriers.filter(archived=False)
-    def get(self, request, *args, **kwargs):
+    def get(self, request):
         # def get_queryset(self):
-        filtered_queryset = super().get_queryset()
+        filtered_queryset = self.filter_queryset(
+            Barrier.barriers.filter(archived=False)
+        )
+        # filtered_queryset = self.filter_queryset(self)
+        print(filtered_queryset.count())
 
         current_user = self.request.user
         user_count = None
