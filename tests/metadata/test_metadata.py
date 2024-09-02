@@ -56,8 +56,10 @@ class TestCategories(APITestMixin):
         assert PolicyTeam.objects.count() == 17
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["policy_teams"]) == 17
-        assert response.data["policy_teams"] == PolicyTeamSerializer(PolicyTeam.objects.all(), many=True).data
-
+        assert (
+            response.data["policy_teams"]
+            == PolicyTeamSerializer(PolicyTeam.objects.all(), many=True).data
+        )
 
     def test_govt_response(self):
         expected = {
