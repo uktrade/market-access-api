@@ -138,9 +138,16 @@ class BarrierHistoricalModel(models.Model):
         blank=True,
         default=list,
     )
+    policy_teams_cache = ArrayField(
+        models.IntegerField(),
+        blank=True,
+        default=list,
+    )
 
-    def get_changed_fields(self, old_history):
+    def get_changed_fields(self, old_history):  # noqa: C901
         changed_fields = set(self.diff_against(old_history).changed_fields)
+
+        self.update_cached_fields(old_history, changed_fields)
 
         if set(self.categories_cache or []) != set(old_history.categories_cache or []):
             changed_fields.add("categories")
@@ -157,6 +164,11 @@ class BarrierHistoricalModel(models.Model):
             old_history.organisations_cache or []
         ):
             changed_fields.add("organisations")
+
+        if set(self.policy_teams_cache or []) != set(
+            old_history.policy_teams_cache or []
+        ):
+            changed_fields.add("policy_teams")
 
         if changed_fields.intersection(("country", "admin_areas")):
             changed_fields.discard("country")
@@ -210,11 +222,17 @@ class BarrierHistoricalModel(models.Model):
             self.instance.organisations.values_list("id", flat=True)
         )
 
+    def update_policy_teams(self):
+        self.policy_teams_cache = list(
+            self.instance.policy_teams.values_list("id", flat=True)
+        )
+
     def save(self, *args, **kwargs):
         self.update_categories()
         self.update_commodities()
         self.update_tags()
         self.update_organisations()
+        self.update_policy_teams()
         super().save(*args, **kwargs)
 
     class Meta:
@@ -621,6 +639,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "organisations_cache",  # Needs cache
             "commodities_cache",  # Needs cache
             "categories_cache",  # Needs cache
+            "policy_teams_cache",  # Needs cache
         )
 
         if fields is None:

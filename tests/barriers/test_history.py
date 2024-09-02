@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
-    fixtures = ["barriers", "categories", "users"]
+    fixtures = ["barriers", "categories", "users", "policy_teams"]
 
     def setUp(self):
         super().setUp()
@@ -67,6 +67,16 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["field"] == "categories"
         assert data["old_value"] == []
         assert set(data["new_value"]) == {109, 115}
+
+    def test_policy_teams_history(self):
+        self.barrier.policy_teams.add("1", "2")
+
+        data = Barrier.get_history(barrier_id=self.barrier.pk)[-1]
+
+        assert data["model"] == "barrier"
+        assert data["field"] == "policy_teams"
+        assert data["old_value"] == []
+        assert set(data["new_value"]) == {1, 2}
 
     def test_organisations_history(self):
         org1 = OrganisationFactory()
