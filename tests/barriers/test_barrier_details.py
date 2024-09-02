@@ -181,10 +181,10 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
     def test_policy_team_management(self):
         policy_team1 = PolicyTeam.objects.create(
-            title="Test Title", description="Test Description"
+            pk=100, title="Test Title", description="Test Description"
         )
         policy_team2 = PolicyTeam.objects.create(
-            title="Test Title", description="Test Description"
+            pk=101, title="Test Title", description="Test Description"
         )
 
         assert self.barrier.policy_teams.count() == 0

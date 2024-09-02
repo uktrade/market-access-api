@@ -186,7 +186,7 @@ class TestDataWarehouseExport(TestCase):
         assert data["policy_teams"] == []
 
         pt = PolicyTeam.objects.create(
-            title="Test Title", description="Test Description"
+            pk=1000, title="Test Title", description="Test Description"
         )
         barrier.policy_teams.add(pt)
 
