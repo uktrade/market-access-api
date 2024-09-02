@@ -455,9 +455,7 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
             "valuation_assessments",
             Prefetch(
                 "next_steps_items",
-                queryset=BarrierNextStepItem.objects.filter(
-                    status="IN_PROGRESS"
-                ).order_by("-completion_date"),
+                queryset=BarrierNextStepItem.objects.all().order_by("-completion_date"),
             ),
         )
     )
