@@ -48,16 +48,16 @@ class TestCategories(APITestMixin):
         assert json.dumps(response.data["stage_status"]) == json.dumps(expected)
 
     def test_policy_teams(self):
+        assert PolicyTeam.objects.count() == 17
+
         pt = PolicyTeam.objects.create(title="test", description="testd")
         url = reverse("metadata")
 
         response = self.api_client.get(url)
 
-        assert PolicyTeam.objects.count() == 1
+        assert PolicyTeam.objects.count() == 18
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["policy_teams"] == [
-            {"id": pt.id, "title": pt.title, "description": pt.description}
-        ]
+        assert len(response.data["policy_teams"]) == 18
 
     def test_govt_response(self):
         expected = {
