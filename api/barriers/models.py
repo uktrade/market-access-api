@@ -1281,7 +1281,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     location = django_filters.BaseInFilter(method="location_filter")
     admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
     search = django_filters.Filter(method="vector_search")
-    text = django_filters.Filter(method="text_search")
+    text = django_filters.Filter(method="vector_search")
 
     user = django_filters.Filter(method="my_barriers")
     has_action_plan = django_filters.Filter(method="has_action_plan_filter")
@@ -1619,6 +1619,14 @@ class BarrierFilterSet(django_filters.FilterSet):
             similarity_threshold=SIMILARITY_THRESHOLD,
             quantity=SIMILAR_BARRIERS_LIMIT,
         )
+
+        if not barrier_scores:
+            # If no similar barriers are found, return the queryset with the text search applied
+            # we do this to compensate for the fact that the related barriers handler may not have
+            # emededings and barrier ids to return
+            # this can happend when running the CI tests
+            # or when the related barriers handler is not running
+            return self.text_search(queryset, name, value)
 
         barrier_ids = [b[0] for b in barrier_scores]
 
