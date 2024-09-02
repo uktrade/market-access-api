@@ -24,7 +24,7 @@ from tests.assessment.factories import (
     StrategicAssessmentFactory,
 )
 from tests.barriers.factories import CommodityFactory
-from tests.metadata.factories import BarrierTagFactory
+from tests.metadata.factories import BarrierPolicyTeamFactory, BarrierTagFactory
 
 freezegun.configure(extend_ignore_list=["transformers"])
 
@@ -679,6 +679,25 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "field": "tags",
             "old_value": initial_tags,
             "new_value": [expected_tag.id],
+            "user": None,
+        } in history
+
+    @freezegun.freeze_time("2020-04-01")
+    def test_history_endpoint_has_policy_teams(self):
+        initial_policy_teams = list(self.barrier.policy_teams.all())
+        expected_policy_team = BarrierPolicyTeamFactory(title="testing policy teams")
+        self.barrier.policy_teams.add(expected_policy_team)
+
+        url = reverse("history", kwargs={"pk": self.barrier.pk})
+        response = self.api_client.get(url)
+        history = response.json()["history"]
+
+        assert {
+            "date": "2020-04-01T00:00:00Z",
+            "model": "barrier",
+            "field": "policy_teams",
+            "old_value": initial_policy_teams,
+            "new_value": [expected_policy_team.id],
             "user": None,
         } in history
 
