@@ -49,6 +49,7 @@ class TestCategories(APITestMixin):
         assert json.dumps(response.data["stage_status"]) == json.dumps(expected)
 
     def test_policy_teams(self):
+
         url = reverse("metadata")
 
         response = self.api_client.get(url)
