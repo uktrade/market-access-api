@@ -15,7 +15,8 @@ from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.core.validators import int_list_validator
 from django.db import models
-from django.db.models import CASCADE, Q, QuerySet
+from django.db.models import CASCADE, CharField, Q, QuerySet
+from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
@@ -1279,8 +1280,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     combined_priority = django_filters.BaseInFilter(method="combined_priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
     admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
-    search = django_filters.Filter(method="text_search")
-    text = django_filters.Filter(method="text_search")
+    search = django_filters.Filter(method="vector_search")
+    text = django_filters.Filter(method="vector_search")
 
     user = django_filters.Filter(method="my_barriers")
     has_action_plan = django_filters.Filter(method="has_action_plan_filter")
@@ -1591,6 +1592,49 @@ class BarrierFilterSet(django_filters.FilterSet):
             | Q(public_barrier__id__iexact=value.lstrip("PID-").upper())
             | Q(combined_company_related_organisation_query)
         )
+
+    def vector_search(self, queryset, name, value):
+        """
+        full text search on multiple fields
+        Args:
+            queryset the queryset to filter
+            name the name of the filter
+            value the value of the filter
+
+        Returns:
+            _type_: the resust is a queryset with a free text search applied to the barrier model
+        """
+
+        from api.related_barriers import manager as handler_manager
+        from api.related_barriers.constants import (
+            SIMILAR_BARRIERS_LIMIT,
+            SIMILARITY_THRESHOLD,
+        )
+
+        if handler_manager.manager is None:
+            handler_manager.init()
+
+        barrier_scores = handler_manager.manager.get_similar_barriers_searched(
+            search_term=value,
+            similarity_threshold=SIMILARITY_THRESHOLD,
+            quantity=SIMILAR_BARRIERS_LIMIT,
+        )
+
+        if not barrier_scores:
+            # If no similar barriers are found, return the queryset with the text search applied
+            # we do this to compensate for the fact that the related barriers handler may not have
+            # emededings and barrier ids to return
+            # this can happend when running the CI tests
+            # or when the related barriers handler is not running
+            return self.text_search(queryset, name, value)
+
+        barrier_ids = [b[0] for b in barrier_scores]
+
+        queryset = queryset.filter(id__in=barrier_ids).annotate(
+            barrier_id=Cast("id", output_field=CharField())
+        )
+
+        return queryset
 
     def my_barriers(self, queryset, name, value):
         if value:
