@@ -220,6 +220,12 @@ class BarrierDashboardSummary(generics.GenericAPIView):
             ).count()
         # TODO for status filter might need to consider status dates as well as ERD
         counts = {
+            "financial_year": {
+                "current_start": current_year_start,
+                "current_end": current_year_end,
+                "previous_start": previous_year_start,
+                "previous_end": previous_year_end,
+            },
             "barriers": {
                 "total": filtered_queryset.count(),
                 "open": filtered_queryset.filter(status=2).count(),
