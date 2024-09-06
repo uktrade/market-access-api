@@ -196,10 +196,6 @@ class DashboardUserTasksView(generics.ListAPIView):
                 if publishing_editor_task:
                     task_list.append(publishing_editor_task)
 
-            if barrier.status in [1, 2, 3]:
-                progress_update_tasks = self.check_progress_update_tasks(barrier)
-                task_list += progress_update_tasks
-
             # Only add public barrier approver tasks for users with that role
             if recipient.groups.filter(name="Public barrier approver"):
                 publishing_approver_task = self.check_public_barrier_approver_tasks(
@@ -214,6 +210,10 @@ class DashboardUserTasksView(generics.ListAPIView):
                 )
                 task_list.append(publishing_publisher_task)
 
+            if barrier.status in [1, 2, 3]:
+                progress_update_tasks = self.check_progress_update_tasks(barrier)
+                task_list += progress_update_tasks
+
             missing_barrier_tasks = self.check_missing_barrier_details(barrier)
             task_list += missing_barrier_tasks
 
@@ -222,17 +222,17 @@ class DashboardUserTasksView(generics.ListAPIView):
             )
             task_list += estimated_resolution_date_tasks
 
-            mentions_tasks = self.check_mentions_tasks(recipient)
-            # Combine list of tasks with list of mentions
-            task_list += mentions_tasks
+        mentions_tasks = self.check_mentions_tasks(recipient)
+        # Combine list of tasks with list of mentions
+        task_list += mentions_tasks
 
-            # Remove empty tasks
-            filtered_task_list = list(filter(None, task_list))
+        # Remove empty tasks
+        filtered_task_list = list(filter(None, task_list))
 
-            # Paginate
-            paginator = Paginator(filtered_task_list, 5)
-            page_number = request.GET.get("page")
-            page_obj = paginator.get_page(page_number)
+        # Paginate
+        paginator = Paginator(filtered_task_list, 5)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
 
         return Response(
             status=status.HTTP_200_OK,
@@ -419,27 +419,46 @@ class DashboardUserTasksView(generics.ListAPIView):
             # logic trigger: (barrier.status == 'OPEN' or barrier.status == 'RESOLVED IN PART')
             #   and barrier.progress_updates is null and barrier.estimated_resolution_date > financial_year_start
             #   and barrier.estimated_resolution_date < financial_year_end
-            financial_year_start = datetime.strptime(
-                f"06/04/{self.todays_date.year} 00:00:00", "%d/%m/%Y %H:%M:%S"
-            )
-            financial_year_end = datetime.strptime(
-                f"06/04/{self.todays_date.year+1} 00:00:00", "%d/%m/%Y %H:%M:%S"
-            )
-            if (
-                not barrier.progress_updates
-                and barrier.estimated_resolution_date > financial_year_start
-                and barrier.estimated_resolution_date < financial_year_end
-            ):
-                missing_details_task_list.append(
-                    {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
-                        "tag": "ADD INFORMATION",
-                        "message": """This barrier does not have information on how confident you feel
-                        about resolving it this financial year. Add the delivery confidence now.""",
-                    }
+            if barrier.estimated_resolution_date:
+
+                if self.todays_date < datetime(self.todays_date.year, 4, 6).replace(
+                    tzinfo=timezone.utc
+                ):
+                    # Financial year runs from previous year to current
+                    start_year_value = self.todays_date.year - 1
+                    end_year_value = self.todays_date.year
+                else:
+                    # Financial year runs from current year to next
+                    start_year_value = self.todays_date.year
+                    end_year_value = self.todays_date.year + 1
+
+                financial_year_start = datetime.strptime(
+                    f"06/04/{start_year_value} 00:00:00", "%d/%m/%Y %H:%M:%S"
                 )
+                financial_year_end = datetime.strptime(
+                    f"06/04/{end_year_value} 00:00:00", "%d/%m/%Y %H:%M:%S"
+                )
+                estimated_resolution_datetime = datetime(
+                    barrier.estimated_resolution_date.year,
+                    barrier.estimated_resolution_date.month,
+                    barrier.estimated_resolution_date.day,
+                )
+
+                if (
+                    not barrier.progress_updates.all()
+                    and estimated_resolution_datetime > financial_year_start
+                    and estimated_resolution_datetime < financial_year_end
+                ):
+                    missing_details_task_list.append(
+                        {
+                            "barrier_code": barrier.code,
+                            "barrier_title": barrier.title,
+                            "barrier_id": barrier.id,
+                            "tag": "ADD INFORMATION",
+                            "message": """This barrier does not have information on how confident you feel
+                            about resolving it this financial year. Add the delivery confidence now.""",
+                        }
+                    )
 
         return missing_details_task_list
 
@@ -478,8 +497,7 @@ class DashboardUserTasksView(generics.ListAPIView):
                     #   and not barrier.estimated_resolution_date and
                     #   (barrier.status == 'OPEN' or barrier.status == 'RESOLVED IN PART')
                     if (
-                        barrier.is_top_priority
-                        or barrier.priority_level == "overseas delivery"
+                        barrier.is_top_priority or barrier.priority_level == "OVERSEAS"
                     ) and not barrier.estimated_resolution_date:
                         estimated_resolution_date_task_list.append(
                             {
@@ -492,7 +510,7 @@ class DashboardUserTasksView(generics.ListAPIView):
                             }
                         )
 
-                    # programme fund progress update due
+                    # progress update estimated resolution date outdated
                     # stored logic_trigger: "barrier.is_top_priority
                     #   and (barrier.status == "OPEN" or barrier.status == "RESOLVED IN PART"
                     #   and latest_update.modified_on < progress_update_expiry_date"
@@ -500,7 +518,12 @@ class DashboardUserTasksView(generics.ListAPIView):
                     progress_update_expiry_date = self.todays_date - timedelta(days=180)
                     if latest_update and (
                         barrier.is_top_priority
-                        and latest_update.modified_on < progress_update_expiry_date
+                        and latest_update.modified_on.replace(tzinfo=None)
+                        < datetime(
+                            progress_update_expiry_date.year,
+                            progress_update_expiry_date.month,
+                            progress_update_expiry_date.day,
+                        ).replace(tzinfo=None)
                     ):
                         difference = (
                             latest_update.modified_on.year - self.todays_date.year
@@ -587,8 +610,8 @@ class DashboardUserTasksView(generics.ListAPIView):
                             "barrier_title": barrier.title,
                             "barrier_id": barrier.id,
                             "tag": "REVIEW NEXT STEP",
-                            "message": f"""the next step for this barrier has not been reviewed
-                            for more than {abs(difference)} months. Review the next step now""",
+                            "message": f"""The next step for this barrier has not been reviewed
+                            for more than {abs(difference)} months. Review the next step now.""",
                         }
                     )
 
