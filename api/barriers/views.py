@@ -178,7 +178,122 @@ class BarrierReportBase(object):
         abstract = True
 
 
+class BarrierDashboardSummary(generics.GenericAPIView):
+    """
+    View to return high level stats to the dashboard
+    """
+
+    serializer_class = BarrierListSerializer
+    filterset_class = BarrierFilterSet
+
+    filter_backends = (DjangoFilterBackend,)
+    ordering_fields = (
+        "reported_on",
+        "modified_on",
+        "estimated_resolution_date",
+        "status",
+        "priority",
+        "country",
+    )
+    ordering = ("-reported_on",)
+
+    def get(self, request):
+        filtered_queryset = self.filter_queryset(
+            Barrier.barriers.filter(archived=False)
+        )
+
+        current_user = self.request.user
+
+        # Get current financial year
+        current_year_start = datetime(datetime.now().year, 4, 1)
+        current_year_end = datetime(datetime.now().year + 1, 3, 31)
+        previous_year_start = datetime(datetime.now().year - 1, 4, 1)
+        previous_year_end = datetime(datetime.now().year + 1, 3, 31)
+
+        if not current_user.is_anonymous:
+            user_barrier_count = Barrier.barriers.filter(
+                created_by=current_user
+            ).count()
+            user_report_count = Barrier.reports.filter(created_by=current_user).count()
+            user_open_barrier_count = Barrier.barriers.filter(
+                created_by=current_user, status=2
+            ).count()
+        # TODO for status filter might need to consider status dates as well as ERD
+        counts = {
+            "financial_year": {
+                "current_start": current_year_start,
+                "current_end": current_year_end,
+                "previous_start": previous_year_start,
+                "previous_end": previous_year_end,
+            },
+            "barriers": {
+                "total": filtered_queryset.count(),
+                "open": filtered_queryset.filter(status=2).count(),
+                "paused": filtered_queryset.filter(status=5).count(),
+                "resolved": filtered_queryset.filter(status=4).count(),
+                "pb100": filtered_queryset.filter(
+                    top_priority_status="Approved"
+                ).count(),
+                "overseas_delivery": filtered_queryset.filter(
+                    priority_level="OVERSEAS"
+                ).count(),
+            },
+            "barriers_current_year": {
+                "total": filtered_queryset.filter(
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ]
+                ).count(),
+                "open": filtered_queryset.filter(
+                    status=2,
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ],
+                ).count(),
+                "paused": filtered_queryset.filter(
+                    status=5,
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ],
+                ).count(),
+                "resolved": filtered_queryset.filter(
+                    status=4,
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ],
+                ).count(),
+                "pb100": filtered_queryset.filter(
+                    top_priority_status="Approved",
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ],
+                ).count(),
+                "overseas_delivery": filtered_queryset.filter(
+                    priority_level="OVERSEAS",
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ],
+                ).count(),
+            },
+            "user_counts": {
+                "user_barrier_count": user_barrier_count,
+                "user_report_count": user_report_count,
+                "user_open_barrier_count": user_open_barrier_count,
+            },
+            "reports": Barrier.reports.count(),
+        }
+
+        return Response(counts)
+
+
 class BarrierReportList(BarrierReportBase, generics.ListCreateAPIView):
+    # TODO - These report views may now be redundant
     serializer_class = BarrierReportSerializer
     filter_backends = (OrderingFilter,)
     ordering_fields = ("created_on",)
