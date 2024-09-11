@@ -219,6 +219,27 @@ class UserMinimalDetailSerializer(UserDetailSerializer):
         )
 
 
+class ActiveUserSerializer(UserDetailSerializer):
+    last_active = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserModel
+        fields = (
+            "email",
+            "first_name",
+            "last_name",
+            "full_name",
+            "last_active",
+        )
+    
+    def get_last_active(self, obj):
+        queryset = UserActvitiyLog.objects.filter(user=obj.id)
+        if not queryset:
+            return None
+        else:
+            return queryset.first().event_time
+
+
 class UserListSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
     full_name = serializers.SerializerMethodField()
@@ -293,4 +314,19 @@ class UserActvitiyLogSerializer(serializers.ModelSerializer):
             "user_email",
             "event_type",
             "event_description",
+            "event_time",
         ]
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserModel
+        fields = (
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "last_login",
+        )
+
