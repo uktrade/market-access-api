@@ -12,7 +12,7 @@ from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 from api.feedback.models import Feedback
 from api.feedback.serializers import FeedbackSerializer
 from api.user.models import UserActvitiyLog
-from api.user.serializers import UserActvitiyLogSerializer, UsersSerializer
+from api.user.serializers import UserActvitiyLogSerializer, UserSerializer
 
 UserModel = get_user_model()
 
@@ -70,4 +70,4 @@ class UsersList(generics.ListAPIView):
             .order_by("-last_login")
         )
 
-    serializer_class = UsersSerializer
+    serializer_class = UserSerializer

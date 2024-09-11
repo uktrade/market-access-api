@@ -296,7 +296,7 @@ class UserActvitiyLogSerializer(serializers.ModelSerializer):
         ]
 
 
-class UsersSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
