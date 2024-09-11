@@ -294,3 +294,16 @@ class UserActvitiyLogSerializer(serializers.ModelSerializer):
             "event_type",
             "event_description",
         ]
+
+
+class UsersSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserModel
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "last_login",
+        ]
