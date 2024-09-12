@@ -2,15 +2,15 @@ from datetime import datetime
 
 import freezegun
 import time_machine
+from django.contrib.auth import get_user_model
 from mock import PropertyMock, patch
 from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
-from django.contrib.auth import get_user_model
 
 from api.barriers.models import Barrier
 from api.collaboration.models import TeamMember
-from api.core.test_utils import APITestMixin, create_test_user, create_simple_user
+from api.core.test_utils import APITestMixin, create_simple_user, create_test_user
 from api.feedback.models import Feedback
 from api.metadata.constants import (
     FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
@@ -308,13 +308,13 @@ class TestUserDataset(APITestMixin):
 
         response1 = response.data["results"][0]["last_login"]
         response2 = response.data["results"][1]["last_login"]
-        # reversing timestamps because they are ordered in reverse
+        # reversing timestamps because the data is in reverse chronological order
         assert datetime.fromisoformat(response1[:-1]) == ts2
         assert datetime.fromisoformat(response2[:-1]) == ts1
 
     def test_user_not_added(self):
         user1 = create_test_user()
- 
+
         ts = datetime(2024, 1, 1, 0, 0, 0)
         with freezegun.freeze_time(ts):
             self.api_client.force_login(user1)
@@ -324,4 +324,3 @@ class TestUserDataset(APITestMixin):
         assert status.HTTP_200_OK == response.status_code
 
         assert len(response.data["results"]) == 0
-

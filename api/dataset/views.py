@@ -1,10 +1,10 @@
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth import get_user_model
 from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-
-from django.contrib.auth import get_user_model
 
 from api.barriers.models import Barrier
 from api.barriers.serializers import DataWorkspaceSerializer
@@ -63,7 +63,6 @@ class UserList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        print("HELLO IM IN THE USER LIST")
         login_cutoff = datetime.now() - relativedelta(months=6)
         return (
             UserModel.objects.all()
