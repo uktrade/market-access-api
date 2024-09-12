@@ -2,7 +2,7 @@ from django.urls import path
 
 from api.user.views import UserActivityLogList
 
-from api.dataset.views import BarrierList, FeedbackDataWorkspaceListView, UsersList
+from api.dataset.views import BarrierList, FeedbackDataWorkspaceListView, UserList
 
 app_name = "dataset"
 
@@ -20,7 +20,7 @@ urlpatterns = [
     ),
     path(
         "dataset/v1/users",
-        UsersList.as_view(),
-        name="users",
+        UserList.as_view(),
+        name="user-list",
     ),
 ]

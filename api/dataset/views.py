@@ -58,11 +58,12 @@ class UserActivityLogView(generics.ListAPIView):
     serializer_class = UserActvitiyLogSerializer
 
 
-class UsersList(generics.ListAPIView):
-    # authentication_classes = (HawkAuthentication,)
+class UserList(generics.ListAPIView):
+    authentication_classes = (HawkAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
+        print("HELLO IM IN THE USER LIST")
         login_cutoff = datetime.now() - relativedelta(months=6)
         return (
             UserModel.objects.all()
