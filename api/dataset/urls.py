@@ -2,7 +2,7 @@ from django.urls import path
 
 from api.user.views import UserActivityLogList
 
-from .views import BarrierList, FeedbackDataWorkspaceListView
+from .views import BarrierList, FeedbackDataWorkspaceListView, UserList
 
 app_name = "dataset"
 
@@ -17,5 +17,10 @@ urlpatterns = [
         "dataset/v1/user_activity_log",
         UserActivityLogList.as_view(),
         name="user-activity-log",
+    ),
+    path(
+        "dataset/v1/users",
+        UserList.as_view(),
+        name="user-list",
     ),
 ]

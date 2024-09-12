@@ -278,3 +278,47 @@ class TestUserActivityLogDataset(APITestMixin):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["results"]) == 2
+
+
+class TestUserDataset(APITestMixin):
+    def test_no_users(self):
+        url = reverse("dataset:user-list")
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 0
+
+    def test_users_added(self):
+        user1 = create_test_user()
+        ts1 = datetime(2024, 9, 1, 0, 0, 0)
+        with freezegun.freeze_time(ts1):
+            self.api_client.force_login(user1)
+
+        user2 = create_test_user()
+        ts2 = datetime(2024, 9, 2, 0, 0, 0)
+        with freezegun.freeze_time(ts2):
+            self.api_client.force_login(user2)
+
+        url = reverse("dataset:user-list")
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+
+        assert len(response.data["results"]) == 2
+
+        response1 = response.data["results"][0]["last_login"]
+        response2 = response.data["results"][1]["last_login"]
+        # reversing timestamps because the data is in reverse chronological order
+        assert datetime.fromisoformat(response1[:-1]) == ts2
+        assert datetime.fromisoformat(response2[:-1]) == ts1
+
+    def test_user_not_added(self):
+        user1 = create_test_user()
+
+        ts = datetime(2024, 1, 1, 0, 0, 0)
+        with freezegun.freeze_time(ts):
+            self.api_client.force_login(user1)
+
+        url = reverse("dataset:user-list")
+        response = self.api_client.get(url)
+        assert status.HTTP_200_OK == response.status_code
+
+        assert len(response.data["results"]) == 0
