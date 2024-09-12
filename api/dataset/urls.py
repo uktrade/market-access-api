@@ -2,7 +2,7 @@ from django.urls import path
 
 from api.user.views import UserActivityLogList
 
-from .views import BarrierList, FeedbackDataWorkspaceListView, UserList
+from api.dataset.views import BarrierList, FeedbackDataWorkspaceListView, UserList
 
 app_name = "dataset"
 
