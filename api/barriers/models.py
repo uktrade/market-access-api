@@ -688,7 +688,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     @property
     def current_valuation_assessment(self):
         """
-        Get the current valuration assessment
+        Get the current valuation assessment
 
         Filter in python to avoid another db call if prefetch_related has been used.
         """

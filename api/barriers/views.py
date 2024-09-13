@@ -5,7 +5,17 @@ from datetime import datetime
 
 from dateutil.parser import parse
 from django.db import transaction
-from django.db.models import Case, CharField, F, Prefetch, Value, When
+from django.db.models import (
+    Case,
+    CharField,
+    F,
+    IntegerField,
+    Prefetch,
+    Q,
+    Sum,
+    Value,
+    When,
+)
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -49,6 +59,7 @@ from api.interactions.models import Interaction
 from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
     BARRIER_SEARCH_ORDERING_CHOICES,
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC_LOOKUP,
     BarrierStatus,
     PublicBarrierStatus,
 )
@@ -218,6 +229,104 @@ class BarrierDashboardSummary(generics.GenericAPIView):
             user_open_barrier_count = Barrier.barriers.filter(
                 created_by=current_user, status=2
             ).count()
+
+        when_assessment = [
+            When(valuation_assessments__impact=k, then=Value(v))
+            for k, v in ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC_LOOKUP
+        ]
+
+        # Resolved vs Estimated barriers values chart
+        resolved_valuations = (
+            filtered_queryset.filter(
+                Q(
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ]
+                )
+                | Q(
+                    status_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ]
+                ),
+                Q(status=4) | Q(status=3),
+                valuation_assessments__archived=False,
+            )
+            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
+            .aggregate(total=Sum("numeric_value"))
+        )
+
+        resolved_barrier_value = resolved_valuations["total"]
+
+        estimated_valuations = (
+            filtered_queryset.filter(
+                Q(
+                    estimated_resolution_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ]
+                )
+                | Q(
+                    status_date__range=[
+                        current_year_start,
+                        current_year_end,
+                    ]
+                ),
+                Q(status=1) | Q(status=2),
+                valuation_assessments__archived=False,
+            )
+            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
+            .aggregate(total=Sum("numeric_value"))
+        )
+
+        estimated_barrier_value = estimated_valuations["total"]
+
+        # Total resolved barriers vs open barriers value chart
+
+        resolved_barriers = (
+            filtered_queryset.filter(
+                Q(status=4) | Q(status=3),
+                valuation_assessments__archived=False,
+            )
+            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
+            .aggregate(total=Sum("numeric_value"))
+        )
+
+        total_resolved_barriers = resolved_barriers["total"]
+
+        open_barriers = (
+            filtered_queryset.filter(
+                Q(status=1) | Q(status=2),
+                valuation_assessments__archived=False,
+            )
+            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
+            .aggregate(total=Sum("numeric_value"))
+        )
+
+        open_barriers_value = open_barriers["total"]
+
+        # Open barriers by status
+        whens = [When(status=k, then=Value(v)) for k, v in BarrierStatus.choices]
+
+        barrier_by_status = (
+            filtered_queryset.filter(
+                valuation_assessments__archived=False,
+            )
+            .annotate(status_display=Case(*whens, output_field=CharField()))
+            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
+            .values("status_display")
+            .annotate(total=Sum("numeric_value"))
+            .order_by()
+        )
+
+        status_labels = []
+        status_data = []
+
+        for series in barrier_by_status:
+            status_labels.append(series["status_display"])
+            status_data.append(series["total"])
+
         # TODO for status filter might need to consider status dates as well as ERD
         counts = {
             "financial_year": {
@@ -287,6 +396,18 @@ class BarrierDashboardSummary(generics.GenericAPIView):
                 "user_open_barrier_count": user_open_barrier_count,
             },
             "reports": Barrier.reports.count(),
+            "barrier_value_chart": {
+                "resolved_barriers_value": resolved_barrier_value,
+                "estimated_barriers_value": estimated_barrier_value,
+            },
+            "total_value_chart": {
+                "resolved_barriers_value": total_resolved_barriers,
+                "open_barriers_value": open_barriers_value,
+            },
+            "barriers_by_status_chart": {
+                "series": status_data,
+                "labels": status_labels,
+            },
         }
 
         return Response(counts)
