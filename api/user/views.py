@@ -55,9 +55,11 @@ def who_am_i(request):
         request.user.email = serializer.data["email"]
         request.user.save()
 
-    # We want to set the last login on a user.
-    request.user.last_login = datetime.datetime.now()
-    request.user.save()
+    today = datetime.date.today()
+    if not request.user.last_login or request.user.last_login.date() != today:
+        # We want to set the last login on a user.
+        request.user.last_login = datetime.datetime.now()
+        request.user.save()
 
     if request.method == "PATCH":
         req_profile = request.data.get("user_profile", None)
