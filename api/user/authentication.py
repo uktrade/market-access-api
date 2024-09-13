@@ -39,6 +39,12 @@ class SSOAuthValidator(OAuth2Validator):
             content["email_user_id"],
         )
 
+        today = datetime.today()
+        if not user.last_login or user.last_login.date() != today:
+            # We want to set the last login on a user.
+            user.last_login = datetime.now()
+            user.save()
+
         if created:
             user.email = sso_user["email"]
             user.first_name = sso_user["first_name"]
@@ -47,8 +53,8 @@ class SSOAuthValidator(OAuth2Validator):
             user.profile.sso_user_id = sso_user["user_id"]
             user.save()
         else:
-            if sso_user and user.email != sso_user["email"]:
-                user.email = sso_user["email"]
+            if sso_user and user.email != sso_user["contact_email"]:
+                user.email = sso_user["contact_email"]
                 user.save()
 
         return user

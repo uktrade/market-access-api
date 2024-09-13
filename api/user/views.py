@@ -49,18 +49,6 @@ def who_am_i(request):
     context = {"token": token}
     serializer = WhoAmISerializer(request.user, context=context)
 
-    if request.user.email != serializer.data["email"]:
-        # the serializer fetches email from sso, not from User table. We want to use
-        # the SSO contact email for user emails.
-        request.user.email = serializer.data["email"]
-        request.user.save()
-
-    today = datetime.date.today()
-    if not request.user.last_login or request.user.last_login.date() != today:
-        # We want to set the last login on a user.
-        request.user.last_login = datetime.datetime.now()
-        request.user.save()
-
     if request.method == "PATCH":
         req_profile = request.data.get("user_profile", None)
         if req_profile:
