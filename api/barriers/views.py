@@ -341,7 +341,7 @@ class BarrierDashboardSummary(generics.GenericAPIView):
                 "paused": filtered_queryset.filter(status=5).count(),
                 "resolved": filtered_queryset.filter(status=4).count(),
                 "pb100": filtered_queryset.filter(
-                    top_priority_status="Approved"
+                    top_priority_status__in=["APPROVED", "REMOVAL_PENDING"]
                 ).count(),
                 "overseas_delivery": filtered_queryset.filter(
                     priority_level="OVERSEAS"
@@ -376,7 +376,7 @@ class BarrierDashboardSummary(generics.GenericAPIView):
                     ],
                 ).count(),
                 "pb100": filtered_queryset.filter(
-                    top_priority_status="Approved",
+                    top_priority_status__in=["APPROVED", "REMOVAL_PENDING"],
                     estimated_resolution_date__range=[
                         current_year_start,
                         current_year_end,
