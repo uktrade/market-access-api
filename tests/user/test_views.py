@@ -26,7 +26,7 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["email"] == self.sso_user_data_1["contact_email"]
         assert (
             response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
         )
@@ -46,7 +46,7 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["email"] == self.sso_user_data_1["contact_email"]
         assert (
             response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
         )
@@ -66,7 +66,7 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["email"] == self.sso_user_data_1["contact_email"]
         assert (
             response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
         )
@@ -86,7 +86,7 @@ class TestUserView(APITestMixin):
 
         response_data = response.json()
 
-        assert response_data["email"] == self.sso_user_data_1["email"]
+        assert response_data["email"] == self.sso_user_data_1["contact_email"]
         assert (
             response_data["username"] == f"{user_test.first_name} {user_test.last_name}"
         )

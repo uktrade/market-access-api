@@ -171,6 +171,7 @@ class APITestMixin:
     sso_user_data_1 = {
         "email": "unit1.test1@unittest.uk",
         "email_user_id": "unit1.test1-907a7a2c@unittest.uk",
+        "contact_email": "contact1.unit1.test1@unittest.uk",
         "user_id": "907a7a2c-b6cd-454f-3764-a4388ec2a42b",
         "first_name": "Unit1",
         "last_name": "Test1",
