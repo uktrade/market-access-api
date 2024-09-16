@@ -46,7 +46,7 @@ class SSOAuthValidator(OAuth2Validator):
             user.save()
 
         if created:
-            user.email = sso_user["email"]
+            user.email = sso_user["contact_email"]
             user.first_name = sso_user["first_name"]
             user.last_name = sso_user["last_name"]
             user.profile.sso_email_user_id = sso_user["email_user_id"]

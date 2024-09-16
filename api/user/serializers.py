@@ -60,7 +60,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     def get_email(self, obj):
         sso_me = sso.get_logged_in_user_details(self.context)
         if sso_me is not None:
-            return sso_me.get("contact_email")
+            return sso_me.get("email")
         return obj.email
 
     def get_first_name(self, obj):
