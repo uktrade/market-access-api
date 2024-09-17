@@ -32,8 +32,11 @@ class TestSSOValidator(TestCase, UserFactoryMixin):
 
         self.test_user = self.create_standard_user()
 
+        assert self.test_user.last_login is None
+
         self.sso_user = {
             "email": "sso_email",
+            "contact_email": "contact_email",
             "first_name": "sso_first_name",
             "last_name": "sso_last_name",
             "email_user_id": "sso_email_user_id",
@@ -70,7 +73,7 @@ class TestSSOValidator(TestCase, UserFactoryMixin):
         response = self.validator._handle_auth_user(content)
 
         mock_sso_user.assert_called_with("id_goes_here")
-        assert response.email == self.sso_user["email"]
+        assert response.email == self.sso_user["contact_email"]
         assert response.first_name == self.sso_user["first_name"]
         assert response.last_name == self.sso_user["last_name"]
         assert response.profile.sso_email_user_id == self.sso_user["email_user_id"]
@@ -83,7 +86,8 @@ class TestSSOValidator(TestCase, UserFactoryMixin):
         response = self.validator._handle_auth_user(content)
 
         mock_sso_user.assert_called_with(self.test_user.username)
-        assert response.email == self.sso_user["email"]
+        assert response.last_login is not None
+        assert response.email == self.sso_user["contact_email"]
         assert response.first_name == self.test_user.first_name
         assert response.last_name == self.test_user.last_name
         assert (
