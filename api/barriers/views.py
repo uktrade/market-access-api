@@ -28,7 +28,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from simple_history.utils import bulk_create_with_history
 
-from api.barriers import barrier_cache
 from api.barriers.exceptions import PublicBarrierPublishException
 from api.barriers.helpers import get_or_create_public_barrier
 from api.barriers.models import (
@@ -713,8 +712,6 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
         pk = self.kwargs[lookup_url_kwarg]
 
-        barrier_cache.delete(pk)
-
     def update_metadata_for_proposed_estimated_date(self, barrier):
         # get patched data from request
         patch_data = self.request.data
@@ -724,24 +721,6 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
             barrier.proposed_estimated_resolution_date_user = self.request.user
             barrier.proposed_estimated_resolution_date_created = datetime.now()
             barrier.save()
-
-    def retrieve(self, request, *args, **kwargs):
-        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        try:
-            pk = self.kwargs[lookup_url_kwarg]
-        except KeyError:
-            """If view with `code` lookup (throws KeyError), don't cache"""
-            return super().retrieve(request, *args, **kwargs)
-
-        data = barrier_cache.get(pk)
-        if data:
-            return Response(data)
-
-        response = super().retrieve(request, *args, **kwargs)
-
-        barrier_cache.set(pk, response.data)
-
-        return response
 
 
 class BarrierFullHistory(generics.GenericAPIView):
@@ -820,7 +799,6 @@ class BarrierStatusBase(generics.UpdateAPIView):
             status_date=status_date,
             modified_by=self.request.user,
         )
-        barrier_cache.delete(barrier_id)
 
 
 class BarrierResolveInFull(BarrierStatusBase):
@@ -1172,8 +1150,6 @@ class ProgrammeFundProgressUpdateViewSet(ModelViewSet):
         self.perform_create(serializer, request.user)
         headers = self.get_success_headers(serializer.data)
 
-        barrier_cache.delete(serializer.data["barrier"])
-
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
@@ -1281,8 +1257,6 @@ class BarrierNextStepItemViewSet(ModelViewSet):
         self.perform_create(serializer, request.user)
         headers = self.get_success_headers(serializer.data)
 
-        barrier_cache.delete(serializer.data["barrier"])
-
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
@@ -1305,7 +1279,5 @@ class BarrierNextStepItemViewSet(ModelViewSet):
             # If 'prefetch_related' has been applied to a queryset, we need to
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
-
-        barrier_cache.delete(serializer.data["barrier"])
 
         return Response(serializer.data)
