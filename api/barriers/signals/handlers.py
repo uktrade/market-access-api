@@ -234,7 +234,7 @@ def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
             manager.manager.update_barrier(
                 BarrierEntry(
                     id=str(current_barrier_object.id),
-                    barrier_corpus=manager.barrier_to_corpus(current_barrier_object),
+                    barrier_corpus=manager.barrier_to_corpus(instance),
                 )
             )
         except Exception as e:

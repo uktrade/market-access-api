@@ -5,11 +5,10 @@ from typing import Dict, List, Optional
 
 import numpy
 from django.core.cache import cache
-from django.db.models import CharField
-from django.db.models import Value as V
-from django.db.models.functions import Concat
 from sentence_transformers import SentenceTransformer, util
 
+from api.barriers.tasks import get_barriers_overseas_region
+from api.metadata.utils import get_sector
 from api.related_barriers.constants import BarrierEntry
 
 logger = logging.getLogger(__name__)
@@ -30,6 +29,7 @@ def timing(f):
 
 @timing
 def get_transformer():
+    # SentenceTransformer("all-MiniLM-L6-v2")
     return SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
 
@@ -58,17 +58,20 @@ class SingletonMeta(type):
 class RelatedBarrierManager(metaclass=SingletonMeta):
     __transformer: Optional[SentenceTransformer] = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Related Barrier Manager"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Only called once in a execution lifecycle
         """
         self.__transformer = get_transformer()
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}"
+
     @timing
-    def set_data(self, data: List[Dict]):
+    def set_data(self, data: List[Dict]) -> None:
         """
         Load data into memory.
         """
@@ -81,49 +84,49 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         self.set_barrier_ids(barrier_ids)
 
     @staticmethod
-    def flush():
+    def flush() -> None:
         logger.info("(Related Barriers): flush cache")
         cache.delete(EMBEDDINGS_CACHE_KEY)
         cache.delete(BARRIER_IDS_CACHE_KEY)
 
     @staticmethod
-    def set_embeddings(embeddings):
+    def set_embeddings(embeddings) -> None:
         logger.info("(Related Barriers): set_embeddings")
         cache.set(EMBEDDINGS_CACHE_KEY, embeddings, timeout=None)
 
     @staticmethod
-    def set_barrier_ids(barrier_ids):
+    def set_barrier_ids(barrier_ids) -> None:
         logger.info("(Related Barriers): barrier_ids")
         cache.set(BARRIER_IDS_CACHE_KEY, barrier_ids, timeout=None)
 
     @staticmethod
-    def get_embeddings():
+    def get_embeddings() -> numpy.ndarray:
         logger.info("(Related Barriers): get_embeddings")
         return cache.get(EMBEDDINGS_CACHE_KEY, [])
 
     @staticmethod
-    def get_barrier_ids():
+    def get_barrier_ids() -> List[str]:
         logger.info("(Related Barriers): get_barrier_ids")
         return cache.get(BARRIER_IDS_CACHE_KEY, [])
 
     @property
-    def model(self):
+    def model(self) -> SentenceTransformer:
         return self.__transformer
 
     @timing
-    def get_cosine_sim(self):
+    def get_cosine_sim(self) -> numpy.ndarray:
         logger.info("(Related Barriers): get_cosine_sim")
         embeddings = self.get_embeddings()
         return util.cos_sim(embeddings, embeddings)
 
     @timing
-    def encode_barrier_corpus(self, barrier: BarrierEntry):
+    def encode_barrier_corpus(self, barrier: BarrierEntry) -> numpy.ndarray:
         return self.model.encode(barrier.barrier_corpus, convert_to_tensor=True).numpy()
 
     @timing
     def add_barrier(
         self, barrier: BarrierEntry, barrier_ids: Optional[List[str]] = None
-    ):
+    ) -> None:
         logger.info(f"(Related Barriers): add_barrier {barrier.id}")
         """barrier_ids: optimisation flag to avoid multiple cache requests"""
         if barrier_ids is None:
@@ -138,7 +141,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         self.set_barrier_ids(new_barrier_ids)
 
     @timing
-    def remove_barrier(self, barrier: BarrierEntry, barrier_ids=None):
+    def remove_barrier(self, barrier: BarrierEntry, barrier_ids=None) -> None:
         logger.info(f"(Related Barriers): remove_barrier {barrier.id}")
         embeddings = self.get_embeddings()
         if not barrier_ids:
@@ -159,7 +162,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
             self.set_barrier_ids(barrier_ids)
 
     @timing
-    def update_barrier(self, barrier: BarrierEntry):
+    def update_barrier(self, barrier: BarrierEntry) -> None:
         logger.info(f"(Related Barriers): update_barrier {barrier.id}")
         barrier_ids = manager.get_barrier_ids()
         if barrier.id in barrier_ids:
@@ -169,7 +172,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     @timing
     def get_similar_barriers(
         self, barrier: BarrierEntry, similarity_threshold: float, quantity: int
-    ):
+    ) -> List[tuple]:
         logger.info(f"(Related Barriers): get_similar_barriers {barrier.id}")
         barrier_ids = self.get_barrier_ids()
 
@@ -197,10 +200,56 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
             for k, v in barrier_scores.items()
             if v > similarity_threshold and k != barrier.id
         }
-        barrier_scores = sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
+        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
-        barrier_ids = [b[0] for b in barrier_scores]
-        return barrier_ids
+    @timing
+    def get_similar_barriers_searched(
+        self, search_term: str, similarity_threshold: float, quantity: int = None
+    ) -> Optional[List[tuple]]:
+        """
+        Search for similar barriers based on a search term.
+
+        :param search_term: The search term to compare against the barrier corpus
+        :param similarity_threshold: The threshold for the cosine similarity score
+        :param quantity: The number of similar barriers to return
+
+        :returns: A list of similar barriers or None
+
+        The None is returned if no barrier ids are found in the cache.
+        which is a sign that the cache has been flushed.
+        """
+
+        logger.info("(Related Barriers): get_similar_barriers_searched")
+
+        if not (barrier_ids := self.get_barrier_ids()):
+            self.set_data(get_data())
+            barrier_ids = self.get_barrier_ids() or []
+
+        if not barrier_ids:
+            logger.warning("(Related Barriers): No barrier ids found")
+            return
+
+        embedded_index = "search_term"
+        search_term_embedding = self.model.encode(
+            search_term, convert_to_tensor=True
+        ).numpy()
+        embeddings = self.get_embeddings()
+        new_embeddings = numpy.vstack(
+            [embeddings, search_term_embedding]
+        )  # append embedding
+        new_barrier_ids = barrier_ids + [embedded_index]  # append barrier_id
+
+        cosine_sim = util.cos_sim(new_embeddings, new_embeddings)
+
+        index_search_term_embedding = len(new_embeddings) - 1
+        scores = cosine_sim[index_search_term_embedding]
+        barrier_scores = dict(zip(new_barrier_ids, scores))
+        barrier_scores = {
+            k: v
+            for k, v in barrier_scores.items()
+            if v > similarity_threshold and k != embedded_index
+        }
+        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
 
 manager: Optional[RelatedBarrierManager] = None
@@ -209,14 +258,69 @@ manager: Optional[RelatedBarrierManager] = None
 def get_data() -> List[Dict]:
     from api.barriers.models import Barrier
 
-    return (
-        Barrier.objects.filter(archived=False)
-        .exclude(draft=True)
-        .annotate(
-            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
+    return [
+        {"id": barrier.id, "barrier_corpus": f"{barrier.title} . {barrier.summary}"}
+        for barrier in Barrier.objects.filter(archived=False).exclude(draft=True)
+    ]
+
+
+def get_data_2() -> List[Dict]:
+    from api.barriers.models import Barrier
+
+    data_dictionary = []
+    barriers = Barrier.objects.filter(archived=False).exclude(draft=True)
+    for barrier in barriers:
+        corpus_object = {}
+
+        companies_affected_list = ""
+        if barrier.companies:
+            companies_affected_list = ", ".join(
+                [company["name"] for company in barrier.companies]
+            )
+
+        other_organisations_affected_list = ""
+        if barrier.related_organisations:
+            other_organisations_affected_list = ", ".join(
+                [company["name"] for company in barrier.related_organisations]
+            )
+
+        notes_text_list = ", ".join(
+            [note.text for note in barrier.interactions_documents.all()]
         )
-        .values("id", "barrier_corpus")
-    )
+
+        sectors_list = [
+            get_sector(str(sector_id))["name"] for sector_id in barrier.sectors
+        ]
+        sectors_list.append(get_sector(barrier.main_sector)["name"])
+        sectors_text = ", ".join(sectors_list)
+
+        overseas_region_text = get_barriers_overseas_region(
+            barrier.country, barrier.trading_bloc
+        )
+
+        estimated_resolution_date_text = ""
+        if barrier.estimated_resolution_date:
+            date = barrier.estimated_resolution_date.strftime("%d-%m-%Y")
+            estimated_resolution_date_text = f"Estimated to be resolved on {date}."
+
+        corpus_object["id"] = barrier.id
+        corpus_object["barrier_corpus"] = (
+            f"{barrier.title}. "
+            f"{barrier.summary}. "
+            f"{sectors_text} "
+            f"{barrier.country_name}. "
+            f"{overseas_region_text}. "
+            f"{companies_affected_list} "
+            f"{other_organisations_affected_list} "
+            f"{notes_text_list}. "
+            f"{barrier.status_summary}. "
+            f"{estimated_resolution_date_text}. "
+            f"{barrier.export_description}."
+        )
+
+        data_dictionary.append(corpus_object)
+
+    return data_dictionary
 
 
 def init():
@@ -226,11 +330,12 @@ def init():
         raise Exception("Related Barrier Manager already set")
 
     manager = RelatedBarrierManager()
+
     if not manager.get_barrier_ids():
         logger.info("(Related Barriers): Initialising)")
         data = get_data()
         manager.set_data(data)
 
 
-def barrier_to_corpus(barrier):
+def barrier_to_corpus(barrier) -> str:
     return barrier.title + ". " + barrier.summary

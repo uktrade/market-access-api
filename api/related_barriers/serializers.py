@@ -3,13 +3,22 @@ from rest_framework import serializers
 from api.barriers.fields import StatusField
 
 
-# TODO : standard list serialiser may suffice and the following not required base on final designs
 class BarrierRelatedListSerializer(serializers.Serializer):
-    summary = serializers.CharField(read_only=True)
-    title = serializers.CharField(read_only=True)
-    id = serializers.UUIDField(read_only=True)
-    reported_on = serializers.DateTimeField(read_only=True)
-    modified_on = serializers.DateTimeField(read_only=True)
-    status = StatusField(required=False)
-    location = serializers.CharField(read_only=True)
-    similarity = serializers.FloatField(read_only=True)
+    summary = serializers.CharField()
+    title = serializers.CharField()
+    barrier_id = serializers.CharField()
+    reported_on = serializers.DateTimeField()
+    modified_on = serializers.DateTimeField()
+    status = StatusField()
+    location = serializers.SerializerMethodField()
+    similarity = serializers.FloatField()
+
+    def get_location(self, obj):
+        try:
+            return obj.location or ""
+        except Exception:
+            return ""
+
+
+class SearchRequest(serializers.Serializer):
+    search_term = serializers.CharField(required=True)
