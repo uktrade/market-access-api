@@ -1,6 +1,8 @@
 from django.urls import path, re_path
+from rest_framework.routers import DefaultRouter
 
 from .views import (
+    DashboardUserTasksView,
     GroupDetail,
     GroupList,
     SavedSearchDetail,
@@ -9,7 +11,9 @@ from .views import (
     UserList,
 )
 
-urlpatterns = [
+router = DefaultRouter(trailing_slash=False)
+
+urlpatterns = router.urls + [
     path("saved-searches", SavedSearchList.as_view(), name="saved-search-list"),
     path(
         "saved-searches/<uuid:pk>",
@@ -30,4 +34,9 @@ urlpatterns = [
     path("groups/<int:pk>", GroupDetail.as_view(), name="group-detail"),
     path("users", UserList.as_view(), name="user-list"),
     path("user_activity_log", UserActivityLogList.as_view(), name="user-activity-log"),
+    path(
+        "dashboard-tasks",
+        DashboardUserTasksView.as_view(),
+        name="get-dashboard-tasks",
+    ),
 ]
