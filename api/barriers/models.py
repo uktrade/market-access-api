@@ -1299,7 +1299,8 @@ class BarrierFilterSet(django_filters.FilterSet):
     combined_priority = django_filters.BaseInFilter(method="combined_priority_filter")
     location = django_filters.BaseInFilter(method="location_filter")
     admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
-    search = django_filters.Filter(method="vector_search")
+    search = django_filters.Filter(method="text_search")
+
     text = django_filters.Filter(method="vector_search")
 
     user = django_filters.Filter(method="my_barriers")
