@@ -289,12 +289,17 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         #    if v > similarity_threshold and k != embedded_index
         # }
 
-        RESULT = sorted(barrier_scores.items(), key=lambda x: x[1])[-6:]
+        result = sorted(barrier_scores.items(), key=lambda x: x[1])[-5:]
 
         logger.critical("+++++++++++++++++++ BARRIER SCORES")
-        for item in RESULT:
+        for item in result:
             if str(item[0]) != "search_term":
+                from api.barriers.models import Barrier
+
+                barrier_obj = Barrier.objects.get(id=item[0])
                 logger.critical(str(item[0]) + " - " + str(item[1]))
+                logger.critical(barrier_obj.title)
+                logger.critical(barrier_obj.code)
                 logger.critical("-")
         logger.critical("+++++++++++++++++++ BARRIER SCORES")
 
@@ -349,12 +354,17 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         #    if v > similarity_threshold
         # }
 
-        RESULT = sorted(barrier_scores.items(), key=lambda x: x[1])[-5:]
+        result = sorted(barrier_scores.items(), key=lambda x: x[1])[-5:]
 
         logger.critical("+++++++++++++++++++ BARRIER SCORES")
-        for item in RESULT:
+        for item in result:
             if str(item[0]) != "search_term":
+                from api.barriers.models import Barrier
+
+                barrier_obj = Barrier.objects.get(id=item[0])
                 logger.critical(str(item[0]) + " - " + str(item[1]))
+                logger.critical(barrier_obj.title)
+                logger.critical(barrier_obj.code)
                 logger.critical("-")
         logger.critical("+++++++++++++++++++ BARRIER SCORES")
 
