@@ -6,7 +6,7 @@ from api.barriers.fields import StatusField
 class BarrierRelatedListSerializer(serializers.Serializer):
     summary = serializers.CharField()
     title = serializers.CharField()
-    barrier_id = serializers.CharField()
+    id = serializers.CharField()
     reported_on = serializers.DateTimeField()
     modified_on = serializers.DateTimeField()
     status = StatusField()
