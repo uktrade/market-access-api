@@ -202,6 +202,43 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         }
         return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
+    # HOW TO TEST:
+
+    # 1. Have market-access-api container running
+    # 2. exec into contatiner
+    # 3. ./manage.py shell_plus
+    # 4. copy and paste imports:
+    #
+    #    from api.related_barriers import manager as handler_manager
+    #    from api.related_barriers.constants import (
+    #        SIMILAR_BARRIERS_LIMIT,
+    #        SIMILARITY_THRESHOLD,
+    #    )
+    #
+    # 5. Set your search term:
+    #
+    #   value="<SEARCH_TERM GOES HERE"
+    #
+    # 6. To run against existing cosine and model:
+    #
+    #    if handler_manager.manager is None:
+    #        handler_manager.init()
+    #    barrier_scores = handler_manager.manager.get_similar_barriers_searched(
+    #        search_term=value,
+    #        similarity_threshold=SIMILARITY_THRESHOLD,
+    #        quantity=SIMILAR_BARRIERS_LIMIT,
+    #    )
+    #
+    # 7. To run against similarity method and "all" model:
+    #
+    #    if handler_manager.manager is None:
+    #        handler_manager.init()
+    #    barrier_scores = handler_manager.manager.get_semantic_search(
+    #        search_term=value,
+    #        similarity_threshold=SIMILARITY_THRESHOLD,
+    #        quantity=SIMILAR_BARRIERS_LIMIT,
+    #    )
+
     @timing
     def get_similar_barriers_searched(
         self, search_term: str, similarity_threshold: float, quantity: int = None
@@ -222,7 +259,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         logger.info("(Related Barriers): get_similar_barriers_searched")
 
         if not (barrier_ids := self.get_barrier_ids()):
-            self.set_data(get_data())
+            self.set_data(get_data_semantic_search())
             barrier_ids = self.get_barrier_ids() or []
 
         if not barrier_ids:
@@ -244,11 +281,83 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         index_search_term_embedding = len(new_embeddings) - 1
         scores = cosine_sim[index_search_term_embedding]
         barrier_scores = dict(zip(new_barrier_ids, scores))
-        barrier_scores = {
-            k: v
-            for k, v in barrier_scores.items()
-            if v > similarity_threshold and k != embedded_index
-        }
+
+        # RESTORE THIS FOR REAL VERSION:
+        # barrier_scores = {
+        #    k: v
+        #    for k, v in barrier_scores.items()
+        #    if v > similarity_threshold and k != embedded_index
+        # }
+
+        RESULT = sorted(barrier_scores.items(), key=lambda x: x[1])[-6:]
+
+        logger.critical("+++++++++++++++++++ BARRIER SCORES")
+        for item in RESULT:
+            if str(item[0]) != "search_term":
+                logger.critical(str(item[0]) + " - " + str(item[1]))
+                logger.critical("-")
+        logger.critical("+++++++++++++++++++ BARRIER SCORES")
+
+        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
+
+    @timing
+    def get_semantic_search(
+        self, search_term: str, similarity_threshold: float, quantity: int = None
+    ) -> Optional[List[tuple]]:
+        """
+        Search for similar barriers based on a search term.
+
+        :param search_term: The search term to compare against the barrier corpus
+        :param similarity_threshold: The threshold for the cosine similarity score
+        :param quantity: The number of similar barriers to return
+
+        :returns: A list of similar barriers or None
+
+        The None is returned if no barrier ids are found in the cache.
+        which is a sign that the cache has been flushed.
+        """
+
+        logger.info("(Related Barriers): get_similar_barriers_searched")
+
+        embedder = SentenceTransformer("all-MiniLM-L6-v2")
+        # change to this to use existing mini model
+        # embedder = get_transformer()
+
+        # "get_data_semantic_seach" - original/current string matcher
+        # "get_data_semantic_search_sentence_structured" - method with added sentence structure around corpus values
+        if not (barrier_ids := self.get_barrier_ids()):
+            self.set_data(get_data_semantic_search())
+            barrier_ids = self.get_barrier_ids() or []
+
+        if not barrier_ids:
+            logger.warning("(Related Barriers): No barrier ids found")
+            return
+
+        embedded_index = "search_term"
+        search_term_embedding = self.model.encode(
+            search_term, convert_to_tensor=True
+        ).numpy()
+
+        embeddings = self.get_embeddings()
+        scores = embedder.similarity(search_term_embedding, embeddings)
+        barrier_scores = dict(zip(barrier_ids, scores[0]))
+
+        # RESTORE THIS FOR REAL VERSION:
+        # barrier_scores = {
+        #    k: v
+        #    for k, v in barrier_scores.items()
+        #    if v > similarity_threshold
+        # }
+
+        RESULT = sorted(barrier_scores.items(), key=lambda x: x[1])[-5:]
+
+        logger.critical("+++++++++++++++++++ BARRIER SCORES")
+        for item in RESULT:
+            if str(item[0]) != "search_term":
+                logger.critical(str(item[0]) + " - " + str(item[1]))
+                logger.critical("-")
+        logger.critical("+++++++++++++++++++ BARRIER SCORES")
+
         return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
 
 
@@ -264,7 +373,7 @@ def get_data() -> List[Dict]:
     ]
 
 
-def get_data_2() -> List[Dict]:
+def get_data_semantic_search() -> List[Dict]:
     from api.barriers.models import Barrier
 
     data_dictionary = []
@@ -296,6 +405,76 @@ def get_data_2() -> List[Dict]:
 
         overseas_region_text = get_barriers_overseas_region(
             barrier.country, barrier.trading_bloc
+        )
+
+        estimated_resolution_date_text = ""
+        if barrier.estimated_resolution_date:
+            date = barrier.estimated_resolution_date.strftime("%d-%m-%Y")
+            estimated_resolution_date_text = f"Estimated to be resolved on {date}."
+
+        corpus_object["id"] = barrier.id
+        corpus_object["barrier_corpus"] = (
+            f"{barrier.title}. "
+            f"{barrier.summary}. "
+            f"{sectors_text} "
+            f"{barrier.country_name}. "
+            f"{overseas_region_text}. "
+            f"{companies_affected_list} "
+            f"{other_organisations_affected_list} "
+            f"{notes_text_list}. "
+            f"{barrier.status_summary}. "
+            f"{estimated_resolution_date_text}. "
+            f"{barrier.export_description}."
+        )
+
+        data_dictionary.append(corpus_object)
+
+    return data_dictionary
+
+
+def get_data_semantic_search_sentence_structured() -> List[Dict]:
+    from api.barriers.models import Barrier
+
+    data_dictionary = []
+    barriers = Barrier.objects.filter(archived=False).exclude(draft=True)
+    for barrier in barriers:
+        corpus_object = {}
+
+        companies_affected_list = ""
+        if barrier.companies:
+            companies_affected_list = ", ".join(
+                [company["name"] for company in barrier.companies]
+            )
+        companies_affected_list = (
+            "The following companies are affected; " + companies_affected_list
+        )
+
+        other_organisations_affected_list = ""
+        if barrier.related_organisations:
+            other_organisations_affected_list = ", ".join(
+                [company["name"] for company in barrier.related_organisations]
+            )
+        other_organisations_affected_list = (
+            "The following organisations are affected; "
+            + other_organisations_affected_list
+        )
+
+        notes_text_list = ", ".join(
+            [note.text for note in barrier.interactions_documents.all()]
+        )
+
+        sectors_list = [
+            get_sector(str(sector_id))["name"] for sector_id in barrier.sectors
+        ]
+        sectors_list.append(get_sector(barrier.main_sector)["name"])
+        sectors_text = ", ".join(sectors_list)
+        sectors_list = "The following sectors are affected; " + sectors_list
+
+        overseas_region_text = get_barriers_overseas_region(
+            barrier.country, barrier.trading_bloc
+        )
+        overseas_region_text = (
+            "The following regions and countries are affected; " + overseas_region_text
         )
 
         estimated_resolution_date_text = ""
