@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models import CharField
+from django.db.models import Case, CharField, FloatField, Value, When
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
@@ -35,21 +35,19 @@ def related_barriers(request, pk) -> Response:
             barrier_corpus=manager.barrier_to_corpus(barrier),
         ),
         similarity_threshold=SIMILARITY_THRESHOLD,
-        quantity=SIMILAR_BARRIERS_LIMIT,
+        quantity=10,
     )
 
     barrier_ids = [b[0] for b in barrier_scores]
+    when_tensor = [When(id=k, then=Value(v.item())) for k, v in barrier_scores]
 
-    barriers = Barrier.objects.filter(id__in=barrier_ids).annotate(
-        barrier_id=Cast("id", output_field=CharField())
+    similar_barriers = (
+        Barrier.objects.filter(id__in=barrier_ids)
+        .annotate(similarity=Case(*when_tensor, output_field=FloatField()))
+        .order_by("-similarity")
     )
-    barriers = {b.barrier_id: b for b in barriers}
 
-    for barrier_id, score in barrier_scores:
-        barriers[barrier_id].similarity = score
-
-    data = [value for key, value in barriers.items()]
-    serializer = BarrierRelatedListSerializer(data, many=True)
+    serializer = BarrierRelatedListSerializer(similar_barriers, many=True)
     return Response(serializer.data)
 
 
