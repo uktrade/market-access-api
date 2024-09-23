@@ -1300,6 +1300,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     location = django_filters.BaseInFilter(method="location_filter")
     admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
     search = django_filters.Filter(method="text_search")
+
     text = django_filters.Filter(method="vector_search")
 
     user = django_filters.Filter(method="my_barriers")

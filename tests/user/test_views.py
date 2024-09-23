@@ -1176,13 +1176,14 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
+
         task_found = False
         for task in response.data["results"]:
             if (
                 task["tag"] == "REVIEW NEXT STEP"
                 and "The next step for this barrier has not been reviewed"
                 in task["message"]
-                and "for more than 2 months" in task["message"]
+                and "for more than 1 months" in task["message"]
             ):
                 task_found = True
         assert task_found

@@ -222,7 +222,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         logger.info("(Related Barriers): get_similar_barriers_searched")
 
         if not (barrier_ids := self.get_barrier_ids()):
-            self.set_data(get_data())
+            self.set_data(get_data_2())
             barrier_ids = self.get_barrier_ids() or []
 
         if not barrier_ids:
