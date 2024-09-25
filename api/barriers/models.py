@@ -1640,10 +1640,9 @@ class BarrierFilterSet(django_filters.FilterSet):
             SIMILARITY_THRESHOLD,
         )
 
-        if handler_manager.manager is None:
-            handler_manager.init()
+        related_barriers = handler_manager.get_or_init()
 
-        barrier_scores = handler_manager.manager.get_similar_barriers_searched(
+        barrier_scores = related_barriers.get_similar_barriers_searched(
             search_term=value,
             similarity_threshold=SIMILARITY_THRESHOLD,
             quantity=SIMILAR_BARRIERS_LIMIT,
