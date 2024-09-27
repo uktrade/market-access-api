@@ -545,7 +545,7 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
     },
     "relevance": {
         "ordering": "relevance",
-        "label": "Relevance",
+        "label": "Relevence to the search term",
         "order_on": "similarity",
         "direction": "descending",
     },
