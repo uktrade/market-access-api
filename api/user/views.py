@@ -180,6 +180,15 @@ class DashboardUserTasksView(generics.ListAPIView):
             )
             .distinct()
             .order_by("modified_on")[:1000]
+            .select_related("public_barrier")
+            .prefetch_related(
+                "progress_updates",
+                "barrier_team",
+                "barrier_commodities",
+                "next_steps_items",
+                "tags",
+                "export_types",
+            )
         )
 
         # Initialise task list
