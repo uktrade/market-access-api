@@ -481,7 +481,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == Barrier.objects.count()
 
-        url = f'{reverse("list-barriers")}?text=wibble'
+        url = f'{reverse("list-barriers")}?search=wibble'
 
         response = self.api_client.get(url)
         assert status.HTTP_200_OK == response.status_code
@@ -495,7 +495,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 2 == Barrier.objects.count()
 
-        url = f'{reverse("list-barriers")}?text=B-22-B30'
+        url = f'{reverse("list-barriers")}?search=B-22-B30'
 
         response = self.api_client.get(url)
         assert status.HTTP_200_OK == response.status_code
@@ -509,7 +509,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 2 == Barrier.objects.count()
 
-        url = f'{reverse("list-barriers")}?text=b-22-b30'
+        url = f'{reverse("list-barriers")}?search=b-22-b30'
 
         response = self.api_client.get(url)
         assert status.HTTP_200_OK == response.status_code
@@ -524,7 +524,7 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert 3 == Barrier.objects.count()
 
-        url = f'{reverse("list-barriers")}?text=wobble'
+        url = f'{reverse("list-barriers")}?search=wobble'
         response = self.api_client.get(url)
 
         assert status.HTTP_200_OK == response.status_code
@@ -618,7 +618,7 @@ class TestListBarriers(APITestMixin, APITestCase):
         for public_id_string in public_ids:
             logger.info(public_id_string)
 
-        url = f'{reverse("list-barriers")}?text={public_id}'
+        url = f'{reverse("list-barriers")}?search={public_id}'
         logger.info(f"URL: {url}")
         response = self.api_client.get(url)
 

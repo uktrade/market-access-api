@@ -15,7 +15,16 @@ from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.core.validators import int_list_validator
 from django.db import models
-from django.db.models import CASCADE, CharField, Q, QuerySet
+from django.db.models import (
+    CASCADE,
+    Case,
+    CharField,
+    FloatField,
+    Q,
+    QuerySet,
+    Value,
+    When,
+)
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1301,7 +1310,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     admin_areas = django_filters.BaseInFilter(method="admin_areas_filter")
     search = django_filters.Filter(method="text_search")
 
-    text = django_filters.Filter(method="vector_search")
+    search_term_text = django_filters.Filter(method="vector_search")
 
     user = django_filters.Filter(method="my_barriers")
     has_action_plan = django_filters.Filter(method="has_action_plan_filter")
@@ -1649,9 +1658,11 @@ class BarrierFilterSet(django_filters.FilterSet):
             return self.text_search(queryset, name, value)
 
         barrier_ids = [b[0] for b in barrier_scores]
+        when_tensor = [When(id=k, then=Value(v.item())) for k, v in barrier_scores]
 
         queryset = queryset.filter(id__in=barrier_ids).annotate(
-            barrier_id=Cast("id", output_field=CharField())
+            barrier_id=Cast("id", output_field=CharField()),
+            similarity=Case(*when_tensor, output_field=FloatField()),
         )
 
         return queryset

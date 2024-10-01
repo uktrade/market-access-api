@@ -213,6 +213,7 @@ class TestCategories(APITestMixin):
             ("resolution", "Estimated resolution date (least recent)"),
             ("-resolved", "Date resolved (most recent)"),
             ("resolved", "Date resolved (least recent)"),
+            ("relevance", "Relevence to the search term"),
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)
