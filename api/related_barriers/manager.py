@@ -305,6 +305,7 @@ def get_data_2() -> List[Dict]:
 
         corpus_object["id"] = barrier.id
         corpus_object["barrier_corpus"] = (
+            f"{barrier.code}. "
             f"{barrier.title}. "
             f"{barrier.summary}. "
             f"{sectors_text} "

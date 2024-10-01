@@ -27,7 +27,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
 
     def test_barrier_download_post_endpoint_no_results_filter(self):
         barrier = BarrierFactory()
-        url = f'{reverse("barrier-downloads")}?text=wrong-{barrier.title}'
+        url = f'{reverse("barrier-downloads")}?search_term_text=wrong-{barrier.title}'
 
         response = self.api_client.post(url)
 

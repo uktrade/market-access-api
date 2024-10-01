@@ -989,6 +989,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         assert response.status_code == 200
         assert response.data["count"] == 0
 
+    # pytest tests/user/test_views.py::TestDashboardTasksView::test_erd_tasks_progress_update_erd_outdated
     def test_erd_tasks_progress_update_erd_outdated(self):
         """Progress updates contain their own estimated resolution date
         value seperate from the one on the barrier, we expect to add
@@ -1012,6 +1013,10 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         self.owner_user_setUp()
 
+        expected_difference = (
+            progress_update.modified_on.year - datetime.now().year
+        ) * 12 + (progress_update.modified_on.month - datetime.now().month)
+
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
@@ -1020,7 +1025,8 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
             if (
                 task["tag"] == "REVIEW DATE"
                 and "This barriers estimated resolution date has not" in task["message"]
-                and "been updated in 6 months." in task["message"]
+                and f"been updated in {abs(expected_difference)} months."
+                in task["message"]
             ):
                 task_found = True
         assert task_found
