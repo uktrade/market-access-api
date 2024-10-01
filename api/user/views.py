@@ -174,7 +174,9 @@ class DashboardUserTasksView(generics.ListAPIView):
         # get the full list of barriers they should be getting task list for
         users_barriers = (
             Barrier.objects.filter(
-                Q(barrier_team__user=recipient) & Q(barrier_team__archived=False)
+                Q(barrier_team__user=recipient)
+                & Q(barrier_team__archived=False)
+                & Q(archived=False)
             )
             .distinct()
             .order_by("modified_on")[:1000]
