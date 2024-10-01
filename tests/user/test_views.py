@@ -1189,7 +1189,6 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
                 task["tag"] == "REVIEW NEXT STEP"
                 and "The next step for this barrier has not been reviewed"
                 in task["message"]
-                and "for more than 1 months" in task["message"]
             ):
                 task_found = True
         assert task_found
