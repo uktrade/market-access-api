@@ -12,6 +12,7 @@ class BarrierRelatedListSerializer(serializers.Serializer):
     status = StatusField()
     location = serializers.SerializerMethodField()
     similarity = serializers.FloatField()
+    companies = serializers.JSONField()
 
     def get_location(self, obj):
         try:
