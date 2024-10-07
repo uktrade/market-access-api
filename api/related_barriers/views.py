@@ -1,5 +1,7 @@
 import logging
 
+from django.db.models import CharField
+from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -19,13 +21,29 @@ def related_barriers(request, pk) -> Response:
     logger.info(f"Getting related barriers for {pk}")
     barrier = get_object_or_404(Barrier, pk=pk)
 
-    barrier_ids = client.get_related_barriers(
-        pk=str(barrier.pk), title=barrier.title, summary=barrier.summary
+    try:
+        barrier_scores = client.get_related_barriers(
+            pk=str(barrier.pk), title=barrier.title, summary=barrier.summary
+        )
+        barrier_ids = [b["barrier_id"] for b in barrier_scores]
+    except Exception as e:
+        # Fail gracefully
+        return Response([])
+
+    barriers = Barrier.objects.filter(id__in=barrier_ids).annotate(
+        barrier_id=Cast("id", output_field=CharField())
     )
+    barriers = {b.barrier_id: b for b in barriers}
+
+    for barrier_score in barrier_scores:
+        barriers[barrier_score["barrier_id"]].similarity = barrier_score["score"]
+
+    barriers = barriers.values()
+    barriers = list(sorted(barriers, key=lambda x: x.similarity, reverse=True))
 
     return Response(
         BarrierRelatedListSerializer(
-            Barrier.objects.filter(id__in=barrier_ids), many=True
+            barriers, many=True
         ).data
     )
 
