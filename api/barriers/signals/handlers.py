@@ -3,6 +3,7 @@ import logging
 from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from api.related_barriers import client
 
 from api.assessment.models import (
     EconomicAssessment,
@@ -21,9 +22,6 @@ from api.barriers.tasks import (
     send_top_priority_notification,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
-from api.related_barriers import manager
-from api.related_barriers.constants import BarrierEntry
-from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
 
 logger = logging.getLogger(__name__)
 
@@ -221,21 +219,19 @@ def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
 
     changed = any(
         getattr(current_barrier_object, field) != getattr(instance, field)
-        for field in BARRIER_UPDATE_FIELDS
+        for field in ["title", "summary"]
     )
     logger.info(
         f"(Handler) Updating related barrier embeddings for {instance.pk}: {changed}"
     )
 
     if changed and not current_barrier_object.draft:
-        if not manager.manager:
-            manager.init()
         try:
-            manager.manager.update_barrier(
-                BarrierEntry(
-                    id=str(current_barrier_object.id),
-                    barrier_corpus=manager.barrier_to_corpus(instance),
-                )
+            # Fail gracefully
+            client.get_related_barriers(
+                pk=str(current_barrier_object.id),
+                title=current_barrier_object.title,
+                summary=current_barrier_object.summary,
             )
         except Exception as e:
             # We don't want barrier embedding updates to break worker so just log error
