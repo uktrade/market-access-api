@@ -37,6 +37,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
     permitted_applications = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
     groups = GroupSerializer(many=True, required=False, read_only=True)
+    sso_user_id = serializers.CharField(source="profile.sso_user_id", allow_null=True)
 
     class Meta:
         model = UserModel
@@ -55,6 +56,7 @@ class WhoAmISerializer(serializers.ModelSerializer):
             "is_active",
             "is_superuser",
             "groups",
+            "sso_user_id",
         )
 
     def get_email(self, obj):
