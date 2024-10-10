@@ -417,6 +417,12 @@ if is_copilot():
 CELERY_BEAT_SCHEDULE = {}
 
 if not DEBUG:
+    # Runs daily at midnight
+    CELERY_BEAT_SCHEDULE["reindex_related_barriers"] = {
+        "task": "api.related_barriers.tasks.reindex_related_barriers",
+        "schedule": crontab(minute=0, hour=0),
+    }
+
     # Runs daily at 6am
     CELERY_BEAT_SCHEDULE["send_notification_emails"] = {
         "task": "api.user.tasks.send_notification_emails",

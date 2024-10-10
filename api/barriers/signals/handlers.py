@@ -21,9 +21,8 @@ from api.barriers.tasks import (
     send_top_priority_notification,
 )
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
-from api.related_barriers import manager
-from api.related_barriers.constants import BarrierEntry
 from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
+from api.related_barriers.tasks import update_related_barrier
 
 logger = logging.getLogger(__name__)
 
@@ -228,15 +227,4 @@ def related_barrier_update_embeddings(sender, instance, *args, **kwargs):
     )
 
     if changed and not current_barrier_object.draft:
-        if not manager.manager:
-            manager.init()
-        try:
-            manager.manager.update_barrier(
-                BarrierEntry(
-                    id=str(current_barrier_object.id),
-                    barrier_corpus=manager.barrier_to_corpus(instance),
-                )
-            )
-        except Exception as e:
-            # We don't want barrier embedding updates to break worker so just log error
-            logger.critical(str(e))
+        update_related_barrier(barrier_id=str(instance.pk))

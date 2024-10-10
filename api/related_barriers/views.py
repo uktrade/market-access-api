@@ -19,17 +19,16 @@ logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
-def related_barriers(request, pk) -> Response:
+def related_barriers_view(request, pk) -> Response:
     """
     Return a list of related barriers
     """
     logger.info(f"Getting related barriers for {pk}")
     barrier = get_object_or_404(Barrier, pk=pk)
 
-    if manager.manager is None:
-        manager.init()
+    related_barriers = manager.get_or_init()
 
-    barrier_scores = manager.manager.get_similar_barriers(
+    barrier_scores = related_barriers.get_similar_barriers(
         barrier=BarrierEntry(
             id=str(barrier.id),
             barrier_corpus=manager.barrier_to_corpus(barrier),
@@ -60,10 +59,9 @@ def related_barriers_search(request) -> Response:
     serializer = SearchRequest(data=request.GET)
     serializer.is_valid(raise_exception=True)
 
-    if manager.manager is None:
-        manager.init()
+    related_barriers = manager.get_or_init()
 
-    barrier_scores = manager.manager.get_similar_barriers_searched(
+    barrier_scores = related_barriers.get_similar_barriers_searched(
         search_term=serializer.data["search_term"],
         similarity_threshold=SIMILARITY_THRESHOLD,
         quantity=SIMILAR_BARRIERS_LIMIT,

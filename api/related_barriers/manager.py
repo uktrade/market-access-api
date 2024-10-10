@@ -4,6 +4,7 @@ from functools import wraps
 from typing import Dict, List, Optional
 
 import numpy
+import torch
 from django.core.cache import cache
 from sentence_transformers import SentenceTransformer, util
 
@@ -29,8 +30,7 @@ def timing(f):
 
 @timing
 def get_transformer():
-    # SentenceTransformer("all-MiniLM-L6-v2")
-    return SentenceTransformer("paraphrase-MiniLM-L3-v2")
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 
 BARRIER_UPDATE_FIELDS: List[str] = ["title", "summary"]
@@ -164,7 +164,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
     @timing
     def update_barrier(self, barrier: BarrierEntry) -> None:
         logger.info(f"(Related Barriers): update_barrier {barrier.id}")
-        barrier_ids = manager.get_barrier_ids()
+        barrier_ids = self.get_barrier_ids()
         if barrier.id in barrier_ids:
             self.remove_barrier(barrier, barrier_ids)
         self.add_barrier(barrier, barrier_ids)
@@ -200,7 +200,8 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
             for k, v in barrier_scores.items()
             if v > similarity_threshold and k != barrier.id
         }
-        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
+        results = sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
+        return [(r[0], torch.round(torch.tensor(r[1]), decimals=4)) for r in results]
 
     @timing
     def get_similar_barriers_searched(
@@ -222,7 +223,7 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
         logger.info("(Related Barriers): get_similar_barriers_searched")
 
         if not (barrier_ids := self.get_barrier_ids()):
-            self.set_data(get_data_2())
+            self.set_data(get_data())
             barrier_ids = self.get_barrier_ids() or []
 
         if not barrier_ids:
@@ -249,87 +250,28 @@ class RelatedBarrierManager(metaclass=SingletonMeta):
             for k, v in barrier_scores.items()
             if v > similarity_threshold and k != embedded_index
         }
-        return sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
-
-
-manager: Optional[RelatedBarrierManager] = None
+        results = sorted(barrier_scores.items(), key=lambda x: x[1])[-quantity:]
+        return [(r[0], torch.round(r[1], decimals=4)) for r in results]
 
 
 def get_data() -> List[Dict]:
     from api.barriers.models import Barrier
 
-    return [
-        {"id": barrier.id, "barrier_corpus": f"{barrier.title} . {barrier.summary}"}
-        for barrier in Barrier.objects.filter(archived=False).exclude(draft=True)
-    ]
-
-
-def get_data_2() -> List[Dict]:
-    from api.barriers.models import Barrier
-
     data_dictionary = []
-    barriers = Barrier.objects.filter(archived=False).exclude(draft=True)
+    barriers = (
+        Barrier.objects.prefetch_related("interactions_documents")
+        .filter(archived=False)
+        .exclude(draft=True)
+    )
     for barrier in barriers:
-        corpus_object = {}
-
-        companies_affected_list = ""
-        if barrier.companies:
-            companies_affected_list = ", ".join(
-                [company["name"] for company in barrier.companies]
-            )
-
-        other_organisations_affected_list = ""
-        if barrier.related_organisations:
-            other_organisations_affected_list = ", ".join(
-                [company["name"] for company in barrier.related_organisations]
-            )
-
-        notes_text_list = ", ".join(
-            [note.text for note in barrier.interactions_documents.all()]
+        data_dictionary.append(
+            {"id": str(barrier.id), "barrier_corpus": barrier_to_corpus(barrier)}
         )
-
-        sectors_list = [
-            get_sector(str(sector_id))["name"] for sector_id in barrier.sectors
-        ]
-        sectors_list.append(get_sector(barrier.main_sector)["name"])
-        sectors_text = ", ".join(sectors_list)
-
-        overseas_region_text = get_barriers_overseas_region(
-            barrier.country, barrier.trading_bloc
-        )
-
-        estimated_resolution_date_text = ""
-        if barrier.estimated_resolution_date:
-            date = barrier.estimated_resolution_date.strftime("%d-%m-%Y")
-            estimated_resolution_date_text = f"Estimated to be resolved on {date}."
-
-        corpus_object["id"] = barrier.id
-        corpus_object["barrier_corpus"] = (
-            f"{barrier.code}. "
-            f"{barrier.title}. "
-            f"{barrier.summary}. "
-            f"{sectors_text} "
-            f"{barrier.country_name}. "
-            f"{overseas_region_text}. "
-            f"{companies_affected_list} "
-            f"{other_organisations_affected_list} "
-            f"{notes_text_list}. "
-            f"{barrier.status_summary}. "
-            f"{estimated_resolution_date_text}. "
-            f"{barrier.export_description}."
-        )
-
-        data_dictionary.append(corpus_object)
 
     return data_dictionary
 
 
-def init():
-    global manager
-
-    if manager:
-        raise Exception("Related Barrier Manager already set")
-
+def get_or_init() -> RelatedBarrierManager:
     manager = RelatedBarrierManager()
 
     if not manager.get_barrier_ids():
@@ -337,6 +279,50 @@ def init():
         data = get_data()
         manager.set_data(data)
 
+    return manager
+
 
 def barrier_to_corpus(barrier) -> str:
-    return barrier.title + ". " + barrier.summary
+    companies_affected_list = ""
+    if barrier.companies:
+        companies_affected_list = ", ".join(
+            [company["name"] for company in barrier.companies]
+        )
+
+    other_organisations_affected_list = ""
+    if barrier.related_organisations:
+        other_organisations_affected_list = ", ".join(
+            [company["name"] for company in barrier.related_organisations]
+        )
+
+    notes_text_list = ", ".join(
+        [note.text for note in barrier.interactions_documents.all()]
+    )
+
+    sectors_list = [
+        get_sector(str(sector_id))["name"]
+        for sector_id in barrier.sectors
+        if get_sector(str(sector_id))
+    ]
+    main_sector = get_sector(barrier.main_sector)
+    if main_sector:
+        sectors_list.append(main_sector["name"])
+    sectors_text = ", ".join(sectors_list)
+
+    overseas_region_text = get_barriers_overseas_region(
+        barrier.country, barrier.trading_bloc
+    )
+
+    estimated_resolution_date_text = ""
+    if barrier.estimated_resolution_date:
+        date = barrier.estimated_resolution_date.strftime("%d-%m-%Y")
+        estimated_resolution_date_text = f"Estimated to be resolved on {date}."
+
+    return (
+        f"{barrier.title}. {barrier.summary}. "
+        f"{sectors_text} {barrier.country_name}. "
+        f"{overseas_region_text}. {companies_affected_list} "
+        f"{other_organisations_affected_list} {notes_text_list}. "
+        f"{barrier.status_summary}. {estimated_resolution_date_text}. "
+        f"{barrier.export_description}."
+    )
