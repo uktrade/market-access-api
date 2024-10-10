@@ -18,6 +18,7 @@ from api.metadata.constants import (
     PROGRESS_UPDATE_CHOICES,
     TOP_PRIORITY_BARRIER_STATUS,
     BarrierStatus,
+    PublicBarrierStatus,
 )
 from api.metadata.models import BarrierTag, PolicyTeam
 from tests.action_plans.factories import (
@@ -179,6 +180,85 @@ class TestDataWarehouseExport(TestCase):
         barrier = BarrierFactory(status_date=date.today())
         serialised_data = DataWorkspaceSerializer(barrier).data
         assert "is_top_priority" in serialised_data.keys()
+
+    def test_has_public_eligibility_summary(self):
+        barrier = BarrierFactory(
+            status_date=date.today(), public_eligibility_summary="Test summary"
+        )
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert "public_eligibility_summary" in serialised_data.keys()
+        assert (
+            serialised_data["public_eligibility_summary"]
+            == barrier.public_eligibility_summary
+        )
+
+    def test_has_approvers_summary(self):
+        barrier = BarrierFactory(status_date=date.today())
+        barrier.public_barrier.approvers_summary = "Test Summary"
+        barrier.public_barrier.save()
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert "approvers_summary" in serialised_data.keys()
+        assert serialised_data["approvers_summary"] == "Test Summary"
+
+    def test_public_barrier_set_to_awaiting_publication_on_no_value(self):
+        barrier = BarrierFactory(status_date=date.today())
+
+        assert barrier.public_barrier._public_view_status == PublicBarrierStatus.UNKNOWN
+
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert "public_barrier_set_to_awaiting_publication_on" in serialised_data.keys()
+        assert serialised_data["public_barrier_set_to_awaiting_publication_on"] is None
+
+    def test_public_barrier_set_to_awaiting_approval_on(self):
+        barrier = BarrierFactory(status_date=date.today())
+
+        assert barrier.public_barrier._public_view_status == PublicBarrierStatus.UNKNOWN
+
+        ts = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        with freezegun.freeze_time(ts):
+            barrier.public_barrier.public_view_status = (
+                PublicBarrierStatus.APPROVAL_PENDING
+            )
+            barrier.public_barrier.save()
+
+        ts2 = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        with freezegun.freeze_time(ts2):
+            barrier.public_barrier.public_view_status = (
+                PublicBarrierStatus.PUBLISHING_PENDING
+            )
+            barrier.public_barrier.save()
+
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert "public_barrier_set_to_awaiting_approval_on" in serialised_data.keys()
+        assert serialised_data[
+            "public_barrier_set_to_awaiting_approval_on"
+        ] == ts.strftime("%Y-%m-%d")
+
+    def test_public_barrier_set_to_awaiting_publication_on(self):
+        barrier = BarrierFactory(status_date=date.today())
+
+        assert barrier.public_barrier._public_view_status == PublicBarrierStatus.UNKNOWN
+
+        ts = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        with freezegun.freeze_time(ts):
+            barrier.public_barrier.public_view_status = (
+                PublicBarrierStatus.PUBLISHING_PENDING
+            )
+            barrier.public_barrier.save()
+
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert "public_barrier_set_to_awaiting_publication_on" in serialised_data.keys()
+        assert serialised_data[
+            "public_barrier_set_to_awaiting_publication_on"
+        ] == ts.strftime("%Y-%m-%d")
 
     def test_policy_teams(self):
         barrier = BarrierFactory(status_date=date.today())
