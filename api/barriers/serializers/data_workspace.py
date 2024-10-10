@@ -24,6 +24,7 @@ from api.metadata.constants import (
     TOP_PRIORITY_BARRIER_STATUS,
     TRADE_DIRECTION_CHOICES,
     BarrierStatus,
+    PublicBarrierStatus,
 )
 from api.metadata.utils import get_barrier_tag_from_title
 
@@ -215,6 +216,9 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     economic_assessment_rating = serializers.SerializerMethodField()
     date_top_priority_rationale_added = serializers.SerializerMethodField()
     policy_teams = serializers.SerializerMethodField()
+    approvers_summary = serializers.SerializerMethodField()
+    public_barrier_set_to_awaiting_approval_on = serializers.SerializerMethodField()
+    public_barrier_set_to_awaiting_publication_on = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -332,6 +336,9 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "tags",
             "policy_teams",
             "date_top_priority_rationale_added",
+            "approvers_summary",
+            "public_barrier_set_to_awaiting_approval_on",
+            "public_barrier_set_to_awaiting_publication_on",
         )
 
     def to_representation(self, instance):
@@ -738,3 +745,29 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
         latest_valuation_assessment = obj.current_valuation_assessment
         if latest_valuation_assessment:
             return latest_valuation_assessment.modified_on
+
+    def get_approvers_summary(self, obj):
+        if hasattr(obj, "public_barrier"):
+            return obj.public_barrier.approvers_summary
+
+    def get_public_barrier_set_to_awaiting_approval_on(self, obj):
+        public_barrier = getattr(obj, "public_barrier")
+        if not public_barrier:
+            return
+
+        first_historical_record = public_barrier.history.filter(
+            _public_view_status=PublicBarrierStatus.APPROVAL_PENDING
+        ).first()
+        if first_historical_record:
+            return first_historical_record.history_date.strftime("%Y-%m-%d")
+
+    def get_public_barrier_set_to_awaiting_publication_on(self, obj):
+        public_barrier = getattr(obj, "public_barrier")
+        if not public_barrier:
+            return
+
+        first_historical_record = public_barrier.history.filter(
+            _public_view_status=PublicBarrierStatus.PUBLISHING_PENDING
+        ).first()
+        if first_historical_record:
+            return first_historical_record.history_date.strftime("%Y-%m-%d")

@@ -168,16 +168,28 @@ class DashboardUserTasksView(generics.ListAPIView):
 
     def get(self, request, *args, **kwargs):
         # Get the User information from the request
-        recipient = request.user
+        user = request.user
+        user_groups = user.groups.all()
 
         # Can use filter from search without excluding barriers that the user owns to
         # get the full list of barriers they should be getting task list for
         users_barriers = (
             Barrier.objects.filter(
-                Q(barrier_team__user=recipient) & Q(barrier_team__archived=False)
+                Q(barrier_team__user=user)
+                & Q(barrier_team__archived=False)
+                & Q(archived=False)
             )
             .distinct()
             .order_by("modified_on")[:1000]
+            .select_related("public_barrier")
+            .prefetch_related(
+                "progress_updates",
+                "barrier_team",
+                "barrier_commodities",
+                "next_steps_items",
+                "tags",
+                "export_types",
+            )
         )
 
         # Initialise task list
@@ -189,26 +201,26 @@ class DashboardUserTasksView(generics.ListAPIView):
             # Check if the barrier is overdue for publishing
             self.check_publishing_overdue(barrier)
 
+            # Establish the relationship between the user and barrier
+            is_owner, is_approver, is_publisher = self.get_user_barrier_relations(
+                user, user_groups, barrier
+            )
+
             # Only barrier owners should get notifications for public barrier editing
-            if hasattr(
-                barrier.barrier_team.filter(role="Owner").first(), "user_id"
-            ) and (
-                recipient.id
-                == barrier.barrier_team.filter(role="Owner").first().user_id
-            ):
+            if is_owner:
                 publishing_editor_task = self.check_public_barrier_editor_tasks(barrier)
                 if publishing_editor_task:
                     task_list.append(publishing_editor_task)
 
             # Only add public barrier approver tasks for users with that role
-            if recipient.groups.filter(name="Public barrier approver"):
+            if is_approver:
                 publishing_approver_task = self.check_public_barrier_approver_tasks(
                     barrier
                 )
                 task_list.append(publishing_approver_task)
 
             # Only add public barrier publisher tasks for users with that role
-            if recipient.groups.filter(name="Publisher"):
+            if is_publisher:
                 publishing_publisher_task = self.check_public_barrier_publisher_tasks(
                     barrier
                 )
@@ -222,11 +234,11 @@ class DashboardUserTasksView(generics.ListAPIView):
             task_list += missing_barrier_tasks
 
             estimated_resolution_date_tasks = (
-                self.check_estimated_resolution_date_tasks(recipient, barrier)
+                self.check_estimated_resolution_date_tasks(user, barrier)
             )
             task_list += estimated_resolution_date_tasks
 
-        mentions_tasks = self.check_mentions_tasks(recipient)
+        mentions_tasks = self.check_mentions_tasks(user)
         # Combine list of tasks with list of mentions
         task_list += mentions_tasks
 
@@ -270,6 +282,26 @@ class DashboardUserTasksView(generics.ListAPIView):
             # Add the difference to the nearest friday to 1 then apply friday modifier
             third_friday_day = 1 + (4 - first_day) + friday_modifier
             self.third_friday_date = self.todays_date.replace(day=third_friday_day)
+
+    def get_user_barrier_relations(self, user, user_groups, barrier):
+        # Only barrier owners should get notifications for public barrier editing
+        barrier_team_members = barrier.barrier_team.all()
+
+        is_owner = False
+        is_approver = False
+        is_publisher = False
+
+        for team_user in barrier_team_members:
+            if team_user.user_id == user.id and team_user.role == "Owner":
+                is_owner = True
+
+        for group in user_groups:
+            if group.name == "Public barrier approver":
+                is_approver = True
+            if group.name == "Publisher":
+                is_publisher = True
+
+        return (is_owner, is_approver, is_publisher)
 
     def check_public_barrier_editor_tasks(self, barrier):
         if barrier.public_barrier.public_view_status == 20:
@@ -466,7 +498,7 @@ class DashboardUserTasksView(generics.ListAPIView):
 
         return missing_details_task_list
 
-    def check_estimated_resolution_date_tasks(self, recipient, barrier):
+    def check_estimated_resolution_date_tasks(self, user, barrier):
         estimated_resolution_date_task_list = []
         if barrier.status in [1, 2, 3]:
 
@@ -492,10 +524,7 @@ class DashboardUserTasksView(generics.ListAPIView):
                     )
 
             if hasattr(barrier.barrier_team.filter(role="Owner").first(), "user_id"):
-                if (
-                    recipient.id
-                    == barrier.barrier_team.filter(role="Owner").first().user_id
-                ):
+                if user.id == barrier.barrier_team.filter(role="Owner").first().user_id:
                     # estimated resolution date missing for high priorities
                     # stored logic_trigger: "(barrier.is_top_priority or barrier.priority_level == 'overseas delivery')
                     #   and not barrier.estimated_resolution_date and
@@ -549,6 +578,7 @@ class DashboardUserTasksView(generics.ListAPIView):
 
     def check_progress_update_tasks(self, barrier):
         progress_update_task_list = []
+        progress_update = barrier.latest_progress_update
 
         # monthly progress update upcoming
         # is_top_priority = true
@@ -561,9 +591,8 @@ class DashboardUserTasksView(generics.ListAPIView):
         #   AND status = OPEN OR status = RESOLVED IN PART
         if barrier.is_top_priority:
             self.set_date_of_third_friday()
-
-            if not barrier.latest_progress_update or (
-                barrier.latest_progress_update.modified_on < self.first_of_month_date
+            if not progress_update or (
+                progress_update.modified_on < self.first_of_month_date
                 and self.todays_date < self.third_friday_date
             ):
                 # Latest update was last month and the current date is before the third friday (the due date)
@@ -579,7 +608,7 @@ class DashboardUserTasksView(generics.ListAPIView):
                     }
                 )
             elif (
-                barrier.latest_progress_update.modified_on < self.first_of_month_date
+                progress_update.modified_on < self.first_of_month_date
                 and self.todays_date > self.third_friday_date
             ):
                 # Latest update was last month and the current date is past the third friday (the due date)
@@ -598,7 +627,7 @@ class DashboardUserTasksView(generics.ListAPIView):
             # overdue next step for pb100 barriers
             # is_top_priority = true  AND public.market_access_trade_barrier_next_steps (status = IN_PROGRESS)
             #   AND public.market_access_trade_barrier_next_steps(completion_date<current date)
-            #   AND (status = OPEN OR status =RESOLVED IN PART)
+            #   AND (status = OPEN OR status = RESOLVED IN PART)
             for step in barrier.next_steps_items.all():
                 if (
                     step.status == "IN_PROGRESS"
@@ -624,9 +653,7 @@ class DashboardUserTasksView(generics.ListAPIView):
         #   AND status = OPEN OR status = RESOLVED IN PART
         if barrier.priority_level == "OVERSEAS":
             update_date_limit = self.todays_date - timedelta(days=90)
-            if not barrier.latest_progress_update or (
-                barrier.latest_progress_update.modified_on < update_date_limit
-            ):
+            if not progress_update or (progress_update.modified_on < update_date_limit):
                 progress_update_task_list.append(
                     {
                         "barrier_code": barrier.code,
@@ -640,7 +667,7 @@ class DashboardUserTasksView(generics.ListAPIView):
 
         # quarterly programme fund update
         # tag = 'programme fund - facilative regional fund'
-        #   AND programme_fund_progress_update_date> 90 days AND status = OPEN OR status =RESOLVED IN PART
+        #   AND programme_fund_progress_update_date > 90 days old AND status = OPEN OR status = RESOLVED IN PART
         tags_list = [tag.title for tag in barrier.tags.all()]
         if "Programme Fund - Facilitative Regional" in tags_list:
             update_date_limit = self.todays_date - timedelta(days=90)
@@ -661,11 +688,11 @@ class DashboardUserTasksView(generics.ListAPIView):
 
         return progress_update_task_list
 
-    def check_mentions_tasks(self, recipient):
+    def check_mentions_tasks(self, user):
         mention_tasks_list = []
         # Get the mentions for the given user
         user_mentions = Mention.objects.filter(
-            recipient=recipient,
+            recipient=user,
             created_on__date__gte=(datetime.now() - timedelta(days=30)),
         )
         for mention in user_mentions:
