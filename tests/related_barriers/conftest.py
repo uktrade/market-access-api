@@ -1,30 +1,147 @@
-import mock
 import pytest
-from django.db.models import CharField
-from django.db.models import Value as V
-from django.db.models.functions import Concat
 
-from api.barriers.models import Barrier
 from api.related_barriers.manager import RelatedBarrierManager
-from tests.barriers.factories import BarrierFactory
 
 
 @pytest.fixture
-def related_barrier_manager_context():
-    # BarrierFactory(title='title 1')
-    BarrierFactory(title="title 2")
-    data = (
-        Barrier.objects.filter(archived=False)
-        .exclude(draft=True)
-        .annotate(
-            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
-        )
-        .values("id", "barrier_corpus")
-    )
-    with mock.patch("api.related_barriers.manager.cache") as mock_cache:
-        with mock.patch(
-            "api.related_barriers.manager.get_transformer"
-        ) as mock_get_transformer:
-            manager = RelatedBarrierManager()
-            manager.set_data(data)
-            yield manager, mock_cache, mock_get_transformer
+def manager(settings):
+    # Loads transformer model
+    settings.CACHES = {
+        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+    }
+    return RelatedBarrierManager()
+
+
+@pytest.fixture
+def transformer(manager):
+    return manager.model
+
+
+@pytest.fixture
+def stop_words():
+    return {
+        "i",
+        "me",
+        "my",
+        "myself",
+        "we",
+        "our",
+        "ours",
+        "ourselves",
+        "you",
+        "your",
+        "yours",
+        "yourself",
+        "yourselves",
+        "he",
+        "him",
+        "his",
+        "himself",
+        "she",
+        "her",
+        "hers",
+        "herself",
+        "it",
+        "its",
+        "itself",
+        "they",
+        "them",
+        "their",
+        "theirs",
+        "themselves",
+        "what",
+        "which",
+        "who",
+        "whom",
+        "this",
+        "that",
+        "these",
+        "those",
+        "am",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "having",
+        "do",
+        "does",
+        "did",
+        "doing",
+        "a",
+        "an",
+        "the",
+        "and",
+        "but",
+        "if",
+        "or",
+        "because",
+        "as",
+        "until",
+        "while",
+        "of",
+        "at",
+        "by",
+        "for",
+        "with",
+        "about",
+        "against",
+        "between",
+        "into",
+        "through",
+        "during",
+        "before",
+        "after",
+        "above",
+        "below",
+        "to",
+        "from",
+        "up",
+        "down",
+        "in",
+        "out",
+        "on",
+        "off",
+        "over",
+        "under",
+        "again",
+        "further",
+        "then",
+        "once",
+        "here",
+        "there",
+        "when",
+        "where",
+        "why",
+        "how",
+        "all",
+        "any",
+        "both",
+        "each",
+        "few",
+        "more",
+        "most",
+        "other",
+        "some",
+        "such",
+        "no",
+        "nor",
+        "not",
+        "only",
+        "own",
+        "same",
+        "so",
+        "than",
+        "too",
+        "very",
+        "can",
+        "will",
+        "just",
+        "should",
+        "now",
+    }

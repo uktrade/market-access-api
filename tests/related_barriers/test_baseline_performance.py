@@ -8,19 +8,10 @@ from sentence_transformers import SentenceTransformer
 
 from api.barriers.models import Barrier
 from api.related_barriers.constants import BarrierEntry
-from api.related_barriers.manager import RelatedBarrierManager, barrier_to_corpus
+from api.related_barriers.manager import barrier_to_corpus
 from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
-
-
-@pytest.fixture
-def manager(settings):
-    # Loads transformer model
-    settings.CACHES = {
-        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
-    }
-    return RelatedBarrierManager()
 
 
 @pytest.fixture
@@ -179,3 +170,82 @@ def test_related_barriers_1(manager, TEST_CASE_3):
     )
 
     assert results1 == [(str(barriers[1].id), torch.tensor(0.1556))]
+
+
+def test_stopwords_lose_semantic_meaning(transformer, stop_words):
+    """
+    This test shows that removing stopwords can affect the semantic meaning of a sentence as interpreted by
+    the transformer model.
+
+    Results:
+        Including stopwords - [0.8278, 0.8852] - ie scores of [data[0], data[1]]
+        Removing stopwords - [0.8992, 0.8992] - ie scores of [data_no_stopwords[0], data_no_stopwords[1]]
+
+    The results show that the model understands the honey preference of the bear which
+    is linguistically determined by the stop words: {does, not}.
+
+    Including the stopwords shows a higher correlation between the search_phrase and data[1], which is expected.
+    Removing the stopwords renders the 2 phrases the same, so the results are identical. The semantic value of the
+    bear's honey preference is lost with the removal of the stopword.
+    """
+    data = [
+        "a bear does not like to eat the honey",
+        "the bear does like to eat the honey",
+    ]
+    data_no_stopwords = [
+        " ".join(word for word in d.split(" ") if word not in stop_words) for d in data
+    ]
+
+    search_phrases = ["bear that eats honey"]
+
+    data_embeddings = transformer.encode(
+        data + search_phrases, convert_to_tensor=True
+    ).numpy()
+    data_no_stopwords_embeddings = transformer.encode(
+        data_no_stopwords + search_phrases, convert_to_tensor=True
+    ).numpy()
+
+    cosine_sim = transformer.similarity(data_embeddings, data_embeddings)
+    cosine_sim_no_stopwords = transformer.similarity(
+        data_no_stopwords_embeddings, data_no_stopwords_embeddings
+    )
+
+    search_similarity = cosine_sim[2][:2].round(decimals=4)
+    search_similarity_no_stopwords = cosine_sim_no_stopwords[2][:2].round(decimals=4)
+
+    assert torch.equal(search_similarity, torch.Tensor([0.8427, 0.8852]))
+    assert torch.equal(search_similarity_no_stopwords, torch.Tensor([0.8992, 0.8992]))
+
+
+def test_country_keywords(transformer):
+    """
+    The results show the Country keyword impacts the similarity score.
+    """
+    data = [
+        "This barrier relates to the export of wine to Malaysia.",
+        "This barrier relates to the export of wine to China",
+    ]
+
+    search_phrases = ["Wine exports", "Wine exports Malaysia", "China barrier"]
+
+    data_embeddings = transformer.encode(
+        data + search_phrases, convert_to_tensor=True
+    ).numpy()
+
+    cosine_sim = transformer.similarity(data_embeddings, data_embeddings)
+
+    search_results = [
+        cosine_sim[2][:2].round(decimals=4),
+        cosine_sim[3][:2].round(decimals=4),
+        cosine_sim[4][:2].round(decimals=4),
+    ]
+
+    assert torch.equal(
+        search_results[0], torch.Tensor([0.6763, 0.6826])
+    )  # search_phrases[0]
+    assert torch.equal(
+        search_results[1], torch.Tensor([0.8406, 0.6639])
+    )  # search_phrases[1]
+    assert torch.equal(
+        search_results[2], torch.Tensor([0.3886, 0.5383])
+    )  # search_phrases[2]
