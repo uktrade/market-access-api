@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +9,9 @@ from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 from api.feedback.models import Feedback
 from api.feedback.serializers import FeedbackSerializer
 from api.user.models import UserActvitiyLog
-from api.user.serializers import UserActvitiyLogSerializer
+from api.user.serializers import UserActvitiyLogSerializer, UserSerializer
+
+UserModel = get_user_model()
 
 
 class BarrierList(generics.ListAPIView):
@@ -50,3 +53,15 @@ class UserActivityLogView(generics.ListAPIView):
 
     queryset = UserActvitiyLog.objects.all()
     serializer_class = UserActvitiyLogSerializer
+
+
+class UserList(generics.ListAPIView):
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return UserModel.objects.values(
+            "id", "email", "first_name", "last_name", "last_login"
+        ).order_by("id")
+
+    serializer_class = UserSerializer
