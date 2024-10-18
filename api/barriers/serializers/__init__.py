@@ -1,7 +1,6 @@
 from .barriers import (  # noqa
     BarrierDetailSerializer,
     BarrierListSerializer,
-    BarrierRelatedListSerializer,
 )
 from .data_workspace import DataWorkspaceSerializer  # noqa
 from .progress_updates import ProgressUpdateSerializer  # noqa
