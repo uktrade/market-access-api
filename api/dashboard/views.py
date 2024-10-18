@@ -1,30 +1,17 @@
 import logging
-from datetime import datetime
-from datetime import time, timedelta, timezone
+from datetime import datetime, time, timedelta
 
 import dateutil.parser
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import (
-    Case,
-    CharField,
-    IntegerField,
-    Q,
-    Sum,
-    Value,
-    When,
-)
+from django.db.models import Case, CharField, IntegerField, Q, Sum, Value, When
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from api.barriers.models import (
-    Barrier, BarrierFilterSet,
-)
-from api.barriers.serializers import (
-    BarrierListSerializer,
-)
+from api.barriers.models import Barrier, BarrierFilterSet
+from api.barriers.serializers import BarrierListSerializer
 from api.interactions.models import Mention
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC_LOOKUP,

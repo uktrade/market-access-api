@@ -71,7 +71,29 @@ THIRD_PARTY_APPS = [
     "django_audit_log_middleware",
 ]
 
-LOCAL_APPS = ['api.action_plans', 'api.assessment', 'api.barrier_downloads', 'api.barriers', 'api.collaboration', 'api.commodities', 'api.core', 'api.dashboard', 'api.dataset', 'api.documents', 'api.feedback', 'api.healthcheck', 'api.history', 'api.interactions', 'api.metadata', 'api.pingdom', 'api.related_barriers', 'api.user', 'api.user_event_log', 'api.wto', 'authbroker_client']
+LOCAL_APPS = [
+    "api.action_plans",
+    "api.assessment",
+    "api.barrier_downloads",
+    "api.barriers",
+    "api.collaboration",
+    "api.commodities",
+    "api.core",
+    "api.dashboard",
+    "api.dataset",
+    "api.documents",
+    "api.feedback",
+    "api.healthcheck",
+    "api.history",
+    "api.interactions",
+    "api.metadata",
+    "api.pingdom",
+    "api.related_barriers",
+    "api.user",
+    "api.user_event_log",
+    "api.wto",
+    "authbroker_client",
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 

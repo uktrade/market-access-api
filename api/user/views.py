@@ -145,5 +145,3 @@ class UserActivityLogList(generics.ListAPIView):
 
     def get_queryset(self):
         return UserActvitiyLog.objects.order_by("-event_time").all()
-
-

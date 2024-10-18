@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from api.dashboard.views import UserTasksView, BarrierDashboardSummary
+from api.dashboard.views import BarrierDashboardSummary, UserTasksView
 
 app_name = "dashboard"
 

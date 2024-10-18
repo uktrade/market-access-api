@@ -5,14 +5,17 @@ from django.contrib.auth.models import Group
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
-from api.barriers.models import BarrierProgressUpdate, BarrierNextStepItem
+from api.barriers.models import BarrierNextStepItem, BarrierProgressUpdate
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin, create_test_user
 from api.interactions.models import Interaction, Mention
 from api.metadata.constants import (
-    PublicBarrierStatus, BarrierStatus, PROGRESS_UPDATE_CHOICES, NEXT_STEPS_ITEMS_STATUS_CHOICES
+    NEXT_STEPS_ITEMS_STATUS_CHOICES,
+    PROGRESS_UPDATE_CHOICES,
+    BarrierStatus,
+    PublicBarrierStatus,
 )
-from api.metadata.models import Organisation, ExportType, BarrierTag
+from api.metadata.models import BarrierTag, ExportType, Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.history.factories import ProgrammeFundProgressUpdateFactory
 
