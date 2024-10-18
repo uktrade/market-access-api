@@ -2,6 +2,7 @@ from datetime import datetime
 
 import freezegun
 import time_machine
+from django.contrib.auth import get_user_model
 from mock import PropertyMock, patch
 from pytz import UTC
 from rest_framework import status
@@ -20,6 +21,7 @@ from api.metadata.models import BarrierTag, Organisation
 from tests.barriers.factories import BarrierFactory
 
 freezegun.configure(extend_ignore_list=["transformers"])
+User = get_user_model()
 
 
 class TestBarriersDataset(APITestMixin):
@@ -277,4 +279,32 @@ class TestUserActivityLogDataset(APITestMixin):
 
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 2
+
+
+class TestUserDataset(APITestMixin):
+    def test_base_user(self):
+        url = reverse("dataset:user-list")
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data["results"]) == 1
+
+        user = User.objects.first()
+        ts1 = datetime(2024, 9, 1, 0, 0, 0)
+        with freezegun.freeze_time(ts1):
+            self.api_client.force_login(user)
+
+        response = self.api_client.get(url)
+
+        assert response.data["results"][0]["last_login"] == ts1.strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+
+    def test_user_added(self):
+        create_test_user()
+        url = reverse("dataset:user-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
         assert len(response.data["results"]) == 2
