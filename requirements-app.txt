@@ -16,7 +16,7 @@ click-repl==0.3.0 ; python_version >= "3.9" and python_version < "4.0"
 click==8.1.7 ; python_version >= "3.9" and python_version < "4.0"
 colorama==0.4.6 ; python_version >= "3.9" and python_version < "4.0" and (sys_platform == "win32" or platform_system == "Windows")
 cron-descriptor==1.4.3 ; python_version >= "3.9" and python_version < "4.0"
-cryptography==42.0.8 ; python_version >= "3.9" and python_version < "4.0"
+cryptography==43.0.3; python_version >= "3.9" and python_version < "4.0"
 dbt-copilot-python==0.2.1 ; python_version >= "3.9" and python_version < "4.0"
 deprecated==1.2.14 ; python_version >= "3.9" and python_version < "4.0"
 distlib==0.3.8 ; python_version >= "3.9" and python_version < "4"
