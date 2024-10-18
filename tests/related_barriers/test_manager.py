@@ -1,10 +1,37 @@
 import mock
 import pytest
+from django.db.models import CharField
+from django.db.models import Value as V
+from django.db.models.functions import Concat
 from mock.mock import call
 
+from api.barriers.models import Barrier
 from api.related_barriers.constants import BarrierEntry
+from api.related_barriers.manager import RelatedBarrierManager
+from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
+
+
+@pytest.fixture
+def related_barrier_manager_context():
+    # BarrierFactory(title='title 1')
+    BarrierFactory(title="title 2")
+    data = (
+        Barrier.objects.filter(archived=False)
+        .exclude(draft=True)
+        .annotate(
+            barrier_corpus=Concat("title", V(". "), "summary", output_field=CharField())
+        )
+        .values("id", "barrier_corpus")
+    )
+    with mock.patch("api.related_barriers.manager.cache") as mock_cache:
+        with mock.patch(
+            "api.related_barriers.manager.get_transformer"
+        ) as mock_get_transformer:
+            manager = RelatedBarrierManager()
+            manager.set_data(data)
+            yield manager, mock_cache, mock_get_transformer
 
 
 def test_manager_calls_cache_get(related_barrier_manager_context):
