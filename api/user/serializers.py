@@ -130,7 +130,13 @@ class WhoAmISerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = ["sso_user_id"]
+        fields = [
+            "id",
+            "sso_user_id",
+            "sectors",
+            "policy_teams",
+            "organisations",
+        ]
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -164,8 +170,31 @@ class UserDetailSerializer(serializers.ModelSerializer):
             .values_list("codename", flat=True)
         )
 
+    def update_profile(self, instance, validated_data):
+        # Update the users profile
+        profile_update = validated_data.pop("profile", None)
+
+        if profile_update is not None:
+            # update the related profile
+            sectors = profile_update.pop("sectors", None)
+            policy_teams = profile_update.pop("policy_teams", None)
+            organisations = profile_update.pop("organisations", None)
+            # get current profile
+            profile = instance.profile
+            if sectors:
+                profile.sectors = sectors
+            if policy_teams:
+                profile.policy_teams.clear()
+                for team in policy_teams:
+                    profile.policy_teams.add(team)
+            if organisations:
+                profile.organisations.clear()
+                for organisation in organisations:
+                    profile.organisations.add(organisation)
+
     def update(self, instance, validated_data):
-        if validated_data.pop("groups") is not None:
+
+        if validated_data.pop("groups", None) is not None:
             group_ids = [
                 int(each.get("id"))
                 for each in self.initial_data.get("groups")
@@ -207,6 +236,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
             instance.groups.set(group_ids)
         if validated_data.pop("is_active", None) is not None:
             instance.is_active = False
+
+        self.update_profile(instance, validated_data)
+
         return super().update(instance, validated_data)
 
 
