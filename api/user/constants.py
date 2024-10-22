@@ -11,6 +11,18 @@ class UserRoles:
     ADMIN = "Administrator"
 
 
+ADMIN_PROTECTED_USER_FIELDS = [
+    "groups",
+    "username",
+    "password",
+    "last_login",
+    "is_superuser",
+    "is_staff",
+    "is_active",
+    "date_joined",
+    "user_permissions",
+]
+
 USER_ACTIVITY_EVENT_TYPES = Choices(
     ("USER_LOGGED_IN", "User logged in"),
     # Logout event is not currently used on the front end

@@ -13,6 +13,9 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from api.barriers.models import Barrier
+from api.core.permissions import IsUserDetailAdminOrOwner
+from api.interactions.models import Mention
 from api.user.helpers import get_django_user_by_sso_user_id
 from api.user.models import (
     Profile,
@@ -68,6 +71,10 @@ def who_am_i(request):
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserDetailSerializer
+    permission_classes = (
+        IsAuthenticated,
+        IsUserDetailAdminOrOwner,
+    )
 
     def get_object(self):
         sso_user_id = self.kwargs.get("sso_user_id")
