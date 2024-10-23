@@ -136,6 +136,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "sectors",
             "policy_teams",
             "organisations",
+            "countries",
+            "trading_blocs",
+            "overseas_regions",
         ]
 
 

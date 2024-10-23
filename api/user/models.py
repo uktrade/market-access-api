@@ -10,8 +10,6 @@ from django.utils import timezone
 from django_filters import BaseInFilter
 
 from api.barriers import models as barriers_models
-
-# from api.barriers.models import BarrierPolicyTeam
 from api.core.utils import nested_sort
 from api.metadata import models as metadata_models
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
@@ -58,6 +56,24 @@ class Profile(models.Model):
     organisations = models.ManyToManyField(
         metadata_models.Organisation,
         help_text="Organisations that the user is interested in",
+    )
+    countries = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        default=list,
+        help_text="Countries that the user is interested in",
+    )
+    trading_blocs = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        default=list,
+        help_text="Trading blocs that the user is interested in",
+    )
+    overseas_regions = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        default=list,
+        help_text="Overseas regions that the user is interested in",
     )
 
 
