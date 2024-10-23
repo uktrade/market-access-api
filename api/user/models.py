@@ -45,6 +45,7 @@ class Profile(models.Model):
     last_activity = models.DateTimeField(null=True, blank=True)
     policy_teams = models.ManyToManyField(
         metadata_models.PolicyTeam,
+        blank=True,
         help_text="Policy teams that the user is interested in",
     )
     sectors = ArrayField(
@@ -55,6 +56,7 @@ class Profile(models.Model):
     )
     organisations = models.ManyToManyField(
         metadata_models.Organisation,
+        blank=True,
         help_text="Organisations that the user is interested in",
     )
     countries = ArrayField(
