@@ -60,4 +60,4 @@ class IsUserDetailAdminOrOwner(BasePermission):
         # owner of the record and is allowed to change the fields in the request.
         # If the requester is not the owner or an admin and is attempting to
         # perform a restricted method, deny permission.
-        return True if request.user.username == obj.username else False
+        return request.user.username == obj.username
