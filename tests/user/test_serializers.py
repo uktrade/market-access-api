@@ -66,3 +66,28 @@ class TestUserDetailSerializer(TestCase, UserFactoryMixin):
         assert patched_logger.called_with(
             "User 5 has been removed from the following groups: {'Public barrier approver'}"
         )
+
+    def test_profile_update(self):
+        normal_user = self.create_standard_user()
+        serializer = UserDetailSerializer(
+            instance=normal_user,
+            partial=True,
+            data={
+                "profile": {
+                    "organisations": [5],
+                    "sectors": [
+                        "af959812-6095-e211-a939-e4115bead28a",
+                        "9538cecc-5f95-e211-a939-e4115bead28a",
+                        "9b38cecc-5f95-e211-a939-e4115bead28a",
+                    ],
+                    "countries": ["985f66a0-5d95-e211-a939-e4115bead28a"],  # Angola
+                    "trading_blocs": ["TB00003"],  # Asia pacific
+                    "overseas_regions": [
+                        "04a7cff0-03dd-4677-aa3c-12dd8426f0d7"
+                    ],  # Asia Pacific
+                    "policy_teams": [1, 4],
+                }
+            },
+        )
+        assert serializer.is_valid()
+        serializer.save()
