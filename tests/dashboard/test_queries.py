@@ -4,11 +4,15 @@ import freezegun
 import pytest
 from factory.fuzzy import FuzzyDate
 
+from api.barriers.models import Barrier
 from api.core.test_utils import create_test_user
 from api.dashboard.service import get_counts
-from api.barriers.models import Barrier
-from api.metadata.constants import BarrierStatus, PRIORITY_LEVELS, TOP_PRIORITY_BARRIER_STATUS, \
-    ECONOMIC_ASSESSMENT_IMPACT
+from api.metadata.constants import (
+    ECONOMIC_ASSESSMENT_IMPACT,
+    PRIORITY_LEVELS,
+    TOP_PRIORITY_BARRIER_STATUS,
+    BarrierStatus,
+)
 from tests.assessment.factories import EconomicImpactAssessmentFactory
 from tests.barriers.factories import BarrierFactory, ReportFactory
 
@@ -38,7 +42,7 @@ def users():
             last_name="Last3",
             email="Test3@Userii.com",
             username="Name3",
-        )
+        ),
     ]
 
 
@@ -57,14 +61,48 @@ def barrier_factory(users):
             ReportFactory(created_by=users[0], estimated_resolution_date=date),
             BarrierFactory(created_by=users[0], estimated_resolution_date=date),
             BarrierFactory(created_by=users[0], estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED, estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING, estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], status=BarrierStatus.OPEN_IN_PROGRESS, estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], status=BarrierStatus.DORMANT, estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], status=BarrierStatus.DORMANT, estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], status=BarrierStatus.RESOLVED_IN_PART, status_date=datetime.now(), estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], status=BarrierStatus.RESOLVED_IN_FULL, status_date=datetime.now(), estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], priority_level=PRIORITY_LEVELS.OVERSEAS, estimated_resolution_date=date),
+            BarrierFactory(
+                created_by=users[0],
+                top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+                estimated_resolution_date=date,
+            ),
+            BarrierFactory(
+                created_by=users[0],
+                top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+                estimated_resolution_date=date,
+            ),
+            BarrierFactory(
+                created_by=users[0],
+                status=BarrierStatus.OPEN_IN_PROGRESS,
+                estimated_resolution_date=date,
+            ),
+            BarrierFactory(
+                created_by=users[0],
+                status=BarrierStatus.DORMANT,
+                estimated_resolution_date=date,
+            ),
+            BarrierFactory(
+                created_by=users[0],
+                status=BarrierStatus.DORMANT,
+                estimated_resolution_date=date,
+            ),
+            BarrierFactory(
+                created_by=users[0],
+                status=BarrierStatus.RESOLVED_IN_PART,
+                status_date=datetime.now(),
+                estimated_resolution_date=date,
+            ),
+            BarrierFactory(
+                created_by=users[0],
+                status=BarrierStatus.RESOLVED_IN_FULL,
+                status_date=datetime.now(),
+                estimated_resolution_date=date,
+            ),
+            BarrierFactory(
+                created_by=users[0],
+                priority_level=PRIORITY_LEVELS.OVERSEAS,
+                estimated_resolution_date=date,
+            ),
         ]
 
     return func
@@ -76,46 +114,48 @@ def test_get_counts_full_schema(users):
 
     ts = datetime.now()
     with freezegun.freeze_time(ts):
-        response = get_counts(qs, users[0])
+        counts = get_counts(qs, users[0])
 
-    assert response == {
-        'barrier_value_chart': {
-            'estimated_barriers_value': None,
-            'resolved_barriers_value': None
+    assert counts == {
+        "barrier_value_chart": {
+            "estimated_barriers_value": None,
+            "resolved_barriers_value": None,
         },
-        'barriers': {
-            'open': 0,
-            'overseas_delivery': 0,
-            'paused': 0,
-            'pb100': 0,
-            'resolved': 0,
-            'total': 1
+        "barriers": {
+            "open": 0,
+            "overseas_delivery": 0,
+            "paused": 0,
+            "pb100": 0,
+            "resolved": 0,
+            "total": 1,
         },
-        'barriers_by_status_chart': {'labels': [], 'series': []},
-        'barriers_current_year': {
-            'open': 0,
-            'overseas_delivery': 0,
-            'paused': 0,
-            'pb100': 0,
-            'resolved': 0,
-            'total': 1
+        "barriers_by_status_chart": {"labels": [], "series": []},
+        "barriers_current_year": {
+            "open": 0,
+            "overseas_delivery": 0,
+            "paused": 0,
+            "pb100": 0,
+            "resolved": 0,
+            "total": 1,
         },
-        'financial_year': {
-            'current_end': datetime(ts.year + 1, 3, 31, 0, 0),
-            'current_start': datetime(ts.year, 4, 1, 0, 0),
-            'previous_end': datetime(ts.year, 3, 31, 0, 0),  # Previous End should bu current start?
-            'previous_start': datetime(ts.year - 1, 4, 1, 0, 0)
+        "financial_year": {
+            "current_end": datetime(ts.year + 1, 3, 31, 0, 0),
+            "current_start": datetime(ts.year, 4, 1, 0, 0),
+            "previous_end": datetime(
+                ts.year, 3, 31, 0, 0
+            ),  # Previous End should bu current start?
+            "previous_start": datetime(ts.year - 1, 4, 1, 0, 0),
         },
-        'reports': 0,
-        'total_value_chart': {
-            'open_barriers_value': None,
-            'resolved_barriers_value': None
+        "reports": 0,
+        "total_value_chart": {
+            "open_barriers_value": None,
+            "resolved_barriers_value": None,
         },
-        'user_counts': {
-            'user_barrier_count': 1,
-            'user_open_barrier_count': 0,
-            'user_report_count': 0
-        }
+        "user_counts": {
+            "user_barrier_count": 1,
+            "user_open_barrier_count": 0,
+            "user_report_count": 0,
+        },
     }
 
 
@@ -130,21 +170,21 @@ def test_get_user_counts(users):
     qs = Barrier.objects.all()
 
     assert get_counts(qs, users[0])["user_counts"] == {
-        'user_barrier_count': 3,  # Report not included?
-        'user_open_barrier_count': 1,
-        'user_report_count': 1
+        "user_barrier_count": 3,  # Report not included?
+        "user_open_barrier_count": 1,
+        "user_report_count": 1,
     }
 
     assert get_counts(qs, users[1])["user_counts"] == {
-        'user_barrier_count': 1,
-        'user_open_barrier_count': 0,
-        'user_report_count': 0
+        "user_barrier_count": 1,
+        "user_open_barrier_count": 0,
+        "user_report_count": 0,
     }
 
     assert get_counts(qs, users[2])["user_counts"] == {
-        'user_barrier_count': 0,
-        'user_open_barrier_count': 0,
-        'user_report_count': 1
+        "user_barrier_count": 0,
+        "user_open_barrier_count": 0,
+        "user_report_count": 1,
     }
 
 
@@ -152,27 +192,31 @@ def test_get_barriers(users, barrier_factory):
     barrier_factory()
     qs = Barrier.objects.all()
 
-    assert get_counts(qs, users[0])["barriers"] == {
-        'open': 1,
-        'overseas_delivery': 1,
-        'paused': 2,
-        'pb100': 2,
-        'resolved': 1,
-        'total': 11
+    barriers = get_counts(qs, users[0])["barriers"]
+
+    assert barriers == {
+        "open": 1,
+        "overseas_delivery": 1,
+        "paused": 2,
+        "pb100": 2,
+        "resolved": 1,
+        "total": 11,
     }
 
 
 def test_get_barriers_old_date(users, barrier_factory):
-    barrier_factory(date=datetime.now() - timedelta(days=2*365))
+    barrier_factory(date=datetime.now() - timedelta(days=2 * 365))
     qs = Barrier.objects.all()
 
-    assert get_counts(qs, users[0])["barriers"] == {
-        'open': 1,
-        'overseas_delivery': 1,
-        'paused': 2,
-        'pb100': 2,
-        'resolved': 1,
-        'total': 11
+    barriers = get_counts(qs, users[0])["barriers"]
+
+    assert barriers == {
+        "open": 1,
+        "overseas_delivery": 1,
+        "paused": 2,
+        "pb100": 2,
+        "resolved": 1,
+        "total": 11,
     }
 
 
@@ -180,13 +224,15 @@ def test_get_barriers_current_year(users, barrier_factory):
     barrier_factory()
     qs = Barrier.objects.all()
 
-    assert get_counts(qs, users[0])["barriers_current_year"] == {
-        'open': 1,
-        'overseas_delivery': 1,
-        'paused': 2,
-        'pb100': 2,
-        'resolved': 1,
-        'total': 11
+    barriers_current_year = get_counts(qs, users[0])["barriers_current_year"]
+
+    assert barriers_current_year == {
+        "open": 1,
+        "overseas_delivery": 1,
+        "paused": 2,
+        "pb100": 2,
+        "resolved": 1,
+        "total": 11,
     }
 
 
@@ -194,20 +240,22 @@ def test_get_barriers_current_year(users, barrier_factory):
     "date",
     [
         datetime(datetime.now().year, 4, 1),
-        datetime(datetime.now().year + 1, 3, 31) - timedelta(seconds=1)
-    ]
+        datetime(datetime.now().year + 1, 3, 31) - timedelta(seconds=1),
+    ],
 )
 def test_get_barriers_current_financial_year(users, barrier_factory, date):
     barrier_factory(date=date)
     qs = Barrier.objects.all()
 
-    assert get_counts(qs, users[0])["barriers_current_year"] == {
-        'open': 1,
-        'overseas_delivery': 1,
-        'paused': 2,
-        'pb100': 2,
-        'resolved': 1,
-        'total': 11
+    barriers_current_year = get_counts(qs, users[0])["barriers_current_year"]
+
+    assert barriers_current_year == {
+        "open": 1,
+        "overseas_delivery": 1,
+        "paused": 2,
+        "pb100": 2,
+        "resolved": 1,
+        "total": 11,
     }
 
 
@@ -215,29 +263,36 @@ def test_barriers_by_status_chart_empty(users, barrier_factory):
     barrier_factory()
     qs = Barrier.objects.all()
 
-    assert get_counts(qs, users[0])["barriers_by_status_chart"] == {'labels': [], 'series': []}
+    barriers_by_status_chart = get_counts(qs, users[0])["barriers_by_status_chart"]
+
+    assert barriers_by_status_chart == {"labels": [], "series": []}
 
 
 def test_barriers_by_status_chart(users, barrier_factory):
     barriers = barrier_factory()
     assessment_impacts = list(ECONOMIC_ASSESSMENT_IMPACT)
     for i, barrier in enumerate(barriers):
-        EconomicImpactAssessmentFactory(barrier=barrier, impact=assessment_impacts[i][0])
+        EconomicImpactAssessmentFactory(
+            barrier=barrier, impact=assessment_impacts[i][0]
+        )
     qs = Barrier.objects.all()
 
-    assert get_counts(qs, users[0])["barriers_by_status_chart"] == {
-        'labels': ['Resolved: In part', 'Dormant', 'Resolved: In full', 'Open'],
-        'series': [5500000, 8000000, 8500000, 57260000]
+    barriers_by_status_chart = get_counts(qs, users[0])["barriers_by_status_chart"]
+
+    assert barriers_by_status_chart == {
+        "labels": ["Resolved: In part", "Dormant", "Resolved: In full", "Open"],
+        "series": [5500000, 8000000, 8500000, 57260000],
     }
 
 
 @pytest.mark.parametrize(
-    "status", [
+    "status",
+    [
         BarrierStatus.OPEN_IN_PROGRESS,
         BarrierStatus.DORMANT,
         BarrierStatus.RESOLVED_IN_FULL,
-        BarrierStatus.RESOLVED_IN_PART
-    ]
+        BarrierStatus.RESOLVED_IN_PART,
+    ],
 )
 def test_barrier_by_status_by_labal(users, status):
     assessment_impacts = list(ECONOMIC_ASSESSMENT_IMPACT)
@@ -256,20 +311,25 @@ def test_barrier_by_status_by_labal(users, status):
             break
 
     assert barriers_by_status_chart["series"][index] == 60000
-    assert barriers_by_status_chart["labels"][index] == dict(BarrierStatus.choices)[status]
+    assert (
+        barriers_by_status_chart["labels"][index] == dict(BarrierStatus.choices)[status]
+    )
 
 
 def test_total_value_chart(users, barrier_factory):
     barriers = barrier_factory()
     assessment_impacts = list(ECONOMIC_ASSESSMENT_IMPACT)
     for i, barrier in enumerate(barriers):
-        EconomicImpactAssessmentFactory(barrier=barrier, impact=assessment_impacts[i][0])
+        EconomicImpactAssessmentFactory(
+            barrier=barrier, impact=assessment_impacts[i][0]
+        )
     qs = Barrier.objects.all()
 
     total_value_chart = get_counts(qs, users[0])["total_value_chart"]
 
     assert total_value_chart == {
-        'resolved_barriers_value': 14000000, 'open_barriers_value': 57260000
+        "resolved_barriers_value": 14000000,
+        "open_barriers_value": 57260000,
     }
 
 
@@ -277,9 +337,14 @@ def test_barrier_value_chart(users, barrier_factory):
     barriers = barrier_factory()
     assessment_impacts = list(ECONOMIC_ASSESSMENT_IMPACT)
     for i, barrier in enumerate(barriers):
-        EconomicImpactAssessmentFactory(barrier=barrier, impact=assessment_impacts[i][0])
+        EconomicImpactAssessmentFactory(
+            barrier=barrier, impact=assessment_impacts[i][0]
+        )
     qs = Barrier.objects.all()
 
     barrier_value_chart = get_counts(qs, users[0])["barrier_value_chart"]
 
-    assert barrier_value_chart == {'resolved_barriers_value': 14000000, 'estimated_barriers_value': 57260000}
+    assert barrier_value_chart == {
+        "resolved_barriers_value": 14000000,
+        "estimated_barriers_value": 57260000,
+    }

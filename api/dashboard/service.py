@@ -18,9 +18,7 @@ def get_counts(qs, user):
     previous_year_end = datetime(datetime.now().year, 3, 31)
 
     if not user.is_anonymous:
-        user_barrier_count = Barrier.barriers.filter(
-            created_by=user
-        ).count()
+        user_barrier_count = Barrier.barriers.filter(created_by=user).count()
         user_report_count = Barrier.reports.filter(created_by=user).count()
         user_open_barrier_count = Barrier.barriers.filter(
             created_by=user, status=2
@@ -119,7 +117,7 @@ def get_counts(qs, user):
     status_labels = []
     status_data = []
 
-    barrier_by_status = sorted(barrier_by_status, key=lambda x: x['total'])
+    barrier_by_status = sorted(barrier_by_status, key=lambda x: x["total"])
 
     for series in barrier_by_status:
         status_labels.append(series["status_display"])
@@ -141,9 +139,7 @@ def get_counts(qs, user):
             "pb100": qs.filter(
                 top_priority_status__in=["APPROVED", "REMOVAL_PENDING"]
             ).count(),
-            "overseas_delivery": qs.filter(
-                priority_level="OVERSEAS"
-            ).count(),
+            "overseas_delivery": qs.filter(priority_level="OVERSEAS").count(),
         },
         "barriers_current_year": {
             "total": qs.filter(
