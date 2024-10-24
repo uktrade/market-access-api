@@ -4,7 +4,7 @@ from datetime import datetime, time, timedelta
 import dateutil.parser
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, IntegerField, Q, Sum, Value, When
+from django.db.models import Q
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
@@ -12,11 +12,8 @@ from rest_framework.response import Response
 
 from api.barriers.models import Barrier, BarrierFilterSet
 from api.barriers.serializers import BarrierListSerializer
+from api.dashboard import service
 from api.interactions.models import Mention
-from api.metadata.constants import (
-    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC_LOOKUP,
-    BarrierStatus,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -45,202 +42,7 @@ class BarrierDashboardSummary(generics.GenericAPIView):
             Barrier.barriers.filter(archived=False)
         )
 
-        current_user = self.request.user
-
-        # Get current financial year
-        current_year_start = datetime(datetime.now().year, 4, 1)
-        current_year_end = datetime(datetime.now().year + 1, 3, 31)
-        previous_year_start = datetime(datetime.now().year - 1, 4, 1)
-        previous_year_end = datetime(datetime.now().year + 1, 3, 31)
-
-        if not current_user.is_anonymous:
-            user_barrier_count = Barrier.barriers.filter(
-                created_by=current_user
-            ).count()
-            user_report_count = Barrier.reports.filter(created_by=current_user).count()
-            user_open_barrier_count = Barrier.barriers.filter(
-                created_by=current_user, status=2
-            ).count()
-
-        when_assessment = [
-            When(valuation_assessments__impact=k, then=Value(v))
-            for k, v in ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC_LOOKUP
-        ]
-
-        # Resolved vs Estimated barriers values chart
-        resolved_valuations = (
-            filtered_queryset.filter(
-                Q(
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ]
-                )
-                | Q(
-                    status_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ]
-                ),
-                Q(status=4) | Q(status=3),
-                valuation_assessments__archived=False,
-            )
-            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
-            .aggregate(total=Sum("numeric_value"))
-        )
-
-        resolved_barrier_value = resolved_valuations["total"]
-
-        estimated_valuations = (
-            filtered_queryset.filter(
-                Q(
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ]
-                )
-                | Q(
-                    status_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ]
-                ),
-                Q(status=1) | Q(status=2),
-                valuation_assessments__archived=False,
-            )
-            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
-            .aggregate(total=Sum("numeric_value"))
-        )
-
-        estimated_barrier_value = estimated_valuations["total"]
-
-        # Total resolved barriers vs open barriers value chart
-
-        resolved_barriers = (
-            filtered_queryset.filter(
-                Q(status=4) | Q(status=3),
-                valuation_assessments__archived=False,
-            )
-            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
-            .aggregate(total=Sum("numeric_value"))
-        )
-
-        total_resolved_barriers = resolved_barriers["total"]
-
-        open_barriers = (
-            filtered_queryset.filter(
-                Q(status=1) | Q(status=2),
-                valuation_assessments__archived=False,
-            )
-            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
-            .aggregate(total=Sum("numeric_value"))
-        )
-
-        open_barriers_value = open_barriers["total"]
-
-        # Open barriers by status
-        whens = [When(status=k, then=Value(v)) for k, v in BarrierStatus.choices]
-
-        barrier_by_status = (
-            filtered_queryset.filter(
-                valuation_assessments__archived=False,
-            )
-            .annotate(status_display=Case(*whens, output_field=CharField()))
-            .annotate(numeric_value=Case(*when_assessment, output_field=IntegerField()))
-            .values("status_display")
-            .annotate(total=Sum("numeric_value"))
-            .order_by()
-        )
-
-        status_labels = []
-        status_data = []
-
-        for series in barrier_by_status:
-            status_labels.append(series["status_display"])
-            status_data.append(series["total"])
-
-        # TODO for status filter might need to consider status dates as well as ERD
-        counts = {
-            "financial_year": {
-                "current_start": current_year_start,
-                "current_end": current_year_end,
-                "previous_start": previous_year_start,
-                "previous_end": previous_year_end,
-            },
-            "barriers": {
-                "total": filtered_queryset.count(),
-                "open": filtered_queryset.filter(status=2).count(),
-                "paused": filtered_queryset.filter(status=5).count(),
-                "resolved": filtered_queryset.filter(status=4).count(),
-                "pb100": filtered_queryset.filter(
-                    top_priority_status__in=["APPROVED", "REMOVAL_PENDING"]
-                ).count(),
-                "overseas_delivery": filtered_queryset.filter(
-                    priority_level="OVERSEAS"
-                ).count(),
-            },
-            "barriers_current_year": {
-                "total": filtered_queryset.filter(
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ]
-                ).count(),
-                "open": filtered_queryset.filter(
-                    status=2,
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ],
-                ).count(),
-                "paused": filtered_queryset.filter(
-                    status=5,
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ],
-                ).count(),
-                "resolved": filtered_queryset.filter(
-                    status=4,
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ],
-                ).count(),
-                "pb100": filtered_queryset.filter(
-                    top_priority_status__in=["APPROVED", "REMOVAL_PENDING"],
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ],
-                ).count(),
-                "overseas_delivery": filtered_queryset.filter(
-                    priority_level="OVERSEAS",
-                    estimated_resolution_date__range=[
-                        current_year_start,
-                        current_year_end,
-                    ],
-                ).count(),
-            },
-            "user_counts": {
-                "user_barrier_count": user_barrier_count,
-                "user_report_count": user_report_count,
-                "user_open_barrier_count": user_open_barrier_count,
-            },
-            "reports": Barrier.reports.count(),
-            "barrier_value_chart": {
-                "resolved_barriers_value": resolved_barrier_value,
-                "estimated_barriers_value": estimated_barrier_value,
-            },
-            "total_value_chart": {
-                "resolved_barriers_value": total_resolved_barriers,
-                "open_barriers_value": open_barriers_value,
-            },
-            "barriers_by_status_chart": {
-                "series": status_data,
-                "labels": status_labels,
-            },
-        }
+        counts = service.get_counts(qs=filtered_queryset, user=request.user)
 
         return Response(counts)
 
