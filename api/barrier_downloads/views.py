@@ -15,6 +15,16 @@ from api.barrier_downloads.serializers import (
 from api.barriers.models import Barrier, BarrierFilterSet
 
 
+
+class BarrierDownloadFilterBackend(DjangoFilterBackend):
+    def get_filterset_kwargs(self, request, queryset, view):
+        return {
+            'data': request.data.get("filters", {}),
+            'queryset': queryset,
+            'request': request,
+        }
+
+
 class BarrierDownloadsView(generics.ListCreateAPIView):
     queryset = (
         Barrier.barriers.annotate(
@@ -41,7 +51,7 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
     )
     serializer_class = BarrierDownloadSerializer
     filterset_class = BarrierFilterSet
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (BarrierDownloadFilterBackend,)
     pagination_class = PageNumberPagination
 
     def post(self, request, *args, **kwargs):
