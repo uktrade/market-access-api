@@ -15,13 +15,12 @@ from api.barrier_downloads.serializers import (
 from api.barriers.models import Barrier, BarrierFilterSet
 
 
-
 class BarrierDownloadFilterBackend(DjangoFilterBackend):
     def get_filterset_kwargs(self, request, queryset, view):
         return {
-            'data': request.data.get("filters", {}),
-            'queryset': queryset,
-            'request': request,
+            "data": request.data,
+            "queryset": queryset,
+            "request": request,
         }
 
 
