@@ -27,9 +27,13 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
 
     def test_barrier_download_post_endpoint_no_results_filter(self):
         barrier = BarrierFactory()
-        url = f'{reverse("barrier-downloads")}?search_term_text=wrong-{barrier.title}'
+        url = f'{reverse("barrier-downloads")}'
 
-        response = self.api_client.post(url)
+        response = self.api_client.post(
+            url,
+            data={"search_term_text": f"wrong-{barrier.title}"},
+            format="json",
+        )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
         assert response.content == b'{"error": "No barriers matching filterset"}'
@@ -60,7 +64,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
     @patch("api.barrier_downloads.tasks.generate_barrier_download_file")
     def test_barrier_download_post_endpoint_success_with_filter(self, mock_generate):
         barrier = BarrierFactory()
-        url = f'{reverse("barrier-downloads")}?text={barrier.title}'
+        url = f'{reverse("barrier-downloads")}'
 
         response = self.api_client.post(
             url, data={"filters": {"text": barrier.title}}, format="json"
