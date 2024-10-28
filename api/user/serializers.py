@@ -185,23 +185,26 @@ class UserDetailSerializer(serializers.ModelSerializer):
             countries = profile_update.pop("countries", None)
             trading_blocs = profile_update.pop("trading_blocs", None)
             overseas_regions = profile_update.pop("overseas_regions", None)
+
             # get current profile
             profile = instance.profile
-            if sectors:
+            if sectors != None:
                 profile.sectors = sectors
-            if policy_teams:
+            if policy_teams != None:                
                 profile.policy_teams.clear()
-                for team in policy_teams:
-                    profile.policy_teams.add(team)
-            if organisations:
+                if policy_teams:
+                    for team in policy_teams:
+                        profile.policy_teams.add(team)
+            if organisations != None:
                 profile.organisations.clear()
-                for organisation in organisations:
-                    profile.organisations.add(organisation)
-            if countries:
+                if organisations:
+                    for organisation in organisations:
+                        profile.organisations.add(organisation)
+            if countries != None:
                 profile.countries = countries
-            if trading_blocs:
+            if trading_blocs != None:
                 profile.trading_blocs = trading_blocs
-            if overseas_regions:
+            if overseas_regions != None:
                 profile.overseas_regions = overseas_regions
 
     def update(self, instance, validated_data):
