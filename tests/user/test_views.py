@@ -303,11 +303,7 @@ class TestUserView(APITestMixin, UserFactoryMixin):
 
         post_test_groups = update_user_test.groups.all()
         assert len(post_test_groups) == 1
-        admin_group_set = False
-        for set_group in post_test_groups:
-            if set_group.name == "Administrator":
-                admin_group_set = True
-        assert admin_group_set
+        assert update_user_test.groups.filter(name="Administrator").exists()
 
     def test_update_protected_user_detail_denied_permission(self):
         """
@@ -332,11 +328,6 @@ class TestUserView(APITestMixin, UserFactoryMixin):
 
         post_test_groups = update_user_test.groups.all()
         assert len(post_test_groups) == 0
-        admin_group_set = False
-        for set_group in post_test_groups:
-            if set_group.name == "Administrator":
-                admin_group_set = True
-        assert not admin_group_set
 
 
 class TestDashboardTasksView(APITestMixin, APITestCase):
