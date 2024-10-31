@@ -9,6 +9,7 @@ from api.barriers.urls import urlpatterns as barrier_urls
 from api.collaboration.urls import urlpatterns as team_urls
 from api.commodities.urls import urlpatterns as commodities_urls
 from api.core.views import admin_override
+from api.dashboard.urls import urlpatterns as dashboard_urls
 from api.feedback import urls as feedback_urls
 from api.interactions.urls import urlpatterns as interaction_urls
 from api.metadata.views import MetadataView
@@ -37,14 +38,15 @@ urlpatterns += (
         path("metadata", MetadataView.as_view(), name="metadata"),
         path("", include("api.dataset.urls", namespace="dataset")),
     ]
+    + action_plans_urls
+    + assessment_urls
     + barrier_download_urls
     + barrier_urls
     + commodities_urls
+    + dashboard_urls
     + interaction_urls
-    + team_urls
-    + assessment_urls
-    + user_urls
-    + action_plans_urls
-    + related_barriers_urls
     + pingdom_urls
+    + related_barriers_urls
+    + team_urls
+    + user_urls
 )
