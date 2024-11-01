@@ -47,6 +47,7 @@ class Profile(models.Model):
     policy_teams = models.ManyToManyField(
         metadata_models.PolicyTeam,
         blank=True,
+        null=True,
         help_text="Policy teams that the user is interested in",
     )
     sectors = ArrayField(

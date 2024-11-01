@@ -16,7 +16,7 @@ from api.metadata.views import MetadataView
 from api.pingdom.urls import urlpatterns as pingdom_urls
 from api.related_barriers.urls import urlpatterns as related_barriers_urls
 from api.user.urls import urlpatterns as user_urls
-from api.user.views import UserDetail, who_am_i
+from api.user.views import who_am_i
 
 urlpatterns = []
 
@@ -33,8 +33,6 @@ urlpatterns += (
         path("", include("api.healthcheck.urls", namespace="healthcheck")),
         path("feedback/", include(feedback_urls, namespace="feedback")),
         path("whoami", who_am_i, name="who_am_i"),
-        path("users/<int:pk>", UserDetail.as_view(), name="get-user"),
-        path("users/<uuid:sso_user_id>", UserDetail.as_view(), name="get-user"),
         path("metadata", MetadataView.as_view(), name="metadata"),
         path("", include("api.dataset.urls", namespace="dataset")),
     ]

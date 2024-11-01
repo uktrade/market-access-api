@@ -13,9 +13,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.barriers.models import Barrier
 from api.core.permissions import IsUserDetailAdminOrOwner
-from api.interactions.models import Mention
 from api.user.helpers import get_django_user_by_sso_user_id
 from api.user.models import (
     Profile,
@@ -29,6 +27,7 @@ from api.user.serializers import (
     UserActvitiyLogSerializer,
     UserDetailSerializer,
     UserListSerializer,
+    UserProfileSerializer,
     WhoAmISerializer,
 )
 
@@ -81,6 +80,15 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
         if sso_user_id:
             return get_django_user_by_sso_user_id(sso_user_id)
         return super().get_object()
+
+
+class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = (
+        IsAuthenticated,
+        # IsUserDetailAdminOrOwner,
+    )
 
 
 class SavedSearchList(generics.ListCreateAPIView):

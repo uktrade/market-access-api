@@ -6,6 +6,7 @@ from django.db.models import Q
 from rest_framework import serializers
 from sentry_sdk import push_scope
 
+from api.barriers.fields import OrganisationsField, PolicyTeamsField
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
 from api.user.models import Profile, SavedSearch, UserActvitiyLog
@@ -128,6 +129,10 @@ class WhoAmISerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    policy_teams = PolicyTeamsField(required=False)
+    # sectors = SectorsField(required=False)
+    organisations = OrganisationsField(required=False)
+
     class Meta:
         model = Profile
         fields = [
@@ -190,16 +195,16 @@ class UserDetailSerializer(serializers.ModelSerializer):
             profile = instance.profile
             if sectors is not None:
                 profile.sectors = sectors
-            if policy_teams is not None:
+            if not policy_teams:
                 profile.policy_teams.clear()
-                if policy_teams:
-                    for team in policy_teams:
-                        profile.policy_teams.add(team)
+            else:
+                profile.policy_teams.clear()
+                for team in policy_teams:
+                    profile.policy_teams.add(team)
             if organisations is not None:
                 profile.organisations.clear()
-                if organisations:
-                    for organisation in organisations:
-                        profile.organisations.add(organisation)
+                for organisation in organisations:
+                    profile.organisations.add(organisation)
             if countries is not None:
                 profile.countries = countries
             if trading_blocs is not None:
