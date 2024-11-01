@@ -21,6 +21,7 @@ from api.user.models import (
     get_my_barriers_saved_search,
     get_team_barriers_saved_search,
 )
+from api.user.permissions import IsAdminOrRoleAdmin
 from api.user.serializers import (
     GroupSerializer,
     SavedSearchSerializer,
@@ -136,6 +137,7 @@ class UserList(generics.ListAPIView):
     filterset_fields = [
         "groups__id",
     ]
+    permission_classes = (IsAuthenticated, IsAdminOrRoleAdmin)
 
     def list(self, request, *args, **kwargs):
         self.paginator.default_limit = 10
