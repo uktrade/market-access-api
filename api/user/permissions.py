@@ -75,7 +75,18 @@ class IsPublisher(BasePermission):
 
 class IsAdmin(BasePermission):
     """
-    Roles that have Publisher permissions.
+    Roles that have Admin permissions.
     """
 
     required_groups = (UserRoles.ADMIN,)
+
+
+class IsAdminOrRoleAdmin(BasePermission):
+    """
+    Roles that have Admin permissions for user profile operations.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.groups.filter(
+            name__in=["Administrator", "Role administrator"]
+        ).exists()

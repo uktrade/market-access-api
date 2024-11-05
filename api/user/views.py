@@ -13,6 +13,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from api.core.permissions import IsUserDetailAdminOrOwner
 from api.user.helpers import get_django_user_by_sso_user_id
 from api.user.models import (
     Profile,
@@ -20,12 +21,14 @@ from api.user.models import (
     get_my_barriers_saved_search,
     get_team_barriers_saved_search,
 )
+from api.user.permissions import IsAdminOrRoleAdmin
 from api.user.serializers import (
     GroupSerializer,
     SavedSearchSerializer,
     UserActvitiyLogSerializer,
     UserDetailSerializer,
     UserListSerializer,
+    UserProfileSerializer,
     WhoAmISerializer,
 )
 
@@ -68,12 +71,25 @@ def who_am_i(request):
 class UserDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = UserModel.objects.all()
     serializer_class = UserDetailSerializer
+    permission_classes = (
+        IsAuthenticated,
+        IsUserDetailAdminOrOwner,
+    )
 
     def get_object(self):
         sso_user_id = self.kwargs.get("sso_user_id")
         if sso_user_id:
             return get_django_user_by_sso_user_id(sso_user_id)
         return super().get_object()
+
+
+class ProfileDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Profile.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = (
+        IsAuthenticated,
+        # IsUserDetailAdminOrOwner,
+    )
 
 
 class SavedSearchList(generics.ListCreateAPIView):
@@ -121,6 +137,7 @@ class UserList(generics.ListAPIView):
     filterset_fields = [
         "groups__id",
     ]
+    permission_classes = (IsAuthenticated, IsAdminOrRoleAdmin)
 
     def list(self, request, *args, **kwargs):
         self.paginator.default_limit = 10

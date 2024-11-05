@@ -7,13 +7,14 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from api.core.test_utils import APITestMixin, create_test_user
+from tests.user.factories import UserFactoryMixin
 
 logger = getLogger(__name__)
 
 freezegun.configure(extend_ignore_list=["transformers"])
 
 
-class TestUserView(APITestMixin):
+class TestUserView(APITestMixin, UserFactoryMixin):
     """User view test case."""
 
     @patch("api.user.staff_sso.StaffSSO.get_logged_in_user_details")
@@ -261,3 +262,54 @@ class TestUserView(APITestMixin):
         )
 
         assert edit_response.status_code == status.HTTP_200_OK
+
+    # pytest tests/user/test_views.py::TestUserView::test_update_protected_user_detail_admin
+    def test_update_protected_user_detail_admin(self):
+        """
+        Attempting to update a user profiles protected fields will pass with
+        admin permissions.
+        """
+        update_user_test = self.create_standard_user()
+        admin_user_test = self.create_admin()
+        api_client = self.create_api_client(user=admin_user_test)
+
+        url = f"{reverse('user-list')}/{update_user_test.id}"
+
+        pre_test_groups = update_user_test.groups.all()
+        assert len(pre_test_groups) == 0
+
+        edit_protected_response = api_client.patch(
+            url,
+            format="json",
+            data={"groups": [{"id": "4"}]},
+        )
+
+        assert edit_protected_response.status_code == 200
+
+        post_test_groups = update_user_test.groups.all()
+        assert len(post_test_groups) == 1
+        assert update_user_test.groups.filter(name="Administrator").exists()
+
+    def test_update_protected_user_detail_denied_permission(self):
+        """
+        Attempting to update a user profiles protected fields without admin
+        permissions will reject the request.
+        """
+        update_user_test = self.create_standard_user()
+        api_client = self.create_api_client(user=update_user_test)
+
+        url = f"{reverse('user-list')}/{update_user_test.id}"
+
+        pre_test_groups = update_user_test.groups.all()
+        assert len(pre_test_groups) == 0
+
+        edit_protected_response = api_client.patch(
+            url,
+            format="json",
+            data={"groups": [{"id": "4"}]},
+        )
+
+        assert edit_protected_response.status_code == 403
+
+        post_test_groups = update_user_test.groups.all()
+        assert len(post_test_groups) == 0
