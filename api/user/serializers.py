@@ -6,7 +6,12 @@ from django.db.models import Q
 from rest_framework import serializers
 from sentry_sdk import push_scope
 
-from api.barriers.fields import OrganisationsField, PolicyTeamsField
+from api.barriers.fields import (
+    OrganisationsField,
+    OverseasRegionsField,
+    PolicyTeamsField,
+    SectorsField,
+)
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
 from api.user.models import Profile, SavedSearch, UserActvitiyLog
@@ -129,8 +134,9 @@ class WhoAmISerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    overseas_regions = OverseasRegionsField(required=False)
     policy_teams = PolicyTeamsField(required=False)
-    # sectors = SectorsField(required=False)
+    sectors = SectorsField(required=False)
     organisations = OrganisationsField(required=False)
 
     class Meta:
