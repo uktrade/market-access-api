@@ -303,4 +303,3 @@ def get_barrier_search_ordering_choices():
         (ordering, config["label"])
         for ordering, config in BARRIER_SEARCH_ORDERING_CHOICES.items()
     ]
-

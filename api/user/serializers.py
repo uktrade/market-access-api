@@ -7,10 +7,12 @@ from rest_framework import serializers
 from sentry_sdk import push_scope
 
 from api.barriers.fields import (
+    CountriesField,
     OrganisationsField,
     OverseasRegionsField,
     PolicyTeamsField,
     SectorsField,
+    TradingBlocsField,
 )
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
@@ -138,6 +140,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     policy_teams = PolicyTeamsField(required=False)
     sectors = SectorsField(required=False)
     organisations = OrganisationsField(required=False)
+    countries = CountriesField(required=False)
+    trading_blocs = TradingBlocsField(required=False)
 
     class Meta:
         model = Profile
