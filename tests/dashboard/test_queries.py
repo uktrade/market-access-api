@@ -65,11 +65,13 @@ def barrier_factory(users):
             BarrierFactory(created_by=users[0], estimated_resolution_date=date),
             BarrierFactory(
                 created_by=users[0],
+                status=BarrierStatus.OPEN_IN_PROGRESS,
                 top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
                 estimated_resolution_date=date,
             ),
             BarrierFactory(
                 created_by=users[0],
+                status=BarrierStatus.OPEN_IN_PROGRESS,
                 top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
                 estimated_resolution_date=date,
             ),
@@ -102,6 +104,7 @@ def barrier_factory(users):
             ),
             BarrierFactory(
                 created_by=users[0],
+                status=BarrierStatus.OPEN_IN_PROGRESS,
                 priority_level=PRIORITY_LEVELS.OVERSEAS,
                 estimated_resolution_date=date,
             ),
@@ -223,11 +226,11 @@ def test_get_barriers(users, barrier_factory):
     barriers = get_counts(qs, users[0])["barriers"]
 
     assert barriers == {
-        "open": 1,
+        "open": 4,
         "overseas_delivery": 1,
         "paused": 2,
         "pb100": 2,
-        "resolved": 1,
+        "resolved": 2,
         "total": 11,
     }
 
@@ -239,11 +242,11 @@ def test_get_barriers_old_date(users, barrier_factory):
     barriers = get_counts(qs, users[0])["barriers"]
 
     assert barriers == {
-        "open": 1,
+        "open": 4,
         "overseas_delivery": 1,
         "paused": 2,
         "pb100": 2,
-        "resolved": 1,
+        "resolved": 2,
         "total": 11,
     }
 
@@ -255,11 +258,11 @@ def test_get_barriers_current_year(users, barrier_factory):
     barriers_current_year = get_counts(qs, users[0])["barriers_current_year"]
 
     assert barriers_current_year == {
-        "open": 1,
+        "open": 4,
         "overseas_delivery": 1,
         "paused": 2,
         "pb100": 2,
-        "resolved": 1,
+        "resolved": 2,
         "total": 11,
     }
 
@@ -278,11 +281,11 @@ def test_get_barriers_current_financial_year(users, barrier_factory, date):
     barriers_current_year = get_counts(qs, users[0])["barriers_current_year"]
 
     assert barriers_current_year == {
-        "open": 1,
+        "open": 4,
         "overseas_delivery": 1,
         "paused": 2,
         "pb100": 2,
-        "resolved": 1,
+        "resolved": 2,
         "total": 11,
     }
 
