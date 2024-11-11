@@ -1,5 +1,11 @@
+from logging import getLogger
+
 from django.conf import settings
 from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+from api.user.constants import ADMIN_PROTECTED_USER_FIELDS
+
+logger = getLogger(__name__)
 
 
 class IsAuthenticated(BasePermission):
@@ -28,3 +34,30 @@ class IsCreatorOrReadOnly(BasePermission):
 
         # Instance must have an attribute named `created_by`.
         return obj.created_by == request.user
+
+
+class IsUserDetailAdminOrOwner(BasePermission):
+    """
+    Object-level permission to only allow admins or owners of an object to edit it.
+    Field based granularity so Owners cannot edit their own permissions
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request
+        if request.method in SAFE_METHODS:
+            return True
+
+        for field in request.data:
+            # Loop through fields in given data, if it is a sensitive field, check
+            # the user is an Admin, or return permission denied.
+            if field in ADMIN_PROTECTED_USER_FIELDS:
+                return request.user.groups.filter(
+                    name__in=["Administrator", "Role administrator"]
+                ).exists()
+
+        # At this point, we either have no protected fields being changed or are an
+        # admin and have already allowed progress. We can now check if the user is the
+        # owner of the record and is allowed to change the fields in the request.
+        # If the requester is not the owner or an admin and is attempting to
+        # perform a restricted method, deny permission.
+        return request.user.username == obj.username
