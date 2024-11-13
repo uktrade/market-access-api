@@ -6,6 +6,14 @@ from django.db.models import Q
 from rest_framework import serializers
 from sentry_sdk import push_scope
 
+from api.barriers.fields import (
+    CountriesField,
+    OrganisationsField,
+    OverseasRegionsField,
+    PolicyTeamsField,
+    SectorsField,
+    TradingBlocsField,
+)
 from api.core.utils import cleansed_username
 from api.user.helpers import get_username
 from api.user.models import Profile, SavedSearch, UserActvitiyLog
@@ -128,9 +136,25 @@ class WhoAmISerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    overseas_regions = OverseasRegionsField(required=False)
+    policy_teams = PolicyTeamsField(required=False)
+    sectors = SectorsField(required=False)
+    organisations = OrganisationsField(required=False)
+    countries = CountriesField(required=False)
+    trading_blocs = TradingBlocsField(required=False)
+
     class Meta:
         model = Profile
-        fields = ["sso_user_id"]
+        fields = [
+            "id",
+            "sso_user_id",
+            "sectors",
+            "policy_teams",
+            "organisations",
+            "countries",
+            "trading_blocs",
+            "overseas_regions",
+        ]
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -164,8 +188,43 @@ class UserDetailSerializer(serializers.ModelSerializer):
             .values_list("codename", flat=True)
         )
 
+    def update_profile(self, instance, validated_data):
+        # Update the users profile
+        profile_update = validated_data.pop("profile", None)
+
+        if profile_update is not None:
+            # update the related profile
+            sectors = profile_update.pop("sectors", None)
+            policy_teams = profile_update.pop("policy_teams", None)
+            organisations = profile_update.pop("organisations", None)
+            countries = profile_update.pop("countries", None)
+            trading_blocs = profile_update.pop("trading_blocs", None)
+            overseas_regions = profile_update.pop("overseas_regions", None)
+
+            # get current profile
+            profile = instance.profile
+            if sectors is not None:
+                profile.sectors = sectors
+            if not policy_teams:
+                profile.policy_teams.clear()
+            else:
+                profile.policy_teams.clear()
+                for team in policy_teams:
+                    profile.policy_teams.add(team)
+            if organisations is not None:
+                profile.organisations.clear()
+                for organisation in organisations:
+                    profile.organisations.add(organisation)
+            if countries is not None:
+                profile.countries = countries
+            if trading_blocs is not None:
+                profile.trading_blocs = trading_blocs
+            if overseas_regions is not None:
+                profile.overseas_regions = overseas_regions
+
     def update(self, instance, validated_data):
-        if validated_data.pop("groups") is not None:
+
+        if validated_data.pop("groups", None) is not None:
             group_ids = [
                 int(each.get("id"))
                 for each in self.initial_data.get("groups")
@@ -207,6 +266,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
             instance.groups.set(group_ids)
         if validated_data.pop("is_active", None) is not None:
             instance.is_active = False
+
+        self.update_profile(instance, validated_data)
+
         return super().update(instance, validated_data)
 
 

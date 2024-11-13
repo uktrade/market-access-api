@@ -33,7 +33,12 @@ from api.metadata.serializers import (
     OrganisationSerializer,
     PolicyTeamSerializer,
 )
-from api.metadata.utils import get_country, get_sector, get_trading_bloc
+from api.metadata.utils import (
+    get_country,
+    get_overseas_region,
+    get_sector,
+    get_trading_bloc,
+)
 from api.wto.models import WTOProfile
 from api.wto.serializers import WTOProfileSerializer
 
@@ -496,3 +501,18 @@ class LineBreakCharField(serializers.CharField):
     def to_internal_value(self, data):
         # Convert the list of lines back to a single string value.
         return "\n".join(data)
+
+
+class OverseasRegionsField(serializers.ListField):
+    def to_representation(self, value):
+        return [get_overseas_region(region_id) for region_id in value]
+
+
+class TradingBlocsField(serializers.ListField):
+    def to_representation(self, value):
+        return [get_trading_bloc(str(trading_bloc_id)) for trading_bloc_id in value]
+
+
+class CountriesField(serializers.ListField):
+    def to_representation(self, value):
+        return [get_country(str(country_id)) for country_id in value]
