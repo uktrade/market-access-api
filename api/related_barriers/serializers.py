@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api.barriers.fields import StatusField
+from api.barriers.fields import BarrierPriorityField, StatusField
 
 
 class BarrierRelatedListSerializer(serializers.Serializer):
@@ -12,6 +12,8 @@ class BarrierRelatedListSerializer(serializers.Serializer):
     status = StatusField()
     location = serializers.SerializerMethodField()
     similarity = serializers.FloatField()
+    priority = BarrierPriorityField(required=False)
+    top_priority_status = serializers.CharField()
 
     def get_location(self, obj):
         try:
