@@ -11,6 +11,8 @@ from django_filters import BaseInFilter
 
 from api.barriers import models as barriers_models
 from api.core.utils import nested_sort
+from api.metadata import models as metadata_models
+from api.metadata.constants import TRADING_BLOC_CHOICES
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
@@ -42,6 +44,41 @@ class Profile(models.Model):
         help_text="Canonical Staff SSO UUID for reference",
     )
     last_activity = models.DateTimeField(null=True, blank=True)
+    policy_teams = models.ManyToManyField(
+        metadata_models.PolicyTeam,
+        blank=True,
+        null=True,
+        help_text="Policy teams that the user is interested in",
+    )
+    sectors = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        default=list,
+        help_text="Sectors that the user is interested in",
+    )
+    organisations = models.ManyToManyField(
+        metadata_models.Organisation,
+        blank=True,
+        help_text="Organisations that the user is interested in",
+    )
+    countries = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        default=list,
+        help_text="Countries that the user is interested in",
+    )
+    trading_blocs = ArrayField(
+        models.CharField(max_length=7, blank=True, choices=TRADING_BLOC_CHOICES),
+        blank=True,
+        default=list,
+        help_text="Trading blocs that the user is interested in",
+    )
+    overseas_regions = ArrayField(
+        models.UUIDField(),
+        blank=True,
+        default=list,
+        help_text="Overseas regions that the user is interested in",
+    )
 
 
 class BaseSavedSearch(models.Model):

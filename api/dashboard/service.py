@@ -146,7 +146,7 @@ def get_counts(qs, user):
         },
         "barriers": {
             "total": qs.count(),
-            "open": qs.filter(status=2).count(),
+            "open": qs.filter(status__in=[2, 3]).count(),
             "paused": qs.filter(status=5).count(),
             "resolved": qs.filter(status=4).count(),
             "pb100": qs.filter(
@@ -162,7 +162,7 @@ def get_counts(qs, user):
                 ]
             ).count(),
             "open": qs.filter(
-                status=2,
+                status__in=[2, 3],
                 estimated_resolution_date__range=[
                     current_year_start,
                     current_year_end,
@@ -177,12 +177,13 @@ def get_counts(qs, user):
             ).count(),
             "resolved": qs.filter(
                 status=4,
-                estimated_resolution_date__range=[
+                status_date__range=[
                     current_year_start,
                     current_year_end,
                 ],
             ).count(),
             "pb100": qs.filter(
+                status__in=[2, 3],
                 top_priority_status__in=["APPROVED", "REMOVAL_PENDING"],
                 estimated_resolution_date__range=[
                     current_year_start,
@@ -190,6 +191,7 @@ def get_counts(qs, user):
                 ],
             ).count(),
             "overseas_delivery": qs.filter(
+                status__in=[2, 3],
                 priority_level="OVERSEAS",
                 estimated_resolution_date__range=[
                     current_year_start,
