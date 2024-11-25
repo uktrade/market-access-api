@@ -942,6 +942,23 @@ class TestListBarriers(APITestMixin, APITestCase):
 
         assert barrier_ids == [str(barrier.id)]
 
+    def test_barrier_estimated_resolution_date_filter_resolved_in_part(self):
+        barrier = BarrierFactory(
+            status=3, status_date="2020-02-02", estimated_resolution_date="2020-06-06"
+        )
+
+        url = f'{reverse("list-barriers")}?status=3&estimated_resolution_date_resolved_in_part=2020-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == [str(barrier.id)]
+
     def test_barrier_status_date_filter_multiple_status(self):
         barrier_open_pending = BarrierFactory(
             status=1, estimated_resolution_date="2020-06-06"
