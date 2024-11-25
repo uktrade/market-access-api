@@ -1295,6 +1295,9 @@ class BarrierFilterSet(django_filters.FilterSet):
     )
     status_date_open_in_progress = django_filters.Filter(method="resolved_date_filter")
     status_date_resolved_in_part = django_filters.Filter(method="resolved_date_filter")
+    estimated_resolution_date_resolved_in_part = django_filters.Filter(
+        method="resolved_date_filter"
+    )
     status_date_resolved_in_full = django_filters.Filter(method="resolved_date_filter")
     delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
     category = django_filters.BaseInFilter("categories", distinct=True)
@@ -1726,6 +1729,11 @@ class BarrierFilterSet(django_filters.FilterSet):
             return queryset.exclude(
                 Q(status__in="3"),
                 ~Q(status_date__range=(start_date, end_date)),
+            )
+        elif name == "estimated_resolution_date_resolved_in_part":
+            return queryset.exclude(
+                Q(status__in="3"),
+                ~Q(estimated_resolution_date__range=(start_date, end_date)),
             )
         elif name == "status_date_open_in_progress":
             return queryset.exclude(

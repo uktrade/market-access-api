@@ -150,9 +150,12 @@ def get_counts(qs, user):
             "paused": qs.filter(status=5).count(),
             "resolved": qs.filter(status=4).count(),
             "pb100": qs.filter(
-                top_priority_status__in=["APPROVED", "REMOVAL_PENDING"]
+                top_priority_status__in=["APPROVED", "REMOVAL_PENDING"],
+                status__in=[2, 3],
             ).count(),
-            "overseas_delivery": qs.filter(priority_level="OVERSEAS").count(),
+            "overseas_delivery": qs.filter(
+                priority_level="OVERSEAS", status__in=[2, 3]
+            ).count(),
         },
         "barriers_current_year": {
             "total": qs.filter(
