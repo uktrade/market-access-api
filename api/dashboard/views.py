@@ -84,15 +84,32 @@ class UserTasksView(generics.ListAPIView):
                 "next_steps_items",
                 "tags",
                 "export_types",
+                "modified_by",
             )
         )
 
         # Initialise task list
         task_list = []
 
+        # Get the mentions task list first, so we can append them when we get to the matching
+        # barrier on the main loop.
+        mentions_tasks = self.check_mentions_tasks(user)
+
         # With the list of barriers the user could potentially see, we now need to build a list of
         # tasks derived from conditions the barriers in the list are in.
         for barrier in users_barriers:
+
+            barrier_entry = {
+                "barrier_id": barrier.id,
+                "barrier_code": barrier.code,
+                "barrier_title": barrier.title,
+                "modified_by": barrier.modified_by.first_name
+                + " "
+                + barrier.modified_by.last_name,
+                "modified_on": barrier.modified_on.strftime("%d %B %Y"),
+                "task_list": [],
+            }
+
             # Check if the barrier is overdue for publishing
             self.check_publishing_overdue(barrier)
 
@@ -101,53 +118,56 @@ class UserTasksView(generics.ListAPIView):
                 user, user_groups, barrier
             )
 
+            # Add mention task item to task list if the barrier has a key in the dictionary
+            if getattr(mentions_tasks, str(barrier.id), None):
+                barrier_entry["task_list"].append(mentions_tasks[barrier.id])
+
             # Only barrier owners should get notifications for public barrier editing
             if is_owner:
                 publishing_editor_task = self.check_public_barrier_editor_tasks(barrier)
+
                 if publishing_editor_task:
-                    task_list.append(publishing_editor_task)
+                    barrier_entry["task_list"].append(publishing_editor_task)
 
             # Only add public barrier approver tasks for users with that role
             if is_approver:
                 publishing_approver_task = self.check_public_barrier_approver_tasks(
                     barrier
                 )
-                task_list.append(publishing_approver_task)
+                barrier_entry["task_list"].append(publishing_approver_task)
 
             # Only add public barrier publisher tasks for users with that role
             if is_publisher:
                 publishing_publisher_task = self.check_public_barrier_publisher_tasks(
                     barrier
                 )
-                task_list.append(publishing_publisher_task)
+                barrier_entry["task_list"].append(publishing_publisher_task)
 
             if barrier.status in [1, 2, 3]:
                 progress_update_tasks = self.check_progress_update_tasks(barrier)
-                task_list += progress_update_tasks
+                barrier_entry["task_list"] += progress_update_tasks
 
             missing_barrier_tasks = self.check_missing_barrier_details(barrier)
-            task_list += missing_barrier_tasks
+            barrier_entry["task_list"] += missing_barrier_tasks
 
             estimated_resolution_date_tasks = (
                 self.check_estimated_resolution_date_tasks(user, barrier)
             )
-            task_list += estimated_resolution_date_tasks
+            barrier_entry["task_list"] += estimated_resolution_date_tasks
 
-        mentions_tasks = self.check_mentions_tasks(user)
-        # Combine list of tasks with list of mentions
-        task_list += mentions_tasks
+            # Remove empty tasks
+            barrier_entry["task_list"] = list(filter(None, barrier_entry["task_list"]))
 
-        # Remove empty tasks
-        filtered_task_list = list(filter(None, task_list))
+            task_list.append(barrier_entry)
 
         # Paginate
-        paginator = Paginator(filtered_task_list, 5)
+        paginator = Paginator(task_list, 5)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
 
         return Response(
             status=status.HTTP_200_OK,
-            data={"results": page_obj.object_list, "count": len(filtered_task_list)},
+            data={"results": page_obj.object_list, "count": len(task_list)},
         )
 
     def check_publishing_overdue(self, barrier):
@@ -210,18 +230,12 @@ class UserTasksView(generics.ListAPIView):
                 #   and (barrier.public_barrier.public_title or barrier.public_barrier.public_summary) and overdue
                 if self.publishing_overdue:
                     return {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "OVERDUE REVIEW",
                         "message": f"""Submit this barrier for a review and clearance checks before the GOV.UK content
                         team to publish it. This needs to be done within {self.countdown} days.""",
                     }
                 else:
                     return {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "PUBLICATION REVIEW",
                         "message": f"""Submit this barrier for a review and clearance checks before the
                         GOV.UK content team to publish it. This needs to be done within {self.countdown} days.""",
@@ -238,18 +252,12 @@ class UserTasksView(generics.ListAPIView):
                 #   and overdue
                 if self.publishing_overdue:
                     return {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "OVERDUE REVIEW",
                         "message": f"""Add a public title and summary to this barrier before it can be
                         approved. This needs to be done within {self.countdown} days""",
                     }
                 else:
                     return {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "PUBLICATION REVIEW",
                         "message": f"""Add a public title and summary to this barrier before it can be
                         approved. This needs to be done within {self.countdown} days""",
@@ -264,18 +272,12 @@ class UserTasksView(generics.ListAPIView):
         if barrier.public_barrier.public_view_status == 70:
             if self.publishing_overdue:
                 return {
-                    "barrier_code": barrier.code,
-                    "barrier_title": barrier.title,
-                    "barrier_id": barrier.id,
                     "tag": "OVERDUE REVIEW",
                     "message": f"""Review and check this barrier for clearances before it can be submitted
                     to the content team. This needs to be done within {self.countdown} days""",
                 }
             else:
                 return {
-                    "barrier_code": barrier.code,
-                    "barrier_title": barrier.title,
-                    "barrier_id": barrier.id,
                     "tag": "PUBLICATION REVIEW",
                     "message": f"""Review and check this barrier for clearances before it can be submitted
                     to the content team. This needs to be done within {self.countdown} days""",
@@ -292,18 +294,12 @@ class UserTasksView(generics.ListAPIView):
         if barrier.public_barrier.public_view_status == 30:
             if self.publishing_overdue:
                 return {
-                    "barrier_code": barrier.code,
-                    "barrier_title": barrier.title,
-                    "barrier_id": barrier.id,
                     "tag": "OVERDUE REVIEW",
                     "message": f"""This barrier has been approved. Complete the final content checks
                     and publish it. This needs to be done within {self.countdown} days""",
                 }
             else:
                 return {
-                    "barrier_code": barrier.code,
-                    "barrier_title": barrier.title,
-                    "barrier_id": barrier.id,
                     "tag": "PUBLICATION REVIEW",
                     "message": f"""This barrier has been approved. Complete the final content checks
                     and publish it. This needs to be done within {self.countdown} days""",
@@ -321,9 +317,6 @@ class UserTasksView(generics.ListAPIView):
             ):
                 missing_details_task_list.append(
                     {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "ADD INFORMATION",
                         "message": """This barrier relates to the export of goods but it does not contain
                         any HS commodity codes. Check and add the codes now.""",
@@ -336,9 +329,6 @@ class UserTasksView(generics.ListAPIView):
             if not barrier.government_organisations:
                 missing_details_task_list.append(
                     {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "ADD INFORMATION",
                         "message": """This barrier is not currently linked with any other government
                         departments (OGD) Check and add any relevant OGDs involved in the
@@ -382,9 +372,6 @@ class UserTasksView(generics.ListAPIView):
                 ):
                     missing_details_task_list.append(
                         {
-                            "barrier_code": barrier.code,
-                            "barrier_title": barrier.title,
-                            "barrier_id": barrier.id,
                             "tag": "ADD INFORMATION",
                             "message": """This barrier does not have information on how confident you feel
                             about resolving it this financial year. Add the delivery confidence now.""",
@@ -409,9 +396,6 @@ class UserTasksView(generics.ListAPIView):
                 ):
                     estimated_resolution_date_task_list.append(
                         {
-                            "barrier_code": barrier.code,
-                            "barrier_title": barrier.title,
-                            "barrier_id": barrier.id,
                             "tag": "CHANGE OVERDUE",
                             "message": """The estimated resolution date of this barrier is now in the
                             past. Review and add a new date now.""",
@@ -429,9 +413,6 @@ class UserTasksView(generics.ListAPIView):
                     ) and not barrier.estimated_resolution_date:
                         estimated_resolution_date_task_list.append(
                             {
-                                "barrier_code": barrier.code,
-                                "barrier_title": barrier.title,
-                                "barrier_id": barrier.id,
                                 "tag": "ADD DATE",
                                 "message": """As this is a priority barrier you need to add an
                                 estimated resolution date.""",
@@ -460,9 +441,6 @@ class UserTasksView(generics.ListAPIView):
                         )
                         estimated_resolution_date_task_list.append(
                             {
-                                "barrier_code": barrier.code,
-                                "barrier_title": barrier.title,
-                                "barrier_id": barrier.id,
                                 "tag": "REVIEW DATE",
                                 "message": f"""This barriers estimated resolution date has not
                                 been updated in {abs(difference)} months. Check if this date is still accurate.""",
@@ -494,12 +472,9 @@ class UserTasksView(generics.ListAPIView):
                 # Barrier needs an upcoming task added
                 progress_update_task_list.append(
                     {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "PROGRESS UPDATE DUE",
                         "message": f"""This is a PB100 barrier. Add a monthly progress update
-                        by {self.third_friday_date.strftime("%d-%m-%y")}""",
+                        by {self.third_friday_date.strftime("%d %B %Y")}""",
                     }
                 )
             elif (
@@ -510,12 +485,9 @@ class UserTasksView(generics.ListAPIView):
                 # Barrier needs an overdue task added
                 progress_update_task_list.append(
                     {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "OVERDUE PROGRESS UPDATE",
                         "message": f"""This is a PB100 barrier. Add a monthly progress update
-                        by {self.third_friday_date.strftime("%d-%m-%y")}""",
+                        by {self.third_friday_date.strftime("%d %B %Y")}""",
                     }
                 )
 
@@ -534,9 +506,6 @@ class UserTasksView(generics.ListAPIView):
                     ) * 12 + (step.completion_date.month - self.todays_date.month)
                     progress_update_task_list.append(
                         {
-                            "barrier_code": barrier.code,
-                            "barrier_title": barrier.title,
-                            "barrier_id": barrier.id,
                             "tag": "REVIEW NEXT STEP",
                             "message": f"""The next step for this barrier has not been reviewed
                             for more than {abs(difference)} months. Review the next step now.""",
@@ -551,9 +520,6 @@ class UserTasksView(generics.ListAPIView):
             if not progress_update or (progress_update.modified_on < update_date_limit):
                 progress_update_task_list.append(
                     {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "PROGRESS UPDATE DUE",
                         "message": """This is an overseas delivery barrier but there has not been
                         an update for over 3 months. Add a quarterly progress update now.""",
@@ -572,9 +538,6 @@ class UserTasksView(generics.ListAPIView):
             ):
                 progress_update_task_list.append(
                     {
-                        "barrier_code": barrier.code,
-                        "barrier_title": barrier.title,
-                        "barrier_id": barrier.id,
                         "tag": "PROGRESS UPDATE DUE",
                         "message": """There is an active programme fund for this barrier but
                         there has not been an update for over 3 months. Add a programme fund update now.""",
@@ -584,26 +547,29 @@ class UserTasksView(generics.ListAPIView):
         return progress_update_task_list
 
     def check_mentions_tasks(self, user):
-        mention_tasks_list = []
+        # mention_tasks_list = []
         # Get the mentions for the given user
         user_mentions = Mention.objects.filter(
             recipient=user,
             created_on__date__gte=(datetime.now() - timedelta(days=30)),
         )
+
+        barrier_mentions = {}
+
         for mention in user_mentions:
             # Get name of the mentioner
             mentioner = User.objects.get(id=mention.created_by_id)
             mention_task = {
-                "barrier_code": "",
-                "barrier_title": "",
-                "barrier_id": "",
                 "tag": "REVIEW COMMENT",
                 "message": f"""{mentioner.first_name} {mentioner.last_name} mentioned you
-                in a comment on {mention.created_on.strftime("%d-%m-%y")} and wants you to reply.""",
+                in a comment on {mention.created_on.strftime("%d %B %Y")} and wants you to reply.""",
             }
-            mention_tasks_list.append(mention_task)
+            # mention_tasks_list.append(mention_task)
+            barrier_mentions[mention.barrier] += mention_task
 
-        return mention_tasks_list
+        # return mention_tasks_list
+        return barrier_mentions
+
         # Once a mention is clicked on the frontend, make a call to the
         # notification view that will clear the mark the mention as read
         # this should be an existing function called by the frontend
