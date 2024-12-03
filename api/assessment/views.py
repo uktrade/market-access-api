@@ -6,14 +6,17 @@ from api.assessment.exceptions import BadRequest
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
+    PreliminaryAssessment,
     ResolvabilityAssessment,
-    StrategicAssessment, PreliminaryAssessment, )
+    StrategicAssessment,
+)
 from api.assessment.serializers import (
     EconomicAssessmentSerializer,
     EconomicImpactAssessmentSerializer,
+    PreliminaryAssessmentSerializer,
+    PreliminaryAssessmentUpdateSerializer,
     ResolvabilityAssessmentSerializer,
     StrategicAssessmentSerializer,
-    PreliminaryAssessmentSerializer, PreliminaryAssessmentUpdateSerializer,
 )
 from api.barriers.models import Barrier
 
@@ -68,7 +71,9 @@ class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIVi
 
         request = PreliminaryAssessmentUpdateSerializer(request.data)
 
-        serializer = self.get_serializer(barrier.preliminary_assessment, data=request.data, partial=True)
+        serializer = self.get_serializer(
+            barrier.preliminary_assessment, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

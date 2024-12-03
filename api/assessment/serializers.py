@@ -4,13 +4,15 @@ from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
+    PreliminaryAssessment,
     ResolvabilityAssessment,
-    StrategicAssessment, PreliminaryAssessment,
+    StrategicAssessment,
 )
 from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 from api.documents.fields import DocumentsField
+
 from .fields import (
     EffortToResolveField,
     ImpactField,
@@ -225,12 +227,16 @@ class StrategicAssessmentSerializer(
 
 
 class PreliminaryAssessmentUpdateSerializer(serializers.Serializer):
-    value = serializers.ChoiceField(choices=PRELIMINARY_ASSESSMENT_CHOICES, required=False)
+    value = serializers.ChoiceField(
+        choices=PRELIMINARY_ASSESSMENT_CHOICES, required=False
+    )
     details = serializers.CharField(required=False)
 
 
 class PreliminaryAssessmentSerializer(serializers.ModelSerializer):
-    value = serializers.ChoiceField(choices=PRELIMINARY_ASSESSMENT_CHOICES, required=True)
+    value = serializers.ChoiceField(
+        choices=PRELIMINARY_ASSESSMENT_CHOICES, required=True
+    )
     details = serializers.CharField(required=True)
     barrier_id = serializers.UUIDField()
 
