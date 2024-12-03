@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
@@ -10,8 +11,6 @@ from api.barriers.fields import UserField
 from api.core.serializers.fields import ApprovedField, ArchivedField
 from api.core.serializers.mixins import AuditMixin, CustomUpdateMixin
 from api.documents.fields import DocumentsField
-from .constants import PRELIMINARY_ASSESSMENT_CHOICES
-
 from .fields import (
     EffortToResolveField,
     ImpactField,

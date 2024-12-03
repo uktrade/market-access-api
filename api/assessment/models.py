@@ -347,9 +347,7 @@ class StrategicAssessment(
         )
 
 
-class PreliminaryAssessment(
-    ApprovalMixin, ArchivableMixin, BarrierRelatedMixin, BaseModel
-):
+class PreliminaryAssessment(BarrierRelatedMixin, BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid4)
     barrier = models.OneToOneField("barriers.Barrier", related_name="preliminary_assessment", on_delete=models.CASCADE)
     value = models.PositiveIntegerField(choices=PRELIMINARY_ASSESSMENT_CHOICES)

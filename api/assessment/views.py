@@ -1,14 +1,13 @@
-from django.http import Http404, HttpResponseBadRequest
 from rest_framework import generics, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
+from api.assessment.exceptions import BadRequest
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
     ResolvabilityAssessment,
-    StrategicAssessment, PreliminaryAssessment,
-)
+    StrategicAssessment, PreliminaryAssessment, )
 from api.assessment.serializers import (
     EconomicAssessmentSerializer,
     EconomicImpactAssessmentSerializer,
@@ -16,7 +15,6 @@ from api.assessment.serializers import (
     StrategicAssessmentSerializer,
     PreliminaryAssessmentSerializer, PreliminaryAssessmentUpdateSerializer,
 )
-from api.assessment.exceptions import BadRequest
 from api.barriers.models import Barrier
 
 
@@ -28,10 +26,14 @@ class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIVi
 
         try:
             barrier = Barrier.objects.get(id=barrier_id)
-            if barrier.preliminary_assessment:
-                raise BadRequest(detail="Preliminary assessment already exists")
         except Barrier.DoesNotExist:
-            raise NotFound("Barrier not found")
+            raise NotFound("Barrier")
+
+        try:
+            barrier.preliminary_assessment
+            raise BadRequest("Preliminary Assessment Exists")
+        except PreliminaryAssessment.DoesNotExist:
+            pass
 
         data = {**request.data, **{"barrier_id": barrier_id}}
         serializer = self.get_serializer(data=data)
@@ -44,12 +46,14 @@ class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIVi
 
         try:
             barrier = Barrier.objects.get(id=barrier_id)
-            if not barrier.preliminary_assessment:
-                raise NotFound("Preliminary assessment not found")
         except Barrier.DoesNotExist:
-            raise NotFound("Barrier not found")
+            raise NotFound("Barrier")
 
-        serializer = self.get_serializer(barrier.preliminary_assessment)
+        try:
+            serializer = self.get_serializer(barrier.preliminary_assessment)
+        except PreliminaryAssessment.DoesNotExist:
+            raise NotFound("Preliminary Assessment")
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, *args, **kwargs):
