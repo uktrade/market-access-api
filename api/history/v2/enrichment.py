@@ -1,6 +1,7 @@
 """
 Enrichments to historical data as done by legacy.
 """
+
 from collections import namedtuple
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -75,8 +76,12 @@ def enrich_preliminary_assessment(history: List[Dict]):
     for item in history:
         if item["field"] != "value":
             continue
-        item["old_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["old_value"]["value"]]
-        item["new_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["new_value"]["value"]]
+        item["old_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[
+            item["old_value"]["value"]
+        ]
+        item["new_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[
+            item["new_value"]["value"]
+        ]
 
 
 def enrich_status(history: List[Dict]):

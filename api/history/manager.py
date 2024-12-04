@@ -4,9 +4,9 @@ from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanT
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
+    PreliminaryAssessment,
     ResolvabilityAssessment,
     StrategicAssessment,
-    PreliminaryAssessment,
 )
 from api.barriers.models import (
     Barrier,
@@ -20,9 +20,10 @@ from api.collaboration.models import TeamMember
 from api.history.factories import PublicBarrierHistoryFactory
 from api.history.v2.enrichment import (
     enrich_impact,
+    enrich_preliminary_assessment,
     enrich_scale_history,
     enrich_status,
-    enrich_time_to_resolve, enrich_preliminary_assessment,
+    enrich_time_to_resolve,
 )
 from api.history.v2.service import (
     FieldMapping,

@@ -22,7 +22,10 @@ class TestPreliminaryAssessments(APITestMixin):
 
     def test_preliminary_assessment_bad_request(self):
         import uuid
-        url = reverse("preliminary-assessment", kwargs={"barrier_id": str(uuid.uuid4())})
+
+        url = reverse(
+            "preliminary-assessment", kwargs={"barrier_id": str(uuid.uuid4())}
+        )
         response = self.api_client.get(url, format="json")
 
         assert response.status_code == HTTPStatus.NOT_FOUND
@@ -46,7 +49,9 @@ class TestPreliminaryAssessments(APITestMixin):
 
         assert response.status_code == HTTPStatus.CREATED
 
-        response = self.api_client.patch(url, format="json", data={"details": "new_details"})
+        response = self.api_client.patch(
+            url, format="json", data={"details": "new_details"}
+        )
 
         assert response.status_code == HTTPStatus.OK
         assert response.data["details"] == "new_details"
