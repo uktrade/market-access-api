@@ -568,7 +568,10 @@ class UserTasksView(generics.ListAPIView):
     def create_barrier_entry(self, barrier):
 
         # Account for possible None values on barrier
-        modified_by = "Unknown" if not barrier.modified_by else barrier.modified_by
+        first_name = (
+            "Unknown" if not barrier.modified_by else barrier.modified_by.first_name
+        )
+        last_name = "" if not barrier.modified_by else barrier.modified_by.last_name
         modified_on = (
             "Unknown"
             if not barrier.modified_on
@@ -579,7 +582,7 @@ class UserTasksView(generics.ListAPIView):
             "barrier_id": barrier.id,
             "barrier_code": barrier.code,
             "barrier_title": barrier.title,
-            "modified_by": modified_by.first_name + " " + modified_by.last_name,
+            "modified_by": first_name + " " + last_name,
             "modified_on": modified_on,
             "task_list": [],
         }
