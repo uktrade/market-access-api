@@ -94,17 +94,7 @@ class UserTasksView(generics.ListAPIView):
         # With the list of barriers the user could potentially see, we now need to build a list of
         # tasks derived from conditions the barriers in the list are in.
         for barrier in users_barriers:
-
-            barrier_entry = {
-                "barrier_id": barrier.id,
-                "barrier_code": barrier.code,
-                "barrier_title": barrier.title,
-                "modified_by": barrier.modified_by.first_name
-                + " "
-                + barrier.modified_by.last_name,
-                "modified_on": barrier.modified_on.strftime("%d %B %Y"),
-                "task_list": [],
-            }
+            barrier_entry = self.create_barrier_entry(barrier)
 
             # Check if the barrier is overdue for publishing
             self.check_publishing_overdue(barrier)
@@ -563,26 +553,35 @@ class UserTasksView(generics.ListAPIView):
             mention_appended = False
             for barrier_task in barrier_task_list:
                 if barrier_task["barrier_id"] == mention.barrier.id:
-                    logger.critical("Barrier match")
-                    logger.critical(barrier_task["task_list"])
-
                     barrier_task["task_list"].append(mention_task)
-                    logger.critical(barrier_task["task_list"])
                     mention_appended = True
                     break
 
             # If we have passed the loop and the mention has not been assigned, we need a new barrier added
             if not mention_appended:
-                barrier_entry = {
-                    "barrier_id": mention.barrier.id,
-                    "barrier_code": mention.barrier.code,
-                    "barrier_title": mention.barrier.title,
-                    "modified_by": mention.barrier.modified_by.first_name
-                    + " "
-                    + mention.barrier.modified_by.last_name,
-                    "modified_on": mention.barrier.modified_on.strftime("%d %B %Y"),
-                    "task_list": [mention_task],
-                }
+                barrier_entry = self.create_barrier_entry(mention.barrier)
+                barrier_entry["task_list"].append(mention_task)
                 barrier_task_list.append(barrier_entry)
 
         return barrier_task_list
+
+    def create_barrier_entry(self, barrier):
+
+        # Account for possible None values on barrier
+        modified_by = "Unknown" if not barrier.modified_by else barrier.modified_by
+        modified_on = (
+            "Unknown"
+            if not barrier.modified_on
+            else barrier.modified_on.strftime("%d %B %Y")
+        )
+
+        barrier_entry = {
+            "barrier_id": barrier.id,
+            "barrier_code": barrier.code,
+            "barrier_title": barrier.title,
+            "modified_by": modified_by.first_name + " " + modified_by.last_name,
+            "modified_on": modified_on,
+            "task_list": [],
+        }
+
+        return barrier_entry
