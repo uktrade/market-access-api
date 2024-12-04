@@ -91,10 +91,6 @@ class UserTasksView(generics.ListAPIView):
         # Initialise task list
         task_list = []
 
-        # Get the mentions task list first, so we can append them when we get to the matching
-        # barrier on the main loop.
-        mentions_tasks = self.check_mentions_tasks(user)
-
         # With the list of barriers the user could potentially see, we now need to build a list of
         # tasks derived from conditions the barriers in the list are in.
         for barrier in users_barriers:
@@ -117,10 +113,6 @@ class UserTasksView(generics.ListAPIView):
             is_owner, is_approver, is_publisher = self.get_user_barrier_relations(
                 user, user_groups, barrier
             )
-
-            # Add mention task item to task list if the barrier has a key in the dictionary
-            if getattr(mentions_tasks, str(barrier.id), None):
-                barrier_entry["task_list"].append(mentions_tasks[barrier.id])
 
             # Only barrier owners should get notifications for public barrier editing
             if is_owner:
@@ -158,7 +150,12 @@ class UserTasksView(generics.ListAPIView):
             # Remove empty tasks
             barrier_entry["task_list"] = list(filter(None, barrier_entry["task_list"]))
 
-            task_list.append(barrier_entry)
+            if barrier_entry["task_list"]:
+                task_list.append(barrier_entry)
+
+        # Append mentions tasks to existing barrier task list, or create new barrier
+        # entries for un-owned barriers
+        task_list = self.append_mentions_tasks(user, task_list)
 
         # Paginate
         paginator = Paginator(task_list, 5)
@@ -546,30 +543,46 @@ class UserTasksView(generics.ListAPIView):
 
         return progress_update_task_list
 
-    def check_mentions_tasks(self, user):
-        # mention_tasks_list = []
+    def append_mentions_tasks(self, user, barrier_task_list):
         # Get the mentions for the given user
         user_mentions = Mention.objects.filter(
             recipient=user,
             created_on__date__gte=(datetime.now() - timedelta(days=30)),
+        ).prefetch_related(
+            "barrier",
         )
 
-        barrier_mentions = {}
-
         for mention in user_mentions:
-            # Get name of the mentioner
             mentioner = User.objects.get(id=mention.created_by_id)
             mention_task = {
                 "tag": "REVIEW COMMENT",
                 "message": f"""{mentioner.first_name} {mentioner.last_name} mentioned you
                 in a comment on {mention.created_on.strftime("%d %B %Y")} and wants you to reply.""",
             }
-            # mention_tasks_list.append(mention_task)
-            barrier_mentions[mention.barrier] += mention_task
 
-        # return mention_tasks_list
-        return barrier_mentions
+            mention_appended = False
+            for barrier_task in barrier_task_list:
+                if barrier_task["barrier_id"] == mention.barrier.id:
+                    logger.critical("Barrier match")
+                    logger.critical(barrier_task["task_list"])
 
-        # Once a mention is clicked on the frontend, make a call to the
-        # notification view that will clear the mark the mention as read
-        # this should be an existing function called by the frontend
+                    barrier_task["task_list"].append(mention_task)
+                    logger.critical(barrier_task["task_list"])
+                    mention_appended = True
+                    break
+
+            # If we have passed the loop and the mention has not been assigned, we need a new barrier added
+            if not mention_appended:
+                barrier_entry = {
+                    "barrier_id": mention.barrier.id,
+                    "barrier_code": mention.barrier.code,
+                    "barrier_title": mention.barrier.title,
+                    "modified_by": mention.barrier.modified_by.first_name
+                    + " "
+                    + mention.barrier.modified_by.last_name,
+                    "modified_on": mention.barrier.modified_on.strftime("%d %B %Y"),
+                    "task_list": [mention_task],
+                }
+                barrier_task_list.append(barrier_entry)
+
+        return barrier_task_list
