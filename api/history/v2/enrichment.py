@@ -7,6 +7,7 @@ from typing import Dict, List, Optional
 
 from pytz import UTC
 
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.core.utils import cleansed_username
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
@@ -68,6 +69,14 @@ def enrich_sectors(history: List[Dict]):
         item["new_value"]["sectors"] = [
             str(sector) for sector in item["new_value"]["sectors"]
         ]
+
+
+def enrich_preliminary_assessment(history: List[Dict]):
+    for item in history:
+        if item["field"] != "value":
+            continue
+        item["old_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["old_value"]["value"]]
+        item["new_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["new_value"]["value"]]
 
 
 def enrich_status(history: List[Dict]):

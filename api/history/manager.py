@@ -6,6 +6,7 @@ from api.assessment.models import (
     EconomicImpactAssessment,
     ResolvabilityAssessment,
     StrategicAssessment,
+    PreliminaryAssessment,
 )
 from api.barriers.models import (
     Barrier,
@@ -21,7 +22,7 @@ from api.history.v2.enrichment import (
     enrich_impact,
     enrich_scale_history,
     enrich_status,
-    enrich_time_to_resolve,
+    enrich_time_to_resolve, enrich_preliminary_assessment,
 )
 from api.history.v2.service import (
     FieldMapping,
@@ -61,6 +62,9 @@ class HistoryManager:
             track_first_item=True,
         )
 
+        v2_preliminary_assessment_history = PreliminaryAssessment.get_history(
+            barrier_id=barrier.pk,
+        )
         v2_economic_assessment_history = EconomicAssessment.get_history(
             barrier_id=barrier.pk, fields=["rating"]
         )
@@ -74,6 +78,7 @@ class HistoryManager:
             barrier_id=barrier.pk, fields=["scale"]
         )
         enrich_status(v2_barrier_history)
+        enrich_preliminary_assessment(v2_preliminary_assessment_history)
         history = convert_v2_history_to_legacy_object(v2_barrier_history)
 
         enrich_scale_history(v2_strategic_assessment_history)
@@ -97,6 +102,9 @@ class HistoryManager:
             start_date = None
 
         v2_barrier_history = Barrier.get_history(barrier_id=barrier.pk)
+        v2_preliminary_assessment_history = PreliminaryAssessment.get_history(
+            barrier_id=barrier.pk,
+        )
         v2_programme_fund_history = ProgrammeFundProgressUpdate.get_history(
             barrier_id=barrier.pk
         )
@@ -140,6 +148,7 @@ class HistoryManager:
 
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
+            preliminary_assessment_history=v2_preliminary_assessment_history,
             programme_fund_history=v2_programme_fund_history,
             top_priority_summary_history=v2_top_priority_summary_history,
             wto_history=v2_wto_history,

@@ -366,9 +366,12 @@ class PreliminaryAssessment(BarrierRelatedMixin, BaseModel):
     def get_history(cls, barrier_id: str, fields: Optional[List] = None):
         qs = cls.history.filter(barrier__id=barrier_id)
 
+        if not fields:
+            fields = ("barrier", "value", "details")
+
         return get_model_history(
             qs,
             model="preliminary_assessment",
-            fields=("barrier", "value", "details"),
+            fields=fields,
             track_first_item=True,
         )
