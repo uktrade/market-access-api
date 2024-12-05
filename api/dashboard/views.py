@@ -57,6 +57,7 @@ class UserTasksView(generics.ListAPIView):
     # Set variables used in date related calculations
     todays_date = datetime.now(timezone.utc)
     publishing_overdue = False
+    publish_deadline = ""
     countdown = 0
     third_friday_date = None
     first_of_month_date = None
@@ -165,10 +166,10 @@ class UserTasksView(generics.ListAPIView):
             barrier.public_barrier.public_view_status in [20, 70, 30]
             and set_to_allowed_date
         ):
-            publish_deadline = dateutil.parser.parse(
+            self.publish_deadline = dateutil.parser.parse(
                 set_to_allowed_date.strftime("%m/%d/%Y")
             ) + timedelta(days=30)
-            diff = publish_deadline - self.todays_date.replace(tzinfo=None)
+            diff = self.publish_deadline - self.todays_date.replace(tzinfo=None)
             # Set variables to track if barrier is overdue and by how much
             self.publishing_overdue = True if diff.days <= 0 else False
             self.countdown = 0 if diff.days <= 0 else diff.days
@@ -218,14 +219,22 @@ class UserTasksView(generics.ListAPIView):
                 if self.publishing_overdue:
                     return {
                         "tag": "OVERDUE REVIEW",
-                        "message": f"""Submit this barrier for a review and clearance checks before the GOV.UK content
-                        team to publish it. This needs to be done within {self.countdown} days.""",
+                        "message": [
+                            "Submit for clearance checks and GOV.UK publication approval",
+                            f"by {self.publish_deadline}.",
+                        ],
+                        "task_url": "public",
+                        "link_text": "Submit for clearance checks and GOV.UK publication approval",
                     }
                 else:
                     return {
                         "tag": "PUBLICATION REVIEW",
-                        "message": f"""Submit this barrier for a review and clearance checks before the
-                        GOV.UK content team to publish it. This needs to be done within {self.countdown} days.""",
+                        "message": [
+                            "Submit for clearance checks and GOV.UK publication approval",
+                            f"by {self.publish_deadline}.",
+                        ],
+                        "task_url": "public",
+                        "link_text": "Submit for clearance checks and GOV.UK publication approval",
                     }
             elif not barrier.public_barrier.title or not barrier.public_barrier.summary:
                 # general user needs to send barrier to approver missing detail
@@ -240,14 +249,24 @@ class UserTasksView(generics.ListAPIView):
                 if self.publishing_overdue:
                     return {
                         "tag": "OVERDUE REVIEW",
-                        "message": f"""Add a public title and summary to this barrier before it can be
-                        approved. This needs to be done within {self.countdown} days""",
+                        "message": [
+                            "Add a public title and summary",
+                            "to this barrier before it can be approved.",
+                            f"This needs to be done by {self.publish_deadline}.",
+                        ],
+                        "task_url": "public",
+                        "link_text": "Add a public title and summary",
                     }
                 else:
                     return {
                         "tag": "PUBLICATION REVIEW",
-                        "message": f"""Add a public title and summary to this barrier before it can be
-                        approved. This needs to be done within {self.countdown} days""",
+                        "message": [
+                            "Add a public title and summary",
+                            "to this barrier before it can be approved.",
+                            f"This needs to be done by {self.publish_deadline}.",
+                        ],
+                        "task_url": "public",
+                        "link_text": "Add a public title and summary",
                     }
 
     def check_public_barrier_approver_tasks(self, barrier):
@@ -260,14 +279,24 @@ class UserTasksView(generics.ListAPIView):
             if self.publishing_overdue:
                 return {
                     "tag": "OVERDUE REVIEW",
-                    "message": f"""Review and check this barrier for clearances before it can be submitted
-                    to the content team. This needs to be done within {self.countdown} days""",
+                    "message": [
+                        "Approve this barrier",
+                        f"for publication and complete clearance checks by {self.publish_deadline}.",
+                        "It can then be submitted to the GOV.UK content team.",
+                    ],
+                    "task_url": "public",
+                    "link_text": "Approve this barrier",
                 }
             else:
                 return {
                     "tag": "PUBLICATION REVIEW",
-                    "message": f"""Review and check this barrier for clearances before it can be submitted
-                    to the content team. This needs to be done within {self.countdown} days""",
+                    "message": [
+                        "Approve this barrier",
+                        f"for publication and complete clearance checks by {self.publish_deadline}.",
+                        "It can then be submitted to the GOV.UK content team.",
+                    ],
+                    "task_url": "public",
+                    "link_text": "Approve this barrier",
                 }
 
     def check_public_barrier_publisher_tasks(self, barrier):
@@ -282,14 +311,22 @@ class UserTasksView(generics.ListAPIView):
             if self.publishing_overdue:
                 return {
                     "tag": "OVERDUE REVIEW",
-                    "message": f"""This barrier has been approved. Complete the final content checks
-                    and publish it. This needs to be done within {self.countdown} days""",
+                    "message": [
+                        "Complete GOV.UK content checks",
+                        f"by {self.publish_deadline}.",
+                    ],
+                    "task_url": "public",
+                    "link_text": "Complete GOV.UK content checks",
                 }
             else:
                 return {
                     "tag": "PUBLICATION REVIEW",
-                    "message": f"""This barrier has been approved. Complete the final content checks
-                    and publish it. This needs to be done within {self.countdown} days""",
+                    "message": [
+                        "Complete GOV.UK content checks",
+                        f"by {self.publish_deadline}.",
+                    ],
+                    "task_url": "public",
+                    "link_text": "Complete GOV.UK content checks",
                 }
 
     def check_missing_barrier_details(self, barrier):
@@ -305,8 +342,9 @@ class UserTasksView(generics.ListAPIView):
                 missing_details_task_list.append(
                     {
                         "tag": "ADD INFORMATION",
-                        "message": """This barrier relates to the export of goods but it does not contain
-                        any HS commodity codes. Check and add the codes now.""",
+                        "message": ["Add an HS code to this barrier."],
+                        "task_url": "edit/commodities",
+                        "link_text": "Add an HS code to this barrier.",
                     }
                 )
 
@@ -317,9 +355,12 @@ class UserTasksView(generics.ListAPIView):
                 missing_details_task_list.append(
                     {
                         "tag": "ADD INFORMATION",
-                        "message": """This barrier is not currently linked with any other government
-                        departments (OGD) Check and add any relevant OGDs involved in the
-                        resolution of this barrier""",
+                        "message": [
+                            "Check and add any other government departments (OGDs)",
+                            "involved in the resolution of this barrier.",
+                        ],
+                        "task_url": "government-organisations/edit",
+                        "link_text": "Check and add any other government departments (OGDs)",
                     }
                 )
 
@@ -360,8 +401,12 @@ class UserTasksView(generics.ListAPIView):
                     missing_details_task_list.append(
                         {
                             "tag": "ADD INFORMATION",
-                            "message": """This barrier does not have information on how confident you feel
-                            about resolving it this financial year. Add the delivery confidence now.""",
+                            "message": [
+                                "Add your delivery confidence",
+                                "to this barrier.",
+                            ],
+                            "task_url": "progress_updates/barrier_progress",
+                            "link_text": "Add your delivery confidence",
                         }
                     )
 
@@ -384,8 +429,13 @@ class UserTasksView(generics.ListAPIView):
                     estimated_resolution_date_task_list.append(
                         {
                             "tag": "CHANGE OVERDUE",
-                            "message": """The estimated resolution date of this barrier is now in the
-                            past. Review and add a new date now.""",
+                            "message": [
+                                "Review the estimated resolution date",
+                                f"as it is currently listed as {barrier.estimated_resolution_date},",
+                                "which is in the past.",
+                            ],
+                            "task_url": "edit/estimated-resolution-date",
+                            "link_text": "Review the estimated resolution date",
                         }
                     )
 
@@ -401,8 +451,12 @@ class UserTasksView(generics.ListAPIView):
                         estimated_resolution_date_task_list.append(
                             {
                                 "tag": "ADD DATE",
-                                "message": """As this is a priority barrier you need to add an
-                                estimated resolution date.""",
+                                "message": [
+                                    "Add an estimated resolution date",
+                                    "to this PB100 barrier.",
+                                ],
+                                "task_url": "edit/estimated-resolution-date",
+                                "link_text": "Add an estimated resolution date",
                             }
                         )
 
@@ -421,16 +475,15 @@ class UserTasksView(generics.ListAPIView):
                             progress_update_expiry_date.day,
                         ).replace(tzinfo=None)
                     ):
-                        difference = (
-                            latest_update.modified_on.year - self.todays_date.year
-                        ) * 12 + (
-                            latest_update.modified_on.month - self.todays_date.month
-                        )
                         estimated_resolution_date_task_list.append(
                             {
                                 "tag": "REVIEW DATE",
-                                "message": f"""This barriers estimated resolution date has not
-                                been updated in {abs(difference)} months. Check if this date is still accurate.""",
+                                "message": [
+                                    "Check the estimated resolution date",
+                                    f"as it has not been reviewed since {latest_update.modified_on}.",
+                                ],
+                                "task_url": "edit/estimated-resolution-date",
+                                "link_text": "Check the estimated resolution date",
                             }
                         )
 
@@ -460,8 +513,12 @@ class UserTasksView(generics.ListAPIView):
                 progress_update_task_list.append(
                     {
                         "tag": "PROGRESS UPDATE DUE",
-                        "message": f"""This is a PB100 barrier. Add a monthly progress update
-                        by {self.third_friday_date.strftime("%d %B %Y")}""",
+                        "message": [
+                            "Add a monthly progress update",
+                            f"to this PB100 barrier by {self.third_friday_date.strftime('%d %B %Y')}.",
+                        ],
+                        "task_url": "progress_updates/barrier_progress",
+                        "link_text": "Add a monthly progress update",
                     }
                 )
             elif (
@@ -473,8 +530,12 @@ class UserTasksView(generics.ListAPIView):
                 progress_update_task_list.append(
                     {
                         "tag": "OVERDUE PROGRESS UPDATE",
-                        "message": f"""This is a PB100 barrier. Add a monthly progress update
-                        by {self.third_friday_date.strftime("%d %B %Y")}""",
+                        "message": [
+                            "Add a monthly progress update",
+                            f"to this PB100 barrier by {self.third_friday_date.strftime('%d %B %Y')}.",
+                        ],
+                        "task_url": "progress_updates/barrier_progress",
+                        "link_text": "Add a monthly progress update",
                     }
                 )
 
@@ -494,8 +555,12 @@ class UserTasksView(generics.ListAPIView):
                     progress_update_task_list.append(
                         {
                             "tag": "REVIEW NEXT STEP",
-                            "message": f"""The next step for this barrier has not been reviewed
-                            for more than {abs(difference)} months. Review the next step now.""",
+                            "message": [
+                                "Review the next steps"
+                                f"as they have not been checked since {step.completion_date}."
+                            ],
+                            "task_url": "list/next_steps_items",
+                            "link_text": "Review the next steps",
                         }
                     )
 
@@ -508,8 +573,12 @@ class UserTasksView(generics.ListAPIView):
                 progress_update_task_list.append(
                     {
                         "tag": "PROGRESS UPDATE DUE",
-                        "message": """This is an overseas delivery barrier but there has not been
-                        an update for over 3 months. Add a quarterly progress update now.""",
+                        "message": [
+                            "Add a quarterly progress update",
+                            "to this overseas delivery barrier.",
+                        ],
+                        "task_url": "progress_updates/barrier_progress",
+                        "link_text": "Add a quarterly progress update",
                     }
                 )
 
@@ -526,8 +595,9 @@ class UserTasksView(generics.ListAPIView):
                 progress_update_task_list.append(
                     {
                         "tag": "PROGRESS UPDATE DUE",
-                        "message": """There is an active programme fund for this barrier but
-                        there has not been an update for over 3 months. Add a programme fund update now.""",
+                        "message": ["Add a programme fund update", "to this barrier."],
+                        "task_url": "progress_updates/programme_fund",
+                        "link_text": "Add a programme fund update",
                     }
                 )
 
@@ -546,8 +616,13 @@ class UserTasksView(generics.ListAPIView):
             mentioner = User.objects.get(id=mention.created_by_id)
             mention_task = {
                 "tag": "REVIEW COMMENT",
-                "message": f"""{mentioner.first_name} {mentioner.last_name} mentioned you
-                in a comment on {mention.created_on.strftime("%d %B %Y")} and wants you to reply.""",
+                "message": [
+                    "Reply to the comment",
+                    f"{mentioner.first_name} {mentioner.last_name} mentioned you in on",
+                    f"{mention.created_on.strftime('%d %B %Y')}.",
+                ],
+                "task_url": "",
+                "link_text": "Reply to the comment",
             }
 
             mention_appended = False
