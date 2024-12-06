@@ -7,7 +7,6 @@ def add_permissions(apps, schema_editor):
     ContentType = apps.get_model("contenttypes", "ContentType")
     Permission = apps.get_model("auth", "Permission")
     PreliminaryAssessment = apps.get_model("assessment", "PreliminaryAssessment")
-
     analyst_group = Group.objects.get(name="Analyst")
     content_type = ContentType.objects.get_for_model(PreliminaryAssessment)
     permission_add, _ = Permission.objects.get_or_create(codename="add_preliminaryassessment", defaults={"name": "Can add preliminary assessment", "content_type_id": content_type.id})
