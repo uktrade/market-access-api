@@ -22,6 +22,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("user", "0043_alter_profile_policy_teams"),
+        ("assessment", "0024_preliminaryassessment_and_more"),
     ]
 
     operations = [
