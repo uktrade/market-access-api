@@ -367,7 +367,7 @@ class PreliminaryAssessment(BarrierRelatedMixin, BaseModel):
         qs = cls.history.filter(barrier__id=barrier_id)
 
         if not fields:
-            fields = ("barrier", "value", "details")
+            fields = ("value", "details")
 
         return get_model_history(
             qs,

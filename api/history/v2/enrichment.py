@@ -76,12 +76,9 @@ def enrich_preliminary_assessment(history: List[Dict]):
     for item in history:
         if item["field"] != "value":
             continue
-        item["old_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[
-            item["old_value"]["value"]
-        ]
-        item["new_value"]["value"] = PRELIMINARY_ASSESSMENT_CHOICES[
-            item["new_value"]["value"]
-        ]
+        if item["old_value"]:
+            item["old_value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["old_value"]]
+        item["new_value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["new_value"]]
 
 
 def enrich_status(history: List[Dict]):
@@ -315,7 +312,6 @@ def enrich_time_to_resolve(history: List[Dict]):
 
 
 def enrich_wto_notified_status(history: List[Dict]):
-
     for item in history:
         if item["field"] != "wto_has_been_notified":
             continue
