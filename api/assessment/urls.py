@@ -14,7 +14,7 @@ from api.assessment.views import (
 
 urlpatterns = [
     path(
-        "preliminary-assessment",
+        "barriers/<uuid:barrier_id>/preliminary-assessment",
         BarrierPreliminaryAssessment.as_view(),
         name="preliminary-assessment",
     ),
