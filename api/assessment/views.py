@@ -21,6 +21,15 @@ from api.assessment.serializers import (
 from api.barriers.models import Barrier
 
 
+class CreateBarrierPreliminaryAssessment(generics.CreateAPIView):
+    serializer_class = PreliminaryAssessmentSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIView):
     serializer_class = PreliminaryAssessmentSerializer
 

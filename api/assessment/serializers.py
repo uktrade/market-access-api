@@ -238,7 +238,7 @@ class PreliminaryAssessmentSerializer(serializers.ModelSerializer):
         choices=PRELIMINARY_ASSESSMENT_CHOICES, required=True
     )
     details = serializers.CharField(required=True)
-    barrier_id = serializers.UUIDField()
+    barrier_id = serializers.UUIDField(required=True)
 
     class Meta:
         model = PreliminaryAssessment
