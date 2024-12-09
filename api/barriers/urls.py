@@ -1,6 +1,7 @@
 from django.urls import path, re_path
 from rest_framework.routers import DefaultRouter
 
+from api.assessment.views import BarrierPreliminaryAssessment
 from api.barriers.views import (
     BarrierActivity,
     BarrierDetail,
@@ -33,6 +34,11 @@ router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barri
 
 
 urlpatterns = router.urls + [
+    path(
+        "barriers/<uuid:barrier_id>/preliminary-assessment",
+        BarrierPreliminaryAssessment.as_view(),
+        name="preliminary-assessment",
+    ),
     path("barriers", BarrierList.as_view(), name="list-barriers"),
     path(
         "barriers/request-download-approval",
