@@ -25,7 +25,7 @@ class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIVi
     serializer_class = PreliminaryAssessmentSerializer
 
     def post(self, request, *args, **kwargs):
-        barrier_id = request.data["barrier_id"]
+        barrier_id = kwargs["barrier_id"]
 
         try:
             barrier = Barrier.objects.get(id=barrier_id)
