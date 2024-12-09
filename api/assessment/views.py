@@ -26,17 +26,17 @@ class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIVi
 
     def post(self, request, *args, **kwargs):
         barrier_id = kwargs["barrier_id"]
-
-        try:
-            barrier = Barrier.objects.get(id=barrier_id)
-        except Barrier.DoesNotExist:
-            raise NotFound("Barrier")
-
-        try:
-            barrier.preliminary_assessment
-            raise BadRequest("Preliminary Assessment Exists")
-        except PreliminaryAssessment.DoesNotExist:
-            pass
+        print('posting preliminary assessment.')
+        # try:
+        #     barrier = Barrier.objects.get(id=barrier_id)
+        # except Barrier.DoesNotExist:
+        #     raise NotFound("Barrier")
+        #
+        # try:
+        #     barrier.preliminary_assessment
+        #     raise BadRequest("Preliminary Assessment Exists")
+        # except PreliminaryAssessment.DoesNotExist:
+        #     pass
 
         data = {**request.data, **{"barrier_id": barrier_id}}
         serializer = self.get_serializer(data=data)
