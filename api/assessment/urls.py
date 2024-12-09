@@ -14,6 +14,11 @@ from api.assessment.views import (
 
 urlpatterns = [
     path(
+        "preliminary-assessment",
+        BarrierPreliminaryAssessment.as_view(),
+        name="preliminary-assessment",
+    ),
+    path(
         "economic-assessments",
         EconomicAssessmentList.as_view(),
         name="economic-assessment-list",
