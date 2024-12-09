@@ -53,6 +53,7 @@ from api.history.v2.enrichment import (
     enrich_impact,
     enrich_main_sector,
     enrich_meeting_minutes,
+    enrich_preliminary_assessment,
     enrich_priority_level,
     enrich_public_barrier_categories,
     enrich_public_barrier_location,
@@ -82,6 +83,7 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
 
 def enrich_full_history(
     barrier_history: List[Dict],
+    preliminary_assessment_history: List[Dict],
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
     wto_history: List[Dict],
@@ -101,6 +103,7 @@ def enrich_full_history(
     Enrichment pipeline for full barrier history.
     """
     enrich_country(barrier_history)
+    enrich_preliminary_assessment(preliminary_assessment_history)
     enrich_trade_category(barrier_history)
     enrich_main_sector(barrier_history)
     enrich_priority_level(barrier_history)
@@ -136,6 +139,7 @@ def enrich_full_history(
 
     enriched_history = (
         barrier_history
+        + preliminary_assessment_history
         + programme_fund_history
         + top_priority_summary_history
         + wto_history
