@@ -163,7 +163,12 @@ class BaseSavedSearch(models.Model):
             barriers = barriers_models.Barrier.barriers.all()
 
             for name, value in self.get_api_parameters().items():
-                barriers = filterset.filters[name].filter(barriers, value)
+                filter = filterset.filters.get(name)
+
+                if not filter:
+                    continue
+
+                barriers = filter.filter(barriers, value)
 
             self._barriers = barriers
 
