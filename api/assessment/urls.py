@@ -9,15 +9,10 @@ from api.assessment.views import (
     ResolvabilityAssessmentDetail,
     ResolvabilityAssessmentList,
     StrategicAssessmentDetail,
-    StrategicAssessmentList, CreateBarrierPreliminaryAssessment,
+    StrategicAssessmentList,
 )
 
 urlpatterns = [
-   path(
-       "preliminary-assessment",
-       CreateBarrierPreliminaryAssessment.as_view(),
-       name="preliminary-assessment",
-   ),
     path(
         "barriers/<uuid:barrier_id>/preliminary-assessment",
         BarrierPreliminaryAssessment.as_view(),
