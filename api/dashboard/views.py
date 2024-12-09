@@ -166,13 +166,14 @@ class UserTasksView(generics.ListAPIView):
             barrier.public_barrier.public_view_status in [20, 70, 30]
             and set_to_allowed_date
         ):
-            self.publish_deadline = dateutil.parser.parse(
+            publish_deadline = dateutil.parser.parse(
                 set_to_allowed_date.strftime("%m/%d/%Y")
             ) + timedelta(days=30)
-            diff = self.publish_deadline - self.todays_date.replace(tzinfo=None)
+            diff = publish_deadline - self.todays_date.replace(tzinfo=None)
             # Set variables to track if barrier is overdue and by how much
             self.publishing_overdue = True if diff.days <= 0 else False
             self.countdown = 0 if diff.days <= 0 else diff.days
+            self.publish_deadline = publish_deadline.strftime("%d %B %Y")
 
     def set_date_of_third_friday(self):
         # Get the third friday of the month, skip if we've already calculated
@@ -223,7 +224,7 @@ class UserTasksView(generics.ListAPIView):
                             "Submit for clearance checks and GOV.UK publication approval",
                             f"by {self.publish_deadline}.",
                         ],
-                        "task_url": "public",
+                        "task_url": "barriers:public_barrier_detail",
                         "link_text": "Submit for clearance checks and GOV.UK publication approval",
                     }
                 else:
@@ -233,7 +234,7 @@ class UserTasksView(generics.ListAPIView):
                             "Submit for clearance checks and GOV.UK publication approval",
                             f"by {self.publish_deadline}.",
                         ],
-                        "task_url": "public",
+                        "task_url": "barriers:public_barrier_detail",
                         "link_text": "Submit for clearance checks and GOV.UK publication approval",
                     }
             elif not barrier.public_barrier.title or not barrier.public_barrier.summary:
@@ -254,7 +255,7 @@ class UserTasksView(generics.ListAPIView):
                             "to this barrier before it can be approved.",
                             f"This needs to be done by {self.publish_deadline}.",
                         ],
-                        "task_url": "public",
+                        "task_url": "barriers:public_barrier_detail",
                         "link_text": "Add a public title and summary",
                     }
                 else:
@@ -265,7 +266,7 @@ class UserTasksView(generics.ListAPIView):
                             "to this barrier before it can be approved.",
                             f"This needs to be done by {self.publish_deadline}.",
                         ],
-                        "task_url": "public",
+                        "task_url": "barriers:public_barrier_detail",
                         "link_text": "Add a public title and summary",
                     }
 
@@ -284,7 +285,7 @@ class UserTasksView(generics.ListAPIView):
                         f"for publication and complete clearance checks by {self.publish_deadline}.",
                         "It can then be submitted to the GOV.UK content team.",
                     ],
-                    "task_url": "public",
+                    "task_url": "barriers:public_barrier_detail",
                     "link_text": "Approve this barrier",
                 }
             else:
@@ -295,7 +296,7 @@ class UserTasksView(generics.ListAPIView):
                         f"for publication and complete clearance checks by {self.publish_deadline}.",
                         "It can then be submitted to the GOV.UK content team.",
                     ],
-                    "task_url": "public",
+                    "task_url": "barriers:public_barrier_detail",
                     "link_text": "Approve this barrier",
                 }
 
@@ -315,7 +316,7 @@ class UserTasksView(generics.ListAPIView):
                         "Complete GOV.UK content checks",
                         f"by {self.publish_deadline}.",
                     ],
-                    "task_url": "public",
+                    "task_url": "barriers:public_barrier_detail",
                     "link_text": "Complete GOV.UK content checks",
                 }
             else:
@@ -325,7 +326,7 @@ class UserTasksView(generics.ListAPIView):
                         "Complete GOV.UK content checks",
                         f"by {self.publish_deadline}.",
                     ],
-                    "task_url": "public",
+                    "task_url": "barriers:public_barrier_detail",
                     "link_text": "Complete GOV.UK content checks",
                 }
 
@@ -343,7 +344,7 @@ class UserTasksView(generics.ListAPIView):
                     {
                         "tag": "ADD INFORMATION",
                         "message": ["Add an HS code to this barrier."],
-                        "task_url": "edit/commodities",
+                        "task_url": "barriers:edit_commodities",
                         "link_text": "Add an HS code to this barrier.",
                     }
                 )
@@ -359,7 +360,7 @@ class UserTasksView(generics.ListAPIView):
                             "Check and add any other government departments (OGDs)",
                             "involved in the resolution of this barrier.",
                         ],
-                        "task_url": "government-organisations/edit",
+                        "task_url": "barriers:edit_gov_orgs",
                         "link_text": "Check and add any other government departments (OGDs)",
                     }
                 )
@@ -405,7 +406,7 @@ class UserTasksView(generics.ListAPIView):
                                 "Add your delivery confidence",
                                 "to this barrier.",
                             ],
-                            "task_url": "progress_updates/barrier_progress",
+                            "task_url": "barriers:add_progress_update",
                             "link_text": "Add your delivery confidence",
                         }
                     )
@@ -434,7 +435,7 @@ class UserTasksView(generics.ListAPIView):
                                 f"as it is currently listed as {barrier.estimated_resolution_date},",
                                 "which is in the past.",
                             ],
-                            "task_url": "edit/estimated-resolution-date",
+                            "task_url": "barriers:edit_estimated_resolution_date",
                             "link_text": "Review the estimated resolution date",
                         }
                     )
@@ -455,7 +456,7 @@ class UserTasksView(generics.ListAPIView):
                                     "Add an estimated resolution date",
                                     "to this PB100 barrier.",
                                 ],
-                                "task_url": "edit/estimated-resolution-date",
+                                "task_url": "barriers:edit_estimated_resolution_date",
                                 "link_text": "Add an estimated resolution date",
                             }
                         )
@@ -475,14 +476,17 @@ class UserTasksView(generics.ListAPIView):
                             progress_update_expiry_date.day,
                         ).replace(tzinfo=None)
                     ):
+                        readable_modified_date = latest_update.modified_on.strftime(
+                            "%d %B %Y"
+                        )
                         estimated_resolution_date_task_list.append(
                             {
                                 "tag": "REVIEW DATE",
                                 "message": [
                                     "Check the estimated resolution date",
-                                    f"as it has not been reviewed since {latest_update.modified_on}.",
+                                    f"as it has not been reviewed since {readable_modified_date}.",
                                 ],
-                                "task_url": "edit/estimated-resolution-date",
+                                "task_url": "barriers:edit_estimated_resolution_date",
                                 "link_text": "Check the estimated resolution date",
                             }
                         )
@@ -517,7 +521,7 @@ class UserTasksView(generics.ListAPIView):
                             "Add a monthly progress update",
                             f"to this PB100 barrier by {self.third_friday_date.strftime('%d %B %Y')}.",
                         ],
-                        "task_url": "progress_updates/barrier_progress",
+                        "task_url": "barriers:add_progress_update",
                         "link_text": "Add a monthly progress update",
                     }
                 )
@@ -534,7 +538,7 @@ class UserTasksView(generics.ListAPIView):
                             "Add a monthly progress update",
                             f"to this PB100 barrier by {self.third_friday_date.strftime('%d %B %Y')}.",
                         ],
-                        "task_url": "progress_updates/barrier_progress",
+                        "task_url": "barriers:add_progress_update",
                         "link_text": "Add a monthly progress update",
                     }
                 )
@@ -556,10 +560,10 @@ class UserTasksView(generics.ListAPIView):
                         {
                             "tag": "REVIEW NEXT STEP",
                             "message": [
-                                "Review the next steps"
-                                f"as they have not been checked since {step.completion_date}."
+                                "Review the next steps",
+                                f"as they have not been checked since {step.completion_date}.",
                             ],
-                            "task_url": "list/next_steps_items",
+                            "task_url": "barriers:list_next_steps",
                             "link_text": "Review the next steps",
                         }
                     )
@@ -577,7 +581,7 @@ class UserTasksView(generics.ListAPIView):
                             "Add a quarterly progress update",
                             "to this overseas delivery barrier.",
                         ],
-                        "task_url": "progress_updates/barrier_progress",
+                        "task_url": "barriers:add_progress_update",
                         "link_text": "Add a quarterly progress update",
                     }
                 )
@@ -596,7 +600,7 @@ class UserTasksView(generics.ListAPIView):
                     {
                         "tag": "PROGRESS UPDATE DUE",
                         "message": ["Add a programme fund update", "to this barrier."],
-                        "task_url": "progress_updates/programme_fund",
+                        "task_url": "barriers:add_programme_fund_progress_update",
                         "link_text": "Add a programme fund update",
                     }
                 )
@@ -621,7 +625,7 @@ class UserTasksView(generics.ListAPIView):
                     f"{mentioner.first_name} {mentioner.last_name} mentioned you in on",
                     f"{mention.created_on.strftime('%d %B %Y')}.",
                 ],
-                "task_url": "",
+                "task_url": "barriers:barrier_detail",
                 "link_text": "Reply to the comment",
             }
 
