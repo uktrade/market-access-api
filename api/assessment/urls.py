@@ -12,7 +12,6 @@ from api.assessment.views import (
     StrategicAssessmentList,
 )
 
-
 urlpatterns = [
     path(
         "barriers/<uuid:barrier_id>/preliminary-assessment",
