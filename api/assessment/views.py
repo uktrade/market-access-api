@@ -21,22 +21,19 @@ from api.assessment.serializers import (
 from api.barriers.models import Barrier
 
 
-class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIView):
+class BarrierPreliminaryAssessment(generics.GenericAPIView):
     serializer_class = PreliminaryAssessmentSerializer
 
-    def post(self, request, *args, **kwargs):
-        barrier_id = kwargs["barrier_id"]
-        print('posting preliminary assessment.')
-        # try:
-        #     barrier = Barrier.objects.get(id=barrier_id)
-        # except Barrier.DoesNotExist:
-        #     raise NotFound("Barrier")
-        #
-        # try:
-        #     barrier.preliminary_assessment
-        #     raise BadRequest("Preliminary Assessment Exists")
-        # except PreliminaryAssessment.DoesNotExist:
-        #     pass
+    def post(self, request, barrier_id, *args, **kwargs):
+        try:
+            barrier = Barrier.objects.get(id=barrier_id)
+        except Barrier.DoesNotExist:
+            raise NotFound("Barrier")
+        try:
+            barrier.preliminary_assessment
+            raise BadRequest("Preliminary Assessment Exists")
+        except PreliminaryAssessment.DoesNotExist:
+            pass
 
         data = {**request.data, **{"barrier_id": barrier_id}}
         serializer = self.get_serializer(data=data)
@@ -44,9 +41,7 @@ class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIVi
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, request, *args, **kwargs):
-        barrier_id = kwargs["barrier_id"]
-
+    def get(self, request, barrier_id, *args, **kwargs):
         try:
             barrier = Barrier.objects.get(id=barrier_id)
         except Barrier.DoesNotExist:
@@ -59,14 +54,12 @@ class BarrierPreliminaryAssessment(generics.UpdateAPIView, generics.GenericAPIVi
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def patch(self, request, *args, **kwargs):
-        barrier_id = kwargs["barrier_id"]
-
+    def patch(self, request, barrier_id, *args, **kwargs):
         try:
             barrier = Barrier.objects.get(id=barrier_id)
             if not barrier.preliminary_assessment:
                 raise NotFound("Preliminary assessment not found")
-        except Barrier.DoesNotExist:
+        except (Barrier.DoesNotExist, PreliminaryAssessment.DoesNotExist):
             raise NotFound("Barrier not found")
 
         request = PreliminaryAssessmentUpdateSerializer(request.data)
