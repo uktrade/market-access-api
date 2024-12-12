@@ -7,6 +7,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from simple_history.models import HistoricalRecords
 
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.barriers.mixins import BarrierRelatedMixin
 from api.core.models import ApprovalMixin, ArchivableMixin, BaseModel
 from api.history.v2.service import get_model_history
@@ -341,6 +342,36 @@ class StrategicAssessment(
         return get_model_history(
             qs,
             model="strategic_assessment",
+            fields=fields,
+            track_first_item=True,
+        )
+
+
+class PreliminaryAssessment(BarrierRelatedMixin, BaseModel):
+    id = models.UUIDField(primary_key=True, default=uuid4)
+    barrier = models.OneToOneField(
+        "barriers.Barrier",
+        related_name="preliminary_assessment",
+        on_delete=models.CASCADE,
+    )
+    value = models.PositiveIntegerField(choices=PRELIMINARY_ASSESSMENT_CHOICES)
+    details = models.TextField(blank=True)
+
+    history = HistoricalRecords()
+
+    class Meta:
+        ordering = ("-created_on",)
+
+    @classmethod
+    def get_history(cls, barrier_id: str, fields: Optional[List] = None):
+        qs = cls.history.filter(barrier__id=barrier_id)
+
+        if not fields:
+            fields = ("value", "details")
+
+        return get_model_history(
+            qs,
+            model="preliminary_assessment",
             fields=fields,
             track_first_item=True,
         )

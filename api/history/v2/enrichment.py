@@ -1,12 +1,14 @@
 """
 Enrichments to historical data as done by legacy.
 """
+
 from collections import namedtuple
 from datetime import datetime
 from typing import Dict, List, Optional
 
 from pytz import UTC
 
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.core.utils import cleansed_username
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
@@ -68,6 +70,15 @@ def enrich_sectors(history: List[Dict]):
         item["new_value"]["sectors"] = [
             str(sector) for sector in item["new_value"]["sectors"]
         ]
+
+
+def enrich_preliminary_assessment(history: List[Dict]):
+    for item in history:
+        if item["field"] != "value":
+            continue
+        if item["old_value"]:
+            item["old_value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["old_value"]]
+        item["new_value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["new_value"]]
 
 
 def enrich_status(history: List[Dict]):
@@ -301,7 +312,6 @@ def enrich_time_to_resolve(history: List[Dict]):
 
 
 def enrich_wto_notified_status(history: List[Dict]):
-
     for item in history:
         if item["field"] != "wto_has_been_notified":
             continue

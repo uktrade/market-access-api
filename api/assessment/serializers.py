@@ -1,8 +1,10 @@
 from rest_framework import serializers
 
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
+    PreliminaryAssessment,
     ResolvabilityAssessment,
     StrategicAssessment,
 )
@@ -222,3 +224,22 @@ class StrategicAssessmentSerializer(
 
     def get_is_current(self, obj):
         return EconomicAssessment.objects.filter(created_on__gt=obj.created_on).exists()
+
+
+class PreliminaryAssessmentUpdateSerializer(serializers.Serializer):
+    value = serializers.ChoiceField(
+        choices=PRELIMINARY_ASSESSMENT_CHOICES, required=False
+    )
+    details = serializers.CharField(required=False)
+
+
+class PreliminaryAssessmentSerializer(serializers.ModelSerializer):
+    value = serializers.ChoiceField(
+        choices=PRELIMINARY_ASSESSMENT_CHOICES, required=True
+    )
+    details = serializers.CharField(required=True)
+    barrier_id = serializers.UUIDField(required=True)
+
+    class Meta:
+        model = PreliminaryAssessment
+        fields = ["value", "details", "barrier_id"]
