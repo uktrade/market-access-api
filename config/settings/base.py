@@ -365,7 +365,7 @@ LOGGING = {
     "disable_existing_loggers": False,
     "formatters": {
         "asim_formatter": {"()": ASIMFormatter},
-        "ecs_formatter": {"()": ECSFormatter},
+        # "ecs_formatter": {"()": ECSFormatter},
         "simple": {
             "format": "{asctime} {levelname} {message}",
             "style": "{",
@@ -377,11 +377,11 @@ LOGGING = {
             "stream": sys.stdout,  # noqa F405
             "formatter": "asim_formatter",
         },
-        "ecs": {
-            "class": "logging.StreamHandler",
-            "stream": sys.stdout,  # noqa F405
-            "formatter": "ecs_formatter",
-        },
+        # "ecs": {
+        #     "class": "logging.StreamHandler",
+        #     "stream": sys.stdout,  # noqa F405
+        #     "formatter": "ecs_formatter",
+        # },
         "stdout": {
             "class": "logging.StreamHandler",
             "stream": sys.stdout,  # noqa F405
@@ -389,22 +389,26 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ["asim", "ecs", "stdout"],
+        # "handlers": ["asim", "ecs", "stdout"],
+        "handlers": ["asim", "stdout"],
         "level": os.getenv("ROOT_LOG_LEVEL", "INFO"),  # noqa F405
     },
     "loggers": {
         "django": {
-            "handlers": ["asim", "ecs", "stdout"],
+            # "handlers": ["asim", "ecs", "stdout"],
+            "handlers": ["asim", "stdout"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),  # noqa F405
             "propagate": False,
         },
         "django.server": {
-            "handlers": ["asim", "ecs", "stdout"],
+            # "handlers": ["asim", "ecs", "stdout"],
+            "handlers": ["asim", "stdout"],
             "level": os.getenv("DJANGO_SERVER_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
         "django.db.backends": {
-            "handlers": ["asim", "ecs", "stdout"],
+            # "handlers": ["asim", "ecs", "stdout"],
+            "handlers": ["asim", "stdout"],
             "level": os.getenv("DJANGO_DB_LOG_LEVEL", "ERROR"),  # noqa F405
             "propagate": False,
         },
