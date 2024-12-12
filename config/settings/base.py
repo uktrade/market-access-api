@@ -68,7 +68,7 @@ THIRD_PARTY_APPS = [
     "rest_framework",
     "simple_history",
     "ordered_model",
-    "django_audit_log_middleware",
+    # "django_audit_log_middleware",
 ]
 
 LOCAL_APPS = [
@@ -113,7 +113,7 @@ MIDDLEWARE = [
     "hawkrest.middleware.HawkResponseMiddleware",
     "api.user.middleware.UserActivityLogMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
-    "django_audit_log_middleware.AuditLogMiddleware",
+    # "django_audit_log_middleware.AuditLogMiddleware",
     "api.core.middleware.sentry.SentryUserContextMiddleware",
     "api.core.middleware.policy_headers.DisableClientCachingMiddleware",
     "api.core.middleware.policy_headers.SetPermittedCrossDomainPolicyHeaderMiddleware",
