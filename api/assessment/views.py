@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import generics, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
@@ -21,10 +23,14 @@ from api.assessment.serializers import (
 from api.barriers.models import Barrier
 
 
+logger = logging.getLogger(__name__)
+
+
 class BarrierPreliminaryAssessment(generics.GenericAPIView):
     serializer_class = PreliminaryAssessmentSerializer
 
     def post(self, request, barrier_id, *args, **kwargs):
+        logger.critical(f"Creating preliminary assessment: {barrier_id} {request.data}")
         try:
             barrier = Barrier.objects.get(id=barrier_id)
         except Barrier.DoesNotExist:
@@ -42,6 +48,7 @@ class BarrierPreliminaryAssessment(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get(self, request, barrier_id, *args, **kwargs):
+        logger.critical(f"Getting preliminary assessment: {barrier_id}")
         try:
             barrier = Barrier.objects.get(id=barrier_id)
         except Barrier.DoesNotExist:
@@ -55,6 +62,7 @@ class BarrierPreliminaryAssessment(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def patch(self, request, barrier_id, *args, **kwargs):
+        logger.critical(f"Patching preliminary assessment: {barrier_id} {request.data}")
         try:
             barrier = Barrier.objects.get(id=barrier_id)
             if not barrier.preliminary_assessment:
