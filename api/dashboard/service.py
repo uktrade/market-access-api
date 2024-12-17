@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 
 from django.db.models import Case, CharField, IntegerField, Q, Sum, Value, When
@@ -140,9 +140,9 @@ def get_counts(qs, user):
     return {
         "financial_year": {
             "current_start": current_year_start,
-            "current_end": current_year_end,
+            "current_end": current_year_end - timedelta(days=1),
             "previous_start": previous_year_start,
-            "previous_end": previous_year_end,
+            "previous_end": previous_year_end - timedelta(days=1),
         },
         "barriers": {
             "total": qs.count(),
