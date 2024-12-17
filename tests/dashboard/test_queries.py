@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 import freezegun
 import pytest
@@ -58,12 +58,20 @@ def barrier_factory(users):
                 start_date=start_date,
                 end_date=start_date + timedelta(days=45),
             ).evaluate(2, None, False)
-            estimated_resolution_date = date(year=fuzzy_date.year, month=fuzzy_date.month, day=fuzzy_date.day)
+            estimated_resolution_date = date(
+                year=fuzzy_date.year, month=fuzzy_date.month, day=fuzzy_date.day
+            )
 
         return [
-            ReportFactory(created_by=users[0], estimated_resolution_date=estimated_resolution_date),
-            BarrierFactory(created_by=users[0], estimated_resolution_date=estimated_resolution_date),
-            BarrierFactory(created_by=users[0], estimated_resolution_date=estimated_resolution_date),
+            ReportFactory(
+                created_by=users[0], estimated_resolution_date=estimated_resolution_date
+            ),
+            BarrierFactory(
+                created_by=users[0], estimated_resolution_date=estimated_resolution_date
+            ),
+            BarrierFactory(
+                created_by=users[0], estimated_resolution_date=estimated_resolution_date
+            ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.OPEN_IN_PROGRESS,
