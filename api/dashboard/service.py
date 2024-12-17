@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 from functools import partial
 
 from django.db.models import Case, CharField, IntegerField, Q, Sum, Value, When
@@ -11,15 +11,15 @@ from api.metadata.constants import (
 
 
 def get_financial_year_dates():
-    today = datetime.now()
-    partial_dt = partial(datetime, month=4, day=1)
+    today = date.today()
+    partial_date = partial(date, month=4, day=1)
     if today.month < 4:
-        start_date = partial_dt(year=datetime.now().year - 1)
+        start_date = partial_date(year=today.year - 1)
     else:
-        start_date = partial_dt(year=datetime.now().year)
+        start_date = partial_date(year=today.year)
 
-    end_date = partial_dt(year=start_date.year + 1)
-    previous_start_date = partial_dt(year=start_date.year - 1)
+    end_date = partial_date(year=start_date.year + 1)
+    previous_start_date = partial_date(year=start_date.year - 1)
     previous_end_date = start_date
 
     return start_date, end_date, previous_start_date, previous_end_date
@@ -71,13 +71,13 @@ def get_counts(qs, user):
             Q(
                 estimated_resolution_date__range=[
                     current_year_start,
-                    current_year_end,
+                    current_year_end + timedelta(days=1),
                 ]
             )
             | Q(
                 status_date__range=[
                     current_year_start,
-                    current_year_end,
+                    current_year_end + timedelta(days=1),
                 ]
             ),
             Q(status=1) | Q(status=2),
@@ -140,9 +140,9 @@ def get_counts(qs, user):
     return {
         "financial_year": {
             "current_start": current_year_start,
-            "current_end": current_year_end - timedelta(days=1),
+            "current_end": current_year_end,
             "previous_start": previous_year_start,
-            "previous_end": previous_year_end - timedelta(days=1),
+            "previous_end": previous_year_end,
         },
         "barriers": {
             "total": qs.count(),
