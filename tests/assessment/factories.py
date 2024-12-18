@@ -6,9 +6,9 @@ from factory.fuzzy import FuzzyText
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
+    PreliminaryAssessment,
     ResolvabilityAssessment,
     StrategicAssessment,
-    PreliminaryAssessment,
 )
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
