@@ -1346,6 +1346,10 @@ class BarrierFilterSet(django_filters.FilterSet):
         method="valuation_assessments_filter"
     )
 
+    preliminary_assessment = django_filters.BaseInFilter(
+        method="preliminar_assessment_filter"
+    )
+
     class Meta:
         model = Barrier
         fields = [
@@ -1873,6 +1877,13 @@ class BarrierFilterSet(django_filters.FilterSet):
             )
 
         return queryset & assessment_queryset
+
+    def preliminar_assessment_filter(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            preliminary_assessment__value__in=[int(item) for item in value]
+        )
 
 
 class PublicBarrierFilterSet(django_filters.FilterSet):
