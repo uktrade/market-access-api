@@ -1249,10 +1249,10 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.data["count"] == 1
 
     def test_preliminary_assessment_filter(self):
-        barrier = BarrierFactory()
-        barrier_2 = BarrierFactory()
-        PreliminaryAssessmentFactory(barrier=barrier, value=1)
-        PreliminaryAssessmentFactory(barrier=barrier_2, value=3)
+        barriers = [BarrierFactory(), BarrierFactory(), BarrierFactory()]
+        PreliminaryAssessmentFactory(barrier=barriers[0], value=1)
+        PreliminaryAssessmentFactory(barrier=barriers[1], value=2)
+        PreliminaryAssessmentFactory(barrier=barriers[2], value=3)
         url = f'{reverse("list-barriers")}?preliminary_assessment=1,3'
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
