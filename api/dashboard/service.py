@@ -12,15 +12,14 @@ from api.metadata.constants import (
 
 def get_financial_year_dates():
     today = date.today()
-    partial_date = partial(date, month=4, day=1)
     if today.month < 4:
-        start_date = partial_date(year=today.year - 1)
+        start_date = date(year=today.year - 1, month=4, day=1)
     else:
-        start_date = partial_date(year=today.year)
+        start_date = date(year=today.year, month=4, day=1)
 
-    end_date = partial_date(year=start_date.year + 1)
-    previous_start_date = partial_date(year=start_date.year - 1)
-    previous_end_date = start_date
+    end_date = date(year=start_date.year + 1, month=3, day=31)
+    previous_start_date = date(year=start_date.year - 1, month=4, day=1)
+    previous_end_date = date(year=start_date.year, month=3, day=31)
 
     return start_date, end_date, previous_start_date, previous_end_date
 
