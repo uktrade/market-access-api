@@ -25,7 +25,10 @@ from tests.action_plans.factories import (
     ActionPlanStakeholderFactory,
     ActionPlanTaskFactory,
 )
-from tests.assessment.factories import EconomicImpactAssessmentFactory
+from tests.assessment.factories import (
+    EconomicImpactAssessmentFactory,
+    PreliminaryAssessmentFactory,
+)
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
 from tests.metadata.factories import CategoryFactory
@@ -722,8 +725,8 @@ class TestListBarriers(APITestMixin, APITestCase):
 
     def test_has_wto_case_number_filter(self):
         barrier1 = BarrierFactory(wto_profile__case_number="CASE123")
-        barrier2 = BarrierFactory(wto_profile__case_number="")
-        barrier3 = BarrierFactory(wto_profile=None)
+        BarrierFactory(wto_profile__case_number="")
+        BarrierFactory(wto_profile=None)
 
         assert 3 == Barrier.objects.count()
 
@@ -1244,6 +1247,16 @@ class TestListBarriers(APITestMixin, APITestCase):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
+
+    def test_preliminary_assessment_filter(self):
+        barrier = BarrierFactory()
+        barrier_2 = BarrierFactory()
+        PreliminaryAssessmentFactory(barrier=barrier, value=1)
+        PreliminaryAssessmentFactory(barrier=barrier_2, value=3)
+        url = f'{reverse("list-barriers")}?preliminary_assessment=1,3'
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 2
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):

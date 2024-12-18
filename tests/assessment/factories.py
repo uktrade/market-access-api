@@ -8,6 +8,7 @@ from api.assessment.models import (
     EconomicImpactAssessment,
     ResolvabilityAssessment,
     StrategicAssessment,
+    PreliminaryAssessment,
 )
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
@@ -80,3 +81,10 @@ class StrategicAssessmentFactory(factory.django.DjangoModelFactory):
     competition = FuzzyText()
     additional_information = FuzzyText()
     scale = get_scale()
+
+
+class PreliminaryAssessmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PreliminaryAssessment
+
+    details = FuzzyText()
