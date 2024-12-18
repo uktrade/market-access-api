@@ -76,7 +76,7 @@ class UserTasksView(generics.ListAPIView):
                 & Q(archived=False)
             )
             .distinct()
-            .order_by("modified_on")[:1000]
+            .order_by("-modified_on")[:100]
             .select_related("public_barrier")
             .prefetch_related(
                 "progress_updates",
@@ -149,7 +149,7 @@ class UserTasksView(generics.ListAPIView):
         task_list = self.append_mentions_tasks(user, task_list)
 
         # Paginate
-        paginator = Paginator(task_list, 5)
+        paginator = Paginator(task_list, 3)
         page_number = request.GET.get("page")
         page_obj = paginator.get_page(page_number)
 

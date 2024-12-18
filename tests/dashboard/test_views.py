@@ -1241,7 +1241,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
     def test_task_list_pagination(self):
         """The results are paginated so the frontend does not get swamped with tasks
-        and overwhelm the user. We expect a maximum of 5 tasks that get returned
+        and overwhelm the user. We expect a maximum of 3 tasks that get returned
         at a time, and that if we are on a second or third page, we get the next
         block of tasks in the list."""
 
@@ -1272,7 +1272,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         assert response.data["count"] == 8
-        assert len(response.data["results"]) == 5
+        assert len(response.data["results"]) == 3
 
         self.request_url_page_2 = f'{reverse("get-dashboard-tasks")}?page=2'
         response_page_2 = self.api_client.get(self.request_url_page_2)
