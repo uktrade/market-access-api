@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from functools import partial
 
 from django.db.models import Case, CharField, IntegerField, Q, Sum, Value, When
 
