@@ -5,9 +5,9 @@ from api.interactions.views import (
     BarrierInteractionList,
     DocumentViewSet,
     ExcludeFromNotificationsView,
-    MentionsCounts,
     MentionDetail,
     MentionList,
+    MentionsCounts,
     PublicBarrierNoteDetail,
     PublicBarrierNoteList,
 )

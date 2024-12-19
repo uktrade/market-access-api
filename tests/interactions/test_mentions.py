@@ -14,26 +14,15 @@ class TestMentionCounts(APITestMixin, APITestCase):
     def test_get_mention_counts_no_mentions(self):
         response = self.api_client.get(self.url)
 
-        assert response.data == {
-            "read_by_recipient": 0,
-            "total": 0
-        }
+        assert response.data == {"read_by_recipient": 0, "total": 0}
 
     def test_get_mention_counts_with_mentions(self):
         barrier = BarrierFactory()
+        Mention.objects.create(recipient=self.user, barrier=barrier)
         Mention.objects.create(
-            recipient=self.user,
-            barrier=barrier
-        )
-        Mention.objects.create(
-            recipient=self.user,
-            barrier=barrier,
-            read_by_recipient=True
+            recipient=self.user, barrier=barrier, read_by_recipient=True
         )
 
         response = self.api_client.get(self.url)
 
-        assert response.data == {
-            "read_by_recipient": 1,
-            "total": 2
-        }
+        assert response.data == {"read_by_recipient": 1, "total": 2}

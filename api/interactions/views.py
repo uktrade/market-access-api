@@ -235,7 +235,7 @@ class MentionsCounts(generics.GenericAPIView):
         return Response(
             {
                 "read_by_recipient": qs.filter(read_by_recipient=True).count(),
-                "total": qs.count()
+                "total": qs.count(),
             }
         )
 
