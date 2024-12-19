@@ -229,6 +229,17 @@ class PublicBarrierNoteDetail(
         instance.archive(self.request.user)
 
 
+class MentionsCounts(generics.GenericAPIView):
+    def get(self, request, *args, **kwargs):
+        qs = Mention.objects.filter(recipient=request.user)
+        return Response(
+            {
+                "read_by_recipient": qs.filter(read_by_recipient=False).count(),
+                "total": qs.count()
+            }
+        )
+
+
 class MentionList(viewsets.ModelViewSet):
     serializer_class = MentionSerializer
 
