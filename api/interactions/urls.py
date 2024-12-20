@@ -7,6 +7,7 @@ from api.interactions.views import (
     ExcludeFromNotificationsView,
     MentionDetail,
     MentionList,
+    MentionsCounts,
     PublicBarrierNoteDetail,
     PublicBarrierNoteList,
 )
@@ -59,6 +60,7 @@ urlpatterns = [
         name="public-barrier-note-detail",
     ),
     path("mentions", MentionList.as_view({"get": "list"}), name="mentions"),
+    path("mentions/counts", MentionsCounts.as_view(), name="mentions-counts"),
     path("mentions/<int:pk>", MentionDetail.as_view(), name="mentions-detail"),
     path(
         "mentions/mark-as-read/<int:pk>",
