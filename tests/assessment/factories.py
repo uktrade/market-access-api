@@ -6,6 +6,7 @@ from factory.fuzzy import FuzzyText
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
+    PreliminaryAssessment,
     ResolvabilityAssessment,
     StrategicAssessment,
 )
@@ -80,3 +81,10 @@ class StrategicAssessmentFactory(factory.django.DjangoModelFactory):
     competition = FuzzyText()
     additional_information = FuzzyText()
     scale = get_scale()
+
+
+class PreliminaryAssessmentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PreliminaryAssessment
+
+    details = FuzzyText()
