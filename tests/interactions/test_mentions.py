@@ -8,8 +8,8 @@ from api.core.test_utils import APITestMixin
 from api.interactions.models import Mention
 from tests.barriers.factories import BarrierFactory
 
-
 freezegun.configure(extend_ignore_list=["transformers"])
+
 
 class TestMentionCounts(APITestMixin, APITestCase):
     def setUp(self):
