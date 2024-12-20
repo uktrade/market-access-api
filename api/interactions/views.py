@@ -231,7 +231,10 @@ class PublicBarrierNoteDetail(
 
 class MentionsCounts(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
-        qs = Mention.objects.filter(recipient=request.user)
+        qs = Mention.objects.filter(
+            recipient=request.user,
+            created_on__date__gte=(datetime.datetime.now() - datetime.timedelta(days=30)),
+        )
         return Response(
             {
                 "read_by_recipient": qs.filter(read_by_recipient=True).count(),
