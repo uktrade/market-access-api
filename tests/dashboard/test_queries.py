@@ -275,12 +275,14 @@ def test_get_barriers_current_year(users, barrier_factory):
         "total": 11,
     }
 
+
 if datetime.now().month >= 4:
     date1 = datetime(datetime.now().year, 4, 1)
     date2 = datetime(datetime.now().year + 1, 3, 31) - timedelta(seconds=1)
 else:
     date1 = datetime(datetime.now().year - 1, 4, 1)
     date2 = datetime(datetime.now().year, 3, 31) - timedelta(seconds=1)
+
 
 @pytest.mark.parametrize(
     "date",
