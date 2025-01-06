@@ -279,8 +279,8 @@ def test_get_barriers_current_year(users, barrier_factory):
 @pytest.mark.parametrize(
     "date",
     [
-        datetime(datetime.now().year, 4, 1),
-        datetime(datetime.now().year + 1, 3, 31) - timedelta(seconds=1),
+        get_financial_year_dates()[0],
+        get_financial_year_dates()[1],
     ],
 )
 def test_get_barriers_current_financial_year(users, barrier_factory, date):
