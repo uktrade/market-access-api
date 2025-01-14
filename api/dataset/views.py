@@ -1,10 +1,14 @@
+import datetime
+
 from django.contrib.auth import get_user_model
 from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from api.barriers.models import Barrier
 from api.barriers.serializers import DataWorkspaceSerializer
+from api.dataset.data_flow_lib.schema import DATASET_SCHEMAS, process_request
 from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 from api.feedback.models import Feedback
 from api.feedback.serializers import FeedbackSerializer
@@ -12,6 +16,22 @@ from api.user.models import UserActvitiyLog
 from api.user.serializers import UserActvitiyLogSerializer, UserSerializer
 
 UserModel = get_user_model()
+
+
+class SchemaView(generics.RetrieveAPIView):
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, *args, **kwargs):
+        return Response(DATASET_SCHEMAS)
+
+
+class LoadView(generics.ListAPIView):
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request, *args, **kwargs):
+        return Response(process_request(request))
 
 
 class BarrierList(generics.ListAPIView):
