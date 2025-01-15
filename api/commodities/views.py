@@ -1,9 +1,17 @@
+import logging
+
 from django.db.models import Max
 from django.http import Http404
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from api.related_barriers.tariff_search import TariffSearchManager
 
 from .models import Commodity
-from .serializers import CommoditySerializer
+from .serializers import CommoditySearchListSerializer, CommoditySerializer
+
+logger = logging.getLogger(__name__)
 
 
 class CommodityList(generics.ListAPIView):
@@ -40,3 +48,14 @@ class CommodityDetail(generics.RetrieveAPIView):
             ).latest("version")
         except Commodity.DoesNotExist:
             raise Http404("Commodity does not exist")
+
+
+@api_view(["GET"])
+def related_barriers_view(request) -> Response:
+    query = request.GET.get("query")
+
+    tariff_search_manager = TariffSearchManager()
+    result = tariff_search_manager.get_similarities(query)
+    serializer = CommoditySearchListSerializer(result, many=True)
+
+    return Response(status=status.HTTP_200_OK, data=serializer.data)

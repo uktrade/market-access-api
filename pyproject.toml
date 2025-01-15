@@ -64,6 +64,7 @@ opentelemetry-propagator-aws-xray = "^1.0.1"
 opentelemetry-sdk-extension-aws = "^2.0.1"
 django-log-formatter-asim = "^0.0.4"
 dbt-copilot-python = "^0.2.0"
+pandas = "2.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "~=24.3.0"
@@ -93,6 +94,7 @@ transformers = "4.38.0"
 sentence-transformers = "3.0.1"
 torch = "2.2.0"
 torchvision = "0.17.0"
+
 
 [build-system]
 requires = ["poetry~=1.6.1"]
