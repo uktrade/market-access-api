@@ -2,78 +2,79 @@ from typing import Dict, Callable, Tuple
 
 from rest_framework.pagination import CursorPagination
 
-from api.barriers.models import Barrier, User
-
-BARRIER_SCHEMA = {
-    'name': 'Barrier',
-    'columns': [
-        {
-            'name': 'id',
-            'type': 'varchar',
-            'nullable': False
-        },
-        {
-            'name': 'title',
-            'type': 'varchar',
-            'nullable': False
-        },
-        {
-            'name': 'created_on',
-            'type': 'timestamp'
-        }
-    ]
-}
-
-USERS_SCHEMA = {
-    'name': 'User',
-    'columns': [
-        {
-            'name': 'id',
-            'type': 'varchar',
-            'nullable': False
-        },
-        {
-            'name': 'first_name',
-            'type': 'varchar',
-        },
-    ]
-}
+from api.action_plans.models import ActionPlan
+from api.assessment.models import EconomicAssessment
+from api.barriers.models import Barrier, ProgrammeFundProgressUpdate, BarrierTopPrioritySummary, BarrierNextStepItem
+from api.dataset import table_schemas
 
 
 # Loaded into Dataflow
 DATASET_SCHEMAS = {
     "tables": [
-        BARRIER_SCHEMA,
-        USERS_SCHEMA
+        table_schemas.BARRIER_HISTORY,
+        table_schemas.ECONOMIC_ASSESSMENT_HISTORY,
+        table_schemas.PROGRAMME_FUND_PROGRESS_UPDATE_HISTORY,
+        table_schemas.TOP_PRIORITY_SUMMARY_HISTORY,
+        table_schemas.NEXT_STEP_HISTORY,
+        table_schemas.ACTION_PLAN_HISTORY
     ]
 }
 
 
-def get_barriers():
-    # return [
-    #     {"id": 1, "title": "Barrier 1", "created_on": datetime.datetime.now()},
-    # ]
-    return Barrier.objects.all()
+def get_barrier_next_steps_history():
+    return BarrierNextStepItem.history.all()
 
 
-def get_users():
-    # return [
-    #     {"id": 1, "title": "Barrier 1", "created_on": datetime.datetime.now()},
-    # ]
-    return User.objects.all()
+def get_barrier_economic_assessment():
+    return EconomicAssessment.history.all()
 
+
+def get_barrier_action_plan_history():
+    return ActionPlan.history.all()
+
+
+def get_barrier_history():
+    return Barrier.history.all()
+
+
+def get_programme_fund_history():
+    return ProgrammeFundProgressUpdate.history.all()
+
+
+def get_barrier_top_priority_summary():
+    return BarrierTopPrioritySummary.history.all()
 
 
 TABLES: Dict[str, Tuple[Callable, Dict, Tuple]] = {
-    BARRIER_SCHEMA["name"]: (
-        get_barriers,            # queryset
-        BARRIER_SCHEMA,          # schema
-        ("created_on", "pk")     # pagination ordering
+    table_schemas.BARRIER_HISTORY["name"]: (
+        get_barrier_history,                    # queryset
+        table_schemas.BARRIER_HISTORY,          # schema
+        ("history_date",)                       # pagination ordering
     ),
-    USERS_SCHEMA["name"]: (
-        get_users,  # queryset
-        USERS_SCHEMA,  # schema
-        ("pk",)  # pagination ordering
+    table_schemas.PROGRAMME_FUND_PROGRESS_UPDATE_HISTORY["name"]: (
+        get_programme_fund_history,
+        table_schemas.PROGRAMME_FUND_PROGRESS_UPDATE_HISTORY,
+        ("history_date",)
+    ),
+    table_schemas.TOP_PRIORITY_SUMMARY_HISTORY["name"]: (
+        get_barrier_top_priority_summary,
+        table_schemas.TOP_PRIORITY_SUMMARY_HISTORY,
+        ("history_date",)
+    ),
+    table_schemas.NEXT_STEP_HISTORY["name"]: (
+        get_barrier_next_steps_history,
+        table_schemas.NEXT_STEP_HISTORY,
+        ("history_date",)
+    ),
+    table_schemas.ACTION_PLAN_HISTORY["name"]: (
+        get_barrier_action_plan_history,
+        table_schemas.ACTION_PLAN_HISTORY,
+        ("history_date",)
+    ),
+    table_schemas.ECONOMIC_ASSESSMENT_HISTORY["name"]: (
+        get_barrier_economic_assessment,
+        table_schemas.ECONOMIC_ASSESSMENT_HISTORY,
+        ("history_date",)
     ),
 }
 
