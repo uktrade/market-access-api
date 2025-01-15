@@ -8,19 +8,6 @@ from api.barriers.models import Barrier, ProgrammeFundProgressUpdate, BarrierTop
 from api.dataset import table_schemas
 
 
-# Loaded into Dataflow
-DATASET_SCHEMAS = {
-    "tables": [
-        table_schemas.BARRIER_HISTORY,
-        table_schemas.ECONOMIC_ASSESSMENT_HISTORY,
-        table_schemas.PROGRAMME_FUND_PROGRESS_UPDATE_HISTORY,
-        table_schemas.TOP_PRIORITY_SUMMARY_HISTORY,
-        table_schemas.NEXT_STEP_HISTORY,
-        table_schemas.ACTION_PLAN_HISTORY
-    ]
-}
-
-
 def get_barrier_next_steps_history():
     return BarrierNextStepItem.history.all()
 
@@ -45,7 +32,7 @@ def get_barrier_top_priority_summary():
     return BarrierTopPrioritySummary.history.all()
 
 
-TABLES: Dict[str, Tuple[Callable, Dict, Tuple]] = {
+DATASET_META: Dict[str, Tuple[Callable, Dict, Tuple]] = {
     table_schemas.BARRIER_HISTORY["name"]: (
         get_barrier_history,                    # queryset
         table_schemas.BARRIER_HISTORY,          # schema
@@ -81,7 +68,7 @@ TABLES: Dict[str, Tuple[Callable, Dict, Tuple]] = {
 
 def get_paginator(ordering):
     paginator = CursorPagination()
-    paginator.page_size = 100
+    paginator.page_size = 1000
     paginator.ordering = ordering
 
     return paginator
@@ -90,7 +77,7 @@ def get_paginator(ordering):
 def process_request(request):
 
     table = request.GET.get('table')
-    qs_generator, table_schema, ordering = TABLES[table]
+    qs_generator, table_schema, ordering = DATASET_META[table]
     qs = qs_generator().values(*[col["name"] for col in table_schema["columns"]])
 
     paginator = get_paginator(ordering)

@@ -174,3 +174,16 @@ PROGRAMME_FUND_PROGRESS_UPDATE_HISTORY = {
         {'name': 'expenditure', 'type': 'varchar'}
     ],
 }
+
+
+# Loaded into Dataflow
+DATASET_SCHEMAS = {
+    "tables": [
+        BARRIER_HISTORY,
+        ECONOMIC_ASSESSMENT_HISTORY,
+        PROGRAMME_FUND_PROGRESS_UPDATE_HISTORY,
+        TOP_PRIORITY_SUMMARY_HISTORY,
+        NEXT_STEP_HISTORY,
+        ACTION_PLAN_HISTORY
+    ]
+}
