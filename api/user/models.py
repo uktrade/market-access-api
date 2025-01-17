@@ -1,3 +1,4 @@
+import logging
 from uuid import uuid4
 
 from django.conf import settings
@@ -14,6 +15,8 @@ from api.core.utils import nested_sort
 from api.metadata import models as metadata_models
 from api.metadata.constants import TRADING_BLOC_CHOICES
 from api.user.constants import USER_ACTIVITY_EVENT_TYPES
+
+logger = logging.getLogger(__name__)
 
 MAX_LENGTH = settings.CHAR_FIELD_MAX_LENGTH
 
@@ -152,6 +155,15 @@ class BaseSavedSearch(models.Model):
                 + params.pop("region", [])
                 + params.pop("extra_location", [])
             )
+
+        # Convert stored admin area filter to a simple list of values
+        if "admin_areas" in params:
+            admin_areas_filter_list = sum(params["admin_areas"].values(), [])
+
+            if not admin_areas_filter_list:
+                params.pop("admin_areas")
+            else:
+                params["admin_areas"] = admin_areas_filter_list
 
         params["archived"] = params.pop("only_archived", "0") or "0"
         return params
