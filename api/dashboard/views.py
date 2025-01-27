@@ -228,18 +228,6 @@ def create_overdue_erd_task(barrier):
     }
 
 
-def add_pb100_erd_task(_):
-    return {
-        "tag": "ADD DATE",
-        "message": [
-            "Add an estimated resolution date",
-            "to this PB100 barrier.",
-        ],
-        "task_url": "barriers:edit_estimated_resolution_date",
-        "link_text": "Add an estimated resolution date",
-    }
-
-
 def create_add_priority_erd_task(_):
     return {
         "tag": "ADD DATE",
@@ -441,7 +429,7 @@ def get_tasks(user):
 
         if barrier["has_programme_fund_tag"] and (
             not barrier["latest_programme_fund_modified_on"] or
-            barrier["latest_programme_fund_modified_on"] < (datetime.today() - timedelta(days=90))
+            barrier["latest_programme_fund_modified_on"] < (datetime.today() - timedelta(days=90)).replace(tzinfo=pytz.UTC)
         ):
             task = create_programme_fund_update_task(barrier)
             barrier_entry["task_list"].append(task)
