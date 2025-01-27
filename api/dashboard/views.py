@@ -2,18 +2,27 @@ import logging
 from datetime import datetime, time, timedelta
 
 import dateutil.parser
+import pytz
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import F
+from django.db.models import Q, ExpressionWrapper, DateTimeField, Value, CharField, OuterRef, Exists, \
+    Case, When
+from django.db.models.functions import Concat, Greatest
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.response import Response
 
-from api.barriers.models import Barrier, BarrierFilterSet
+from api.barriers.models import Barrier, BarrierFilterSet, BarrierProgressUpdate, BarrierNextStepItem, \
+    ProgrammeFundProgressUpdate
 from api.barriers.serializers import BarrierListSerializer
+from api.collaboration.models import TeamMember
+from api.core.date_utils import get_nth_day_of_month
 from api.dashboard import service
+from api.dashboard.service import get_financial_year_dates
 from api.interactions.models import Mention
+from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS, GOVERNMENT_ORGANISATION_TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +56,463 @@ class BarrierDashboardSummary(generics.GenericAPIView):
         return Response(counts)
 
 
+def create_editor_task(barrier):
+    overdue = barrier["deadline"].replace(tzinfo=None) < datetime.today() if barrier["deadline"] else ""
+    deadline = barrier['deadline'].strftime('%d %B %Y') if barrier["deadline"] else ""
+    if barrier["public_barrier_title"] and barrier["public_barrier_summary"]:
+        return {
+            "tag": "OVERDUE REVIEW" if overdue else "PUBLICATION REVIEW",
+            "message": [
+                "Submit for clearance checks and GOV.UK publication approval",
+                f"by {deadline}." if deadline else "",
+            ],
+            "task_url": "barriers:public_barrier_detail",
+            "link_text": "Submit for clearance checks and GOV.UK publication approval",
+        }
+    else:
+        return {
+            "tag": "OVERDUE REVIEW" if overdue else "PUBLICATION REVIEW",
+            "message": [
+                "Add a public title and summary",
+                "to this barrier before it can be approved.",
+                f"This needs to be done by {deadline}." if deadline else "",
+            ],
+            "task_url": "barriers:public_barrier_detail",
+            "link_text": "Add a public title and summary",
+        }
+
+
+def create_approver_task(barrier):
+    overdue = barrier["deadline"].replace(tzinfo=None) < datetime.today() if barrier["deadline"] else ""
+    deadline = barrier['deadline'].strftime('%d %B %Y') if barrier["deadline"] else ""
+
+    return {
+        "tag": "OVERDUE REVIEW" if overdue else "PUBLICATION REVIEW",
+        "message": [
+            "Approve this barrier",
+            f"for publication and complete clearance checks by {deadline}." if deadline else "",
+            "It can then be submitted to the GOV.UK content team.",
+        ],
+        "task_url": "barriers:public_barrier_detail",
+        "link_text": "Approve this barrier",
+    }
+
+
+def create_publisher_task(barrier):
+    overdue = barrier["deadline"].replace(tzinfo=None) < datetime.today() if barrier["deadline"] else ""
+    deadline = barrier['deadline'].strftime('%d %B %Y') if barrier["deadline"] else ""
+
+    return {
+        "tag": "OVERDUE REVIEW" if overdue else "PUBLICATION REVIEW",
+        "message": [
+            "Complete GOV.UK content checks",
+            f"by {deadline}." if deadline else "",
+        ],
+        "task_url": "barriers:public_barrier_detail",
+        "link_text": "Complete GOV.UK content checks",
+    }
+
+
+def create_barrier_entry(barrier):
+    return {
+        "barrier_id": str(barrier["id"]),
+        "barrier_code": barrier["code"],
+        "barrier_title": barrier["title"],
+        "modified_by": barrier["full_name"],
+        "modified_on": barrier["modified_on"].strftime("%d %B %Y") if barrier["modified_on"] else "Unknown",
+        "task_list": [],
+    }
+
+
+def create_progress_update_task(barrier):
+    today = datetime.today()
+    first_of_month_date = today.replace(day=1, tzinfo=pytz.UTC)
+    third_friday_day = get_nth_day_of_month(year=today.year, month=today.month, nth=3, weekday=4)
+    third_fridate_date = today.replace(day=third_friday_day)
+    if not barrier["progress_update_modified_on"] or (
+        barrier["progress_update_modified_on"] < first_of_month_date
+        and today < third_fridate_date
+    ):
+        tag = "PROGRESS UPDATE DUE"
+    elif barrier["progress_update_modified_on"] < first_of_month_date and today > third_fridate_date:
+        tag = "OVERDUE PROGRESS UPDATE"
+    else:
+        return
+
+    return {
+        "tag": tag,
+        "message": [
+            "Add a monthly progress update",
+            f"to this PB100 barrier by {third_fridate_date.strftime('%d %B %Y')}.",
+        ],
+        "task_url": "barriers:add_progress_update",
+        "link_text": "Add a monthly progress update",
+    }
+
+
+def create_next_step_task(_):
+    return {
+        "tag": "REVIEW NEXT STEP",
+        "message": [
+            "Review the barrier next steps",
+        ],
+        "task_url": "barriers:list_next_steps",
+        "link_text": "Review the next steps",
+    }
+
+
+def create_overseas_task(_):
+    return {
+        "tag": "PROGRESS UPDATE DUE",
+        "message": [
+            "Add a quarterly progress update",
+            "to this overseas delivery barrier.",
+        ],
+        "task_url": "barriers:add_progress_update",
+        "link_text": "Add a quarterly progress update",
+    }
+
+
+def create_programme_fund_update_task(_):
+    return {
+        "tag": "PROGRESS UPDATE DUE",
+        "message": ["Add a programme fund update", "to this barrier."],
+        "task_url": "barriers:add_programme_fund_progress_update",
+        "link_text": "Add a programme fund update",
+    }
+
+
+def create_missing_hs_code_task(_):
+    return {
+        "tag": "ADD INFORMATION",
+        "message": ["Add an HS code to this barrier."],
+        "task_url": "barriers:edit_commodities",
+        "link_text": "Add an HS code to this barrier.",
+    }
+
+
+def create_missing_gov_org_task(_):
+    return {
+        "tag": "ADD INFORMATION",
+        "message": [
+            "Check and add any other government departments (OGDs)",
+            "involved in the resolution of this barrier.",
+        ],
+        "task_url": "barriers:edit_gov_orgs",
+        "link_text": "Check and add any other government departments (OGDs)",
+    }
+
+
+def create_add_progress_update_task(_):
+    return {
+        "tag": "ADD INFORMATION",
+        "message": [
+            "Add your delivery confidence",
+            "to this barrier.",
+        ],
+        "task_url": "barriers:add_progress_update",
+        "link_text": "Add your delivery confidence",
+    }
+
+
+def create_overdue_erd_task(barrier):
+    return {
+        "tag": "CHANGE OVERDUE",
+        "message": [
+            "Review the estimated resolution date",
+            f"as it is currently listed as {barrier['estimated_resolution_date']},",
+            "which is in the past.",
+        ],
+        "task_url": "barriers:edit_estimated_resolution_date",
+        "link_text": "Review the estimated resolution date",
+    }
+
+
+def add_pb100_erd_task(_):
+    return {
+        "tag": "ADD DATE",
+        "message": [
+            "Add an estimated resolution date",
+            "to this PB100 barrier.",
+        ],
+        "task_url": "barriers:edit_estimated_resolution_date",
+        "link_text": "Add an estimated resolution date",
+    }
+
+
+def create_add_priority_erd_task(_):
+    return {
+        "tag": "ADD DATE",
+        "message": [
+            "Add an estimated resolution date",
+            "to this PB100 barrier.",
+        ],
+        "task_url": "barriers:edit_estimated_resolution_date",
+        "link_text": "Add an estimated resolution date",
+    }
+
+
+def create_review_priority_erd_task(barrier):
+    return {
+        "tag": "REVIEW DATE",
+        "message": [
+            "Check the estimated resolution date",
+            f"as it has not been reviewed since {barrier['progress_update_modified_on'].strftime('%d %B %Y')}.",
+        ],
+        "task_url": "barriers:edit_estimated_resolution_date",
+        "link_text": "Check the estimated resolution date",
+    }
+
+
+def create_mentions_task(mention):
+    return {
+        "tag": "REVIEW COMMENT",
+        "message": [
+            "Reply to the comment",
+            f"{mention['first_name']} {mention['last_name']} mentioned you in on",
+            f"{mention['created_on'].strftime('%d %B %Y')}.",
+        ],
+        "task_url": "barriers:barrier_detail",
+        "link_text": "Reply to the comment",
+    }
+
+
+def get_combined_barrier_mention_qs(user):
+    return (
+        Barrier.objects.filter(
+            Q(barrier_team__user=user)
+            & Q(barrier_team__archived=False)
+            & Q(archived=False)
+        )
+        .annotate(
+            modified_on_union=Case(
+                When(
+                    Exists(
+                        Mention.objects.filter(
+                            barrier__id=OuterRef('pk'),
+                            recipient=user,
+                            created_on__date__gte=(datetime.now() - timedelta(days=30))
+                        )
+                    ),
+                    then=Greatest(
+                        Mention.objects.filter(
+                            barrier__id=OuterRef('pk'),
+                            recipient=user,
+                            created_on__date__gte=(datetime.now() - timedelta(days=30))
+                        ).order_by("-created_on").values("created_on")[:1],
+                        F("modified_on")
+                    ),
+                ),
+                default=F("modified_on"),
+                output_field=DateTimeField()
+
+            )
+        )
+        .order_by("-modified_on_union")
+        .distinct()
+    )
+
+
+def get_tasks(user):
+    user_groups = set(user.groups.values_list("name", flat=True))
+    public_view_statuses = [20]
+    fy_start_date, fy_end_date, _, __ = get_financial_year_dates()
+    if "Public barrier approver" in user_groups:
+        public_view_statuses.append(70)
+    if "Publisher" in user_groups:
+        public_view_statuses.append(30)
+    barrier_entries = []
+
+    qs = get_combined_barrier_mention_qs(user)
+
+    qs = qs.annotate(
+        is_owner=Exists(TeamMember.objects.filter(
+            barrier=OuterRef("pk"), role=TeamMember.OWNER, user=user, archived=False
+        )),
+        deadline=ExpressionWrapper(
+            F("public_barrier__set_to_allowed_on") + timedelta(days=30), output_field=DateTimeField()
+        ),
+        full_name=Concat(
+            F("modified_by__first_name"), Value(' '), F("modified_by__last_name"),
+            output_field=CharField()
+        ),
+        progress_update_modified_on=BarrierProgressUpdate.objects.filter(
+            barrier=OuterRef("pk")
+        ).order_by("-created_on").values("modified_on")[:1],
+        has_overdue_next_step=Exists(
+            BarrierNextStepItem.objects.filter(
+                barrier=OuterRef("pk"),
+                status="IN_PROGRESS",
+                completion_date__lt=datetime.date(datetime.today())
+            )
+        ),
+        latest_programme_fund_modified_on=ProgrammeFundProgressUpdate.objects.filter(
+            barrier=OuterRef("pk")
+        ).order_by("-created_on").values("modified_on")[:1],
+        has_programme_fund_tag=Exists(
+            Barrier.objects.filter(pk=OuterRef("pk"), tags__title="Programme Fund - Facilitative Regional")
+        ),
+        has_goods=Exists(
+            Barrier.objects.filter(
+                id=OuterRef("pk"),
+                export_types__name="goods"
+            )
+        ),
+        has_commodities=Exists(
+            Barrier.objects.filter(
+                id=OuterRef("pk"),
+                commodities__commodity__isnull=False
+            )
+        ),
+        has_government_organisation=Exists(
+            Barrier.objects.filter(
+                id=OuterRef("pk"),
+                organisations__organisation_type__in=GOVERNMENT_ORGANISATION_TYPES
+            )
+        )
+    ).values(
+        "id",
+        "modified_on_union",
+        "title",
+        "code",
+        "deadline",
+        "is_owner",
+        "modified_on",
+        "full_name",
+        "status",
+        "top_priority_status",
+        "progress_update_modified_on",
+        "has_overdue_next_step",
+        "priority_level",
+        "has_programme_fund_tag",
+        "latest_programme_fund_modified_on",
+        "has_goods",
+        "has_commodities",
+        "has_government_organisation",
+        "estimated_resolution_date",
+        set_to_allowed_on=F("public_barrier__set_to_allowed_on"),
+        public_barrier_title=F("public_barrier___title"),
+        public_barrier_summary=F("public_barrier___summary"),
+        public_view_status=F("public_barrier___public_view_status")
+    )
+    mentions = Mention.objects.filter(
+        barrier__id__in=[b["id"] for b in qs],
+        recipient=user,
+        created_on__date__gte=(datetime.now() - timedelta(days=30))
+    ).values("created_on", "barrier", first_name=F("created_by__first_name"), last_name=F("created_by__last_name"))
+    mentions_lookup = {m["barrier"]: m for m in mentions}
+
+    for barrier in qs:
+        barrier_entry = create_barrier_entry(barrier)
+        if barrier["is_owner"] and barrier["public_view_status"] == 20:
+            task = create_editor_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if "Public barrier approver" in user_groups and barrier["public_view_status"] == 70:
+            task = create_approver_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if "Publisher" in user_groups and barrier["public_view_status"] == 30:
+            task = create_publisher_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if barrier["status"] in {1, 2, 3} and barrier["top_priority_status"] in {
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+        }:
+            task = create_progress_update_task(barrier)
+            if task:
+                barrier_entry["task_list"].append(task)
+
+            if barrier["has_overdue_next_step"]:
+                task = create_next_step_task(barrier)
+                barrier_entry["task_list"].append(task)
+
+        if (
+            barrier["status"] in {1, 2, 3} and
+            barrier["priority_level"] == "OVERSEAS" and
+            (
+                not barrier["progress_update_modified_on"] or
+                barrier["progress_update_modified_on"] < datetime.today() - timedelta(days=90)
+            )
+        ):
+            task = create_overseas_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if barrier["has_programme_fund_tag"] and (
+            not barrier["latest_programme_fund_modified_on"] or
+            barrier["latest_programme_fund_modified_on"] < (datetime.today() - timedelta(days=90))
+        ):
+            task = create_programme_fund_update_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        # Barrier missing details
+        if (
+            barrier["status"] in {1, 2, 3} and
+            barrier["has_goods"] and
+            not barrier["has_commodities"]
+        ):
+            task = create_missing_hs_code_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if barrier["status"] in {1, 2, 3} and not barrier["has_government_organisation"]:
+            task = create_missing_gov_org_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if (
+            barrier["status"] in {1, 2, 3} and
+            barrier["estimated_resolution_date"] and
+            not barrier["progress_update_modified_on"] and
+            barrier["estimated_resolution_date"] < fy_end_date and
+            barrier["estimated_resolution_date"] > fy_start_date
+        ):
+            task = create_add_progress_update_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if (
+                barrier["status"] in {1, 2, 3} and
+                barrier["estimated_resolution_date"] and
+                barrier["estimated_resolution_date"] < datetime.today().date()
+        ):
+            task = create_overdue_erd_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if (
+                barrier["is_owner"] and
+                (
+                    barrier["top_priority_status"] in {
+                        TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+                        TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+                    } or barrier['priority_level'] == "OVERSEAS"
+                ) and
+                not barrier["estimated_resolution_date"]
+        ):
+            task = create_add_priority_erd_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if (
+                barrier["is_owner"] and
+                barrier["top_priority_status"] in {
+                    TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+                    TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+                } and
+                barrier["progress_update_modified_on"] and
+                barrier["progress_update_modified_on"] < (datetime.now() - timedelta(days=180)).replace(tzinfo=pytz.UTC)
+        ):
+            task = create_review_priority_erd_task(barrier)
+            barrier_entry["task_list"].append(task)
+
+        if barrier["id"] in mentions_lookup:
+            mention = mentions_lookup[barrier["id"]]
+            task = create_mentions_task(mention)
+            barrier_entry["task_list"].append(task)
+
+        if barrier_entry["task_list"]:
+            barrier_entries.append(barrier_entry)
+
+    return barrier_entries
+
+
 class UserTasksView(generics.ListAPIView):
     """
     Returns list of dashboard next steps, tasks and progress updates
@@ -58,7 +524,6 @@ class UserTasksView(generics.ListAPIView):
     todays_date = datetime.now(timezone.utc)
     publishing_overdue = False
     publish_deadline = ""
-    countdown = 0
     third_friday_date = None
     first_of_month_date = None
 
@@ -76,7 +541,7 @@ class UserTasksView(generics.ListAPIView):
                 & Q(archived=False)
             )
             .distinct()
-            .order_by("-modified_on")[:100]
+            .order_by("-modified_on")
             .select_related("public_barrier")
             .prefetch_related(
                 "progress_updates",
@@ -161,18 +626,16 @@ class UserTasksView(generics.ListAPIView):
     def check_publishing_overdue(self, barrier):
         # Get publishing deadline difference for public_barrier related tasks/updates
         # Only set publishing deadlines for barriers in either ALLOWED, APPROVAL_PENDING or PUBLISHING_PENDING status
-        set_to_allowed_date = barrier.public_barrier.set_to_allowed_on
         if (
             barrier.public_barrier.public_view_status in [20, 70, 30]
-            and set_to_allowed_date
+            and barrier.public_barrier.set_to_allowed_on
         ):
             publish_deadline = dateutil.parser.parse(
-                set_to_allowed_date.strftime("%m/%d/%Y")
+                barrier.public_barrier.set_to_allowed_on.strftime("%m/%d/%Y")
             ) + timedelta(days=30)
             diff = publish_deadline - self.todays_date.replace(tzinfo=None)
             # Set variables to track if barrier is overdue and by how much
             self.publishing_overdue = True if diff.days <= 0 else False
-            self.countdown = 0 if diff.days <= 0 else diff.days
             self.publish_deadline = publish_deadline.strftime("%d %B %Y")
 
     def set_date_of_third_friday(self):
@@ -616,13 +1079,18 @@ class UserTasksView(generics.ListAPIView):
             "barrier",
         )
 
+        mention_users = User.objects.filter(
+            id__in=[mention.created_by_id for mention in user_mentions]
+        ).values("first_name", "last_name", "pk")
+        user_lookup = {str(u["pk"]): u for u in mention_users}
+
         for mention in user_mentions:
-            mentioner = User.objects.get(id=mention.created_by_id)
+            mentioner = user_lookup[str(mention.created_by_id)]
             mention_task = {
                 "tag": "REVIEW COMMENT",
                 "message": [
                     "Reply to the comment",
-                    f"{mentioner.first_name} {mentioner.last_name} mentioned you in on",
+                    f"{mentioner['first_name']} {mentioner['last_name']} mentioned you in on",
                     f"{mention.created_on.strftime('%d %B %Y')}.",
                 ],
                 "task_url": "barriers:barrier_detail",
@@ -658,7 +1126,7 @@ class UserTasksView(generics.ListAPIView):
         )
 
         barrier_entry = {
-            "barrier_id": barrier.id,
+            "barrier_id": str(barrier.id),
             "barrier_code": barrier.code,
             "barrier_title": barrier.title,
             "modified_by": first_name + " " + last_name,
