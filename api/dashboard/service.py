@@ -253,12 +253,8 @@ def get_combined_barrier_mention_qs(user):
     return (
         Barrier.objects.filter(
             (
-                (
-                    Q(barrier_team__user=user)
-                    & Q(barrier_team__archived=False)
-                ) | (
-                    Q(mention__recipient=user)
-                )
+                (Q(barrier_team__user=user) & Q(barrier_team__archived=False))
+                | (Q(mention__recipient=user))
             )
             & Q(archived=False)
         )
@@ -307,9 +303,7 @@ def get_tasks(user):  # noqa
             )
         ),
         is_member=Exists(
-            TeamMember.objects.filter(
-                barrier=OuterRef("pk"), user=user, archived=False
-            )
+            TeamMember.objects.filter(barrier=OuterRef("pk"), user=user, archived=False)
         ),
         deadline=ExpressionWrapper(
             F("public_barrier__set_to_allowed_on") + timedelta(days=30),
@@ -396,6 +390,7 @@ def get_tasks(user):  # noqa
     for barrier in qs:
         barrier_entry = tasks.create_barrier_entry(barrier)
         from pprint import pprint
+
         pprint(barrier)
 
         if barrier["id"] in mentions_lookup:
