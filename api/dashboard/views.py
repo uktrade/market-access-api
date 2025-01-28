@@ -349,7 +349,7 @@ def get_tasks(user):
         has_commodities=Exists(
             Barrier.objects.filter(
                 id=OuterRef("pk"),
-                commodities__commodity__isnull=False
+                commodities__code__isnull=False
             )
         ),
         has_government_organisation=Exists(
