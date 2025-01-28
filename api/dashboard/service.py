@@ -389,9 +389,6 @@ def get_tasks(user):  # noqa
 
     for barrier in qs:
         barrier_entry = tasks.create_barrier_entry(barrier)
-        from pprint import pprint
-
-        pprint(barrier)
 
         if barrier["id"] in mentions_lookup:
             mention = mentions_lookup[barrier["id"]]
@@ -399,6 +396,8 @@ def get_tasks(user):  # noqa
             barrier_entry["task_list"].append(task)
 
         if not barrier["is_member"]:
+            # If user isn't part of the barrier team, they should not have any tasks generated
+            # for this barrier besides the Mention tasks above.
             if barrier_entry["task_list"]:
                 barrier_entries.append(barrier_entry)
             continue
