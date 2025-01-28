@@ -252,8 +252,14 @@ def get_counts(qs, user):
 def get_combined_barrier_mention_qs(user):
     return (
         Barrier.objects.filter(
-            Q(barrier_team__user=user)
-            & Q(barrier_team__archived=False)
+            (
+                (
+                    Q(barrier_team__user=user)
+                    & Q(barrier_team__archived=False)
+                ) | (
+                    Q(mention__recipient=user)
+                )
+            )
             & Q(archived=False)
         )
         .annotate(
@@ -298,6 +304,11 @@ def get_tasks(user):  # noqa
         is_owner=Exists(
             TeamMember.objects.filter(
                 barrier=OuterRef("pk"), role=TeamMember.OWNER, user=user, archived=False
+            )
+        ),
+        is_member=Exists(
+            TeamMember.objects.filter(
+                barrier=OuterRef("pk"), user=user, archived=False
             )
         ),
         deadline=ExpressionWrapper(
@@ -346,6 +357,7 @@ def get_tasks(user):  # noqa
         ),
     ).values(
         "id",
+        "is_member",
         "modified_on_union",
         "title",
         "code",
@@ -383,6 +395,19 @@ def get_tasks(user):  # noqa
 
     for barrier in qs:
         barrier_entry = tasks.create_barrier_entry(barrier)
+        from pprint import pprint
+        pprint(barrier)
+
+        if barrier["id"] in mentions_lookup:
+            mention = mentions_lookup[barrier["id"]]
+            task = tasks.create_mentions_task(mention)
+            barrier_entry["task_list"].append(task)
+
+        if not barrier["is_member"]:
+            if barrier_entry["task_list"]:
+                barrier_entries.append(barrier_entry)
+            continue
+
         if barrier["is_owner"] and barrier["public_view_status"] == 20:
             task = tasks.create_editor_task(barrier)
             barrier_entry["task_list"].append(task)
@@ -416,7 +441,7 @@ def get_tasks(user):  # noqa
             and (
                 not barrier["progress_update_modified_on"]
                 or barrier["progress_update_modified_on"]
-                < datetime.today() - timedelta(days=90)
+                < (datetime.today() - timedelta(days=90)).replace(tzinfo=pytz.UTC)
             )
         ):
             task = tasks.create_overseas_task(barrier)
@@ -491,11 +516,6 @@ def get_tasks(user):  # noqa
             < (datetime.now() - timedelta(days=180)).replace(tzinfo=pytz.UTC)
         ):
             task = tasks.create_review_priority_erd_task(barrier)
-            barrier_entry["task_list"].append(task)
-
-        if barrier["id"] in mentions_lookup:
-            mention = mentions_lookup[barrier["id"]]
-            task = tasks.create_mentions_task(mention)
             barrier_entry["task_list"].append(task)
 
         if barrier_entry["task_list"]:
