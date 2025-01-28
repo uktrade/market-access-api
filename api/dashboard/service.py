@@ -19,6 +19,7 @@ from django.db.models import (
 from django.db.models.functions import Concat, Greatest
 
 from api.barriers.models import (
+    Barrier,
     BarrierNextStepItem,
     BarrierProgressUpdate,
     ProgrammeFundProgressUpdate,
@@ -27,17 +28,13 @@ from api.collaboration.models import TeamMember
 from api.dashboard import tasks
 from api.interactions.models import Mention
 from api.metadata.constants import (
+    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC_LOOKUP,
     GOVERNMENT_ORGANISATION_TYPES,
     TOP_PRIORITY_BARRIER_STATUS,
+    BarrierStatus,
 )
 
 logger = logging.getLogger(__name__)
-
-from api.barriers.models import Barrier
-from api.metadata.constants import (
-    ECONOMIC_ASSESSMENT_IMPACT_MIDPOINTS_NUMERIC_LOOKUP,
-    BarrierStatus,
-)
 
 
 def get_financial_year_dates():
@@ -289,7 +286,7 @@ def get_combined_barrier_mention_qs(user):
     )
 
 
-def get_tasks(user):
+def get_tasks(user):  # noqa
     user_groups = set(user.groups.values_list("name", flat=True))
     fy_start_date, fy_end_date, _, __ = get_financial_year_dates()
 
