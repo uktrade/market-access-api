@@ -6,8 +6,12 @@ from api.core.date_utils import get_nth_day_of_month
 
 
 def create_editor_task(barrier):
-    overdue = barrier["deadline"].replace(tzinfo=None) < datetime.today() if barrier["deadline"] else ""
-    deadline = barrier['deadline'].strftime('%d %B %Y') if barrier["deadline"] else ""
+    overdue = (
+        barrier["deadline"].replace(tzinfo=None) < datetime.today()
+        if barrier["deadline"]
+        else ""
+    )
+    deadline = barrier["deadline"].strftime("%d %B %Y") if barrier["deadline"] else ""
     if barrier["public_barrier_title"] and barrier["public_barrier_summary"]:
         return {
             "tag": "OVERDUE REVIEW" if overdue else "PUBLICATION REVIEW",
@@ -32,14 +36,22 @@ def create_editor_task(barrier):
 
 
 def create_approver_task(barrier):
-    overdue = barrier["deadline"].replace(tzinfo=None) < datetime.today() if barrier["deadline"] else ""
-    deadline = barrier['deadline'].strftime('%d %B %Y') if barrier["deadline"] else ""
+    overdue = (
+        barrier["deadline"].replace(tzinfo=None) < datetime.today()
+        if barrier["deadline"]
+        else ""
+    )
+    deadline = barrier["deadline"].strftime("%d %B %Y") if barrier["deadline"] else ""
 
     return {
         "tag": "OVERDUE REVIEW" if overdue else "PUBLICATION REVIEW",
         "message": [
             "Approve this barrier",
-            f"for publication and complete clearance checks by {deadline}." if deadline else "",
+            (
+                f"for publication and complete clearance checks by {deadline}."
+                if deadline
+                else ""
+            ),
             "It can then be submitted to the GOV.UK content team.",
         ],
         "task_url": "barriers:public_barrier_detail",
@@ -48,8 +60,12 @@ def create_approver_task(barrier):
 
 
 def create_publisher_task(barrier):
-    overdue = barrier["deadline"].replace(tzinfo=None) < datetime.today() if barrier["deadline"] else ""
-    deadline = barrier['deadline'].strftime('%d %B %Y') if barrier["deadline"] else ""
+    overdue = (
+        barrier["deadline"].replace(tzinfo=None) < datetime.today()
+        if barrier["deadline"]
+        else ""
+    )
+    deadline = barrier["deadline"].strftime("%d %B %Y") if barrier["deadline"] else ""
 
     return {
         "tag": "OVERDUE REVIEW" if overdue else "PUBLICATION REVIEW",
@@ -68,7 +84,11 @@ def create_barrier_entry(barrier):
         "barrier_code": barrier["code"],
         "barrier_title": barrier["title"],
         "modified_by": barrier["full_name"],
-        "modified_on": barrier["modified_on"].strftime("%d %B %Y") if barrier["modified_on"] else "Unknown",
+        "modified_on": (
+            barrier["modified_on"].strftime("%d %B %Y")
+            if barrier["modified_on"]
+            else "Unknown"
+        ),
         "task_list": [],
     }
 
@@ -76,14 +96,19 @@ def create_barrier_entry(barrier):
 def create_progress_update_task(barrier):
     today = datetime.today()
     first_of_month_date = today.replace(day=1, tzinfo=pytz.UTC)
-    third_friday_day = get_nth_day_of_month(year=today.year, month=today.month, nth=3, weekday=4)
+    third_friday_day = get_nth_day_of_month(
+        year=today.year, month=today.month, nth=3, weekday=4
+    )
     third_fridate_date = today.replace(day=third_friday_day)
     if not barrier["progress_update_modified_on"] or (
         barrier["progress_update_modified_on"] < first_of_month_date
         and today < third_fridate_date
     ):
         tag = "PROGRESS UPDATE DUE"
-    elif barrier["progress_update_modified_on"] < first_of_month_date and today > third_fridate_date:
+    elif (
+        barrier["progress_update_modified_on"] < first_of_month_date
+        and today > third_fridate_date
+    ):
         tag = "OVERDUE PROGRESS UPDATE"
     else:
         return

@@ -1,17 +1,20 @@
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
 
 import pytest
+from django.contrib.auth.models import Group
 
-from api.barriers.models import Barrier, ProgrammeFundProgressUpdate, BarrierProgressUpdate
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    ProgrammeFundProgressUpdate,
+)
 from api.collaboration.models import TeamMember
 from api.core.test_utils import create_test_user
-from api.dashboard.service import get_tasks, get_combined_barrier_mention_qs
+from api.dashboard.service import get_combined_barrier_mention_qs, get_tasks
 from api.interactions.models import Mention
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from api.metadata.models import BarrierTag, ExportType
 from tests.barriers.factories import BarrierFactory
-from django.contrib.auth.models import Group
-
 
 pytestmark = [pytest.mark.django_db]
 
@@ -27,20 +30,19 @@ def test_editor_tasks():
     barrier.barrier_team.add(team_member)
     tasks = get_tasks(user)
 
-    assert tasks[0]['task_list'][0]['tag'] == 'PUBLICATION REVIEW'
+    assert tasks[0]["task_list"][0]["tag"] == "PUBLICATION REVIEW"
 
     barrier.public_barrier.set_to_allowed_on = date.today() - timedelta(days=31)
     barrier.public_barrier.save()
     tasks = get_tasks(user)
 
-    assert tasks[0]['task_list'][0]['tag'] == 'OVERDUE REVIEW'
+    assert tasks[0]["task_list"][0]["tag"] == "OVERDUE REVIEW"
 
 
 def test_create_add_priority_erd_task():
     user = create_test_user()
     barrier: Barrier = BarrierFactory(
-        priority_level="OVERSEAS",
-        estimated_resolution_date=None
+        priority_level="OVERSEAS", estimated_resolution_date=None
     )
     team_member = TeamMember.objects.create(
         barrier=barrier, user=user, created_by=user, role=TeamMember.OWNER
@@ -49,24 +51,31 @@ def test_create_add_priority_erd_task():
     tasks = get_tasks(user)
 
     # assert 0
-    assert tasks[0]['task_list'] == [
-        {'link_text': 'Add a quarterly progress update',
-         'message': ['Add a quarterly progress update',
-                     'to this overseas delivery barrier.'],
-         'tag': 'PROGRESS UPDATE DUE',
-         'task_url': 'barriers:add_progress_update'},
-        {'link_text': 'Check and add any other government departments '
-                      '(OGDs)',
-         'message': ['Check and add any other government departments '
-                     '(OGDs)',
-                     'involved in the resolution of this barrier.'],
-         'tag': 'ADD INFORMATION',
-         'task_url': 'barriers:edit_gov_orgs'},
-        {'link_text': 'Add an estimated resolution date',
-         'message': ['Add an estimated resolution date',
-                     'to this PB100 barrier.'],
-         'tag': 'ADD DATE',
-         'task_url': 'barriers:edit_estimated_resolution_date'}
+    assert tasks[0]["task_list"] == [
+        {
+            "link_text": "Add a quarterly progress update",
+            "message": [
+                "Add a quarterly progress update",
+                "to this overseas delivery barrier.",
+            ],
+            "tag": "PROGRESS UPDATE DUE",
+            "task_url": "barriers:add_progress_update",
+        },
+        {
+            "link_text": "Check and add any other government departments " "(OGDs)",
+            "message": [
+                "Check and add any other government departments " "(OGDs)",
+                "involved in the resolution of this barrier.",
+            ],
+            "tag": "ADD INFORMATION",
+            "task_url": "barriers:edit_gov_orgs",
+        },
+        {
+            "link_text": "Add an estimated resolution date",
+            "message": ["Add an estimated resolution date", "to this PB100 barrier."],
+            "tag": "ADD DATE",
+            "task_url": "barriers:edit_estimated_resolution_date",
+        },
     ]
 
 
@@ -74,7 +83,7 @@ def test_create_review_priority_erd_task():
     user = create_test_user()
     barrier: Barrier = BarrierFactory(
         top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-        estimated_resolution_date=None
+        estimated_resolution_date=None,
     )
     team_member = TeamMember.objects.create(
         barrier=barrier, user=user, created_by=user, role=TeamMember.OWNER
@@ -86,13 +95,15 @@ def test_create_review_priority_erd_task():
 
     tasks = get_tasks(user)
 
-    assert tasks[0]['task_list'][-1]['tag'] == "REVIEW DATE"
+    assert tasks[0]["task_list"][-1]["tag"] == "REVIEW DATE"
 
 
 def test_create_add_progress_update_task():
     user = create_test_user()
     estimated_resolution_date = date(year=2024, month=12, day=12)
-    barrier: Barrier = BarrierFactory(estimated_resolution_date=estimated_resolution_date)
+    barrier: Barrier = BarrierFactory(
+        estimated_resolution_date=estimated_resolution_date
+    )
     barrier.public_barrier.public_view_status = 20
     barrier.public_barrier.save()
     team_member = TeamMember.objects.create(
@@ -102,17 +113,17 @@ def test_create_add_progress_update_task():
     barrier.top_priority_status = TOP_PRIORITY_BARRIER_STATUS.APPROVED
     barrier.save()
     progress_update = ProgrammeFundProgressUpdate(barrier=barrier)
-    progress_update.milestones_and_deliverables = 'hello'
+    progress_update.milestones_and_deliverables = "hello"
     progress_update.modified_on = datetime.now() - timedelta(days=91)
     progress_update.save()
 
     tasks = get_tasks(user)
 
-    assert tasks[0]['task_list'][-2] == {
-        'link_text': 'Add your delivery confidence',
-        'message': ['Add your delivery confidence', 'to this barrier.'],
-        'tag': 'ADD INFORMATION',
-        'task_url': 'barriers:add_progress_update'
+    assert tasks[0]["task_list"][-2] == {
+        "link_text": "Add your delivery confidence",
+        "message": ["Add your delivery confidence", "to this barrier."],
+        "tag": "ADD INFORMATION",
+        "task_url": "barriers:add_progress_update",
     }
 
 
@@ -123,9 +134,11 @@ def test_get_tasks():
     tag = BarrierTag.objects.get(title="Programme Fund - Facilitative Regional")
     tag2 = BarrierTag.objects.first()
     estimated_resolution_date = date(year=2024, month=12, day=12)
-    barrier: Barrier = BarrierFactory(estimated_resolution_date=estimated_resolution_date)
+    barrier: Barrier = BarrierFactory(
+        estimated_resolution_date=estimated_resolution_date
+    )
     progress_update = ProgrammeFundProgressUpdate(barrier=barrier)
-    progress_update.milestones_and_deliverables = 'hello'
+    progress_update.milestones_and_deliverables = "hello"
     progress_update.modified_on = datetime.now() - timedelta(days=91)
     progress_update.save()
     export_type = ExportType.objects.get(name="goods")
@@ -145,45 +158,51 @@ def test_get_tasks():
 
     assert tasks[0]["task_list"] == [
         {
-            'link_text': 'Submit for clearance checks and GOV.UK publication approval',
-            'message': ['Submit for clearance checks and GOV.UK publication approval',
-            f'by {(barrier.public_barrier.set_to_allowed_on + timedelta(days=30)).strftime("%d %B %Y")}.'],
-            'tag': 'PUBLICATION REVIEW',
-            'task_url': 'barriers:public_barrier_detail'
+            "link_text": "Submit for clearance checks and GOV.UK publication approval",
+            "message": [
+                "Submit for clearance checks and GOV.UK publication approval",
+                f'by {(barrier.public_barrier.set_to_allowed_on + timedelta(days=30)).strftime("%d %B %Y")}.',
+            ],
+            "tag": "PUBLICATION REVIEW",
+            "task_url": "barriers:public_barrier_detail",
         },
         {
-            'link_text': 'Add a programme fund update',
-            'message': ['Add a programme fund update', 'to this barrier.'],
-            'tag': 'PROGRESS UPDATE DUE',
-            'task_url': 'barriers:add_programme_fund_progress_update'
+            "link_text": "Add a programme fund update",
+            "message": ["Add a programme fund update", "to this barrier."],
+            "tag": "PROGRESS UPDATE DUE",
+            "task_url": "barriers:add_programme_fund_progress_update",
         },
         {
-            'link_text': 'Add an HS code to this barrier.',
-            'message': ['Add an HS code to this barrier.'],
-            'tag': 'ADD INFORMATION',
-            'task_url': 'barriers:edit_commodities'
+            "link_text": "Add an HS code to this barrier.",
+            "message": ["Add an HS code to this barrier."],
+            "tag": "ADD INFORMATION",
+            "task_url": "barriers:edit_commodities",
         },
         {
-            'link_text': 'Check and add any other government departments (OGDs)',
-            'message': ['Check and add any other government departments (OGDs)',
-            'involved in the resolution of this barrier.'],
-            'tag': 'ADD INFORMATION',
-            'task_url': 'barriers:edit_gov_orgs'
+            "link_text": "Check and add any other government departments (OGDs)",
+            "message": [
+                "Check and add any other government departments (OGDs)",
+                "involved in the resolution of this barrier.",
+            ],
+            "tag": "ADD INFORMATION",
+            "task_url": "barriers:edit_gov_orgs",
         },
         {
-           'link_text': 'Add your delivery confidence',
-            'message': ['Add your delivery confidence', 'to this barrier.'],
-            'tag': 'ADD INFORMATION',
-            'task_url': 'barriers:add_progress_update'
+            "link_text": "Add your delivery confidence",
+            "message": ["Add your delivery confidence", "to this barrier."],
+            "tag": "ADD INFORMATION",
+            "task_url": "barriers:add_progress_update",
         },
         {
-            'link_text': 'Review the estimated resolution date',
-            'message': ['Review the estimated resolution date',
-            f'as it is currently listed as {estimated_resolution_date},',
-            'which is in the past.'],
-            'tag': 'CHANGE OVERDUE',
-            'task_url': 'barriers:edit_estimated_resolution_date'
-        }
+            "link_text": "Review the estimated resolution date",
+            "message": [
+                "Review the estimated resolution date",
+                f"as it is currently listed as {estimated_resolution_date},",
+                "which is in the past.",
+            ],
+            "tag": "CHANGE OVERDUE",
+            "task_url": "barriers:edit_estimated_resolution_date",
+        },
     ]
 
 

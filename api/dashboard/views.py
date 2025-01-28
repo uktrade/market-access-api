@@ -47,6 +47,7 @@ class UserTasksView(generics.ListAPIView):
     related to barriers where a given user is either owner or
     collaborator.
     """
+
     def get(self, request, *args, **kwargs):
         # Get the User information from the request
         task_list = service.get_tasks(request.user)
@@ -60,4 +61,3 @@ class UserTasksView(generics.ListAPIView):
             status=status.HTTP_200_OK,
             data={"results": page_obj.object_list, "count": len(task_list)},
         )
-
