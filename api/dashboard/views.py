@@ -501,13 +501,7 @@ def get_tasks(user):
     return barrier_entries
 
 
-class UserTasksView(generics.ListAPIView):
-    """
-    Returns list of dashboard next steps, tasks and progress updates
-    related to barriers where a given user is either owner or
-    collaborator.
-    """
-
+class OldTasks:
     # Set variables used in date related calculations
     todays_date = datetime.now(timezone.utc)
     publishing_overdue = False
@@ -515,9 +509,7 @@ class UserTasksView(generics.ListAPIView):
     third_friday_date = None
     first_of_month_date = None
 
-    def get(self, request, *args, **kwargs):
-        # Get the User information from the request
-        user = request.user
+    def get_old_tasks(self, user):
         user_groups = user.groups.all()
 
         # Can use filter from search without excluding barriers that the user owns to
@@ -601,15 +593,7 @@ class UserTasksView(generics.ListAPIView):
         # entries for un-owned barriers
         task_list = self.append_mentions_tasks(user, task_list)
 
-        # Paginate
-        paginator = Paginator(task_list, 3)
-        page_number = request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
-
-        return Response(
-            status=status.HTTP_200_OK,
-            data={"results": page_obj.object_list, "count": len(task_list)},
-        )
+        return task_list
 
     def check_publishing_overdue(self, barrier):
         # Get publishing deadline difference for public_barrier related tasks/updates
@@ -1067,18 +1051,13 @@ class UserTasksView(generics.ListAPIView):
             "barrier",
         )
 
-        mention_users = User.objects.filter(
-            id__in=[mention.created_by_id for mention in user_mentions]
-        ).values("first_name", "last_name", "pk")
-        user_lookup = {str(u["pk"]): u for u in mention_users}
-
         for mention in user_mentions:
-            mentioner = user_lookup[str(mention.created_by_id)]
+            mentioner = User.objects.get(id=mention.created_by_id)
             mention_task = {
                 "tag": "REVIEW COMMENT",
                 "message": [
                     "Reply to the comment",
-                    f"{mentioner['first_name']} {mentioner['last_name']} mentioned you in on",
+                    f"{mentioner.first_name} {mentioner.last_name} mentioned you in on",
                     f"{mention.created_on.strftime('%d %B %Y')}.",
                 ],
                 "task_url": "barriers:barrier_detail",
@@ -1087,7 +1066,7 @@ class UserTasksView(generics.ListAPIView):
 
             mention_appended = False
             for barrier_task in barrier_task_list:
-                if barrier_task["barrier_id"] == mention.barrier.id:
+                if barrier_task["barrier_id"] == str(mention.barrier.id):
                     barrier_task["task_list"].append(mention_task)
                     mention_appended = True
                     break
@@ -1123,3 +1102,25 @@ class UserTasksView(generics.ListAPIView):
         }
 
         return barrier_entry
+
+
+class UserTasksView(generics.ListAPIView):
+    """
+    Returns list of dashboard next steps, tasks and progress updates
+    related to barriers where a given user is either owner or
+    collaborator.
+    """
+    def get(self, request, *args, **kwargs):
+        # Get the User information from the request
+        task_list = OldTasks().get_old_tasks(request.user)
+
+        # Paginate
+        paginator = Paginator(task_list, 3)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+
+        return Response(
+            status=status.HTTP_200_OK,
+            data={"results": page_obj.object_list, "count": len(task_list)},
+        )
+
