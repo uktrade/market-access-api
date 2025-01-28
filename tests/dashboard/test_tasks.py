@@ -5,7 +5,7 @@ import pytest
 from api.barriers.models import Barrier, ProgrammeFundProgressUpdate, BarrierProgressUpdate
 from api.collaboration.models import TeamMember
 from api.core.test_utils import create_test_user
-from api.dashboard.views import get_tasks, get_combined_barrier_mention_qs
+from api.dashboard.service import get_tasks, get_combined_barrier_mention_qs
 from api.interactions.models import Mention
 from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from api.metadata.models import BarrierTag, ExportType
