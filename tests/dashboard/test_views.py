@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from logging import getLogger
-from unittest.mock import patch
 
 import dateutil.parser
 import freezegun
