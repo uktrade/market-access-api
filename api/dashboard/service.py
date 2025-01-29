@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta
 
 import pytz
 from django.db.models import (
+    BooleanField,
     Case,
     CharField,
     DateTimeField,
@@ -14,7 +15,7 @@ from django.db.models import (
     Q,
     Sum,
     Value,
-    When, BooleanField,
+    When,
 )
 from django.db.models.functions import Concat, Greatest
 
@@ -352,8 +353,8 @@ def get_tasks(user):  # noqa
         is_top_priority=ExpressionWrapper(
             Q(top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED)
             | Q(top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING),
-            output_field=BooleanField()
-        )
+            output_field=BooleanField(),
+        ),
     ).values(
         "id",
         "is_member",
@@ -488,10 +489,7 @@ def get_tasks(user):  # noqa
 
         if (
             barrier["is_owner"]
-            and (
-                barrier["is_top_priority"]
-                or barrier["priority_level"] == "OVERSEAS"
-            )
+            and (barrier["is_top_priority"] or barrier["priority_level"] == "OVERSEAS")
             and not barrier["estimated_resolution_date"]
         ):
             task = tasks.create_add_priority_erd_task(barrier)
