@@ -14,7 +14,7 @@ from django.db.models import (
     Q,
     Sum,
     Value,
-    When,
+    When, BooleanField,
 )
 from django.db.models.functions import Concat, Greatest
 
@@ -349,6 +349,11 @@ def get_tasks(user):  # noqa
                 organisations__organisation_type__in=GOVERNMENT_ORGANISATION_TYPES,
             )
         ),
+        is_top_priority=ExpressionWrapper(
+            Q(top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED)
+            | Q(top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING),
+            output_field=BooleanField()
+        )
     ).values(
         "id",
         "is_member",
@@ -361,6 +366,7 @@ def get_tasks(user):  # noqa
         "full_name",
         "status",
         "top_priority_status",
+        "is_top_priority",
         "progress_update_modified_on",
         "has_overdue_next_step",
         "priority_level",
@@ -417,10 +423,7 @@ def get_tasks(user):  # noqa
             task = tasks.create_publisher_task(barrier)
             barrier_entry["task_list"].append(task)
 
-        if barrier["status"] in {1, 2, 3} and barrier["top_priority_status"] in {
-            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-        }:
+        if barrier["status"] in {1, 2, 3} and barrier["is_top_priority"]:
             task = tasks.create_progress_update_task(barrier)
             if task:
                 barrier_entry["task_list"].append(task)
@@ -486,11 +489,7 @@ def get_tasks(user):  # noqa
         if (
             barrier["is_owner"]
             and (
-                barrier["top_priority_status"]
-                in {
-                    TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-                    TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-                }
+                barrier["is_top_priority"]
                 or barrier["priority_level"] == "OVERSEAS"
             )
             and not barrier["estimated_resolution_date"]
@@ -500,11 +499,7 @@ def get_tasks(user):  # noqa
 
         if (
             barrier["is_owner"]
-            and barrier["top_priority_status"]
-            in {
-                TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-                TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-            }
+            and barrier["is_top_priority"]
             and barrier["progress_update_modified_on"]
             and barrier["progress_update_modified_on"]
             < (datetime.now() - timedelta(days=180)).replace(tzinfo=pytz.UTC)

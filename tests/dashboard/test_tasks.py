@@ -95,7 +95,11 @@ def test_create_review_priority_erd_task():
 
     tasks = get_tasks(user)
 
-    assert tasks[0]["task_list"][-1]["tag"] == "REVIEW DATE"
+    assert len(tasks[0]["task_list"]) == 4
+    assert tasks[0]["task_list"][0]["tag"] == "OVERDUE PROGRESS UPDATE"
+    assert tasks[0]["task_list"][1]["tag"] == "ADD INFORMATION"
+    assert tasks[0]["task_list"][2]["tag"] == "ADD DATE"
+    assert tasks[0]["task_list"][3]["tag"] == "REVIEW DATE"
 
 
 def test_create_add_progress_update_task():
