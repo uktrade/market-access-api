@@ -224,3 +224,17 @@ def test_get_combined_barrier_mention_qs():
     qs = get_combined_barrier_mention_qs(user)
 
     assert list(qs.values_list("id", flat=True)) == [barrier_2.id, barrier_1.id]
+
+
+def test_get_mention_non_team_member():
+    user = create_test_user()
+    user2 = create_test_user()
+    barrier_1: Barrier = BarrierFactory()
+
+    Mention.objects.create(created_by=user2, barrier=barrier_1, recipient=user)
+
+    tasks = get_tasks(user)
+
+    assert len(tasks) == 1
+    assert len(tasks[0]["task_list"]) == 1
+    assert tasks[0]["task_list"][0]["tag"] == "REVIEW COMMENT"
