@@ -54,6 +54,8 @@ class UserTasksView(generics.ListAPIView):
     collaborator.
     """
 
+    schema = None
+
     # Set variables used in date related calculations
     todays_date = datetime.now(timezone.utc)
     publishing_overdue = False

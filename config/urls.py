@@ -37,6 +37,23 @@ urlpatterns += (
         path("whoami", who_am_i, name="who_am_i"),
         path("metadata", MetadataView.as_view(), name="metadata"),
         path("", include("api.dataset.urls", namespace="dataset")),
+    ]
+    + action_plans_urls
+    + assessment_urls
+    + barrier_download_urls
+    + barrier_urls
+    + commodities_urls
+    + dashboard_urls
+    + interaction_urls
+    + pingdom_urls
+    + related_barriers_urls
+    + team_urls
+    + user_urls
+)
+
+# Add endpoints for documentation on non-prod environments
+if settings.DJANGO_ENV in ["local", "dev", "uat"]:
+    urlpatterns += [
         path(
             "openapi",
             get_schema_view(
@@ -65,15 +82,3 @@ urlpatterns += (
             name="swagger-ui",
         ),
     ]
-    + action_plans_urls
-    + assessment_urls
-    + barrier_download_urls
-    + barrier_urls
-    + commodities_urls
-    + dashboard_urls
-    + interaction_urls
-    + pingdom_urls
-    + related_barriers_urls
-    + team_urls
-    + user_urls
-)
