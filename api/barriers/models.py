@@ -159,9 +159,6 @@ class BarrierHistoricalModel(models.Model):
 
         self.update_cached_fields(old_history, changed_fields)
 
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
-
         commodity_codes = [c.get("code") for c in self.commodities_cache]
         old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
         if set(commodity_codes) != set(old_commodity_codes):
@@ -199,11 +196,6 @@ class BarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
-    def update_categories(self):
-        self.categories_cache = list(
-            self.instance.categories.values_list("id", flat=True)
-        )
-
     def update_commodities(self):
         self.commodities_cache = []
         for barrier_commodity in self.instance.barrier_commodities.all():
@@ -238,7 +230,6 @@ class BarrierHistoricalModel(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        self.update_categories()
         self.update_commodities()
         self.update_tags()
         self.update_organisations()
