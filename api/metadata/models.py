@@ -31,7 +31,7 @@ class ServicesManager(models.Manager):
         )
 
 
-class Category(models.Model):
+class DELETECategory(models.Model):
     """
     Model representing type of a barrier
     Each type belongs to one or more categories
