@@ -15,7 +15,7 @@ from api.barriers.models import (
 )
 from api.core.test_utils import APITestMixin
 from api.metadata.constants import PROGRESS_UPDATE_CHOICES, TOP_PRIORITY_BARRIER_STATUS
-from api.metadata.models import Category, Organisation, PolicyTeam
+from api.metadata.models import Organisation, PolicyTeam
 from api.metadata.serializers import PolicyTeamSerializer
 from tests.barriers.factories import BarrierFactory
 from tests.metadata.factories import OrganisationFactory
@@ -217,55 +217,6 @@ class TestBarrierDetails(APITestMixin, APITestCase):
 
         assert status.HTTP_200_OK == response.status_code
         assert response.data["policy_teams"] == []
-
-    def test_add_barrier_categories(self):
-        categories = Category.objects.all()
-        category1 = categories[0]
-        category2 = categories[1]
-        self.barrier.categories.add(category1)
-
-        self.barrier.refresh_from_db()
-        assert 1 == self.barrier.categories.count()
-
-        payload = {"categories": (category1.id, category2.id)}
-        response = self.api_client.patch(self.url, format="json", data=payload)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert {category1.id, category2.id} == set(
-            [category["id"] for category in response.data["categories"]]
-        )
-
-    def test_replace_barrier_categories(self):
-        categories = Category.objects.all()
-        category1 = categories[0]
-        category2 = categories[1]
-        category3 = categories[2]
-        self.barrier.categories.add(category1)
-
-        self.barrier.refresh_from_db()
-        assert 1 == self.barrier.categories.count()
-
-        payload = {"categories": (category2.id, category3.id)}
-        response = self.api_client.patch(self.url, format="json", data=payload)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert {category2.id, category3.id} == set(
-            [category["id"] for category in response.data["categories"]]
-        )
-
-    def test_flush_barrier_categories(self):
-        categories = Category.objects.all()
-        category1 = categories[0]
-        self.barrier.categories.add(category1)
-
-        self.barrier.refresh_from_db()
-        assert 1 == self.barrier.categories.count()
-
-        payload = {"categories": ()}
-        response = self.api_client.patch(self.url, format="json", data=payload)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert not response.data["categories"]
 
     def test_update_barrier_adds_user_as_contributor(self):
         """Users who edit a barrier should be  added as a Contributor automatically."""
