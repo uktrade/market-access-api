@@ -4,17 +4,9 @@ from api.metadata.constants import OrganisationType
 from api.metadata.models import (
     BarrierPriority,
     BarrierTag,
-    Category,
     Organisation,
     PolicyTeam,
 )
-
-
-class CategoryFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Category
-
-    title = factory.Sequence(lambda n: "Category {}".format(n + 1))
 
 
 class BarrierTagFactory(factory.django.DjangoModelFactory):
