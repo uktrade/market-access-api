@@ -12,7 +12,6 @@ class TestCreateMockBarriers(APITestMixin, TestCase):
     fixtures = [
         "barrier_priorities",
         "barrier_for_anonymisation",
-        "categories",
         "users",
     ]
 
