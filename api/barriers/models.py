@@ -1300,6 +1300,7 @@ class BarrierFilterSet(django_filters.FilterSet):
     )
     status_date_resolved_in_full = django_filters.Filter(method="resolved_date_filter")
     delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
+    category = django_filters.BaseInFilter("categories", distinct=True)
     policy_team = django_filters.BaseInFilter("policy_teams", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
