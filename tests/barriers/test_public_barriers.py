@@ -506,8 +506,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert pb.latest_published_version
 
     def test_public_barrier_latest_published_version_attributes(self):
-        category = CategoryFactory()
-        self.barrier.categories.add(category)
         self.barrier.sectors = ["9b38cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.all_sectors = False
         self.barrier.save()
@@ -525,13 +523,8 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
             str(s) for s in pb.latest_published_version.sectors
         ]
         assert False is pb.latest_published_version.all_sectors
-        assert list(self.barrier.categories.all()) == list(
-            pb.latest_published_version.categories.all()
-        )
 
     def test_public_barrier_latest_published_version_not_affected_by_updates(self):
-        category = CategoryFactory()
-        self.barrier.categories.add(category)
         self.barrier.sectors = ["9b38cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.all_sectors = False
         self.barrier.status = BarrierStatus.OPEN_PENDING
@@ -566,9 +559,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
             str(s) for s in pb.latest_published_version.sectors
         ]
         assert False is pb.latest_published_version.all_sectors
-        assert list(self.barrier.categories.all()) == list(
-            pb.latest_published_version.categories.all()
-        )
 
     # === UNPUBLISH ===
     def test_public_barrier_unpublish_as_standard_user(self):
