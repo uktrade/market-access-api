@@ -1,12 +1,7 @@
 import factory
 
 from api.metadata.constants import OrganisationType
-from api.metadata.models import (
-    BarrierPriority,
-    BarrierTag,
-    Organisation,
-    PolicyTeam,
-)
+from api.metadata.models import BarrierPriority, BarrierTag, Organisation, PolicyTeam
 
 
 class BarrierTagFactory(factory.django.DjangoModelFactory):
