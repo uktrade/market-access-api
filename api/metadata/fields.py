@@ -10,18 +10,6 @@ class AdminAreasField(serializers.ListField):
         return [admin_area for admin_area in admin_areas if admin_area is not None]
 
 
-class CategoryGroupField(serializers.ChoiceField):
-    def __init__(self, **kwargs):
-        return super().__init__(choices=BARRIER_TYPE_CATEGORIES, **kwargs)
-
-    def to_representation(self, value):
-        group_lookup = dict(BARRIER_TYPE_CATEGORIES)
-        return {
-            "code": value,
-            "name": group_lookup.get(value),
-        }
-
-
 class CountryField(serializers.UUIDField):
     def to_representation(self, value):
         return get_country(str(value))
