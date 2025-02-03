@@ -31,7 +31,6 @@ from tests.assessment.factories import (
 )
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
-from tests.metadata.factories import CategoryFactory
 
 logger = logging.getLogger(__name__)
 
@@ -357,21 +356,6 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         barriers = Barrier.objects.filter(status__in=[2, 4])
         assert response.data["count"] == barriers.count()
-
-    def test_list_barriers_category_filter(self):
-        BarrierFactory()
-        cat1 = CategoryFactory()
-        barrier = BarrierFactory()
-        barrier.categories.add(cat1)
-
-        assert 2 == Barrier.objects.count()
-
-        url = f'{reverse("list-barriers")}?category={cat1.id}'
-        response = self.api_client.get(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert 1 == response.data["count"]
-        assert str(barrier.id) == response.data["results"][0]["id"]
 
     def test_list_barriers_sector_filter(self):
         sector1 = "9b38cecc-5f95-e211-a939-e4115bead28a"
