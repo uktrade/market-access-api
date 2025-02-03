@@ -451,17 +451,6 @@ class ReadOnlyAllSectorsField(serializers.Field):
         self.fail("read_only")
 
 
-class ReadOnlyCategoriesField(FilterableReadOnlyField):
-    """
-    Field serializer to be used with read only categories fields.
-    """
-
-    def get_data(self, value):
-        return [
-            {"id": category.id, "title": category.title} for category in value.all()
-        ]
-
-
 class BarrierReportStageListingField(serializers.RelatedField):
     def to_representation(self, value):
         stage_status_dict = dict(STAGE_STATUS)
