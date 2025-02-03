@@ -30,9 +30,6 @@ def get_or_create_public_barrier(barrier):
             "all_sectors": barrier.all_sectors,
         },
     )
-    if created:
-        public_barrier.categories.set(barrier.categories.all())
-
     return public_barrier, created
 
 
