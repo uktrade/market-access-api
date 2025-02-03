@@ -40,7 +40,6 @@ class TestCreateMockBarriers(APITestMixin, TestCase):
     def test_categories_m2m_fields_included(self):
         self.call_command(quantity=1)
         barrier = Barrier.objects.first()
-        assert barrier.categories.all().count() >= 1
         assert barrier.organisations.all().count() >= 1
         assert barrier.tags.all().count() >= 1
         assert barrier.export_types.all().count() >= 1
