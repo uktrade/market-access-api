@@ -80,25 +80,24 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
             "user": None,
         } in history
 
-    # could we remove this?
-    # @freezegun.freeze_time("2020-04-01")
-    # def test_history_endpoint_has_categories(self):
-    #     initial_categories = list(self.barrier.categories.all())
-    #     expected_categories = [109, 115]
-    #     self.barrier.categories.add(*expected_categories)
+    @freezegun.freeze_time("2020-04-01")
+    def test_history_endpoint_has_categories(self):
+        initial_categories = list(self.barrier.categories.all())
+        expected_categories = [109, 115]
+        self.barrier.categories.add(*expected_categories)
 
-    #     url = reverse("history", kwargs={"pk": self.barrier.pk})
-    #     response = self.api_client.get(url)
-    #     history = response.json()["history"]
+        url = reverse("history", kwargs={"pk": self.barrier.pk})
+        response = self.api_client.get(url)
+        history = response.json()["history"]
 
-    #     assert {
-    #         "date": "2020-04-01T00:00:00Z",
-    #         "model": "barrier",
-    #         "field": "categories",
-    #         "old_value": initial_categories,
-    #         "new_value": expected_categories,
-    #         "user": None,
-    #     } in history
+        assert {
+            "date": "2020-04-01T00:00:00Z",
+            "model": "barrier",
+            "field": "categories",
+            "old_value": initial_categories,
+            "new_value": expected_categories,
+            "user": None,
+        } in history
 
     @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_commercial_value(self):
