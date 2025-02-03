@@ -11,7 +11,7 @@ from api.barriers.models import (
 from api.collaboration.models import TeamMember
 from api.core.test_utils import create_test_user
 from api.metadata.constants import PROGRESS_UPDATE_CHOICES, OrganisationType
-from api.metadata.models import BarrierPriority, Category
+from api.metadata.models import BarrierPriority
 from tests.barriers.factories import BarrierFactory, CommodityFactory
 from tests.history.factories import ProgrammeFundProgressUpdateFactory
 from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
@@ -19,7 +19,7 @@ from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 pytestmark = [pytest.mark.django_db]
 
 
-EXPECTED_QUERY_COUNT = 13  # 1 + 12 m2m prefetch
+EXPECTED_QUERY_COUNT = 12  # 1 + 11 m2m prefetch
 
 
 def test_csv_serializer_query_count(django_assert_num_queries):
@@ -42,8 +42,6 @@ def test_csv_serializer_query_count(django_assert_num_queries):
     )
 
     b1 = BarrierFactory(summary="Summ1", created_by=user2)
-    categories = Category.objects.all()
-    category1 = categories[0]
     b2 = BarrierFactory(
         summary="Summ2",
         priority=BarrierPriority.objects.last(),
@@ -59,7 +57,6 @@ def test_csv_serializer_query_count(django_assert_num_queries):
     TeamMember.objects.create(barrier=b2, user=user, role="Owner")
     TeamMember.objects.create(barrier=b2, user=user2, role="Contributor")
     TeamMember.objects.create(barrier=b1, role="Owner")
-    b2.categories.add(category1)
 
     BarrierProgressUpdate.objects.create(
         barrier=b2,

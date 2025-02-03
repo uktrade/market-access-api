@@ -53,7 +53,6 @@ class CsvDownloadSerializer(serializers.Serializer):
     admin_areas = serializers.SerializerMethodField()
     sectors = serializers.SerializerMethodField()
     product = serializers.CharField()
-    categories = serializers.SerializerMethodField()
     reported_by = serializers.SerializerMethodField()
     reported_on = serializers.DateTimeField(format="%Y-%m-%d")
     barrier_owner = serializers.SerializerMethodField()
@@ -100,9 +99,6 @@ class CsvDownloadSerializer(serializers.Serializer):
 
     def get_link(self, obj):
         return f"{settings.DMAS_BASE_URL}/barriers/{obj.code}"
-
-    def get_categories(self, barrier):
-        return [category.title for category in barrier.categories.all()]
 
     def get_location(self, barrier):
         if barrier.country:
