@@ -19,7 +19,7 @@ from .constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     TRADING_BLOCS,
 )
-from .models import BarrierPriority, BarrierTag, Organisation, PolicyTeam
+from .models import BarrierPriority, BarrierTag, Category, Organisation, PolicyTeam
 
 
 def import_api_results(endpoint):
