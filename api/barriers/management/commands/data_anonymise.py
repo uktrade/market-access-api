@@ -32,7 +32,7 @@ from api.core.exceptions import (
     IllegalManagementCommandException,
 )
 from api.interactions.models import Interaction, PublicBarrierNote
-from api.metadata.models import BarrierTag, Category, Organisation
+from api.metadata.models import BarrierTag, Organisation
 from api.metadata.utils import get_countries, get_sectors
 from api.wto.models import WTOCommittee, WTOProfile
 
@@ -201,7 +201,6 @@ class Command(BaseCommand):
             - commercial_value
             - sectors
             - main_sector
-            - categories
             - organisations
             - tags
         """
@@ -251,16 +250,6 @@ class Command(BaseCommand):
                         main_sector_updated = True
                     else:
                         random_pick = random.choice(top_level_sectors)
-
-            if barrier.categories:
-                categories_list = Category.objects.all()
-                number_of_categories = barrier.categories.count()
-                barrier.categories.clear()
-                i = 0
-                while i < number_of_categories:
-                    random_pick = random.choice(categories_list)
-                    barrier.categories.add(random_pick)
-                    i = i + 1
 
             if barrier.organisations:
                 organisations_list = Organisation.objects.all()
