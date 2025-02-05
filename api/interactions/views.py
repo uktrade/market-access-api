@@ -230,6 +230,8 @@ class PublicBarrierNoteDetail(
 
 
 class MentionsCounts(generics.GenericAPIView):
+    schema = None
+
     def get(self, request, *args, **kwargs):
         qs = Mention.objects.filter(
             recipient=request.user,

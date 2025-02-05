@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
+from rest_framework.schemas import get_schema_view
 
 from api.action_plans.urls import urlpatterns as action_plans_urls
 from api.assessment.urls import urlpatterns as assessment_urls
@@ -48,3 +50,35 @@ urlpatterns += (
     + team_urls
     + user_urls
 )
+
+# Add endpoints for documentation on non-prod environments
+if settings.DJANGO_ENV in ["local", "dev", "uat"]:
+    urlpatterns += [
+        path(
+            "openapi",
+            get_schema_view(
+                title="Digital Market Access Barriers",
+                description="API for Digital Market Access",
+                version="1.0.0",
+            ),
+            name="openapi-schema",
+        ),
+        # Route TemplateView to serve the ReDoc template.
+        #   * Provide `extra_context` with view name of `SchemaView`.
+        path(
+            "redoc/",
+            TemplateView.as_view(
+                template_name="redoc.html",
+                extra_context={"schema_url": "openapi-schema"},
+            ),
+            name="redoc",
+        ),
+        path(
+            "swagger-ui/",
+            TemplateView.as_view(
+                template_name="swagger-ui.html",
+                extra_context={"schema_url": "openapi-schema"},
+            ),
+            name="swagger-ui",
+        ),
+    ]
