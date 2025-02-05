@@ -187,38 +187,3 @@ def test_m2m_tags(barrier):
         "user": None,
     }
 
-
-def test_categories(barrier):
-    category1 = CategoryFactory(title="1", description="1")
-    category2 = CategoryFactory(title="2", description="2")
-    category3 = CategoryFactory(title="3", description="3")
-
-    barrier.categories.add(category1)
-    barrier.save()
-
-    v2_history = Barrier.get_history(barrier_id=barrier.id)
-
-    assert v2_history[-1] == {
-        "date": v2_history[-1]["date"],
-        "model": "barrier",
-        "field": "categories",
-        "old_value": [],
-        "new_value": [category1.id],
-        "user": None,
-    }
-
-    barrier.refresh_from_db()
-    barrier.categories.add(*[category2, category3])
-    barrier.categories.remove(category1)
-    barrier.save()
-
-    v2_history = Barrier.get_history(barrier_id=barrier.id)
-
-    assert v2_history[-1] == {
-        "date": v2_history[-1]["date"],
-        "model": "barrier",
-        "field": "categories",
-        "old_value": [category1.id],
-        "new_value": [category2.id, category3.id],
-        "user": None,
-    }

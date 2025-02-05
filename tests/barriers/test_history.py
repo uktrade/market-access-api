@@ -60,6 +60,8 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
     def test_categories_history(self):
         self.barrier.categories.add("109", "115")
+        # we have to save here because there is no longer a signal to catch category updates because it is a defunct feature
+        self.barrier.save()
 
         data = Barrier.get_history(barrier_id=self.barrier.pk)[-1]
 
