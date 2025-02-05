@@ -25,13 +25,6 @@ class BarrierFactory(factory.django.DjangoModelFactory):
         model = Barrier
 
 
-class CategoryFactory(factory.django.DjangoModelFactory):
-    category = BARRIER_TYPE_CATEGORIES.SERVICES
-
-    class Meta:
-        model = Category
-
-
 class ProgrammeFundProgressUpdateFactory(factory.django.DjangoModelFactory):
     milestones_and_deliverables = factory.Sequence(lambda n: "Product {}".format(n + 1))
     expenditure = factory.Sequence(lambda n: "Product {}".format(n + 1))
