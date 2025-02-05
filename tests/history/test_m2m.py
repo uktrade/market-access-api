@@ -4,7 +4,6 @@ from api.barriers.models import Barrier
 from api.metadata.constants import OrganisationType
 from api.metadata.models import Organisation
 from tests.barriers.factories import CommodityFactory
-from tests.history.factories import CategoryFactory
 from tests.metadata.factories import BarrierTagFactory
 
 pytestmark = [pytest.mark.django_db]
