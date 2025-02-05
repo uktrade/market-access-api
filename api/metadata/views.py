@@ -96,7 +96,6 @@ class MetadataView(generics.GenericAPIView):
             "report_status": report_status,
             "report_stages": report_stages,
             "support_type": support_type,
-            "barrier_types": categories,
             "policy_teams": policy_teams,
             "overseas_regions": dh_os_regions,
             "countries": dh_countries,
