@@ -14,7 +14,6 @@ from api.barriers.models import (
     Barrier,
     BarrierRequestDownloadApproval,
     HistoricalBarrier,
-    HistoricalPublicBarrier,
 )
 from api.barriers.tasks import (
     send_new_valuation_notification,

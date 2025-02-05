@@ -185,4 +185,3 @@ def test_m2m_tags(barrier):
         "new_value": [new_tag_2.id],
         "user": None,
     }
-
