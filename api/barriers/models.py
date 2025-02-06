@@ -1980,6 +1980,25 @@ User = get_user_model()
 
 
 class BarrierRequestDownloadApproval(models.Model):
+    """
+    This model is kept to maintain legacy data and is no longer actively used.
+
+    A model representing a user's request for approval to download barrier data.
+
+    This model tracks requests from users who need permission to download barrier information,
+    including notification status to administrators.
+
+    Attributes:
+        user (ForeignKey): Link to the User model who requested download approval
+        created (DateTimeField): Timestamp of when the request was created
+        updated (DateTimeField): Timestamp of when the request was last updated
+        notification_sent (BooleanField): Flag indicating if notification was sent to admins
+        notification_sent_at (DateTimeField): Timestamp when notification was sent
+
+    Methods:
+        send_notification(): Sends email notifications to admin users about the download
+            approval request using the Notifications API. Updates notification status once sent.
+    """
     user = models.ForeignKey(
         User,
         null=True,
