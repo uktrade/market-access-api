@@ -1999,6 +1999,7 @@ class BarrierRequestDownloadApproval(models.Model):
         send_notification(): Sends email notifications to admin users about the download
             approval request using the Notifications API. Updates notification status once sent.
     """
+
     user = models.ForeignKey(
         User,
         null=True,
