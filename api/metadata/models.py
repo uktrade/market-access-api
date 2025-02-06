@@ -31,7 +31,6 @@ class ServicesManager(models.Manager):
         )
 
 
-# i think this can be removed now
 class Category(models.Model):
     """
     Model representing type of a barrier

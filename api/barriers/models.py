@@ -1264,8 +1264,6 @@ class BarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle all necessary filters on Barriers
     reported_on_before: filter start date dd-mm-yyyy
     reported_on_after: filter end date dd-mm-yyyy
-    cateogory: int, one or more comma seperated category ids
-        ex: category=1 or category=1,2
     sector: uuid, one or more comma seperated sector UUIDs
         ex:
         sector=af959812-6095-e211-a939-e4115bead28a
