@@ -493,6 +493,8 @@ class BarrierFullHistory(generics.GenericAPIView):
     Full audit history of changes made to a barrier and related models
     """
 
+    schema = None
+
     def get(self, request, pk):
         barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_full_history(
@@ -513,6 +515,8 @@ class BarrierActivity(generics.GenericAPIView):
     Returns history items used on the barrier activity stream
     """
 
+    schema = None
+
     def get(self, request, pk):
         barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_activity(barrier=barrier)
@@ -527,6 +531,8 @@ class PublicBarrierActivity(generics.GenericAPIView):
     """
     Returns history items used on the public barrier activity stream
     """
+
+    schema = None
 
     def get(self, request, pk):
         public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))

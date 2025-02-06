@@ -12,6 +12,7 @@ from .checks import db_check
 class HealthCheckView(GenericAPIView):
     authentication_classes = (HawkAuthentication,)
     permission_classes = (IsAuthenticated,)
+    schema = None
 
     def get(self, request):
         data = {"duration": time.time() - request.start_time, "status": db_check()}
