@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from logging import getLogger
-from unittest.mock import patch
 
 import dateutil.parser
+import freezegun
 from django.contrib.auth.models import Group
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
@@ -22,6 +22,9 @@ from tests.barriers.factories import BarrierFactory
 from tests.history.factories import ProgrammeFundProgressUpdateFactory
 
 logger = getLogger(__name__)
+
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestDashboardTasksView(APITestMixin, APITestCase):
@@ -629,10 +632,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
                 task_found = True
         assert task_found
 
-    @patch(
-        "api.dashboard.views.UserTasksView.todays_date",
-        datetime(2024, 1, 10).replace(tzinfo=timezone.utc),
-    )
+    @freezegun.freeze_time(datetime(2024, 1, 10).replace(tzinfo=timezone.utc))
     def test_missing_barrier_detail_financial_year_delivery_confidence(self):
         """A task will be generated for barriers with an estimated resolution date
         within the current financial year without any progress updates."""
@@ -878,10 +878,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
                 task_found = True
         assert not task_found
 
-    @patch(
-        "api.dashboard.views.UserTasksView.todays_date",
-        datetime(2024, 1, 10).replace(tzinfo=timezone.utc),
-    )
+    @freezegun.freeze_time(datetime(2024, 1, 10).replace(tzinfo=timezone.utc))
     def test_progress_update_tasks_monthly_pb100_update_due(self):
         """It is current practice that there are progress updates for top priority (pb100) barriers
         which are due before the 3rd friday of every month. A task is expected to trigger
@@ -918,10 +915,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
                 task_found = True
         assert task_found
 
-    @patch(
-        "api.dashboard.views.UserTasksView.todays_date",
-        datetime(2024, 1, 21).replace(tzinfo=timezone.utc),
-    )
+    @freezegun.freeze_time(datetime(2024, 1, 21).replace(tzinfo=timezone.utc))
     def test_progress_update_tasks_monthly_pb100_update_overdue(self):
         """It is current practice that there are progress updates for top priority (pb100) barriers
         which are due before the 3rd friday of every month. A task indicating the update
@@ -986,7 +980,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
             logger.critical(task["message"])
             if (
                 task["tag"] == "REVIEW NEXT STEP"
-                and "Review the next steps" in task["message"]
+                and "Review the barrier next steps" in task["message"]
             ):
                 task_found = True
         assert task_found
