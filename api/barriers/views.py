@@ -34,7 +34,6 @@ from api.barriers.serializers import (
     BarrierReportSerializer,
     PublicBarrierSerializer,
 )
-from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.barriers.serializers.progress_updates import (
     NextStepItemSerializer,
@@ -395,21 +394,6 @@ class BarrierList(generics.ListAPIView):
         response = super().get(request, *args, **kwargs)
         self.update_saved_search_if_required()
         return response
-
-
-class BarrierRequestDownloadApproval(generics.CreateAPIView):
-    """
-    Handles the request for a barrier
-    """
-
-    serializer_class = BarrierRequestDownloadApprovalSerializer
-
-    def perform_create(self, serializer):
-        """
-        Validates request for mandatory fields
-        Creates a Barrier Instance out of the request
-        """
-        serializer.save(user=self.request.user)
 
 
 class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):

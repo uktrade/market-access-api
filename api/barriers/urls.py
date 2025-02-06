@@ -15,7 +15,6 @@ from api.barriers.views import (
     BarrierReportDetail,
     BarrierReportList,
     BarrierReportSubmit,
-    BarrierRequestDownloadApproval,
     BarrierResolveInFull,
     BarrierResolveInPart,
     BarrierStatusChangeUnknown,
@@ -34,11 +33,6 @@ router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barri
 
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
-    path(
-        "barriers/request-download-approval",
-        BarrierRequestDownloadApproval.as_view(),
-        name="barriers-request-download-approval",
-    ),
     re_path(
         "barriers/(?P<code>[A-Z]-[0-9]{2}-[A-Z0-9]{3})",
         BarrierDetail.as_view(),

@@ -12,7 +12,6 @@ from api.assessment.models import (
 )
 from api.barriers.models import (
     Barrier,
-    BarrierRequestDownloadApproval,
     HistoricalBarrier,
     HistoricalPublicBarrier,
 )
@@ -178,12 +177,6 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
         else:
             # Return if there has been no change in top_priority_status
             return
-
-
-@receiver(post_save, sender=BarrierRequestDownloadApproval)
-def send_barrier_download_request_notification(sender, instance, created, **kwargs):
-    if created:
-        instance.send_notification()
 
 
 @transaction.atomic
