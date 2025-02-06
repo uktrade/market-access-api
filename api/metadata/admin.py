@@ -1,17 +1,7 @@
 from django.contrib import admin
 from ordered_model.admin import OrderedModelAdmin
 
-from api.metadata.models import BarrierTag, Category
-
-
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    """
-    ModelAdmin class for customised behaviour for
-    allowing Category edits.
-    """
-
-    list_display = ("title", "category")
+from api.metadata.models import BarrierTag
 
 
 @admin.register(BarrierTag)

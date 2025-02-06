@@ -22,7 +22,7 @@ freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestActivityView(APITestMixin, TestCase):
-    fixtures = ["categories", "documents", "users", "barriers"]
+    fixtures = ["documents", "users", "barriers"]
 
     @freezegun.freeze_time("2020-03-01")
     def setUp(self):
@@ -45,7 +45,6 @@ class TestActivityView(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_200_OK
 
         # Barrier changes
-        self.barrier.categories.add("109", "115")
         self.barrier.companies = ["1", "2", "3"]
         self.barrier.summary = "New summary"
         self.barrier.country = "81756b9a-5d95-e211-a939-e4115bead28a"  # USA
@@ -113,7 +112,6 @@ class TestActivityView(APITestMixin, TestCase):
         assert ("resolvability_assessment", "time_to_resolve") in fields
         assert ("strategic_assessment", "scale") in fields
 
-        assert ("barrier", "categories") not in fields
         assert ("barrier", "companies") not in fields
         assert ("barrier", "summary") not in fields
         assert ("barrier", "location") not in fields

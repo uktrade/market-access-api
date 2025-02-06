@@ -33,7 +33,6 @@ from api.interactions.models import PublicBarrierNote
 from api.metadata.constants import BarrierStatus, PublicBarrierStatus
 from api.metadata.models import Organisation
 from tests.barriers.factories import BarrierFactory
-from tests.metadata.factories import CategoryFactory
 from tests.user.factories import UserFactoryMixin
 
 freezegun.configure(extend_ignore_list=["transformers"])
@@ -356,7 +355,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["summary"]
         assert self.barrier.country == response.data["country"]["id"]
         assert self.barrier.sectors == [s["id"] for s in response.data["sectors"]]
-        assert not response.data["categories"]
         assert not response.data["last_published_on"]
         assert not response.data["first_published_on"]
         assert not response.data["unpublished_on"]
@@ -364,27 +362,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert not response.data["ready_to_be_published"]
         assert self.barrier.reported_on == dateutil.parser.parse(
             response.data["reported_on"]
-        )
-
-    def test_public_barrier_categories_at_publication(self):
-        """
-        Check that all categories are being set for the public barrier.
-        """
-        categories_count = 3
-        categories = CategoryFactory.create_batch(categories_count)
-        expected_category_ids = set([c.id for c in categories])
-        self.barrier.categories.add(*categories)
-
-        user = self.create_publisher()
-        self.publish_barrier(self.barrier.public_barrier, user=user, prepare=True)
-        self.barrier.refresh_from_db()
-
-        response = self.api_client.get(self.url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert categories_count == len(response.data["categories"])
-        assert expected_category_ids == set(
-            [c["id"] for c in response.data["categories"]]
         )
 
     # === PATCH ===
@@ -529,8 +506,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
         assert pb.latest_published_version
 
     def test_public_barrier_latest_published_version_attributes(self):
-        category = CategoryFactory()
-        self.barrier.categories.add(category)
         self.barrier.sectors = ["9b38cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.all_sectors = False
         self.barrier.save()
@@ -548,13 +523,8 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
             str(s) for s in pb.latest_published_version.sectors
         ]
         assert False is pb.latest_published_version.all_sectors
-        assert list(self.barrier.categories.all()) == list(
-            pb.latest_published_version.categories.all()
-        )
 
     def test_public_barrier_latest_published_version_not_affected_by_updates(self):
-        category = CategoryFactory()
-        self.barrier.categories.add(category)
         self.barrier.sectors = ["9b38cecc-5f95-e211-a939-e4115bead28a"]
         self.barrier.all_sectors = False
         self.barrier.status = BarrierStatus.OPEN_PENDING
@@ -589,9 +559,6 @@ class TestPublicBarrier(PublicBarrierBaseTestCase):
             str(s) for s in pb.latest_published_version.sectors
         ]
         assert False is pb.latest_published_version.all_sectors
-        assert list(self.barrier.categories.all()) == list(
-            pb.latest_published_version.categories.all()
-        )
 
     # === UNPUBLISH ===
     def test_public_barrier_unpublish_as_standard_user(self):
@@ -687,8 +654,6 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
             sectors=["9b38cecc-5f95-e211-a939-e4115bead28a"],  # Chemicals
             status=BarrierStatus.OPEN_PENDING,
         )
-        self.category = CategoryFactory()
-        self.barrier.categories.add(self.category)
         self.url = reverse("public-barriers-detail", kwargs={"pk": self.barrier.id})
 
     def test_latest_published_version_fields(self):
@@ -777,18 +742,6 @@ class TestPublicBarrierSerializer(PublicBarrierBaseTestCase):
         data = PublicBarrierSerializer(pb).data
         assert expected_all_sectors == data["all_sectors"]
         assert expected_all_sectors == data["latest_published_version"]["all_sectors"]
-
-    def test_categories_is_serialized_consistently(self):
-        expected_categories = [{"id": self.category.id, "title": self.category.title}]
-
-        user = self.create_publisher()
-        pb = self.get_public_barrier(self.barrier)
-        pb, response = self.publish_barrier(pb=pb, user=user)
-        assert status.HTTP_200_OK == response.status_code
-
-        data = PublicBarrierSerializer(pb).data
-        assert expected_categories == data["categories"]
-        assert expected_categories == data["latest_published_version"]["categories"]
 
     def test_internal_main_sector_in_latest_published_version(self):
         user = self.create_publisher()

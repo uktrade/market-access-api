@@ -13,7 +13,6 @@ BARRIER_FIELD_TO_COLUMN_TITLE = {
     "sectors": "Sectors",
     "policy_teams": "Policy Teams",
     "product": "Product",
-    "categories": "Barrier categories",
     "admin_areas": "Admin areas",
     "reported_by": "Reported by",
     "reported_on": "Reported date",

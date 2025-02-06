@@ -9,7 +9,6 @@ class BarriersConfig(AppConfig):
 
         from .models import Barrier
         from .signals.handlers import (
-            barrier_categories_changed,
             barrier_completion_top_priority_barrier_resolved,
             barrier_policy_teams_changed,
             barrier_priority_approval_email_notification,
@@ -17,9 +16,6 @@ class BarriersConfig(AppConfig):
             related_barrier_update_embeddings,
         )
 
-        m2m_changed.connect(
-            barrier_categories_changed, sender=Barrier.categories.through
-        )
         m2m_changed.connect(barrier_tags_changed, sender=Barrier.tags.through)
         m2m_changed.connect(
             barrier_policy_teams_changed, sender=Barrier.policy_teams.through

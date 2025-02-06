@@ -13,7 +13,6 @@ from api.barriers.fields import (
     ArchivedField,
     ArchivedReasonField,
     BarrierPriorityField,
-    CategoriesField,
     CommoditiesField,
     ExportTypesField,
     OrganisationsField,
@@ -64,7 +63,6 @@ class BarrierSerializerBase(
         required=False, many=True
     )
     strategic_assessments = StrategicAssessmentSerializer(required=False, many=True)
-    categories = CategoriesField(required=False)
     policy_teams = PolicyTeamsField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
     country = CountryField(required=False, allow_null=True)

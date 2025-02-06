@@ -6,7 +6,7 @@ from django.db import transaction
 
 from api.barriers.models import Barrier
 from api.core.exceptions import IllegalManagementCommandException
-from api.metadata.models import BarrierTag, Category, ExportType, Organisation
+from api.metadata.models import BarrierTag, ExportType, Organisation
 from api.metadata.utils import get_countries
 from tests.barriers.factories import BarrierFactory, fuzzy_date
 
@@ -29,7 +29,6 @@ class Command(BaseCommand):
             countries = get_countries()
 
             with transaction.atomic():
-                category = Category.objects.first()
                 government_organisation = Organisation.objects.first()
                 tag = BarrierTag.objects.first()
                 export_type = ExportType.objects.first()
@@ -48,7 +47,6 @@ class Command(BaseCommand):
                     )
 
                     # adding some m2m fields which will get later anonymised and changed
-                    barrier.categories.add(category)
                     barrier.organisations.add(government_organisation)
                     barrier.tags.add(tag)
                     barrier.export_types.add(export_type)

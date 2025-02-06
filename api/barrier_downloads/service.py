@@ -72,7 +72,6 @@ def get_queryset(barrier_ids: List[str]) -> QuerySet:
         )
         .prefetch_related(
             "tags",
-            "categories",
             Prefetch(
                 "barrier_team",
                 queryset=TeamMember.objects.select_related("user")

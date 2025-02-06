@@ -12,7 +12,6 @@ class TestCreateMockBarriers(APITestMixin, TestCase):
     fixtures = [
         "barrier_priorities",
         "barrier_for_anonymisation",
-        "categories",
         "users",
     ]
 
@@ -37,10 +36,9 @@ class TestCreateMockBarriers(APITestMixin, TestCase):
         self.call_command(quantity=3)
         assert Barrier.objects.count() == current_barrier_count + 3
 
-    def test_categories_m2m_fields_included(self):
+    def test_m2m_fields_included(self):
         self.call_command(quantity=1)
         barrier = Barrier.objects.first()
-        assert barrier.categories.all().count() >= 1
         assert barrier.organisations.all().count() >= 1
         assert barrier.tags.all().count() >= 1
         assert barrier.export_types.all().count() >= 1

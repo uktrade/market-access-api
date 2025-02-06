@@ -55,7 +55,6 @@ from api.history.v2.enrichment import (
     enrich_meeting_minutes,
     enrich_preliminary_assessment,
     enrich_priority_level,
-    enrich_public_barrier_categories,
     enrich_public_barrier_location,
     enrich_public_barrier_publish_status,
     enrich_public_barrier_sectors,
@@ -123,7 +122,6 @@ def enrich_full_history(
     enrich_team_member_user(team_member_history)
 
     if public_barrier_history:
-        enrich_public_barrier_categories(public_barrier_history)
         enrich_public_barrier_location(public_barrier_history)
         enrich_public_barrier_sectors(public_barrier_history)
         enrich_public_barrier_publish_status(public_barrier_history)

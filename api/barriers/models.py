@@ -117,8 +117,6 @@ class PublicBarrierManager(models.Manager):
                 "all_sectors": barrier.all_sectors,
             },
         )
-        if created:
-            public_barrier.categories.set(barrier.categories.all())
 
         return public_barrier, created
 
@@ -1141,7 +1139,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             "sectors",
             "main_sector",
             "all_sectors",
-            "categories",
         ]
 
         changed_list = []
@@ -1267,8 +1264,6 @@ class BarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle all necessary filters on Barriers
     reported_on_before: filter start date dd-mm-yyyy
     reported_on_after: filter end date dd-mm-yyyy
-    cateogory: int, one or more comma seperated category ids
-        ex: category=1 or category=1,2
     sector: uuid, one or more comma seperated sector UUIDs
         ex:
         sector=af959812-6095-e211-a939-e4115bead28a
@@ -1300,7 +1295,6 @@ class BarrierFilterSet(django_filters.FilterSet):
     )
     status_date_resolved_in_full = django_filters.Filter(method="resolved_date_filter")
     delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
-    category = django_filters.BaseInFilter("categories", distinct=True)
     policy_team = django_filters.BaseInFilter("policy_teams", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
@@ -1354,7 +1348,6 @@ class BarrierFilterSet(django_filters.FilterSet):
         model = Barrier
         fields = [
             "country",
-            "category",
             "sector",
             "reported_on",
             "status",

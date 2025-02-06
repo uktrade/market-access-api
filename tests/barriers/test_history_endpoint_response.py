@@ -30,7 +30,7 @@ freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestHistoryEndpointResponse(APITestMixin, TestCase):
-    fixtures = ["categories", "documents", "users", "barriers"]
+    fixtures = ["documents", "users", "barriers"]
 
     @freezegun.freeze_time("2020-03-02")
     def setUp(self):
@@ -77,25 +77,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
                 "archived_explanation": archived_explanation,
                 "unarchived_reason": "",
             },
-            "user": None,
-        } in history
-
-    @freezegun.freeze_time("2020-04-01")
-    def test_history_endpoint_has_categories(self):
-        initial_categories = list(self.barrier.categories.all())
-        expected_categories = [109, 115]
-        self.barrier.categories.add(*expected_categories)
-
-        url = reverse("history", kwargs={"pk": self.barrier.pk})
-        response = self.api_client.get(url)
-        history = response.json()["history"]
-
-        assert {
-            "date": "2020-04-01T00:00:00Z",
-            "model": "barrier",
-            "field": "categories",
-            "old_value": initial_categories,
-            "new_value": expected_categories,
             "user": None,
         } in history
 

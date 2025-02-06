@@ -19,7 +19,7 @@ from .constants import (
     GOVERNMENT_ORGANISATION_TYPES,
     TRADING_BLOCS,
 )
-from .models import BarrierPriority, BarrierTag, Category, Organisation, PolicyTeam
+from .models import BarrierPriority, BarrierTag, Organisation, PolicyTeam
 
 
 def import_api_results(endpoint):
@@ -140,28 +140,6 @@ def get_sector(sector_id):
 
 def get_sectors():
     return import_api_results("sector")
-
-
-def get_categories():
-    barrier_goods = [
-        {
-            "id": category.id,
-            "title": category.title,
-            "description": category.description,
-            "category": "GOODS",
-        }
-        for category in Category.goods.all()
-    ]
-    barrier_services = [
-        {
-            "id": category.id,
-            "title": category.title,
-            "description": category.description,
-            "category": "SERVICES",
-        }
-        for category in Category.services.all()
-    ]
-    return barrier_goods + barrier_services
 
 
 def get_policy_teams() -> List[Dict]:
