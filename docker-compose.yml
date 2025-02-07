@@ -43,7 +43,7 @@ services:
       MOCK_SSO_SCOPE: "test"
       MOCK_SSO_USERNAME: "test-user"
       MOCK_SSO_TOKEN: "jkl-mno-pqr"
-      MOCK_SSO_EMAIL_USER_ID: "your@email.here"
+      MOCK_SSO_EMAIL_USER_ID: "uka.osim@digital.trade.gov.uk"
     ports:
       - "8888:8888"
     networks:
