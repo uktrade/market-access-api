@@ -1991,10 +1991,6 @@ class BarrierRequestDownloadApproval(models.Model):
         updated (DateTimeField): Timestamp of when the request was last updated
         notification_sent (BooleanField): Flag indicating if notification was sent to admins
         notification_sent_at (DateTimeField): Timestamp when notification was sent
-
-    Methods:
-        send_notification(): Sends email notifications to admin users about the download
-            approval request using the Notifications API. Updates notification status once sent.
     """
 
     user = models.ForeignKey(
