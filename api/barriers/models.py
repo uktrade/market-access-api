@@ -2013,36 +2013,6 @@ class BarrierRequestDownloadApproval(models.Model):
     notification_sent = models.BooleanField(default=False)
     notification_sent_at = models.DateTimeField(null=True, blank=True)
 
-    def send_notification(self):
-        if self.notification_sent:
-            return
-
-        recipient_emails = settings.SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS
-
-        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-        group_id = Group.objects.get(
-            name=settings.APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME
-        ).id
-        user_group_approval_path = f"/users/add/?group={group_id}"
-        approval_url: str = urllib.parse.urljoin(
-            settings.FRONTEND_DOMAIN, user_group_approval_path
-        )
-        for recipient_email in recipient_emails:
-            client.send_email_notification(
-                email_address=recipient_email,
-                template_id=settings.SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID,
-                personalisation={
-                    "first_name": self.user.first_name.capitalize(),
-                    "last_name": self.user.last_name.capitalize(),
-                    "administration_link": approval_url,
-                    "email_address": self.user.email,
-                },
-            )
-
-        self.notification_sent = True
-        self.notification_sent_at = timezone.now()
-        self.save()
-
 
 class BarrierSearchCSVDownloadEvent(models.Model):
     email = models.EmailField()
