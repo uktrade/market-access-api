@@ -35,7 +35,7 @@ List[str, FieldMapping]
 
 import operator
 from collections import namedtuple
-from typing import Dict, List, Tuple, Union, Optional
+from typing import Dict, List, Tuple, Union
 
 from django.db.models import QuerySet
 
@@ -160,7 +160,9 @@ def enrich_full_history(
     return enriched_history
 
 
-def flatten_fields(fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...]):
+def flatten_fields(
+    fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...]
+):
     qs_fields = []
     for field in fields:
         if isinstance(field, list):
@@ -206,7 +208,9 @@ def get_model_history(  # noqa: C901
     return get_history_changes(qs, model, fields, track_first_item)
 
 
-def get_history_changes(qs, model, fields, track_first_item: bool = False, primary_key: str = None):
+def get_history_changes(  # noqa: C901
+    qs, model, fields, track_first_item: bool = False, primary_key: str = None
+):
     count = qs.count() if isinstance(qs, QuerySet) else len(qs)
 
     history = []
@@ -273,7 +277,7 @@ def get_history_changes(qs, model, fields, track_first_item: bool = False, prima
                                 else None
                             ),
                             **change,
-                            **primary_field
+                            **primary_field,
                         }
                     )
             previous_item = item
@@ -332,7 +336,7 @@ def get_history_changes(qs, model, fields, track_first_item: bool = False, prima
                             else None
                         ),
                         **change,
-                        **primary_field
+                        **primary_field,
                     }
                 )
 

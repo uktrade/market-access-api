@@ -64,25 +64,20 @@ FIELDS = [
 def get_barrier_history(request):
     qs = Barrier.history.all()
 
-    qs = qs.values(*["id", "history_date", "history_user__id", "history_user__username"] + FIELDS)
+    qs = qs.values(
+        *["id", "history_date", "history_user__id", "history_user__username"] + FIELDS
+    )
 
     paginator = get_paginator(("id", "history_date"))
     page = paginator.paginate_queryset(qs, request)
     next = paginator.get_next_link()
 
     history = get_history_changes(
-        page,
-        model="barrier",
-        fields=FIELDS,
-        track_first_item=False,
-        primary_key="id"
+        page, model="barrier", fields=FIELDS, track_first_item=False, primary_key="id"
     )
 
     for h in history:
         h["barrier_id"] = h["id"]
         del h["id"]
 
-    return {
-        'results': history,
-        'next': next
-    }
+    return {"results": history, "next": next}
