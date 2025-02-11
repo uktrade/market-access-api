@@ -10,7 +10,7 @@ from api.assessment.models import (
     ResolvabilityAssessment,
     StrategicAssessment,
 )
-from api.barriers.models import Barrier, HistoricalBarrier, HistoricalPublicBarrier
+from api.barriers.models import Barrier, HistoricalBarrier
 from api.barriers.tasks import (
     send_new_valuation_notification,
     send_top_priority_notification,
