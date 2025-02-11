@@ -126,6 +126,7 @@ class BarrierHistoricalModel(models.Model):
     Abstract model for history models tracking category changes.
     """
 
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories_cache = ArrayField(
         models.PositiveIntegerField(),
         blank=True,
@@ -415,6 +416,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(blank=True)
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories = models.ManyToManyField(
         metadata_models.Category, related_name="barriers"
     )
@@ -882,6 +884,7 @@ class PublicBarrierHistoricalModel(models.Model):
     Abstract model for tracking m2m changes for PublicBarrier.
     """
 
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories_cache = ArrayField(
         models.CharField(max_length=20),
         blank=True,
@@ -977,6 +980,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     main_sector = models.UUIDField(blank=True, null=True)
     all_sectors = models.BooleanField(blank=True, null=True)
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories = models.ManyToManyField(
         metadata_models.Category, related_name="public_barriers"
     )

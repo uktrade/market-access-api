@@ -31,6 +31,7 @@ class ServicesManager(models.Manager):
         )
 
 
+# Categories are a legacy metadata field that was replaced by policy teams
 class Category(models.Model):
     """
     Model representing type of a barrier
