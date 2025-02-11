@@ -1,7 +1,6 @@
 import datetime
 import logging
 import operator
-import urllib.parse
 from functools import reduce
 from typing import List, Optional
 from uuid import uuid4
@@ -9,7 +8,6 @@ from uuid import uuid4
 import django_filters
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
@@ -30,7 +28,6 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
 from hashid_field import HashidAutoField
-from notifications_python_client.notifications import NotificationsAPIClient
 from simple_history.models import HistoricalRecords
 
 from api.barriers import validators
@@ -1945,6 +1942,22 @@ User = get_user_model()
 
 
 class BarrierRequestDownloadApproval(models.Model):
+    """
+    This model is kept to maintain legacy data and is no longer actively used.
+
+    A model representing a user's request for approval to download barrier data.
+
+    This model tracks requests from users who need permission to download barrier information,
+    including notification status to administrators.
+
+    Attributes:
+        user (ForeignKey): Link to the User model who requested download approval
+        created (DateTimeField): Timestamp of when the request was created
+        updated (DateTimeField): Timestamp of when the request was last updated
+        notification_sent (BooleanField): Flag indicating if notification was sent to admins
+        notification_sent_at (DateTimeField): Timestamp when notification was sent
+    """
+
     user = models.ForeignKey(
         User,
         null=True,
@@ -1957,36 +1970,6 @@ class BarrierRequestDownloadApproval(models.Model):
     updated = models.DateTimeField(auto_now=True)
     notification_sent = models.BooleanField(default=False)
     notification_sent_at = models.DateTimeField(null=True, blank=True)
-
-    def send_notification(self):
-        if self.notification_sent:
-            return
-
-        recipient_emails = settings.SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS
-
-        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-        group_id = Group.objects.get(
-            name=settings.APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME
-        ).id
-        user_group_approval_path = f"/users/add/?group={group_id}"
-        approval_url: str = urllib.parse.urljoin(
-            settings.FRONTEND_DOMAIN, user_group_approval_path
-        )
-        for recipient_email in recipient_emails:
-            client.send_email_notification(
-                email_address=recipient_email,
-                template_id=settings.SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID,
-                personalisation={
-                    "first_name": self.user.first_name.capitalize(),
-                    "last_name": self.user.last_name.capitalize(),
-                    "administration_link": approval_url,
-                    "email_address": self.user.email,
-                },
-            )
-
-        self.notification_sent = True
-        self.notification_sent_at = timezone.now()
-        self.save()
 
 
 class BarrierSearchCSVDownloadEvent(models.Model):
