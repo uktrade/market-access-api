@@ -34,7 +34,6 @@ from api.barriers.serializers import (
     BarrierReportSerializer,
     PublicBarrierSerializer,
 )
-from api.barriers.serializers.csv import BarrierRequestDownloadApprovalSerializer
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.barriers.serializers.progress_updates import (
     NextStepItemSerializer,
@@ -397,21 +396,6 @@ class BarrierList(generics.ListAPIView):
         return response
 
 
-class BarrierRequestDownloadApproval(generics.CreateAPIView):
-    """
-    Handles the request for a barrier
-    """
-
-    serializer_class = BarrierRequestDownloadApprovalSerializer
-
-    def perform_create(self, serializer):
-        """
-        Validates request for mandatory fields
-        Creates a Barrier Instance out of the request
-        """
-        serializer.save(user=self.request.user)
-
-
 class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     """
     Return details of a Barrier
@@ -493,6 +477,8 @@ class BarrierFullHistory(generics.GenericAPIView):
     Full audit history of changes made to a barrier and related models
     """
 
+    schema = None
+
     def get(self, request, pk):
         barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_full_history(
@@ -513,6 +499,8 @@ class BarrierActivity(generics.GenericAPIView):
     Returns history items used on the barrier activity stream
     """
 
+    schema = None
+
     def get(self, request, pk):
         barrier = Barrier.objects.get(id=self.kwargs.get("pk"))
         history_items = HistoryManager.get_activity(barrier=barrier)
@@ -527,6 +515,8 @@ class PublicBarrierActivity(generics.GenericAPIView):
     """
     Returns history items used on the public barrier activity stream
     """
+
+    schema = None
 
     def get(self, request, pk):
         public_barrier = PublicBarrier.objects.get(barrier_id=self.kwargs.get("pk"))

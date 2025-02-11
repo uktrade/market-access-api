@@ -198,3 +198,13 @@ With docker:
 
 Or for local builds:
 ```poetry run coverage run -m pytest tests && poetry run coverage term```
+
+## Swagger Endpoint Documentation
+
+API has auto-generated swagger documentation providing all of the information needed to easily make a request to each endpoint.
+This can be accessed in UAT, development and local environments.
+Local access must have SSO turned off in the env file.
+
+URLS, replace base URL where appropriate:
+```http://api.market-access.local:8880/redoc/```
+```http://api.market-access.local:8880/swagger-ui/```
