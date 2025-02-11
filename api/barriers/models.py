@@ -1123,9 +1123,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             latest_version = self.latest_published_version
             if latest_version:
                 for field in change_alert_fields:
-                    if getattr(self.barrier, field) != getattr(
-                        latest_version, field
-                    ):
+                    if getattr(self.barrier, field) != getattr(latest_version, field):
                         changed_list.append(field)
 
         return changed_list
