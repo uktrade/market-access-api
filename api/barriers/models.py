@@ -157,9 +157,6 @@ class BarrierHistoricalModel(models.Model):
 
         self.update_cached_fields(old_history, changed_fields)
 
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
-
         commodity_codes = [c.get("code") for c in self.commodities_cache]
         old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
         if set(commodity_codes) != set(old_commodity_codes):
@@ -197,11 +194,6 @@ class BarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
-    def update_categories(self):
-        self.categories_cache = list(
-            self.instance.categories.values_list("id", flat=True)
-        )
-
     def update_commodities(self):
         self.commodities_cache = []
         for barrier_commodity in self.instance.barrier_commodities.all():
@@ -236,7 +228,6 @@ class BarrierHistoricalModel(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        self.update_categories()
         self.update_commodities()
         self.update_tags()
         self.update_organisations()
@@ -646,7 +637,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "tags_cache",  # needs cache
             "organisations_cache",  # Needs cache
             "commodities_cache",  # Needs cache
-            "categories_cache",  # Needs cache
             "policy_teams_cache",  # Needs cache
         )
 
@@ -883,7 +873,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         for field in non_editable_public_fields:
             internal_value = getattr(self, field)
             setattr(public_barrier, field, internal_value)
-        public_barrier.categories.set(self.categories.all())
         public_barrier.save()
         public_barrier.update_changed_since_published()
 
@@ -901,9 +890,6 @@ class PublicBarrierHistoricalModel(models.Model):
 
     def get_changed_fields(self, old_history):  # noqa: C901, E261
         changed_fields = set(self.diff_against(old_history).changed_fields)
-
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
 
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
@@ -935,11 +921,6 @@ class PublicBarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
-    def update_categories(self):
-        self.categories_cache = list(
-            self.instance.categories.values_list("id", flat=True)
-        )
-
     @property
     def public_view_status(self):
         return self._public_view_status
@@ -951,10 +932,6 @@ class PublicBarrierHistoricalModel(models.Model):
     @property
     def title(self):
         return self._title
-
-    def save(self, *args, **kwargs):
-        self.update_categories()
-        super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
@@ -1146,16 +1123,10 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             latest_version = self.latest_published_version
             if latest_version:
                 for field in change_alert_fields:
-                    if field != "categories":
-                        if getattr(self.barrier, field) != getattr(
-                            latest_version, field
-                        ):
-                            changed_list.append(field)
-                    else:
-                        if set(self.barrier.categories.all()) != set(
-                            latest_version.categories.all()
-                        ):
-                            changed_list.append(field)
+                    if getattr(self.barrier, field) != getattr(
+                        latest_version, field
+                    ):
+                        changed_list.append(field)
 
         return changed_list
 
@@ -1194,7 +1165,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             "_title",
             "_summary",
             "_public_view_status",
-            "categories_cache",
         )
 
         # Get all fields required - raw changes no enrichment
