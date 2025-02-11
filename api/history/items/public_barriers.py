@@ -16,9 +16,6 @@ class BasePublicBarrierHistoryItem(BaseHistoryItem):
 class CategoriesHistoryItem(BasePublicBarrierHistoryItem):
     field = "categories"
 
-    def get_value(self, record):
-        return record.categories_cache or []
-
 
 class LocationHistoryItem(BasePublicBarrierHistoryItem):
     field = "location"
