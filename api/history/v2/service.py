@@ -35,7 +35,7 @@ List[str, FieldMapping]
 
 import operator
 from collections import namedtuple
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, Optional
 
 from django.db.models import QuerySet
 
@@ -160,6 +160,22 @@ def enrich_full_history(
     return enriched_history
 
 
+def flatten_fields(fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...]):
+    qs_fields = []
+    for field in fields:
+        if isinstance(field, list):
+            for f in field:
+                if isinstance(f, FieldMapping):
+                    qs_fields.append(f.query_name)
+                else:
+                    qs_fields.append(f)
+        elif isinstance(field, FieldMapping):
+            qs_fields.append(field.query_name)
+        else:
+            qs_fields.append(field)
+    return qs_fields
+
+
 def get_model_history(  # noqa: C901
     qs: QuerySet,
     model: str,
@@ -181,24 +197,17 @@ def get_model_history(  # noqa: C901
     Returns:
         Returns a list of dictionaries representing the historical changes.
     """
-    qs_fields = []
-    for field in fields:
-        if isinstance(field, list):
-            for f in field:
-                if isinstance(f, FieldMapping):
-                    qs_fields.append(f.query_name)
-                else:
-                    qs_fields.append(f)
-        elif isinstance(field, FieldMapping):
-            qs_fields.append(field.query_name)
-        else:
-            qs_fields.append(field)
+    flattened_fields = flatten_fields(fields)
 
     qs = qs.order_by("history_date").values(
-        *qs_fields, "history_date", "history_user__id", "history_user__username"
+        *flattened_fields, "history_date", "history_user__id", "history_user__username"
     )
 
-    count = qs.count()
+    return get_history_changes(qs, model, fields, track_first_item)
+
+
+def get_history_changes(qs, model, fields, track_first_item: bool = False, primary_key: str = None):
+    count = qs.count() if isinstance(qs, QuerySet) else len(qs)
 
     history = []
 
@@ -209,6 +218,15 @@ def get_model_history(  # noqa: C901
     previous_item = None
 
     for item in qs:
+        primary_field = {}
+        if primary_key:
+            primary_field[primary_key] = item[primary_key]
+
+        if primary_key and previous_item:
+            if previous_item[primary_key] != item[primary_key]:
+                # If a new primary reference is found, treat it as the first item as its the first historical
+                # change for the object with that key
+                previous_item = None
         if previous_item is None:
             if track_first_item:
                 # Render first historical item in a table.
@@ -255,6 +273,7 @@ def get_model_history(  # noqa: C901
                                 else None
                             ),
                             **change,
+                            **primary_field
                         }
                     )
             previous_item = item
@@ -313,6 +332,7 @@ def get_model_history(  # noqa: C901
                             else None
                         ),
                         **change,
+                        **primary_field
                     }
                 )
 
