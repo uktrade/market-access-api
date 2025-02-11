@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
-    fixtures = ["barriers", "categories", "users", "policy_teams"]
+    fixtures = ["barriers", "users", "policy_teams"]
 
     def setUp(self):
         super().setUp()
@@ -57,17 +57,6 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["new_value"]["archived"] is True
         assert data["new_value"]["archived_reason"] == "DUPLICATE"
         assert data["new_value"]["archived_explanation"] == "It was a duplicate"
-
-    def test_categories_history(self):
-        self.barrier.categories.add("1", "2")
-        self.barrier.save()
-
-        data = Barrier.get_history(barrier_id=self.barrier.pk)[-1]
-
-        assert data["model"] == "barrier"
-        assert data["field"] == "categories"
-        assert data["old_value"] == []
-        assert set(data["new_value"]) == {1, 2}
 
     def test_policy_teams_history(self):
         self.barrier.policy_teams.add("1", "2")
