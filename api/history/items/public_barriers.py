@@ -13,6 +13,7 @@ class BasePublicBarrierHistoryItem(BaseHistoryItem):
     model = "public_barrier"
 
 
+# Categories are a legacy metadata field that was replaced by policy teams
 class CategoriesHistoryItem(BasePublicBarrierHistoryItem):
     field = "categories"
 
