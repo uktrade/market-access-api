@@ -78,7 +78,13 @@ def perform_virus_scan(document_pk: str, download_url: str):
 
 def _download_and_scan_file(document_pk: str, download_url: str):
     """Virus scans a file stored on remote server."""
-    with requests.post(download_url, stream=True) as response:
+
+    logger.critical("----------------------------------------------")
+    logger.critical("About to virus scan request to url:")
+    logger.critical(settings.AV_V2_SERVICE_URL)
+    logger.critical("----------------------------------------------")
+
+    with requests.get(download_url, stream=True) as response:
         try:
             response.raise_for_status()
         except HTTPError as exc:
