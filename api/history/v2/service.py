@@ -307,7 +307,9 @@ def get_model_history(  # noqa: C901
                         "user": (
                             {
                                 "id": item["history_user__id"],
-                                "name": item["history_user__username"],
+                                "name": pretty_sso_name(
+                                        item["history_user__username"]
+                                    ),
                             }
                             if item["history_user__id"]
                             else None
