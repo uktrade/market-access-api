@@ -46,7 +46,6 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
             "resolvability_assessments",
             "strategic_assessments",
             "tags",
-            "categories",
             "barrier_commodities",
             "public_barrier__notes",
             "organisations",

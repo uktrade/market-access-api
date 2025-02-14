@@ -29,7 +29,7 @@ from api.core.exceptions import IllegalManagementCommandException
 from api.core.test_utils import APITestMixin
 from api.interactions.models import Document as InteractionDocument
 from api.interactions.models import Interaction, Mention, PublicBarrierNote
-from api.metadata.models import BarrierTag, Category
+from api.metadata.models import BarrierTag
 from api.metadata.utils import get_sectors
 from api.wto.models import WTOProfile
 
@@ -38,7 +38,6 @@ class TestDataAnonymise(APITestMixin, TestCase):
     fixtures = [
         "barrier_priorities",
         "barrier_for_anonymisation",
-        "categories",
         "users",
     ]
 
@@ -174,7 +173,6 @@ class TestDataAnonymise(APITestMixin, TestCase):
         )
 
     def test_anonymise_complex_fields(self):
-        self.barrier.categories.add(Category.objects.first())
         Command.anonymise_complex_barrier_fields(self.barrier_queryset)
         self.barrier.refresh_from_db()
         assert self.barrier.companies[0] != self.barrier_fields["companies"][0]
@@ -200,7 +198,6 @@ class TestDataAnonymise(APITestMixin, TestCase):
         assert str(self.barrier.main_sector) != self.barrier_fields["main_sector"]
         assert self.barrier.main_sector not in self.barrier.sectors
 
-        assert len(self.barrier.categories.all()) == 1
         assert len(self.barrier.organisations.all()) == 0
 
     def test_anonymise_tags(self):
