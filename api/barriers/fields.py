@@ -20,7 +20,6 @@ from api.metadata.constants import (
 from api.metadata.models import (
     BarrierPriority,
     BarrierTag,
-    Category,
     ExportType,
     Organisation,
     PolicyTeam,
@@ -28,7 +27,6 @@ from api.metadata.models import (
 from api.metadata.serializers import (
     BarrierPrioritySerializer,
     BarrierTagSerializer,
-    CategorySerializer,
     ExportTypeSerializer,
     OrganisationSerializer,
     PolicyTeamSerializer,
@@ -93,15 +91,6 @@ class PolicyTeamsField(serializers.ListField):
 
     def to_internal_value(self, data):
         return PolicyTeam.objects.filter(id__in=data)
-
-
-class CategoriesField(serializers.ListField):
-    def to_representation(self, value):
-        serializer = CategorySerializer(value.all(), many=True)
-        return serializer.data
-
-    def to_internal_value(self, data):
-        return Category.objects.filter(id__in=data)
 
 
 class OrganisationsField(serializers.ListField):
@@ -449,17 +438,6 @@ class ReadOnlyAllSectorsField(serializers.Field):
 
     def to_internal_value(self, data):
         self.fail("read_only")
-
-
-class ReadOnlyCategoriesField(FilterableReadOnlyField):
-    """
-    Field serializer to be used with read only categories fields.
-    """
-
-    def get_data(self, value):
-        return [
-            {"id": category.id, "title": category.title} for category in value.all()
-        ]
 
 
 class BarrierReportStageListingField(serializers.RelatedField):

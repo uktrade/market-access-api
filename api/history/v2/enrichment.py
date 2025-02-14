@@ -362,20 +362,6 @@ def enrich_scale_history(history: List[Dict]):
         item["new_value"] = enrich(item["new_value"])
 
 
-def enrich_public_barrier_categories(history: List[Dict]):
-    def enrich(value):
-        if value and value.get("categories_cache"):
-            value["categories"] = value.get("categories_cache") or []
-        return value
-
-    for item in history:
-        if item["field"] != "categories_cache":
-            continue
-
-        item["old_value"] = enrich(item["old_value"])
-        item["new_value"] = enrich(item["new_value"])
-
-
 def enrich_public_barrier_location(history: List[Dict]):
     def enrich(value):
         if value:
