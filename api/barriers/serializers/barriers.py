@@ -24,7 +24,6 @@ class BarrierDetailSerializer(BarrierSerializerBase):
             "archived_explanation",
             "archived_on",
             "archived_reason",
-            "categories",
             "caused_by_trading_bloc",
             "code",
             "commercial_value",

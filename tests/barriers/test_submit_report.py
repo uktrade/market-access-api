@@ -155,7 +155,6 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.data["status"]["id"] == 2
         assert response.data["status_date"]
         assert not response.data["status_summary"]
-        assert 0 == len(response.data["categories"])
         assert response.data["created_on"]
 
     def test_check_all_fields_after_report_submit_2(self):
@@ -196,7 +195,6 @@ class TestSubmitReport(APITestMixin, APITestCase):
         assert response.data["status"]["id"] == 2
         assert response.data["status_date"]
         assert "some status summary" == response.data["status_summary"]
-        assert 0 == len(response.data["categories"])
         assert response.data["created_on"]
 
     @freezegun.freeze_time("2020-02-02")

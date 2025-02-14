@@ -27,7 +27,6 @@ class BarrierList(generics.ListAPIView):
         )
         .prefetch_related(
             "barrier_commodities",
-            "categories",
             "economic_assessments",
             "organisations",
             "tags",
