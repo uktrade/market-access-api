@@ -2,10 +2,12 @@ from django.contrib.auth import get_user_model
 from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from api.barriers.models import Barrier
 from api.barriers.serializers import DataWorkspaceSerializer
 from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
+from api.dataset.service import get_barrier_history
 from api.feedback.models import Feedback
 from api.feedback.serializers import FeedbackSerializer
 from api.user.models import UserActvitiyLog
@@ -36,6 +38,14 @@ class BarrierList(generics.ListAPIView):
     )
 
     serializer_class = DataWorkspaceSerializer
+
+
+class BarrierHistoryStreamView(generics.ListAPIView):
+    authentication_classes = (HawkAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request, *args, **kwargs):
+        return Response(get_barrier_history(request))
 
 
 class FeedbackDataWorkspaceListView(generics.ListAPIView):
