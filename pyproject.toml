@@ -9,7 +9,7 @@ authors = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.9.2"
 boto3 = "~=1.17.86"
 celery = "5.3.6"
 dj-database-url = "==0.5.0"
@@ -49,7 +49,7 @@ time-machine = "^2.8.2"
 pytest = "^7.2.0"
 certifi = "2024.7.4"
 sqlparse = "0.5.0"
-cryptography = "43.0.1"
+cryptography = "44.0.1"
 tqdm = "*"
 numpy = "1.24.4"
 scikit-learn = "*"
@@ -92,7 +92,7 @@ pillow = "10.3.0"
 # Below are the packages required for the ML models, we keep them in dev-dependencies so they are not put into the
 # requirements.txt file and installed in production - trying to do so causes ALL sorts of issues.
 # instead we install them as part of the .profile script that is ran on the server during deployment.
-transformers = "4.38.0"
+transformers = "4.48.0"
 sentence-transformers = "3.0.1"
 torch = "2.2.0"
 torchvision = "0.17.0"
