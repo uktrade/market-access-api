@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestBarrierHistory(APITestMixin, TestCase):
-    fixtures = ["barriers", "categories", "users", "policy_teams"]
+    fixtures = ["barriers", "users", "policy_teams"]
 
     def setUp(self):
         super().setUp()
@@ -57,16 +57,6 @@ class TestBarrierHistory(APITestMixin, TestCase):
         assert data["new_value"]["archived"] is True
         assert data["new_value"]["archived_reason"] == "DUPLICATE"
         assert data["new_value"]["archived_explanation"] == "It was a duplicate"
-
-    def test_categories_history(self):
-        self.barrier.categories.add("109", "115")
-
-        data = Barrier.get_history(barrier_id=self.barrier.pk)[-1]
-
-        assert data["model"] == "barrier"
-        assert data["field"] == "categories"
-        assert data["old_value"] == []
-        assert set(data["new_value"]) == {109, 115}
 
     def test_policy_teams_history(self):
         self.barrier.policy_teams.add("1", "2")
@@ -200,7 +190,7 @@ class TestBarrierHistory(APITestMixin, TestCase):
 
 
 class TestPublicBarrierHistory(APITestMixin, TestCase):
-    fixtures = ["barriers", "categories", "users"]
+    fixtures = ["barriers", "users"]
 
     @freezegun.freeze_time("2020-03-02")
     def setUp(self):
@@ -208,20 +198,6 @@ class TestPublicBarrierHistory(APITestMixin, TestCase):
         self.barrier = Barrier.objects.get(pk="c33dad08-b09c-4e19-ae1a-be47796a8882")
         self.barrier.save()
         self.public_barrier, _created = get_or_create_public_barrier(self.barrier)
-
-    def test_categories_history(self):
-        self.public_barrier.categories.add("109", "115")
-        self.public_barrier.save()
-
-        items = PublicBarrierHistoryFactory.get_history_items(
-            barrier_id=self.barrier.pk
-        )
-        data = items[-1].data
-
-        assert data["model"] == "public_barrier"
-        assert data["field"] == "categories"
-        assert data["old_value"] == []
-        assert set(data["new_value"]) == {"109", "115"}
 
     def test_location_history(self):
         self.public_barrier.country = "e0f682ac-5d95-e211-a939-e4115bead28a"

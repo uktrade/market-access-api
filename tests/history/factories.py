@@ -1,8 +1,6 @@
 import factory
 
 from api.barriers.models import Barrier, ProgrammeFundProgressUpdate
-from api.metadata.constants import BARRIER_TYPE_CATEGORIES
-from api.metadata.models import Category
 
 
 class BarrierFactory(factory.django.DjangoModelFactory):
@@ -23,13 +21,6 @@ class BarrierFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Barrier
-
-
-class CategoryFactory(factory.django.DjangoModelFactory):
-    category = BARRIER_TYPE_CATEGORIES.SERVICES
-
-    class Meta:
-        model = Category
 
 
 class ProgrammeFundProgressUpdateFactory(factory.django.DjangoModelFactory):
