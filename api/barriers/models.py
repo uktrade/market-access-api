@@ -28,6 +28,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
 from hashid_field import HashidAutoField
+from model_utils import Choices
 from simple_history.models import HistoricalRecords
 
 from api.barriers import validators
@@ -290,6 +291,47 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
         ordering = ("-created_on",)
         verbose_name = "Top 100 Barrier Progress Update"
         verbose_name_plural = "Top 100 Barrier Progress Updates"
+
+
+class EstimatedResolutionDateRequest(BaseModel):
+    STATUSES = Choices(
+        ("NEEDS_REVIEW", "Needs Review"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+        ("CLOSED", "Closed"),
+    )
+    barrier = models.ForeignKey(
+        "Barrier",
+        on_delete=models.CASCADE,
+        related_name="estimated_resolution_date_request",
+    )
+    estimated_resolution_date = models.DateField(
+        blank=True, null=True, help_text="Proposed estimated resolution date"
+    )
+    reason = models.TextField(
+        blank=True, null=True, help_text="Reason for proposed estimated resolution date"
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="estimated_resolution_date_request_user",
+        blank=True,
+        null=True,
+        help_text="User who created the proposed date",
+    )
+    status = models.CharField(choices=STATUSES)
+
+    history = HistoricalRecords()
+
+    def approve(self):
+        self.status = self.STATUSES.APPROVED
+        self.barrier.estimated_resolution_date = self.estimated_resolution_date
+        self.barrier.save()
+        self.save()
+
+    def reject(self):
+        self.status = self.STATUSES.REJECTED
+        self.save()
 
 
 class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
@@ -657,6 +699,16 @@ class Barrier(FullyArchivableMixin, BaseModel):
         return get_model_history(
             qs, model="barrier", fields=fields, track_first_item=track_first_item
         )
+
+    def get_active_erd_request(self):
+        try:
+            return self.estimated_resolution_date_request.get(
+                status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
+            )
+        except EstimatedResolutionDateRequest.DoesNotExist:
+            pass
+        except EstimatedResolutionDateRequest.MultipleObjectsReturned:
+            logger.warn(f"Barrier: {str(self.id)} - Multiple active ERD Requests")
 
     @property
     def latest_progress_update(self):

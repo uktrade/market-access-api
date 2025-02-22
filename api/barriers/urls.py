@@ -22,6 +22,7 @@ from api.barriers.views import (
     PublicBarrierActivity,
     PublicBarrierViewSet,
     barrier_count,
+    EstimatedResolutionDateRequestView,
 )
 
 app_name = "barriers"
@@ -39,6 +40,7 @@ urlpatterns = router.urls + [
         name="barrier_detail_code",
     ),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
+    path("barriers/<uuid:barrier_id>/estimated-resolution-date-request", EstimatedResolutionDateRequestView.as_view(), name="estimated-resolution-date-request"),
     path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),
     path(
         "barriers/<uuid:pk>/full_history",
