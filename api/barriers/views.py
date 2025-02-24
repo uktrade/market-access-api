@@ -59,7 +59,7 @@ from api.user.permissions import AllRetrieveAndEditorUpdateOnly, IsApprover, IsP
 from .models import BarrierFilterSet, BarrierProgressUpdate, PublicBarrierFilterSet
 from .public_data import public_release_to_s3
 from .serializers.estimated_resolution_date import ERDResponseSerializer, CreateERDRequestSerializer, \
-    PatchERDRequestSerializer
+    PatchERDRequestSerializer, ERDRequestSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -1094,6 +1094,11 @@ class EstimatedResolutionDateRequestView(generics.ListCreateAPIView, generics.Up
         return Response(status=status.HTTP_200_OK, data=ERDResponseSerializer(erd_request).data)
 
     def patch(self, request, barrier_id, *args, **kwargs):
+        is_admin = request.user.groups.filter(name="PB100 barrier approver").exists()
+
+        if not is_admin:
+            return Response(status=status.HTTP_403_FORBIDDEN, data={})
+
         barrier = get_object_or_404(Barrier, id=barrier_id)
 
         if not barrier.get_active_erd_request():
