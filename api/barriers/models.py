@@ -115,8 +115,6 @@ class PublicBarrierManager(models.Manager):
                 "all_sectors": barrier.all_sectors,
             },
         )
-        if created:
-            public_barrier.categories.set(barrier.categories.all())
 
         return public_barrier, created
 
@@ -126,6 +124,7 @@ class BarrierHistoricalModel(models.Model):
     Abstract model for history models tracking category changes.
     """
 
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories_cache = ArrayField(
         models.PositiveIntegerField(),
         blank=True,
@@ -156,9 +155,6 @@ class BarrierHistoricalModel(models.Model):
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
         self.update_cached_fields(old_history, changed_fields)
-
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
 
         commodity_codes = [c.get("code") for c in self.commodities_cache]
         old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
@@ -197,11 +193,6 @@ class BarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
-    def update_categories(self):
-        self.categories_cache = list(
-            self.instance.categories.values_list("id", flat=True)
-        )
-
     def update_commodities(self):
         self.commodities_cache = []
         for barrier_commodity in self.instance.barrier_commodities.all():
@@ -236,7 +227,6 @@ class BarrierHistoricalModel(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        self.update_categories()
         self.update_commodities()
         self.update_tags()
         self.update_organisations()
@@ -465,6 +455,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(blank=True)
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories = models.ManyToManyField(
         metadata_models.Category, related_name="barriers"
     )
@@ -687,7 +678,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "tags_cache",  # needs cache
             "organisations_cache",  # Needs cache
             "commodities_cache",  # Needs cache
-            "categories_cache",  # Needs cache
             "policy_teams_cache",  # Needs cache
         )
 
@@ -934,7 +924,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         for field in non_editable_public_fields:
             internal_value = getattr(self, field)
             setattr(public_barrier, field, internal_value)
-        public_barrier.categories.set(self.categories.all())
         public_barrier.save()
         public_barrier.update_changed_since_published()
 
@@ -944,6 +933,7 @@ class PublicBarrierHistoricalModel(models.Model):
     Abstract model for tracking m2m changes for PublicBarrier.
     """
 
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories_cache = ArrayField(
         models.CharField(max_length=20),
         blank=True,
@@ -952,9 +942,6 @@ class PublicBarrierHistoricalModel(models.Model):
 
     def get_changed_fields(self, old_history):  # noqa: C901, E261
         changed_fields = set(self.diff_against(old_history).changed_fields)
-
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
 
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
@@ -986,11 +973,6 @@ class PublicBarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
-    def update_categories(self):
-        self.categories_cache = list(
-            self.instance.categories.values_list("id", flat=True)
-        )
-
     @property
     def public_view_status(self):
         return self._public_view_status
@@ -1002,10 +984,6 @@ class PublicBarrierHistoricalModel(models.Model):
     @property
     def title(self):
         return self._title
-
-    def save(self, *args, **kwargs):
-        self.update_categories()
-        super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
@@ -1051,6 +1029,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     main_sector = models.UUIDField(blank=True, null=True)
     all_sectors = models.BooleanField(blank=True, null=True)
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories = models.ManyToManyField(
         metadata_models.Category, related_name="public_barriers"
     )
@@ -1190,7 +1169,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             "sectors",
             "main_sector",
             "all_sectors",
-            "categories",
         ]
 
         changed_list = []
@@ -1198,16 +1176,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             latest_version = self.latest_published_version
             if latest_version:
                 for field in change_alert_fields:
-                    if field != "categories":
-                        if getattr(self.barrier, field) != getattr(
-                            latest_version, field
-                        ):
-                            changed_list.append(field)
-                    else:
-                        if set(self.barrier.categories.all()) != set(
-                            latest_version.categories.all()
-                        ):
-                            changed_list.append(field)
+                    if getattr(self.barrier, field) != getattr(latest_version, field):
+                        changed_list.append(field)
 
         return changed_list
 
@@ -1246,7 +1216,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             "_title",
             "_summary",
             "_public_view_status",
-            "categories_cache",
         )
 
         # Get all fields required - raw changes no enrichment
@@ -1316,8 +1285,6 @@ class BarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle all necessary filters on Barriers
     reported_on_before: filter start date dd-mm-yyyy
     reported_on_after: filter end date dd-mm-yyyy
-    cateogory: int, one or more comma seperated category ids
-        ex: category=1 or category=1,2
     sector: uuid, one or more comma seperated sector UUIDs
         ex:
         sector=af959812-6095-e211-a939-e4115bead28a
@@ -1349,7 +1316,6 @@ class BarrierFilterSet(django_filters.FilterSet):
     )
     status_date_resolved_in_full = django_filters.Filter(method="resolved_date_filter")
     delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
-    category = django_filters.BaseInFilter("categories", distinct=True)
     policy_team = django_filters.BaseInFilter("policy_teams", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
@@ -1403,7 +1369,6 @@ class BarrierFilterSet(django_filters.FilterSet):
         model = Barrier
         fields = [
             "country",
-            "category",
             "sector",
             "reported_on",
             "status",

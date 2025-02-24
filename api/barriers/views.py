@@ -433,7 +433,6 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
             ),
             "barrier_commodities",
             "public_barrier",
-            "categories",
             "economic_assessments",
             "valuation_assessments",
             Prefetch(
@@ -711,11 +710,9 @@ class PublicBarrierViewSet(
             barrier__archived=False, barrier__draft=False
         ).prefetch_related(
             "notes",
-            "categories",
             "barrier",
             "barrier__tags",
             "barrier__organisations",
-            "barrier__categories",
             "barrier__priority",
         )
 

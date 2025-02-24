@@ -32,7 +32,6 @@ from api.metadata.utils import (
     get_barrier_search_ordering_choices,
     get_barrier_tags,
     get_barrier_type_categories,
-    get_categories,
     get_government_organisations,
     get_os_regions_and_countries,
     get_policy_teams,
@@ -79,7 +78,6 @@ class MetadataView(generics.GenericAPIView):
         dh_sectors = get_sectors()
 
         report_stages = get_reporting_stages()
-        categories = get_categories()
         policy_teams = get_policy_teams()
         barrier_type_cat = get_barrier_type_categories()
         barrier_priorities = get_barrier_priorities()
@@ -98,8 +96,6 @@ class MetadataView(generics.GenericAPIView):
             "report_status": report_status,
             "report_stages": report_stages,
             "support_type": support_type,
-            "barrier_types": categories,
-            "categories": categories,
             "policy_teams": policy_teams,
             "overseas_regions": dh_os_regions,
             "countries": dh_countries,

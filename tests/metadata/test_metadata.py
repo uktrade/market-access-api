@@ -8,7 +8,7 @@ from api.metadata.models import PolicyTeam
 from api.metadata.serializers import PolicyTeamSerializer
 
 
-class TestCategories(APITestMixin):
+class TestMetadata(APITestMixin):
     def test_metadata_dict(self):
         """Test all items are exposed using metadata"""
         url = reverse("metadata")
