@@ -3,8 +3,9 @@ from rest_framework import serializers
 from api.barriers.fields import SectorField, SectorsField, StatusField, TagsField
 from api.barriers.serializers.priority_summary import PrioritySummarySerializer
 from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
-from .base import BarrierSerializerBase
+
 from ...action_plans.serializers import ActionPlanSerializer
+from .base import BarrierSerializerBase
 
 
 class BarrierDetailSerializer(BarrierSerializerBase):

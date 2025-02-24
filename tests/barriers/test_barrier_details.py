@@ -108,14 +108,19 @@ class TestBarrierDetails(APITestMixin, APITestCase):
         assert title == response.data["title"]
 
     def test_patch_estimated_resolution_date_doesnt_update(self):
-        payload = {"estimated_resolution_date": datetime.today().date() + timedelta(days=41)}
+        payload = {
+            "estimated_resolution_date": datetime.today().date() + timedelta(days=41)
+        }
 
         response = self.api_client.patch(self.url, format="json", data=payload)
         self.barrier.refresh_from_db()
 
         assert status.HTTP_200_OK == response.status_code
         assert str(self.barrier.id) == response.data["id"]
-        assert self.barrier.estimated_resolution_date != payload["estimated_resolution_date"]
+        assert (
+            self.barrier.estimated_resolution_date
+            != payload["estimated_resolution_date"]
+        )
 
     def test_patch_barrier_country(self):
         payload = {"country": "82756b9a-5d95-e211-a939-e4115bead28a"}

@@ -14,7 +14,14 @@ class ERDRequestSerializer(serializers.ModelSerializer):
 class ERDResponseSerializer(ERDRequestSerializer):
     class Meta:
         model = EstimatedResolutionDateRequest
-        fields = ('barrier', 'reason', 'estimated_resolution_date', 'created_by', 'status', 'created_on')
+        fields = (
+            "barrier",
+            "reason",
+            "estimated_resolution_date",
+            "created_by",
+            "status",
+            "created_on",
+        )
 
 
 class CreateERDRequestSerializer(ERDRequestSerializer):
@@ -22,11 +29,15 @@ class CreateERDRequestSerializer(ERDRequestSerializer):
         """
         Check that the start is before the stop.
         """
-        erd = data.get('estimated_resolution_date')
+        erd = data.get("estimated_resolution_date")
         if erd and erd < datetime.date.today().replace(day=1):
-            raise serializers.ValidationError({"estimated_resolution_date": "Must be in future"})
+            raise serializers.ValidationError(
+                {"estimated_resolution_date": "Must be in future"}
+            )
         return data
 
 
 class PatchERDRequestSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(choices=EstimatedResolutionDateRequest.STATUSES, required=True)
+    status = serializers.ChoiceField(
+        choices=EstimatedResolutionDateRequest.STATUSES, required=True
+    )
