@@ -1,4 +1,4 @@
-from django.db import migrations, models
+from django.db import migrations
 from django.db.models import F
 
 
@@ -37,6 +37,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            migrate_estimated_resolution_date
+            migrate_estimated_resolution_date, reverse_code=migrations.RunPython.noop
         ),
     ]
