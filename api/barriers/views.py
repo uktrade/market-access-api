@@ -1084,7 +1084,7 @@ class EstimatedResolutionDateRequestView(
 
         if (
             not barrier.estimated_resolution_date
-            or not barrier.is_erd_top_priority
+            or not barrier.is_top_priority
             or (validated_erd and validated_erd < barrier.estimated_resolution_date)
         ):
             approver_erd = serializer.save()
