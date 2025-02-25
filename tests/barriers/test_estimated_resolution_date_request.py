@@ -49,6 +49,21 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert not barrier.get_active_erd_request()
         assert barrier.estimated_resolution_date == data["estimated_resolution_date"]
 
+    def test_create_erd_request_no_reason_201(self):
+        barrier = BarrierFactory(estimated_resolution_date=None)
+        url = reverse(
+            "estimated-resolution-date-request", kwargs={"barrier_id": barrier.id}
+        )
+        data = {
+            "estimated_resolution_date": datetime.date.today() + timedelta(days=31),
+        }
+
+        response = self.api_client.post(url, data=data, format="json")
+
+        barrier.refresh_from_db()
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.json() == {'reason': ['This field is required.']}
+
     def test_create_erd_has_existing_erd_request(self):
         barrier = BarrierFactory(estimated_resolution_date=datetime.date.today())
         EstimatedResolutionDateRequest.objects.create(

@@ -34,6 +34,8 @@ class ERDResponseSerializer(ERDRequestSerializer):
 
 
 class CreateERDRequestSerializer(ERDRequestSerializer):
+    reason = serializers.CharField(required=True)
+
     def validate(self, data):
         """
         Check that the start is before the stop.
