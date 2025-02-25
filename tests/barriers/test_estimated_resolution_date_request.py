@@ -207,6 +207,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
             estimated_resolution_date=datetime.date.today() + timedelta(days=100),
             reason="test",
             status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+            created_by=self.mock_user
         )
         url = reverse(
             "estimated-resolution-date-request", kwargs={"barrier_id": barrier.id}
@@ -217,6 +218,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
 
         assert response.status_code == status.HTTP_200_OK
         assert data["status"] == "NEEDS_REVIEW"
+        assert data["created_by"] == "Testfirst Testlast"
 
     def test_get_erd_request_404(self):
         barrier = BarrierFactory(

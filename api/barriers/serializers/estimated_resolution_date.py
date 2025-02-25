@@ -3,6 +3,7 @@ import datetime
 from rest_framework import serializers
 
 from api.barriers.models import EstimatedResolutionDateRequest
+from api.core.utils import cleansed_username
 
 
 class ERDRequestSerializer(serializers.ModelSerializer):
@@ -12,6 +13,8 @@ class ERDRequestSerializer(serializers.ModelSerializer):
 
 
 class ERDResponseSerializer(ERDRequestSerializer):
+    created_by = serializers.SerializerMethodField()
+
     class Meta:
         model = EstimatedResolutionDateRequest
         fields = (
@@ -22,6 +25,12 @@ class ERDResponseSerializer(ERDRequestSerializer):
             "status",
             "created_on",
         )
+
+    def get_created_by(self, obj):
+        if not obj.created_by:
+            return ""
+
+        return cleansed_username(obj.created_by)
 
 
 class CreateERDRequestSerializer(ERDRequestSerializer):
