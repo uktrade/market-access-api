@@ -207,7 +207,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
             estimated_resolution_date=datetime.date.today() + timedelta(days=100),
             reason="test",
             status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
-            created_by=self.mock_user
+            created_by=self.mock_user,
         )
         url = reverse(
             "estimated-resolution-date-request", kwargs={"barrier_id": barrier.id}
