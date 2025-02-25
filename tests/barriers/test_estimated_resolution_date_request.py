@@ -257,6 +257,30 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
+    def test_priority_overseas_approve_erd_request_later_date_403(self):
+        priority_barrier = BarrierFactory(
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+        url = reverse(
+            "estimated-resolution-date-request",
+            kwargs={"barrier_id": priority_barrier.id},
+        )
+        data = {
+            "estimated_resolution_date": datetime.date.today() + timedelta(days=31),
+            "reason": "Test Reason",
+        }
+
+        response = self.api_client.post(url, data=data, format="json")
+
+        assert response.status_code == status.HTTP_201_CREATED
+
+        response = self.api_client.patch(
+            url, data={"status": "APPROVED"}, format="json"
+        )
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
     def test_priority_approve_erd_request_later_date_200(self):
         priority_barrier = BarrierFactory(
             estimated_resolution_date=datetime.date.today(),
@@ -276,7 +300,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_201_CREATED
 
         # Set request user to approver status
-        self.user.groups.add(Group.objects.get(name="PB100 barrier approver"))
+        self.user.groups.add(Group.objects.get(name="Administrator"))
 
         response = self.api_client.patch(
             url, data={"status": "APPROVED"}, format="json"

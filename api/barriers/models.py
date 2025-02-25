@@ -283,7 +283,7 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
         verbose_name_plural = "Top 100 Barrier Progress Updates"
 
 
-class EstimatedResolutionDateRequest(BaseModel):
+class EstimatedResolutionDateRequest(models.Model):
     STATUSES = Choices(
         ("NEEDS_REVIEW", "Needs Review"),
         ("APPROVED", "Approved"),
@@ -301,7 +301,7 @@ class EstimatedResolutionDateRequest(BaseModel):
     reason = models.TextField(
         blank=True, null=True, help_text="Reason for proposed estimated resolution date"
     )
-    user = models.ForeignKey(
+    created_by = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         related_name="estimated_resolution_date_request_user",
@@ -310,17 +310,43 @@ class EstimatedResolutionDateRequest(BaseModel):
         help_text="User who created the proposed date",
     )
     status = models.CharField(choices=STATUSES)
+    created_on = models.DateTimeField(editable=False, null=True)
+    modified_on = models.DateTimeField(null=True)
+    modified_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="estimated_resolution_date_request_modified_by",
+        blank=True,
+        null=True,
+    )
 
     history = HistoricalRecords()
 
-    def approve(self):
+    def save(self, *args, **kwargs):
+        ts = timezone.now()
+        if not self.pk:
+            self.created_on = self.created_on or ts
+        self.modified_on = ts
+        return super().save(*args, **kwargs)
+
+    def approve(self, modified_by: User):
         self.status = self.STATUSES.APPROVED
+        self.modified_by = modified_by
         self.barrier.estimated_resolution_date = self.estimated_resolution_date
         self.barrier.save()
+        self.modified_on = timezone.now()
         self.save()
 
-    def reject(self):
+    def reject(self, modified_by: User):
         self.status = self.STATUSES.REJECTED
+        self.modified_by = modified_by
+        self.modified_on = timezone.now()
+        self.save()
+
+    def close(self, modified_by: User):
+        self.status = self.STATUSES.CLOSED
+        self.modified_by = modified_by
+        self.modified_on = timezone.now()
         self.save()
 
 
@@ -853,6 +879,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
             TOP_PRIORITY_BARRIER_STATUS.APPROVED,
             TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
         ]
+
+    @property
+    def is_erd_top_priority(self):
+        return self.is_top_priority or self.priority_level == PRIORITY_LEVELS.OVERSEAS
 
     @property
     def is_regional_trade_plan(self):
