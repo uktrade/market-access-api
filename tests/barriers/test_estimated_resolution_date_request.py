@@ -12,8 +12,7 @@ from api.metadata.constants import TOP_PRIORITY_BARRIER_STATUS
 from tests.barriers.factories import BarrierFactory
 
 
-class TestBarrierDownloadViews(APITestMixin, TestCase):
-
+class TestEstimatedResolutionDateView(APITestMixin, TestCase):
     def setUp(self):
         super().setUp()
 
@@ -217,7 +216,7 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
             estimated_resolution_date=datetime.date.today() + timedelta(days=31),
             top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
         )
-        erd_request = EstimatedResolutionDateRequest.objects.create(
+        EstimatedResolutionDateRequest.objects.create(
             barrier=barrier,
             estimated_resolution_date=datetime.date.today() + timedelta(days=100),
             reason="test",
@@ -250,51 +249,24 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert response.json() == {}
 
-    def test_priority_approve_erd_request_later_date_403(self):
-        priority_barrier = BarrierFactory(
-            estimated_resolution_date=datetime.date.today(),
-            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-        )
-        url = reverse(
-            "estimated-resolution-date-request",
-            kwargs={"barrier_id": priority_barrier.id},
-        )
-        data = {
-            "estimated_resolution_date": datetime.date.today() + timedelta(days=31),
-            "reason": "Test Reason",
-        }
-
-        response = self.api_client.post(url, data=data, format="json")
-
-        assert response.status_code == status.HTTP_201_CREATED
-
-        response = self.api_client.patch(
-            url, data={"status": "APPROVED"}, format="json"
-        )
-
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-
     def test_priority_overseas_approve_erd_request_later_date_403(self):
         priority_barrier = BarrierFactory(
             estimated_resolution_date=datetime.date.today(),
             priority_level="OVERSEAS",
         )
+        EstimatedResolutionDateRequest.objects.create(
+            barrier=priority_barrier,
+            estimated_resolution_date=datetime.date.today() + timedelta(days=100),
+            reason="test",
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+            created_by=self.mock_user,
+        )
         url = reverse(
-            "estimated-resolution-date-request",
+            "estimated-resolution-date-request-approve",
             kwargs={"barrier_id": priority_barrier.id},
         )
-        data = {
-            "estimated_resolution_date": datetime.date.today() + timedelta(days=31),
-            "reason": "Test Reason",
-        }
 
-        response = self.api_client.post(url, data=data, format="json")
-
-        assert response.status_code == status.HTTP_201_CREATED
-
-        response = self.api_client.patch(
-            url, data={"status": "APPROVED"}, format="json"
-        )
+        response = self.api_client.post(url, data={}, format="json")
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
@@ -303,24 +275,21 @@ class TestBarrierDownloadViews(APITestMixin, TestCase):
             estimated_resolution_date=datetime.date.today(),
             top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
         )
+        EstimatedResolutionDateRequest.objects.create(
+            barrier=priority_barrier,
+            estimated_resolution_date=datetime.date.today() + timedelta(days=100),
+            reason="test",
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+            created_by=self.mock_user,
+        )
         url = reverse(
-            "estimated-resolution-date-request",
+            "estimated-resolution-date-request-approve",
             kwargs={"barrier_id": priority_barrier.id},
         )
-        data = {
-            "estimated_resolution_date": datetime.date.today() + timedelta(days=31),
-            "reason": "Test Reason",
-        }
-
-        response = self.api_client.post(url, data=data, format="json")
-
-        assert response.status_code == status.HTTP_201_CREATED
 
         # Set request user to approver status
         self.user.groups.add(Group.objects.get(name="Administrator"))
 
-        response = self.api_client.patch(
-            url, data={"status": "APPROVED"}, format="json"
-        )
+        response = self.api_client.post(url, data={}, format="json")
 
         assert response.status_code == status.HTTP_200_OK

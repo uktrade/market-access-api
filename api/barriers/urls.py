@@ -22,7 +22,7 @@ from api.barriers.views import (
     ProgrammeFundProgressUpdateViewSet,
     PublicBarrierActivity,
     PublicBarrierViewSet,
-    barrier_count,
+    barrier_count, EstimatedResolutionDateRequestApproveView, EstimatedResolutionDateRequestRejectView,
 )
 
 app_name = "barriers"
@@ -44,6 +44,16 @@ urlpatterns = router.urls + [
         "barriers/<uuid:barrier_id>/estimated-resolution-date-request",
         EstimatedResolutionDateRequestView.as_view(),
         name="estimated-resolution-date-request",
+    ),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request/approve",
+        EstimatedResolutionDateRequestApproveView.as_view(),
+        name="estimated-resolution-date-request-approve",
+    ),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request/reject",
+        EstimatedResolutionDateRequestRejectView.as_view(),
+        name="estimated-resolution-date-request-reject",
     ),
     path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),
     path(

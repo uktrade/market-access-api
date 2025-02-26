@@ -6,13 +6,7 @@ from api.barriers.models import EstimatedResolutionDateRequest
 from api.core.utils import cleansed_username
 
 
-class ERDRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EstimatedResolutionDateRequest
-        fields = "__all__"
-
-
-class ERDResponseSerializer(ERDRequestSerializer):
+class ERDResponseSerializer(serializers.ModelSerializer):
     created_by = serializers.SerializerMethodField()
 
     class Meta:
@@ -33,8 +27,9 @@ class ERDResponseSerializer(ERDRequestSerializer):
         return cleansed_username(obj.created_by)
 
 
-class CreateERDRequestSerializer(ERDRequestSerializer):
-    reason = serializers.CharField(required=True)
+class CreateERDRequestSerializer(serializers.Serializer):
+    reason = serializers.CharField()
+    estimated_resolution_date = serializers.DateField(allow_null=True)
 
     def validate(self, data):
         """
@@ -48,7 +43,5 @@ class CreateERDRequestSerializer(ERDRequestSerializer):
         return data
 
 
-class PatchERDRequestSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(
-        choices=EstimatedResolutionDateRequest.STATUSES, required=True
-    )
+class RejectERDRequestSerializer(serializers.Serializer):
+    reason = serializers.CharField()

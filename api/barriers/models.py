@@ -337,8 +337,9 @@ class EstimatedResolutionDateRequest(models.Model):
         self.modified_on = timezone.now()
         self.save()
 
-    def reject(self, modified_by: User):
+    def reject(self, modified_by: User, reason):
         self.status = self.STATUSES.REJECTED
+        self.reason = reason
         self.modified_by = modified_by
         self.modified_on = timezone.now()
         self.save()
@@ -348,6 +349,19 @@ class EstimatedResolutionDateRequest(models.Model):
         self.modified_by = modified_by
         self.modified_on = timezone.now()
         self.save()
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id)
+        fields = (["estimated_resolution_date", "reason", "modified_by", "created_by", "status"],)
+
+        return get_model_history(
+            qs,
+            model="estimated_resolution_date_request",
+            fields=fields,
+            track_first_item=True,
+            primary_key="id"
+        )
 
 
 class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):

@@ -15,7 +15,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet, ViewSetMixin
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.exceptions import PublicBarrierPublishException
@@ -64,7 +64,7 @@ from .public_data import public_release_to_s3
 from .serializers.estimated_resolution_date import (
     CreateERDRequestSerializer,
     ERDResponseSerializer,
-    PatchERDRequestSerializer,
+    RejectERDRequestSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -1027,55 +1027,90 @@ class BarrierNextStepItemViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class EstimatedResolutionDateRequestView(
-    generics.ListCreateAPIView, generics.UpdateAPIView
+class EstimatedResolutionDateRequestApproveView(
+    generics.CreateAPIView
 ):
     def create(self, request, barrier_id, *args, **kwargs):
-        serializer = CreateERDRequestSerializer(
-            data={
-                **request.data,
-                **{
-                    "barrier": barrier_id,
-                    "created_by": request.user.id,
-                    "status": EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
-                },
-            }
-        )
+        is_admin = request.user.groups.filter(name="Administrator").exists()
+        barrier = get_object_or_404(Barrier, id=barrier_id)
+
+        if not is_admin:
+            return Response(status=status.HTTP_403_FORBIDDEN, data={})
+
+        erd_request = barrier.get_active_erd_request()
+
+        if not erd_request:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={})
+
+        erd_request.approve(modified_by=request.user)
+        return Response(status=status.HTTP_200_OK, data={})
+
+
+class EstimatedResolutionDateRequestRejectView(
+    generics.CreateAPIView
+):
+    def create(self, request, barrier_id, *args, **kwargs):
+        serializer = RejectERDRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=False)
         if serializer.errors:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
-        validated_erd = serializer.validated_data.get("estimated_resolution_date", "")
+        is_admin = request.user.groups.filter(name="Administrator").exists()
         barrier = get_object_or_404(Barrier, id=barrier_id)
 
-        if barrier.estimated_resolution_date == validated_erd:
+        if not is_admin:
+            return Response(status=status.HTTP_403_FORBIDDEN, data={})
+
+        erd_request = barrier.get_active_erd_request()
+
+        if not erd_request:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={})
+
+        erd_request.reject(modified_by=request.user, reason=serializer.validated_data["reason"])
+        return Response(status=status.HTTP_200_OK, data={})
+
+
+class EstimatedResolutionDateRequestView(
+    generics.ListCreateAPIView, generics.UpdateAPIView
+):
+    def create(self, request, barrier_id, *args, **kwargs):
+        serializer = CreateERDRequestSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=False)
+        if serializer.errors:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+
+        estimated_resolution_date = serializer.validated_data["estimated_resolution_date"]
+        reason = serializer.validated_data["reason"]
+
+        barrier = get_object_or_404(Barrier, id=barrier_id)
+
+        if barrier.estimated_resolution_date == estimated_resolution_date:
+            # No change
             return Response(status=status.HTTP_200_OK, data={})
 
         is_admin = request.user.groups.filter(name="Administrator").exists()
         erd_request = barrier.get_active_erd_request()
 
         if is_admin:
-            if not erd_request:
-                with transaction.atomic():
-                    admin_erd = serializer.save()
-                    admin_erd.approve(modified_by=request.user)
-                return Response(status=status.HTTP_200_OK, data={})
-
-            if validated_erd == str(erd_request.estimated_resolution_date or ""):
-                erd_request.approve(modified_by=request.user)
-                return Response(status=status.HTTP_200_OK, data={})
-            else:
-                with transaction.atomic():
+            with transaction.atomic():
+                if erd_request:
                     erd_request.close(modified_by=request.user)
-                    admin_erd = serializer.save()
-                    admin_erd.approve(modified_by=request.user)
-                    return Response(
-                        status=status.HTTP_201_CREATED,
-                        data=ERDResponseSerializer(admin_erd).data,
-                    )
+
+                EstimatedResolutionDateRequest.objects.create(
+                    estimated_resolution_date=estimated_resolution_date,
+                    reason=reason,
+                    barrier=barrier,
+                    created_by=request.user,
+                    modified_by=request.user,
+                    status=EstimatedResolutionDateRequest.STATUSES.APPROVED
+                )
+                barrier.estimated_resolution_date = estimated_resolution_date
+                barrier.save()
+            return Response(status=status.HTTP_200_OK, data={})
 
         if erd_request:
-            if validated_erd == str(erd_request.estimated_resolution_date or ""):
+            if estimated_resolution_date == str(erd_request.estimated_resolution_date or ""):
                 # No change
                 return Response(status=status.HTTP_200_OK, data={})
 
@@ -1085,13 +1120,30 @@ class EstimatedResolutionDateRequestView(
         if (
             not barrier.estimated_resolution_date
             or not barrier.is_top_priority
-            or (validated_erd and validated_erd < barrier.estimated_resolution_date)
+            or (estimated_resolution_date and estimated_resolution_date < barrier.estimated_resolution_date)
         ):
-            approver_erd = serializer.save()
-            approver_erd.approve(modified_by=request.user)
+            with transaction.atomic():
+                EstimatedResolutionDateRequest.objects.create(
+                    estimated_resolution_date=estimated_resolution_date,
+                    reason=reason,
+                    barrier=barrier,
+                    created_by=request.user,
+                    modified_by=request.user,
+                    status=EstimatedResolutionDateRequest.STATUSES.APPROVED
+                )
+                barrier.estimated_resolution_date = estimated_resolution_date
+                barrier.save()
             return Response(status=status.HTTP_200_OK, data={})
 
-        erd_request = serializer.save()
+        EstimatedResolutionDateRequest.objects.create(
+            estimated_resolution_date=estimated_resolution_date,
+            reason=reason,
+            barrier=barrier,
+            created_by=request.user,
+            modified_by=request.user,
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
+        )
+
         return Response(
             status=status.HTTP_201_CREATED, data=ERDResponseSerializer(erd_request).data
         )
@@ -1108,39 +1160,3 @@ class EstimatedResolutionDateRequestView(
         return Response(
             status=status.HTTP_200_OK, data=ERDResponseSerializer(erd_request).data
         )
-
-    def patch(self, request, barrier_id, *args, **kwargs):
-        is_admin = request.user.groups.filter(name="Administrator").exists()
-
-        if not is_admin:
-            return Response(status=status.HTTP_403_FORBIDDEN, data={})
-
-        barrier = get_object_or_404(Barrier, id=barrier_id)
-
-        if not barrier.get_active_erd_request():
-            return Response(status=status.HTTP_404_NOT_FOUND, data={})
-
-        erd_request = barrier.estimated_resolution_date_request.filter(
-            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
-        ).first()
-
-        serializer = PatchERDRequestSerializer(data=request.data)
-
-        serializer.is_valid(raise_exception=False)
-        if serializer.errors:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
-
-        if (
-            serializer.validated_data["status"]
-            == EstimatedResolutionDateRequest.STATUSES.APPROVED
-        ):
-            erd_request.approve(modified_by=request.user)
-        elif (
-            serializer.validated_data["status"]
-            == EstimatedResolutionDateRequest.STATUSES.REJECTED
-        ):
-            erd_request.reject(modified_by=request.user)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={})
-
-        return Response(status=status.HTTP_200_OK, data={})
