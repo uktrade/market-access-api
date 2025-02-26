@@ -404,20 +404,11 @@ def get_tasks(user):  # noqa
     )
     mentions_lookup = {m["barrier"]: m for m in mentions}
 
-    erd_requests = EstimatedResolutionDateRequest.objects.filter(
-        barrier__id__in=[b["id"] for b in qs],
-        status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
-    ).values(
-        "created_on", "barrier", "status"
-    )
-    erd_requests_lookup = {e["barrier"]: e for e in erd_requests} if user_is_admin else {}
-
     for barrier in qs:
         barrier_entry = tasks.create_barrier_entry(barrier)
 
-        if barrier["id"] in erd_requests_lookup:
-            erd_request = erd_requests_lookup[barrier["id"]]
-            task = tasks.create_erd_review_task(erd_request)
+        if barrier["has_estimated_resolution_date_request"] and user_is_admin:
+            task = tasks.create_erd_review_task()
             barrier_entry["task_list"].append(task)
 
         if barrier["id"] in mentions_lookup:

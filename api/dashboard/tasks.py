@@ -5,7 +5,7 @@ import pytz
 from api.core.date_utils import get_nth_day_of_month
 
 
-def create_erd_review_task(erd_request):
+def create_erd_review_task():
     return {
         "tag": "ERD REVIEW",
         "message": [
