@@ -24,6 +24,7 @@ from api.barriers.models import (
     BarrierNextStepItem,
     BarrierProgressUpdate,
     ProgrammeFundProgressUpdate,
+    EstimatedResolutionDateRequest,
 )
 from api.collaboration.models import TeamMember
 from api.dashboard import tasks
@@ -293,6 +294,8 @@ def get_tasks(user):  # noqa
     user_groups = set(user.groups.values_list("name", flat=True))
     fy_start_date, fy_end_date, _, __ = get_financial_year_dates()
 
+    user_is_admin = "Administrator" in user_groups
+
     barrier_entries = []
 
     qs = get_combined_barrier_mention_qs(user)
@@ -350,6 +353,12 @@ def get_tasks(user):  # noqa
                 organisations__organisation_type__in=GOVERNMENT_ORGANISATION_TYPES,
             )
         ),
+        has_estimated_resolution_date_request=Exists(
+            Barrier.objects.filter(
+                id=OuterRef("pk"),
+                estimated_resolution_date_request__status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
+            )
+        ),
         is_top_priority=ExpressionWrapper(
             Q(top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED)
             | Q(top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING),
@@ -374,6 +383,7 @@ def get_tasks(user):  # noqa
         "has_programme_fund_tag",
         "latest_programme_fund_modified_on",
         "has_goods",
+        "has_estimated_resolution_date_request",
         "has_commodities",
         "has_government_organisation",
         "estimated_resolution_date",
@@ -394,8 +404,21 @@ def get_tasks(user):  # noqa
     )
     mentions_lookup = {m["barrier"]: m for m in mentions}
 
+    erd_requests = EstimatedResolutionDateRequest.objects.filter(
+        barrier__id__in=[b["id"] for b in qs],
+        status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+    ).values(
+        "created_on", "barrier", "status"
+    )
+    erd_requests_lookup = {e["barrier"]: e for e in erd_requests} if user_is_admin else {}
+
     for barrier in qs:
         barrier_entry = tasks.create_barrier_entry(barrier)
+
+        if barrier["id"] in erd_requests_lookup:
+            erd_request = erd_requests_lookup[barrier["id"]]
+            task = tasks.create_erd_review_task(erd_request)
+            barrier_entry["task_list"].append(task)
 
         if barrier["id"] in mentions_lookup:
             mention = mentions_lookup[barrier["id"]]
