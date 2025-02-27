@@ -18,11 +18,13 @@ from api.barriers.views import (
     BarrierResolveInFull,
     BarrierResolveInPart,
     BarrierStatusChangeUnknown,
+    EstimatedResolutionDateRequestApproveView,
+    EstimatedResolutionDateRequestRejectView,
     EstimatedResolutionDateRequestView,
     ProgrammeFundProgressUpdateViewSet,
     PublicBarrierActivity,
     PublicBarrierViewSet,
-    barrier_count, EstimatedResolutionDateRequestApproveView, EstimatedResolutionDateRequestRejectView,
+    barrier_count,
 )
 
 app_name = "barriers"

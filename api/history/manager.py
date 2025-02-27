@@ -13,8 +13,9 @@ from api.barriers.models import (
     BarrierNextStepItem,
     BarrierProgressUpdate,
     BarrierTopPrioritySummary,
+    EstimatedResolutionDateRequest,
     ProgrammeFundProgressUpdate,
-    PublicBarrier, EstimatedResolutionDateRequest,
+    PublicBarrier,
 )
 from api.collaboration.models import TeamMember
 from api.history.factories import PublicBarrierHistoryFactory
@@ -147,8 +148,8 @@ class HistoryManager:
         if barrier.has_public_barrier:
             v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
 
-        v2_estimated_resolution_date_request_history = EstimatedResolutionDateRequest.get_history(
-            barrier_id=barrier.pk
+        v2_estimated_resolution_date_request_history = (
+            EstimatedResolutionDateRequest.get_history(barrier_id=barrier.pk)
         )
 
         v2_history = enrich_full_history(
@@ -168,7 +169,7 @@ class HistoryManager:
             action_plan_milestone_history=v2_action_plan_milestone_history,
             delivery_confidence_history=v2_delivery_confidence_history,
             next_step_item_history=v2_next_step_item_history,
-            estimated_resolution_date_request_history=v2_estimated_resolution_date_request_history
+            estimated_resolution_date_request_history=v2_estimated_resolution_date_request_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)

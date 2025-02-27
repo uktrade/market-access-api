@@ -15,7 +15,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet, ViewSetMixin
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from simple_history.utils import bulk_create_with_history
 
 from api.barriers.exceptions import PublicBarrierPublishException
@@ -1027,9 +1027,7 @@ class BarrierNextStepItemViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class EstimatedResolutionDateRequestApproveView(
-    generics.CreateAPIView
-):
+class EstimatedResolutionDateRequestApproveView(generics.CreateAPIView):
     def create(self, request, barrier_id, *args, **kwargs):
         is_admin = request.user.groups.filter(name="Administrator").exists()
         barrier = get_object_or_404(Barrier, id=barrier_id)
@@ -1046,9 +1044,7 @@ class EstimatedResolutionDateRequestApproveView(
         return Response(status=status.HTTP_200_OK, data={})
 
 
-class EstimatedResolutionDateRequestRejectView(
-    generics.CreateAPIView
-):
+class EstimatedResolutionDateRequestRejectView(generics.CreateAPIView):
     def create(self, request, barrier_id, *args, **kwargs):
         serializer = RejectERDRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=False)
@@ -1066,7 +1062,9 @@ class EstimatedResolutionDateRequestRejectView(
         if not erd_request:
             return Response(status=status.HTTP_404_NOT_FOUND, data={})
 
-        erd_request.reject(modified_by=request.user, reason=serializer.validated_data["reason"])
+        erd_request.reject(
+            modified_by=request.user, reason=serializer.validated_data["reason"]
+        )
         return Response(status=status.HTTP_200_OK, data={})
 
 
@@ -1080,7 +1078,9 @@ class EstimatedResolutionDateRequestView(
         if serializer.errors:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
-        estimated_resolution_date = serializer.validated_data["estimated_resolution_date"]
+        estimated_resolution_date = serializer.validated_data[
+            "estimated_resolution_date"
+        ]
         reason = serializer.validated_data["reason"]
 
         barrier = get_object_or_404(Barrier, id=barrier_id)
@@ -1103,14 +1103,16 @@ class EstimatedResolutionDateRequestView(
                     barrier=barrier,
                     created_by=request.user,
                     modified_by=request.user,
-                    status=EstimatedResolutionDateRequest.STATUSES.APPROVED
+                    status=EstimatedResolutionDateRequest.STATUSES.APPROVED,
                 )
                 barrier.estimated_resolution_date = estimated_resolution_date
                 barrier.save()
             return Response(status=status.HTTP_200_OK, data={})
 
         if erd_request:
-            if estimated_resolution_date == str(erd_request.estimated_resolution_date or ""):
+            if estimated_resolution_date == str(
+                erd_request.estimated_resolution_date or ""
+            ):
                 # No change
                 return Response(status=status.HTTP_200_OK, data={})
 
@@ -1120,7 +1122,10 @@ class EstimatedResolutionDateRequestView(
         if (
             not barrier.estimated_resolution_date
             or not barrier.is_top_priority
-            or (estimated_resolution_date and estimated_resolution_date < barrier.estimated_resolution_date)
+            or (
+                estimated_resolution_date
+                and estimated_resolution_date < barrier.estimated_resolution_date
+            )
         ):
             with transaction.atomic():
                 EstimatedResolutionDateRequest.objects.create(
@@ -1129,7 +1134,7 @@ class EstimatedResolutionDateRequestView(
                     barrier=barrier,
                     created_by=request.user,
                     modified_by=request.user,
-                    status=EstimatedResolutionDateRequest.STATUSES.APPROVED
+                    status=EstimatedResolutionDateRequest.STATUSES.APPROVED,
                 )
                 barrier.estimated_resolution_date = estimated_resolution_date
                 barrier.save()
@@ -1141,7 +1146,7 @@ class EstimatedResolutionDateRequestView(
             barrier=barrier,
             created_by=request.user,
             modified_by=request.user,
-            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
         )
 
         return Response(

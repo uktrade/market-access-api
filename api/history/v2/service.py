@@ -35,7 +35,7 @@ List[str, FieldMapping]
 
 import operator
 from collections import namedtuple
-from typing import Dict, List, Tuple, Union, Optional
+from typing import Dict, List, Optional, Tuple, Union
 
 from django.db.models import QuerySet
 
@@ -186,7 +186,7 @@ def get_model_history(  # noqa: C901
     model: str,
     fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...],
     track_first_item: bool = False,
-    primary_key: Optional[str] = None
+    primary_key: Optional[str] = None,
 ) -> List[Dict]:
     """
     This function returns the raw historical changes for a django-simple-history table.

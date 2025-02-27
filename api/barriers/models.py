@@ -352,15 +352,25 @@ class EstimatedResolutionDateRequest(models.Model):
 
     @classmethod
     def get_history(cls, barrier_id):
-        qs = cls.history.filter(barrier__id=barrier_id).exclude(status=cls.STATUSES.CLOSED)
-        fields = (["estimated_resolution_date", "reason", "modified_by", "created_by", "status"],)
+        qs = cls.history.filter(barrier__id=barrier_id).exclude(
+            status=cls.STATUSES.CLOSED
+        )
+        fields = (
+            [
+                "estimated_resolution_date",
+                "reason",
+                "modified_by",
+                "created_by",
+                "status",
+            ],
+        )
 
         return get_model_history(
             qs,
             model="estimated_resolution_date_request",
             fields=fields,
             track_first_item=True,
-            primary_key="id"
+            primary_key="id",
         )
 
 
@@ -888,10 +898,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def is_top_priority(self):
-        return self.top_priority_status in [
-            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-        ] or self.priority_level == PRIORITY_LEVELS.OVERSEAS
+        return (
+            self.top_priority_status
+            in [
+                TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+                TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+            ]
+            or self.priority_level == PRIORITY_LEVELS.OVERSEAS
+        )
 
     @property
     def is_regional_trade_plan(self):

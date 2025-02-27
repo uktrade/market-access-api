@@ -61,7 +61,7 @@ class TestEstimatedResolutionDateView(APITestMixin, TestCase):
 
         barrier.refresh_from_db()
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert response.json() == {'reason': ['This field is required.']}
+        assert response.json() == {"reason": ["This field is required."]}
 
     def test_create_erd_has_existing_erd_request(self):
         barrier = BarrierFactory(estimated_resolution_date=datetime.date.today())

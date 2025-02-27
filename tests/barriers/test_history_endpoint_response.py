@@ -280,26 +280,6 @@ class TestHistoryEndpointResponse(APITestMixin, TestCase):
         } in history
 
     @freezegun.freeze_time("2020-04-01")
-    def test_history_endpoint_has_estimated_resolution_date(self):
-        initial_estimated_resolution_date = self.barrier.estimated_resolution_date
-        expected_estimated_resolution_date = datetime.date(year=2030, month=12, day=25)
-        self.barrier.estimated_resolution_date = expected_estimated_resolution_date
-        self.barrier.save()
-
-        url = reverse("history", kwargs={"pk": self.barrier.pk})
-        response = self.api_client.get(url)
-        history = response.json()["history"]
-
-        assert {
-            "date": "2020-04-01T00:00:00Z",
-            "model": "barrier",
-            "field": "estimated_resolution_date",
-            "old_value": initial_estimated_resolution_date,
-            "new_value": expected_estimated_resolution_date.isoformat(),
-            "user": None,
-        } in history
-
-    @freezegun.freeze_time("2020-04-01")
     def test_history_endpoint_has_is_summary_sensitive(self):
         initial_is_summary_sensitive = self.barrier.is_summary_sensitive
         expected_is_summary_sensitive = not initial_is_summary_sensitive

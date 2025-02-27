@@ -23,8 +23,8 @@ from api.barriers.models import (
     Barrier,
     BarrierNextStepItem,
     BarrierProgressUpdate,
-    ProgrammeFundProgressUpdate,
     EstimatedResolutionDateRequest,
+    ProgrammeFundProgressUpdate,
 )
 from api.collaboration.models import TeamMember
 from api.dashboard import tasks
@@ -356,7 +356,7 @@ def get_tasks(user):  # noqa
         has_estimated_resolution_date_request=Exists(
             Barrier.objects.filter(
                 id=OuterRef("pk"),
-                estimated_resolution_date_request__status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
+                estimated_resolution_date_request__status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
             )
         ),
         is_top_priority=ExpressionWrapper(
