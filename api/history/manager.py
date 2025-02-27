@@ -151,7 +151,6 @@ class HistoryManager:
         v2_estimated_resolution_date_request_history = (
             EstimatedResolutionDateRequest.get_history(barrier_id=barrier.pk)
         )
-
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
             preliminary_assessment_history=v2_preliminary_assessment_history,

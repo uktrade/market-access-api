@@ -67,7 +67,7 @@ from api.history.v2.enrichment import (
     enrich_time_to_resolve,
     enrich_top_priority_status,
     enrich_trade_category,
-    enrich_wto_notified_status,
+    enrich_wto_notified_status, enrich_estimated_resolution_date,
 )
 
 FieldMapping = namedtuple("FieldMapping", ["query_name", "name"])
@@ -135,6 +135,7 @@ def enrich_full_history(
     enrich_action_plan(action_plan_history)
     enrich_action_plan_task(action_plan_task_history)
     enrich_delivery_confidence(delivery_confidence_history)
+    enrich_estimated_resolution_date(estimated_resolution_date_request_history)
 
     enriched_history = (
         barrier_history
@@ -155,9 +156,7 @@ def enrich_full_history(
         + next_step_item_history
         + estimated_resolution_date_request_history
     )
-    from pprint import pprint
 
-    pprint(estimated_resolution_date_request_history)
     enriched_history.sort(key=operator.itemgetter("date"))
 
     return enriched_history
