@@ -55,7 +55,6 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
     serializer_class = BarrierDownloadSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (BarrierDownloadFilterBackend,)
-    pagination_class = PageNumberPagination
 
     def post(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).values_list("id")
