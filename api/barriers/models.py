@@ -352,7 +352,7 @@ class EstimatedResolutionDateRequest(models.Model):
 
     @classmethod
     def get_history(cls, barrier_id):
-        qs = cls.history.filter(barrier__id=barrier_id)
+        qs = cls.history.filter(barrier__id=barrier_id).exclude(status=cls.STATUSES.CLOSED)
         fields = (["estimated_resolution_date", "reason", "modified_by", "created_by", "status"],)
 
         return get_model_history(
@@ -684,7 +684,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "companies",
             "economic_assessment_eligibility",
             "economic_assessment_eligibility_summary",
-            "estimated_resolution_date",
             "start_date",
             "is_summary_sensitive",
             "main_sector",

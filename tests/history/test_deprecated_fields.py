@@ -20,8 +20,6 @@ pytestmark = [pytest.mark.django_db]
         ("companies", ["1", "2", "3"], []),
         ("economic_assessment_eligibility", False, None),
         ("economic_assessment_eligibility_summary", "Test", ""),
-        ("estimated_resolution_date", datetime.date(year=2030, month=12, day=25), None),
-        # ("start_date", datetime.date(year=2030, month=12, day=25), "attr"),  # Works is_summary_sensitive
         ("is_summary_sensitive", True, None),
         ("product", "New", "TEST PRODUCT"),
         ("public_eligibility_summary", "SUMM", ""),
