@@ -532,12 +532,17 @@ def enrich_action_plan_task(history: List[Dict]):
             item["old_value"] = enrich_action_type(item["old_value"])
             item["new_value"] = enrich_action_type(item["new_value"])
 
+
 def enrich_estimated_resolution_date(history: List[Dict]):
     for item in history:
         if item["old_value"]["estimated_resolution_date"]:
-            item["old_value"]["estimated_resolution_date"] = formats.date_format(item["old_value"]["estimated_resolution_date"],"j F Y")
+            item["old_value"]["estimated_resolution_date"] = formats.date_format(
+                item["old_value"]["estimated_resolution_date"], "j F Y"
+            )
         if item["new_value"]["estimated_resolution_date"]:
-            item["new_value"]["estimated_resolution_date"] = formats.date_format(item["new_value"]["estimated_resolution_date"],"j F Y")
+            item["new_value"]["estimated_resolution_date"] = formats.date_format(
+                item["new_value"]["estimated_resolution_date"], "j F Y"
+            )
 
 
 def enrich_delivery_confidence(history: List[Dict]):

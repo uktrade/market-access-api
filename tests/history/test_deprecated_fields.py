@@ -3,6 +3,7 @@ Sanity tests that fields can be replaced:
 
 TODO: Once approved, remove the fields from legacy history
 """
+
 import pytest
 
 from api.barriers.models import Barrier

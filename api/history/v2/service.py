@@ -50,6 +50,7 @@ from api.history.v2.enrichment import (
     enrich_country,
     enrich_delivery_confidence,
     enrich_effort_to_resolve,
+    enrich_estimated_resolution_date,
     enrich_impact,
     enrich_main_sector,
     enrich_meeting_minutes,
@@ -67,7 +68,7 @@ from api.history.v2.enrichment import (
     enrich_time_to_resolve,
     enrich_top_priority_status,
     enrich_trade_category,
-    enrich_wto_notified_status, enrich_estimated_resolution_date,
+    enrich_wto_notified_status,
 )
 
 FieldMapping = namedtuple("FieldMapping", ["query_name", "name"])
