@@ -437,6 +437,8 @@ class Barrier(FullyArchivableMixin, BaseModel):
     estimated_resolution_date = models.DateField(
         blank=True, null=True, help_text="Date the barrier ends"
     )
+    # TODO: deprecate proposed_estimated_resolution_date_* fields
+    # ERD now managed through class EstimatedResolutionDateRequest
     proposed_estimated_resolution_date = models.DateField(
         blank=True, null=True, help_text="Proposed date the barrier ends"
     )
