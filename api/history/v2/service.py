@@ -35,7 +35,7 @@ List[str, FieldMapping]
 
 import operator
 from collections import namedtuple
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from django.db.models import QuerySet
 
@@ -50,6 +50,7 @@ from api.history.v2.enrichment import (
     enrich_country,
     enrich_delivery_confidence,
     enrich_effort_to_resolve,
+    enrich_estimated_resolution_date,
     enrich_impact,
     enrich_main_sector,
     enrich_meeting_minutes,
@@ -97,6 +98,7 @@ def enrich_full_history(
     action_plan_milestone_history: List[Dict],
     delivery_confidence_history: List[Dict],
     next_step_item_history: List[Dict],
+    estimated_resolution_date_request_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
@@ -134,6 +136,7 @@ def enrich_full_history(
     enrich_action_plan(action_plan_history)
     enrich_action_plan_task(action_plan_task_history)
     enrich_delivery_confidence(delivery_confidence_history)
+    enrich_estimated_resolution_date(estimated_resolution_date_request_history)
 
     enriched_history = (
         barrier_history
@@ -152,7 +155,9 @@ def enrich_full_history(
         + action_plan_milestone_history
         + delivery_confidence_history
         + next_step_item_history
+        + estimated_resolution_date_request_history
     )
+
     enriched_history.sort(key=operator.itemgetter("date"))
 
     return enriched_history
@@ -181,6 +186,7 @@ def get_model_history(  # noqa: C901
     model: str,
     fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...],
     track_first_item: bool = False,
+    primary_key: Optional[str] = None,
 ) -> List[Dict]:
     """
     This function returns the raw historical changes for a django-simple-history table.
@@ -193,21 +199,25 @@ def get_model_history(  # noqa: C901
                         [b, c] will be considered a group, with `b` as the primary change. This was done for
                         backward compatibility with the legacy history FE.
         track_first_item: Track first item in table (typically for M2M fields)
+        primary_key: Separate records by primary key
 
     Returns:
         Returns a list of dictionaries representing the historical changes.
     """
     flattened_fields = flatten_fields(fields)
 
+    if primary_key and primary_key not in flattened_fields:
+        flattened_fields.append(primary_key)
+
     qs = qs.order_by("history_date").values(
         *flattened_fields, "history_date", "history_user__id", "history_user__username"
     )
 
-    return get_history_changes(qs, model, fields, track_first_item)
+    return get_history_changes(qs, model, fields, track_first_item, primary_key)
 
 
 def get_history_changes(  # noqa: C901
-    qs, model, fields, track_first_item: bool = False, primary_key: str = None
+    qs, model, fields, track_first_item: bool = False, primary_key: Optional[str] = None
 ):
     count = qs.count() if isinstance(qs, QuerySet) else len(qs)
 

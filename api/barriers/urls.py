@@ -18,6 +18,9 @@ from api.barriers.views import (
     BarrierResolveInFull,
     BarrierResolveInPart,
     BarrierStatusChangeUnknown,
+    EstimatedResolutionDateRequestApproveView,
+    EstimatedResolutionDateRequestRejectView,
+    EstimatedResolutionDateRequestView,
     ProgrammeFundProgressUpdateViewSet,
     PublicBarrierActivity,
     PublicBarrierViewSet,
@@ -39,6 +42,21 @@ urlpatterns = router.urls + [
         name="barrier_detail_code",
     ),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request",
+        EstimatedResolutionDateRequestView.as_view(),
+        name="estimated-resolution-date-request",
+    ),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request/approve",
+        EstimatedResolutionDateRequestApproveView.as_view(),
+        name="estimated-resolution-date-request-approve",
+    ),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request/reject",
+        EstimatedResolutionDateRequestRejectView.as_view(),
+        name="estimated-resolution-date-request-reject",
+    ),
     path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),
     path(
         "barriers/<uuid:pk>/full_history",

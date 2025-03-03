@@ -5,6 +5,18 @@ import pytz
 from api.core.date_utils import get_nth_day_of_month
 
 
+def create_erd_review_task():
+    return {
+        "tag": "ERD REVIEW",
+        "message": [
+            "Review",
+            "estimated resolution date change request",
+        ],
+        "task_url": "barriers:review_estimated_resolution_date",
+        "link_text": "Review",
+    }
+
+
 def create_editor_task(barrier):
     overdue = (
         barrier["deadline"].replace(tzinfo=None) < datetime.today()
