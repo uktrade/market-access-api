@@ -72,11 +72,15 @@ def test_create_add_priority_erd_task():
         },
         {
             "link_text": "Add an estimated resolution date",
-            "message": ["Add an estimated resolution date", "to this Overseas Delivery barrier."],
+            "message": [
+                "Add an estimated resolution date",
+                "to this Overseas Delivery barrier.",
+            ],
             "tag": "ADD DATE",
             "task_url": "barriers:add_estimated_resolution_date",
         },
     ]
+
 
 def test_create_add_overseas_priority_erd_task():
     user = create_test_user()
@@ -111,7 +115,10 @@ def test_create_add_overseas_priority_erd_task():
         },
         {
             "link_text": "Add an estimated resolution date",
-            "message": ["Add an estimated resolution date", "to this Overseas Delivery barrier."],
+            "message": [
+                "Add an estimated resolution date",
+                "to this Overseas Delivery barrier.",
+            ],
             "tag": "ADD DATE",
             "task_url": "barriers:add_estimated_resolution_date",
         },
@@ -121,7 +128,8 @@ def test_create_add_overseas_priority_erd_task():
 def test_create_add_pb100_priority_erd_task():
     user = create_test_user()
     barrier: Barrier = BarrierFactory(
-        top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED, estimated_resolution_date=None
+        top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+        estimated_resolution_date=None,
     )
     team_member = TeamMember.objects.create(
         barrier=barrier, user=user, created_by=user, role=TeamMember.OWNER
