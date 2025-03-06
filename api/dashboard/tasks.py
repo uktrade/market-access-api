@@ -214,14 +214,15 @@ def create_overdue_erd_task(barrier):
     }
 
 
-def create_add_priority_erd_task(_):
+def create_add_priority_erd_task(barrier):
+    tag = "Overseas Delivery" if barrier["priority_level"] == "OVERSEAS" else "PB100"
     return {
         "tag": "ADD DATE",
         "message": [
             "Add an estimated resolution date",
-            "to this PB100 barrier.",
+            f"to this {tag} barrier.",
         ],
-        "task_url": "barriers:edit_estimated_resolution_date",
+        "task_url": "barriers:add_estimated_resolution_date",
         "link_text": "Add an estimated resolution date",
     }
 
