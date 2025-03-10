@@ -460,6 +460,9 @@ class BarrierDetail(TeamMemberModelMixin, generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         barrier = self.get_object()
         self.update_contributors(barrier)
+        from pprint import pprint
+        pprint(self.request.data)
+        pprint(serializer.validated_data)
         serializer.save(modified_by=self.request.user)
 
 

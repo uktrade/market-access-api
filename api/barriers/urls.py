@@ -128,7 +128,7 @@ urlpatterns = router.urls + [
         name="top_priority_summary",
     ),
     path(
-        "barriers/<uuid:barrier_pk>/top_priority_summary/<uuid:pk>",
+        "barriers/<uuid:barrier_pk>/test/<uuid:pk>",
         BarrierPrioritySummaryViewSet.as_view(
             {
                 "get": "retrieve",
