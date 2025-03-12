@@ -1733,13 +1733,13 @@ class BarrierFilterSet(django_filters.FilterSet):
         # For dashboard search, we combine the functionality of text_search and related barriers
         # and prioritise direct text_search matches by setting similarity score to 1.0
         barrier_ids = [b[0] for b in barrier_scores]
-        related_qs = queryset.filter(id__in=barrier_ids)
-        text_qs = self.text_search(queryset, name, value)
-        ids = [str(b) for b in text_qs.values_list("id", flat=True)]
-        barrier_scores = [(k, v) for k, v in barrier_scores if k not in ids]
+        related_barrier_qs = queryset.filter(id__in=barrier_ids)
+        text_search_qs = self.text_search(queryset, name, value)
+        text_search_ids = [str(b) for b in text_search_qs.values_list("id", flat=True)]
+        barrier_scores = [(k, v) for k, v in barrier_scores if k not in text_search_ids]
 
         return (
-            text_qs | related_qs
+            text_search_qs | related_barrier_qs
         ).annotate(
             barrier_id=Cast("id", output_field=CharField()),
             similarity=Case(
