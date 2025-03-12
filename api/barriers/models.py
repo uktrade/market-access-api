@@ -1739,14 +1739,16 @@ class BarrierFilterSet(django_filters.FilterSet):
         barrier_scores = [(k, v) for k, v in barrier_scores if k not in text_search_ids]
 
         return (
-            text_search_qs | related_barrier_qs
-        ).annotate(
-            barrier_id=Cast("id", output_field=CharField()),
-            similarity=Case(
-                *[When(id=k, then=Value(v.item())) for k, v in barrier_scores],
-                default=Value(1.0)
+            (text_search_qs | related_barrier_qs)
+            .annotate(
+                barrier_id=Cast("id", output_field=CharField()),
+                similarity=Case(
+                    *[When(id=k, then=Value(v.item())) for k, v in barrier_scores],
+                    default=Value(1.0),
+                ),
             )
-        ).order_by("-similarity")
+            .order_by("-similarity")
+        )
 
     def my_barriers(self, queryset, name, value):
         if value:
