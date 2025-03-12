@@ -121,7 +121,7 @@ urlpatterns = router.urls + [
         "barriers/<uuid:barrier_pk>/top_priority_summary",
         BarrierPrioritySummaryViewSet.as_view(
             {
-                "get": "list",
+                "get": "retrieve",
                 "post": "create",
             }
         ),
