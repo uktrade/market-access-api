@@ -1731,14 +1731,23 @@ class BarrierFilterSet(django_filters.FilterSet):
             return self.text_search(queryset, name, value)
 
         barrier_ids = [b[0] for b in barrier_scores]
-        when_tensor = [When(id=k, then=Value(v.item())) for k, v in barrier_scores]
 
-        queryset = queryset.filter(id__in=barrier_ids).annotate(
+        related_qs = queryset.filter(id__in=barrier_ids)
+        text_qs = self.text_search(queryset, name, value)
+
+        # Remove barrier from scored is regular search has match
+        ids = [str(b) for b in text_qs.values_list("id", flat=True)]
+        barrier_scores = [(k, v) for k, v in barrier_scores if k not in ids]
+
+        return (
+            text_qs | related_qs
+        ).annotate(
             barrier_id=Cast("id", output_field=CharField()),
-            similarity=Case(*when_tensor, output_field=FloatField()),
-        )
-
-        return queryset
+            similarity=Case(
+                *[When(id=k, then=Value(v.item())) for k, v in barrier_scores],
+                default=Value(1.0)
+            )
+        ).order_by("-similarity")
 
     def my_barriers(self, queryset, name, value):
         if value:
