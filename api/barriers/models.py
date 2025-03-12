@@ -13,16 +13,7 @@ from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.core.validators import int_list_validator
 from django.db import models
-from django.db.models import (
-    CASCADE,
-    Case,
-    CharField,
-    FloatField,
-    Q,
-    QuerySet,
-    Value,
-    When,
-)
+from django.db.models import CASCADE, Case, CharField, Q, QuerySet, Value, When
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
