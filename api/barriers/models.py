@@ -1730,12 +1730,11 @@ class BarrierFilterSet(django_filters.FilterSet):
             # or when the related barriers handler is not running
             return self.text_search(queryset, name, value)
 
+        # For dashboard search, we combine the functionality of text_search and related barriers
+        # and prioritise direct text_search matches by setting similarity score to 1.0
         barrier_ids = [b[0] for b in barrier_scores]
-
         related_qs = queryset.filter(id__in=barrier_ids)
         text_qs = self.text_search(queryset, name, value)
-
-        # Remove barrier from scored is regular search has match
         ids = [str(b) for b in text_qs.values_list("id", flat=True)]
         barrier_scores = [(k, v) for k, v in barrier_scores if k not in ids]
 
