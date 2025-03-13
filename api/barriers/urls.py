@@ -127,6 +127,7 @@ urlpatterns = router.urls + [
         ),
         name="top_priority_summary",
     ),
+    # TODO: Remove
     path(
         "barriers/<uuid:barrier_pk>/top_priority_summary/<uuid:pk>",
         BarrierPrioritySummaryViewSet.as_view(
