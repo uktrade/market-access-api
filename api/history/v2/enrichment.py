@@ -1,12 +1,15 @@
 """
 Enrichments to historical data as done by legacy.
 """
+
 from collections import namedtuple
 from datetime import datetime
 from typing import Dict, List, Optional
 
+from django.utils import formats
 from pytz import UTC
 
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.core.utils import cleansed_username
 from api.metadata.constants import (
     ECONOMIC_ASSESSMENT_IMPACT,
@@ -68,6 +71,15 @@ def enrich_sectors(history: List[Dict]):
         item["new_value"]["sectors"] = [
             str(sector) for sector in item["new_value"]["sectors"]
         ]
+
+
+def enrich_preliminary_assessment(history: List[Dict]):
+    for item in history:
+        if item["field"] != "value":
+            continue
+        if item["old_value"]:
+            item["old_value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["old_value"]]
+        item["new_value"] = PRELIMINARY_ASSESSMENT_CHOICES[item["new_value"]]
 
 
 def enrich_status(history: List[Dict]):
@@ -301,7 +313,6 @@ def enrich_time_to_resolve(history: List[Dict]):
 
 
 def enrich_wto_notified_status(history: List[Dict]):
-
     for item in history:
         if item["field"] != "wto_has_been_notified":
             continue
@@ -348,20 +359,6 @@ def enrich_scale_history(history: List[Dict]):
     for item in history:
         if item["field"] != "scale":
             continue
-        item["old_value"] = enrich(item["old_value"])
-        item["new_value"] = enrich(item["new_value"])
-
-
-def enrich_public_barrier_categories(history: List[Dict]):
-    def enrich(value):
-        if value and value.get("categories_cache"):
-            value["categories"] = value.get("categories_cache") or []
-        return value
-
-    for item in history:
-        if item["field"] != "categories_cache":
-            continue
-
         item["old_value"] = enrich(item["old_value"])
         item["new_value"] = enrich(item["new_value"])
 
@@ -534,6 +531,18 @@ def enrich_action_plan_task(history: List[Dict]):
         if item["field"] == "action_type":
             item["old_value"] = enrich_action_type(item["old_value"])
             item["new_value"] = enrich_action_type(item["new_value"])
+
+
+def enrich_estimated_resolution_date(history: List[Dict]):
+    for item in history:
+        if item["old_value"]["estimated_resolution_date"]:
+            item["old_value"]["estimated_resolution_date"] = formats.date_format(
+                item["old_value"]["estimated_resolution_date"], "j F Y"
+            )
+        if item["new_value"]["estimated_resolution_date"]:
+            item["new_value"]["estimated_resolution_date"] = formats.date_format(
+                item["new_value"]["estimated_resolution_date"], "j F Y"
+            )
 
 
 def enrich_delivery_confidence(history: List[Dict]):

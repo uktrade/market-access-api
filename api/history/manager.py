@@ -4,6 +4,7 @@ from api.action_plans.models import ActionPlan, ActionPlanMilestone, ActionPlanT
 from api.assessment.models import (
     EconomicAssessment,
     EconomicImpactAssessment,
+    PreliminaryAssessment,
     ResolvabilityAssessment,
     StrategicAssessment,
 )
@@ -12,6 +13,7 @@ from api.barriers.models import (
     BarrierNextStepItem,
     BarrierProgressUpdate,
     BarrierTopPrioritySummary,
+    EstimatedResolutionDateRequest,
     ProgrammeFundProgressUpdate,
     PublicBarrier,
 )
@@ -19,6 +21,7 @@ from api.collaboration.models import TeamMember
 from api.history.factories import PublicBarrierHistoryFactory
 from api.history.v2.enrichment import (
     enrich_impact,
+    enrich_preliminary_assessment,
     enrich_scale_history,
     enrich_status,
     enrich_time_to_resolve,
@@ -61,6 +64,9 @@ class HistoryManager:
             track_first_item=True,
         )
 
+        v2_preliminary_assessment_history = PreliminaryAssessment.get_history(
+            barrier_id=barrier.pk,
+        )
         v2_economic_assessment_history = EconomicAssessment.get_history(
             barrier_id=barrier.pk, fields=["rating"]
         )
@@ -74,6 +80,7 @@ class HistoryManager:
             barrier_id=barrier.pk, fields=["scale"]
         )
         enrich_status(v2_barrier_history)
+        enrich_preliminary_assessment(v2_preliminary_assessment_history)
         history = convert_v2_history_to_legacy_object(v2_barrier_history)
 
         enrich_scale_history(v2_strategic_assessment_history)
@@ -97,6 +104,9 @@ class HistoryManager:
             start_date = None
 
         v2_barrier_history = Barrier.get_history(barrier_id=barrier.pk)
+        v2_preliminary_assessment_history = PreliminaryAssessment.get_history(
+            barrier_id=barrier.pk,
+        )
         v2_programme_fund_history = ProgrammeFundProgressUpdate.get_history(
             barrier_id=barrier.pk
         )
@@ -138,8 +148,12 @@ class HistoryManager:
         if barrier.has_public_barrier:
             v2_public_barrier_history = PublicBarrier.get_history(barrier.pk)
 
+        v2_estimated_resolution_date_request_history = (
+            EstimatedResolutionDateRequest.get_history(barrier_id=barrier.pk)
+        )
         v2_history = enrich_full_history(
             barrier_history=v2_barrier_history,
+            preliminary_assessment_history=v2_preliminary_assessment_history,
             programme_fund_history=v2_programme_fund_history,
             top_priority_summary_history=v2_top_priority_summary_history,
             wto_history=v2_wto_history,
@@ -154,6 +168,7 @@ class HistoryManager:
             action_plan_milestone_history=v2_action_plan_milestone_history,
             delivery_confidence_history=v2_delivery_confidence_history,
             next_step_item_history=v2_next_step_item_history,
+            estimated_resolution_date_request_history=v2_estimated_resolution_date_request_history,
         )
 
         history = convert_v2_history_to_legacy_object(v2_history)

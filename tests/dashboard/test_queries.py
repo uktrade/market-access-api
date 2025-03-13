@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 import freezegun
 import pytest
@@ -52,61 +52,70 @@ def barrier_factory(users):
         get_financial_year_dates()
     )
 
-    def func(date=None):
-        if not date:
-            date = FuzzyDate(
+    def func(estimated_resolution_date=None):
+        if not estimated_resolution_date:
+            fuzzy_date = FuzzyDate(
                 start_date=start_date,
                 end_date=start_date + timedelta(days=45),
             ).evaluate(2, None, False)
+            estimated_resolution_date = date(
+                year=fuzzy_date.year, month=fuzzy_date.month, day=fuzzy_date.day
+            )
 
         return [
-            ReportFactory(created_by=users[0], estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], estimated_resolution_date=date),
-            BarrierFactory(created_by=users[0], estimated_resolution_date=date),
+            ReportFactory(
+                created_by=users[0], estimated_resolution_date=estimated_resolution_date
+            ),
+            BarrierFactory(
+                created_by=users[0], estimated_resolution_date=estimated_resolution_date
+            ),
+            BarrierFactory(
+                created_by=users[0], estimated_resolution_date=estimated_resolution_date
+            ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.OPEN_IN_PROGRESS,
                 top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.OPEN_IN_PROGRESS,
                 top_priority_status=TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.OPEN_IN_PROGRESS,
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.DORMANT,
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.DORMANT,
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.RESOLVED_IN_PART,
                 status_date=datetime.now(),
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.RESOLVED_IN_FULL,
                 status_date=datetime.now(),
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
             BarrierFactory(
                 created_by=users[0],
                 status=BarrierStatus.OPEN_IN_PROGRESS,
                 priority_level=PRIORITY_LEVELS.OVERSEAS,
-                estimated_resolution_date=date,
+                estimated_resolution_date=estimated_resolution_date,
             ),
         ]
 
@@ -236,7 +245,7 @@ def test_get_barriers(users, barrier_factory):
 
 
 def test_get_barriers_old_date(users, barrier_factory):
-    barrier_factory(date=datetime.now() - timedelta(days=2 * 365))
+    barrier_factory(estimated_resolution_date=datetime.now() - timedelta(days=2 * 365))
     qs = Barrier.objects.all()
 
     barriers = get_counts(qs, users[0])["barriers"]
@@ -270,12 +279,12 @@ def test_get_barriers_current_year(users, barrier_factory):
 @pytest.mark.parametrize(
     "date",
     [
-        datetime(datetime.now().year, 4, 1),
-        datetime(datetime.now().year + 1, 3, 31) - timedelta(seconds=1),
+        get_financial_year_dates()[0],
+        get_financial_year_dates()[1],
     ],
 )
 def test_get_barriers_current_financial_year(users, barrier_factory, date):
-    barrier_factory(date=date)
+    barrier_factory(estimated_resolution_date=date)
     qs = Barrier.objects.all()
 
     barriers_current_year = get_counts(qs, users[0])["barriers_current_year"]

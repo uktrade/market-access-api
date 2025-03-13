@@ -10,12 +10,7 @@ from api.assessment.models import (
     ResolvabilityAssessment,
     StrategicAssessment,
 )
-from api.barriers.models import (
-    Barrier,
-    BarrierRequestDownloadApproval,
-    HistoricalBarrier,
-    HistoricalPublicBarrier,
-)
+from api.barriers.models import Barrier, HistoricalBarrier
 from api.barriers.tasks import (
     send_new_valuation_notification,
     send_top_priority_notification,
@@ -25,29 +20,6 @@ from api.related_barriers.manager import BARRIER_UPDATE_FIELDS
 from api.related_barriers.tasks import update_related_barrier
 
 logger = logging.getLogger(__name__)
-
-
-def barrier_categories_changed(sender, instance, action, **kwargs):
-    """
-    Triggered when barriers.categories (m2m field) is changed
-
-    Ensure the historical record saves a copy of the categories.
-
-    post_remove and post_add can both get called, but we only want to create one
-    history record, so we need to check if one has already been created
-    """
-
-    if action in ("post_add", "post_remove"):
-        with transaction.atomic():
-            if hasattr(instance, "categories_history_saved"):
-                historical_instance = HistoricalBarrier.objects.filter(
-                    id=instance.pk
-                ).latest("history_date")
-                historical_instance.update_categories()
-                historical_instance.save()
-            else:
-                instance.categories_history_saved = True
-                instance.save()
 
 
 def barrier_tags_changed(sender, instance, action, **kwargs):
@@ -81,28 +53,6 @@ def barrier_policy_teams_changed(sender, instance, action, **kwargs):
             historical_instance.save()
         else:
             instance.policy_teams_history_saved = True
-            instance.save()
-
-
-def public_barrier_categories_changed(sender, instance, action, **kwargs):
-    """
-    Triggered when PublicBarrier.categories (m2m field) is changed
-
-    Ensure the historical record saves a copy of the categories.
-
-    post_remove and post_add can both get called, but we only want to create one
-    history record, so we need to check if one has already been created
-    """
-
-    if action in ("post_add", "post_remove"):
-        if hasattr(instance, "categories_history_saved"):
-            historical_instance = HistoricalPublicBarrier.objects.filter(
-                id=instance.pk
-            ).latest()
-            historical_instance.update_categories()
-            historical_instance.save()
-        else:
-            instance.categories_history_saved = True
             instance.save()
 
 
@@ -178,12 +128,6 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
         else:
             # Return if there has been no change in top_priority_status
             return
-
-
-@receiver(post_save, sender=BarrierRequestDownloadApproval)
-def send_barrier_download_request_notification(sender, instance, created, **kwargs):
-    if created:
-        instance.send_notification()
 
 
 @transaction.atomic

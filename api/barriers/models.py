@@ -1,7 +1,6 @@
 import datetime
 import logging
 import operator
-import urllib.parse
 from functools import reduce
 from typing import List, Optional
 from uuid import uuid4
@@ -9,7 +8,6 @@ from uuid import uuid4
 import django_filters
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
@@ -30,7 +28,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
 from hashid_field import HashidAutoField
-from notifications_python_client.notifications import NotificationsAPIClient
+from model_utils import Choices
 from simple_history.models import HistoricalRecords
 
 from api.barriers import validators
@@ -117,8 +115,6 @@ class PublicBarrierManager(models.Manager):
                 "all_sectors": barrier.all_sectors,
             },
         )
-        if created:
-            public_barrier.categories.set(barrier.categories.all())
 
         return public_barrier, created
 
@@ -128,6 +124,7 @@ class BarrierHistoricalModel(models.Model):
     Abstract model for history models tracking category changes.
     """
 
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories_cache = ArrayField(
         models.PositiveIntegerField(),
         blank=True,
@@ -158,9 +155,6 @@ class BarrierHistoricalModel(models.Model):
         changed_fields = set(self.diff_against(old_history).changed_fields)
 
         self.update_cached_fields(old_history, changed_fields)
-
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
 
         commodity_codes = [c.get("code") for c in self.commodities_cache]
         old_commodity_codes = [c.get("code") for c in old_history.commodities_cache]
@@ -199,11 +193,6 @@ class BarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
-    def update_categories(self):
-        self.categories_cache = list(
-            self.instance.categories.values_list("id", flat=True)
-        )
-
     def update_commodities(self):
         self.commodities_cache = []
         for barrier_commodity in self.instance.barrier_commodities.all():
@@ -238,7 +227,6 @@ class BarrierHistoricalModel(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        self.update_categories()
         self.update_commodities()
         self.update_tags()
         self.update_organisations()
@@ -293,6 +281,97 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
         ordering = ("-created_on",)
         verbose_name = "Top 100 Barrier Progress Update"
         verbose_name_plural = "Top 100 Barrier Progress Updates"
+
+
+class EstimatedResolutionDateRequest(models.Model):
+    STATUSES = Choices(
+        ("NEEDS_REVIEW", "Needs Review"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+        ("CLOSED", "Closed"),
+    )
+    barrier = models.ForeignKey(
+        "Barrier",
+        on_delete=models.CASCADE,
+        related_name="estimated_resolution_date_request",
+    )
+    estimated_resolution_date = models.DateField(
+        blank=True, null=True, help_text="Proposed estimated resolution date"
+    )
+    reason = models.TextField(
+        blank=True, null=True, help_text="Reason for proposed estimated resolution date"
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="estimated_resolution_date_request_user",
+        blank=True,
+        null=True,
+        help_text="User who created the proposed date",
+    )
+    status = models.CharField(choices=STATUSES)
+    created_on = models.DateTimeField(editable=False, null=True)
+    modified_on = models.DateTimeField(null=True)
+    modified_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="estimated_resolution_date_request_modified_by",
+        blank=True,
+        null=True,
+    )
+
+    history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        ts = timezone.now()
+        if not self.pk:
+            self.created_on = self.created_on or ts
+        self.modified_on = ts
+        return super().save(*args, **kwargs)
+
+    def approve(self, modified_by: User):
+        self.status = self.STATUSES.APPROVED
+        self.modified_by = modified_by
+        self.barrier.estimated_resolution_date = self.estimated_resolution_date
+        self.barrier.save()
+        self.modified_on = timezone.now()
+        self.save()
+
+    def reject(self, modified_by: User, reason):
+        self.status = self.STATUSES.REJECTED
+        self.reason = reason
+        self.modified_by = modified_by
+        self.modified_on = timezone.now()
+        self.save()
+
+    def close(self, modified_by: User):
+        self.status = self.STATUSES.CLOSED
+        self.modified_by = modified_by
+        self.modified_on = timezone.now()
+        self.save()
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id).exclude(
+            status=cls.STATUSES.CLOSED
+        )
+        fields = (
+            [
+                "estimated_resolution_date",
+                "reason",
+                "modified_by",
+                "created_by",
+                "status",
+            ],
+        )
+
+        return get_model_history(
+            qs,
+            model="estimated_resolution_date_request",
+            fields=fields,
+            track_first_item=True,
+            primary_key="id",
+        )
 
 
 class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
@@ -426,6 +505,7 @@ class Barrier(FullyArchivableMixin, BaseModel):
     # next steps will be saved here momentarily during reporting.
     # once the report is ready for submission, this will be added as a new note
     next_steps_summary = models.TextField(blank=True)
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories = models.ManyToManyField(
         metadata_models.Category, related_name="barriers"
     )
@@ -614,7 +694,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "companies",
             "economic_assessment_eligibility",
             "economic_assessment_eligibility_summary",
-            "estimated_resolution_date",
             "start_date",
             "is_summary_sensitive",
             "main_sector",
@@ -648,7 +727,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "tags_cache",  # needs cache
             "organisations_cache",  # Needs cache
             "commodities_cache",  # Needs cache
-            "categories_cache",  # Needs cache
             "policy_teams_cache",  # Needs cache
         )
 
@@ -660,6 +738,16 @@ class Barrier(FullyArchivableMixin, BaseModel):
         return get_model_history(
             qs, model="barrier", fields=fields, track_first_item=track_first_item
         )
+
+    def get_active_erd_request(self):
+        try:
+            return self.estimated_resolution_date_request.get(
+                status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
+            )
+        except EstimatedResolutionDateRequest.DoesNotExist:
+            pass
+        except EstimatedResolutionDateRequest.MultipleObjectsReturned:
+            logger.warn(f"Barrier: {str(self.id)} - Multiple active ERD Requests")
 
     @property
     def latest_progress_update(self):
@@ -810,10 +898,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def is_top_priority(self):
-        return self.top_priority_status in [
-            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-        ]
+        return (
+            self.top_priority_status
+            in [
+                TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+                TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+            ]
+            or self.priority_level == PRIORITY_LEVELS.OVERSEAS
+        )
 
     @property
     def is_regional_trade_plan(self):
@@ -885,7 +977,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
         for field in non_editable_public_fields:
             internal_value = getattr(self, field)
             setattr(public_barrier, field, internal_value)
-        public_barrier.categories.set(self.categories.all())
         public_barrier.save()
         public_barrier.update_changed_since_published()
 
@@ -895,6 +986,7 @@ class PublicBarrierHistoricalModel(models.Model):
     Abstract model for tracking m2m changes for PublicBarrier.
     """
 
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories_cache = ArrayField(
         models.CharField(max_length=20),
         blank=True,
@@ -903,9 +995,6 @@ class PublicBarrierHistoricalModel(models.Model):
 
     def get_changed_fields(self, old_history):  # noqa: C901, E261
         changed_fields = set(self.diff_against(old_history).changed_fields)
-
-        if set(self.categories_cache or []) != set(old_history.categories_cache or []):
-            changed_fields.add("categories")
 
         if "all_sectors" in changed_fields:
             changed_fields.discard("all_sectors")
@@ -937,11 +1026,6 @@ class PublicBarrierHistoricalModel(models.Model):
 
         return list(changed_fields)
 
-    def update_categories(self):
-        self.categories_cache = list(
-            self.instance.categories.values_list("id", flat=True)
-        )
-
     @property
     def public_view_status(self):
         return self._public_view_status
@@ -953,10 +1037,6 @@ class PublicBarrierHistoricalModel(models.Model):
     @property
     def title(self):
         return self._title
-
-    def save(self, *args, **kwargs):
-        self.update_categories()
-        super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
@@ -1002,6 +1082,7 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
     sectors = ArrayField(models.UUIDField(), blank=True, null=False, default=list)
     main_sector = models.UUIDField(blank=True, null=True)
     all_sectors = models.BooleanField(blank=True, null=True)
+    # Categories are a legacy metadata field that was replaced by policy teams
     categories = models.ManyToManyField(
         metadata_models.Category, related_name="public_barriers"
     )
@@ -1141,7 +1222,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             "sectors",
             "main_sector",
             "all_sectors",
-            "categories",
         ]
 
         changed_list = []
@@ -1149,16 +1229,8 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             latest_version = self.latest_published_version
             if latest_version:
                 for field in change_alert_fields:
-                    if field != "categories":
-                        if getattr(self.barrier, field) != getattr(
-                            latest_version, field
-                        ):
-                            changed_list.append(field)
-                    else:
-                        if set(self.barrier.categories.all()) != set(
-                            latest_version.categories.all()
-                        ):
-                            changed_list.append(field)
+                    if getattr(self.barrier, field) != getattr(latest_version, field):
+                        changed_list.append(field)
 
         return changed_list
 
@@ -1197,7 +1269,6 @@ class PublicBarrier(FullyArchivableMixin, BaseModel):
             "_title",
             "_summary",
             "_public_view_status",
-            "categories_cache",
         )
 
         # Get all fields required - raw changes no enrichment
@@ -1267,8 +1338,6 @@ class BarrierFilterSet(django_filters.FilterSet):
     Custom FilterSet to handle all necessary filters on Barriers
     reported_on_before: filter start date dd-mm-yyyy
     reported_on_after: filter end date dd-mm-yyyy
-    cateogory: int, one or more comma seperated category ids
-        ex: category=1 or category=1,2
     sector: uuid, one or more comma seperated sector UUIDs
         ex:
         sector=af959812-6095-e211-a939-e4115bead28a
@@ -1295,9 +1364,11 @@ class BarrierFilterSet(django_filters.FilterSet):
     )
     status_date_open_in_progress = django_filters.Filter(method="resolved_date_filter")
     status_date_resolved_in_part = django_filters.Filter(method="resolved_date_filter")
+    estimated_resolution_date_resolved_in_part = django_filters.Filter(
+        method="resolved_date_filter"
+    )
     status_date_resolved_in_full = django_filters.Filter(method="resolved_date_filter")
     delivery_confidence = django_filters.BaseInFilter(method="progress_status_filter")
-    category = django_filters.BaseInFilter("categories", distinct=True)
     policy_team = django_filters.BaseInFilter("policy_teams", distinct=True)
     top_priority = django_filters.BaseInFilter(method="tags_filter")
     priority = django_filters.BaseInFilter(method="priority_filter")
@@ -1343,11 +1414,14 @@ class BarrierFilterSet(django_filters.FilterSet):
         method="valuation_assessments_filter"
     )
 
+    preliminary_assessment = django_filters.BaseInFilter(
+        method="preliminar_assessment_filter"
+    )
+
     class Meta:
         model = Barrier
         fields = [
             "country",
-            "category",
             "sector",
             "reported_on",
             "status",
@@ -1727,6 +1801,11 @@ class BarrierFilterSet(django_filters.FilterSet):
                 Q(status__in="3"),
                 ~Q(status_date__range=(start_date, end_date)),
             )
+        elif name == "estimated_resolution_date_resolved_in_part":
+            return queryset.exclude(
+                Q(status__in="3"),
+                ~Q(estimated_resolution_date__range=(start_date, end_date)),
+            )
         elif name == "status_date_open_in_progress":
             return queryset.exclude(
                 Q(status__in="2"),
@@ -1866,6 +1945,13 @@ class BarrierFilterSet(django_filters.FilterSet):
 
         return queryset & assessment_queryset
 
+    def preliminar_assessment_filter(self, queryset, name, value):
+        if not value:
+            return queryset
+        return queryset.filter(
+            preliminary_assessment__value__in=[int(item) for item in value]
+        )
+
 
 class PublicBarrierFilterSet(django_filters.FilterSet):
     """
@@ -1961,6 +2047,22 @@ User = get_user_model()
 
 
 class BarrierRequestDownloadApproval(models.Model):
+    """
+    This model is kept to maintain legacy data and is no longer actively used.
+
+    A model representing a user's request for approval to download barrier data.
+
+    This model tracks requests from users who need permission to download barrier information,
+    including notification status to administrators.
+
+    Attributes:
+        user (ForeignKey): Link to the User model who requested download approval
+        created (DateTimeField): Timestamp of when the request was created
+        updated (DateTimeField): Timestamp of when the request was last updated
+        notification_sent (BooleanField): Flag indicating if notification was sent to admins
+        notification_sent_at (DateTimeField): Timestamp when notification was sent
+    """
+
     user = models.ForeignKey(
         User,
         null=True,
@@ -1973,36 +2075,6 @@ class BarrierRequestDownloadApproval(models.Model):
     updated = models.DateTimeField(auto_now=True)
     notification_sent = models.BooleanField(default=False)
     notification_sent_at = models.DateTimeField(null=True, blank=True)
-
-    def send_notification(self):
-        if self.notification_sent:
-            return
-
-        recipient_emails = settings.SEARCH_DOWNLOAD_APPROVAL_REQUEST_EMAILS
-
-        client = NotificationsAPIClient(settings.NOTIFY_API_KEY)
-        group_id = Group.objects.get(
-            name=settings.APPROVED_FOR_BARRIER_DOWNLOADS_GROUP_NAME
-        ).id
-        user_group_approval_path = f"/users/add/?group={group_id}"
-        approval_url: str = urllib.parse.urljoin(
-            settings.FRONTEND_DOMAIN, user_group_approval_path
-        )
-        for recipient_email in recipient_emails:
-            client.send_email_notification(
-                email_address=recipient_email,
-                template_id=settings.SEARCH_DOWNLOAD_APPROVAL_NOTIFICATION_ID,
-                personalisation={
-                    "first_name": self.user.first_name.capitalize(),
-                    "last_name": self.user.last_name.capitalize(),
-                    "administration_link": approval_url,
-                    "email_address": self.user.email,
-                },
-            )
-
-        self.notification_sent = True
-        self.notification_sent_at = timezone.now()
-        self.save()
 
 
 class BarrierSearchCSVDownloadEvent(models.Model):

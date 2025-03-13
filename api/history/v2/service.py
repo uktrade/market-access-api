@@ -35,7 +35,7 @@ List[str, FieldMapping]
 
 import operator
 from collections import namedtuple
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from django.db.models import QuerySet
 
@@ -50,11 +50,12 @@ from api.history.v2.enrichment import (
     enrich_country,
     enrich_delivery_confidence,
     enrich_effort_to_resolve,
+    enrich_estimated_resolution_date,
     enrich_impact,
     enrich_main_sector,
     enrich_meeting_minutes,
+    enrich_preliminary_assessment,
     enrich_priority_level,
-    enrich_public_barrier_categories,
     enrich_public_barrier_location,
     enrich_public_barrier_publish_status,
     enrich_public_barrier_sectors,
@@ -82,6 +83,7 @@ def convert_v2_history_to_legacy_object(items: List) -> List:
 
 def enrich_full_history(
     barrier_history: List[Dict],
+    preliminary_assessment_history: List[Dict],
     programme_fund_history: List[Dict],
     top_priority_summary_history: List[Dict],
     wto_history: List[Dict],
@@ -96,11 +98,13 @@ def enrich_full_history(
     action_plan_milestone_history: List[Dict],
     delivery_confidence_history: List[Dict],
     next_step_item_history: List[Dict],
+    estimated_resolution_date_request_history: List[Dict],
 ) -> List[Dict]:
     """
     Enrichment pipeline for full barrier history.
     """
     enrich_country(barrier_history)
+    enrich_preliminary_assessment(preliminary_assessment_history)
     enrich_trade_category(barrier_history)
     enrich_main_sector(barrier_history)
     enrich_priority_level(barrier_history)
@@ -120,7 +124,6 @@ def enrich_full_history(
     enrich_team_member_user(team_member_history)
 
     if public_barrier_history:
-        enrich_public_barrier_categories(public_barrier_history)
         enrich_public_barrier_location(public_barrier_history)
         enrich_public_barrier_sectors(public_barrier_history)
         enrich_public_barrier_publish_status(public_barrier_history)
@@ -133,9 +136,11 @@ def enrich_full_history(
     enrich_action_plan(action_plan_history)
     enrich_action_plan_task(action_plan_task_history)
     enrich_delivery_confidence(delivery_confidence_history)
+    enrich_estimated_resolution_date(estimated_resolution_date_request_history)
 
     enriched_history = (
         barrier_history
+        + preliminary_assessment_history
         + programme_fund_history
         + top_priority_summary_history
         + wto_history
@@ -150,33 +155,17 @@ def enrich_full_history(
         + action_plan_milestone_history
         + delivery_confidence_history
         + next_step_item_history
+        + estimated_resolution_date_request_history
     )
+
     enriched_history.sort(key=operator.itemgetter("date"))
 
     return enriched_history
 
 
-def get_model_history(  # noqa: C901
-    qs: QuerySet,
-    model: str,
-    fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...],
-    track_first_item: bool = False,
-) -> List[Dict]:
-    """
-    This function returns the raw historical changes for a django-simple-history table.
-
-    Args:
-        qs: Queryset of historical table.
-        model: Model name.
-        fields: A List of fields to be returned. Fields can be grouped into list.
-                    ie: [a, [b, c], d].
-                        [b, c] will be considered a group, with `b` as the primary change. This was done for
-                        backward compatibility with the legacy history FE.
-        track_first_item: Track first item in table (typically for M2M fields)
-
-    Returns:
-        Returns a list of dictionaries representing the historical changes.
-    """
+def flatten_fields(
+    fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...]
+):
     qs_fields = []
     for field in fields:
         if isinstance(field, list):
@@ -189,12 +178,48 @@ def get_model_history(  # noqa: C901
             qs_fields.append(field.query_name)
         else:
             qs_fields.append(field)
+    return qs_fields
+
+
+def get_model_history(  # noqa: C901
+    qs: QuerySet,
+    model: str,
+    fields: Tuple[Union[str, FieldMapping, List[Union[str, FieldMapping]]], ...],
+    track_first_item: bool = False,
+    primary_key: Optional[str] = None,
+) -> List[Dict]:
+    """
+    This function returns the raw historical changes for a django-simple-history table.
+
+    Args:
+        qs: Queryset of historical table.
+        model: Model name.
+        fields: A List of fields to be returned. Fields can be grouped into list.
+                    ie: [a, [b, c], d].
+                        [b, c] will be considered a group, with `b` as the primary change. This was done for
+                        backward compatibility with the legacy history FE.
+        track_first_item: Track first item in table (typically for M2M fields)
+        primary_key: Separate records by primary key
+
+    Returns:
+        Returns a list of dictionaries representing the historical changes.
+    """
+    flattened_fields = flatten_fields(fields)
+
+    if primary_key and primary_key not in flattened_fields:
+        flattened_fields.append(primary_key)
 
     qs = qs.order_by("history_date").values(
-        *qs_fields, "history_date", "history_user__id", "history_user__username"
+        *flattened_fields, "history_date", "history_user__id", "history_user__username"
     )
 
-    count = qs.count()
+    return get_history_changes(qs, model, fields, track_first_item, primary_key)
+
+
+def get_history_changes(  # noqa: C901
+    qs, model, fields, track_first_item: bool = False, primary_key: Optional[str] = None
+):
+    count = qs.count() if isinstance(qs, QuerySet) else len(qs)
 
     history = []
 
@@ -205,6 +230,15 @@ def get_model_history(  # noqa: C901
     previous_item = None
 
     for item in qs:
+        primary_field = {}
+        if primary_key:
+            primary_field[primary_key] = item[primary_key]
+
+        if primary_key and previous_item:
+            if previous_item[primary_key] != item[primary_key]:
+                # If a new primary reference is found, treat it as the first item as its the first historical
+                # change for the object with that key
+                previous_item = None
         if previous_item is None:
             if track_first_item:
                 # Render first historical item in a table.
@@ -251,6 +285,7 @@ def get_model_history(  # noqa: C901
                                 else None
                             ),
                             **change,
+                            **primary_field,
                         }
                     )
             previous_item = item
@@ -303,12 +338,13 @@ def get_model_history(  # noqa: C901
                         "user": (
                             {
                                 "id": item["history_user__id"],
-                                "name": item["history_user__username"],
+                                "name": pretty_sso_name(item["history_user__username"]),
                             }
                             if item["history_user__id"]
                             else None
                         ),
                         **change,
+                        **primary_field,
                     }
                 )
 

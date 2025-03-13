@@ -15,10 +15,12 @@ from api.barriers.views import (
     BarrierReportDetail,
     BarrierReportList,
     BarrierReportSubmit,
-    BarrierRequestDownloadApproval,
     BarrierResolveInFull,
     BarrierResolveInPart,
     BarrierStatusChangeUnknown,
+    EstimatedResolutionDateRequestApproveView,
+    EstimatedResolutionDateRequestRejectView,
+    EstimatedResolutionDateRequestView,
     ProgrammeFundProgressUpdateViewSet,
     PublicBarrierActivity,
     PublicBarrierViewSet,
@@ -34,17 +36,27 @@ router.register(r"public-barriers", PublicBarrierViewSet, basename="public-barri
 
 urlpatterns = router.urls + [
     path("barriers", BarrierList.as_view(), name="list-barriers"),
-    path(
-        "barriers/request-download-approval",
-        BarrierRequestDownloadApproval.as_view(),
-        name="barriers-request-download-approval",
-    ),
     re_path(
         "barriers/(?P<code>[A-Z]-[0-9]{2}-[A-Z0-9]{3})",
         BarrierDetail.as_view(),
         name="barrier_detail_code",
     ),
     path("barriers/<uuid:pk>", BarrierDetail.as_view(), name="get-barrier"),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request",
+        EstimatedResolutionDateRequestView.as_view(),
+        name="estimated-resolution-date-request",
+    ),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request/approve",
+        EstimatedResolutionDateRequestApproveView.as_view(),
+        name="estimated-resolution-date-request-approve",
+    ),
+    path(
+        "barriers/<uuid:barrier_id>/estimated-resolution-date-request/reject",
+        EstimatedResolutionDateRequestRejectView.as_view(),
+        name="estimated-resolution-date-request-reject",
+    ),
     path("barriers/<uuid:pk>/activity", BarrierActivity.as_view(), name="activity"),
     path(
         "barriers/<uuid:pk>/full_history",

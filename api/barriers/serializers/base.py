@@ -13,7 +13,6 @@ from api.barriers.fields import (
     ArchivedField,
     ArchivedReasonField,
     BarrierPriorityField,
-    CategoriesField,
     CommoditiesField,
     ExportTypesField,
     OrganisationsField,
@@ -64,7 +63,6 @@ class BarrierSerializerBase(
         required=False, many=True
     )
     strategic_assessments = StrategicAssessmentSerializer(required=False, many=True)
-    categories = CategoriesField(required=False)
     policy_teams = PolicyTeamsField(required=False)
     commodities = CommoditiesField(source="barrier_commodities", required=False)
     country = CountryField(required=False, allow_null=True)
@@ -120,6 +118,8 @@ class BarrierSerializerBase(
             "unarchived_on",
             "progress_updates",
             "next_steps_items",
+            "estimated_resolution_date",
+            "proposed_estimated_resolution_date",
         )
 
     def get_last_seen_on(self, obj):

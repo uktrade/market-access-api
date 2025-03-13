@@ -7,7 +7,6 @@ from api.barriers.fields import (
     DisplayChoiceField,
     NoneToBlankCharField,
     ReadOnlyAllSectorsField,
-    ReadOnlyCategoriesField,
     ReadOnlyCountryField,
     ReadOnlySectorsField,
     ReadOnlyStatusField,
@@ -85,7 +84,6 @@ class PublicBarrierSerializer(
     sectors = ReadOnlySectorsField()
     main_sector = SectorField()
     all_sectors = ReadOnlyAllSectorsField()
-    categories = ReadOnlyCategoriesField()
     latest_published_version = serializers.SerializerMethodField()
     unpublished_changes = serializers.SerializerMethodField()
     ready_to_be_published = serializers.SerializerMethodField()
@@ -118,7 +116,6 @@ class PublicBarrierSerializer(
             "sectors",
             "main_sector",
             "all_sectors",
-            "categories",
             "public_view_status",
             "first_published_on",
             "last_published_on",
@@ -148,7 +145,6 @@ class PublicBarrierSerializer(
             "sectors",
             "main_sector",
             "all_sectors",
-            "categories",
             "public_view_status",
             "first_published_on",
             "last_published_on",
@@ -209,7 +205,6 @@ class PublishedVersionSerializer(
     sectors = ReadOnlySectorsField()
     main_sector = SectorField()
     all_sectors = ReadOnlyAllSectorsField()
-    categories = ReadOnlyCategoriesField()
 
     class Meta:
         model = PublicBarrier
@@ -223,7 +218,6 @@ class PublishedVersionSerializer(
             "location",
             "sectors",
             "all_sectors",
-            "categories",
             "main_sector",
         )
 
@@ -241,7 +235,6 @@ class PublicPublishedVersionSerializer(
     country = ReadOnlyCountryField(to_repr_keys=("name", "trading_bloc"))
     trading_bloc = ReadOnlyTradingBlocField()
     sectors = serializers.SerializerMethodField()
-    categories = ReadOnlyCategoriesField(to_repr_keys=("name",))
     reported_on = serializers.DateTimeField(source="barrier.created_on")
 
     class Meta:
@@ -257,7 +250,6 @@ class PublicPublishedVersionSerializer(
             "trading_bloc",
             "location",
             "sectors",
-            "categories",
             "last_published_on",
             "reported_on",
         )

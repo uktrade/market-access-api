@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from logging import getLogger
 
+import dateutil.parser
+import freezegun
 from django.contrib.auth.models import Group
 from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
@@ -18,6 +20,11 @@ from api.metadata.constants import (
 from api.metadata.models import BarrierTag, ExportType, Organisation
 from tests.barriers.factories import BarrierFactory
 from tests.history.factories import ProgrammeFundProgressUpdateFactory
+
+logger = getLogger(__name__)
+
+
+freezegun.configure(extend_ignore_list=["transformers"])
 
 
 class TestDashboardTasksView(APITestMixin, APITestCase):
@@ -151,46 +158,29 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         self.public_barrier_setUp()
 
-        response = self.api_client.get(self.request_url)
-
-        assert response.status_code == 200
-        assert response.data["count"] == 2
-        for task in response.data["results"]:
-            assert task["tag"] == "PUBLICATION REVIEW"
-            assert "Add a public title and summary to this barrier" in task["message"]
-            # Check countdown has been substituted into message
-            assert "needs to be done within 29 days" in task["message"]
-
-    def test_publishing_task_editor_user_info_required_overdue(self):
-        """This task needs to be completed within a timeframe tracked
-        on the public barrier. The dashboard task has a seperate tag
-        for when this countdown is passed."""
-
-        self.public_barrier_setUp()
-
-        # Modify the public barrier missing the title to be overdue by
-        # making set_to_allowed_on more than 30 days in the past
-        self.barrier.public_barrier.set_to_allowed_on = datetime.now() - timedelta(
-            days=40
-        )
+        self.barrier.public_barrier.set_to_allowed_date = datetime.now()
         self.barrier.public_barrier.save()
 
-        # Modify the public barrier missing the summary to be overdue by
-        # making set_to_allowed_on more than 30 days in the past
-        self.barrier_2.public_barrier.set_to_allowed_on = datetime.now() - timedelta(
-            days=40
-        )
-        self.barrier_2.public_barrier.save()
+        expected_deadline = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_date.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline = expected_deadline.strftime("%d %B %Y")
 
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
         assert response.data["count"] == 2
-        for task in response.data["results"]:
-            assert task["tag"] == "OVERDUE REVIEW"
-            assert "Add a public title and summary to this barrier" in task["message"]
+        for barrier in response.data["results"]:
+            assert len(barrier["task_list"]) == 1
+            assert barrier["task_list"][0]["tag"] == "PUBLICATION REVIEW"
+            assert (
+                "Add a public title and summary" in barrier["task_list"][0]["message"]
+            )
             # Check countdown has been substituted into message
-            assert "needs to be done within 0 days" in task["message"]
+            assert (
+                f"This needs to be done by {expected_deadline}."
+                in barrier["task_list"][0]["message"]
+            )
 
     def test_publishing_task_editor_user_send_to_approval(self):
         """A second type of task is added in place of the missing information
@@ -201,7 +191,13 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         # Add summary to barrier with only a title
         self.barrier.public_barrier.summary = "adding a summary"
+        self.barrier.public_barrier.set_to_allowed_date = datetime.now()
         self.barrier.public_barrier.save()
+
+        expected_deadline = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_date.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline = expected_deadline.strftime("%d %B %Y")
 
         response = self.api_client.get(self.request_url)
 
@@ -211,21 +207,24 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         # Count the expected task types
         missing_info_task_count = 0
         submit_task_count = 0
-        for task in response.data["results"]:
-            assert task["tag"] == "PUBLICATION REVIEW"
+        for barrier in response.data["results"]:
+            assert barrier["task_list"][0]["tag"] == "PUBLICATION REVIEW"
             # Message will be different for barrier with both title and sumary, but we
             # also expect for one of the tasks to be the previously tested message
             if (
-                "Submit this barrier for a review and clearance checks"
-                in task["message"]
+                "Submit for clearance checks and GOV.UK publication approval"
+                in barrier["task_list"][0]["message"]
             ):
                 submit_task_count = submit_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 29 days" in task["message"]
-            elif "Add a public title and summary to this barrier" in task["message"]:
+                assert f"by {expected_deadline}." in barrier["task_list"][0]["message"]
+            elif "Add a public title and summary" in barrier["task_list"][0]["message"]:
                 missing_info_task_count = missing_info_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 29 days" in task["message"]
+                assert (
+                    f"This needs to be done by {expected_deadline}."
+                    in barrier["task_list"][0]["message"]
+                )
 
         assert submit_task_count == 1
         assert missing_info_task_count == 1
@@ -255,6 +254,16 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         )
         self.barrier_2.public_barrier.save()
 
+        expected_deadline_1 = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_on.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline_1 = expected_deadline_1.strftime("%d %B %Y")
+
+        expected_deadline_2 = dateutil.parser.parse(
+            self.barrier_2.public_barrier.set_to_allowed_on.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline_2 = expected_deadline_2.strftime("%d %B %Y")
+
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
@@ -263,21 +272,26 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         # Count the expected task types
         missing_info_task_count = 0
         submit_task_count = 0
-        for task in response.data["results"]:
-            assert task["tag"] == "OVERDUE REVIEW"
+        for barrier in response.data["results"]:
+            assert barrier["task_list"][0]["tag"] == "OVERDUE REVIEW"
             # Message will be different for barrier with both title and sumary, but we
             # also expect for one of the tasks to be the previously tested message
             if (
-                "Submit this barrier for a review and clearance checks"
-                in task["message"]
+                "Submit for clearance checks and GOV.UK publication approval"
+                in barrier["task_list"][0]["message"]
             ):
                 submit_task_count = submit_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 0 days" in task["message"]
-            elif "Add a public title and summary to this barrier" in task["message"]:
+                assert (
+                    f"by {expected_deadline_1}." in barrier["task_list"][0]["message"]
+                )
+            elif "Add a public title and summary" in barrier["task_list"][0]["message"]:
                 missing_info_task_count = missing_info_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 0 days" in task["message"]
+                assert (
+                    f"This needs to be done by {expected_deadline_2}."
+                    in barrier["task_list"][0]["message"]
+                )
 
         assert submit_task_count == 1
         assert missing_info_task_count == 1
@@ -305,26 +319,12 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         assert response.data["count"] == 2
 
         # Count the expected task types
-        missing_info_task_count = 0
-        approve_task_count = 0
-        for task in response.data["results"]:
-            assert task["tag"] == "PUBLICATION REVIEW"
-            # Message will be different for barrier with both title and sumary, but we
-            # also expect for one of the tasks to be the previously tested message
-            if (
-                "Review and check this barrier for clearances before it can be submitted"
-                in task["message"]
-            ):
-                approve_task_count = approve_task_count + 1
-                # Check countdown has been substituted into message
-                assert "needs to be done within 29 days" in task["message"]
-            elif "Add a public title and summary to this barrier" in task["message"]:
-                missing_info_task_count = missing_info_task_count + 1
-                # Check countdown has been substituted into message
-                assert "needs to be done within 29 days" in task["message"]
-
-        assert approve_task_count == 1
-        assert missing_info_task_count == 1
+        for result_barrier in response.data["results"]:
+            if result_barrier["barrier_id"] == self.barrier.id:
+                assert result_barrier["task_list"][0]["tag"] == "PUBLICATION REVIEW"
+                assert (
+                    "Approve this barrier" in result_barrier["task_list"][0]["message"]
+                )
 
     def test_publishing_task_approver_user_approve_request_no_permission(self):
         """This task is for users with approver permissions only. We need
@@ -337,17 +337,29 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
             PublicBarrierStatus.APPROVAL_PENDING
         )
         self.barrier.public_barrier.summary = "adding a summary"
+        self.barrier.public_barrier.set_to_allowed_date = datetime.now()
         self.barrier.public_barrier.save()
+
+        expected_deadline = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_date.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline = expected_deadline.strftime("%d %B %Y")
 
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
         assert response.data["count"] == 1
-        for task in response.data["results"]:
-            assert task["tag"] == "PUBLICATION REVIEW"
-            assert "Add a public title and summary to this barrier" in task["message"]
+        for barrier in response.data["results"]:
+            assert len(barrier["task_list"]) == 1
+            assert barrier["task_list"][0]["tag"] == "PUBLICATION REVIEW"
+            assert (
+                "Add a public title and summary" in barrier["task_list"][0]["message"]
+            )
             # Check countdown has been substituted into message
-            assert "needs to be done within 29 days" in task["message"]
+            assert (
+                f"This needs to be done by {expected_deadline}."
+                in barrier["task_list"][0]["message"]
+            )
 
     def test_publishing_task_approver_user_approve_request_overdue(self):
         """This task needs to be completed within a timeframe tracked
@@ -377,6 +389,16 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         )
         self.barrier_2.public_barrier.save()
 
+        expected_deadline_1 = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_on.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline_1 = expected_deadline_1.strftime("%d %B %Y")
+
+        expected_deadline_2 = dateutil.parser.parse(
+            self.barrier_2.public_barrier.set_to_allowed_on.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline_2 = expected_deadline_2.strftime("%d %B %Y")
+
         # Update user to have the approver permission
         self.test_user.groups.add(Group.objects.get(name="Public barrier approver"))
         self.test_user.save()
@@ -389,21 +411,24 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         # Count the expected task types
         missing_info_task_count = 0
         approve_task_count = 0
-        for task in response.data["results"]:
-            assert task["tag"] == "OVERDUE REVIEW"
+        for barrier in response.data["results"]:
+            assert barrier["task_list"][0]["tag"] == "OVERDUE REVIEW"
             # Message will be different for barrier with both title and sumary, but we
             # also expect for one of the tasks to be the previously tested message
-            if (
-                "Review and check this barrier for clearances before it can be submitted"
-                in task["message"]
-            ):
+            if "Approve this barrier" in barrier["task_list"][0]["message"]:
                 approve_task_count = approve_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 0 days" in task["message"]
-            elif "Add a public title and summary to this barrier" in task["message"]:
+                assert (
+                    f"for publication and complete clearance checks by {expected_deadline_1}."
+                    in barrier["task_list"][0]["message"]
+                )
+            elif "Add a public title and summary" in barrier["task_list"][0]["message"]:
                 missing_info_task_count = missing_info_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 0 days" in task["message"]
+                assert (
+                    f"This needs to be done by {expected_deadline_2}."
+                    in barrier["task_list"][0]["message"]
+                )
 
         assert approve_task_count == 1
         assert missing_info_task_count == 1
@@ -419,7 +444,13 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
             PublicBarrierStatus.PUBLISHING_PENDING
         )
         self.barrier.public_barrier.summary = "adding a summary"
+        self.barrier.public_barrier.set_to_allowed_date = datetime.now()
         self.barrier.public_barrier.save()
+
+        expected_deadline = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_date.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline = expected_deadline.strftime("%d %B %Y")
 
         # Update user to have the publisher permission
         self.test_user.groups.add(Group.objects.get(name="Publisher"))
@@ -433,21 +464,21 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         # Count the expected task types
         missing_info_task_count = 0
         publish_task_count = 0
-        for task in response.data["results"]:
-            assert task["tag"] == "PUBLICATION REVIEW"
+        for barrier in response.data["results"]:
+            assert barrier["task_list"][0]["tag"] == "PUBLICATION REVIEW"
             # Message will be different for barrier with both title and sumary, but we
             # also expect for one of the tasks to be the previously tested message
-            if (
-                "This barrier has been approved. Complete the final content checks"
-                in task["message"]
-            ):
+            if "Complete GOV.UK content checks" in barrier["task_list"][0]["message"]:
                 publish_task_count = publish_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 29 days" in task["message"]
-            elif "Add a public title and summary to this barrier" in task["message"]:
+                assert f"by {expected_deadline}." in barrier["task_list"][0]["message"]
+            elif "Add a public title and summary" in barrier["task_list"][0]["message"]:
                 missing_info_task_count = missing_info_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 29 days" in task["message"]
+                assert (
+                    f"This needs to be done by {expected_deadline}."
+                    in barrier["task_list"][0]["message"]
+                )
 
         assert publish_task_count == 1
         assert missing_info_task_count == 1
@@ -463,18 +494,30 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
             PublicBarrierStatus.PUBLISHING_PENDING
         )
         self.barrier.public_barrier.summary = "adding a summary"
+        self.barrier.public_barrier.set_to_allowed_date = datetime.now()
         self.barrier.public_barrier.save()
+
+        expected_deadline = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_date.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline = expected_deadline.strftime("%d %B %Y")
 
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
         assert response.data["count"] == 1
 
-        for task in response.data["results"]:
-            assert task["tag"] == "PUBLICATION REVIEW"
-            assert "Add a public title and summary to this barrier" in task["message"]
+        for barrier in response.data["results"]:
+            assert len(barrier["task_list"]) == 1
+            assert barrier["task_list"][0]["tag"] == "PUBLICATION REVIEW"
+            assert (
+                "Add a public title and summary" in barrier["task_list"][0]["message"]
+            )
             # Check countdown has been substituted into message
-            assert "needs to be done within 29 days" in task["message"]
+            assert (
+                f"This needs to be done by {expected_deadline}."
+                in barrier["task_list"][0]["message"]
+            )
 
     def test_publishing_task_publisher_user_approve_request_overdue(self):
         """This task is for users with approver permissions only. We need
@@ -503,6 +546,16 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         )
         self.barrier_2.public_barrier.save()
 
+        expected_deadline_1 = dateutil.parser.parse(
+            self.barrier.public_barrier.set_to_allowed_on.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline_1 = expected_deadline_1.strftime("%d %B %Y")
+
+        expected_deadline_2 = dateutil.parser.parse(
+            self.barrier_2.public_barrier.set_to_allowed_on.strftime("%d %B %Y")
+        ) + timedelta(days=30)
+        expected_deadline_2 = expected_deadline_2.strftime("%d %B %Y")
+
         # Update user to have the publisher permission
         self.test_user.groups.add(Group.objects.get(name="Publisher"))
         self.test_user.save()
@@ -515,21 +568,23 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         # Count the expected task types
         missing_info_task_count = 0
         publish_task_count = 0
-        for task in response.data["results"]:
-            assert task["tag"] == "OVERDUE REVIEW"
+        for barrier in response.data["results"]:
+            assert barrier["task_list"][0]["tag"] == "OVERDUE REVIEW"
             # Message will be different for barrier with both title and sumary, but we
             # also expect for one of the tasks to be the previously tested message
-            if (
-                "This barrier has been approved. Complete the final content checks"
-                in task["message"]
-            ):
+            if "Complete GOV.UK content checks" in barrier["task_list"][0]["message"]:
                 publish_task_count = publish_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 0 days" in task["message"]
-            elif "Add a public title and summary to this barrier" in task["message"]:
+                assert (
+                    f"by {expected_deadline_1}." in barrier["task_list"][0]["message"]
+                )
+            elif "Add a public title and summary" in barrier["task_list"][0]["message"]:
                 missing_info_task_count = missing_info_task_count + 1
                 # Check countdown has been substituted into message
-                assert "needs to be done within 0 days" in task["message"]
+                assert (
+                    f"This needs to be done by {expected_deadline_2}."
+                    in barrier["task_list"][0]["message"]
+                )
 
         assert publish_task_count == 1
         assert missing_info_task_count == 1
@@ -547,10 +602,10 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "ADD INFORMATION"
-                and "This barrier is not currently linked with any other government"
+                and "Check and add any other government departments (OGDs)"
                 in task["message"]
             ):
                 task_found = True
@@ -569,18 +624,15 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "ADD INFORMATION"
-                and "HS commodity codes. Check and add the codes now" in task["message"]
+                and "Add an HS code to this barrier." in task["message"]
             ):
                 task_found = True
         assert task_found
 
-    @patch(
-        "api.dashboard.views.UserTasksView.todays_date",
-        datetime(2024, 1, 10).replace(tzinfo=timezone.utc),
-    )
+    @freezegun.freeze_time(datetime(2024, 1, 10).replace(tzinfo=timezone.utc))
     def test_missing_barrier_detail_financial_year_delivery_confidence(self):
         """A task will be generated for barriers with an estimated resolution date
         within the current financial year without any progress updates."""
@@ -598,12 +650,10 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         assert response.data["count"] == 1
-        for task in response.data["results"]:
-            assert task["tag"] == "ADD INFORMATION"
-            assert (
-                "This barrier does not have information on how confident you feel"
-                in task["message"]
-            )
+        for barrier in response.data["results"]:
+            assert len(barrier["task_list"]) == 1
+            assert barrier["task_list"][0]["tag"] == "ADD INFORMATION"
+            assert "Add your delivery confidence" in barrier["task_list"][0]["message"]
 
     def test_missing_barrier_detail_no_tasks_if_resolved(self):
         """Test to ensure tasks dealing with missing details will
@@ -631,9 +681,13 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         assert response.data["count"] == 1
-        for task in response.data["results"]:
-            assert task["tag"] == "CHANGE OVERDUE"
-            assert "past. Review and add a new date now." in task["message"]
+        for barrier in response.data["results"]:
+            assert len(barrier["task_list"]) == 1
+            assert barrier["task_list"][0]["tag"] == "CHANGE OVERDUE"
+            assert (
+                "Review the estimated resolution date"
+                in barrier["task_list"][0]["message"]
+            )
 
     def test_erd_tasks_resolved_wont_trigger_task(self):
         """Ensure that tasks relating to estimated resolution date are not
@@ -675,9 +729,12 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         assert response.data["count"] == 1
-        for task in response.data["results"]:
-            assert task["tag"] == "ADD DATE"
-            assert "As this is a priority barrier you need to add an" in task["message"]
+        for barrier in response.data["results"]:
+            assert len(barrier["task_list"]) == 1
+            assert barrier["task_list"][0]["tag"] == "ADD DATE"
+            assert (
+                "Add an estimated resolution date" in barrier["task_list"][0]["message"]
+            )
 
     def test_erd_tasks_missing_for_overseas_delivery(self):
         """A task should be created for barriers that are overseas delivery priority
@@ -704,9 +761,12 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         assert response.data["count"] == 1
-        for task in response.data["results"]:
-            assert task["tag"] == "ADD DATE"
-            assert "As this is a priority barrier you need to add an" in task["message"]
+        for barrier in response.data["results"]:
+            assert len(barrier["task_list"]) == 1
+            assert barrier["task_list"][0]["tag"] == "ADD DATE"
+            assert (
+                "Add an estimated resolution date" in barrier["task_list"][0]["message"]
+            )
 
     def test_erd_tasks_missing_for_overseas_delivery_no_permission(self):
         """Only owners should see these estimated resolution date tasks"""
@@ -731,7 +791,6 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         assert response.status_code == 200
         assert response.data["count"] == 0
 
-    # pytest tests/user/test_views.py::TestDashboardTasksView::test_erd_tasks_progress_update_erd_outdated
     def test_erd_tasks_progress_update_erd_outdated(self):
         """Progress updates contain their own estimated resolution date
         value seperate from the one on the barrier, we expect to add
@@ -753,21 +812,21 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         progress_update.next_steps = "Edited Steps"
         progress_update.save()
 
-        self.owner_user_setUp()
+        readable_modified_date = progress_update.modified_on.strftime("%d %B %Y")
 
-        expected_difference = (
-            progress_update.modified_on.year - datetime.now().year
-        ) * 12 + (progress_update.modified_on.month - datetime.now().month)
+        self.owner_user_setUp()
 
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
+            logger.critical(task["message"])
+
             if (
                 task["tag"] == "REVIEW DATE"
-                and "This barriers estimated resolution date has not" in task["message"]
-                and f"been updated in {abs(expected_difference)} months."
+                and "Check the estimated resolution date" in task["message"]
+                and f"as it has not been reviewed since {readable_modified_date}."
                 in task["message"]
             ):
                 task_found = True
@@ -788,11 +847,10 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "PROGRESS UPDATE DUE"
-                and "This is a PB100 barrier. Add a monthly progress update"
-                in task["message"]
+                and "Add a monthly progress update" in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -820,10 +878,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
                 task_found = True
         assert not task_found
 
-    @patch(
-        "api.dashboard.views.UserTasksView.todays_date",
-        datetime(2024, 1, 10).replace(tzinfo=timezone.utc),
-    )
+    @freezegun.freeze_time(datetime(2024, 1, 10).replace(tzinfo=timezone.utc))
     def test_progress_update_tasks_monthly_pb100_update_due(self):
         """It is current practice that there are progress updates for top priority (pb100) barriers
         which are due before the 3rd friday of every month. A task is expected to trigger
@@ -851,20 +906,16 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "PROGRESS UPDATE DUE"
-                and "This is a PB100 barrier. Add a monthly progress update"
-                in task["message"]
-                and "by 19-01-24" in task["message"]
+                and "Add a monthly progress update" in task["message"]
+                and "to this PB100 barrier by 19 January 2024." in task["message"]
             ):
                 task_found = True
         assert task_found
 
-    @patch(
-        "api.dashboard.views.UserTasksView.todays_date",
-        datetime(2024, 1, 21).replace(tzinfo=timezone.utc),
-    )
+    @freezegun.freeze_time(datetime(2024, 1, 21).replace(tzinfo=timezone.utc))
     def test_progress_update_tasks_monthly_pb100_update_overdue(self):
         """It is current practice that there are progress updates for top priority (pb100) barriers
         which are due before the 3rd friday of every month. A task indicating the update
@@ -892,12 +943,11 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "OVERDUE PROGRESS UPDATE"
-                and "This is a PB100 barrier. Add a monthly progress update"
-                in task["message"]
-                and "by 19-01-24" in task["message"]
+                and "Add a monthly progress update" in task["message"]
+                and "to this PB100 barrier by 19 January 2024." in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -924,13 +974,13 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         response = self.api_client.get(self.request_url)
 
         assert response.status_code == 200
-
+        # pytest tests/dashboard/test_views.py::TestDashboardTasksView::test_progress_update_tasks_overdue_next_steps
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
+            logger.critical(task["message"])
             if (
                 task["tag"] == "REVIEW NEXT STEP"
-                and "The next step for this barrier has not been reviewed"
-                in task["message"]
+                and "Review the barrier next steps" in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -960,11 +1010,11 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "PROGRESS UPDATE DUE"
-                and "This is an overseas delivery barrier" in task["message"]
-                and "Add a quarterly progress update now." in task["message"]
+                and "Add a quarterly progress update" in task["message"]
+                and "to this overseas delivery barrier." in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -983,11 +1033,11 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "PROGRESS UPDATE DUE"
-                and "This is an overseas delivery barrier" in task["message"]
-                and "Add a quarterly progress update now." in task["message"]
+                and "Add a quarterly progress update" in task["message"]
+                and "to this overseas delivery barrier." in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -1016,12 +1066,11 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "PROGRESS UPDATE DUE"
-                and "There is an active programme fund for this barrier"
-                in task["message"]
-                and "there has not been an update for over 3 months" in task["message"]
+                and "Add a programme fund update" in task["message"]
+                and "to this barrier." in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -1045,12 +1094,11 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "PROGRESS UPDATE DUE"
-                and "There is an active programme fund for this barrier"
-                in task["message"]
-                and "there has not been an update for over 3 months" in task["message"]
+                and "Add a programme fund update" in task["message"]
+                and "to this barrier." in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -1088,13 +1136,57 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "REVIEW COMMENT"
-                and f"{self.test_user_2.first_name} {self.test_user_2.last_name} mentioned you"
+                and f"{self.test_user_2.first_name} {self.test_user_2.last_name} mentioned you in on"
                 in task["message"]
-                and f"in a comment on {datetime.now().strftime('%d-%m-%y')}"
+                and f"{mention.created_on.strftime('%d %B %Y')}." in task["message"]
+            ):
+                task_found = True
+        assert task_found
+
+    def test_mentions_task_list_append_to_existing_list(self):
+        """Mentions are when another user uses an @ followed by another users
+        email in a barrier note to flag to that user that they need to pay attention.
+        Mentions with a user indicated should create a task that is added to the task list.
+        """
+
+        self.basic_barrier_setUp(erd_time="future")
+        # Ensure another task will be triggered by the barrier
+        self.barrier.export_types.add(ExportType.objects.get(name="goods"))
+
+        text = f"test mention @{self.user.email}"
+        interaction = Interaction(
+            created_by=self.test_user,
+            barrier=self.barrier,
+            kind="kind",
+            text=text,
+            pinned=False,
+            is_active=True,
+        )
+        interaction.save()
+
+        mention = Mention(
+            barrier=self.barrier,
+            email_used=self.test_user_2.email,
+            recipient=self.test_user,
+            created_by_id=self.test_user_2.id,
+        )
+        mention.save()
+
+        self.owner_user_setUp()
+
+        response = self.api_client.get(self.request_url)
+
+        assert response.status_code == 200
+        task_found = False
+        for task in response.data["results"][0]["task_list"]:
+            if (
+                task["tag"] == "REVIEW COMMENT"
+                and f"{self.test_user_2.first_name} {self.test_user_2.last_name} mentioned you in on"
                 in task["message"]
+                and f"{mention.created_on.strftime('%d %B %Y')}." in task["message"]
             ):
                 task_found = True
         assert task_found
@@ -1130,40 +1222,43 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         task_found = False
-        for task in response.data["results"]:
+        response.data["results"][0]["barrier_id"] = self.barrier.id
+        for task in response.data["results"][0]["task_list"]:
             if (
                 task["tag"] == "REVIEW COMMENT"
-                and f"{self.test_user_2.first_name} {self.test_user_2.last_name} mentioned you"
+                and f"{self.test_user_2.first_name} {self.test_user_2.last_name} mentioned you in on"
                 in task["message"]
-                and f"in a comment on {datetime.now().strftime('%d-%m-%y')}"
-                in task["message"]
+                and f"{mention.created_on.strftime('%d %B %Y')}." in task["message"]
             ):
                 task_found = True
         assert task_found
 
     def test_task_list_pagination(self):
         """The results are paginated so the frontend does not get swamped with tasks
-        and overwhelm the user. We expect a maximum of 5 tasks that get returned
+        and overwhelm the user. We expect a maximum of 3 tasks that get returned
         at a time, and that if we are on a second or third page, we get the next
         block of tasks in the list."""
 
-        # Create barriers that will trigger more than 5 tasks
+        # Create barriers that will trigger more than 5 entries
         self.barrier = BarrierFactory()
         self.barrier.top_priority_status = "APPROVED"
         self.barrier.save()
 
-        self.barrier_2 = BarrierFactory()
-        self.barrier_2.priority_level = "OVERSEAS"
-        self.barrier_2.save()
+        barrier_build_count = 0
+        while barrier_build_count < 7:
+            additional_barrier = BarrierFactory()
+            additional_barrier.priority_level = "OVERSEAS"
+            additional_barrier.save()
 
-        # Test requires user to be added to second barrier
-        tm_2 = TeamMember.objects.create(
-            barrier=self.barrier_2,
-            user=self.test_user,
-            created_by=self.test_user,
-            role="Owner",
-        )
-        self.barrier_2.barrier_team.add(tm_2)
+            # Test requires user to be added to additional barrier
+            team_member = TeamMember.objects.create(
+                barrier=additional_barrier,
+                user=self.test_user,
+                created_by=self.test_user,
+                role="Owner",
+            )
+            additional_barrier.barrier_team.add(team_member)
+            barrier_build_count += 1
 
         self.owner_user_setUp()
 
@@ -1171,7 +1266,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
 
         assert response.status_code == 200
         assert response.data["count"] == 8
-        assert len(response.data["results"]) == 5
+        assert len(response.data["results"]) == 3
 
         self.request_url_page_2 = f'{reverse("get-dashboard-tasks")}?page=2'
         response_page_2 = self.api_client.get(self.request_url_page_2)

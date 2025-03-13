@@ -25,10 +25,12 @@ from tests.action_plans.factories import (
     ActionPlanStakeholderFactory,
     ActionPlanTaskFactory,
 )
-from tests.assessment.factories import EconomicImpactAssessmentFactory
+from tests.assessment.factories import (
+    EconomicImpactAssessmentFactory,
+    PreliminaryAssessmentFactory,
+)
 from tests.barriers.factories import BarrierFactory, ReportFactory
 from tests.collaboration.factories import TeamMemberFactory
-from tests.metadata.factories import CategoryFactory
 
 logger = logging.getLogger(__name__)
 
@@ -354,21 +356,6 @@ class TestListBarriers(APITestMixin, APITestCase):
         assert response.status_code == status.HTTP_200_OK
         barriers = Barrier.objects.filter(status__in=[2, 4])
         assert response.data["count"] == barriers.count()
-
-    def test_list_barriers_category_filter(self):
-        BarrierFactory()
-        cat1 = CategoryFactory()
-        barrier = BarrierFactory()
-        barrier.categories.add(cat1)
-
-        assert 2 == Barrier.objects.count()
-
-        url = f'{reverse("list-barriers")}?category={cat1.id}'
-        response = self.api_client.get(url)
-
-        assert status.HTTP_200_OK == response.status_code
-        assert 1 == response.data["count"]
-        assert str(barrier.id) == response.data["results"][0]["id"]
 
     def test_list_barriers_sector_filter(self):
         sector1 = "9b38cecc-5f95-e211-a939-e4115bead28a"
@@ -722,8 +709,8 @@ class TestListBarriers(APITestMixin, APITestCase):
 
     def test_has_wto_case_number_filter(self):
         barrier1 = BarrierFactory(wto_profile__case_number="CASE123")
-        barrier2 = BarrierFactory(wto_profile__case_number="")
-        barrier3 = BarrierFactory(wto_profile=None)
+        BarrierFactory(wto_profile__case_number="")
+        BarrierFactory(wto_profile=None)
 
         assert 3 == Barrier.objects.count()
 
@@ -931,6 +918,23 @@ class TestListBarriers(APITestMixin, APITestCase):
         barrier = BarrierFactory(status=4, status_date="2020-02-02")
 
         url = f'{reverse("list-barriers")}?status=4&status_date_resolved_in_full=2020-01-01,2021-06-30'
+
+        response = self.api_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+
+        barrier_ids = []
+        for result in response.data["results"]:
+            barrier_ids.append(result["id"])
+
+        assert barrier_ids == [str(barrier.id)]
+
+    def test_barrier_estimated_resolution_date_filter_resolved_in_part(self):
+        barrier = BarrierFactory(
+            status=3, status_date="2020-02-02", estimated_resolution_date="2020-06-06"
+        )
+
+        url = f'{reverse("list-barriers")}?status=3&estimated_resolution_date_resolved_in_part=2020-01-01,2021-06-30'
 
         response = self.api_client.get(url)
 
@@ -1227,6 +1231,16 @@ class TestListBarriers(APITestMixin, APITestCase):
         response = self.api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["count"] == 1
+
+    def test_preliminary_assessment_filter(self):
+        barriers = [BarrierFactory(), BarrierFactory(), BarrierFactory()]
+        PreliminaryAssessmentFactory(barrier=barriers[0], value=1)
+        PreliminaryAssessmentFactory(barrier=barriers[1], value=2)
+        PreliminaryAssessmentFactory(barrier=barriers[2], value=3)
+        url = f'{reverse("list-barriers")}?preliminary_assessment=1,3'
+        response = self.api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["count"] == 2
 
 
 class PublicViewFilterTest(APITestMixin, APITestCase):
