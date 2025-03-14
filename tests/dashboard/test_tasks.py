@@ -72,11 +72,78 @@ def test_create_add_priority_erd_task():
         },
         {
             "link_text": "Add an estimated resolution date",
-            "message": ["Add an estimated resolution date", "to this PB100 barrier."],
+            "message": [
+                "Add an estimated resolution date",
+                "to this Overseas Delivery barrier.",
+            ],
             "tag": "ADD DATE",
-            "task_url": "barriers:edit_estimated_resolution_date",
+            "task_url": "barriers:add_estimated_resolution_date",
         },
     ]
+
+
+def test_create_add_overseas_priority_erd_task():
+    user = create_test_user()
+    barrier: Barrier = BarrierFactory(
+        priority_level="OVERSEAS", estimated_resolution_date=None
+    )
+    team_member = TeamMember.objects.create(
+        barrier=barrier, user=user, created_by=user, role=TeamMember.OWNER
+    )
+    barrier.barrier_team.add(team_member)
+    tasks = get_tasks(user)
+
+    # assert 0
+    assert tasks[0]["task_list"] == [
+        {
+            "link_text": "Add a quarterly progress update",
+            "message": [
+                "Add a quarterly progress update",
+                "to this overseas delivery barrier.",
+            ],
+            "tag": "PROGRESS UPDATE DUE",
+            "task_url": "barriers:add_progress_update",
+        },
+        {
+            "link_text": "Check and add any other government departments " "(OGDs)",
+            "message": [
+                "Check and add any other government departments " "(OGDs)",
+                "involved in the resolution of this barrier.",
+            ],
+            "tag": "ADD INFORMATION",
+            "task_url": "barriers:edit_gov_orgs",
+        },
+        {
+            "link_text": "Add an estimated resolution date",
+            "message": [
+                "Add an estimated resolution date",
+                "to this Overseas Delivery barrier.",
+            ],
+            "tag": "ADD DATE",
+            "task_url": "barriers:add_estimated_resolution_date",
+        },
+    ]
+
+
+def test_create_add_pb100_priority_erd_task():
+    user = create_test_user()
+    barrier: Barrier = BarrierFactory(
+        top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+        estimated_resolution_date=None,
+    )
+    team_member = TeamMember.objects.create(
+        barrier=barrier, user=user, created_by=user, role=TeamMember.OWNER
+    )
+    barrier.barrier_team.add(team_member)
+    tasks = get_tasks(user)
+
+    # assert 0
+    assert tasks[0]["task_list"][2] == {
+        "link_text": "Add an estimated resolution date",
+        "message": ["Add an estimated resolution date", "to this PB100 barrier."],
+        "tag": "ADD DATE",
+        "task_url": "barriers:add_estimated_resolution_date",
+    }
 
 
 def test_create_review_priority_erd_task():

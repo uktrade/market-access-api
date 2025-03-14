@@ -28,6 +28,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.widgets import BooleanWidget
 from hashid_field import HashidAutoField
+from model_utils import Choices
 from simple_history.models import HistoricalRecords
 
 from api.barriers import validators
@@ -280,6 +281,97 @@ class BarrierProgressUpdate(FullyArchivableMixin, BaseModel):
         ordering = ("-created_on",)
         verbose_name = "Top 100 Barrier Progress Update"
         verbose_name_plural = "Top 100 Barrier Progress Updates"
+
+
+class EstimatedResolutionDateRequest(models.Model):
+    STATUSES = Choices(
+        ("NEEDS_REVIEW", "Needs Review"),
+        ("APPROVED", "Approved"),
+        ("REJECTED", "Rejected"),
+        ("CLOSED", "Closed"),
+    )
+    barrier = models.ForeignKey(
+        "Barrier",
+        on_delete=models.CASCADE,
+        related_name="estimated_resolution_date_request",
+    )
+    estimated_resolution_date = models.DateField(
+        blank=True, null=True, help_text="Proposed estimated resolution date"
+    )
+    reason = models.TextField(
+        blank=True, null=True, help_text="Reason for proposed estimated resolution date"
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="estimated_resolution_date_request_user",
+        blank=True,
+        null=True,
+        help_text="User who created the proposed date",
+    )
+    status = models.CharField(choices=STATUSES)
+    created_on = models.DateTimeField(editable=False, null=True)
+    modified_on = models.DateTimeField(null=True)
+    modified_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="estimated_resolution_date_request_modified_by",
+        blank=True,
+        null=True,
+    )
+
+    history = HistoricalRecords()
+
+    def save(self, *args, **kwargs):
+        ts = timezone.now()
+        if not self.pk:
+            self.created_on = self.created_on or ts
+        self.modified_on = ts
+        return super().save(*args, **kwargs)
+
+    def approve(self, modified_by: User):
+        self.status = self.STATUSES.APPROVED
+        self.modified_by = modified_by
+        self.barrier.estimated_resolution_date = self.estimated_resolution_date
+        self.barrier.save()
+        self.modified_on = timezone.now()
+        self.save()
+
+    def reject(self, modified_by: User, reason):
+        self.status = self.STATUSES.REJECTED
+        self.reason = reason
+        self.modified_by = modified_by
+        self.modified_on = timezone.now()
+        self.save()
+
+    def close(self, modified_by: User):
+        self.status = self.STATUSES.CLOSED
+        self.modified_by = modified_by
+        self.modified_on = timezone.now()
+        self.save()
+
+    @classmethod
+    def get_history(cls, barrier_id):
+        qs = cls.history.filter(barrier__id=barrier_id).exclude(
+            status=cls.STATUSES.CLOSED
+        )
+        fields = (
+            [
+                "estimated_resolution_date",
+                "reason",
+                "modified_by",
+                "created_by",
+                "status",
+            ],
+        )
+
+        return get_model_history(
+            qs,
+            model="estimated_resolution_date_request",
+            fields=fields,
+            track_first_item=True,
+            primary_key="id",
+        )
 
 
 class ProgrammeFundProgressUpdate(FullyArchivableMixin, BaseModel):
@@ -602,7 +694,6 @@ class Barrier(FullyArchivableMixin, BaseModel):
             "companies",
             "economic_assessment_eligibility",
             "economic_assessment_eligibility_summary",
-            "estimated_resolution_date",
             "start_date",
             "is_summary_sensitive",
             "main_sector",
@@ -647,6 +738,16 @@ class Barrier(FullyArchivableMixin, BaseModel):
         return get_model_history(
             qs, model="barrier", fields=fields, track_first_item=track_first_item
         )
+
+    def get_active_erd_request(self):
+        try:
+            return self.estimated_resolution_date_request.get(
+                status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW
+            )
+        except EstimatedResolutionDateRequest.DoesNotExist:
+            pass
+        except EstimatedResolutionDateRequest.MultipleObjectsReturned:
+            logger.warn(f"Barrier: {str(self.id)} - Multiple active ERD Requests")
 
     @property
     def latest_progress_update(self):
@@ -797,10 +898,14 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def is_top_priority(self):
-        return self.top_priority_status in [
-            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-        ]
+        return (
+            self.top_priority_status
+            in [
+                TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+                TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+            ]
+            or self.priority_level == PRIORITY_LEVELS.OVERSEAS
+        )
 
     @property
     def is_regional_trade_plan(self):
