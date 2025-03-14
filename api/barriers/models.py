@@ -13,16 +13,7 @@ from django.contrib.postgres.search import SearchVector
 from django.core.cache import cache
 from django.core.validators import int_list_validator
 from django.db import models
-from django.db.models import (
-    CASCADE,
-    Case,
-    CharField,
-    FloatField,
-    Q,
-    QuerySet,
-    Value,
-    When,
-)
+from django.db.models import CASCADE, Case, CharField, Q, QuerySet, Value, When
 from django.db.models.functions import Cast
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1730,15 +1721,25 @@ class BarrierFilterSet(django_filters.FilterSet):
             # or when the related barriers handler is not running
             return self.text_search(queryset, name, value)
 
+        # For dashboard search, combine the functionality of text_search and related barriers
+        # and prioritise direct text_search matches by setting similarity score to 1.0
         barrier_ids = [b[0] for b in barrier_scores]
-        when_tensor = [When(id=k, then=Value(v.item())) for k, v in barrier_scores]
+        related_barrier_qs = queryset.filter(id__in=barrier_ids)
+        text_search_qs = self.text_search(queryset, name, value)
+        text_search_ids = [str(b) for b in text_search_qs.values_list("id", flat=True)]
+        barrier_scores = [(k, v) for k, v in barrier_scores if k not in text_search_ids]
 
-        queryset = queryset.filter(id__in=barrier_ids).annotate(
-            barrier_id=Cast("id", output_field=CharField()),
-            similarity=Case(*when_tensor, output_field=FloatField()),
+        return (
+            (text_search_qs | related_barrier_qs)
+            .annotate(
+                barrier_id=Cast("id", output_field=CharField()),
+                similarity=Case(
+                    *[When(id=k, then=Value(v.item())) for k, v in barrier_scores],
+                    default=Value(1.0),
+                ),
+            )
+            .order_by("-similarity")
         )
-
-        return queryset
 
     def my_barriers(self, queryset, name, value):
         if value:
