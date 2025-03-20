@@ -926,7 +926,7 @@ class BarrierPrioritySummaryViewSet(ModelViewSet):
 
     def get_object(self):
         return_object = BarrierTopPrioritySummary.objects.filter(
-            barrier=self.kwargs.get("pk")
+            barrier=self.kwargs.get("barrier_pk")
         )
         if return_object:
             return return_object.latest("modified_on")

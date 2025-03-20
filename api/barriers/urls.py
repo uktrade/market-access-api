@@ -121,12 +121,13 @@ urlpatterns = router.urls + [
         "barriers/<uuid:barrier_pk>/top_priority_summary",
         BarrierPrioritySummaryViewSet.as_view(
             {
-                "get": "list",
+                "get": "retrieve",
                 "post": "create",
             }
         ),
         name="top_priority_summary",
     ),
+    # TODO: Remove
     path(
         "barriers/<uuid:barrier_pk>/top_priority_summary/<uuid:pk>",
         BarrierPrioritySummaryViewSet.as_view(
