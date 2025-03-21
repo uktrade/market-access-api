@@ -2,7 +2,6 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from api.barrier_downloads import service
@@ -55,7 +54,6 @@ class BarrierDownloadsView(generics.ListCreateAPIView):
     serializer_class = BarrierDownloadSerializer
     filterset_class = BarrierFilterSet
     filter_backends = (BarrierDownloadFilterBackend,)
-    pagination_class = PageNumberPagination
 
     def post(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).values_list("id")
