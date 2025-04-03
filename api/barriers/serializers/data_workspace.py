@@ -219,8 +219,12 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     approvers_summary = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_approval_on = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_publication_on = serializers.SerializerMethodField()
-    preliminary_assessment_value = serializers.IntegerField(source="preliminary_assessment.value")
-    preliminary_assessment_details = serializers.CharField(source="preliminary_assessment.details")
+    preliminary_assessment_value = serializers.IntegerField(
+        source="preliminary_assessment.value"
+    )
+    preliminary_assessment_details = serializers.CharField(
+        source="preliminary_assessment.details"
+    )
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -341,7 +345,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "public_barrier_set_to_awaiting_approval_on",
             "public_barrier_set_to_awaiting_publication_on",
             "preliminary_assessment_value",
-            "preliminary_assessment_details"
+            "preliminary_assessment_details",
         )
 
     def to_representation(self, instance):
@@ -639,7 +643,10 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
 
     def get_proposed_estimated_resolution_date_user(self, instance):
         # only show the proposed date if it is different to the current date
-        if not instance.proposed_estimated_resolution_date or not instance.proposed_estimated_resolution_date_user:
+        if (
+            not instance.proposed_estimated_resolution_date
+            or not instance.proposed_estimated_resolution_date_user
+        ):
             return
         first_name = getattr(
             instance.proposed_estimated_resolution_date_user, "first_name"

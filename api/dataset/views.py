@@ -24,10 +24,7 @@ class BarrierList(generics.ListAPIView):
 
     queryset = (
         Barrier.barriers.all()
-        .select_related(
-            "priority",
-            "preliminary_assessment"
-        )
+        .select_related("priority", "preliminary_assessment")
         .prefetch_related(
             "barrier_commodities",
             "economic_assessments",
