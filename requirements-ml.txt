@@ -1,6 +1,6 @@
 # DO NOT DELETE: (Related Barriers)
 transformers==4.48.0
-sentence-transformers==3.0.1
+sentence-transformers==4.0.2
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.6.0
 torchvision==0.21.0
