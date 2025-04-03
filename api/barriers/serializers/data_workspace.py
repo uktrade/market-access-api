@@ -8,6 +8,8 @@ from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
+from api.assessment.models import PreliminaryAssessment
 from api.barriers.fields import ExportTypeReportField, LineBreakCharField
 from api.barriers.models import (
     Barrier,
@@ -219,9 +221,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     approvers_summary = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_approval_on = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_publication_on = serializers.SerializerMethodField()
-    preliminary_assessment_value = serializers.IntegerField(
-        source="preliminary_assessment.value"
-    )
+    preliminary_assessment_value = serializers.SerializerMethodField()
     preliminary_assessment_details = serializers.CharField(
         source="preliminary_assessment.details"
     )
@@ -379,6 +379,13 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
 
     def get_policy_teams(self, obj):
         return ",".join([p.title for p in obj.policy_teams.all()])
+
+    def get_preliminary_assessment_value(self, obj):
+        try:
+            if obj.preliminary_assessment:
+                return PRELIMINARY_ASSESSMENT_CHOICES[obj.preliminary_assessment.value]
+        except PreliminaryAssessment.DoesNotExist:
+            pass
 
     def get_status_history(self, obj):
         history = Barrier.get_history(

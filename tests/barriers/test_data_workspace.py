@@ -8,6 +8,7 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.assessment.models import PreliminaryAssessment
 from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
@@ -809,7 +810,7 @@ class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITest
         serialised_data = DataWorkspaceSerializer(self.barrier).data
         assert (
             serialised_data["preliminary_assessment_value"]
-            == preliminary_assessment.value
+            == PRELIMINARY_ASSESSMENT_CHOICES[preliminary_assessment.value]
         )
         assert (
             serialised_data["preliminary_assessment_details"]
