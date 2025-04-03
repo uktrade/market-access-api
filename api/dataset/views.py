@@ -26,6 +26,7 @@ class BarrierList(generics.ListAPIView):
         Barrier.barriers.all()
         .select_related(
             "priority",
+            "preliminary_assessment"
         )
         .prefetch_related(
             "barrier_commodities",

@@ -8,6 +8,8 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
+from api.assessment.models import PreliminaryAssessment
 from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
@@ -800,6 +802,16 @@ class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITest
             and serialised_data["latest_progress_update"]["status"]
             == PROGRESS_UPDATE_CHOICES["RISK_OF_DELAY"]
         )
+
+    def test_preliminary_assessment_fields(self):
+        preliminary_assessment = PreliminaryAssessment.objects.create(
+            barrier=self.barrier,
+            value=1,
+            details="test"
+        )
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert serialised_data["preliminary_assessment_value"] == preliminary_assessment.value
+        assert serialised_data["preliminary_assessment_details"] == preliminary_assessment.details
 
     def test_latest_progress_update_status_delayed_is_readable(self):
         progress_update = BarrierProgressUpdate.objects.create(
