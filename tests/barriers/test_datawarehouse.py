@@ -8,7 +8,7 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
-from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary
+from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary, EstimatedResolutionDateRequest
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
@@ -191,6 +191,68 @@ class TestDataWarehouseExport(TestCase):
         assert (
             serialised_data["public_eligibility_summary"]
             == barrier.public_eligibility_summary
+        )
+
+    def test_erd_pending_none(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+
+        qs = barrier.objects.filter(id=barrier.id)
+
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert "erd_pending" in serialised_data.keys()
+        assert (
+            serialised_data["erd_pending"]
+            == "None"
+        )
+
+    def test_erd_pending_delete(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+        EstimatedResolutionDateRequest.objects.create(
+            barrier=barrier,
+            estimated_resolution_date=datetime.date.today() + datetime.timedelta(days=100),
+            reason="test",
+            status=EstimatedResolutionDateRequest.STATUSES.CLOSED,
+        )
+        EstimatedResolutionDateRequest.objects.create(
+            barrier=barrier,
+            reason="test",
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+        )
+
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert (
+            serialised_data["erd_pending"]
+            == "Delete pending"
+        )
+
+    def test_erd_pending_extend(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+        EstimatedResolutionDateRequest.objects.create(
+            barrier=barrier,
+            estimated_resolution_date=datetime.date.today() + datetime.timedelta(days=100),
+            reason="test",
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+        )
+
+        serialised_data = DataWorkspaceSerializer(barrier).data
+
+        assert (
+            serialised_data["erd_pending"]
+            == "Extend pending"
         )
 
     def test_has_approvers_summary(self):
