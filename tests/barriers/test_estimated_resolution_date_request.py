@@ -163,7 +163,7 @@ class TestEstimatedResolutionDateView(APITestMixin, TestCase):
         )
         data = {
             "estimated_resolution_date": datetime.date.today() + timedelta(days=31),
-            "reason": "test"
+            "reason": "test",
         }
 
         response = self.api_client.post(url, data=data, format="json")
