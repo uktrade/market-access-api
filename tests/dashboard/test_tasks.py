@@ -193,7 +193,7 @@ def test_create_add_progress_update_task():
 
     tasks = get_tasks(user)
 
-    assert tasks[0]["task_list"][1]['link_text'] == 'Add a monthly progress update'
+    assert tasks[0]["task_list"][1]["link_text"] == "Add a monthly progress update"
 
 
 def test_get_tasks():
