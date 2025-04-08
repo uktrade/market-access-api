@@ -49,7 +49,7 @@ from api.metadata.constants import (
     BARRIER_INTERACTION_TYPE,
     BARRIER_SEARCH_ORDERING_CHOICES,
     BarrierStatus,
-    PublicBarrierStatus,
+    PublicBarrierStatus, PRIORITY_LEVELS,
 )
 from api.user.helpers import has_profile
 from api.user.models import (
@@ -1119,9 +1119,11 @@ class EstimatedResolutionDateRequestView(
             # Overwrite old ERD request if a new request has come in
             erd_request.close(modified_by=request.user)
 
+        is_priority = barrier.is_top_priority or barrier.priority_level == PRIORITY_LEVELS.OVERSEAS
+
         if (
             not barrier.estimated_resolution_date
-            or not barrier.is_top_priority
+            or not is_priority
             or (
                 estimated_resolution_date
                 and estimated_resolution_date < barrier.estimated_resolution_date

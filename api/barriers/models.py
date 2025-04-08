@@ -889,14 +889,10 @@ class Barrier(FullyArchivableMixin, BaseModel):
 
     @property
     def is_top_priority(self):
-        return (
-            self.top_priority_status
-            in [
-                TOP_PRIORITY_BARRIER_STATUS.APPROVED,
-                TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
-            ]
-            or self.priority_level == PRIORITY_LEVELS.OVERSEAS
-        )
+        return self.top_priority_status in [
+            TOP_PRIORITY_BARRIER_STATUS.APPROVED,
+            TOP_PRIORITY_BARRIER_STATUS.REMOVAL_PENDING,
+        ]
 
     @property
     def is_regional_trade_plan(self):
