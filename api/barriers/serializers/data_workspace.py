@@ -219,7 +219,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     approvers_summary = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_approval_on = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_publication_on = serializers.SerializerMethodField()
-    erd_pending = serializers.SerializerMethodField()
+    erd_request_status = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -339,7 +339,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "approvers_summary",
             "public_barrier_set_to_awaiting_approval_on",
             "public_barrier_set_to_awaiting_publication_on",
-            "erd_pending",
+            "erd_request_status",
         )
 
     def to_representation(self, instance):
@@ -371,15 +371,12 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     def get_tags(obj):
         return [tag.title for tag in obj.tags.all()]
 
-    def get_erd_pending(self, obj):
+    def get_erd_request_status(self, obj):
         qs = obj.estimated_resolution_date_request.all()
-        print(qs)
-        for q in qs:
-            print(q.barrier, q.status)
         if not qs:
             return "None"
 
-        erd_request = qs.first()
+        erd_request = qs[0]
 
         if not erd_request.estimated_resolution_date:
             return "Delete pending"

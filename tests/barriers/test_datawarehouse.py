@@ -4,11 +4,13 @@ from datetime import date
 import django.db.models
 import freezegun
 import pytest
+from django.db.models import Prefetch
 from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
-from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary, EstimatedResolutionDateRequest
+from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary, EstimatedResolutionDateRequest, \
+    Barrier
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
@@ -193,49 +195,62 @@ class TestDataWarehouseExport(TestCase):
             == barrier.public_eligibility_summary
         )
 
-    def test_erd_pending_none(self):
+    def test_erd_request_status_none(self):
         barrier = BarrierFactory(
             status_date=date.today(),
             estimated_resolution_date=datetime.date.today(),
             priority_level="OVERSEAS",
         )
 
-        qs = barrier.objects.filter(id=barrier.id)
+        # Emulate view prefetch
+        qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
+            Prefetch(
+                "estimated_resolution_date_request",
+                queryset=EstimatedResolutionDateRequest.objects.filter(status="NEEDS_REVIEW")
+            ),
+        )
 
-        serialised_data = DataWorkspaceSerializer(barrier).data
+        serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
-        assert "erd_pending" in serialised_data.keys()
         assert (
-            serialised_data["erd_pending"]
+            serialised_data[0]["erd_request_status"]
             == "None"
         )
 
-    def test_erd_pending_delete(self):
+    def test_erd_request_status_delete(self):
         barrier = BarrierFactory(
             status_date=date.today(),
             estimated_resolution_date=datetime.date.today(),
             priority_level="OVERSEAS",
         )
-        EstimatedResolutionDateRequest.objects.create(
+        erd1 = EstimatedResolutionDateRequest.objects.create(
             barrier=barrier,
             estimated_resolution_date=datetime.date.today() + datetime.timedelta(days=100),
             reason="test",
-            status=EstimatedResolutionDateRequest.STATUSES.CLOSED,
         )
+        erd1.close(modified_by=create_test_user())
         EstimatedResolutionDateRequest.objects.create(
             barrier=barrier,
             reason="test",
             status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
         )
 
-        serialised_data = DataWorkspaceSerializer(barrier).data
+        # Emulate view prefetch
+        qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
+            Prefetch(
+                "estimated_resolution_date_request",
+                queryset=EstimatedResolutionDateRequest.objects.filter(status="NEEDS_REVIEW")
+            ),
+        )
+
+        serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
         assert (
-            serialised_data["erd_pending"]
+            serialised_data[0]["erd_request_status"]
             == "Delete pending"
         )
 
-    def test_erd_pending_extend(self):
+    def test_erd_request_status_extend(self):
         barrier = BarrierFactory(
             status_date=date.today(),
             estimated_resolution_date=datetime.date.today(),
@@ -248,10 +263,18 @@ class TestDataWarehouseExport(TestCase):
             status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
         )
 
-        serialised_data = DataWorkspaceSerializer(barrier).data
+        # Emulate view prefetch
+        qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
+            Prefetch(
+                "estimated_resolution_date_request",
+                queryset=EstimatedResolutionDateRequest.objects.filter(status="NEEDS_REVIEW")
+            ),
+        )
+
+        serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
         assert (
-            serialised_data["erd_pending"]
+            serialised_data[0]["erd_request_status"]
             == "Extend pending"
         )
 
