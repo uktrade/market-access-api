@@ -193,12 +193,7 @@ def test_create_add_progress_update_task():
 
     tasks = get_tasks(user)
 
-    assert tasks[0]["task_list"][-2] == {
-        "link_text": "Add your delivery confidence",
-        "message": ["Add your delivery confidence", "to this barrier."],
-        "tag": "ADD INFORMATION",
-        "task_url": "barriers:add_progress_update",
-    }
+    assert tasks[0]["task_list"][1]["link_text"] == "Add a monthly progress update"
 
 
 def test_get_tasks():
@@ -260,12 +255,6 @@ def test_get_tasks():
             ],
             "tag": "ADD INFORMATION",
             "task_url": "barriers:edit_gov_orgs",
-        },
-        {
-            "link_text": "Add your delivery confidence",
-            "message": ["Add your delivery confidence", "to this barrier."],
-            "tag": "ADD INFORMATION",
-            "task_url": "barriers:add_progress_update",
         },
         {
             "link_text": "Review the estimated resolution date",

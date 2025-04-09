@@ -153,6 +153,24 @@ class TestEstimatedResolutionDateView(APITestMixin, TestCase):
             != data["estimated_resolution_date"]
         )
 
+    def test_create_erd_request_overseas_201(self):
+        barrier = BarrierFactory(
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+        url = reverse(
+            "estimated-resolution-date-request", kwargs={"barrier_id": barrier.id}
+        )
+        data = {
+            "estimated_resolution_date": datetime.date.today() + timedelta(days=31),
+            "reason": "test",
+        }
+
+        response = self.api_client.post(url, data=data, format="json")
+
+        barrier.refresh_from_db()
+        assert response.status_code == status.HTTP_201_CREATED
+
     def test_priority_create_erd_request_earlier_date_200(self):
         priority_barrier = BarrierFactory(
             estimated_resolution_date=datetime.date.today() + timedelta(days=90),
