@@ -9,8 +9,12 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
-from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary, EstimatedResolutionDateRequest, \
-    Barrier
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    BarrierTopPrioritySummary,
+    EstimatedResolutionDateRequest,
+)
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
@@ -206,16 +210,15 @@ class TestDataWarehouseExport(TestCase):
         qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
             Prefetch(
                 "estimated_resolution_date_request",
-                queryset=EstimatedResolutionDateRequest.objects.filter(status="NEEDS_REVIEW")
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
             ),
         )
 
         serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
-        assert (
-            serialised_data[0]["erd_request_status"]
-            == "None"
-        )
+        assert serialised_data[0]["erd_request_status"] == "None"
 
     def test_erd_request_status_delete(self):
         barrier = BarrierFactory(
@@ -225,7 +228,8 @@ class TestDataWarehouseExport(TestCase):
         )
         erd1 = EstimatedResolutionDateRequest.objects.create(
             barrier=barrier,
-            estimated_resolution_date=datetime.date.today() + datetime.timedelta(days=100),
+            estimated_resolution_date=datetime.date.today()
+            + datetime.timedelta(days=100),
             reason="test",
         )
         erd1.close(modified_by=create_test_user())
@@ -239,16 +243,15 @@ class TestDataWarehouseExport(TestCase):
         qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
             Prefetch(
                 "estimated_resolution_date_request",
-                queryset=EstimatedResolutionDateRequest.objects.filter(status="NEEDS_REVIEW")
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
             ),
         )
 
         serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
-        assert (
-            serialised_data[0]["erd_request_status"]
-            == "Delete pending"
-        )
+        assert serialised_data[0]["erd_request_status"] == "Delete pending"
 
     def test_erd_request_status_extend(self):
         barrier = BarrierFactory(
@@ -258,7 +261,8 @@ class TestDataWarehouseExport(TestCase):
         )
         EstimatedResolutionDateRequest.objects.create(
             barrier=barrier,
-            estimated_resolution_date=datetime.date.today() + datetime.timedelta(days=100),
+            estimated_resolution_date=datetime.date.today()
+            + datetime.timedelta(days=100),
             reason="test",
             status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
         )
@@ -267,16 +271,15 @@ class TestDataWarehouseExport(TestCase):
         qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
             Prefetch(
                 "estimated_resolution_date_request",
-                queryset=EstimatedResolutionDateRequest.objects.filter(status="NEEDS_REVIEW")
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
             ),
         )
 
         serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
-        assert (
-            serialised_data[0]["erd_request_status"]
-            == "Extend pending"
-        )
+        assert serialised_data[0]["erd_request_status"] == "Extend pending"
 
     def test_has_approvers_summary(self):
         barrier = BarrierFactory(status_date=date.today())

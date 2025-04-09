@@ -383,7 +383,6 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
 
         return "Extend pending"
 
-
     def get_policy_teams(self, obj):
         return ",".join([p.title for p in obj.policy_teams.all()])
 

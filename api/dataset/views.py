@@ -36,7 +36,9 @@ class BarrierList(generics.ListAPIView):
             "top_priority_summary",
             Prefetch(
                 "estimated_resolution_date_request",
-                queryset=EstimatedResolutionDateRequest.objects.filter(status="NEEDS_REVIEW")
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
             ),
         )
         .order_by("reported_on")
