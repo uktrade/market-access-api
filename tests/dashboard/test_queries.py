@@ -123,14 +123,11 @@ def barrier_factory(users):
 
 
 def test_get_counts_full_schema(users):
-    BarrierFactory(created_by=users[0])
-    qs = Barrier.objects.all()
-
     ts = datetime.now()
-    with freezegun.freeze_time(ts):
-        counts = get_counts(qs, users[0])
-
     financial_dates = get_financial_year_dates()
+    BarrierFactory(created_by=users[0], estimated_resolution_date=ts)
+    qs = Barrier.objects.all()
+    counts = get_counts(qs, users[0])
 
     assert counts == {
         "barrier_value_chart": {
