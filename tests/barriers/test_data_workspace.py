@@ -13,9 +13,10 @@ from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
 from api.assessment.models import PreliminaryAssessment
 from api.barriers.models import (
     Barrier,
+    BarrierProgressUpdate,
+    BarrierTopPrioritySummary,
     EstimatedResolutionDateRequest,
 )
-from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
