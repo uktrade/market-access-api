@@ -208,3 +208,9 @@ Local access must have SSO turned off in the env file.
 URLS, replace base URL where appropriate:
 ```http://api.market-access.local:8880/redoc/```
 ```http://api.market-access.local:8880/swagger-ui/```
+
+All endpoints need a serializer_class assigned for swagger to generate, but are sometimes not needed in code, so if the error pops up,
+just find the offending view and set one as a placeholder.
+
+To generate a JSON file for endpoint information, access the link below and select 'openapi-json' from the GET dropdown box.
+```http://api.market-access.local:8880/openapi```
