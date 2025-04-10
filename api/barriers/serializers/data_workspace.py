@@ -221,6 +221,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     approvers_summary = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_approval_on = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_publication_on = serializers.SerializerMethodField()
+    erd_request_status = serializers.SerializerMethodField()
     preliminary_assessment_value = serializers.SerializerMethodField()
     preliminary_assessment_details = serializers.CharField(
         source="preliminary_assessment.details"
@@ -344,6 +345,7 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "approvers_summary",
             "public_barrier_set_to_awaiting_approval_on",
             "public_barrier_set_to_awaiting_publication_on",
+            "erd_request_status",
             "preliminary_assessment_value",
             "preliminary_assessment_details",
         )
@@ -376,6 +378,18 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     @staticmethod
     def get_tags(obj):
         return [tag.title for tag in obj.tags.all()]
+
+    def get_erd_request_status(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return "None"
+
+        erd_request = qs[0]
+
+        if not erd_request.estimated_resolution_date:
+            return "Delete pending"
+
+        return "Extend pending"
 
     def get_policy_teams(self, obj):
         return ",".join([p.title for p in obj.policy_teams.all()])
