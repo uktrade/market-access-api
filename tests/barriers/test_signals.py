@@ -124,7 +124,9 @@ class TestSignalFunctions(APITestMixin, TestCase):
         assert barrier.top_priority_status == "RESOLVED"
 
     def test_reopening_resolved_top_priority_removes_resolved_tag(self):
-        barrier = BarrierFactory(status=4, top_priority_status="APPROVED", status_date=datetime.date.today())
+        barrier = BarrierFactory(
+            status=4, top_priority_status="APPROVED", status_date=datetime.date.today()
+        )
         barrier.status = 1
         barrier.save()
 
