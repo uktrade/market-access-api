@@ -1,3 +1,4 @@
+import datetime
 import logging
 from unittest.mock import call, patch
 
@@ -121,6 +122,19 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.refresh_from_db()
 
         assert barrier.top_priority_status == "RESOLVED"
+
+    def test_reopening_resolved_top_priority_removes_resolved_tag(self):
+        barrier = BarrierFactory(status=4, top_priority_status="APPROVED", status_date=datetime.date.today())
+        barrier.status = 1
+        barrier.save()
+
+        barrier_completion_top_priority_barrier_status_update(
+            sender=Barrier, instance=barrier
+        )
+
+        barrier.refresh_from_db()
+
+        assert barrier.top_priority_status == "APPROVED"
 
     def test_resolving_top_priority_pending_barrier_retains_pending_tag(self):
         barrier = BarrierFactory(status=1, top_priority_status="APPROVAL_PENDING")
