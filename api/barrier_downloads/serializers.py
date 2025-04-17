@@ -87,6 +87,27 @@ class CsvDownloadSerializer(serializers.Serializer):
     valuation_assessment_explanation = serializers.SerializerMethodField()
     commercial_value = serializers.IntegerField()
     policy_teams = serializers.SerializerMethodField()
+    erd_request_status = serializers.SerializerMethodField()
+    erd_request_reason = serializers.SerializerMethodField()
+
+    def get_erd_request_status(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return "None"
+
+        erd_request = qs[0]
+
+        if not erd_request.estimated_resolution_date:
+            return "Delete pending"
+
+        return "Extend pending"
+
+    def get_erd_request_reason(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return
+
+        return qs[0].reason
 
     def get_policy_teams(self, obj):
         return [p.title for p in obj.policy_teams.all()]
