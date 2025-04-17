@@ -7,7 +7,7 @@ from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.models import Barrier
 from api.barriers.signals.handlers import (
-    barrier_completion_top_priority_barrier_resolved,
+    barrier_completion_top_priority_barrier_status_update,
     barrier_priority_approval_email_notification,
 )
 from api.core.test_utils import APITestMixin, create_test_user
@@ -114,7 +114,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.status = 4
         barrier.save()
 
-        barrier_completion_top_priority_barrier_resolved(
+        barrier_completion_top_priority_barrier_status_update(
             sender=Barrier, instance=barrier
         )
 
@@ -127,7 +127,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.status = 4
         barrier.save()
 
-        barrier_completion_top_priority_barrier_resolved(
+        barrier_completion_top_priority_barrier_status_update(
             sender=Barrier, instance=barrier
         )
 
@@ -140,7 +140,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.status = 3
         barrier.save()
 
-        barrier_completion_top_priority_barrier_resolved(
+        barrier_completion_top_priority_barrier_status_update(
             sender=Barrier, instance=barrier
         )
 
@@ -157,7 +157,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.status = 1
         barrier.save()
 
-        barrier_completion_top_priority_barrier_resolved(
+        barrier_completion_top_priority_barrier_status_update(
             sender=Barrier, instance=barrier
         )
 
