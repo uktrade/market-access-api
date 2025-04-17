@@ -19,7 +19,8 @@ from api.barriers.models import (
     BarrierNextStepItem,
     BarrierProgressUpdate,
     BarrierSearchCSVDownloadEvent,
-    ProgrammeFundProgressUpdate, EstimatedResolutionDateRequest,
+    EstimatedResolutionDateRequest,
+    ProgrammeFundProgressUpdate,
 )
 from api.collaboration.models import TeamMember
 from api.core.utils import serializer_to_csv_bytes
@@ -143,7 +144,7 @@ def get_queryset(barrier_ids: List[str]) -> QuerySet:
             "public_barrier___title",
             "public_barrier___summary",
             "commercial_value",
-            "estimated_resolution_date_request"
+            "estimated_resolution_date_request",
         )
     )
 

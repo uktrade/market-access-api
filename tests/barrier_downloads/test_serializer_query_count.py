@@ -44,7 +44,11 @@ def test_csv_serializer_query_count(django_assert_num_queries):
         username="heysiri2",
     )
 
-    b1 = BarrierFactory(summary="Summ1", created_by=user2, estimated_resolution_date=datetime.datetime.now())
+    b1 = BarrierFactory(
+        summary="Summ1",
+        created_by=user2,
+        estimated_resolution_date=datetime.datetime.now(),
+    )
     b2 = BarrierFactory(
         summary="Summ2",
         priority=BarrierPriority.objects.last(),
@@ -61,7 +65,9 @@ def test_csv_serializer_query_count(django_assert_num_queries):
     TeamMember.objects.create(barrier=b2, user=user2, role="Contributor")
     TeamMember.objects.create(barrier=b1, role="Owner")
 
-    EstimatedResolutionDateRequest.objects.create(barrier=b1, reason="Hello", status="NEEDS_REVIEW")
+    EstimatedResolutionDateRequest.objects.create(
+        barrier=b1, reason="Hello", status="NEEDS_REVIEW"
+    )
 
     BarrierProgressUpdate.objects.create(
         barrier=b2,

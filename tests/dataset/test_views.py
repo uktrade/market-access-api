@@ -27,20 +27,20 @@ User = get_user_model()
 class TestBarrierHistoryStreamDataset(APITestMixin):
     def test_list_barriers(self):
         barrier = BarrierFactory()
-        barrier.title = 'update'
+        barrier.title = "update"
         barrier.save()
         url = reverse("dataset:barrier-history-stream")
 
         response = self.api_client.get(url)
 
-        assert "user_id" in response.data['results'][0]
-        assert "user_name" in response.data['results'][0]
-        assert "barrier_id" in response.data['results'][0]
-        assert "field" in response.data['results'][0]
-        assert "model" in response.data['results'][0]
-        assert "date" in response.data['results'][0]
-        assert "new_value" in response.data['results'][0]
-        assert "old_value" in response.data['results'][0]
+        assert "user_id" in response.data["results"][0]
+        assert "user_name" in response.data["results"][0]
+        assert "barrier_id" in response.data["results"][0]
+        assert "field" in response.data["results"][0]
+        assert "model" in response.data["results"][0]
+        assert "date" in response.data["results"][0]
+        assert "new_value" in response.data["results"][0]
+        assert "old_value" in response.data["results"][0]
 
 
 class TestBarriersDataset(APITestMixin):
