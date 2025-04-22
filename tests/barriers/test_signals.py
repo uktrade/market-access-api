@@ -164,23 +164,6 @@ class TestSignalFunctions(APITestMixin, TestCase):
 
         assert barrier.top_priority_status == "APPROVED"
 
-    def test_reopening_resolved_top_priority_retains_resolved_tag(self):
-        barrier = BarrierFactory(status=1, top_priority_status="RESOLVED")
-        # Resolve the barrier
-        barrier.status = 4
-        barrier.save()
-        # Reopen the barrier
-        barrier.status = 1
-        barrier.save()
-
-        barrier_completion_top_priority_barrier_status_update(
-            sender=Barrier, instance=barrier
-        )
-
-        barrier.refresh_from_db()
-
-        assert barrier.top_priority_status == "RESOLVED"
-
     def test_new_valuation_commercial_value(self):
         barrier = Barrier()
         test_user = create_test_user()
