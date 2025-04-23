@@ -635,47 +635,36 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
                 ):
                     return history_date.strftime("%Y-%m-%d")
 
-    def get_proposed_estimated_resolution_date(self, instance):
-        # only show the proposed date if it is different to the current date
-        if not instance.proposed_estimated_resolution_date:
-            return None
-
-        # compare to estimated_resolution_date
-        if (
-            instance.proposed_estimated_resolution_date
-            == instance.estimated_resolution_date
-        ):
-            return None
-
-        return instance.proposed_estimated_resolution_date.strftime("%Y-%m-%d")
-
-    def get_proposed_estimated_resolution_date_created(self, instance):
-        # only show the proposed date if it is different to the current date
-        if not instance.proposed_estimated_resolution_date_created:
-            return None
-
-        # compare to estimated_resolution_date
-        if (
-            instance.proposed_estimated_resolution_date_created
-            == instance.estimated_resolution_date
-        ):
-            return None
-        return instance.proposed_estimated_resolution_date_created.strftime("%Y-%m-%d")
-
-    def get_proposed_estimated_resolution_date_user(self, instance):
-        # only show the proposed date if it is different to the current date
-        if (
-            not instance.proposed_estimated_resolution_date
-            or not instance.proposed_estimated_resolution_date_user
-        ):
+    def get_proposed_estimated_resolution_date(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
             return
-        first_name = getattr(
-            instance.proposed_estimated_resolution_date_user, "first_name"
-        )
-        last_name = getattr(
-            instance.proposed_estimated_resolution_date_user, "last_name"
-        )
-        return f"{first_name} {last_name}" if first_name and last_name else None
+
+        erd = qs[0]
+
+        if erd.estimated_resolution_date:
+            return erd.estimated_resolution_date.strftime("%Y-%m-%d")
+
+    def get_proposed_estimated_resolution_date_created(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return
+
+        erd = qs[0]
+
+        return erd.created_on.strftime("%Y-%m-%d")
+
+    def get_proposed_estimated_resolution_date_user(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return
+
+        user = qs[0].created_by
+
+        if user:
+            first_name = getattr(user, "first_name")
+            last_name = getattr(user, "last_name")
+            return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_main_sector(self, instance) -> typing.Optional[str]:
         main_sector = metadata_utils.get_sector(instance.main_sector)
