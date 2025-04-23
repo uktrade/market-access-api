@@ -1,3 +1,5 @@
+import datetime
+
 import pytest
 from django.utils import timezone
 
@@ -7,6 +9,7 @@ from api.barriers.models import (
     BarrierCommodity,
     BarrierNextStepItem,
     BarrierProgressUpdate,
+    EstimatedResolutionDateRequest,
 )
 from api.collaboration.models import TeamMember
 from api.core.test_utils import create_test_user
@@ -19,7 +22,7 @@ from tests.metadata.factories import BarrierTagFactory, OrganisationFactory
 pytestmark = [pytest.mark.django_db]
 
 
-EXPECTED_QUERY_COUNT = 12  # 1 + 11 m2m prefetch
+EXPECTED_QUERY_COUNT = 13  # 1 + 11 m2m prefetch
 
 
 def test_csv_serializer_query_count(django_assert_num_queries):
@@ -41,7 +44,11 @@ def test_csv_serializer_query_count(django_assert_num_queries):
         username="heysiri2",
     )
 
-    b1 = BarrierFactory(summary="Summ1", created_by=user2)
+    b1 = BarrierFactory(
+        summary="Summ1",
+        created_by=user2,
+        estimated_resolution_date=datetime.datetime.now(),
+    )
     b2 = BarrierFactory(
         summary="Summ2",
         priority=BarrierPriority.objects.last(),
@@ -57,6 +64,10 @@ def test_csv_serializer_query_count(django_assert_num_queries):
     TeamMember.objects.create(barrier=b2, user=user, role="Owner")
     TeamMember.objects.create(barrier=b2, user=user2, role="Contributor")
     TeamMember.objects.create(barrier=b1, role="Owner")
+
+    EstimatedResolutionDateRequest.objects.create(
+        barrier=b1, reason="Hello", status="NEEDS_REVIEW"
+    )
 
     BarrierProgressUpdate.objects.create(
         barrier=b2,
@@ -111,6 +122,9 @@ def test_csv_serializer_query_count(django_assert_num_queries):
 
     assert len(s) == 3
     assert s[0]["barrier_owner"] is None
+    assert s[0]["erd_request_status"] == "None"
     assert s[1]["barrier_owner"] == "Hey Siri"
     assert s[1]["progress_update_next_steps"] == "This next step"
+    assert s[1]["erd_request_status"] == "None"
     assert s[2]["barrier_owner"] is None
+    assert s[2]["erd_request_status"] == "Delete pending"

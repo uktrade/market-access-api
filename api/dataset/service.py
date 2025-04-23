@@ -78,6 +78,9 @@ def get_barrier_history(request):
 
     for h in history:
         h["barrier_id"] = h["id"]
+        h["user_id"] = h["user"]["id"] if h["user"] else None
+        h["user_name"] = h["user"]["name"] if h["user"] else None
+        del h["user"]
         del h["id"]
 
     return {"results": history, "next": next}

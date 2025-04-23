@@ -1,3 +1,5 @@
+import datetime
+
 import mock
 import pytest
 from django.conf import settings
@@ -9,15 +11,16 @@ from api.barrier_downloads import service
 from api.barrier_downloads.exceptions import BarrierDownloadNotificationError
 from api.barrier_downloads.models import BarrierDownload, BarrierDownloadStatus
 from api.barrier_downloads.serializers import CsvDownloadSerializer
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, EstimatedResolutionDateRequest
 from tests.barriers.factories import BarrierFactory
 
 pytestmark = [pytest.mark.django_db]
 
 
 def test_serializer_to_csv_bytes():
-    b1 = BarrierFactory()
+    b1 = BarrierFactory(estimated_resolution_date=datetime.datetime.now())
     b2 = BarrierFactory()
+    erd = EstimatedResolutionDateRequest.objects.create(barrier=b1, reason="Reason")
     b3 = BarrierFactory()
     queryset = Barrier.objects.filter(id__in=[b1.id, b2.id])
     field_names = {
@@ -25,6 +28,8 @@ def test_serializer_to_csv_bytes():
         "code": "code",
         "title": "Title",
         "status": "Status",
+        "erd_request_status": "ERD Status",
+        "erd_request_reason": "ERD Reason",
     }
     serializer = CsvDownloadSerializer(queryset, many=True)
 
@@ -34,8 +39,8 @@ def test_serializer_to_csv_bytes():
 
     assert content == (
         f'{",".join(field_names.values())}'
-        f'\r\n{b2.id},{b2.code},{b2.title},{serializer.data[1]["status"]}'
-        f'\r\n{b1.id},{b1.code},{b1.title},{serializer.data[0]["status"]}'
+        f'\r\n{b2.id},{b2.code},{b2.title},{serializer.data[1]["status"]},None,'
+        f'\r\n{b1.id},{b1.code},{b1.title},{serializer.data[0]["status"]},Delete pending,{erd.reason}'
         f"\r\n"
     ).encode("utf-8")
 
