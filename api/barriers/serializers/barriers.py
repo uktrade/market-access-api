@@ -117,6 +117,7 @@ class BarrierListSerializer(serializers.Serializer):
     priority_level = serializers.CharField(read_only=True)
     is_top_priority = serializers.BooleanField(read_only=True)
     current_valuation_assessment = serializers.SerializerMethodField()
+    similarity = serializers.SerializerMethodField()
 
     @staticmethod
     def get_current_valuation_assessment(instance):
@@ -126,5 +127,12 @@ class BarrierListSerializer(serializers.Serializer):
             ]
             rating = rating.split(":")[1]
             return f"{rating}"
+        else:
+            return None
+
+    @staticmethod
+    def get_similarity(instance):
+        if instance.similarity:
+            return f"{instance.similarity}"
         else:
             return None
