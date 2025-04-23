@@ -282,19 +282,15 @@ class CsvDownloadSerializer(serializers.Serializer):
             last_name = getattr(author, "last_name", None)
             return f"{first_name} {last_name}" if first_name and last_name else None
 
-    def get_proposed_estimated_resolution_date(self, barrier):
-        # only show the proposed date if it is different to the current date
-        if not barrier.proposed_estimated_resolution_date:
-            return None
+    def get_proposed_estimated_resolution_date(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return
 
-        # compare to estimated_resolution_date
-        if (
-            barrier.proposed_estimated_resolution_date
-            == barrier.estimated_resolution_date
-        ):
-            return None
+        erd = qs[0]
 
-        return barrier.proposed_estimated_resolution_date.strftime("%b-%y")
+        if erd.estimated_resolution_date:
+            return erd.estimated_resolution_date.strftime("%Y-%m-%d")
 
     def get_commodity_codes(self, barrier):
         return (

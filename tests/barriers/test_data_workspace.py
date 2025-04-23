@@ -235,10 +235,12 @@ class TestDataWarehouseExport(TestCase):
             reason="test",
         )
         erd1.close(modified_by=create_test_user())
-        EstimatedResolutionDateRequest.objects.create(
+        user = create_test_user()
+        erd = EstimatedResolutionDateRequest.objects.create(
             barrier=barrier,
             reason="test",
             status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+            created_by=user,
         )
 
         # Emulate view prefetch
@@ -254,6 +256,14 @@ class TestDataWarehouseExport(TestCase):
         serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
         assert serialised_data[0]["erd_request_status"] == "Delete pending"
+        assert serialised_data[0]["proposed_estimated_resolution_date"] is None
+        assert (
+            serialised_data[0]["proposed_estimated_resolution_date_user"]
+            == f"{user.first_name} {user.last_name}"
+        )
+        assert serialised_data[0][
+            "proposed_estimated_resolution_date_created"
+        ] == erd.created_on.strftime("%Y-%m-%d")
 
     def test_erd_request_status_extend(self):
         barrier = BarrierFactory(
@@ -261,12 +271,14 @@ class TestDataWarehouseExport(TestCase):
             estimated_resolution_date=datetime.date.today(),
             priority_level="OVERSEAS",
         )
-        EstimatedResolutionDateRequest.objects.create(
+        user = create_test_user()
+        erd = EstimatedResolutionDateRequest.objects.create(
             barrier=barrier,
             estimated_resolution_date=datetime.date.today()
             + datetime.timedelta(days=100),
             reason="test",
             status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+            created_by=user,
         )
 
         # Emulate view prefetch
@@ -282,6 +294,16 @@ class TestDataWarehouseExport(TestCase):
         serialised_data = DataWorkspaceSerializer(qs, many=True).data
 
         assert serialised_data[0]["erd_request_status"] == "Extend pending"
+        assert serialised_data[0][
+            "proposed_estimated_resolution_date"
+        ] == erd.estimated_resolution_date.strftime("%Y-%m-%d")
+        assert (
+            serialised_data[0]["proposed_estimated_resolution_date_user"]
+            == f"{user.first_name} {user.last_name}"
+        )
+        assert serialised_data[0][
+            "proposed_estimated_resolution_date_created"
+        ] == erd.created_on.strftime("%Y-%m-%d")
 
     def test_has_approvers_summary(self):
         barrier = BarrierFactory(status_date=date.today())
