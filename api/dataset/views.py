@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Prefetch
 from hawkrest import HawkAuthentication
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.barriers.models import Barrier
+from api.barriers.models import Barrier, EstimatedResolutionDateRequest
 from api.barriers.serializers import DataWorkspaceSerializer
 from api.dataset.pagination import MarketAccessDatasetViewCursorPagination
 from api.dataset.service import get_barrier_history
@@ -24,15 +25,19 @@ class BarrierList(generics.ListAPIView):
 
     queryset = (
         Barrier.barriers.all()
-        .select_related(
-            "priority",
-        )
+        .select_related("priority", "preliminary_assessment")
         .prefetch_related(
             "barrier_commodities",
             "economic_assessments",
             "organisations",
             "tags",
             "top_priority_summary",
+            Prefetch(
+                "estimated_resolution_date_request",
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
+            ),
         )
         .order_by("reported_on")
     )

@@ -131,12 +131,11 @@ def barrier_priority_approval_email_notification(sender, instance: Barrier, **kw
 
 
 @transaction.atomic
-def barrier_completion_top_priority_barrier_resolved(
+def barrier_completion_top_priority_barrier_status_update(
     sender, instance: Barrier, **kwargs
 ):
     """
-    After a barrier is updated, check if it has a status of 'Resolved: In Full' and has an
-    APPROVED top_pritority status. If it does, change top_priority_status to RESOLVED.
+    After a barrier's status is updated, update the top_priority_status to match.
     """
     edited_barrier = Barrier.objects.get(id=instance.id)
 
@@ -148,6 +147,15 @@ def barrier_completion_top_priority_barrier_resolved(
         # an endless loop where post_save keeps getting called!!!
         Barrier.objects.filter(id=instance.id).update(
             top_priority_status=TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+        )
+    elif (
+        edited_barrier.status != 4
+        and edited_barrier.top_priority_status == TOP_PRIORITY_BARRIER_STATUS.RESOLVED
+    ):
+        # IMPORTANT - Use Update here instead of save or we'll get stuck in
+        # an endless loop where post_save keeps getting called!!!
+        Barrier.objects.filter(id=instance.id).update(
+            top_priority_status=TOP_PRIORITY_BARRIER_STATUS.APPROVED
         )
 
 

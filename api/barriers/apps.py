@@ -9,7 +9,7 @@ class BarriersConfig(AppConfig):
 
         from .models import Barrier
         from .signals.handlers import (
-            barrier_completion_top_priority_barrier_resolved,
+            barrier_completion_top_priority_barrier_status_update,
             barrier_policy_teams_changed,
             barrier_priority_approval_email_notification,
             barrier_tags_changed,
@@ -24,7 +24,7 @@ class BarriersConfig(AppConfig):
         pre_save.connect(related_barrier_update_embeddings, sender=Barrier)
 
         post_save.connect(
-            barrier_completion_top_priority_barrier_resolved, sender=Barrier
+            barrier_completion_top_priority_barrier_status_update, sender=Barrier
         )
 
         post_save.connect(barrier_priority_approval_email_notification, sender=Barrier)

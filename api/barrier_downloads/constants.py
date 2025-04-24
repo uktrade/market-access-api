@@ -18,6 +18,8 @@ BARRIER_FIELD_TO_COLUMN_TITLE = {
     "reported_on": "Reported date",
     "barrier_owner": "Barrier Owner",
     "estimated_resolution_date": "Estimated resolution date",
+    "erd_request_status": "ERD status",
+    "erd_request_reason": "ERD reason",
     "proposed_estimated_resolution_date": "Proposed estimated resolution date",
     "status_date": "Status effective from date",
     "resolved_date": "Resolved date",

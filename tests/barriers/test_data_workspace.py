@@ -4,11 +4,19 @@ from datetime import date
 import django.db.models
 import freezegun
 import pytest
+from django.db.models import Prefetch
 from django.test import TestCase
 from rest_framework.test import APITestCase
 
 from api.action_plans.models import ActionPlan
-from api.barriers.models import BarrierProgressUpdate, BarrierTopPrioritySummary
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
+from api.assessment.models import PreliminaryAssessment
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    BarrierTopPrioritySummary,
+    EstimatedResolutionDateRequest,
+)
 from api.barriers.serializers.data_workspace import DataWorkspaceSerializer
 from api.core.test_utils import APITestMixin, create_test_user
 from api.metadata.constants import (
@@ -192,6 +200,110 @@ class TestDataWarehouseExport(TestCase):
             serialised_data["public_eligibility_summary"]
             == barrier.public_eligibility_summary
         )
+
+    def test_erd_request_status_none(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+
+        # Emulate view prefetch
+        qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
+            Prefetch(
+                "estimated_resolution_date_request",
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
+            ),
+        )
+
+        serialised_data = DataWorkspaceSerializer(qs, many=True).data
+
+        assert serialised_data[0]["erd_request_status"] == "None"
+
+    def test_erd_request_status_delete(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+        erd1 = EstimatedResolutionDateRequest.objects.create(
+            barrier=barrier,
+            estimated_resolution_date=datetime.date.today()
+            + datetime.timedelta(days=100),
+            reason="test",
+        )
+        erd1.close(modified_by=create_test_user())
+        user = create_test_user()
+        erd = EstimatedResolutionDateRequest.objects.create(
+            barrier=barrier,
+            reason="test",
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+            created_by=user,
+        )
+
+        # Emulate view prefetch
+        qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
+            Prefetch(
+                "estimated_resolution_date_request",
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
+            ),
+        )
+
+        serialised_data = DataWorkspaceSerializer(qs, many=True).data
+
+        assert serialised_data[0]["erd_request_status"] == "Delete pending"
+        assert serialised_data[0]["proposed_estimated_resolution_date"] is None
+        assert (
+            serialised_data[0]["proposed_estimated_resolution_date_user"]
+            == f"{user.first_name} {user.last_name}"
+        )
+        assert serialised_data[0][
+            "proposed_estimated_resolution_date_created"
+        ] == erd.created_on.strftime("%Y-%m-%d")
+
+    def test_erd_request_status_extend(self):
+        barrier = BarrierFactory(
+            status_date=date.today(),
+            estimated_resolution_date=datetime.date.today(),
+            priority_level="OVERSEAS",
+        )
+        user = create_test_user()
+        erd = EstimatedResolutionDateRequest.objects.create(
+            barrier=barrier,
+            estimated_resolution_date=datetime.date.today()
+            + datetime.timedelta(days=100),
+            reason="test",
+            status=EstimatedResolutionDateRequest.STATUSES.NEEDS_REVIEW,
+            created_by=user,
+        )
+
+        # Emulate view prefetch
+        qs = Barrier.objects.filter(id=barrier.pk).prefetch_related(
+            Prefetch(
+                "estimated_resolution_date_request",
+                queryset=EstimatedResolutionDateRequest.objects.filter(
+                    status="NEEDS_REVIEW"
+                ),
+            ),
+        )
+
+        serialised_data = DataWorkspaceSerializer(qs, many=True).data
+
+        assert serialised_data[0]["erd_request_status"] == "Extend pending"
+        assert serialised_data[0][
+            "proposed_estimated_resolution_date"
+        ] == erd.estimated_resolution_date.strftime("%Y-%m-%d")
+        assert (
+            serialised_data[0]["proposed_estimated_resolution_date_user"]
+            == f"{user.first_name} {user.last_name}"
+        )
+        assert serialised_data[0][
+            "proposed_estimated_resolution_date_created"
+        ] == erd.created_on.strftime("%Y-%m-%d")
 
     def test_has_approvers_summary(self):
         barrier = BarrierFactory(status_date=date.today())
@@ -799,6 +911,20 @@ class TestBarrierDataWarehouseDeliveryConfidenceSerializer(APITestMixin, APITest
             "status" in serialised_data["latest_progress_update"]
             and serialised_data["latest_progress_update"]["status"]
             == PROGRESS_UPDATE_CHOICES["RISK_OF_DELAY"]
+        )
+
+    def test_preliminary_assessment_fields(self):
+        preliminary_assessment = PreliminaryAssessment.objects.create(
+            barrier=self.barrier, value=1, details="test"
+        )
+        serialised_data = DataWorkspaceSerializer(self.barrier).data
+        assert (
+            serialised_data["preliminary_assessment_value"]
+            == PRELIMINARY_ASSESSMENT_CHOICES[preliminary_assessment.value]
+        )
+        assert (
+            serialised_data["preliminary_assessment_details"]
+            == preliminary_assessment.details
         )
 
     def test_latest_progress_update_status_delayed_is_readable(self):

@@ -1,3 +1,4 @@
+import datetime
 import logging
 from unittest.mock import call, patch
 
@@ -7,7 +8,7 @@ from notifications_python_client.notifications import NotificationsAPIClient
 
 from api.barriers.models import Barrier
 from api.barriers.signals.handlers import (
-    barrier_completion_top_priority_barrier_resolved,
+    barrier_completion_top_priority_barrier_status_update,
     barrier_priority_approval_email_notification,
 )
 from api.core.test_utils import APITestMixin, create_test_user
@@ -114,7 +115,7 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.status = 4
         barrier.save()
 
-        barrier_completion_top_priority_barrier_resolved(
+        barrier_completion_top_priority_barrier_status_update(
             sender=Barrier, instance=barrier
         )
 
@@ -122,12 +123,27 @@ class TestSignalFunctions(APITestMixin, TestCase):
 
         assert barrier.top_priority_status == "RESOLVED"
 
+    def test_reopening_resolved_top_priority_removes_resolved_tag(self):
+        barrier = BarrierFactory(
+            status=4, top_priority_status="APPROVED", status_date=datetime.date.today()
+        )
+        barrier.status = 1
+        barrier.save()
+
+        barrier_completion_top_priority_barrier_status_update(
+            sender=Barrier, instance=barrier
+        )
+
+        barrier.refresh_from_db()
+
+        assert barrier.top_priority_status == "APPROVED"
+
     def test_resolving_top_priority_pending_barrier_retains_pending_tag(self):
         barrier = BarrierFactory(status=1, top_priority_status="APPROVAL_PENDING")
         barrier.status = 4
         barrier.save()
 
-        barrier_completion_top_priority_barrier_resolved(
+        barrier_completion_top_priority_barrier_status_update(
             sender=Barrier, instance=barrier
         )
 
@@ -140,30 +156,13 @@ class TestSignalFunctions(APITestMixin, TestCase):
         barrier.status = 3
         barrier.save()
 
-        barrier_completion_top_priority_barrier_resolved(
+        barrier_completion_top_priority_barrier_status_update(
             sender=Barrier, instance=barrier
         )
 
         barrier.refresh_from_db()
 
         assert barrier.top_priority_status == "APPROVED"
-
-    def test_reopening_resolved_top_priority_retains_resolved_tag(self):
-        barrier = BarrierFactory(status=1, top_priority_status="RESOLVED")
-        # Resolve the barrier
-        barrier.status = 4
-        barrier.save()
-        # Reopen the barrier
-        barrier.status = 1
-        barrier.save()
-
-        barrier_completion_top_priority_barrier_resolved(
-            sender=Barrier, instance=barrier
-        )
-
-        barrier.refresh_from_db()
-
-        assert barrier.top_priority_status == "RESOLVED"
 
     def test_new_valuation_commercial_value(self):
         barrier = Barrier()

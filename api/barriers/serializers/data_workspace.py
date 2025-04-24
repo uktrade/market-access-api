@@ -8,6 +8,8 @@ from django.db.models import Count, Q
 from rest_framework import serializers
 
 from api.action_plans.models import ActionPlan, ActionPlanTask
+from api.assessment.constants import PRELIMINARY_ASSESSMENT_CHOICES
+from api.assessment.models import PreliminaryAssessment
 from api.barriers.fields import ExportTypeReportField, LineBreakCharField
 from api.barriers.models import (
     Barrier,
@@ -219,6 +221,11 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     approvers_summary = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_approval_on = serializers.SerializerMethodField()
     public_barrier_set_to_awaiting_publication_on = serializers.SerializerMethodField()
+    erd_request_status = serializers.SerializerMethodField()
+    preliminary_assessment_value = serializers.SerializerMethodField()
+    preliminary_assessment_details = serializers.CharField(
+        source="preliminary_assessment.details"
+    )
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -338,6 +345,9 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "approvers_summary",
             "public_barrier_set_to_awaiting_approval_on",
             "public_barrier_set_to_awaiting_publication_on",
+            "erd_request_status",
+            "preliminary_assessment_value",
+            "preliminary_assessment_details",
         )
 
     def to_representation(self, instance):
@@ -369,8 +379,27 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     def get_tags(obj):
         return [tag.title for tag in obj.tags.all()]
 
+    def get_erd_request_status(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return "None"
+
+        erd_request = qs[0]
+
+        if not erd_request.estimated_resolution_date:
+            return "Delete pending"
+
+        return "Extend pending"
+
     def get_policy_teams(self, obj):
         return ",".join([p.title for p in obj.policy_teams.all()])
+
+    def get_preliminary_assessment_value(self, obj):
+        try:
+            if obj.preliminary_assessment:
+                return PRELIMINARY_ASSESSMENT_CHOICES[obj.preliminary_assessment.value]
+        except PreliminaryAssessment.DoesNotExist:
+            pass
 
     def get_status_history(self, obj):
         history = Barrier.get_history(
@@ -606,44 +635,36 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
                 ):
                     return history_date.strftime("%Y-%m-%d")
 
-    def get_proposed_estimated_resolution_date(self, instance):
-        # only show the proposed date if it is different to the current date
-        if not instance.proposed_estimated_resolution_date:
-            return None
+    def get_proposed_estimated_resolution_date(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return
 
-        # compare to estimated_resolution_date
-        if (
-            instance.proposed_estimated_resolution_date
-            == instance.estimated_resolution_date
-        ):
-            return None
+        erd = qs[0]
 
-        return instance.proposed_estimated_resolution_date.strftime("%Y-%m-%d")
+        if erd.estimated_resolution_date:
+            return erd.estimated_resolution_date.strftime("%Y-%m-%d")
 
-    def get_proposed_estimated_resolution_date_created(self, instance):
-        # only show the proposed date if it is different to the current date
-        if not instance.proposed_estimated_resolution_date_created:
-            return None
+    def get_proposed_estimated_resolution_date_created(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return
 
-        # compare to estimated_resolution_date
-        if (
-            instance.proposed_estimated_resolution_date_created
-            == instance.estimated_resolution_date
-        ):
-            return None
-        return instance.proposed_estimated_resolution_date_created.strftime("%Y-%m-%d")
+        erd = qs[0]
 
-    def get_proposed_estimated_resolution_date_user(self, instance):
-        # only show the proposed date if it is different to the current date
-        if not instance.proposed_estimated_resolution_date:
-            return None
-        first_name = getattr(
-            instance.proposed_estimated_resolution_date_user, "first_name"
-        )
-        last_name = getattr(
-            instance.proposed_estimated_resolution_date_user, "last_name"
-        )
-        return f"{first_name} {last_name}" if first_name and last_name else None
+        return erd.created_on.strftime("%Y-%m-%d")
+
+    def get_proposed_estimated_resolution_date_user(self, obj):
+        qs = obj.estimated_resolution_date_request.all()
+        if not qs:
+            return
+
+        user = qs[0].created_by
+
+        if user:
+            first_name = getattr(user, "first_name")
+            last_name = getattr(user, "last_name")
+            return f"{first_name} {last_name}" if first_name and last_name else None
 
     def get_main_sector(self, instance) -> typing.Optional[str]:
         main_sector = metadata_utils.get_sector(instance.main_sector)
