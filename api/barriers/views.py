@@ -330,6 +330,16 @@ class BarrierList(generics.ListAPIView):
                             output_field=CharField(),
                         )
                     )
+                elif order_by == "similarity":
+                    # Can only sort by similarity when a search term is present from the dashboard search bar
+                    # the query itself performs the sort, so we can return the query set here before ordering on
+                    # the annotated "ordering_value" field
+                    queryset = queryset.annotate(
+                        ordering_value=Value(
+                            "query_calculated", output_field=CharField()
+                        )
+                    )
+                    return queryset.distinct()
 
                 # Implement Final filter to exclude duplicates where the search option implies extra
                 # filters e.g. Barriers may have multiple impact assesements

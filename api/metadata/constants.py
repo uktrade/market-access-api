@@ -543,6 +543,13 @@ BARRIER_SEARCH_ORDERING_CHOICES = {
         "order_on": "status_date",
         "direction": "ascending",
     },
+    "relevance": {
+        "ordering": "relevance",
+        "ordering-filter": "query_calculated",
+        "label": "Relevence to the search term",
+        "order_on": "similarity",
+        "direction": "descending",
+    },
 }
 
 FEEDBACK_FORM_SATISFACTION_ANSWERS = Choices(

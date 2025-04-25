@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import serializers
 
 from api.barriers.fields import SectorField, SectorsField, StatusField, TagsField
@@ -6,6 +8,8 @@ from api.metadata.constants import ECONOMIC_ASSESSMENT_IMPACT
 
 from ...action_plans.serializers import ActionPlanSerializer
 from .base import BarrierSerializerBase
+
+logger = logging.getLogger(__name__)
 
 
 class BarrierDetailSerializer(BarrierSerializerBase):
@@ -117,6 +121,7 @@ class BarrierListSerializer(serializers.Serializer):
     priority_level = serializers.CharField(read_only=True)
     is_top_priority = serializers.BooleanField(read_only=True)
     current_valuation_assessment = serializers.SerializerMethodField()
+    similarity = serializers.FloatField(required=False)
 
     @staticmethod
     def get_current_valuation_assessment(instance):
