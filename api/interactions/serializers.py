@@ -21,6 +21,7 @@ class InteractionSerializer(serializers.ModelSerializer):
             "documents",
             "created_on",
             "created_by",
+            "barrier",
         )
         read_only_fields = ("barrier", "kind", "created_on", "created_by")
 
@@ -120,6 +121,7 @@ class PublicBarrierNoteSerializer(serializers.ModelSerializer):
             "text",
             "created_on",
             "created_by",
+            "barrier",
         )
         read_only_fields = ("id", "created_on", "created_by")
 
