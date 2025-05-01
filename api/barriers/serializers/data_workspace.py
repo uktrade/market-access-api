@@ -177,7 +177,7 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
         return None
 
     def get_barrier(self, obj):
-        return obj.id
+        return obj.barrier.id
 
 
 class DataWorkspaceSerializer(BarrierSerializerBase):

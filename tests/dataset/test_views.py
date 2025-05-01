@@ -1,4 +1,5 @@
 from datetime import datetime
+from logging import getLogger
 
 import freezegun
 import time_machine
@@ -8,17 +9,25 @@ from pytz import UTC
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from api.barriers.models import Barrier
+from api.barriers.models import (
+    Barrier,
+    BarrierProgressUpdate,
+    ProgrammeFundProgressUpdate,
+)
 from api.collaboration.models import TeamMember
 from api.core.test_utils import APITestMixin, create_test_user
 from api.feedback.models import Feedback
+from api.interactions.models import Interaction, PublicBarrierNote
 from api.metadata.constants import (
     FEEDBACK_FORM_ATTEMPTED_ACTION_ANSWERS,
     FEEDBACK_FORM_SATISFACTION_ANSWERS,
+    PROGRESS_UPDATE_CHOICES,
     PublicBarrierStatus,
 )
 from api.metadata.models import BarrierTag, Organisation
 from tests.barriers.factories import BarrierFactory
+
+logger = getLogger(__name__)
 
 freezegun.configure(extend_ignore_list=["transformers"])
 User = get_user_model()
@@ -157,6 +166,166 @@ class TestBarriersDataset(APITestMixin):
 
         assert org1.name == data_item["government_organisations"][0]
         assert org2.name == data_item["government_organisations"][1]
+
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_progress_update(self, mock_public_barrier_status):
+
+        barrier = BarrierFactory()
+        barrier.top_priority_status = "APPROVED"
+        barrier.save()
+
+        BarrierProgressUpdate.objects.create(
+            barrier=barrier,
+            status=PROGRESS_UPDATE_CHOICES.ON_TRACK,
+            update="Nothing Specific",
+            next_steps="First steps",
+            modified_on=datetime.now(),
+        )
+
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
+
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+
+        assert data_item["progress_updates"][0]["update"] == "Nothing Specific"
+        assert data_item["progress_updates"][0]["barrier"] == barrier.id
+
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_programme_fund_progress_update(self, mock_public_barrier_status):
+
+        barrier = BarrierFactory()
+        barrier.top_priority_status = "APPROVED"
+        barrier.save()
+
+        ProgrammeFundProgressUpdate.objects.create(
+            barrier=barrier,
+            milestones_and_deliverables="Nothing Specific",
+            expenditure="First steps",
+            modified_on=datetime.now(),
+        )
+
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
+
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+
+        assert (
+            data_item["programme_fund_progress_updates"][0][
+                "milestones_and_deliverables"
+            ]
+            == "Nothing Specific"
+        )
+        assert (
+            data_item["programme_fund_progress_updates"][0]["expenditure"]
+            == "First steps"
+        )
+        assert data_item["programme_fund_progress_updates"][0]["barrier"] == str(
+            barrier.id
+        )
+
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_notes(self, mock_public_barrier_status):
+
+        barrier = BarrierFactory()
+        barrier.save()
+
+        test_user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+
+        Interaction.objects.create(
+            created_by=test_user,
+            barrier=barrier,
+            text="Nothing Specific",
+            modified_on=datetime.now(),
+        )
+
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
+
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+
+        assert data_item["barrier_notes"][0]["text"] == "Nothing Specific"
+        assert data_item["barrier_notes"][0]["barrier"] == barrier.id
+
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_public_barrier_notes(self, mock_public_barrier_status):
+
+        barrier = BarrierFactory()
+        barrier.save()
+
+        test_user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+
+        PublicBarrierNote.objects.create(
+            created_by=test_user,
+            public_barrier=barrier.public_barrier,
+            text="Nothing Specific",
+            modified_on=datetime.now(),
+        )
+
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
+
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+
+        assert data_item["public_notes"][0]["text"] == "Nothing Specific"
+        assert data_item["public_notes"][0]["barrier"] == barrier.id
+
+    @patch(
+        "api.barriers.models.PublicBarrier.public_view_status",
+        new_callable=PropertyMock,
+    )
+    def test_public_barrier_notes_multiples(self, mock_public_barrier_status):
+
+        barrier = BarrierFactory()
+        barrier.save()
+
+        test_user = create_test_user(sso_user_id=self.sso_creator["user_id"])
+
+        PublicBarrierNote.objects.create(
+            created_by=test_user,
+            public_barrier=barrier.public_barrier,
+            text="Nothing Specific",
+            modified_on=datetime.now(),
+        )
+        PublicBarrierNote.objects.create(
+            created_by=test_user,
+            public_barrier=barrier.public_barrier,
+            text="Very Specific",
+            modified_on=datetime.now(),
+        )
+
+        mock_public_barrier_status.return_value = PublicBarrierStatus.UNKNOWN
+
+        url = reverse("dataset:barrier-list")
+        response = self.api_client.get(url)
+
+        assert status.HTTP_200_OK == response.status_code
+        data_item = response.data["results"][0]
+
+        assert len(data_item["public_notes"]) == 2
 
     @patch(
         "api.barriers.models.PublicBarrier.public_view_status",
