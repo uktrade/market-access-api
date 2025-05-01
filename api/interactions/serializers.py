@@ -113,6 +113,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 class PublicBarrierNoteSerializer(serializers.ModelSerializer):
     created_by = serializers.SerializerMethodField()
+    barrier = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrierNote
@@ -128,6 +129,10 @@ class PublicBarrierNoteSerializer(serializers.ModelSerializer):
     def get_created_by(self, obj):
         if obj.created_by is not None:
             return {"id": obj.created_by.id, "name": obj.created_user}
+
+    def get_barrier(self, obj):
+        if obj.public_barrier is not None:
+            return obj.public_barrier.barrier.id
 
 
 class MentionSerializer(serializers.ModelSerializer):

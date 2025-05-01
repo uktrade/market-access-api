@@ -149,6 +149,7 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
     archived_by = UserSerializer()
     unarchived_by = UserSerializer()
     status = serializers.SerializerMethodField()
+    barrier = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierProgressUpdate
@@ -167,12 +168,16 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
             "id",
             "status",
             "update",
+            "barrier",
         )
 
     def get_status(self, obj):
         if obj.status is not None:
             return PROGRESS_UPDATE_CHOICES[obj.status]
         return None
+
+    def get_barrier(self, obj):
+        return obj.id
 
 
 class DataWorkspaceSerializer(BarrierSerializerBase):
