@@ -307,8 +307,8 @@ class BarrierList(generics.ListAPIView):
             # order of the field we want to order on. We also use this column to implement a filter to the
             # queryset assigning 'c' value to entries(duplicates) we want to exclude from the final results
             if ordering_filter:
-                # Here apply the custom logic to the extaordinary search orders e.g. barriers with multiple impact
-                # assesments and sorting on resolution date
+                # Here apply the custom logic to the extraordinary search orders e.g. barriers with multiple impact
+                # assessments and sorting on resolution date
                 if order_by == "valuation_assessments__impact":
                     queryset = queryset.annotate(
                         ordering_value=Case(
@@ -342,7 +342,7 @@ class BarrierList(generics.ListAPIView):
                     return queryset.distinct()
 
                 # Implement Final filter to exclude duplicates where the search option implies extra
-                # filters e.g. Barriers may have multiple impact assesements
+                # filters e.g. Barriers may have multiple impact assessments
                 # which could be archived therefore would result in duplicates due to annotation
                 queryset = queryset.exclude(ordering_value="c")
             else:

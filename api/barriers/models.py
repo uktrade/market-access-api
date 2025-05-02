@@ -1696,12 +1696,13 @@ class BarrierFilterSet(django_filters.FilterSet):
         """
 
         from api.related_barriers import manager as handler_manager
-        from api.related_barriers.constants import (
+        from api.related_barriers.constants import (  # SIMILARITY_THRESHOLD,
             SIMILAR_BARRIERS_LIMIT,
-            SIMILARITY_THRESHOLD,
         )
 
         related_barriers = handler_manager.get_or_init()
+        # Filter out results with low similarity score
+        SIMILARITY_THRESHOLD = 0.4
 
         barrier_scores = related_barriers.get_similar_barriers_searched(
             search_term=value,
