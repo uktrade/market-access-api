@@ -17,7 +17,15 @@ from api.barriers.models import (
     BarrierTopPrioritySummary,
 )
 from api.barriers.serializers.base import BarrierSerializerBase
+from api.barriers.serializers.progress_updates import (
+    ProgrammeFundProgressUpdateSerializer,
+)
 from api.collaboration.models import TeamMember
+from api.interactions.models import Interaction, PublicBarrierNote
+from api.interactions.serializers import (
+    InteractionSerializer,
+    PublicBarrierNoteSerializer,
+)
 from api.metadata import utils as metadata_utils
 from api.metadata.constants import (
     GOVERNMENT_ORGANISATION_TYPES,
@@ -141,6 +149,7 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
     archived_by = UserSerializer()
     unarchived_by = UserSerializer()
     status = serializers.SerializerMethodField()
+    barrier = serializers.SerializerMethodField()
 
     class Meta:
         model = BarrierProgressUpdate
@@ -159,12 +168,16 @@ class ProgressUpdateSerializer(serializers.ModelSerializer):
             "id",
             "status",
             "update",
+            "barrier",
         )
 
     def get_status(self, obj):
         if obj.status is not None:
             return PROGRESS_UPDATE_CHOICES[obj.status]
         return None
+
+    def get_barrier(self, obj):
+        return obj.barrier.id
 
 
 class DataWorkspaceSerializer(BarrierSerializerBase):
@@ -226,6 +239,10 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
     preliminary_assessment_details = serializers.CharField(
         source="preliminary_assessment.details"
     )
+    progress_updates = serializers.SerializerMethodField()
+    programme_fund_progress_updates = serializers.SerializerMethodField()
+    barrier_notes = serializers.SerializerMethodField()
+    public_notes = serializers.SerializerMethodField()
 
     class Meta(BarrierSerializerBase.Meta):
         fields = (
@@ -325,6 +342,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "progress_update_message",
             "progress_update_next_steps",
             "progress_update_status",
+            "progress_updates",
+            "programme_fund_progress_updates",
             "top_priority_summary",
             "top_priority_requested_date",
             "proposed_top_priority_change_user",
@@ -348,6 +367,8 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
             "erd_request_status",
             "preliminary_assessment_value",
             "preliminary_assessment_details",
+            "barrier_notes",
+            "public_notes",
         )
 
     def to_representation(self, instance):
@@ -791,3 +812,37 @@ class DataWorkspaceSerializer(BarrierSerializerBase):
         ).first()
         if first_historical_record:
             return first_historical_record.history_date.strftime("%Y-%m-%d")
+
+    def get_progress_updates(self, obj):
+        progress_updates = obj.progress_updates.all().order_by("-created_on")
+        if not progress_updates:
+            return
+        return ProgressUpdateSerializer(
+            progress_updates, required=False, many=True
+        ).data
+
+    def get_programme_fund_progress_updates(self, obj):
+        programme_fund_progress_updates = (
+            obj.programme_fund_progress_updates.all().order_by("-created_on")
+        )
+        if not programme_fund_progress_updates:
+            return
+        return ProgrammeFundProgressUpdateSerializer(
+            programme_fund_progress_updates, required=False, many=True
+        ).data
+
+    def get_barrier_notes(self, obj):
+        barrier_notes = Interaction.objects.filter(barrier=obj.id).order_by(
+            "-created_on"
+        )
+        if not barrier_notes:
+            return
+        return InteractionSerializer(barrier_notes, required=False, many=True).data
+
+    def get_public_notes(self, obj):
+        public_notes = PublicBarrierNote.objects.filter(
+            public_barrier=obj.public_barrier.id
+        ).order_by("-created_on")
+        if not public_notes:
+            return
+        return PublicBarrierNoteSerializer(public_notes, required=False, many=True).data

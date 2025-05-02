@@ -704,6 +704,7 @@ class TestDashboardTasksView(APITestMixin, APITestCase):
         assert response.status_code == 200
         assert response.data["count"] == 0
 
+    @freezegun.freeze_time(datetime(2024, 1, 10).replace(tzinfo=timezone.utc))
     def test_erd_tasks_missing_for_pb100(self):
         """A task should be created for barriers that are top priority (pb100)
         that have not had an estimated resolution date set"""

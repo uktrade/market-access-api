@@ -21,6 +21,7 @@ class InteractionSerializer(serializers.ModelSerializer):
             "documents",
             "created_on",
             "created_by",
+            "barrier",
         )
         read_only_fields = ("barrier", "kind", "created_on", "created_by")
 
@@ -112,6 +113,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 class PublicBarrierNoteSerializer(serializers.ModelSerializer):
     created_by = serializers.SerializerMethodField()
+    barrier = serializers.SerializerMethodField()
 
     class Meta:
         model = PublicBarrierNote
@@ -120,12 +122,17 @@ class PublicBarrierNoteSerializer(serializers.ModelSerializer):
             "text",
             "created_on",
             "created_by",
+            "barrier",
         )
         read_only_fields = ("id", "created_on", "created_by")
 
     def get_created_by(self, obj):
         if obj.created_by is not None:
             return {"id": obj.created_by.id, "name": obj.created_user}
+
+    def get_barrier(self, obj):
+        if obj.public_barrier is not None:
+            return obj.public_barrier.barrier.id
 
 
 class MentionSerializer(serializers.ModelSerializer):
