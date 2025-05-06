@@ -56,7 +56,7 @@ scikit-learn = "*"
 scipy = "*"
 nltk = "3.9.1"
 sentencepiece = "*"
-huggingface-hub = "0.25.2"
+huggingface-hub = "0.26.0"
 opentelemetry-distro = "0.43b0"
 opentelemetry-exporter-otlp = "1.22.0"
 opentelemetry-instrumentation-wsgi = "0.43b0"
@@ -67,6 +67,7 @@ dbt-copilot-python = "^0.2.0"
 PyYAML = "^6.0.2"
 uritemplate = "^4.1.1"
 inflection = "0.5.1"
+transformers = "4.50.0"
 
 [tool.poetry.dev-dependencies]
 black = "~=24.3.0"
@@ -92,7 +93,7 @@ pillow = "10.3.0"
 # Below are the packages required for the ML models, we keep them in dev-dependencies so they are not put into the
 # requirements.txt file and installed in production - trying to do so causes ALL sorts of issues.
 # instead we install them as part of the .profile script that is ran on the server during deployment.
-transformers = "4.48.0"
+transformers = "4.50.0"
 sentence-transformers = "3.0.1"
 torch = "2.7.0"
 torchvision = "0.22.0"
