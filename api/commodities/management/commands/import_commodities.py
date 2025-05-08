@@ -53,9 +53,9 @@ class Command(BaseCommand):
         ):
             try:
                 commodity.parent = Commodity.objects.get(
-                sid=commodity.parent_sid, version=version
-            )
-            except:
+                    sid=commodity.parent_sid, version=version
+                )
+            except Commodity.DoesNotExist:
                 commodity.parent = None
             commodity.save()
 
