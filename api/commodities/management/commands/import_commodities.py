@@ -56,7 +56,7 @@ class Command(BaseCommand):
                     sid=commodity.parent_sid, version=version
                 )
             except Commodity.DoesNotExist:
-                commodity.parent = None
+                pass
             commodity.save()
 
             if i % 1000 == 0:
