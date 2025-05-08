@@ -25,14 +25,14 @@ class Command(BaseCommand):
             for line in reader:
                 commodity = Commodity.objects.create(
                     version=version,
-                    code=line["Commodity code"],
-                    suffix=line["Suffix"],
-                    level=line["HS Level"],
-                    indent=line["Indent"],
-                    description=line["Description"],
-                    is_leaf=(line["Suffix"] == "80"),
-                    sid=line["SID"],
-                    parent_sid=line["Parent SID"] or None,
+                    code=line["commodity_code"],
+                    suffix=line["suffix"],
+                    level=line["hs_level"],
+                    indent=line["indent"],
+                    description=line["description"],
+                    is_leaf=(line["suffix"] == "80"),
+                    sid=line["sid"],
+                    parent_sid=line["parent_sid"] or None,
                 )
 
                 if i % 1000 == 0:
