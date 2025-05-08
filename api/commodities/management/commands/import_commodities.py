@@ -23,16 +23,21 @@ class Command(BaseCommand):
             reader = csv.DictReader(file)
             i = 0
             for line in reader:
+                if "Number of rows" in line["id"]:
+                    return
+                commodity_code = line["commodity_code"]
+                if len(commodity_code) < 10:
+                    commodity_code = f"0{commodity_code}"
                 commodity = Commodity.objects.create(
                     version=version,
-                    code=line["Commodity code"],
-                    suffix=line["Suffix"],
-                    level=line["HS Level"],
-                    indent=line["Indent"],
-                    description=line["Description"],
-                    is_leaf=(line["Suffix"] == "80"),
-                    sid=line["SID"],
-                    parent_sid=line["Parent SID"] or None,
+                    code=commodity_code,
+                    suffix=line["suffix"],
+                    level=line["hs_level"],
+                    indent=line["indent"],
+                    description=line["description"],
+                    is_leaf=line["suffix"] == "80",
+                    sid=line["sid"],
+                    parent_sid=line["parent_sid"] or None,
                 )
 
                 if i % 1000 == 0:
@@ -46,9 +51,12 @@ class Command(BaseCommand):
         for commodity in Commodity.objects.filter(
             parent_sid__isnull=False, version=version
         ):
-            commodity.parent = Commodity.objects.get(
-                sid=commodity.parent_sid, version=version
-            )
+            try:
+                commodity.parent = Commodity.objects.get(
+                    sid=commodity.parent_sid, version=version
+                )
+            except Commodity.DoesNotExist:
+                pass
             commodity.save()
 
             if i % 1000 == 0:
