@@ -35,7 +35,7 @@ class Command(BaseCommand):
                     level=line["hs_level"],
                     indent=line["indent"],
                     description=line["description"],
-                    is_leaf=(line["suffix"] == "80"),
+                    is_leaf=line["suffix"] == "80",
                     sid=line["sid"],
                     parent_sid=line["parent_sid"] or None,
                 )
