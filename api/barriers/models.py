@@ -1732,7 +1732,7 @@ class BarrierFilterSet(django_filters.FilterSet):
             ),
         )
 
-        if queryset[0].ordering_value == "query_calculated":
+        if getattr(queryset[0], "ordering_value", "") == "query_calculated":
             qs = qs.order_by("-similarity")
 
         return qs
