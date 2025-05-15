@@ -192,6 +192,7 @@ class TestMetadata(APITestMixin):
             "Programme Fund - Facilitative Regional",
             "Programme Fund - Regulator",
             "Market Distorting Practices (MDP)",
+            "Market Shaping",
         ]
         url = reverse("metadata")
         response = self.api_client.get(url)
