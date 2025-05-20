@@ -12,8 +12,9 @@ class Commodity(models.Model):
     indent = models.IntegerField()
     parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
     is_leaf = models.BooleanField(default=False, db_index=True)
-    sid = models.IntegerField()
+    sid = models.IntegerField(null=True)
     parent_sid = models.IntegerField(null=True)
+    parent_code = models.IntegerField(null=True)
 
     @property
     def full_description(self):
