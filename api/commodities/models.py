@@ -14,7 +14,7 @@ class Commodity(models.Model):
     is_leaf = models.BooleanField(default=False, db_index=True)
     sid = models.IntegerField(null=True)
     parent_sid = models.IntegerField(null=True)
-    parent_code = models.IntegerField(null=True)
+    parent_code = models.CharField(null=True)
 
     @property
     def full_description(self):
