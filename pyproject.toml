@@ -68,6 +68,13 @@ PyYAML = "^6.0.2"
 uritemplate = "^4.1.1"
 inflection = "0.5.1"
 transformers = "4.52.1"
+torch = {version = "^2.7.0", source="torchcpu"}
+
+[[tool.poetry.source]]
+name = "torchcpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
 
 [tool.poetry.dev-dependencies]
 black = "~=24.3.0"
