@@ -70,12 +70,9 @@ inflection = "0.5.1"
 transformers = "4.52.1"
 sentence-transformers = "3.0.1"
 pytz = "^2025.2"
-torch = {version = "^2.7.0", source="torchcpu"}
+torchvision = "^0.22.0"
+torch = "^2.7.0"
 
-[[tool.poetry.source]]
-name = "torchcpu"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
 
 [tool.poetry.dev-dependencies]
 black = "~=24.3.0"
