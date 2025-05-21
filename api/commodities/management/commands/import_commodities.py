@@ -26,17 +26,20 @@ class Command(BaseCommand):
                 if not line.get("commodity_code", None):
                     return
                 commodity = Commodity.objects.create(
-                        version=version,
-                        code=self.clean_commodity_code(line["commodity_code"], version),
-                        suffix=line["suffix"],
-                        level=line["hs_level"],
-                        indent=line["indent"],
-                        description=line["description"],
-                        is_leaf=line["suffix"] == "80",
-                        sid=line.get("sid", None) or None,
-                        parent_sid=line.get("parent_sid", None) or None,
-                        parent_code=self.clean_commodity_code(line["commodity_code"], version) or None,
+                    version=version,
+                    code=self.clean_commodity_code(line["commodity_code"], version),
+                    suffix=line["suffix"],
+                    level=line["hs_level"],
+                    indent=line["indent"],
+                    description=line["description"],
+                    is_leaf=line["suffix"] == "80",
+                    sid=line.get("sid", None) or None,
+                    parent_sid=line.get("parent_sid", None) or None,
+                    parent_code=self.clean_commodity_code(
+                        line["commodity_code"], version
                     )
+                    or None,
+                )
 
                 if i % 1000 == 0:
                     self.stdout.write(str(i))
@@ -56,7 +59,9 @@ class Command(BaseCommand):
         for commodity in Commodity.objects.filter(
             parent_code__isnull=False, version=version
         ):
-            parent = Commodity.objects.filter(code=commodity.parent_code, version=version)
+            parent = Commodity.objects.filter(
+                code=commodity.parent_code, version=version
+            )
             if parent.exists():
                 commodity.parent = parent.first()
                 commodity.save()
