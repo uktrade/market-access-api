@@ -71,7 +71,7 @@ transformers = "4.52.1"
 sentence-transformers = "3.0.1"
 pytz = "^2025.2"
 torchvision = "^0.22.0"
-torch = "^2.7.0"
+
 
 
 [tool.poetry.dev-dependencies]
@@ -94,6 +94,7 @@ greenlet = "==3.2.2"
 coverage = "^7.2.7"
 pytest-circleci-parallelized = "^0.1.0"
 pillow = "10.3.0"
+torch = "^2.7.0"
 
 [build-system]
 requires = ["poetry~=1.6.1"]
