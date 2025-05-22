@@ -1709,7 +1709,7 @@ class BarrierFilterSet(django_filters.FilterSet):
                 quantity=SIMILAR_BARRIERS_LIMIT,
             )
         except AttributeError as e:
-            logger.warning("[ERROR] torch pacakge")
+            logger.warning("[ERROR] torch package")
             logger.warning(f"{e}")
             return self.text_search(queryset, name, value)
 
