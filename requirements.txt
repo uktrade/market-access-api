@@ -140,7 +140,7 @@ tokenizers==0.20.3 ; python_full_version >= "3.9.2" and python_full_version < "4
 tomli==2.2.1 ; python_full_version >= "3.9.2" and python_version < "3.11"
 torch==2.7.0 ; python_full_version >= "3.9.2" and python_full_version < "4.0.0"
 tqdm==4.67.1 ; python_full_version >= "3.9.2" and python_full_version < "4.0.0"
-transformers==4.45.1 ; python_full_version >= "3.9.2" and python_full_version < "4.0.0"
+transformers==4.52.3; python_full_version >= "3.9.2" and python_full_version < "4.0.0"
 triton==3.3.0 ; platform_system == "Linux" and platform_machine == "x86_64" and python_full_version >= "3.9.2" and python_full_version < "4.0.0"
 typing-extensions==4.13.2 ; python_full_version >= "3.9.2" and python_version < "4.0"
 tzdata==2025.2 ; python_full_version >= "3.9.2" and python_version < "4"
