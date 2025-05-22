@@ -1695,18 +1695,23 @@ class BarrierFilterSet(django_filters.FilterSet):
             _type_: the resust is a queryset with a free text search applied to the barrier model
         """
 
-        from api.related_barriers import manager as handler_manager
-        from api.related_barriers.constants import SIMILAR_BARRIERS_LIMIT
+        try:
+            # TODO: Remove excpetion handliung once torch dependency issue fixed
+            from api.related_barriers import manager as handler_manager
+            from api.related_barriers.constants import SIMILAR_BARRIERS_LIMIT
 
-        related_barriers = handler_manager.get_or_init()
-        # Filter out results with low similarity score
-        SIMILARITY_THRESHOLD = 0.4
-
-        barrier_scores = related_barriers.get_similar_barriers_searched(
-            search_term=value,
-            similarity_threshold=SIMILARITY_THRESHOLD,
-            quantity=SIMILAR_BARRIERS_LIMIT,
-        )
+            related_barriers = handler_manager.get_or_init()
+            # Filter out results with low similarity score
+            SIMILARITY_THRESHOLD = 0.4
+            barrier_scores = related_barriers.get_similar_barriers_searched(
+                search_term=value,
+                similarity_threshold=SIMILARITY_THRESHOLD,
+                quantity=SIMILAR_BARRIERS_LIMIT,
+            )
+        except AttributeError as e:
+            logger.warning("[ERROR] torch pacakge")
+            logger.warning(f"{e}")
+            return self.text_search(queryset, name, value)
 
         if not barrier_scores:
             # If no similar barriers are found, return the queryset with the text search applied
