@@ -61,6 +61,7 @@ PyYAML = "^6.0.2"
 uritemplate = "^4.1.1"
 inflection = "0.5.1"
 sentence-transformers = "4.1.0"
+transformers = "4.45.1"
 
 
 [tool.poetry.dev-dependencies]
