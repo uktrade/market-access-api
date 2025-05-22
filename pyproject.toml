@@ -68,6 +68,9 @@ PyYAML = "^6.0.2"
 uritemplate = "^4.1.1"
 inflection = "0.5.1"
 transformers = "4.52.1"
+sentence-transformers = "3.0.1"
+torch = "2.7.0"
+torchvision = "0.22.0"
 
 [tool.poetry.dev-dependencies]
 black = "~=24.3.0"
@@ -90,13 +93,7 @@ coverage = "^7.2.7"
 pytest-circleci-parallelized = "^0.1.0"
 pillow = "10.3.0"
 
-# Below are the packages required for the ML models, we keep them in dev-dependencies so they are not put into the
-# requirements.txt file and installed in production - trying to do so causes ALL sorts of issues.
-# instead we install them as part of the .profile script that is ran on the server during deployment.
-transformers = "4.52.1"
-sentence-transformers = "3.0.1"
-torch = "2.7.0"
-torchvision = "0.22.0"
+
 
 [build-system]
 requires = ["poetry~=1.6.1"]
