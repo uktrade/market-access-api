@@ -16,6 +16,9 @@ class Commodity(models.Model):
     parent_sid = models.IntegerField(null=True)
     parent_code = models.CharField(null=True)
 
+    class Meta:
+        verbose_name_plural = "commodities"
+
     @property
     def full_description(self):
         if not self.parent or self.level <= 4:
