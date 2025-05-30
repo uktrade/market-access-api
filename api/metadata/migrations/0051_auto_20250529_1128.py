@@ -4,8 +4,8 @@ from django.db import migrations
 
 INNOVATION_TEAM = {
     "pk": 18,
-    "title": "Innovation",
-    "description": ""
+    "title": "Innovation Trade Policy",
+    "description": "The Innovation Trade Policy team helps UK businesses export innovative goods and services. They do this by horizon-scanning for potential trade barriers and opportunities within priority sectors, with a focus on emerging technologies. Potential barriers may include differing market standards on future technologies."
 }
 
 
