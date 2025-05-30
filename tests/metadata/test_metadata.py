@@ -54,7 +54,7 @@ class TestMetadata(APITestMixin):
 
         response = self.api_client.get(url)
 
-        assert PolicyTeam.objects.count() == 17
+        assert PolicyTeam.objects.count() == 18
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data["policy_teams"]) == 18
         assert (
